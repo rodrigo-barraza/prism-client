@@ -120,17 +120,17 @@ export default function RunHistorySidebarComponent({
           TAB: General — Models, Agents, Assertions, Prompt
           ════════════════════════════════════════════════════ */}
       {activeTab === "general" && (
-        <div className={styles.tabContent}>
+        <div className={styles['tab-content']}>
           {/* -- Assertions -------------------------------- */}
           {assertions.length > 0 && (
-            <div className={styles.assertionsSection}>
-              <div className={styles.sectionLabel}>
+            <div className={styles['assertions-section']}>
+              <div className={styles['section-label']}>
                 <ListChecks size={12} />
                 Assertions
               </div>
-              <div className={styles.assertionsList}>
+              <div className={styles['assertions-list']}>
                 {assertions.map((a: any, i: number) => (
-                  <div key={i} className={styles.assertionRow}>
+                  <div key={i} className={styles['assertion-row']}>
                     {i > 0 && (
                       <BadgeComponent
                         variant={operator === "OR" ? "warning" : "info"}
@@ -142,7 +142,7 @@ export default function RunHistorySidebarComponent({
                       {a.matchMode || "contains"}
                     </BadgeComponent>
                     <span
-                      className={styles.assertionValue}
+                      className={styles['assertion-value']}
                       title={a.expectedValue}
                     >
                       {a.expectedValue}
@@ -155,7 +155,7 @@ export default function RunHistorySidebarComponent({
 
           {/* -- Prompt Preview ---------------------------- */}
           {(benchmark.prompt || benchmark.systemPrompt) && (
-            <div className={styles.promptSection}>
+            <div className={styles['prompt-section']}>
               <ChatPreviewComponent
                 systemPrompt={benchmark.systemPrompt}
                 messages={[{ role: "user", content: benchmark.prompt }]}
@@ -165,18 +165,18 @@ export default function RunHistorySidebarComponent({
           )}
 
           {/* -- Model Selection --------------------------- */}
-          <div className={styles.modelsSection}>
-            <div className={styles.sectionLabel}>
+          <div className={styles['models-section']}>
+            <div className={styles['section-label']}>
               <Cpu size={12} />
               Models
-              <span className={styles.modelCountBadge}>
+              <span className={styles['model-count-badge']}>
                 {selectedModels.length}
               </span>
             </div>
 
             {/* Selected model cards */}
             {selectedModels.length > 0 ? (
-              <div className={styles.modelCards}>
+              <div className={styles['model-cards']}>
                 {selectedModels.map((m: any) => {
                   const isThinking = !!thinkingMap[m.instanceId];
                   const isTools = !!toolsMap[m.instanceId];
@@ -202,7 +202,7 @@ export default function RunHistorySidebarComponent({
                 })}
               </div>
             ) : (
-              <div className={styles.emptyModels}>
+              <div className={styles['empty-models']}>
                 Use the model picker above to select models
               </div>
             )}
@@ -211,7 +211,7 @@ export default function RunHistorySidebarComponent({
             {(selectedModels.length > 0 || agentInstances.length > 0) && (
               <>
                 {agentInstances.length > 0 && (
-                  <div className={styles.modelCards}>
+                  <div className={styles['model-cards']}>
                     {agentInstances.map((a: any) => {
                       const isThinking = !!thinkingMap[a.instanceId];
                       const currentModelDef = allModels.find(
@@ -236,9 +236,9 @@ export default function RunHistorySidebarComponent({
                     })}
                   </div>
                 )}
-                <div className={styles.modelActions}>
+                <div className={styles['model-actions']}>
                   <button
-                    className={styles.clearModelsButton}
+                    className={styles['clear-models-button']}
                     onClick={onClearSelection}
                   >
                     Clear all
@@ -254,11 +254,11 @@ export default function RunHistorySidebarComponent({
           TAB: Run History
           ════════════════════════════════════════════════════ */}
       {activeTab === "history" && (
-        <div className={styles.tabContent}>
+        <div className={styles['tab-content']}>
           {/* -- Running Banner ---------------------------- */}
           {running && (
-            <div className={styles.runningBanner}>
-              <Loader2 size={14} className={styles.spinIcon} />
+            <div className={styles['running-banner']}>
+              <Loader2 size={14} className={styles['spin-icon']} />
               Running…{" "}
               {streamingCompleted > 0 ? `${streamingCompleted} done` : ""}
             </div>
@@ -285,14 +285,14 @@ export default function RunHistorySidebarComponent({
                 return (
                   <div
                     key={run.id}
-                    className={`${styles.runItem} ${isActive ? styles.runItemActive : ""} ${run.aborted ? styles.runItemAborted : ""}`}
+                    className={`${styles['run-item']} ${isActive ? styles['run-item-active'] : ""} ${run.aborted ? styles['run-item-aborted'] : ""}`}
                     {...(SoundService.interactive(() => onViewRun(run)) as any)}
                     data-panel-close
                   >
-                    <div className={styles.runItemHeader}>
+                    <div className={styles['run-item-header']}>
                       <BadgeComponent type="dateTime" date={run.completedAt} />
                       <BadgeComponent type="cost" cost={totalCost} mini />
-                      <span className={styles.runIndex}>
+                      <span className={styles['run-index']}>
                         #{runHistory.length - index}
                       </span>
                       {run.aborted && (
@@ -305,12 +305,12 @@ export default function RunHistorySidebarComponent({
                         />
                       )}
                     </div>
-                    <div className={styles.runStats}>
-                      <span className={styles.statPassed}>
+                    <div className={styles['run-stats']}>
+                      <span className={styles['stat-passed']}>
                         <CheckCircle2 size={10} />
                         {run.summary.passed}
                       </span>
-                      <span className={styles.statFailed}>
+                      <span className={styles['stat-failed']}>
                         <XCircle size={10} />
                         {run.summary.failed + (run.summary.errored || 0)}
                       </span>

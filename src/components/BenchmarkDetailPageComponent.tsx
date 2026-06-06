@@ -1282,10 +1282,10 @@ export default function BenchmarkDetailPageComponent({
         rightPanel={rightSidebar}
         rightTitle="Benchmarks"
       >
-        <div className={styles.contentMain}>
-          <div className={styles.runProgress}>
+        <div className={styles['content-main']}>
+          <div className={styles['run-progress']}>
             <PanelLoadingSpinner size="small" inline />
-            <div className={styles.progressText}>Loading benchmark…</div>
+            <div className={styles['progress-text']}>Loading benchmark…</div>
           </div>
         </div>
       </ThreePanelLayout>
@@ -1300,9 +1300,9 @@ export default function BenchmarkDetailPageComponent({
         rightPanel={rightSidebar}
         rightTitle="Benchmarks"
       >
-        <div className={styles.contentMain}>
-          <div className={styles.runProgress}>
-            <div className={styles.progressText}>Benchmark not found.</div>
+        <div className={styles['content-main']}>
+          <div className={styles['run-progress']}>
+            <div className={styles['progress-text']}>Benchmark not found.</div>
           </div>
         </div>
       </ThreePanelLayout>
@@ -1365,8 +1365,8 @@ export default function BenchmarkDetailPageComponent({
         </div>
       }
     >
-      <div className={styles.contentMain}>
-        <div className={styles.contentMainHeader}>
+      <div className={styles['content-main']}>
+        <div className={styles['content-main-header']}>
           <ButtonComponent
             variant="disabled"
             icon={Trash2}
@@ -1396,11 +1396,11 @@ export default function BenchmarkDetailPageComponent({
           </ButtonComponent>
         </div>
 
-        <div className={styles.detailPanel}>
+        <div className={styles['detail-panel']}>
           {/* -- Benchmark Info -- */}
-          <div className={styles.detailHeader}>
-            <div className={styles.detailTitle}>{benchmark.name}</div>
-            <div className={styles.detailMeta}>
+          <div className={styles['detail-header']}>
+            <div className={styles['detail-title']}>{benchmark.name}</div>
+            <div className={styles['detail-meta']}>
               <BadgeComponent variant="info">
                 {benchmark.benchmarkMode === "agent"
                   ? "Agent"
@@ -1433,7 +1433,7 @@ export default function BenchmarkDetailPageComponent({
                       <BadgeComponent variant="accent">
                         {a.matchMode || "contains"}
                       </BadgeComponent>
-                      <span className={styles.expectedValue}>
+                      <span className={styles['expected-value']}>
                         Expected: {a.expectedValue}
                       </span>
                     </span>
@@ -1490,17 +1490,17 @@ export default function BenchmarkDetailPageComponent({
               const passRate = completed > 0 ? (passed / completed) * 100 : 0;
 
               return (
-                <div className={styles.runProgress}>
-                  <div className={styles.progressHeader}>
+                <div className={styles['run-progress']}>
+                  <div className={styles['progress-header']}>
                     <PanelLoadingSpinner size="small" inline />
-                    <div className={styles.progressText}>
+                    <div className={styles['progress-text']}>
                       Running benchmark against{" "}
                       {streamingTotal > 0 && streamingTotal !== allModels.length
                         ? `${streamingTotal} models`
                         : "all models"}
                       …
                       {completed > 0 && (
-                        <span className={styles.progressCount}>
+                        <span className={styles['progress-count']}>
                           {" "}
                           — {completed} completed
                         </span>
@@ -1510,7 +1510,7 @@ export default function BenchmarkDetailPageComponent({
                       variant="destructive"
                       icon={Square}
                       onClick={handleStop}
-                      className={styles.stopButton}
+                      className={styles['stop-button']}
                     >
                       Stop
                     </ButtonComponent>
@@ -1529,7 +1529,7 @@ export default function BenchmarkDetailPageComponent({
                         value: runningCount,
                         label: "Running",
                         color: "var(--accent-primary)",
-                        icon: <Loader2 size={14} className={styles.spinIcon} />,
+                        icon: <Loader2 size={14} className={styles['spin-icon']} />,
                       },
                       {
                         value: passed,
@@ -1566,7 +1566,7 @@ export default function BenchmarkDetailPageComponent({
                               label: "Cost",
                               color: "var(--color-success)",
                               icon: (
-                                <Coins size={14} className={styles.costIcon} />
+                                <Coins size={14} className={styles['cost-icon']} />
                               ),
                             },
                           ]
@@ -1592,9 +1592,9 @@ export default function BenchmarkDetailPageComponent({
 
           {/* -- Results -- */}
           {latestRun && !running && (
-            <div className={styles.resultsSection}>
-              <div className={styles.resultsSectionHeader}>
-                <div className={styles.resultsSectionTitle}>
+            <div className={styles['results-section']}>
+              <div className={styles['results-section-header']}>
+                <div className={styles['results-section-title']}>
                   Results
                   {latestRun.aborted && (
                     <BadgeComponent variant="warning" style={{ marginLeft: 8 }}>
@@ -1675,7 +1675,7 @@ export default function BenchmarkDetailPageComponent({
                           ),
                           label: "Cost",
                           color: "var(--color-success)",
-                          icon: <Coins size={14} className={styles.costIcon} />,
+                          icon: <Coins size={14} className={styles['cost-icon']} />,
                         },
                       ]
                     : []),

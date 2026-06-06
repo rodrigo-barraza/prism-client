@@ -8,7 +8,7 @@
 }
 
 /* ── Loading / empty states ──────────────────────────── */
-.isLoadingState {
+.is-loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,11 +30,11 @@
 }
 
 /* ── Detail drawer content ───────────────────────────── */
-.detailSection {
+.detail-section {
   margin-bottom: 20px;
 }
 
-.detailSectionTitle {
+.detail-section-title {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-muted);
@@ -44,19 +44,19 @@
 }
 
 /* Associations */
-.associationGrid {
+.association-grid {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.associationGroup {
+.association-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.associationGroupLabel {
+.association-group-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -66,20 +66,20 @@
   letter-spacing: 0.02em;
 }
 
-.associationList {
+.association-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.associationEmpty {
+.association-empty {
   font-size: var(--font-size-base);
   color: var(--text-muted);
   padding-left: 2px;
 }
 
 /* Media Grid */
-.mediaGrid {
+.media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 12px;

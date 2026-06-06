@@ -12,18 +12,18 @@
   gap: 4px;
 }
 
-.hiddenInput {
+.hidden-input {
   display: none;
 }
 
-.optionGrid {
+.option-grid {
   display: flex;
   gap: 4px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.optionButton {
+.option-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,12 +50,12 @@
   }
 }
 
-.compact .optionButton {
+.compact .option-button {
   padding: 5px;
   flex: 0 0 auto;
 }
 
-.dropZone {
+.drop-zone {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,7 +81,7 @@
 }
 
 /* ── Webcam ── */
-.webcamPreview {
+.webcam-preview {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -89,7 +89,7 @@
   gap: 4px;
 }
 
-.webcamVideo {
+.webcam-video {
   flex: 1;
   width: 100%;
   min-height: 0;
@@ -99,14 +99,14 @@
   transform: scaleX(-1);
 }
 
-.webcamActions {
+.webcam-actions {
   display: flex;
   gap: 6px;
   align-items: center;
   justify-content: center;
 }
 
-.captureButton {
+.capture-button {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -125,7 +125,7 @@
   }
 }
 
-.cancelButton {
+.cancel-button {
   background: transparent;
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 4px;
@@ -144,7 +144,7 @@
 }
 
 /* ── Audio recording ── */
-.audioRecWrap {
+.audio-rec-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;

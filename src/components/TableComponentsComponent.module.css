@@ -3,13 +3,13 @@
 /* Empty / null value placeholder — replaces all inline style={{ color: "var(--text-muted)" }}
 
 */
-.emptyDash {
+.empty-dash {
   color: var(--text-muted);
 }
 
 /* ── CountLink (Sessions / Conversations / Workflows) ── */
 
-.countLink {
+.count-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -32,13 +32,13 @@
   }
 }
 
-.countLinkZero {
+.count-link-zero {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
 /* Inline stat cell (requests, conversations count, etc.) */
-.countCell {
+.count-cell {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -52,7 +52,7 @@
 
 /* ── Session ID cell ─────────────────────────────────── */
 
-.sessionIdCell {
+.session-id-cell {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -64,18 +64,18 @@
     opacity: 0.8;
   }
 
-  &:hover .sessionIdText {
+  &:hover .session-id-text {
     color: var(--accent-primary);
   }
 }
 
-.sessionIcon {
+.session-icon {
   flex-shrink: 0;
   color: var(--accent-primary);
   opacity: 0.7;
 }
 
-.sessionIdText {
+.session-id-text {
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-xs);
   color: var(--text-muted);
@@ -84,7 +84,7 @@
 
 /* ── Conversation title cell ─────────────────────────── */
 
-.conversationTitle {
+.conversation-title {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -95,45 +95,45 @@
   }
 }
 
-.conversationTitleMini {
+.conversation-title-mini {
   gap: 4px;
 }
 
 /* ── Benchmark result cells ──────────────────────────── */
 
-.benchmarkStatusCell {
+.benchmark-status-cell {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.benchmarkPassIcon {
+.benchmark-pass-icon {
   color: var(--color-success);
 }
 
-.benchmarkFailIcon {
+.benchmark-fail-icon {
   color: var(--color-danger);
 }
 
-.benchmarkErrorIcon {
+.benchmark-error-icon {
   color: var(--color-warning);
 }
 
-.benchmarkRunningIcon {
+.benchmark-running-icon {
   color: var(--accent-primary);
-  animation: benchmarkSpin 1s linear infinite;
+  animation: benchmark-spin 1s linear infinite;
 }
 
-.benchmarkPendingIcon {
+.benchmark-pending-icon {
   color: var(--text-muted);
   opacity: 0.4;
 }
 
-.benchmarkModelPending {
+.benchmark-model-pending {
   opacity: 0.45;
 }
 
-@keyframes benchmarkSpin {
+@keyframes benchmark-spin {
   from {
     transform: rotate(0deg);
   }
@@ -142,7 +142,7 @@
   }
 }
 
-.benchmarkProgressPct {
+.benchmark-progress-pct {
   font-size: 0.625rem;
   font-family: var(--font-mono);
   font-weight: 600;
@@ -153,29 +153,29 @@
   margin-left: 4px;
 }
 
-.benchmarkModelCell {
+.benchmark-model-cell {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 /* Keep provider + progress badge on a single row */
-.benchmarkModelProviderRow {
+.benchmark-model-provider-row {
   display: flex;
   align-items: center;
 }
 
-.benchmarkModelName {
+.benchmark-model-name {
   font-weight: 500;
   color: var(--text-primary);
 }
 
-.benchmarkModelProvider {
+.benchmark-model-provider {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
-.benchmarkResponseCell {
+.benchmark-response-cell {
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
@@ -183,13 +183,13 @@
   word-break: break-word;
 }
 
-.benchmarkErrorMessage {
+.benchmark-error-message {
   font-size: var(--font-size-xs);
   color: var(--color-danger);
   font-style: italic;
 }
 
-.benchmarkTpsCell {
+.benchmark-tps-cell {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -205,14 +205,14 @@
   }
 }
 
-.monoCell {
+.mono-cell {
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
 }
 
 /* Highlighted expected-value match inside response text */
-.benchmarkHighlight {
+.benchmark-highlight {
   background: color-mix(in srgb, var(--color-success) 20%, transparent);
   color: var(--color-success);
   border-radius: 2px;
@@ -222,13 +222,13 @@
 
 /* ── Benchmark Dashboard cells ──────────────────────────── */
 
-.dashboardModelCell {
+.dashboard-model-cell {
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.dashboardModelName {
+.dashboard-model-name {
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -236,7 +236,7 @@
   text-overflow: ellipsis;
 }
 
-.dashboardPassedCell {
+.dashboard-passed-cell {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -249,7 +249,7 @@
   }
 }
 
-.dashboardFailedCell {
+.dashboard-failed-cell {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -262,13 +262,13 @@
   }
 }
 
-.dashboardRateCell {
+.dashboard-rate-cell {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.dashboardRateBar {
+.dashboard-rate-bar {
   width: 40px;
   height: 4px;
   border-radius: 2px;
@@ -277,14 +277,14 @@
   flex-shrink: 0;
 }
 
-.dashboardRateBarFill {
+.dashboard-rate-bar-fill {
   height: 100%;
   border-radius: 2px;
   transform-origin: left;
   transition: transform 0.3s ease-out;
 }
 
-.dashboardRateValue {
+.dashboard-rate-value {
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: var(--font-size-sm);

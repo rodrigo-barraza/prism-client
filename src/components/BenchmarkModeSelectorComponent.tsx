@@ -79,7 +79,7 @@ export default function BenchmarkModeSelector({
             <button
               key={mode.value}
               type="button"
-              className={`${styles.option} ${isActive ? styles.isActiveState : ""}`}
+              className={`${styles.option} ${isActive ? styles['is-active-state'] : ""}`}
               onClick={() => onChange(mode.value)}
               title={mode.description}
             >

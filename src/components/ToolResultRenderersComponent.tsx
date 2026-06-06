@@ -308,7 +308,7 @@ interface StatusBadgeProps {
 function StatusBadge({ success, label }: StatusBadgeProps) {
   return (
     <span
-      className={`${styles.statusBadge} ${success ? styles.statusSuccess : styles.statusError}`}
+      className={`${styles['status-badge']} ${success ? styles['status-success'] : styles['status-error']}`}
     >
       {success ? <Check size={10} /> : <XCircle size={10} />}
       {label}
@@ -326,9 +326,9 @@ interface PathPillProps {
 function PathPill({ path, icon }: PathPillProps) {
   const Icon = icon || FileText;
   return (
-    <span className={styles.pathPill}>
+    <span className={styles['path-pill']}>
       <Icon size={11} />
-      <span className={styles.pathFull}>{path}</span>
+      <span className={styles['path-full']}>{path}</span>
     </span>
   );
 }
@@ -355,16 +355,16 @@ function RawResultToggle({ result }: { result: unknown }) {
       : "```json\n" + JSON.stringify(result, null, 2) + "\n```";
 
   return (
-    <div className={styles.rawToggle}>
+    <div className={styles['raw-toggle']}>
       <button
-        className={styles.rawToggleButton}
+        className={styles['raw-toggle-button']}
         onClick={() => setShow((previousState) => !previousState)}
       >
-        <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
+        <ChevronRight size={11} className={show ? styles['chevron-open'] : ""} />
         <span>Raw Response</span>
       </button>
       {show && (
-        <div className={styles.rawContent}>
+        <div className={styles['raw-content']}>
           <MarkdownContent content={formatted} />
         </div>
       )}
@@ -389,17 +389,17 @@ function InputArgsToggle({ args }: { args?: ToolArgs }) {
   if (entries.length === 0) return null;
 
   return (
-    <div className={styles.inputArgsToggle}>
+    <div className={styles['input-args-toggle']}>
       <button
-        className={styles.rawToggleButton}
+        className={styles['raw-toggle-button']}
         onClick={() => setShow((previousState) => !previousState)}
       >
-        <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
+        <ChevronRight size={11} className={show ? styles['chevron-open'] : ""} />
         <span>Input</span>
-        <span className={styles.inputArgsCount}>{entries.length}</span>
+        <span className={styles['input-args-count']}>{entries.length}</span>
       </button>
       {show && (
-        <div className={styles.inputArgsContent}>
+        <div className={styles['input-args-content']}>
           {entries.map(([key, value]) => {
             const isLong = typeof value === "string" && value.length > 80;
             const display =
@@ -408,10 +408,10 @@ function InputArgsToggle({ args }: { args?: ToolArgs }) {
                 : JSON.stringify(value, null, 2);
 
             return (
-              <div key={key} className={styles.inputArgRow}>
-                <span className={styles.inputArgKey}>{key}</span>
+              <div key={key} className={styles['input-arg-row']}>
+                <span className={styles['input-arg-key']}>{key}</span>
                 <span
-                  className={`${styles.inputArgValue} ${isLong ? styles.inputArgValueLong : ""}`}
+                  className={`${styles['input-arg-value']} ${isLong ? styles['input-arg-value-long'] : ""}`}
                 >
                   {display}
                 </span>
@@ -466,19 +466,19 @@ function OutputResultToggle({ result }: { result: unknown }) {
       : null;
 
   return (
-    <div className={styles.outputResultToggle}>
+    <div className={styles['output-result-toggle']}>
       <button
-        className={styles.rawToggleButton}
+        className={styles['raw-toggle-button']}
         onClick={() => setShow((previousState) => !previousState)}
       >
-        <ChevronRight size={11} className={show ? styles.chevronOpen : ""} />
+        <ChevronRight size={11} className={show ? styles['chevron-open'] : ""} />
         <span>Output</span>
         {entryCount != null && (
-          <span className={styles.outputResultCount}>{entryCount}</span>
+          <span className={styles['output-result-count']}>{entryCount}</span>
         )}
       </button>
       {show && (
-        <div className={styles.outputResultContent}>
+        <div className={styles['output-result-content']}>
           {display.type === "object" && !Array.isArray(display.data) ? (
             Object.entries(display.data)
               .filter(([, value]) => value !== undefined && value !== null)
@@ -490,10 +490,10 @@ function OutputResultToggle({ result }: { result: unknown }) {
                 const isLong = valueString.length > 80;
 
                 return (
-                  <div key={key} className={styles.outputArgRow}>
-                    <span className={styles.outputArgKey}>{key}</span>
+                  <div key={key} className={styles['output-arg-row']}>
+                    <span className={styles['output-arg-key']}>{key}</span>
                     <span
-                      className={`${styles.outputArgValue} ${isLong ? styles.outputArgValueLong : ""}`}
+                      className={`${styles['output-arg-value']} ${isLong ? styles['output-arg-value-long'] : ""}`}
                     >
                       {valueString}
                     </span>
@@ -501,7 +501,7 @@ function OutputResultToggle({ result }: { result: unknown }) {
                 );
               })
           ) : (
-            <pre className={styles.outputRawPre}>{display.raw}</pre>
+            <pre className={styles['output-raw-pre']}>{display.raw}</pre>
           )}
         </div>
       )}
@@ -553,12 +553,12 @@ function FileReadRenderer({ result, args }: RendererProps) {
     (EXT_LANG as Record<string, string>)[extensionOf(filePath)] || "";
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <PathPill path={filePath} icon={FileText} />
       </div>
       {content && (
-        <pre className={styles.codeBlock}>
+        <pre className={styles['code-block']}>
           <code>
             {content.length > 3000 ? content.slice(0, 3000) + "\n…" : content}
           </code>
@@ -580,15 +580,15 @@ function FileWriteRenderer({ result, args }: RendererProps) {
   const created = parsed.created;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <PathPill path={filePath} icon={FileText} />
         <StatusBadge
           success={success}
           label={created ? "Created" : "Written"}
         />
       </div>
-      {parsed.error && <div className={styles.errorText}>{parsed.error}</div>}
+      {parsed.error && <div className={styles['error-text']}>{parsed.error}</div>}
     </div>
   );
 }
@@ -604,8 +604,8 @@ function StrReplaceRenderer({ result, args }: RendererProps) {
   const replacements = parsed.replacements || parsed.count || 1;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <PathPill path={filePath} icon={FileText} />
         <StatusBadge
           success={success}
@@ -613,16 +613,16 @@ function StrReplaceRenderer({ result, args }: RendererProps) {
         />
       </div>
       {args?.oldStr && args?.newStr && (
-        <pre className={styles.diffBlock}>
+        <pre className={styles['diff-block']}>
           <code>
-            <span className={styles.diffRemoved}>
+            <span className={styles['diff-removed']}>
               -{" "}
               {args.oldStr.length > 200
                 ? args.oldStr.slice(0, 200) + "…"
                 : args.oldStr}
             </span>
             {"\n"}
-            <span className={styles.diffAdded}>
+            <span className={styles['diff-added']}>
               +{" "}
               {args.newStr.length > 200
                 ? args.newStr.slice(0, 200) + "…"
@@ -631,7 +631,7 @@ function StrReplaceRenderer({ result, args }: RendererProps) {
           </code>
         </pre>
       )}
-      {parsed.error && <div className={styles.errorText}>{parsed.error}</div>}
+      {parsed.error && <div className={styles['error-text']}>{parsed.error}</div>}
     </div>
   );
 }
@@ -672,24 +672,24 @@ function GrepSearchRenderer({ result, args }: RendererProps) {
   }
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <Search size={13} />
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           {totalMatches} match{totalMatches !== 1 ? "es" : ""} for{" "}
-          <code className={styles.inlineCode}>{pattern}</code>
+          <code className={styles['inline-code']}>{pattern}</code>
         </span>
       </div>
-      <div className={styles.grepList}>
+      <div className={styles['grep-list']}>
         {Object.entries(grouped).map(([file, fileMatches]) => (
-          <div key={file} className={styles.grepFile}>
-            <span className={styles.grepFilePath}>{file}</span>
+          <div key={file} className={styles['grep-file']}>
+            <span className={styles['grep-file-path']}>{file}</span>
             {fileMatches.map((matchItem, i) => (
-              <div key={i} className={styles.grepLine}>
+              <div key={i} className={styles['grep-line']}>
                 {matchItem.line != null && (
-                  <span className={styles.grepLineNum}>{matchItem.line}</span>
+                  <span className={styles['grep-line-num']}>{matchItem.line}</span>
                 )}
-                <span className={styles.grepLineContent}>
+                <span className={styles['grep-line-content']}>
                   {matchItem.content || matchItem.text || matchItem.match || ""}
                 </span>
               </div>
@@ -717,14 +717,14 @@ function DirectoryListRenderer({ result, args }: RendererProps) {
   const dirPath = parsed.path || args?.path || "";
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <FolderTree size={13} />
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           {basename(dirPath) || "Directory"}
         </span>
       </div>
-      <div className={styles.directoryList}>
+      <div className={styles['directory-list']}>
         {entries.slice(0, 40).map((entry, i) => {
           const name =
             typeof entry === "string" ? entry : entry.name || entry.path || "";
@@ -732,11 +732,11 @@ function DirectoryListRenderer({ result, args }: RendererProps) {
             typeof entry === "object" &&
             (entry.type === "directory" || entry.isDirectory);
           return (
-            <div key={i} className={styles.directoryEntry}>
+            <div key={i} className={styles['directory-entry']}>
               {isDir ? (
-                <Folder size={11} className={styles.directoryIcon} />
+                <Folder size={11} className={styles['directory-icon']} />
               ) : (
-                <File size={11} className={styles.fileIcon} />
+                <File size={11} className={styles['file-icon']} />
               )}
               <span>{name}</span>
             </div>
@@ -758,20 +758,20 @@ function GlobFilesRenderer({ result, args }: RendererProps) {
   const pattern = args?.pattern || "";
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <Search size={13} />
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           {files.length} file{files.length !== 1 ? "s" : ""} matching{" "}
-          <code className={styles.inlineCode}>{pattern}</code>
+          <code className={styles['inline-code']}>{pattern}</code>
         </span>
       </div>
-      <div className={styles.directoryList}>
+      <div className={styles['directory-list']}>
         {files.slice(0, 40).map((fileEntry, i) => {
           const path = typeof fileEntry === "string" ? fileEntry : fileEntry.path || fileEntry.name || "";
           return (
-            <div key={i} className={styles.directoryEntry}>
-              <File size={11} className={styles.fileIcon} />
+            <div key={i} className={styles['directory-entry']}>
+              <File size={11} className={styles['file-icon']} />
               <span>{path}</span>
             </div>
           );
@@ -798,26 +798,26 @@ function WebSearchRenderer({ result, args }: RendererProps) {
   const query = args?.query || "";
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <Globe size={13} />
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;
           {query}&rdquo;
         </span>
       </div>
-      <div className={styles.searchResults}>
+      <div className={styles['search-results']}>
         {results.slice(0, 8).map((r, i) => (
-          <div key={i} className={styles.searchResult}>
+          <div key={i} className={styles['search-result']}>
             <a
               href={r.url || r.link}
               target="_blank"
               rel="noopener noreferrer"
-              className={styles.searchLink}
+              className={styles['search-link']}
             >
               {r.title || r.name || r.url}
             </a>
-            {r.snippet && <p className={styles.searchSnippet}>{r.snippet}</p>}
+            {r.snippet && <p className={styles['search-snippet']}>{r.snippet}</p>}
           </div>
         ))}
       </div>
@@ -836,20 +836,20 @@ function FetchUrlRenderer({ result, args }: RendererProps) {
   const content = parsed.content || parsed.text || parsed.markdown || "";
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <Globe size={13} />
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className={styles.searchLink}
+          className={styles['search-link']}
         >
           {title || url}
         </a>
       </div>
       {content && (
-        <pre className={styles.codeBlock}>
+        <pre className={styles['code-block']}>
           <code>
             {content.length > 2000 ? content.slice(0, 2000) + "\n…" : content}
           </code>
@@ -879,10 +879,10 @@ function AudioGeneratorRenderer({ result, args }: RendererProps) {
   const hasError = !!parsed.error;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <Music size={13} />
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           {args?.presetEffect
             ? `Sound Preset: '${args.presetEffect}'`
             : `Synth (${args?.waveform || "sine"} · ${totalDuration.toFixed(2)}s · ${sampleCount.toLocaleString()} samples)`}
@@ -892,7 +892,7 @@ function AudioGeneratorRenderer({ result, args }: RendererProps) {
           label={hasError ? "Error" : `${totalDuration.toFixed(2)}s`}
         />
       </div>
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
       {audioSource && <AudioPlayerRecorderComponent sourceUrl={audioSource} />}
     </div>
   );
@@ -921,10 +921,10 @@ function TextToSpeechRenderer({ result, args }: RendererProps) {
     typeof args?.text === "string" ? args.text : null;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <Volume2 size={13} />
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           {voiceLabel ? `Voice: ${voiceLabel}` : "Text-to-Speech"}
         </span>
         {durationEstimate != null && (
@@ -938,14 +938,14 @@ function TextToSpeechRenderer({ result, args }: RendererProps) {
         )}
       </div>
       {inputText && (
-        <div className={styles.inputArgRow}>
-          <span className={styles.inputArgKey}>text</span>
-          <span className={styles.inputArgValue}>
+        <div className={styles['input-arg-row']}>
+          <span className={styles['input-arg-key']}>text</span>
+          <span className={styles['input-arg-value']}>
             {inputText.length > 120 ? inputText.slice(0, 120) + "…" : inputText}
           </span>
         </div>
       )}
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
       {audioSource && <AudioPlayerRecorderComponent sourceUrl={audioSource} />}
     </div>
   );
@@ -1131,17 +1131,17 @@ function detectTerminalLevel(text: string): string | null {
 }
 
 const TERM_LEVEL_CLASS = {
-  error: styles.termLineError,
-  warn: styles.termLineWarn,
-  success: styles.termLineSuccess,
+  error: styles['term-line-error'],
+  warn: styles['term-line-warn'],
+  success: styles['term-line-success'],
 };
 
 const TERM_CONTENT_LEVEL_CLASS = {
-  error: styles.termContentError,
-  warn: styles.termContentWarn,
-  info: styles.termContentInfo,
-  success: styles.termContentSuccess,
-  debug: styles.termContentDebug,
+  error: styles['term-content-error'],
+  warn: styles['term-content-warn'],
+  info: styles['term-content-info'],
+  success: styles['term-content-success'],
+  debug: styles['term-content-debug'],
 };
 
 function TerminalRenderer({
@@ -1204,11 +1204,11 @@ function TerminalRenderer({
     return <RawResultToggle result={result} />;
 
   return (
-    <div className={styles.terminalBlock}>
-      <div className={styles.terminalHeader}>
+    <div className={styles['terminal-block']}>
+      <div className={styles['terminal-header']}>
         <Terminal size={11} />
         <span>{language || "terminal"}</span>
-        {isStreaming && <span className={styles.terminalLive}>● live</span>}
+        {isStreaming && <span className={styles['terminal-live']}>● live</span>}
         {exitCode != null && (
           <StatusBadge success={exitCode === 0} label={`exit ${exitCode}`} />
         )}
@@ -1216,22 +1216,22 @@ function TerminalRenderer({
           <StatusBadge success={false} label="error" />
         )}
         {totalLines > 0 && (
-          <span className={styles.terminalLineCount}>
+          <span className={styles['terminal-line-count']}>
             {totalLines.toLocaleString()}
           </span>
         )}
       </div>
       <div
         ref={bodyRef}
-        className={styles.terminalBody}
+        className={styles['terminal-body']}
         onScroll={handleScroll}
       >
         {/* Input command lines */}
         {inputLines.map((line: string, i: number) => (
-          <div key={`in-${i}`} className={styles.termLine}>
-            <span className={styles.termLineNum}>{i + 1}</span>
+          <div key={`in-${i}`} className={styles['term-line']}>
+            <span className={styles['term-line-num']}>{i + 1}</span>
             <span
-              className={`${styles.termLineContent} ${styles.terminalInput}`}
+              className={`${styles['term-line-content']} ${styles['terminal-input']}`}
             >
               {line}
             </span>
@@ -1244,11 +1244,11 @@ function TerminalRenderer({
           return (
             <div
               key={`out-${i}`}
-              className={`${styles.termLine} ${level ? (TERM_LEVEL_CLASS as Record<string, string>)[level] || "" : ""}`}
+              className={`${styles['term-line']} ${level ? (TERM_LEVEL_CLASS as Record<string, string>)[level] || "" : ""}`}
             >
-              <span className={styles.termLineNum}>{lineNumber}</span>
+              <span className={styles['term-line-num']}>{lineNumber}</span>
               <span
-                className={`${styles.termLineContent} ${level ? (TERM_CONTENT_LEVEL_CLASS as Record<string, string>)[level] || "" : ""}`}
+                className={`${styles['term-line-content']} ${level ? (TERM_CONTENT_LEVEL_CLASS as Record<string, string>)[level] || "" : ""}`}
               >
                 {parseAnsi(line)}
               </span>
@@ -1256,10 +1256,10 @@ function TerminalRenderer({
           );
         })}
         {isStreaming && (
-          <div className={styles.termLine}>
-            <span className={styles.termLineNum} />
-            <span className={styles.termLineContent}>
-              <span className={styles.terminalCursor}>▊</span>
+          <div className={styles['term-line']}>
+            <span className={styles['term-line-num']} />
+            <span className={styles['term-line-content']}>
+              <span className={styles['terminal-cursor']}>▊</span>
             </span>
           </div>
         )}
@@ -1276,7 +1276,7 @@ function ScheduleRenderer({ result }: RendererProps) {
 
   const timer = (parsed as any).timer;
   return (
-    <div className={styles.rendererBlock}>
+    <div className={styles['renderer-block']}>
       <TimerBadgeComponent
         timerId={timer.id}
         firesAt={timer.firesAt}
@@ -1303,17 +1303,17 @@ function GitStatusRenderer({ result }: RendererProps) {
   const clean = parsed.clean || files.length === 0;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <GitBranch size={13} />
-        <span className={styles.rendererTitle}>{branch || "git status"}</span>
+        <span className={styles['renderer-title']}>{branch || "git status"}</span>
         <StatusBadge
           success={clean}
           label={clean ? "Clean" : `${files.length} changed`}
         />
       </div>
       {!clean && (
-        <div className={styles.directoryList}>
+        <div className={styles['directory-list']}>
           {files.slice(0, 30).map((fileEntry, i) => {
             const name = typeof fileEntry === "string" ? fileEntry : fileEntry.path || fileEntry.file || "";
             const status =
@@ -1321,8 +1321,8 @@ function GitStatusRenderer({ result }: RendererProps) {
                 ? fileEntry.status || fileEntry.state || ""
                 : "";
             return (
-              <div key={i} className={styles.directoryEntry}>
-                {status && <span className={styles.gitStatus}>{status}</span>}
+              <div key={i} className={styles['directory-entry']}>
+                {status && <span className={styles['git-status']}>{status}</span>}
                 <span>{name}</span>
               </div>
             );
@@ -1341,13 +1341,13 @@ function GitDiffRenderer({ result }: RendererProps) {
     parsed.diff || parsed.output || (typeof result === "string" ? result : "");
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <GitBranch size={13} />
-        <span className={styles.rendererTitle}>git diff</span>
+        <span className={styles['renderer-title']}>git diff</span>
       </div>
       {diff && (
-        <pre className={styles.diffBlock}>
+        <pre className={styles['diff-block']}>
           <code>
             {diff
               .split("\n")
@@ -1355,10 +1355,10 @@ function GitDiffRenderer({ result }: RendererProps) {
               .map((line: string, i: number) => {
                 let cls = "";
                 if (line.startsWith("+") && !line.startsWith("+++"))
-                  cls = styles.diffAdded;
+                  cls = styles['diff-added'];
                 else if (line.startsWith("-") && !line.startsWith("---"))
-                  cls = styles.diffRemoved;
-                else if (line.startsWith("@@")) cls = styles.diffHunk;
+                  cls = styles['diff-removed'];
+                else if (line.startsWith("@@")) cls = styles['diff-hunk'];
                 return (
                   <span key={i} className={cls}>
                     {line}
@@ -1386,23 +1386,23 @@ function GitLogRenderer({ result }: RendererProps) {
   const commits = (parsed.commits || parsed.log || []) as CommitEntry[];
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <GitBranch size={13} />
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           {commits.length} commit{commits.length !== 1 ? "s" : ""}
         </span>
       </div>
-      <div className={styles.gitLog}>
+      <div className={styles['git-log']}>
         {commits.slice(0, 15).map((commitEntry, i) => (
-          <div key={i} className={styles.gitCommit}>
-            <span className={styles.gitHash}>
+          <div key={i} className={styles['git-commit']}>
+            <span className={styles['git-hash']}>
               {(commitEntry.hash || commitEntry.sha || "").slice(0, 7)}
             </span>
-            <span className={styles.gitMsg}>
+            <span className={styles['git-msg']}>
               {commitEntry.message || commitEntry.subject || ""}
             </span>
-            {commitEntry.author && <span className={styles.gitAuthor}>{commitEntry.author}</span>}
+            {commitEntry.author && <span className={styles['git-author']}>{commitEntry.author}</span>}
           </div>
         ))}
       </div>
@@ -1419,13 +1419,13 @@ function FileDeleteRenderer({ result, args }: RendererProps) {
   const success = !parsed.error;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <Trash2 size={13} />
         <PathPill path={filePath} />
         <StatusBadge success={success} label={success ? "Deleted" : "Failed"} />
       </div>
-      {parsed.error && <div className={styles.errorText}>{parsed.error}</div>}
+      {parsed.error && <div className={styles['error-text']}>{parsed.error}</div>}
     </div>
   );
 }
@@ -1438,15 +1438,15 @@ function FileMoveRenderer({ result, args }: RendererProps) {
   const success = !parsed.error;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <ArrowRight size={13} />
         <PathPill path={source} />
-        <ArrowRight size={10} className={styles.moveArrow} />
+        <ArrowRight size={10} className={styles['move-arrow']} />
         <PathPill path={destination} />
         <StatusBadge success={success} label={success ? "Moved" : "Failed"} />
       </div>
-      {parsed.error && <div className={styles.errorText}>{parsed.error}</div>}
+      {parsed.error && <div className={styles['error-text']}>{parsed.error}</div>}
     </div>
   );
 }
@@ -1484,16 +1484,16 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
   }
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <Monitor size={13} />
-        <span className={styles.rendererTitle}>{label}</span>
+        <span className={styles['renderer-title']}>{label}</span>
         {parsed.url && (
           <a
             href={parsed.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.searchLink}
+            className={styles['search-link']}
           >
             {parsed.title || parsed.url}
           </a>
@@ -1502,21 +1502,21 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
         {hasError && <StatusBadge success={false} label="Error" />}
       </div>
 
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
 
       {screenshotSource && (
-        <div className={styles.browserScreenshot}>
+        <div className={styles['browser-screenshot']}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={screenshotSource}
             alt={`Screenshot of ${parsed.url || "page"}`}
-            className={styles.browserScreenshotImg}
+            className={styles['browser-screenshot-img']}
           />
         </div>
       )}
 
       {parsed.content && (
-        <pre className={styles.codeBlock}>
+        <pre className={styles['code-block']}>
           <code>
             {parsed.content.length > 3000
               ? parsed.content.slice(0, 3000) + "\n\u2026"
@@ -1526,18 +1526,18 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
       )}
 
       {parsed.result !== undefined && action === "evaluate" && (
-        <pre className={styles.codeBlock}>
+        <pre className={styles['code-block']}>
           <code>{String(parsed.result)}</code>
         </pre>
       )}
 
       {action === "get_elements" && parsed.elements && (
-        <div className={styles.directoryList}>
+        <div className={styles['directory-list']}>
           {parsed.elements
             .slice(0, 30)
             .map((element: { selector: string; text?: string }, i: number) => (
-              <div key={i} className={styles.directoryEntry}>
-                <code className={styles.inlineCode}>{element.selector}</code>
+              <div key={i} className={styles['directory-entry']}>
+                <code className={styles['inline-code']}>{element.selector}</code>
 
                 {element.text && <span>{element.text}</span>}
               </div>
@@ -1552,10 +1552,10 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
 
 function TurtleDrawEmbed({ sourceUrl, title }: { sourceUrl: string; title: string }) {
   return (
-    <div className={styles.turtleEmbedWrapper}>
+    <div className={styles['turtle-embed-wrapper']}>
       <iframe
         src={sourceUrl}
-        className={styles.turtleEmbedFrame}
+        className={styles['turtle-embed-frame']}
         title={title}
         loading="lazy"
         referrerPolicy="no-referrer"
@@ -1574,10 +1574,10 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
   const embedUrl = parsed.turtleEmbedUrl || parsed.embedUrl || "";
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <span style={{ fontSize: 13 }}>🐢</span>
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           Turtle Drawing — {commandCount} command{commandCount !== 1 ? "s" : ""}
         </span>
         <StatusBadge
@@ -1585,7 +1585,7 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
           label={hasError ? "Error" : canvasSize}
         />
       </div>
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasError && embedUrl && (
         <TurtleDrawEmbed sourceUrl={embedUrl} title="Turtle Drawing" />
       )}
@@ -1597,10 +1597,10 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
 
 function VectorAnimationEmbed({ sourceUrl, title }: { sourceUrl: string; title: string }) {
   return (
-    <div className={styles.turtleEmbedWrapper}>
+    <div className={styles['turtle-embed-wrapper']}>
       <iframe
         src={sourceUrl}
-        className={styles.turtleEmbedFrame}
+        className={styles['turtle-embed-frame']}
         title={title}
         loading="lazy"
         referrerPolicy="no-referrer"
@@ -1622,10 +1622,10 @@ function VectorAnimationRenderer({ result, args }: RendererProps) {
   const isAppend = !!parsed.isAppend;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <span style={{ fontSize: 13 }}>🎬</span>
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           Vector Animation — {isAppend ? "Updated" : "Created"} {layerCount} layer{layerCount !== 1 ? "s" : ""}{totalKeyframes > 0 ? ` (${totalKeyframes} total keyframes)` : ""} ({duration.toFixed(1)}s)
         </span>
         <StatusBadge
@@ -1633,7 +1633,7 @@ function VectorAnimationRenderer({ result, args }: RendererProps) {
           label={hasError ? "Error" : canvasSize}
         />
       </div>
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasError && embedUrl && (
         <VectorAnimationEmbed sourceUrl={embedUrl} title="Vector Animation" />
       )}
@@ -1656,10 +1656,10 @@ function ThreeMeshRenderer({ result, args }: RendererProps) {
   const embedUrl = parsed.sceneEmbedUrl || parsed.embedUrl || "";
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <span style={{ fontSize: 13 }}>🔺</span>
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           3D Mesh — {isAppend ? `Added ${vertexCount} vertices, ${faceCount} faces` : `Created ${vertexCount} vertices, ${faceCount} faces`}
           {isAppend && ` (Total: ${totalVertices} vertices, ${totalFaces} faces)`}
         </span>
@@ -1668,7 +1668,7 @@ function ThreeMeshRenderer({ result, args }: RendererProps) {
           label={hasError ? "Error" : "Interactive 3D"}
         />
       </div>
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasError && embedUrl && (
         <div className={styles["three-dimensional-mesh-embed-wrapper"]}>
           <iframe
@@ -1694,10 +1694,10 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
   const embedUrl = parsed.asciiEmbedUrl || parsed.embedUrl || "";
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <span style={{ fontSize: 13 }}>🎨</span>
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           ASCII Art — {String(width)}×{String(height)}
         </span>
         <StatusBadge
@@ -1705,10 +1705,10 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
           label={hasError ? "Error" : "Rendered"}
         />
       </div>
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasError && parsed.ascii ? (
-        <div className={styles.asciiArtContainer}>
-          <pre className={styles.asciiArtPre}>
+        <div className={styles['ascii-art-container']}>
+          <pre className={styles['ascii-art-pre']}>
             <code>{parsed.ascii}</code>
           </pre>
         </div>
@@ -1737,53 +1737,53 @@ function EmojiCombinationRenderer({ result }: RendererProps) {
   } = parsed;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <span style={{ fontSize: 13 }}>🍳</span>
-        <span className={styles.rendererTitle}>Emoji Mashup</span>
+        <span className={styles['renderer-title']}>Emoji Mashup</span>
         {isLatest && (
           <StatusBadge success={true} label="Latest GBoard Design" />
         )}
       </div>
-      <div className={styles.emojiCombineContainer}>
-        <div className={styles.emojiLeftRightGrid}>
+      <div className={styles['emoji-combine-container']}>
+        <div className={styles['emoji-left-right-grid']}>
           <div
-            className={styles.emojiBubble}
+            className={styles['emoji-bubble']}
             title={`Codepoint: ${leftEmojiCodepoint}`}
           >
-            <span className={styles.bubbleEmojiChar}>{leftEmoji}</span>
+            <span className={styles['bubble-emoji-char']}>{leftEmoji}</span>
           </div>
-          <span className={styles.combinePlus}>+</span>
+          <span className={styles['combine-plus']}>+</span>
           <div
-            className={styles.emojiBubble}
+            className={styles['emoji-bubble']}
             title={`Codepoint: ${rightEmojiCodepoint}`}
           >
-            <span className={styles.bubbleEmojiChar}>{rightEmoji}</span>
+            <span className={styles['bubble-emoji-char']}>{rightEmoji}</span>
           </div>
-          <span className={styles.combineEquals}>=</span>
+          <span className={styles['combine-equals']}>=</span>
         </div>
-        <div className={styles.emojiMergedContainer}>
-          <div className={styles.mergedBackdropGlow} />
+        <div className={styles['emoji-merged-container']}>
+          <div className={styles['merged-backdrop-glow']} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={gStaticUrl}
             alt={alt || "Emoji Kitchen mashup"}
-            className={styles.mergedEmojiImage}
+            className={styles['merged-emoji-image']}
             title={alt}
           />
         </div>
       </div>
-      <div className={styles.emojiMetaRow}>
-        <span className={styles.metaItem}>Order: {gBoardOrder || "N/A"}</span>
-        <span className={styles.metaSeparator}>·</span>
-        <span className={styles.metaItem}>Date: {date || "N/A"}</span>
-        <span className={styles.metaSeparator}>·</span>
+      <div className={styles['emoji-meta-row']}>
+        <span className={styles['meta-item']}>Order: {gBoardOrder || "N/A"}</span>
+        <span className={styles['meta-separator']}>·</span>
+        <span className={styles['meta-item']}>Date: {date || "N/A"}</span>
+        <span className={styles['meta-separator']}>·</span>
         <a
           href={gStaticUrl}
           target="_blank"
           rel="noopener noreferrer"
           download={`mashup_${leftEmojiCodepoint}_${rightEmojiCodepoint}.png`}
-          className={styles.downloadLink}
+          className={styles['download-link']}
           style={{ display: "inline-flex", alignItems: "center", gap: 3 }}
         >
           <Download size={11} />
@@ -1803,30 +1803,30 @@ function EmojiCombinationsRenderer({ result, args }: RendererProps) {
   const combinations = parsed.combinations || [];
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <span style={{ fontSize: 13 }}>🧑‍🍳</span>
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           {baseEmoji} Mashup Kitchen — {count} Options
         </span>
       </div>
-      <div className={styles.emojiGridScrollContainer}>
-        <div className={styles.emojiCombosGrid}>
+      <div className={styles['emoji-grid-scroll-container']}>
+        <div className={styles['emoji-combos-grid']}>
           {combinations.map((option: any, index: number) => {
             const combo = option.combination;
             return (
-              <div key={index} className={styles.comboOptionCard}>
-                <div className={styles.optionCardHeader}>
-                  <span className={styles.miniEmoji}>{baseEmoji}</span>
-                  <span className={styles.miniPlus}>+</span>
-                  <span className={styles.miniEmoji}>{option.emoji}</span>
+              <div key={index} className={styles['combo-option-card']}>
+                <div className={styles['option-card-header']}>
+                  <span className={styles['mini-emoji']}>{baseEmoji}</span>
+                  <span className={styles['mini-plus']}>+</span>
+                  <span className={styles['mini-emoji']}>{option.emoji}</span>
                 </div>
-                <div className={styles.optionCardImageContainer}>
+                <div className={styles['option-card-image-container']}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={combo.gStaticUrl}
                     alt={combo.alt}
-                    className={styles.miniMergedImage}
+                    className={styles['mini-merged-image']}
                     loading="lazy"
                   />
                 </div>
@@ -2021,10 +2021,10 @@ function TeamCreateRenderer({
       }));
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <Users size={13} />
-        <span className={styles.rendererTitle}>
+        <span className={styles['renderer-title']}>
           Team <strong>{teamName}</strong> — {membersList.length} worker
           {membersList.length !== 1 ? "s" : ""}
         </span>
@@ -2040,7 +2040,7 @@ function TeamCreateRenderer({
         />
       </div>
 
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
 
       {membersList.map((member, index) => {
         const activity = getActivity(member, index);
@@ -2067,15 +2067,15 @@ function TeamCreateRenderer({
         return (
           <div
             key={index}
-            className={styles.rendererBlock}
+            className={styles['renderer-block']}
             style={{ marginTop: 4 }}
           >
-            <div className={styles.rendererHeader}>
-              <span className={styles.rendererTitle}>
+            <div className={styles['renderer-header']}>
+              <span className={styles['renderer-title']}>
                 Worker {index + 1}: <strong>{member.description}</strong>
               </span>
               {tokPerSec !== null && (
-                <span className={styles.workerSpeedBadge}>
+                <span className={styles['worker-speed-badge']}>
                   ⚡ {tokPerSec.toFixed(1)} tok/s
                 </span>
               )}
@@ -2098,18 +2098,18 @@ function TeamCreateRenderer({
             )}
 
             {member.error && (
-              <div className={styles.errorText}>{member.error}</div>
+              <div className={styles['error-text']}>{member.error}</div>
             )}
 
             {activity && !isTerminal && <WorkerStatusBar activity={activity} />}
 
-            <div className={styles.workerResultCard}>
+            <div className={styles['worker-result-card']}>
               <button
-                className={styles.workerResultToggle}
+                className={styles['worker-result-toggle']}
                 onClick={() => toggleMember(index)}
               >
                 <Zap size={12} />
-                <span className={styles.workerResultSummary}>
+                <span className={styles['worker-result-summary']}>
                   {member.summary ||
                     (!isTerminal
                       ? activity?.currentTool
@@ -2122,17 +2122,17 @@ function TeamCreateRenderer({
                           : "Worker finished")}
                 </span>
                 {durationLabel && (
-                  <span className={styles.workerResultMeta}>
+                  <span className={styles['worker-result-meta']}>
                     {durationLabel}
                   </span>
                 )}
                 {toolUsesCount > 0 && (
-                  <span className={styles.workerResultMeta}>
+                  <span className={styles['worker-result-meta']}>
                     {toolUsesCount} tools
                   </span>
                 )}
                 {iterationsCount > 0 && (
-                  <span className={styles.workerResultMeta}>
+                  <span className={styles['worker-result-meta']}>
                     {iterationsCount} iteration
                     {iterationsCount !== 1 ? "s" : ""}
                   </span>
@@ -2144,7 +2144,7 @@ function TeamCreateRenderer({
                 )}
               </button>
               {memberExpanded && (
-                <div className={styles.workerResultBody}>
+                <div className={styles['worker-result-body']}>
                   {isTerminal && (member.messages?.length ?? 0) > 0 ? (
                     <Suspense fallback={null}>
                       <LazyMessageList
@@ -2197,16 +2197,16 @@ function SendMessageRenderer({ result, args }: RendererProps) {
   const hasError = !!parsed.error;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <MessageSquare size={13} />
-        <span className={styles.rendererTitle}>
-          Message → <code className={styles.inlineCode}>{agentId}</code>
+        <span className={styles['renderer-title']}>
+          Message → <code className={styles['inline-code']}>{agentId}</code>
         </span>
         <StatusBadge success={!hasError} label={status} />
       </div>
 
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
     </div>
   );
 }
@@ -2219,18 +2219,18 @@ function StopAgentRenderer({ result, args }: RendererProps) {
   const hasError = !!parsed.error;
 
   return (
-    <div className={styles.rendererBlock}>
-      <div className={styles.rendererHeader}>
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
         <StopCircle size={13} />
-        <span className={styles.rendererTitle}>
-          Stopped: <code className={styles.inlineCode}>{agentId}</code>
+        <span className={styles['renderer-title']}>
+          Stopped: <code className={styles['inline-code']}>{agentId}</code>
         </span>
         <StatusBadge
           success={!hasError}
           label={hasError ? "Failed" : "Stopped"}
         />
       </div>
-      {hasError && <div className={styles.errorText}>{parsed.error}</div>}
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
     </div>
   );
 }

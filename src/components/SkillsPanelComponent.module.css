@@ -10,25 +10,25 @@
 
 /* ── Empty State ────────────────────────────────────────────── */
 
-.emptyState {
-  composes: emptyState from "./PanelShared.module.css";
+.empty-state {
+  composes: empty-state from "./PanelShared.module.css";
 }
 
-.emptyIcon {
-  composes: emptyIcon from "./PanelShared.module.css";
+.empty-icon {
+  composes: empty-icon from "./PanelShared.module.css";
 }
 
-.emptyTitle {
-  composes: emptyTitle from "./PanelShared.module.css";
+.empty-title {
+  composes: empty-title from "./PanelShared.module.css";
 }
 
-.emptySubtitle {
-  composes: emptySubtitle from "./PanelShared.module.css";
+.empty-subtitle {
+  composes: empty-subtitle from "./PanelShared.module.css";
 }
 
 /* ── Skill Card ─────────────────────────────────────────────── */
 
-.skillCard {
+.skill-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -49,17 +49,17 @@
   }
 }
 
-.skillCardDisabled {
+.skill-card-disabled {
   opacity: 0.5;
 }
 
-.skillCardHeader {
+.skill-card-header {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.skillIcon {
+.skill-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,12 +71,12 @@
   flex-shrink: 0;
 }
 
-.skillInfo {
+.skill-info {
   flex: 1;
   min-width: 0;
 }
 
-.skillName {
+.skill-name {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
@@ -85,7 +85,7 @@
   text-overflow: ellipsis;
 }
 
-.skillDescription {
+.skill-description {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   white-space: nowrap;
@@ -94,14 +94,14 @@
   margin-top: 1px;
 }
 
-.skillActions {
+.skill-actions {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
 }
 
-.skillActionButton {
+.skill-action-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,12 +120,12 @@
   }
 }
 
-.skillDeleteButton:hover {
+.skill-delete-button:hover {
   color: var(--color-rose) !important;
   background: color-mix(in srgb, var(--color-rose) 12%, transparent) !important;
 }
 
-.skillContentPreview {
+.skill-content-preview {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.5;
@@ -138,37 +138,37 @@
     color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
 }
 
-.skillCharCount {
+.skill-char-count {
   font-size: 0.625rem;
   color: var(--text-muted);
   text-align: right;
 }
 
-.skillCharCountWarn {
+.skill-char-count-warn {
   color: var(--color-warning);
 }
 
 /* ── Confirm Delete ─────────────────────────────────────────── */
 
-.confirmLayoutRow {
+.confirm-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 0;
 }
 
-.confirmLabel {
+.confirm-label {
   flex: 1;
   font-size: var(--font-size-xs);
   color: var(--color-rose);
   font-weight: 500;
 }
 
-.confirmButton {
-  composes: confirmButton from "./PanelShared.module.css";
+.confirm-button {
+  composes: confirm-button from "./PanelShared.module.css";
 }
 
-.confirmBtnYes {
+.confirm-btn-yes {
   background: color-mix(in srgb, var(--color-rose) 15%, transparent);
   color: var(--color-rose);
   border-color: color-mix(in srgb, var(--color-rose) 30%, transparent);
@@ -178,7 +178,7 @@
   }
 }
 
-.confirmBtnNo {
+.confirm-btn-no {
   background: transparent;
   color: var(--text-muted);
 
@@ -189,7 +189,7 @@
 
 /* ── Edit / Create Form ─────────────────────────────────────── */
 
-.formHeader {
+.form-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -206,7 +206,7 @@
   }
 }
 
-.cancelButton {
+.cancel-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,7 +232,7 @@
   overflow-y: auto;
 }
 
-.formGroup {
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -291,7 +291,7 @@
   }
 }
 
-.contentTextarea {
+.content-textarea {
   min-height: 200px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   font-size: var(--font-size-sm);
@@ -306,24 +306,24 @@
   line-height: 1.4;
 }
 
-.charCounter {
+.char-counter {
   font-size: 0.625rem;
   color: var(--text-muted);
   text-align: right;
   margin-top: -2px;
 }
 
-.charCounterWarn {
+.char-counter-warn {
   color: var(--color-warning);
 }
 
-.charCounterDanger {
+.char-counter-danger {
   color: var(--color-rose);
 }
 
 /* ── Form Actions ───────────────────────────────────────────── */
 
-.formActions {
+.form-actions {
   display: flex;
   gap: 8px;
   padding-top: 8px;
@@ -331,7 +331,7 @@
   flex-shrink: 0;
 }
 
-.saveButton {
+.save-button {
   flex: 1;
   display: inline-flex;
   align-items: center;
@@ -360,7 +360,7 @@
   }
 }
 
-.cancelFormButton {
+.cancel-form-button {
   padding: 8px 14px;
   font-size: var(--font-size-sm);
   font-weight: 500;

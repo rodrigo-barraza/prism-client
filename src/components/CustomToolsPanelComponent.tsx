@@ -431,7 +431,7 @@ export default function CustomToolsPanel({
   if (editingTool) {
     return (
       <div className={styles.container}>
-        <div className={styles.formHeader}>
+        <div className={styles['form-header']}>
           <h3>{isNew ? "New Tool" : "Edit Tool"}</h3>
           <IconButtonComponent
             icon={<X size={16} />}
@@ -441,7 +441,7 @@ export default function CustomToolsPanel({
         </div>
 
         <div className={styles.form}>
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Function Name</label>
             <InputComponent
               type="text"
@@ -467,7 +467,7 @@ export default function CustomToolsPanel({
             </span>
           </div>
 
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Description</label>
             <TextAreaComponent
               className={styles.textarea}
@@ -495,10 +495,10 @@ export default function CustomToolsPanel({
             </span>
           </div>
 
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Code</label>
             <TextAreaComponent
-              className={`${styles.textarea} ${styles.codeTextarea}`}
+              className={`${styles.textarea} ${styles['code-textarea']}`}
               value={editingTool.code}
               onChange={(
                 e: React.ChangeEvent<
@@ -521,8 +521,8 @@ export default function CustomToolsPanel({
           </div>
 
           {/* Parameters */}
-          <div className={styles.paramsSection}>
-            <div className={styles.paramsSectionHeader}>
+          <div className={styles['params-section']}>
+            <div className={styles['params-section-header']}>
               <label>Parameters</label>
               <SegmentedControlComponent
                 value={inputMode}
@@ -548,15 +548,15 @@ export default function CustomToolsPanel({
             {inputMode === "manual" && (
               <>
                 {editingTool.parameters?.length === 0 && (
-                  <div className={styles.paramsEmpty}>
+                  <div className={styles['params-empty']}>
                     No parameters — tool will be called without arguments.
                   </div>
                 )}
 
                 {editingTool.parameters?.map((param: any, i: any) => (
-                  <div key={i} className={styles.paramCard}>
-                    <div className={styles.paramCardHeader}>
-                      <span className={styles.paramIndex}>#{i + 1}</span>
+                  <div key={i} className={styles['param-card']}>
+                    <div className={styles['param-card-header']}>
+                      <span className={styles['param-index']}>#{i + 1}</span>
                       <IconButtonComponent
                         icon={<Trash2 size={12} />}
                         onClick={() => removeParameter(i)}
@@ -565,9 +565,9 @@ export default function CustomToolsPanel({
                       />
                     </div>
 
-                    <div className={styles.paramFields}>
-                      <div className={styles.paramRow}>
-                        <div className={styles.paramField}>
+                    <div className={styles['param-fields']}>
+                      <div className={styles['param-row']}>
+                        <div className={styles['param-field']}>
                           <label>Name</label>
                           <InputComponent
                             type="text"
@@ -579,7 +579,7 @@ export default function CustomToolsPanel({
                           />
                         </div>
                         <div
-                          className={styles.paramField}
+                          className={styles['param-field']}
                           style={{ width: 100 }}
                         >
                           <label>Type</label>
@@ -591,7 +591,7 @@ export default function CustomToolsPanel({
                             }
                           />
                         </div>
-                        <div className={styles.paramFieldToggle}>
+                        <div className={styles['param-field-toggle']}>
                           <label>Req</label>
                           <ToggleComponent
                             checked={param.required}
@@ -603,7 +603,7 @@ export default function CustomToolsPanel({
                         </div>
                       </div>
 
-                      <div className={styles.paramField}>
+                      <div className={styles['param-field']}>
                         <label>Description</label>
                         <InputComponent
                           type="text"
@@ -617,7 +617,7 @@ export default function CustomToolsPanel({
                         />
                       </div>
 
-                      <div className={styles.paramField}>
+                      <div className={styles['param-field']}>
                         <label>
                           Enum values{" "}
                           <span className={styles.optional}>
@@ -640,14 +640,14 @@ export default function CustomToolsPanel({
             )}
 
             {inputMode === "json" && (
-              <div className={styles.jsonImportSection}>
-                <div className={styles.jsonImportHint}>
+              <div className={styles['json-import-section']}>
+                <div className={styles['json-import-hint']}>
                   Paste an OpenAI-style tool definition, a function schema, or a
                   raw parameters object. Name, description, and parameters will
                   be auto-populated.
                 </div>
                 <TextAreaComponent
-                  className={`${styles.textarea} ${styles.jsonTextarea}`}
+                  className={`${styles.textarea} ${styles['json-textarea']}`}
                   value={jsonText}
                   onChange={(
                     e: React.ChangeEvent<
@@ -664,7 +664,7 @@ export default function CustomToolsPanel({
                   autoResize={false}
                   spellCheck={false}
                 />
-                <div className={styles.jsonActions}>
+                <div className={styles['json-actions']}>
                   <ButtonComponent
                     variant="primary"
                     size="small"
@@ -692,7 +692,7 @@ export default function CustomToolsPanel({
                 </div>
                 {jsonError && (
                   <div
-                    className={styles.jsonFeedback}
+                    className={styles['json-feedback']}
                     data-content-type="error"
                   >
                     <AlertCircle size={12} />
@@ -701,7 +701,7 @@ export default function CustomToolsPanel({
                 )}
                 {jsonSuccess && (
                   <div
-                    className={styles.jsonFeedback}
+                    className={styles['json-feedback']}
                     data-content-type="success"
                   >
                     <CheckCircle size={12} />
@@ -797,7 +797,7 @@ export default function CustomToolsPanel({
             <span className={styles["subtab-title-text"]}>
               Custom Tools ({enabledCustomCount}/{tools.length})
             </span>
-            <div className={styles.sectionActions}>
+            <div className={styles['section-actions']}>
               {tools.length > 0 && (
                 <ToggleComponent
                   checked={allCustomEnabled}
@@ -816,7 +816,7 @@ export default function CustomToolsPanel({
           </div>
 
           {tools.length === 0 && (
-            <div className={styles.emptyCustom}>
+            <div className={styles['empty-custom']}>
               Create a tool to run custom JavaScript.
             </div>
           )}
@@ -827,25 +827,25 @@ export default function CustomToolsPanel({
             return (
               <div
                 key={id}
-                className={`${styles.toolCard} ${!tool.enabled ? styles.toolDisabled : ""}`}
+                className={`${styles['tool-card']} ${!tool.enabled ? styles['tool-disabled'] : ""}`}
                 style={{ marginBottom: "8px" }}
               >
                 <div
-                  className={styles.toolCardHeader}
+                  className={styles['tool-card-header']}
                   onClick={() => setExpandedId(isExpanded ? null : id)}
                 >
-                  <button className={styles.expandButton}>
+                  <button className={styles['expand-button']}>
                     {isExpanded ? (
                       <ChevronDown size={14} />
                     ) : (
                       <ChevronRight size={14} />
                     )}
                   </button>
-                  <div className={styles.toolCardInfo}>
-                    <span className={styles.toolCardName}>{tool.name}</span>
-                    <span className={styles.toolCardMeta}>
+                  <div className={styles['tool-card-info']}>
+                    <span className={styles['tool-card-name']}>{tool.name}</span>
+                    <span className={styles['tool-card-meta']}>
                       <span
-                        className={styles.methodBadge}
+                        className={styles['method-badge']}
                         data-http-method="JS"
                       >
                         JS
@@ -855,7 +855,7 @@ export default function CustomToolsPanel({
                       )}
                     </span>
                   </div>
-                  <div className={styles.toolCardActions}>
+                  <div className={styles['tool-card-actions']}>
                     <ToggleComponent
                       checked={tool.enabled}
                       onChange={() => handleToggle(tool)}
@@ -865,12 +865,12 @@ export default function CustomToolsPanel({
                 </div>
 
                 {isExpanded && (
-                  <div className={styles.toolCardBody}>
-                    <p className={styles.toolCardDesc}>
+                  <div className={styles['tool-card-body']}>
+                    <p className={styles['tool-card-desc']}>
                       {tool.description || "No description"}
                     </p>
                     {tool.code && (
-                      <div className={styles.toolCardEndpoint}>
+                      <div className={styles['tool-card-endpoint']}>
                         <Code2 size={11} />
                         <code style={{ whiteSpace: "pre-wrap", fontSize: 11 }}>
                           {tool.code.length > 120
@@ -880,19 +880,19 @@ export default function CustomToolsPanel({
                       </div>
                     )}
                     {!tool.code && tool.endpoint && (
-                      <div className={styles.toolCardEndpoint}>
+                      <div className={styles['tool-card-endpoint']}>
                         <Globe size={11} />
                         <code>{tool.endpoint}</code>
                       </div>
                     )}
                     {tool.parameters && tool.parameters.length > 0 && (
-                      <div className={styles.toolCardParams}>
+                      <div className={styles['tool-card-params']}>
                         {tool.parameters.map((p: any, i: number) => (
-                          <div key={i} className={styles.toolCardParam}>
+                          <div key={i} className={styles['tool-card-param']}>
                             <code>{p.name}</code>
-                            <span className={styles.paramType}>{p.type}</span>
+                            <span className={styles['param-type']}>{p.type}</span>
                             {p.required && (
-                              <span className={styles.paramRequired}>
+                              <span className={styles['param-required']}>
                                 required
                               </span>
                             )}
@@ -900,7 +900,7 @@ export default function CustomToolsPanel({
                         ))}
                       </div>
                     )}
-                    <div className={styles.toolCardFooter}>
+                    <div className={styles['tool-card-footer']}>
                       <ButtonComponent
                         variant="secondary"
                         icon={Edit3}
@@ -909,8 +909,8 @@ export default function CustomToolsPanel({
                         Edit
                       </ButtonComponent>
                       {confirmingDeleteId === id ? (
-                        <div className={styles.deleteConfirm}>
-                          <span className={styles.deleteConfirmLabel}>
+                        <div className={styles['delete-confirm']}>
+                          <span className={styles['delete-confirm-label']}>
                             Delete?
                           </span>
                           <ButtonComponent

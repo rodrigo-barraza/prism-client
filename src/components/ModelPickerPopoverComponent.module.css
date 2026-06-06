@@ -7,7 +7,7 @@
 
 /* ── Trigger overrides ─────────────────────────────────────────────── */
 
-.triggerActive {
+.trigger-active {
   border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
   background: color-mix(
     in srgb,
@@ -16,7 +16,7 @@
   );
 }
 
-.tooltipCapabilities {
+.tooltip-capabilities {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -47,13 +47,13 @@
 }
 
 /* Flipped: anchored above the trigger */
-.popoverFlipped {
+.popover-flipped {
   animation-name: popoverInUp;
 }
 
 /* ── Popover header ─────────────────────────────────────────────────── */
 
-.popoverHeader {
+.popover-header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -69,7 +69,7 @@
 
 /* ── Popover body ─────────────────────────────────────────────────── */
 
-.popoverBody {
+.popover-body {
   flex: 1;
   min-height: 0;
   overflow: visible;
@@ -79,7 +79,7 @@
 }
 
 /* ModelsTableComponent .container — flex column filling remaining space */
-.popoverBody > div {
+.popover-body > div {
   border-radius: 0;
   gap: 0;
   flex: 1;
@@ -90,8 +90,8 @@
 
 /* FilterBar — stays at top, doesn't scroll.
    overflow: visible lets FilterDropdownComponent's
-   absolutely-positioned .dropdownMenu escape. */
-.popoverBody > div > div:first-child {
+   absolutely-positioned .dropdown-menu escape. */
+.popover-body > div > div:first-child {
   background: var(--background-surface);
   margin-bottom: 0;
   border: none;
@@ -105,7 +105,7 @@
 }
 
 /* TableComponent .container — flex fill */
-.popoverBody > div > div:last-child {
+.popover-body > div > div:last-child {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -114,7 +114,7 @@
 
 /* [data-table-scroll] — both-axis scroll, fills remaining space.
    TableComponent's built-in drag-to-scroll handles both axes. */
-.popoverBody [data-table-scroll] {
+.popover-body [data-table-scroll] {
   border: none;
   border-radius: 0;
   flex: 1;

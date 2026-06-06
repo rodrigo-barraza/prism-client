@@ -60,7 +60,7 @@ export type TableRow = TransformedTableRow;
 /* -- Helpers ---------------------------------------------- */
 
 /** Renders a muted "—" dash — replaces all inline style={{ color: "var(--text-muted)" }} */
-export const emptyDash = () => <span className={styles.emptyDash}>—</span>;
+export const emptyDash = () => <span className={styles['empty-dash']}>—</span>;
 
 /** Render a value or a muted dash if falsy/zero */
 export const valueOrDash = <T,>(
@@ -233,7 +233,7 @@ export const requestCountColumn = () => ({
   align: "right" as const,
   render: (row: TableRow) =>
     ((row.requestCount as number | undefined) ?? 0) > 0 ? (
-      <span className={styles.countCell}>
+      <span className={styles['count-cell']}>
         <Zap size={10} />
         {row.requestCount as number}
       </span>
@@ -495,7 +495,7 @@ export const conversationCountColumn = () => ({
       (row.conversationCount as number | undefined) ??
       ((row.conversations as TableRow[] | undefined) ?? []).length;
     return (
-      <span className={styles.countCell}>
+      <span className={styles['count-cell']}>
         <MessageSquare size={10} />
         {count}
       </span>
@@ -584,12 +584,12 @@ export const traceIdColumn = () => ({
   render: (s: TableRow) => (
     <a
       href={`/admin/chat?trace=${s.id as string}`}
-      className={styles.sessionIdCell}
+      className={styles['session-id-cell']}
       title={`View conversations for trace ${s.id as string}`}
       onClick={(e: React.MouseEvent) => e.stopPropagation()}
     >
-      <FolderOpen size={12} className={styles.sessionIcon} />
-      <span className={styles.sessionIdText}>
+      <FolderOpen size={12} className={styles['session-icon']} />
+      <span className={styles['session-id-text']}>
         {(s.id as string).slice(0, 8)}
       </span>
     </a>
@@ -607,7 +607,7 @@ export const conversationTitleColumn = ({
   sortable: false,
   render: (c: TableRow) => (
     <span
-      className={`${styles.conversationTitle} ${mini ? styles.conversationTitleMini : ""}`}
+      className={`${styles['conversation-title']} ${mini ? styles['conversation-title-mini'] : ""}`}
     >
       <MessageSquare size={mini ? 9 : 12} />
       {(c.title as string | undefined) || "Untitled"}
@@ -717,39 +717,39 @@ export const benchmarkStatusColumn = () => ({
   render: (r: TableRow) => {
     if (r._pending) {
       return (
-        <span className={styles.benchmarkStatusCell}>
-          <Circle size={16} className={styles.benchmarkPendingIcon} />
+        <span className={styles['benchmark-status-cell']}>
+          <Circle size={16} className={styles['benchmark-pending-icon']} />
           <span>Queued</span>
         </span>
       );
     }
     if (r._running) {
       return (
-        <span className={styles.benchmarkStatusCell}>
-          <Loader2 size={16} className={styles.benchmarkRunningIcon} />
+        <span className={styles['benchmark-status-cell']}>
+          <Loader2 size={16} className={styles['benchmark-running-icon']} />
           <span>{(r._phase as string | undefined) || "Running"}</span>
         </span>
       );
     }
     if (r.error) {
       return (
-        <span className={styles.benchmarkStatusCell}>
-          <AlertTriangle size={16} className={styles.benchmarkErrorIcon} />
+        <span className={styles['benchmark-status-cell']}>
+          <AlertTriangle size={16} className={styles['benchmark-error-icon']} />
           <span>Error</span>
         </span>
       );
     }
     if (r.passed) {
       return (
-        <span className={styles.benchmarkStatusCell}>
-          <CheckCircle2 size={16} className={styles.benchmarkPassIcon} />
+        <span className={styles['benchmark-status-cell']}>
+          <CheckCircle2 size={16} className={styles['benchmark-pass-icon']} />
           <span>Pass</span>
         </span>
       );
     }
     return (
-      <span className={styles.benchmarkStatusCell}>
-        <XCircle size={16} className={styles.benchmarkFailIcon} />
+      <span className={styles['benchmark-status-cell']}>
+        <XCircle size={16} className={styles['benchmark-fail-icon']} />
         <span>Fail</span>
       </span>
     );
@@ -762,15 +762,15 @@ export const benchmarkModelColumn = () => ({
   description: "The model and provider tested",
   render: (r: TableRow) => (
     <span
-      className={`${styles.benchmarkModelCell} ${r._pending ? styles.benchmarkModelPending : ""}`}
+      className={`${styles['benchmark-model-cell']} ${r._pending ? styles['benchmark-model-pending'] : ""}`}
     >
-      <span className={styles.benchmarkModelName}>{r.label as string}</span>
-      <span className={styles.benchmarkModelProviderRow}>
-        <span className={styles.benchmarkModelProvider}>
+      <span className={styles['benchmark-model-name']}>{r.label as string}</span>
+      <span className={styles['benchmark-model-provider-row']}>
+        <span className={styles['benchmark-model-provider']}>
           {resolveProviderLabel(r.provider as string | undefined)}
         </span>
         {!!r._running && typeof r._progress === "number" && r._progress > 0 && (
-          <span className={styles.benchmarkProgressPct}>
+          <span className={styles['benchmark-progress-pct']}>
             {Math.round(r._progress * 100)}%
           </span>
         )}
@@ -852,7 +852,7 @@ export const benchmarkSizeColumn = ({
       modelConfigMap[`${r.provider as string}:${r.model as string}`];
     if (!config?.size) return emptyDash();
     return (
-      <span className={styles.benchmarkTpsCell}>
+      <span className={styles['benchmark-tps-cell']}>
         <HardDrive size={10} />
         {config.size}
       </span>
@@ -882,7 +882,7 @@ function highlightExpected(text: string, expected: string, matchMode: string) {
       return (
         <>
           {text.slice(0, index)}
-          <mark className={styles.benchmarkHighlight}>
+          <mark className={styles['benchmark-highlight']}>
             {text.slice(index, index + matchLength)}
           </mark>
           {text.slice(index + matchLength)}
@@ -895,7 +895,7 @@ function highlightExpected(text: string, expected: string, matchMode: string) {
 
   // For exact mode — highlight the entire response if it matches
   if (matchMode === "exact" && normText === normExpected) {
-    return <mark className={styles.benchmarkHighlight}>{text}</mark>;
+    return <mark className={styles['benchmark-highlight']}>{text}</mark>;
   }
 
   // For contains / startsWith — find the substring position (case-insensitive)
@@ -909,7 +909,7 @@ function highlightExpected(text: string, expected: string, matchMode: string) {
   return (
     <>
       {before}
-      <mark className={styles.benchmarkHighlight}>{matched}</mark>
+      <mark className={styles['benchmark-highlight']}>{matched}</mark>
       {after}
     </>
   );
@@ -926,14 +926,14 @@ export const benchmarkResponseColumn = ({
   render: (r: TableRow) => {
     if (r.error) {
       return (
-        <span className={styles.benchmarkErrorMessage}>
+        <span className={styles['benchmark-error-message']}>
           {r.error as string}
         </span>
       );
     }
     return (
       <span
-        className={styles.benchmarkResponseCell}
+        className={styles['benchmark-response-cell']}
         title={r.response as string | undefined}
       >
         {expectedValue
@@ -956,7 +956,7 @@ export const benchmarkLatencyColumn = () => ({
   align: "right" as const,
   render: (r: TableRow) =>
     r.latency ? (
-      <span className={styles.monoCell}>
+      <span className={styles['mono-cell']}>
         {formatLatency(r.latency as number)}
       </span>
     ) : (
@@ -1033,7 +1033,7 @@ export const benchmarkTokPerSecColumn = () => ({
     if (!lat || lat <= 0 || out <= 0) return emptyDash();
     const tps = out / lat;
     return (
-      <span className={styles.benchmarkTpsCell}>
+      <span className={styles['benchmark-tps-cell']}>
         <Gauge size={10} />
         {tps.toFixed(1)}
       </span>
@@ -1099,9 +1099,9 @@ export const dashboardModelColumn = () => ({
   description: "Model name and provider tested across benchmarks",
   sortable: true,
   render: (r: TableRow) => (
-    <span className={styles.dashboardModelCell}>
+    <span className={styles['dashboard-model-cell']}>
       <ProviderLogo provider={r.provider as string | undefined} size={16} />
-      <span className={styles.dashboardModelName}>{r.label as string}</span>
+      <span className={styles['dashboard-model-name']}>{r.label as string}</span>
     </span>
   ),
 });
@@ -1126,7 +1126,7 @@ export const dashboardTestsColumn = () => ({
   sortable: true,
   align: "right" as const,
   render: (r: TableRow) => (
-    <span className={styles.monoCell}>{r.total as number}</span>
+    <span className={styles['mono-cell']}>{r.total as number}</span>
   ),
 });
 
@@ -1137,7 +1137,7 @@ export const dashboardPassedColumn = () => ({
   sortable: true,
   align: "right" as const,
   render: (r: TableRow) => (
-    <span className={styles.dashboardPassedCell}>
+    <span className={styles['dashboard-passed-cell']}>
       <CheckCircle2 size={12} />
       {r.passed as number}
     </span>
@@ -1152,7 +1152,7 @@ export const dashboardFailedColumn = () => ({
   sortValue: (r: TableRow) => (r.failed as number) + (r.errored as number),
   align: "right" as const,
   render: (r: TableRow) => (
-    <span className={styles.dashboardFailedCell}>
+    <span className={styles['dashboard-failed-cell']}>
       <XCircle size={12} />
       {(r.failed as number) + (r.errored as number)}
     </span>
@@ -1174,14 +1174,14 @@ export const dashboardPassRateColumn = () => ({
           ? "var(--color-warning)"
           : "var(--color-danger)";
     return (
-      <span className={styles.dashboardRateCell}>
-        <span className={styles.dashboardRateBar}>
+      <span className={styles['dashboard-rate-cell']}>
+        <span className={styles['dashboard-rate-bar']}>
           <span
-            className={styles.dashboardRateBarFill}
+            className={styles['dashboard-rate-bar-fill']}
             style={{ width: `${percentage}%`, background: color }}
           />
         </span>
-        <span className={styles.dashboardRateValue} style={{ color }}>
+        <span className={styles['dashboard-rate-value']} style={{ color }}>
           {percentage}%
         </span>
       </span>

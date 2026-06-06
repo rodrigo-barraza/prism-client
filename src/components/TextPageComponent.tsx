@@ -126,9 +126,9 @@ export default function TextPageComponent({
         <div className={styles.container}>
           {/* Header */}
           <div className={styles.header}>
-            <div className={styles.headerLeft}>
+            <div className={styles['header-left']}>
               <h1 className={styles.title}>
-                <FileText className={styles.titleIcon} size={22} />
+                <FileText className={styles['title-icon']} size={22} />
                 Text
               </h1>
               <p className={styles.subtitle}>
@@ -136,11 +136,11 @@ export default function TextPageComponent({
               </p>
             </div>
 
-            <div className={styles.headerRight}>
+            <div className={styles['header-right']}>
               {/* Stats */}
-              <div className={styles.statsBadges}>
-                <div className={styles.statBadge}>
-                  <span className={styles.statValue}>{total}</span> messages
+              <div className={styles['stats-badges']}>
+                <div className={styles['stat-badge']}>
+                  <span className={styles['stat-value']}>{total}</span> messages
                 </div>
               </div>
             </div>
@@ -232,15 +232,15 @@ export default function TextPageComponent({
 
             {/* Text List */}
             {!loading && (
-              <div className={styles.textList}>
+              <div className={styles['text-list']}>
                 {displayTexts.map((textItem, index) => {
                   const textKey = getTextKey(textItem, index);
                   const isFav = favoriteKeys.includes(textKey);
                   return (
-                    <div key={`${textItem.convId}-${index}`} className={styles.textCard}>
-                      <div className={styles.textHeader}>
+                    <div key={`${textItem.convId}-${index}`} className={styles['text-card']}>
+                      <div className={styles['text-header']}>
                         <button
-                          className={`${styles.favoriteButton} ${isFav ? styles.favoriteButtonActive : ""}`}
+                          className={`${styles['favorite-button']} ${isFav ? styles['favorite-button-active'] : ""}`}
                           onClick={() => toggleFavorite(textKey)}
                           title={
                             isFav ? "Remove from favorites" : "Add to favorites"
@@ -249,7 +249,7 @@ export default function TextPageComponent({
                           <Star size={11} fill={isFav ? "currentColor" : "none"} />
                         </button>
                         <span
-                          className={`${styles.roleBadge} ${textItem.origin === "ai" ? styles.roleAi : styles.roleUser}`}
+                          className={`${styles['role-badge']} ${textItem.origin === "ai" ? styles['role-ai'] : styles['role-user']}`}
                         >
                           {textItem.origin === "ai" ? (
                             <>
@@ -263,19 +263,19 @@ export default function TextPageComponent({
                         </span>
                         <Link
                           href={`${convBasePath}/${textItem.convId}`}
-                          className={styles.conversationLink}
+                          className={styles['conversation-link']}
                           title={textItem.convTitle}
                         >
                           <ExternalLink size={10} />
                           <span>{textItem.convTitle}</span>
                         </Link>
                         {textItem.hasImages && (
-                          <span className={styles.attachmentTag}>
+                          <span className={styles['attachment-tag']}>
                             <ImageIcon size={10} /> +media
                           </span>
                         )}
                         {textItem.model && (
-                          <span className={styles.modelTag}>
+                          <span className={styles['model-tag']}>
                             {textItem.model.split("/").pop()}
                           </span>
                         )}
@@ -296,7 +296,7 @@ export default function TextPageComponent({
                         ]}
                         readOnly
                         maxHeight="400px"
-                        className={styles.cardPreview}
+                        className={styles['card-preview']}
                       />
                     </div>
                   );
@@ -318,7 +318,7 @@ export default function TextPageComponent({
           </div>
         </div>
       ) : (
-        <div className={styles.adminPage}>
+        <div className={styles['admin-page']}>
           <SearchInputComponent
             value={searchInput}
             onChange={(value: any) => {
@@ -404,15 +404,15 @@ export default function TextPageComponent({
 
           {/* Text List */}
           {!loading && (
-            <div className={styles.textList}>
+            <div className={styles['text-list']}>
               {displayTexts.map((textItem, index) => {
                 const textKey = getTextKey(textItem, index);
                 const isFav = favoriteKeys.includes(textKey);
                 return (
-                  <div key={`${textItem.convId}-${index}`} className={styles.textCard}>
-                    <div className={styles.textHeader}>
+                  <div key={`${textItem.convId}-${index}`} className={styles['text-card']}>
+                    <div className={styles['text-header']}>
                       <button
-                        className={`${styles.favoriteButton} ${isFav ? styles.favoriteButtonActive : ""}`}
+                        className={`${styles['favorite-button']} ${isFav ? styles['favorite-button-active'] : ""}`}
                         onClick={() => toggleFavorite(textKey)}
                         title={
                           isFav ? "Remove from favorites" : "Add to favorites"
@@ -421,7 +421,7 @@ export default function TextPageComponent({
                         <Star size={11} fill={isFav ? "currentColor" : "none"} />
                       </button>
                       <span
-                        className={`${styles.roleBadge} ${textItem.origin === "ai" ? styles.roleAi : styles.roleUser}`}
+                        className={`${styles['role-badge']} ${textItem.origin === "ai" ? styles['role-ai'] : styles['role-user']}`}
                       >
                         {textItem.origin === "ai" ? (
                           <>
@@ -435,19 +435,19 @@ export default function TextPageComponent({
                       </span>
                       <Link
                         href={`${convBasePath}/${textItem.convId}`}
-                        className={styles.conversationLink}
+                        className={styles['conversation-link']}
                         title={textItem.convTitle}
                       >
                         <ExternalLink size={10} />
                         <span>{textItem.convTitle}</span>
                       </Link>
                       {textItem.hasImages && (
-                        <span className={styles.attachmentTag}>
+                        <span className={styles['attachment-tag']}>
                           <ImageIcon size={10} /> +media
                         </span>
                       )}
                       {textItem.model && (
-                        <span className={styles.modelTag}>
+                        <span className={styles['model-tag']}>
                           {textItem.model.split("/").pop()}
                         </span>
                       )}
@@ -468,7 +468,7 @@ export default function TextPageComponent({
                       ]}
                       readOnly
                       maxHeight="400px"
-                      className={styles.cardPreview}
+                      className={styles['card-preview']}
                     />
                   </div>
                 );

@@ -84,7 +84,7 @@ function OriginBadge({
 }) {
   return (
     <span
-      className={`${className} ${origin === "ai" ? styles.originAi : styles.originUser}`}
+      className={`${className} ${origin === "ai" ? styles['origin-ai'] : styles['origin-user']}`}
     >
       {origin === "ai" ? (
         <>
@@ -247,12 +247,12 @@ export default function MediaPageComponent({
       render: (m: any) => {
         const resolvedUrl = resolveUrl(m.url);
         return (
-          <div className={styles.listThumb}>
+          <div className={styles['list-thumb']}>
             {m.mediaType === "image" && resolvedUrl ? (
               <img
                 src={resolvedUrl}
                 alt=""
-                className={styles.listThumbImg}
+                className={styles['list-thumb-img']}
                 style={{ cursor: "pointer" }}
                 loading="lazy"
                 onClick={() => setLightboxSrc(resolvedUrl)}
@@ -260,13 +260,13 @@ export default function MediaPageComponent({
             ) : m.mediaType === "video" && resolvedUrl ? (
               <video
                 src={resolvedUrl}
-                className={styles.listThumbImg}
+                className={styles['list-thumb-img']}
                 muted
                 preload="metadata"
               />
             ) : m.mediaType === "audio" && resolvedUrl ? (
               <div
-                className={styles.listThumbAudio}
+                className={styles['list-thumb-audio']}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
                 <AudioPlayerRecorderComponent sourceUrl={resolvedUrl} compact />
@@ -274,11 +274,11 @@ export default function MediaPageComponent({
             ) : m.mediaType === "pdf" && resolvedUrl ? (
               <iframe
                 src={resolvedUrl}
-                className={styles.listThumbPdf}
+                className={styles['list-thumb-pdf']}
                 title="PDF"
               />
             ) : (
-              <div className={styles.listThumbPlaceholder}>
+              <div className={styles['list-thumb-placeholder']}>
                 <MediaTypeIcon type={m.mediaType} size={16} />
               </div>
             )}
@@ -291,7 +291,7 @@ export default function MediaPageComponent({
       label: "Type",
       render: (m: any) => (
         <span
-          className={styles.typeBadge}
+          className={styles['type-badge']}
           style={{ color: (MODALITY_COLORS as any)[m.mediaType] }}
         >
           {m.mediaType}
@@ -302,7 +302,7 @@ export default function MediaPageComponent({
       key: "source",
       label: "Source",
       render: (m: any) => (
-        <OriginBadge origin={m.origin} className={styles.originPill} />
+        <OriginBadge origin={m.origin} className={styles['origin-pill']} />
       ),
     },
     {
@@ -311,7 +311,7 @@ export default function MediaPageComponent({
       render: (m: any) => (
         <Link
           href={`${convBasePath}/${m.convId}`}
-          className={styles.conversationLink}
+          className={styles['conversation-link']}
           title={m.convTitle}
         >
           <ExternalLink size={10} />
@@ -326,7 +326,7 @@ export default function MediaPageComponent({
             label: "Project",
             render: (m: any) =>
               m.project ? (
-                <span className={styles.projectTag}>{m.project}</span>
+                <span className={styles['project-tag']}>{m.project}</span>
               ) : (
                 <span className={styles.time}>—</span>
               ),
@@ -338,7 +338,7 @@ export default function MediaPageComponent({
       label: "Model",
       render: (m: any) =>
         m.model ? (
-          <span className={styles.modelTag}>{m.model.split("/").pop()}</span>
+          <span className={styles['model-tag']}>{m.model.split("/").pop()}</span>
         ) : (
           <span className={styles.time}>—</span>
         ),
@@ -360,9 +360,9 @@ export default function MediaPageComponent({
         <div className={styles.container}>
           {/* Header */}
           <div className={styles.header}>
-            <div className={styles.headerLeft}>
+            <div className={styles['header-left']}>
               <h1 className={styles.title}>
-                <Film className={styles.titleIcon} size={22} />
+                <Film className={styles['title-icon']} size={22} />
                 Media
               </h1>
               <p className={styles.subtitle}>
@@ -370,11 +370,11 @@ export default function MediaPageComponent({
               </p>
             </div>
 
-            <div className={styles.headerRight}>
+            <div className={styles['header-right']}>
               {/* Stats */}
-              <div className={styles.statsBadges}>
-                <div className={styles.statBadge}>
-                  <span className={styles.statValue}>{total}</span> files
+              <div className={styles['stats-badges']}>
+                <div className={styles['stat-badge']}>
+                  <span className={styles['stat-value']}>{total}</span> files
                 </div>
               </div>
             </div>
@@ -393,7 +393,7 @@ export default function MediaPageComponent({
               }}
               placeholder="Search titles & conversations…"
               compact
-              className={styles.searchWrapper}
+              className={styles['search-wrapper']}
             />
 
             {/* Filters */}
@@ -529,7 +529,7 @@ export default function MediaPageComponent({
 
             {/* -- Grid View -- */}
             {!loading && viewMode === "grid" && (
-              <div className={styles.mediaGrid}>
+              <div className={styles['media-grid']}>
                 {displayMedia.map((m, i) => {
                   const mediaKey = getMediaKey(m, i);
                   const isFav = favoriteKeys.includes(mediaKey);
@@ -550,7 +550,7 @@ export default function MediaPageComponent({
 
             {/* -- List View -- */}
             {!loading && viewMode === "list" && (
-              <div className={styles.listWrapper}>
+              <div className={styles['list-wrapper']}>
                 <TableComponent
                   columns={listColumns}
                   data={displayMedia}
@@ -573,7 +573,7 @@ export default function MediaPageComponent({
           </div>
         </div>
       ) : (
-        <div className={styles.adminContent}>
+        <div className={styles['admin-content']}>
           <SearchInputComponent
             value={searchInput}
             onChange={(v: any) => {
@@ -586,7 +586,7 @@ export default function MediaPageComponent({
             }}
             placeholder="Search titles & conversations…"
             compact
-            className={styles.searchWrapper}
+            className={styles['search-wrapper']}
           />
 
           {/* Filters */}
@@ -722,7 +722,7 @@ export default function MediaPageComponent({
 
           {/* -- Grid View -- */}
           {!loading && viewMode === "grid" && (
-            <div className={styles.mediaGrid}>
+            <div className={styles['media-grid']}>
               {displayMedia.map((m, i) => {
                 const mediaKey = getMediaKey(m, i);
                 const isFav = favoriteKeys.includes(mediaKey);
@@ -743,7 +743,7 @@ export default function MediaPageComponent({
 
           {/* -- List View -- */}
           {!loading && viewMode === "list" && (
-            <div className={styles.listWrapper}>
+            <div className={styles['list-wrapper']}>
               <TableComponent
                 columns={listColumns}
                 data={displayMedia}

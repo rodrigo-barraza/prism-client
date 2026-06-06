@@ -111,13 +111,13 @@ export default function BenchmarkPageComponent({
         </ButtonComponent>
       }
     >
-      <div className={styles.contentMain}>
-        <div className={styles.createFormWrapper}>
-          <div className={styles.createFormHeader}>
-            <Target size={18} className={styles.createFormIcon} />
+      <div className={styles['content-main']}>
+        <div className={styles['create-form-wrapper']}>
+          <div className={styles['create-form-header']}>
+            <Target size={18} className={styles['create-form-icon']} />
             <div>
-              <div className={styles.createFormTitle}>New Benchmark</div>
-              <div className={styles.createFormSubtitle}>
+              <div className={styles['create-form-title']}>New Benchmark</div>
+              <div className={styles['create-form-subtitle']}>
                 Define a prompt, expected output, and match criteria to evaluate
                 model accuracy.
               </div>

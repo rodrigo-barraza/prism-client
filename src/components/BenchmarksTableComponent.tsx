@@ -163,8 +163,8 @@ export default function BenchmarksTableComponent({
 
   // Assign a CSS class for running/pending rows
   const getRowClassName = useCallback((row: any) => {
-    if (row._running) return styles.runningRow;
-    if (row._pending) return styles.pendingRow;
+    if (row._running) return styles['running-row'];
+    if (row._pending) return styles['pending-row'];
     return "";
   }, []);
 

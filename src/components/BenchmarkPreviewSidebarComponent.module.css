@@ -13,7 +13,7 @@
 
 /* ── Mode Badge ──────────────────────────────────────────── */
 
-.modeSection {
+.mode-section {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -29,13 +29,13 @@
 
 /* ── Name Section ────────────────────────────────────────── */
 
-.nameSection {
+.name-section {
   padding: 14px 14px 12px;
   border-bottom: 1px solid var(--calculated-border-color);
   flex-shrink: 0;
 }
 
-.nameLabel {
+.name-label {
   font-size: var(--font-size-base);
   font-weight: 700;
   color: var(--text-primary);
@@ -44,14 +44,14 @@
   word-break: break-word;
 }
 
-.nameLabel:empty::after,
-.container .nameSection .nameLabel:only-child {
+.name-label:empty::after,
+.container .name-section .name-label:only-child {
   color: var(--text-muted);
 }
 
 /* ── Shared Section Label ────────────────────────────────── */
 
-.sectionLabel {
+.section-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -63,7 +63,7 @@
   margin-bottom: 8px;
 }
 
-.countBadge {
+.count-badge {
   font-size: 0.5625rem;
   font-weight: 600;
   font-family: var(--font-mono);
@@ -76,19 +76,19 @@
 
 /* ── Checklist ───────────────────────────────────────────── */
 
-.checklistSection {
+.checklist-section {
   padding: 12px 14px;
   border-bottom: 1px solid var(--calculated-border-color);
   flex-shrink: 0;
 }
 
-.checklistItems {
+.checklist-items {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.checkItem {
+.check-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -105,7 +105,7 @@
   }
 }
 
-.checkDone {
+.check-done {
   color: var(--color-success);
 
   & svg {
@@ -116,28 +116,28 @@
 
 /* ── Assertions ──────────────────────────────────────────── */
 
-.assertionsSection {
+.assertions-section {
   padding: 12px 14px;
   border-bottom: 1px solid var(--calculated-border-color);
   flex-shrink: 0;
-  animation: fadeIn 0.2s ease-out;
+  animation: fade-in 0.2s ease-out;
 }
 
-.assertionsList {
+.assertions-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.assertionRow {
+.assertion-row {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  animation: slideIn 0.15s ease-out;
+  animation: slide-in 0.15s ease-out;
 }
 
-.assertionValue {
+.assertion-value {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--accent-primary);
@@ -154,15 +154,15 @@
 
 /* ── Prompt Preview ──────────────────────────────────────── */
 
-.promptSection {
+.prompt-section {
   padding: 10px 14px;
   flex-shrink: 0;
-  animation: fadeIn 0.2s ease-out;
+  animation: fade-in 0.2s ease-out;
 }
 
 /* ── Animations ──────────────────────────────────────────── */
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
   }
@@ -171,7 +171,7 @@
   }
 }
 
-@keyframes slideIn {
+@keyframes slide-in {
   from {
     opacity: 0;
     transform: translateX(-4px);

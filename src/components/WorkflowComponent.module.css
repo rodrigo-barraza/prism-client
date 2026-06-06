@@ -5,7 +5,7 @@
   position: relative;
 }
 
-.sidebarWrapper {
+.sidebar-wrapper {
   display: flex;
   flex-shrink: 0;
   width: 320px;
@@ -16,13 +16,13 @@
   overflow: hidden;
 }
 
-.sidebarHidden {
+.sidebar-hidden {
   width: 0;
   min-width: 0;
 }
 
 /* ── Inspector wrapper ── */
-.inspectorWrapper {
+.inspector-wrapper {
   display: flex;
   flex-shrink: 0;
   height: 100%;
@@ -30,7 +30,7 @@
 
 /* ── Mobile overrides ── */
 @media (max-width: 767px) {
-  .sidebarWrapper {
+  .sidebar-wrapper {
     position: fixed;
     top: 0;
     left: 0;
@@ -43,14 +43,14 @@
     opacity: 1;
   }
 
-  .sidebarHidden {
+  .sidebar-hidden {
     width: calc(100% - 60px);
     min-width: calc(100% - 60px);
     opacity: 0;
     pointer-events: none;
   }
 
-  .sidebarBackdrop {
+  .sidebar-backdrop {
     position: fixed;
     top: 0;
     right: 0;
@@ -64,7 +64,7 @@
   }
 
   /* Inspector: bottom sheet on mobile */
-  .inspectorWrapper {
+  .inspector-wrapper {
     position: fixed;
     left: 0;
     right: 0;
@@ -72,10 +72,10 @@
     height: auto;
     max-height: 60vh;
     z-index: 210;
-    animation: slideUpSheet 0.25s ease-out;
+    animation: slide-up-sheet 0.25s ease-out;
   }
 
-  .inspectorWrapper > * {
+  .inspector-wrapper > * {
     border-left: none;
     border-top: 1px solid var(--calculated-border-color);
     width: 100%;
@@ -84,7 +84,7 @@
     overflow: hidden;
   }
 
-  @keyframes slideUpSheet {
+  @keyframes slide-up-sheet {
     from {
       transform: translateY(100%);
       opacity: 0;
@@ -95,7 +95,7 @@
     }
   }
 
-  .inspectorBackdrop {
+  .inspector-backdrop {
     position: fixed;
     inset: 0;
     z-index: 209;

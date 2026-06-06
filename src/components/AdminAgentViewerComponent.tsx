@@ -498,7 +498,7 @@ export default function AdminAgentViewerComponent() {
 
       {/* Read-only banner instead of input area */}
       {activeId && (
-        <div className={styles.readOnlyBanner}>
+        <div className={styles['read-only-banner']}>
           <Layers size={13} />
           Read-only admin view — {messages.length} messages
         </div>
@@ -510,16 +510,16 @@ export default function AdminAgentViewerComponent() {
   return (
     <div className={styles.viewer}>
       {/* Mini header: session title + model badge + panel toggles */}
-      <header className={styles.viewerHeader}>
+      <header className={styles['viewer-header']}>
         <button
-          className={`${styles.panelToggle} ${!showLeft ? styles.panelToggleHidden : ""}`}
+          className={`${styles['panel-toggle']} ${!showLeft ? styles['panel-toggle-hidden'] : ""}`}
           onClick={() => setShowLeft((visible) => !visible)}
           title={showLeft ? "Hide settings" : "Show settings"}
         >
           {showLeft ? <PanelLeftClose size={15} /> : <PanelLeft size={15} />}
         </button>
 
-        <span className={styles.viewerTitle}>
+        <span className={styles['viewer-title']}>
           {title || "Select a session"}
         </span>
 
@@ -534,7 +534,7 @@ export default function AdminAgentViewerComponent() {
         <div style={{ flex: 1 }} />
 
         <button
-          className={`${styles.panelToggle} ${!showRight ? styles.panelToggleHidden : ""}`}
+          className={`${styles['panel-toggle']} ${!showRight ? styles['panel-toggle-hidden'] : ""}`}
           onClick={() => setShowRight((visible) => !visible)}
           title={showRight ? "Hide sessions" : "Show sessions"}
         >
@@ -543,20 +543,20 @@ export default function AdminAgentViewerComponent() {
       </header>
 
       {/* 3-column body */}
-      <div className={styles.viewerBody}>
+      <div className={styles['viewer-body']}>
         {/* Left panel - settings/tools/info tabs */}
         <aside
-          className={`${styles.leftPanel} ${!showLeft ? styles.panelHidden : ""}`}
+          className={`${styles['left-panel']} ${!showLeft ? styles['panel-hidden'] : ""}`}
         >
           {leftPanel}
         </aside>
 
         {/* Center - messages */}
-        <section className={styles.centerPanel}>{chatContent}</section>
+        <section className={styles['center-panel']}>{chatContent}</section>
 
         {/* Right panel - sessions list */}
         <aside
-          className={`${styles.rightPanel} ${!showRight ? styles.panelHidden : ""}`}
+          className={`${styles['right-panel']} ${!showRight ? styles['panel-hidden'] : ""}`}
         >
           <HistoryPanel
             sessions={sessions}

@@ -10,7 +10,7 @@
   font-weight: 500;
   letter-spacing: 0.2px;
   font-variant-numeric: tabular-nums;
-  color: rgb(96, 165, 250);
+  color: oklch(0.704 0.158 269.1);
   background: oklch(71.4% 0.1435 254.6 / 0.08);
   border: 1px solid oklch(71.4% 0.1435 254.6 / 0.2);
   white-space: nowrap;
@@ -42,11 +42,11 @@
 .tweening {
   color: oklch(66.8% 0.1972 24.2);
   filter: hue-rotate(0deg);
-  animation: tokenRainbow 0.6s linear;
+  animation: token-rainbow 0.6s linear;
   will-change: filter;
 }
 
-@keyframes tokenRainbow {
+@keyframes token-rainbow {
   from {
     filter: hue-rotate(0deg);
   }

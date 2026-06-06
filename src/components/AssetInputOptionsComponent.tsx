@@ -109,24 +109,24 @@ export default function AssetInputOptions({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        <div className={styles.webcamPreview}>
+        <div className={styles['webcam-preview']}>
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className={styles.webcamVideo}
+            className={styles['webcam-video']}
           />
-          <div className={styles.webcamActions}>
+          <div className={styles['webcam-actions']}>
             <button
               type="button"
-              className={styles.captureButton}
+              className={styles['capture-button']}
               onClick={captureWebcam}
               title="Capture photo"
             />
             <button
               type="button"
-              className={styles.cancelButton}
+              className={styles['cancel-button']}
               onClick={stopWebcam}
               title="Cancel"
             >
@@ -146,7 +146,7 @@ export default function AssetInputOptions({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        <div className={styles.audioRecWrap}>
+        <div className={styles['audio-rec-wrap']}>
           <AudioPlayerRecorderComponent
             onRecordingComplete={(dataUrl: string | ArrayBuffer | null) => {
               onFile?.(dataUrl, "audio/webm");
@@ -155,7 +155,7 @@ export default function AssetInputOptions({
           />
           <button
             type="button"
-            className={styles.cancelButton}
+            className={styles['cancel-button']}
             onClick={() => setShowAudioRec(false)}
           >
             Cancel
@@ -176,14 +176,14 @@ export default function AssetInputOptions({
           ref={fileInputRef}
           type="file"
           accept="image/*,audio/*,video/*,.pdf,.txt,.sizeMedium,.json,.csv"
-          className={styles.hiddenInput}
+          className={styles['hidden-input']}
           onChange={handleFileChange}
         />
 
-        <div className={styles.optionGrid}>
+        <div className={styles['option-grid']}>
           <button
             type="button"
-            className={styles.optionButton}
+            className={styles['option-button']}
             onClick={() => fileInputRef.current?.click()}
             title="Upload file"
           >
@@ -193,7 +193,7 @@ export default function AssetInputOptions({
 
           <button
             type="button"
-            className={styles.optionButton}
+            className={styles['option-button']}
             onClick={() => setShowDrawing(true)}
             title="Create drawing"
           >
@@ -203,7 +203,7 @@ export default function AssetInputOptions({
 
           <button
             type="button"
-            className={styles.optionButton}
+            className={styles['option-button']}
             onClick={() => setShowAudioRec(true)}
             title="Record audio"
           >
@@ -213,7 +213,7 @@ export default function AssetInputOptions({
 
           <button
             type="button"
-            className={styles.optionButton}
+            className={styles['option-button']}
             onClick={startWebcam}
             title="Webcam capture"
           >
@@ -223,7 +223,7 @@ export default function AssetInputOptions({
         </div>
 
         <label
-          className={styles.dropZone}
+          className={styles['drop-zone']}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
         >
@@ -232,7 +232,7 @@ export default function AssetInputOptions({
           <input
             type="file"
             accept="image/*,audio/*,video/*,.pdf,.txt,.sizeMedium,.json,.csv"
-            className={styles.hiddenInput}
+            className={styles['hidden-input']}
             onChange={handleFileChange}
           />
         </label>

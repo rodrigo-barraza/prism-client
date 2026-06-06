@@ -348,7 +348,7 @@ export default function ModelsPageComponent({
         if (isActioning) {
           return (
             <button
-              className={`${styles.actionButton} ${actionType === "unload" ? styles.unloadButton : styles.loadingButton}`}
+              className={`${styles['action-button']} ${actionType === "unload" ? styles['unload-button'] : styles['loading-button']}`}
               disabled
             >
               <Loader2 size={10} className={styles.spinning} />
@@ -360,7 +360,7 @@ export default function ModelsPageComponent({
         if (isLoaded) {
           return (
             <button
-              className={`${styles.actionButton} ${styles.unloadButton}`}
+              className={`${styles['action-button']} ${styles['unload-button']}`}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 handleUnload(instance.id);
@@ -376,7 +376,7 @@ export default function ModelsPageComponent({
 
         return (
           <button
-            className={`${styles.actionButton} ${styles.loadButton}`}
+            className={`${styles['action-button']} ${styles['load-button']}`}
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               handleLoad(modelKey);
@@ -397,9 +397,9 @@ export default function ModelsPageComponent({
         <div className={styles.container}>
           {/* Header */}
           <div className={styles.header}>
-            <div className={styles.headerLeft}>
+            <div className={styles['header-left']}>
               <h1 className={styles.title}>
-                <Cpu className={styles.titleIcon} size={22} />
+                <Cpu className={styles['title-icon']} size={22} />
                 Models
               </h1>
               <p className={styles.subtitle}>
@@ -407,19 +407,19 @@ export default function ModelsPageComponent({
               </p>
             </div>
 
-            <div className={styles.headerRight}>
+            <div className={styles['header-right']}>
               {/* Stats */}
-              <div className={styles.statsBadges}>
-                <div className={styles.statBadge}>
-                  <span className={styles.statValue}>{allModels.length}</span> models
+              <div className={styles['stats-badges']}>
+                <div className={styles['stat-badge']}>
+                  <span className={styles['stat-value']}>{allModels.length}</span> models
                 </div>
-                <div className={styles.statBadge}>
-                  <span className={styles.statValue}>{providerSet.size}</span> providers
+                <div className={styles['stat-badge']}>
+                  <span className={styles['stat-value']}>{providerSet.size}</span> providers
                 </div>
               </div>
 
               <button
-                className={`${styles.refreshButton} ${loading ? styles.spinning : ""}`}
+                className={`${styles['refresh-button']} ${loading ? styles.spinning : ""}`}
                 onClick={handleRefresh}
                 disabled={loading}
                 title="Refresh models status"
@@ -435,7 +435,7 @@ export default function ModelsPageComponent({
             <ToastComponent toasts={toasts} onRemove={removeToast} />
 
             {loading && allModels.length === 0 ? (
-              <div className={styles.loadingState}>
+              <div className={styles['loading-state']}>
                 <PanelLoadingSpinner size="large" />
               </div>
             ) : (
@@ -451,22 +451,22 @@ export default function ModelsPageComponent({
         </div>
       ) : (
         <>
-          <div className={styles.adminActions}>
+          <div className={styles['admin-actions']}>
             <button
-              className={`${styles.refreshButton} ${loading ? styles.spinning : ""}`}
+              className={`${styles['refresh-button']} ${loading ? styles.spinning : ""}`}
               onClick={handleRefresh}
               disabled={loading}
             >
               <RefreshCw /> Refresh
             </button>
           </div>
-          <div className={styles.adminContent}>
+          <div className={styles['admin-content']}>
             <ErrorMessage message={error} />
 
             <ToastComponent toasts={toasts} onRemove={removeToast} />
 
             {loading && allModels.length === 0 ? (
-              <div className={styles.loadingState}>
+              <div className={styles['loading-state']}>
                 <PanelLoadingSpinner size="large" />
               </div>
             ) : (

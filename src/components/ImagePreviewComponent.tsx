@@ -286,7 +286,7 @@ export default function ImagePreviewComponent({
 
   return (
     <div className={styles.overlay} onClick={handleOverlayClick}>
-      <button className={styles.closeButton} onClick={onClose}>
+      <button className={styles['close-button']} onClick={onClose}>
         <X size={24} />
       </button>
 
@@ -294,16 +294,16 @@ export default function ImagePreviewComponent({
       {!readOnly && (
         <div className={styles.toolbar}>
           {/* Mode toggle */}
-          <div className={styles.toolGroup}>
+          <div className={styles['tool-group']}>
             <button
-              className={`${styles.actionButton} ${!isEraser ? styles.sizeBtnActive : ""}`}
+              className={`${styles['action-button']} ${!isEraser ? styles['size-btn-active'] : ""}`}
               onClick={() => setIsEraser(false)}
               title="Draw"
             >
               <Pen size={14} />
             </button>
             <button
-              className={`${styles.actionButton} ${isEraser ? styles.sizeBtnActive : ""}`}
+              className={`${styles['action-button']} ${isEraser ? styles['size-btn-active'] : ""}`}
               onClick={() => setIsEraser(true)}
               title="Eraser"
             >
@@ -312,12 +312,12 @@ export default function ImagePreviewComponent({
           </div>
 
           {/* Colors */}
-          <div className={styles.toolGroup}>
-            <span className={styles.toolLabel}>Color</span>
+          <div className={styles['tool-group']}>
+            <span className={styles['tool-label']}>Color</span>
             {COLORS.map((c) => (
               <button
                 key={c.value}
-                className={`${styles.swatch} ${color === c.value && !isEraser ? styles.swatchActive : ""}`}
+                className={`${styles.swatch} ${color === c.value && !isEraser ? styles['swatch-active'] : ""}`}
                 style={{ background: c.value }}
                 onClick={() => {
                   setColor(c.value);
@@ -329,17 +329,17 @@ export default function ImagePreviewComponent({
           </div>
 
           {/* Sizes */}
-          <div className={styles.toolGroup}>
-            <span className={styles.toolLabel}>Size</span>
+          <div className={styles['tool-group']}>
+            <span className={styles['tool-label']}>Size</span>
             {SIZES.map((s, i) => (
               <button
                 key={s.label}
-                className={`${styles.sizeButton} ${sizeIdx === i ? styles.sizeBtnActive : ""}`}
+                className={`${styles['size-button']} ${sizeIdx === i ? styles['size-btn-active'] : ""}`}
                 onClick={() => setSizeIdx(i)}
                 title={s.label}
               >
                 <span
-                  className={styles.sizeDot}
+                  className={styles['size-dot']}
                   style={{ width: s.dot, height: s.dot }}
                 />
               </button>
@@ -347,9 +347,9 @@ export default function ImagePreviewComponent({
           </div>
 
           {/* Actions */}
-          <div className={styles.toolGroup}>
+          <div className={styles['tool-group']}>
             <button
-              className={styles.actionButton}
+              className={styles['action-button']}
               onClick={handleUndo}
               disabled={strokes.length === 0}
               title="Undo last stroke"
@@ -357,7 +357,7 @@ export default function ImagePreviewComponent({
               <Undo2 size={14} /> Undo
             </button>
             <button
-              className={styles.actionButton}
+              className={styles['action-button']}
               onClick={handleClear}
               disabled={strokes.length === 0}
               title="Clear all annotations"
@@ -369,12 +369,12 @@ export default function ImagePreviewComponent({
       )}
 
       {/* Canvas */}
-      <div className={styles.canvasArea}>
+      <div className={styles['canvas-area']}>
         <img ref={imgRef} src={src} alt="Annotate" crossOrigin="anonymous" />
         {!readOnly && (
           <canvas
             ref={canvasRef}
-            className={`${styles.drawCanvas} ${isEraser ? styles.eraserCursor : ""}`}
+            className={`${styles['draw-canvas']} ${isEraser ? styles['eraser-cursor'] : ""}`}
             onMouseDown={handlePointerDown}
             onMouseMove={handlePointerMove}
             onMouseUp={handlePointerUp}
@@ -388,8 +388,8 @@ export default function ImagePreviewComponent({
 
       {/* Bottom bar */}
       {!readOnly && (
-        <div className={styles.bottomBar}>
-          <button className={styles.useButton} onClick={handleUse}>
+        <div className={styles['bottom-bar']}>
+          <button className={styles['use-button']} onClick={handleUse}>
             <Send size={16} /> Use in chat
           </button>
         </div>

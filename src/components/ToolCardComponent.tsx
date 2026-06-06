@@ -39,7 +39,7 @@ export default function ToolCardComponent({
 }: ToolCardProps) {
   return (
     <div
-      className={`${styles.card}${!enabled ? ` ${styles.cardDisabled}` : ""}${glowing ? ` ${styles.cardGlow}` : ""}${locked ? ` ${styles.cardLocked}` : ""}`}
+      className={`${styles.card}${!enabled ? ` ${styles['card-disabled']}` : ""}${glowing ? ` ${styles['card-glow']}` : ""}${locked ? ` ${styles['card-locked']}` : ""}`}
       style={{ "--tool-color": color } as React.CSSProperties}
       onClick={
         locked
@@ -76,13 +76,13 @@ export default function ToolCardComponent({
         <span className={styles.subtitle}>{subtitle}</span>
       </div>
       {locked ? (
-        <div className={styles.badgeLocked}>
+        <div className={styles['badge-locked']}>
           <Lock size={10} />
           Always On
         </div>
       ) : (
         <div
-          className={`${styles.badge}${!enabled ? ` ${styles.badgeDisabled}` : ""}`}
+          className={`${styles.badge}${!enabled ? ` ${styles['badge-disabled']}` : ""}`}
         >
           {enabled ? <CircleCheck size={12} /> : <Circle size={12} />}
           {enabled ? enabledLabel : disabledLabel}

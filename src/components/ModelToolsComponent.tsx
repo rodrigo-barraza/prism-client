@@ -99,7 +99,7 @@ export default function ModelToolsComponent({
   if (activeTools.length === 0) return null;
 
   return (
-    <div className={`${styles.toolsRow} ${className || ""}`}>
+    <div className={`${styles['tools-row']} ${className || ""}`}>
       {activeTools.map((toolDefinition) => {
         const rawValue = tools[toolDefinition.key];
         const count = typeof rawValue === "number" ? rawValue : 0;
@@ -108,14 +108,14 @@ export default function ModelToolsComponent({
         return (
           <TooltipComponent key={toolDefinition.key} label={tooltipLabel} position="top">
             <span
-              className={styles.toolBadge}
+              className={styles['tool-badge']}
               style={{
                 color: toolDefinition.color,
                 borderColor: `color-mix(in srgb, ${toolDefinition.color} 30%, transparent)`,
               }}
             >
               <toolDefinition.icon size={size} />
-              {count > 1 && <span className={styles.toolCount}>×{count}</span>}
+              {count > 1 && <span className={styles['tool-count']}>×{count}</span>}
             </span>
           </TooltipComponent>
         );

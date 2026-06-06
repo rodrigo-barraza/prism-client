@@ -6,19 +6,19 @@
   gap: 6px;
 }
 
-.filterRow {
+.filter-row {
   display: flex;
   align-items: flex-start;
   gap: 6px;
 }
 
 /* ── Dropdown trigger ── */
-.dropdownWrapper {
+.dropdown-wrapper {
   position: relative;
   flex-shrink: 0;
 }
 
-.dropdownTrigger {
+.dropdown-trigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -41,27 +41,27 @@
   }
 }
 
-.triggerContent {
+.trigger-content {
   display: flex;
   align-items: center;
   gap: 8px;
   overflow: hidden;
 }
 
-.triggerIcon {
+.trigger-icon {
   display: flex;
   align-items: center;
   flex-shrink: 0;
   color: var(--text-secondary);
 }
 
-.triggerText {
+.trigger-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.triggerCount {
+.trigger-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -76,7 +76,7 @@
   line-height: 1;
 }
 
-.dropdownTriggerOpen {
+.dropdown-trigger-open {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
 }
@@ -88,12 +88,12 @@
   transition: transform 0.2s;
 }
 
-.chevronOpen {
+.chevron-open {
   transform: rotate(180deg);
 }
 
 /* ── Dropdown Menu ── */
-.dropdownMenu {
+.dropdown-menu {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -107,10 +107,10 @@
   border-radius: var(--border-radius-md, 6px);
   box-shadow: var(--calculated-shadow-lg, 0 12px 40px oklch(0.0% 0.0 0.0 / 0.25));
   padding: 4px 0;
-  animation: filterDropdownSlideIn 0.15s ease-out;
+  animation: filter-dropdown-slide-in 0.15s ease-out;
 }
 
-@keyframes filterDropdownSlideIn {
+@keyframes filter-dropdown-slide-in {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -121,16 +121,16 @@
   }
 }
 
-.menuGroup {
+.menu-group {
   padding: 2px 0;
 }
 
-.menuGroup + .menuGroup {
+.menu-group + .menu-group {
   border-top: 1px solid
     var(--calculated-border-subtle, var(--calculated-border-color));
 }
 
-.menuGroupLabel {
+.menu-group-label {
   padding: 6px 12px 3px;
   font-size: 0.625rem;
   font-weight: 700;
@@ -140,7 +140,7 @@
   user-select: none;
 }
 
-.menuItem {
+.menu-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -156,7 +156,7 @@
   text-align: left;
 }
 
-.menuItem:hover {
+.menu-item:hover {
   background: var(
     --calculated-accent-primary-subtle,
     var(--background-elevated)
@@ -164,7 +164,7 @@
   color: var(--text-primary);
 }
 
-.menuItemActive {
+.menu-item-active {
   color: var(--text-primary);
   background: var(
     --calculated-accent-primary-subtle,
@@ -172,14 +172,14 @@
   );
 }
 
-.menuItemActive:hover {
+.menu-item-active:hover {
   background: var(
     --calculated-accent-primary-subtle,
     var(--calculated-accent-primary-glow)
   );
 }
 
-.menuCheck {
+.menu-check {
   margin-left: auto;
   font-size: var(--font-size-xs);
   color: var(--accent-primary);
@@ -187,21 +187,21 @@
 }
 
 /* ── Scrollbar ── */
-.dropdownMenu::-webkit-scrollbar {
+.dropdown-menu::-webkit-scrollbar {
   width: 4px;
 }
 
-.dropdownMenu::-webkit-scrollbar-track {
+.dropdown-menu::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.dropdownMenu::-webkit-scrollbar-thumb {
+.dropdown-menu::-webkit-scrollbar-thumb {
   background: var(--calculated-border-color);
   border-radius: 2px;
 }
 
 /* ── Badges ── */
-.badgeList {
+.badge-list {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -224,10 +224,10 @@
   white-space: nowrap;
   user-select: none;
   cursor: default;
-  animation: filterBadgeFadeIn 0.2s ease-out;
+  animation: filter-badge-fade-in 0.2s ease-out;
 }
 
-@keyframes filterBadgeFadeIn {
+@keyframes filter-badge-fade-in {
   from {
     opacity: 0;
     transform: scale(0.9);
@@ -238,11 +238,11 @@
   }
 }
 
-.badgeLabel {
+.badge-label {
   line-height: 1;
 }
 
-.badgeRemove {
+.badge-remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -259,7 +259,7 @@
   transition: all 0.12s ease;
 }
 
-.badgeRemove:hover {
+.badge-remove:hover {
   opacity: 1;
   background: oklch(100.0% 0.0001 263.3 / 0.08);
 }

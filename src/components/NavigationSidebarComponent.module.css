@@ -12,26 +12,26 @@
     min-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.wrapper.noTransition {
+.wrapper.no-transition {
   &,
   & * {
     transition-duration: 0s !important;
   }
 }
 
-.wrapper.isCollapsedState,
+.wrapper.is-collapsed-state,
 :global([data-navigation-is-collapsed="true"]) .wrapper {
   & .sidebar {
     min-width: 52px;
     width: 52px;
   }
 
-  & .navigationList {
+  & .navigation-list {
     padding: 4px 0;
     gap: 0;
   }
 
-  & .navigationLink {
+  & .navigation-link {
     justify-content: center;
     padding: 0;
     gap: 0;
@@ -39,24 +39,24 @@
     border-radius: 0;
   }
 
-  & .activeStateLayer {
+  & .active-state-layer {
     margin: 0;
     padding: 14px 0;
     border-radius: 0;
     justify-content: center;
   }
 
-  & .navigationLink.isActiveState .activeStateLayer {
+  & .navigation-link.is-active-state .active-state-layer {
     background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   }
 
-  & .navigationLabel,
+  & .navigation-label,
   & .badge,
-  & .attentionDot {
+  & .attention-dot {
     display: none;
   }
 
-  & .navigationDivider {
+  & .navigation-divider {
     padding: 0;
     margin: 0;
 
@@ -73,7 +73,7 @@
     padding: 4px 0;
   }
 
-  & .statusRow {
+  & .status-row {
     justify-content: center;
     padding: 4px 0;
 
@@ -82,7 +82,7 @@
     }
   }
 
-  & .collapseButton {
+  & .collapse-button {
     right: 50%;
     transform: translate(50%, -50%);
 
@@ -92,13 +92,13 @@
   }
 }
 
-.tooltipFill {
+.tooltip-fill {
   display: flex;
   justify-content: center;
   width: 100%;
 }
 
-.expandButton {
+.expand-button {
   display: none;
 }
 
@@ -123,7 +123,7 @@
 
 /* ── Rainbow Logo Banner ── */
 
-.logoBanner {
+.logo-banner {
   position: relative;
   width: 100%;
   height: 50px;
@@ -135,7 +135,7 @@
 
 /* ── Mini Cats (concurrent API calls — JS-driven bouncing) ── */
 
-.miniCat {
+.mini-cat {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -148,14 +148,14 @@
   will-change: transform, filter;
 }
 
-.rainbowCanvas {
+.rainbow-canvas {
   display: block;
   width: 100%;
   height: 50px;
   image-rendering: pixelated;
 }
 
-.collapseButton {
+.collapse-button {
   position: absolute;
   right: 6px;
   top: 50%;
@@ -173,7 +173,7 @@
   opacity: 0;
   transition: opacity 0.2s;
 
-  .logoBanner:hover & {
+  .logo-banner:hover & {
     opacity: 0.8;
   }
 
@@ -185,7 +185,7 @@
 
 /* ── Navigation ── */
 
-.navigationList {
+.navigation-list {
   flex: 1;
   padding: 0;
   display: flex;
@@ -194,7 +194,7 @@
   overflow-y: auto;
 }
 
-.navigationLink {
+.navigation-link {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -219,7 +219,7 @@
     color: var(--sidebar-contrast-color, oklch(100% 0.0001 263.3 / 0.92));
   }
 
-  &:hover .activeStateLayer {
+  &:hover .active-state-layer {
     background: var(
       --sidebar-contrast-hover-background,
       oklch(100% 0.0001 263.3 / 0.08)
@@ -227,19 +227,19 @@
   }
 }
 
-.navigationLink.isActiveState {
+.navigation-link.is-active-state {
   color: white;
 
-  & .navigationIcon,
-  & .navigationLabel {
+  & .navigation-icon,
+  & .navigation-label {
     color: white;
     filter: hue-rotate(0deg);
-    animation: rainbowHue 4s linear infinite;
+    animation: rainbow-hue 4s linear infinite;
     will-change: filter;
   }
 }
 
-.activeStateLayer {
+.active-state-layer {
   display: flex;
   align-items: center;
   gap: inherit;
@@ -251,11 +251,11 @@
   transition: background var(--transition-fast);
 }
 
-.navigationLink.isActiveState .activeStateLayer {
+.navigation-link.is-active-state .active-state-layer {
   background: color-mix(in srgb, white 15%, transparent);
 }
 
-.themeToggle {
+.theme-toggle {
   :global([data-theme="light"]) & {
     background: oklch(23.5% 0 263.3);
     color: oklch(68.3% 0.0001 263.3);
@@ -307,20 +307,20 @@
   }
 }
 
-.navigationIcon {
+.navigation-icon {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
 }
 
-.navigationLabel {
+.navigation-label {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* ── Nav Divider ── */
 
-.navigationDivider {
+.navigation-divider {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -346,7 +346,7 @@
 
 /* ── Attention Indicator ── */
 
-.attentionDot {
+.attention-dot {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -363,7 +363,7 @@
   cursor: help;
 }
 
-.attentionDot.informational {
+.attention-dot.informational {
   background: var(--color-info, oklch(0.62 0.18 255));
 }
 
@@ -400,7 +400,7 @@
   gap: 0;
 }
 
-.statusRow {
+.status-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -409,17 +409,17 @@
   color: var(--sidebar-contrast-color-muted, oklch(100% 0.0001 263.3 / 0.55));
 }
 
-.statusDot {
+.status-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: var(--color-success);
   box-shadow: 0 0 8px color-mix(in srgb, var(--color-success) 50%, transparent);
   flex-shrink: 0;
-  animation: statusDotPulse 2s ease-in-out infinite;
+  animation: status-dot-pulse 2s ease-in-out infinite;
 }
 
-@keyframes statusDotPulse {
+@keyframes status-dot-pulse {
   0%,
   100% {
     opacity: 1;
@@ -430,7 +430,7 @@
   }
 }
 
-.statusDot.offline {
+.status-dot.offline {
   background: var(--color-danger);
   box-shadow: 0 0 8px color-mix(in srgb, var(--color-danger) 50%, transparent);
 }
@@ -446,7 +446,7 @@
 }
 
 /* Mobile nav circle button — sits to the left of the chat inputBox */
-.mobileHamburger {
+.mobile-hamburger {
   display: none;
   position: fixed;
   bottom: 0;
@@ -461,13 +461,13 @@
   align-items: center;
   justify-content: center;
 
-  &:active .circleSpin {
+  &:active .circle-spin {
     transform: scale(0.92);
   }
 }
 
 /* Spinning wrapper — contains both outer (rainbow ring) and inner (fill) circles */
-.circleSpin {
+.circle-spin {
   position: absolute;
   inset: 0;
   will-change: transform;
@@ -477,7 +477,7 @@
 }
 
 /* Outer circle — the rainbow canvas clipped to circle shape */
-.triangleOuter {
+.triangle-outer {
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -491,7 +491,7 @@
 }
 
 /* Inner circle — solid fill, inset to create the rainbow ring border */
-.triangleInner {
+.triangle-inner {
   position: absolute;
   inset: 0;
   background: oklch(100% 0.0001 263.3 / 0.33);
@@ -499,7 +499,7 @@
 }
 
 /* Icon — centered, counter-rotates to stay upright */
-.triangleIcon {
+.triangle-icon {
   position: absolute;
   left: 8px;
   bottom: 8px;
@@ -513,21 +513,21 @@
 }
 
 @media (max-width: 1200px) {
-  .mobileHamburger {
+  .mobile-hamburger {
     display: flex;
   }
 }
 
 /* Overlay container — darkens the page behind the nav popover */
-.mobileBackdrop {
+.mobile-backdrop {
   position: fixed;
   inset: 0;
   z-index: 10000;
   background: oklch(0% 0 0 / 0.7);
-  animation: scrimFadeIn 0.25s ease;
+  animation: scrim-fade-in 0.25s ease;
 }
 
-@keyframes scrimFadeIn {
+@keyframes scrim-fade-in {
   from {
     opacity: 0;
   }
@@ -538,7 +538,7 @@
 }
 
 /* Compact popover card — floats above the circle FAB */
-.mobilePopover {
+.mobile-popover {
   position: fixed;
   bottom: 103px;
   left: 12px;
@@ -555,7 +555,7 @@
   transform-origin: bottom left;
 }
 
-.rainbowStrip {
+.rainbow-strip {
   position: relative;
   align-self: stretch;
   height: 12px;
@@ -571,14 +571,14 @@
   }
 }
 
-.mobilePopoverNav {
+.mobile-popover-nav {
   padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-.mobilePopoverFooter {
+.mobile-popover-footer {
   padding: 8px;
   border-top: 1px solid
     var(--sidebar-contrast-border, oklch(100% 0.0001 263.3 / 0.15));
@@ -589,13 +589,13 @@
 
 /* ── Workspace Selector ── */
 
-.workspaceSelector {
+.workspace-selector {
   position: relative;
   padding: 6px 8px;
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.workspaceCurrent {
+.workspace-current {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -615,7 +615,7 @@
   }
 }
 
-.workspaceName {
+.workspace-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -630,7 +630,7 @@
   color: var(--text-muted);
 }
 
-.workspaceMenu {
+.workspace-menu {
   position: absolute;
   top: calc(100% - 6px);
   left: 8px;
@@ -647,7 +647,7 @@
   gap: 2px;
 }
 
-.workspaceItem {
+.workspace-item {
   display: flex;
   align-items: center;
   width: 100%;
@@ -668,18 +668,18 @@
   }
 }
 
-.workspaceItemActive {
+.workspace-item-active {
   color: var(--accent-primary);
   background: var(--calculated-accent-primary-subtle);
 }
 
-.workspaceMenuDivider {
+.workspace-menu-divider {
   height: 1px;
   background: var(--calculated-border-color);
   margin: 2px 0;
 }
 
-.workspaceNewButton {
+.workspace-new-button {
   display: flex;
   align-items: center;
   gap: 6px;

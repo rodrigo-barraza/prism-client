@@ -23,18 +23,18 @@ export default function TextContentComponent({
 
   return (
     <div className={`${styles.wrapper} ${className || ""}`}>
-      <div className={styles.headerRow}>
+      <div className={styles['header-row']}>
         <label className={styles.label}>{label}</label>
         <div className={styles.tabs}>
           <button
-            className={`${styles.tab} ${!preview ? styles.tabActive : ""}`}
+            className={`${styles.tab} ${!preview ? styles['tab-active'] : ""}`}
             onClick={() => setPreview(false)}
           >
             <Code size={10} />
             Raw
           </button>
           <button
-            className={`${styles.tab} ${preview ? styles.tabActive : ""}`}
+            className={`${styles.tab} ${preview ? styles['tab-active'] : ""}`}
             onClick={() => setPreview(true)}
           >
             <BookOpen size={10} />
@@ -44,16 +44,16 @@ export default function TextContentComponent({
       </div>
 
       {preview ? (
-        <div className={styles.markdownPreview}>
+        <div className={styles['markdown-preview']}>
           {value ? (
             <MarkdownContent content={value} />
           ) : (
-            <span className={styles.previewEmpty}>Nothing to preview</span>
+            <span className={styles['preview-empty']}>Nothing to preview</span>
           )}
         </div>
       ) : (
         <TextAreaComponent
-          className={`${styles.textarea} ${!isEditable ? styles.textareaReadOnly : ""}`}
+          className={`${styles.textarea} ${!isEditable ? styles['textarea-read-only'] : ""}`}
           value={value}
           onChange={
             isEditable ? (e: any) => onChange(e.target.value) : undefined

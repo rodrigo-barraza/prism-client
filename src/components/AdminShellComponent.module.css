@@ -7,7 +7,7 @@
   overflow: hidden;
 }
 
-.mainArea {
+.main-area {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -16,20 +16,20 @@
 }
 
 /* The <header> element itself is now rendered by LayoutHeaderComponent,
-   so .header and .headerTitle are no longer needed. */
+   so .header and .header-title are no longer needed. */
 
 
 
-.sessionBadge {
+.session-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 0 10px;
   height: 28px;
-  background: var(--header-contrast-hover-background, rgba(255, 255, 255, 0.08));
-  border: 1px solid var(--header-contrast-border, rgba(255, 255, 255, 0.15));
+  background: var(--header-contrast-hover-background, oklch(1 0 0 / 0.08));
+  border: 1px solid var(--header-contrast-border, oklch(1 0 0 / 0.15));
   border-radius: var(--border-radius-sm);
-  color: var(--header-contrast-color, rgba(255, 255, 255, 0.92));
+  color: var(--header-contrast-color, oklch(1 0 0 / 0.92));
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
@@ -42,12 +42,12 @@
   letter-spacing: 0;
 
   &:hover {
-    background: var(--header-contrast-hover-background, rgba(255, 255, 255, 0.12));
-    border-color: var(--header-contrast-color-muted, rgba(255, 255, 255, 0.3));
+    background: var(--header-contrast-hover-background, oklch(1 0 0 / 0.12));
+    border-color: var(--header-contrast-color-muted, oklch(1 0 0 / 0.3));
   }
 }
 
-.sessionBadgeLabel {
+.session-badge-label {
   font-weight: 500;
   opacity: 0.7;
   text-transform: uppercase;
@@ -55,19 +55,19 @@
   letter-spacing: 0.05em;
 }
 
-.sessionBadgeId {
+.session-badge-id {
   font-family: var(--font-mono, "SF Mono", "Fira Code", monospace);
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
 
-.sessionBadgeX {
+.session-badge-x {
   opacity: 0.5;
   transition: opacity 0.15s;
   flex-shrink: 0;
 }
 
-.sessionBadge:hover .sessionBadgeX {
+.session-badge:hover .session-badge-x {
   opacity: 1;
 }
 
@@ -78,7 +78,7 @@
   padding: 28px 32px;
 }
 
-.main.noScroll {
+.main.no-scroll {
   overflow: hidden;
 }
 

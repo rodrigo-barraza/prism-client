@@ -2,7 +2,7 @@
   position: relative;
 }
 
-.inputWrapper {
+.input-wrapper {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -18,7 +18,7 @@
   }
 }
 
-.inputWrapperOpen {
+.input-wrapper-open {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
 }
@@ -44,11 +44,11 @@
   transition: transform var(--transition-fast);
 }
 
-.chevronOpen {
+.chevron-open {
   transform: rotate(180deg);
 }
 
-.clearButton {
+.clear-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,13 +107,13 @@
   }
 }
 
-.optionSelected {
+.option-selected {
   background: var(--calculated-accent-primary-glow);
   color: var(--accent-primary);
   font-weight: 600;
 }
 
-.noResults {
+.no-results {
   padding: 8px 10px;
   font-size: var(--font-size-xs);
   color: var(--text-muted);

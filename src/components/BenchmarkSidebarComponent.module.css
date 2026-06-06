@@ -10,7 +10,7 @@
   overflow: hidden;
 }
 
-.newButton {
+.new-button {
   margin: 12px 12px 0;
   width: calc(100% - 24px);
   height: var(--button-height);
@@ -26,14 +26,14 @@
 
 /* ── Search ──────────────────────────────────────────────── */
 
-.searchWrap {
+.search-wrap {
   padding: 10px 12px 6px;
   flex-shrink: 0;
 }
 
 /* ── All Benchmarks link ─────────────────────────────────── */
 
-.allLink {
+.all-link {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -62,7 +62,7 @@
   }
 }
 
-.allLinkActive {
+.all-link-active {
   background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
   border-color: color-mix(in srgb, var(--accent-primary) 25%, transparent);
@@ -72,7 +72,7 @@
   }
 }
 
-.allLinkCount {
+.all-link-count {
   margin-left: auto;
   font-size: 0.625rem;
   font-weight: 600;
@@ -119,16 +119,16 @@
   }
 }
 
-.itemActive {
+.item-active {
   background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
   border-left: 3px solid var(--accent-primary);
 }
 
-.itemRunning {
+.item-running {
   background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
-.itemRunning::after {
+.item-running::after {
   content: "";
   position: absolute;
   right: 0;
@@ -136,10 +136,10 @@
   bottom: 0;
   width: 2px;
   background: var(--accent-primary);
-  animation: runPulse 2s ease-in-out infinite;
+  animation: run-pulse 2s ease-in-out infinite;
 }
 
-@keyframes runPulse {
+@keyframes run-pulse {
   0%,
   100% {
     opacity: 1;
@@ -152,7 +152,7 @@
 /* ── Item Header ──────────────────────────────────────────── */
 
 /* Row 1: date (left) · cost (right) */
-.topRow {
+.top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -160,7 +160,7 @@
 }
 
 /* Row 2: name */
-.itemName {
+.item-name {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
@@ -170,19 +170,19 @@
   min-width: 0;
 }
 
-.itemActive .itemName {
+.item-active .item-name {
   color: var(--accent-primary);
 }
 
 /* Row 3: passed/failed (left) · pass bar (right) */
-.bottomRow {
+.bottom-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
 }
 
-.statsLeft {
+.stats-left {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -190,7 +190,7 @@
   color: var(--text-secondary);
 }
 
-.statPassed {
+.stat-passed {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -198,7 +198,7 @@
   color: var(--color-success);
 }
 
-.statFailed {
+.stat-failed {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -206,14 +206,14 @@
   color: var(--color-danger);
 }
 
-.noRuns {
+.no-runs {
   font-style: italic;
   color: var(--text-muted);
 }
 
 /* ── Spin Icon ────────────────────────────────────────────── */
 
-.spinIcon {
+.spin-icon {
   animation: spin 1s linear infinite;
   flex-shrink: 0;
   color: var(--accent-primary);

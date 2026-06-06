@@ -33,7 +33,7 @@
   opacity: 1;
 }
 
-.containerCollapsed {
+.container-collapsed {
   width: 0 !important;
   min-width: 0 !important;
   opacity: 0;
@@ -45,7 +45,7 @@
 
 /* ── Title bar — VSCode-style header (accent background) ── */
 
-.titleBar {
+.title-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -58,7 +58,7 @@
   -webkit-app-region: drag;
 }
 
-.titleBarLabel {
+.title-bar-label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: oklch(100.0% 0.0001 263.3 / 0.85);
@@ -67,14 +67,14 @@
   pointer-events: none;
 }
 
-.titleBarActions {
+.title-bar-actions {
   display: flex;
   align-items: center;
   gap: 2px;
   -webkit-app-region: no-drag;
 }
 
-.titleBarButton {
+.title-bar-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -91,27 +91,27 @@
     color 0.12s;
 }
 
-.titleBarButton:hover {
+.title-bar-button:hover {
   background: oklch(100.0% 0.0001 263.3 / 0.15);
   color: var(--color-white);
 }
 
-.titleBarButton:active {
+.title-bar-button:active {
   background: oklch(100.0% 0.0001 263.3 / 0.22);
 }
 
-.titleBarBtnActive {
+.title-bar-btn-active {
   background: oklch(100.0% 0.0001 263.3 / 0.12);
   color: var(--color-white);
 }
 
-.titleBarBtnActive:hover {
+.title-bar-btn-active:hover {
   background: oklch(100.0% 0.0001 263.3 / 0.22);
 }
 
 /* ── Tab bar ─────────────────────────────────────────────── */
 
-.tabBar {
+.tab-bar {
   display: flex;
   align-items: stretch;
   height: 34px;
@@ -155,33 +155,33 @@
     color: var(--text-secondary);
   }
 
-  &:hover .tabClose {
+  &:hover .tab-close {
     opacity: 1;
   }
 }
 
-.tabActive {
+.tab-active {
   background: var(--background-base);
   color: var(--text-primary);
   border-bottom: 2px solid var(--accent-primary);
   font-weight: 500;
 }
 
-.tabIcon {
+.tab-icon {
   flex-shrink: 0;
   opacity: 0.5;
 }
 
-.tabActive .tabIcon {
+.tab-active .tab-icon {
   opacity: 1;
 }
 
-.tabName {
+.tab-name {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.tabClose {
+.tab-close {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -206,13 +206,13 @@
   }
 }
 
-.tabActive .tabClose {
+.tab-active .tab-close {
   opacity: 0.6;
 }
 
 /* ── File content area ───────────────────────────────────── */
 
-.contentArea {
+.content-area {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -241,13 +241,13 @@
   background: var(--background-base);
 }
 
-.breadcrumbSep {
+.breadcrumb-sep {
   opacity: 0.4;
 }
 
 /* ── Code scroll container ───────────────────────────────── */
 
-.codeScroll {
+.code-scroll {
   flex: 1;
   overflow: auto;
   scrollbar-width: thin;
@@ -256,14 +256,14 @@
 }
 
 /* Override react-syntax-highlighter's internal pre/code styles */
-.codeScroll pre {
+.code-scroll pre {
   background: var(--background-base) !important;
   word-wrap: break-word;
   white-space: pre-wrap;
 }
 
 /* No-wrap mode: horizontal scrolling instead of line wrapping */
-.codeScrollNoWrap pre {
+.code-scroll-no-wrap pre {
   word-wrap: normal;
   white-space: pre;
   overflow-x: auto;
@@ -271,7 +271,7 @@
 
 /* ── Loading & empty states ──────────────────────────────── */
 
-.isLoadingState {
+.is-loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,7 +295,7 @@
   text-align: center;
 }
 
-.emptyState {
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -308,7 +308,7 @@
 
 /* ── File meta badge (line count, language) ───────────────── */
 
-.metaBar {
+.meta-bar {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -323,7 +323,7 @@
   min-height: 22px;
 }
 
-.metaDot {
+.meta-dot {
   width: 3px;
   height: 3px;
   border-radius: 50%;
@@ -332,7 +332,7 @@
 
 /* ── Resize handle ───────────────────────────────────────── */
 
-.resizeHandle {
+.resize-handle {
   position: absolute;
   top: 0;
   right: -2px;
@@ -352,33 +352,33 @@
 
 /* ── Code line with hover effects (CSS-only, no React state) ─ */
 
-.codeLine {
+.code-line {
   position: relative;
   transition: background-color 0.08s;
 }
 
-.codeLine:hover {
+.code-line:hover {
   background-color: oklch(100.0% 0.0001 263.3 / 0.03) !important;
 }
 
 /* Brighten line numbers on hover */
-.codeLine:hover .react-syntax-highlighter-line-number {
+.code-line:hover .react-syntax-highlighter-line-number {
   color: oklch(100.0% 0.0001 263.3 / 0.5) !important;
 }
 
 /* ── Selected line state ─────────────────────────────────── */
 
-.codeLineSelected {
+.code-line-selected {
   background-color: oklch(58.5% 0.2041 277.1 / 0.12) !important;
 }
 
-.codeLineSelected .react-syntax-highlighter-line-number {
+.code-line-selected .react-syntax-highlighter-line-number {
   color: var(--accent-primary) !important;
 }
 
 /* ── Inline @ mention button (injected into every line, shown on hover) ─ */
 
-.lineMentionButton {
+.line-mention-button {
   position: absolute;
   right: 8px;
   top: 50%;
@@ -415,13 +415,13 @@
 }
 
 /* Reveal on line hover — CSS-only, zero React re-renders */
-.codeLine:hover .lineMentionButton {
+.code-line:hover .line-mention-button {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(-50%) scale(1);
 }
 
-.lineMentionButton:hover {
+.line-mention-button:hover {
   background: var(--accent-primary);
   color: var(--color-white);
   border-color: var(--accent-primary);
@@ -430,7 +430,7 @@
   transform: translateY(-50%) scale(1.05);
 }
 
-.lineMentionButton:active {
+.line-mention-button:active {
   transform: translateY(-50%) scale(0.95);
 }
 
@@ -438,7 +438,7 @@
 
 /* ── Media viewer (binary files: images, audio, video, PDF) ─ */
 
-.mediaViewer {
+.media-viewer {
   flex: 1;
   display: flex;
   align-items: center;
@@ -452,7 +452,7 @@
 
 /* ── Image preview ──────────────────────────────────────── */
 
-.mediaImageWrap {
+.media-image-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -462,7 +462,7 @@
   min-height: 0;
 }
 
-.mediaImage {
+.media-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -486,7 +486,7 @@
 
 /* ── Audio player ───────────────────────────────────────── */
 
-.mediaAudioWrap {
+.media-audio-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -497,14 +497,14 @@
   max-width: 420px;
 }
 
-.mediaAudioIcon {
+.media-audio-icon {
   color: var(--text-muted);
   opacity: 0.6;
 }
 
 /* ── Video player ───────────────────────────────────────── */
 
-.mediaVideoWrap {
+.media-video-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -513,7 +513,7 @@
   padding: 8px;
 }
 
-.mediaVideo {
+.media-video {
   max-width: 100%;
   max-height: 100%;
   border-radius: 4px;
@@ -523,7 +523,7 @@
 
 /* ── PDF viewer ─────────────────────────────────────────── */
 
-.mediaPdf {
+.media-pdf {
   width: 100%;
   height: 100%;
   border: none;
@@ -532,7 +532,7 @@
 
 /* ── SVG preview ───────────────────────────────────────── */
 
-.mediaSvg {
+.media-svg {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;

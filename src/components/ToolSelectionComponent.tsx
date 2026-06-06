@@ -576,17 +576,17 @@ export default function ToolSelectionComponent({
 
   // -- Render ---------------------------------------------------
   return (
-    <div className={styles.toolsSection} data-read-only={readOnly}>
+    <div className={styles['tools-section']} data-read-only={readOnly}>
       {/* Search — pinned above scroll */}
       <SearchInputComponent
         value={toolSearch}
         onChange={setToolSearch}
         placeholder="Search tools..."
         compact
-        className={styles.toolsSearch}
+        className={styles['tools-search']}
       />
 
-      <div className={styles.toolsSectionHeaderRight}>
+      <div className={styles['tools-section-header-right']}>
         <SegmentedControlComponent
           value={groupMode}
           onChange={setGroupMode}
@@ -601,11 +601,11 @@ export default function ToolSelectionComponent({
         />
       </div>
 
-      <div className={styles.toolsListWrapper}>
+      <div className={styles['tools-list-wrapper']}>
 
         {/* Master select-all / deselect-all checkbox */}
         {(groupMode !== "selected" || selectedGroupedByDomain.length > 0) && (
-          <div className={styles.bulkCheckboxRow}>
+          <div className={styles['bulk-checkbox-row']}>
             <CheckboxComponent
               size="compact"
               checked={
@@ -636,12 +636,12 @@ export default function ToolSelectionComponent({
                 }
               }}
               label={
-                <span className={styles.bulkCheckboxLabel}>
+                <span className={styles['bulk-checkbox-label']}>
                   {groupMode === "selected" ? "Deselect All" : "Select All"}
                 </span>
               }
             />
-            <span className={styles.domainCount}>
+            <span className={styles['domain-count']}>
               {totalEnabledCount}/{totalToolsCount}
             </span>
           </div>
@@ -649,9 +649,9 @@ export default function ToolSelectionComponent({
 
         {/* Core Tools Section */}
         {groupMode !== "selected" && filteredCoreTools.length > 0 && (
-          <div className={styles.coreGroup}>
+          <div className={styles['core-group']}>
             <div
-              className={styles.coreHeader}
+              className={styles['core-header']}
               onClick={() => setCoreCollapsed(!coreCollapsed)}
             >
               {coreCollapsed ? (
@@ -659,15 +659,15 @@ export default function ToolSelectionComponent({
               ) : (
                 <ChevronDown size={12} />
               )}
-              <span className={styles.coreIcon}>
+              <span className={styles['core-icon']}>
                 <Bot size={12} />
               </span>
-              <span className={styles.coreLabel}>Core Tools</span>
+              <span className={styles['core-label']}>Core Tools</span>
               {coreToolsLocked ? (
-                <span className={styles.coreBadge}>Locked On</span>
+                <span className={styles['core-badge']}>Locked On</span>
               ) : (
                 <>
-                  <span className={styles.domainCount}>
+                  <span className={styles['domain-count']}>
                     {enabledCoreCount}/{coreTools.length}
                   </span>
                   <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
@@ -687,7 +687,7 @@ export default function ToolSelectionComponent({
             </div>
 
             {!coreCollapsed && (
-              <div className={styles.coreToolsList}>
+              <div className={styles['core-tools-list']}>
                 {filteredCoreTools.map((tool) => (
                   <TooltipComponent
                     key={tool.name}
@@ -697,27 +697,27 @@ export default function ToolSelectionComponent({
                   >
                     {coreToolsLocked ? (
                       <div
-                        className={`${styles.toolRow} ${styles.coreToolRow}`}
+                        className={`${styles['tool-row']} ${styles['core-tool-row']}`}
                       >
                         <CheckboxComponent
                           size="compact"
-                          className={styles.toolCheckbox}
+                          className={styles['tool-checkbox']}
                           checked={true}
                           disabled={true}
                           onChange={() => {}}
                           label={
-                            <span className={`${styles.toolName} ${styles.coreToolName}`}>
+                            <span className={`${styles['tool-name']} ${styles['core-tool-name']}`}>
                               {renderToolName(tool.name)}
                             </span>
                           }
                         />
-                        <Lock size={10} className={styles.lockIcon} />
+                        <Lock size={10} className={styles['lock-icon']} />
                       </div>
                     ) : (
-                      <div className={styles.toolRow}>
+                      <div className={styles['tool-row']}>
                         <CheckboxComponent
                           size="compact"
-                          className={styles.toolCheckbox}
+                          className={styles['tool-checkbox']}
                           checked={resolvedEnabledSet.has(tool.name)}
                           disabled={readOnly}
                           onChange={() => {
@@ -725,7 +725,7 @@ export default function ToolSelectionComponent({
                             toggleTool(tool.name);
                           }}
                           label={
-                            <span className={styles.toolName}>
+                            <span className={styles['tool-name']}>
                               {renderToolName(tool.name)}
                             </span>
                           }
@@ -741,12 +741,12 @@ export default function ToolSelectionComponent({
 
         {/* Group rendering — domain, label, tier, or selected mode */}
         {groupMode === "selected" ? (
-          <div className={styles.selectedTabContent}>
+          <div className={styles['selected-tab-content']}>
             {selectedGroupedByDomain.length === 0 ? (
-              <div className={styles.noSelectedToolsContainer}>
-                <Layers size={24} className={styles.noSelectedToolsIcon} />
-                <span className={styles.noSelectedToolsMessage}>No tools currently selected</span>
-                <span className={styles.noSelectedToolsSubtext}>
+              <div className={styles['no-selected-tools-container']}>
+                <Layers size={24} className={styles['no-selected-tools-icon']} />
+                <span className={styles['no-selected-tools-message']}>No tools currently selected</span>
+                <span className={styles['no-selected-tools-subtext']}>
                   Enable tools from the Domain, Label, or Tier tabs to see them here.
                 </span>
               </div>
@@ -767,9 +767,9 @@ export default function ToolSelectionComponent({
                 ).length;
 
                 return (
-                  <div key={groupKey} className={isCoreDomain ? styles.coreGroup : styles.domainGroup}>
+                  <div key={groupKey} className={isCoreDomain ? styles['core-group'] : styles['domain-group']}>
                     <div
-                      className={isCoreDomain ? styles.coreHeader : styles.domainHeader}
+                      className={isCoreDomain ? styles['core-header'] : styles['domain-header']}
                       onClick={() => toggleDomain(`selected:${groupKey}`)}
                     >
                       {collapsed ? (
@@ -777,19 +777,19 @@ export default function ToolSelectionComponent({
                       ) : (
                         <ChevronDown size={12} />
                       )}
-                      <span className={isCoreDomain ? styles.coreIcon : styles.domainIcon}>
+                      <span className={isCoreDomain ? styles['core-icon'] : styles['domain-icon']}>
                         <GroupIcon size={12} />
                       </span>
                       {isCoreDomain ? (
-                        <span className={styles.coreLabel}>{label}</span>
+                        <span className={styles['core-label']}>{label}</span>
                       ) : (
                         label
                       )}
                       {isCoreDomain && coreToolsLocked ? (
-                        <span className={styles.coreBadge}>Locked On</span>
+                        <span className={styles['core-badge']}>Locked On</span>
                       ) : (
                         <>
-                          <span className={styles.domainCount}>
+                          <span className={styles['domain-count']}>
                             {groupEnabled}/{tools.length}
                           </span>
                           <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
@@ -809,7 +809,7 @@ export default function ToolSelectionComponent({
                     </div>
 
                     {!collapsed && (
-                      <div className={isCoreDomain ? styles.coreToolsList : styles.toolsGrid}>
+                      <div className={isCoreDomain ? styles['core-tools-list'] : styles['tools-grid']}>
                         {tools.map((tool) => {
                           const isLocked = lockedOffTools.has(tool.name);
                           const lockReason = lockedOffTools.get(tool.name);
@@ -822,42 +822,42 @@ export default function ToolSelectionComponent({
                               delay={isLocked ? 0 : 400}
                             >
                               {isCoreLockedTool ? (
-                                <div className={`${styles.toolRow} ${styles.coreToolRow}`}>
+                                <div className={`${styles['tool-row']} ${styles['core-tool-row']}`}>
                                   <CheckboxComponent
                                     size="compact"
-                                    className={styles.toolCheckbox}
+                                    className={styles['tool-checkbox']}
                                     checked={true}
                                     disabled={true}
                                     onChange={() => {}}
                                     label={
-                                      <span className={`${styles.toolName} ${styles.coreToolName}`}>
+                                      <span className={`${styles['tool-name']} ${styles['core-tool-name']}`}>
                                         {renderToolName(tool.name)}
                                       </span>
                                     }
                                   />
-                                  <Lock size={10} className={styles.lockIcon} />
+                                  <Lock size={10} className={styles['lock-icon']} />
                                 </div>
                               ) : isLocked ? (
-                                <div className={`${styles.toolRow} ${styles.lockedToolRow}`}>
+                                <div className={`${styles['tool-row']} ${styles['locked-tool-row']}`}>
                                   <CheckboxComponent
                                     size="compact"
-                                    className={styles.toolCheckbox}
+                                    className={styles['tool-checkbox']}
                                     checked={false}
                                     disabled={true}
                                     onChange={() => {}}
                                     label={
-                                      <span className={`${styles.toolName} ${styles.lockedToolName}`}>
+                                      <span className={`${styles['tool-name']} ${styles['locked-tool-name']}`}>
                                         {renderToolName(tool.name)}
                                       </span>
                                     }
                                   />
-                                  <Lock size={10} className={styles.lockIcon} />
+                                  <Lock size={10} className={styles['lock-icon']} />
                                 </div>
                               ) : (
-                                <div className={styles.toolRow}>
+                                <div className={styles['tool-row']}>
                                   <CheckboxComponent
                                     size="compact"
-                                    className={styles.toolCheckbox}
+                                    className={styles['tool-checkbox']}
                                     checked={resolvedEnabledSet.has(tool.name)}
                                     disabled={readOnly}
                                     onChange={() => {
@@ -865,7 +865,7 @@ export default function ToolSelectionComponent({
                                       toggleTool(tool.name);
                                     }}
                                     label={
-                                      <span className={styles.toolName}>
+                                      <span className={styles['tool-name']}>
                                         {renderToolName(tool.name)}
                                       </span>
                                     }
@@ -914,9 +914,9 @@ export default function ToolSelectionComponent({
             ).length;
 
             return (
-              <div key={groupKey} className={styles.domainGroup}>
+              <div key={groupKey} className={styles['domain-group']}>
                 <div
-                  className={styles.domainHeader}
+                  className={styles['domain-header']}
                   onClick={() => toggleDomain(groupKey)}
                 >
                   {collapsed ? (
@@ -924,11 +924,11 @@ export default function ToolSelectionComponent({
                   ) : (
                     <ChevronDown size={12} />
                   )}
-                  <span className={styles.domainIcon}>
+                  <span className={styles['domain-icon']}>
                     <GroupIcon size={12} />
                   </span>
                   {label}
-                  <span className={styles.domainCount}>
+                  <span className={styles['domain-count']}>
                     {groupEnabled}/{tools.length}
                   </span>
                   <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
@@ -946,7 +946,7 @@ export default function ToolSelectionComponent({
                 </div>
 
                 {!collapsed && (
-                  <div className={styles.toolsGrid}>
+                  <div className={styles['tools-grid']}>
                     {tools.map((tool) => {
                       const isLocked = lockedOffTools.has(tool.name);
                       const lockReason = lockedOffTools.get(tool.name);
@@ -958,26 +958,26 @@ export default function ToolSelectionComponent({
                           delay={isLocked ? 0 : 400}
                         >
                           {isLocked ? (
-                            <div className={`${styles.toolRow} ${styles.lockedToolRow}`}>
+                            <div className={`${styles['tool-row']} ${styles['locked-tool-row']}`}>
                               <CheckboxComponent
                                 size="compact"
-                                className={styles.toolCheckbox}
+                                className={styles['tool-checkbox']}
                                 checked={false}
                                 disabled={true}
                                 onChange={() => {}}
                                 label={
-                                  <span className={`${styles.toolName} ${styles.lockedToolName}`}>
+                                  <span className={`${styles['tool-name']} ${styles['locked-tool-name']}`}>
                                     {renderToolName(tool.name)}
                                   </span>
                                 }
                               />
-                              <Lock size={10} className={styles.lockIcon} />
+                              <Lock size={10} className={styles['lock-icon']} />
                             </div>
                           ) : (
-                            <div className={styles.toolRow}>
+                            <div className={styles['tool-row']}>
                               <CheckboxComponent
                                 size="compact"
-                                className={styles.toolCheckbox}
+                                className={styles['tool-checkbox']}
                                 checked={resolvedEnabledSet.has(tool.name)}
                                 disabled={readOnly}
                                 onChange={() => {
@@ -985,7 +985,7 @@ export default function ToolSelectionComponent({
                                   toggleTool(tool.name);
                                 }}
                                 label={
-                                  <span className={styles.toolName}>
+                                  <span className={styles['tool-name']}>
                                     {renderToolName(tool.name)}
                                   </span>
                                 }

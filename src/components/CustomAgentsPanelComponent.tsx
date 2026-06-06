@@ -353,18 +353,18 @@ export default function CustomAgentsPanel({
 
   if (editingAgent) {
     return (
-      <div className={styles.formOverlay}>
-        <div className={styles.formHeader}>
+      <div className={styles['form-overlay']}>
+        <div className={styles['form-header']}>
           <h3>{isNew ? "New Agent" : `Edit: ${editingAgent.name}`}</h3>
-          <button className={styles.cancelButton} onClick={handleCancel}>
+          <button className={styles['cancel-button']} onClick={handleCancel}>
             <X size={16} />
           </button>
         </div>
 
         <div className={styles.form}>
           {/* Name + Project */}
-          <div className={styles.formRow}>
-            <div className={styles.formGroup} style={{ flex: 2 }}>
+          <div className={styles['form-row']}>
+            <div className={styles['form-group']} style={{ flex: 2 }}>
               <label>Agent Name</label>
               <InputComponent
                 type="text"
@@ -384,7 +384,7 @@ export default function CustomAgentsPanel({
                   : "..."}
               </span>
             </div>
-            <div className={styles.formGroup} style={{ flex: 1 }}>
+            <div className={styles['form-group']} style={{ flex: 1 }}>
               <label>Project</label>
               <InputComponent
                 type="text"
@@ -399,7 +399,7 @@ export default function CustomAgentsPanel({
           </div>
 
           {/* Description */}
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Description</label>
             <InputComponent
               type="text"
@@ -412,13 +412,13 @@ export default function CustomAgentsPanel({
           </div>
 
           {/* Icon Picker */}
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Icon</label>
-            <div className={styles.iconGrid}>
+            <div className={styles['icon-grid']}>
               {/* Custom Image Upload Button */}
               <button
                 type="button"
-                className={styles.iconOption}
+                className={styles['icon-option']}
                 onClick={() => fileInputReference.current?.click()}
                 title="Upload Custom Image"
               >
@@ -438,7 +438,7 @@ export default function CustomAgentsPanel({
                   editingAgent.avatar.startsWith("http")) && (
                   <button
                     type="button"
-                    className={styles.iconOption}
+                    className={styles['icon-option']}
                     data-is-selected={true}
                     onClick={() => updateField("avatar", editingAgent.avatar)}
                     title="Custom Avatar Image"
@@ -446,7 +446,7 @@ export default function CustomAgentsPanel({
                     <img
                       src={editingAgent.avatar}
                       alt="Custom Avatar"
-                      className={styles.customIconPreview}
+                      className={styles['custom-icon-preview']}
                     />
                   </button>
                 )}
@@ -455,7 +455,7 @@ export default function CustomAgentsPanel({
                 <button
                   key={name}
                   type="button"
-                  className={styles.iconOption}
+                  className={styles['icon-option']}
                   data-is-selected={editingAgent.icon === name}
                   onClick={() => updateField("icon", name)}
                   title={name}
@@ -492,7 +492,7 @@ export default function CustomAgentsPanel({
           )}
 
           {/* Color Picker */}
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>
               <Palette
                 size={12}
@@ -500,12 +500,12 @@ export default function CustomAgentsPanel({
               />
               Accent Color
             </label>
-            <div className={styles.colorGrid}>
+            <div className={styles['color-grid']}>
               {COLOR_PALETTE.map(({ hex, name }: ColorOption) => (
                 <button
                   key={hex}
                   type="button"
-                  className={styles.colorSwatch}
+                  className={styles['color-swatch']}
                   data-is-selected={editingAgent.color === hex}
                   onClick={() =>
                     updateField("color", editingAgent.color === hex ? "" : hex)
@@ -520,7 +520,7 @@ export default function CustomAgentsPanel({
                 <>
                   Selected:{" "}
                   <span
-                    className={styles.colorPreviewDot}
+                    className={styles['color-preview-dot']}
                     style={{ background: editingAgent.color }}
                   />{" "}
                   {COLOR_PALETTE.find((color) => color.hex === editingAgent.color)
@@ -533,7 +533,7 @@ export default function CustomAgentsPanel({
           </div>
 
           {/* Background Image */}
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>
               <ImageIcon
                 size={12}
@@ -554,19 +554,19 @@ export default function CustomAgentsPanel({
               a subtle, dark image for best results
             </span>
             {editingAgent.backgroundImage && (
-              <div className={styles.backgroundPreview}>
+              <div className={styles['background-preview']}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={editingAgent.backgroundImage}
                   alt="Background preview"
-                  className={styles.backgroundPreviewImg}
+                  className={styles['background-preview-img']}
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     e.currentTarget.style.display = "none";
                   }}
                 />
                 <button
                   type="button"
-                  className={styles.backgroundPreviewClear}
+                  className={styles['background-preview-clear']}
                   onClick={() => updateField("backgroundImage", "")}
                   title="Remove background image"
                 >
@@ -577,7 +577,7 @@ export default function CustomAgentsPanel({
           </div>
 
           {/* Identity Prompt */}
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Identity Prompt</label>
             <TextAreaComponent
               value={editingAgent.identity || ""}
@@ -594,7 +594,7 @@ export default function CustomAgentsPanel({
           </div>
 
           {/* Guidelines */}
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Response Guidelines</label>
             <TextAreaComponent
               value={editingAgent.guidelines || ""}
@@ -611,7 +611,7 @@ export default function CustomAgentsPanel({
           </div>
 
           {/* Tool Policy */}
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Tool Policy</label>
             <TextAreaComponent
               value={editingAgent.toolPolicy || ""}
@@ -627,18 +627,18 @@ export default function CustomAgentsPanel({
           </div>
 
           {/* Toggles */}
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Context Injection</label>
-            <div className={styles.toggleRow}>
-              <div className={styles.toggleLabel}>
-                <span className={styles.toggleTitle}>
+            <div className={styles['toggle-row']}>
+              <div className={styles['toggle-label']}>
+                <span className={styles['toggle-title']}>
                   <FolderTree
                     size={12}
                     style={{ marginRight: 4, verticalAlign: -1 }}
                   />
                   Directory Tree
                 </span>
-                <span className={styles.toggleHint}>
+                <span className={styles['toggle-hint']}>
                   Inject workspace file structure into context
                 </span>
               </div>
@@ -652,16 +652,16 @@ export default function CustomAgentsPanel({
                 }
               />
             </div>
-            <div className={styles.toggleRow}>
-              <div className={styles.toggleLabel}>
-                <span className={styles.toggleTitle}>
+            <div className={styles['toggle-row']}>
+              <div className={styles['toggle-label']}>
+                <span className={styles['toggle-title']}>
                   <BookOpen
                     size={12}
                     style={{ marginRight: 4, verticalAlign: -1 }}
                   />
                   Coding Defaults
                 </span>
-                <span className={styles.toggleHint}>
+                <span className={styles['toggle-hint']}>
                   Inject generic coding conventions and coordinator
                   orchestration mode
                 </span>
@@ -689,7 +689,7 @@ export default function CustomAgentsPanel({
           />
 
           {/* Policy Editor */}
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>
               <Shield size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
               Tool Policies
@@ -702,7 +702,7 @@ export default function CustomAgentsPanel({
 
             {(editingAgent.policies || []).map(
               (policy: SerializedPolicy, idx: number) => (
-                <div key={idx} className={styles.policyRow}>
+                <div key={idx} className={styles['policy-row']}>
                   <SelectComponent
                     value={policy.decision}
                     options={[
@@ -762,7 +762,7 @@ export default function CustomAgentsPanel({
 
                   <button
                     type="button"
-                    className={styles.policyRemoveButton}
+                    className={styles['policy-remove-button']}
                     onClick={() => {
                       const updated = (editingAgent.policies || []).filter(
                         (_: SerializedPolicy, i: number) => i !== idx,
@@ -779,7 +779,7 @@ export default function CustomAgentsPanel({
 
             <button
               type="button"
-              className={styles.policyAddButton}
+              className={styles['policy-add-button']}
               onClick={() => {
                 const newPolicy: SerializedPolicy = {
                   tool: "*",
@@ -814,7 +814,7 @@ export default function CustomAgentsPanel({
         </div>
 
         {/* Footer */}
-        <div className={styles.formFooter}>
+        <div className={styles['form-footer']}>
           <ButtonComponent variant="disabled" onClick={handleCancel}>
             Cancel
           </ButtonComponent>
@@ -836,7 +836,7 @@ export default function CustomAgentsPanel({
   return (
     <div className={styles.container}>
       {agents.length > 0 && (
-        <div className={styles.panelHeader}>
+        <div className={styles['panel-header']}>
           <ButtonComponent
             variant="disabled"
             icon={Plus}
@@ -848,12 +848,12 @@ export default function CustomAgentsPanel({
       )}
 
       {agents.length === 0 ? (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-icon']}>
             <Bot size={24} />
           </div>
-          <span className={styles.emptyTitle}>No custom agents yet</span>
-          <span className={styles.emptyHint}>
+          <span className={styles['empty-title']}>No custom agents yet</span>
+          <span className={styles['empty-hint']}>
             Create your own agent persona with a custom system prompt and
             hand-picked tools from the full tool suite.
           </span>
@@ -862,12 +862,12 @@ export default function CustomAgentsPanel({
           </ButtonComponent>
         </div>
       ) : (
-        <div className={styles.agentList}>
+        <div className={styles['agent-list']}>
           {(agents || []).map((agent: EditableAgent) => {
             const isConfirming = confirmingDeleteId === agent._id;
 
             return (
-              <div key={agent._id} className={styles.agentCard}>
+              <div key={agent._id} className={styles['agent-card']}>
                 <BadgeComponent
                   type="agent"
                   agent={{
@@ -877,26 +877,26 @@ export default function CustomAgentsPanel({
                     color: agent.color,
                   }}
                 />
-                <div className={styles.agentInfo}>
-                  <span className={styles.agentName}>{agent.name}</span>
+                <div className={styles['agent-info']}>
+                  <span className={styles['agent-name']}>{agent.name}</span>
                   {agent.description && (
-                    <span className={styles.agentDesc}>
+                    <span className={styles['agent-desc']}>
                       {agent.description}
                     </span>
                   )}
-                  <div className={styles.agentMeta}>
-                    <span className={styles.agentBadge}>
+                  <div className={styles['agent-meta']}>
+                    <span className={styles['agent-badge']}>
                       <Wrench size={9} />
                       {agent.enabledTools?.length || 0} tools
                     </span>
-                    <span className={styles.agentBadge}>{agent.agentId}</span>
+                    <span className={styles['agent-badge']}>{agent.agentId}</span>
                   </div>
                 </div>
 
-                <div className={styles.agentActions}>
+                <div className={styles['agent-actions']}>
                   {isConfirming ? (
-                    <div className={styles.confirmLayoutRow}>
-                      <span className={styles.confirmText}>Delete?</span>
+                    <div className={styles['confirm-layout-row']}>
+                      <span className={styles['confirm-text']}>Delete?</span>
                       <ButtonComponent
                         variant="destructive"
                         onClick={() => confirmDelete(String(agent._id))}
@@ -913,14 +913,14 @@ export default function CustomAgentsPanel({
                   ) : (
                     <>
                       <button
-                        className={styles.actionButton}
+                        className={styles['action-button']}
                         onClick={() => handleEdit(agent)}
                         title="Edit"
                       >
                         <Edit3 size={14} />
                       </button>
                       <button
-                        className={`${styles.actionButton} ${styles.actionBtnDanger}`}
+                        className={`${styles['action-button']} ${styles['action-btn-danger']}`}
                         onClick={() => handleDelete(String(agent._id))}
                         title="Delete"
                       >

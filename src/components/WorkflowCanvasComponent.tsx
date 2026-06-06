@@ -839,7 +839,7 @@ export default function WorkflowCanvas({
     return (
       <g
         key={conn.id}
-        className={`${styles.connectionGroup}${isEdgeFlowing ? ` ${styles.connectionSelected}` : ""}`}
+        className={`${styles['connection-group']}${isEdgeFlowing ? ` ${styles['connection-selected']}` : ""}`}
         data-workflow-connection
       >
         <path
@@ -847,7 +847,7 @@ export default function WorkflowCanvas({
           stroke="transparent"
           strokeWidth={12}
           fill="none"
-          className={styles.connectionHitArea}
+          className={styles['connection-hit-area']}
           onClick={() => onSelectNode(conn.sourceNodeId)}
         />
         <path
@@ -862,7 +862,7 @@ export default function WorkflowCanvas({
           strokeWidth={isActive ? 3 : 2}
           fill="none"
           strokeOpacity={isActive ? 1 : 0.7}
-          className={`${styles.connectionLine}${isActive ? ` ${styles.prismLine}` : ""}`}
+          className={`${styles['connection-line']}${isActive ? ` ${styles.prismLine}` : ""}`}
         />
         {!readOnly && (
           <foreignObject
@@ -870,10 +870,10 @@ export default function WorkflowCanvas({
             y={(sourcePos.y + targetPos.y) / 2 - 8}
             width={16}
             height={16}
-            className={styles.connectionDeleteWrapper}
+            className={styles['connection-delete-wrapper']}
           >
             <button
-              className={styles.connectionDeleteButton}
+              className={styles['connection-delete-button']}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 if (conn.id) onDeleteConnection(conn.id);
@@ -923,7 +923,7 @@ export default function WorkflowCanvas({
         strokeDasharray="6 3"
         fill="none"
         strokeOpacity={0.5}
-        className={styles.connectingLine}
+        className={styles['connecting-line']}
       />
     );
   };
@@ -941,10 +941,10 @@ export default function WorkflowCanvas({
       />
 
       {nodes.length === 0 && !isLoadingWorkflow && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>⟡</div>
-          <div className={styles.emptyTitle}>Start Building Your Workflow</div>
-          <div className={styles.emptySubtitle}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-icon']}>⟡</div>
+          <div className={styles['empty-title']}>Start Building Your Workflow</div>
+          <div className={styles['empty-subtitle']}>
             Add models and assets from the sidebar to begin chaining them
             together
           </div>
@@ -1034,10 +1034,10 @@ export default function WorkflowCanvas({
       </svg>
 
       {nodes.length > 0 && (
-        <div className={styles.canvasToolbar}>
+        <div className={styles['canvas-toolbar']}>
           {onToggleSidebar && (
             <button
-              className={`${styles.toolbarButton} ${sidebarVisible ? styles.toolbarBtnActive : ""}`}
+              className={`${styles['toolbar-button']} ${sidebarVisible ? styles['toolbar-btn-active'] : ""}`}
               onClick={onToggleSidebar}
               title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
             >
@@ -1049,7 +1049,7 @@ export default function WorkflowCanvas({
             </button>
           )}
           <button
-            className={styles.toolbarButton}
+            className={styles['toolbar-button']}
             onClick={handleToggleAllExpand}
             title={
               allExpanded ? "Collapse all node info" : "Expand all node info"

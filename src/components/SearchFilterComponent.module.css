@@ -7,7 +7,7 @@
   gap: 6px;
 }
 
-/* ── Trigger (matches FilterDropdownComponent.dropdownTrigger) ── */
+/* ── Trigger (matches FilterDropdownComponent.dropdown-trigger) ── */
 .container {
   position: relative;
   flex-shrink: 0;
@@ -32,12 +32,12 @@
   }
 }
 
-.triggerOpen {
+.trigger-open {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
 }
 
-.triggerIcon {
+.trigger-icon {
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -69,11 +69,11 @@
   transition: transform 0.2s;
 }
 
-.chevronOpen {
+.chevron-open {
   transform: rotate(180deg);
 }
 
-/* ── Dropdown Menu (matches FilterDropdownComponent.dropdownMenu) ── */
+/* ── Dropdown Menu (matches FilterDropdownComponent.dropdown-menu) ── */
 .menu {
   position: absolute;
   top: calc(100% + 4px);
@@ -89,10 +89,10 @@
   border-radius: var(--border-radius-md, 6px);
   box-shadow: var(--calculated-shadow-lg, 0 12px 40px oklch(0.0% 0.0 0.0 / 0.25));
   padding: 4px 0;
-  animation: searchFilterSlideIn 0.15s ease-out;
+  animation: search-filter-slide-in 0.15s ease-out;
 }
 
-@keyframes searchFilterSlideIn {
+@keyframes search-filter-slide-in {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -103,7 +103,7 @@
   }
 }
 
-.menuItem {
+.menu-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -122,7 +122,7 @@
   text-overflow: ellipsis;
 }
 
-.menuItem:hover {
+.menu-item:hover {
   background: var(
     --calculated-accent-primary-subtle,
     var(--background-elevated)
@@ -130,7 +130,7 @@
   color: var(--text-primary);
 }
 
-.menuItemActive {
+.menu-item-active {
   color: var(--text-primary);
   background: var(
     --calculated-accent-primary-subtle,
@@ -138,14 +138,14 @@
   );
 }
 
-.menuItemActive:hover {
+.menu-item-active:hover {
   background: var(
     --calculated-accent-primary-subtle,
     var(--calculated-accent-primary-glow)
   );
 }
 
-.menuCheck {
+.menu-check {
   margin-left: auto;
   font-size: var(--font-size-xs);
   color: var(--accent-primary);
@@ -153,7 +153,7 @@
   flex-shrink: 0;
 }
 
-.noResults {
+.no-results {
   padding: 10px 12px;
   font-size: var(--font-size-xs);
   color: var(--text-muted);
@@ -175,7 +175,7 @@
 }
 
 /* ── Badge (matches FilterDropdownComponent badges) ── */
-.badgeList {
+.badge-list {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -198,10 +198,10 @@
   white-space: nowrap;
   user-select: none;
   cursor: default;
-  animation: searchFilterBadgeFadeIn 0.2s ease-out;
+  animation: search-filter-badge-fade-in 0.2s ease-out;
 }
 
-@keyframes searchFilterBadgeFadeIn {
+@keyframes search-filter-badge-fade-in {
   from {
     opacity: 0;
     transform: scale(0.9);
@@ -212,11 +212,11 @@
   }
 }
 
-.badgeLabel {
+.badge-label {
   line-height: 1;
 }
 
-.badgeRemove {
+.badge-remove {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -233,7 +233,7 @@
   transition: all 0.12s ease;
 }
 
-.badgeRemove:hover {
+.badge-remove:hover {
   opacity: 1;
   background: oklch(100.0% 0.0001 263.3 / 0.08);
 }

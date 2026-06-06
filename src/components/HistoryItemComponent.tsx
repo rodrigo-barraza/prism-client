@@ -158,7 +158,7 @@ export default function HistoryItemComponent({
 
   return (
     <div
-      className={`${styles.item} ${isActive ? styles.isActiveState : ""} ${className || ""}`}
+      className={`${styles.item} ${isActive ? styles['is-active-state'] : ""} ${className || ""}`}
       {...SoundService.interactive(() => onClick?.(item))}
       {...(dataPanelClose ? { "data-panel-close-trigger": true } : {})}
       onContextMenu={
@@ -176,7 +176,7 @@ export default function HistoryItemComponent({
     >
       {onToggleFavorite && (
         <button
-          className={`${styles.favoriteButton} ${isFavorite ? styles.favoriteButtonActive : ""}`}
+          className={`${styles['favorite-button']} ${isFavorite ? styles['favorite-button-active'] : ""}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onToggleFavorite(item.id);
@@ -188,14 +188,14 @@ export default function HistoryItemComponent({
       )}
       <div className={styles.content}>
         {/* Row 1: time + tags (left) · agentBadge + cost (right) */}
-        <div className={styles.topRow}>
-          <div className={styles.topLeft}>
+        <div className={styles['top-row']}>
+          <div className={styles['top-left']}>
             <BadgeComponent type="dateTime" date={itemDate} />
             {admin &&
               item.username &&
               item.username !== "unknown" &&
               item.username !== "anonymous" && (
-                <span className={styles.usernameTag}>{item.username}</span>
+                <span className={styles['username-tag']}>{item.username}</span>
               )}
             {item.tags?.map((tag: HistoryItemTag) => (
               <span key={tag.label} className={styles.tag} style={tag.style}>
@@ -203,7 +203,7 @@ export default function HistoryItemComponent({
               </span>
             ))}
           </div>
-          <div className={styles.topRight}>
+          <div className={styles['top-right']}>
             {item.agent &&
               (() => {
                 const agentId =
@@ -219,7 +219,7 @@ export default function HistoryItemComponent({
 
                 return (
                   <span
-                    className={styles.agentBadge}
+                    className={styles['agent-badge']}
                     data-agent-identifier={agentId}
                   >
                     <BadgeComponent
@@ -228,7 +228,7 @@ export default function HistoryItemComponent({
                       size={14}
                       iconSize={9}
                     />
-                    <span className={styles.agentBadgeName}>
+                    <span className={styles['agent-badge-name']}>
                       {getAgentDisplayName(item.agent)}
                     </span>
                   </span>
@@ -239,14 +239,14 @@ export default function HistoryItemComponent({
 
         {/* Row 2: title */}
         <div className={styles.title}>
-          {isGenerating && <span className={styles.generatingDot} />}
+          {isGenerating && <span className={styles['generating-dot']} />}
           {item.title || "Untitled"}
-          {isNew && <span className={styles.newBadge}>NEW</span>}
+          {isNew && <span className={styles['new-badge']}>NEW</span>}
         </div>
 
         {/* Row 3: model badge & cost badge (when condensed) */}
         {(hasModel || (isCondensed && item.totalCost !== undefined && item.totalCost > 0)) && (
-          <div className={styles.modelBadgeAndCostContainer}>
+          <div className={styles['model-badge-and-cost-container']}>
             {hasModel && (
               <BadgeComponent
                 type="model"
@@ -256,7 +256,7 @@ export default function HistoryItemComponent({
                     : ([item.modelName].filter(Boolean) as string[])
                 }
                 providers={item.providers}
-                className={styles.modelBadge}
+                className={styles['model-badge']}
                 noHover
               />
             )}
@@ -265,7 +265,7 @@ export default function HistoryItemComponent({
                 type="cost"
                 cost={item.totalCost ?? 0}
                 showIcon={false}
-                className={styles.costBadgeRightAligned}
+                className={styles['cost-badge-right-aligned']}
               />
             )}
           </div>
@@ -280,8 +280,8 @@ export default function HistoryItemComponent({
         {!isCondensed &&
           (hasInputOutputModalities ||
             (item.totalCost !== undefined && item.totalCost > 0)) && (
-            <div className={styles.bottomRow}>
-              <div className={styles.bottomLeft}>
+            <div className={styles['bottom-row']}>
+              <div className={styles['bottom-left']}>
                 {hasInputOutputModalities && (
                   <ModalityIconComponent modalities={modalities} />
                 )}

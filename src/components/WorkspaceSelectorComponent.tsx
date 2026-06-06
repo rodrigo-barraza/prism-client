@@ -53,8 +53,8 @@ export default function WorkspaceSelectorComponent({
             data-is-unavailable
             title={`Workspace not available: ${unavailableWorkspace}`}
           >
-            <WifiOff className={styles.buttonIcon} />
-            <span className={styles.unavailableLabel}>{label}</span>
+            <WifiOff className={styles['button-icon']} />
+            <span className={styles['unavailable-label']}>{label}</span>
           </div>
         </div>
       );
@@ -62,9 +62,9 @@ export default function WorkspaceSelectorComponent({
     return (
       <div className={`${styles.wrapper} ${className || ""}`}>
         <div className={styles.button} data-is-locked>
-          <Monitor className={styles.buttonIcon} />
+          <Monitor className={styles['button-icon']} />
           <span>{(currentWorkspace as any)?.name ?? "Workspace"}</span>
-          <Lock className={styles.lockIcon} />
+          <Lock className={styles['lock-icon']} />
         </div>
       </div>
     );
@@ -79,10 +79,10 @@ export default function WorkspaceSelectorComponent({
         onClick={() => setOpen((v) => !v)}
         title={(currentWorkspace as any)?.path ?? "Switch workspace"}
       >
-        <Monitor className={styles.buttonIcon} />
+        <Monitor className={styles['button-icon']} />
         <span>{(currentWorkspace as any)?.name ?? "Workspace"}</span>
         {(workspaces.length > 1 || true) && (
-          <ChevronDown size={12} className={open ? styles.chevronOpen : ""} />
+          <ChevronDown size={12} className={open ? styles['chevron-open'] : ""} />
         )}
       </button>
 
@@ -92,17 +92,17 @@ export default function WorkspaceSelectorComponent({
           {workspaces.map((w: any) => (
             <button
               key={w.id}
-              className={`${styles.menuItem} ${(currentWorkspace as any)?.path === w.path ? styles.menuItemActive : ""}`}
+              className={`${styles['menu-item']} ${(currentWorkspace as any)?.path === w.path ? styles['menu-item-active'] : ""}`}
               onClick={() => {
                 setCurrentWorkspace(w);
                 setOpen(false);
               }}
               title={w.path}
             >
-              <FolderOpen size={12} className={styles.menuItemIcon} />
-              <span className={styles.menuItemName}>{w.name}</span>
+              <FolderOpen size={12} className={styles['menu-item-icon']} />
+              <span className={styles['menu-item-name']}>{w.name}</span>
               {w.isPinned && (
-                <Lock size={9} className={styles.menuItemPinned} />
+                <Lock size={9} className={styles['menu-item-pinned']} />
               )}
             </button>
           ))}

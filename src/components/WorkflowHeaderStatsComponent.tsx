@@ -35,11 +35,11 @@ export default function WorkflowHeaderStatsComponent({
 
   return (
     <>
-      <span className={styles.headerBadge}>
+      <span className={styles['header-badge']}>
         {nodes.length} nodes · {edgeCount} edges
       </span>
       {workflowStats.modalities.length > 0 && (
-        <span className={styles.headerBadge}>
+        <span className={styles['header-badge']}>
           {workflowStats.modalities.map((mod: any) => {
             const info = (MODALITY_ICONS as any)[mod];
             if (!info) return null;
@@ -56,11 +56,11 @@ export default function WorkflowHeaderStatsComponent({
         </span>
       )}
       {workflowStats.models.length > 0 && (
-        <span className={styles.headerBadge}>
+        <span className={styles['header-badge']}>
           {workflowStats.models.map((m: any) => (
             <span
               key={`${m.provider}:${m.name}`}
-              className={styles.headerModelTag}
+              className={styles['header-model-tag']}
               title={m.name}
             >
               <ProviderLogo provider={m.provider} size={11} />
@@ -71,7 +71,7 @@ export default function WorkflowHeaderStatsComponent({
       )}
       {workflowStats.conversationCount > 0 && (
         <span
-          className={styles.headerBadge}
+          className={styles['header-badge']}
           title="Conversations created per run"
         >
           <MessageSquare size={11} />

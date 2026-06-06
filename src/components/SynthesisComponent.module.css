@@ -2,7 +2,7 @@
 
 /* ── Layout ── */
 
-.appContainer {
+.app-container {
   width: 100%;
   height: 100dvh;
   overflow: hidden;
@@ -11,13 +11,13 @@
 
 /* ── Header Center Group (model pickers + split toggle) ── */
 
-.headerCenterGroup {
+.header-center-group {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.userSimLabel {
+.user-sim-label {
   flex-shrink: 0;
   width: 24px;
   height: 24px;
@@ -32,7 +32,7 @@
 }
 
 /* override ButtonComponent sizing to fit in the header bar */
-.headerActions {
+.header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -52,7 +52,7 @@
 
 /* ── Prompt Row (system prompt + user persona side-by-side) ── */
 
-.promptRow {
+.prompt-row {
   display: flex;
   gap: 16px;
 
@@ -63,14 +63,14 @@
 }
 
 @media (max-width: 640px) {
-  .promptRow {
+  .prompt-row {
     flex-direction: column;
   }
 }
 
 /* ── Config Bar (length + category inline) ── */
 
-.configBar {
+.config-bar {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -80,7 +80,7 @@
   background: var(--background-surface);
 }
 
-.configBarItem {
+.config-bar-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -88,7 +88,7 @@
   min-width: 0;
 }
 
-.configBarLabel {
+.config-bar-label {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -101,7 +101,7 @@
   flex-shrink: 0;
 }
 
-.configBarControl {
+.config-bar-control {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -111,7 +111,7 @@
 
 /* ── Collapsible Sections ── */
 
-.collapsibleSection {
+.collapsible-section {
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--background-surface);
@@ -120,14 +120,14 @@
 
 /* ── Template Grid ── */
 
-.templateGrid {
+.template-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 8px;
   padding: 0 12px 12px;
 }
 
-.templateCard {
+.template-card {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -147,7 +147,7 @@
   }
 }
 
-.templateLabel {
+.template-label {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
@@ -156,28 +156,28 @@
   text-overflow: ellipsis;
 }
 
-.templateCategory {
+.template-category {
   font-size: 0.625rem;
   color: var(--accent-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.templateMsgCount {
+.template-msg-count {
   font-size: 0.625rem;
   color: var(--text-muted);
 }
 
 /* ── Seed Messages ── */
 
-.seedMessages {
+.seed-messages {
   padding: 0 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.seedMessage {
+.seed-message {
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
@@ -189,7 +189,7 @@
   }
 }
 
-.seedMessageHeader {
+.seed-message-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -198,7 +198,7 @@
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.roleToggle {
+.role-toggle {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -212,12 +212,12 @@
   border: 1px solid transparent;
 }
 
-.removeSeedButton {
+.remove-seed-button {
   /* IconButtonComponent handles base styles — just override sizing */
   flex-shrink: 0;
 }
 
-.seedTextarea {
+.seed-textarea {
   /* TextAreaComponent handles core styles — override to sit flush inside card */
   border: none !important;
   border-radius: 0 !important;
@@ -228,12 +228,12 @@
   }
 }
 
-.addSeedRow {
+.add-seed-row {
   display: flex;
   gap: 8px;
 }
 
-.addSeedButton {
+.add-seed-button {
   /* ButtonComponent handles base styles — add layout overrides for dashed border style */
   flex: 1;
   justify-content: center;
@@ -250,13 +250,13 @@
 
 /* ── Generated Conversation ── */
 
-.generatedSection {
+.generated-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.generatedHeader {
+.generated-header {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -267,7 +267,7 @@
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.conversationLink {
+.conversation-link {
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-muted);
@@ -282,11 +282,11 @@
   }
 }
 
-.streamingBadge {
+.streaming-badge {
   margin-left: auto;
 }
 
-.streamingDot {
+.streaming-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -308,14 +308,14 @@
 
 /* ── Config Panel (left sidebar) ── */
 
-.configPanel {
+.config-panel {
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
 
-.turnsInput {
+.turns-input {
   width: 72px;
   padding: 5px 8px;
   border: 1px solid var(--calculated-border-color);
@@ -345,7 +345,7 @@
   -moz-appearance: textfield;
 }
 
-.turnsValue {
+.turns-value {
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
@@ -354,25 +354,25 @@
 
 /* ── Output Panel ── */
 
-.outputPanel {
+.output-panel {
   flex: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.outputActions {
+.output-actions {
   display: flex;
   gap: 6px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.outputActionButton {
+.output-action-button {
   /* CopyButtonComponent — just inherit parent layout */
 }
 
-.outputEmpty {
+.output-empty {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -391,7 +391,7 @@
 
 /* ── Empty Center ── */
 
-.emptyCenter {
+.empty-center {
   flex: 1;
   display: flex;
   align-items: center;

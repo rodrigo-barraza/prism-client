@@ -210,7 +210,7 @@
 }
 
 .confirm-button {
-  composes: confirmButton from "./PanelShared.module.css";
+  composes: confirm-button from "./PanelShared.module.css";
 }
 
 .confirm-button-yes {

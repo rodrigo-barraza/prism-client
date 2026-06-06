@@ -12,7 +12,7 @@
 
 /* ── Tab Content ─────────────────────────────────────────── */
 
-.tabContent {
+.tab-content {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -43,7 +43,7 @@
 
 /* ── Model Selection Section ─────────────────────────────── */
 
-.modelsSection {
+.models-section {
   padding: 12px 14px;
   border-bottom: 1px solid var(--calculated-border-color);
   display: flex;
@@ -51,7 +51,7 @@
   gap: 8px;
 }
 
-.modelCountBadge {
+.model-count-badge {
   font-size: 0.5625rem;
   font-weight: 600;
   font-family: var(--font-mono);
@@ -64,19 +64,19 @@
 
 /* ── Model Cards ─────────────────────────────────────────── */
 
-.modelCards {
+.model-cards {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.modelActions {
+.model-actions {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.clearModelsButton {
+.clear-models-button {
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-tertiary);
@@ -90,7 +90,7 @@
   }
 }
 
-.emptyModels {
+.empty-models {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   font-style: italic;
@@ -99,13 +99,13 @@
 
 /* ── Assertions Section ──────────────────────────────────── */
 
-.assertionsSection {
+.assertions-section {
   padding: 12px 14px;
   border-bottom: 1px solid var(--calculated-border-color);
   flex-shrink: 0;
 }
 
-.sectionLabel {
+.section-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -117,20 +117,20 @@
   margin-bottom: 8px;
 }
 
-.assertionsList {
+.assertions-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.assertionRow {
+.assertion-row {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
 }
 
-.assertionValue {
+.assertion-value {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--accent-primary);
@@ -147,7 +147,7 @@
 
 /* ── Prompt Preview ──────────────────────────────────────── */
 
-.promptSection {
+.prompt-section {
   padding: 10px 14px;
   border-bottom: 1px solid var(--calculated-border-color);
   flex-shrink: 0;
@@ -173,7 +173,7 @@
 
 /* ── Run Item ────────────────────────────────────────────── */
 
-.runItem {
+.run-item {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -190,25 +190,25 @@
   }
 }
 
-.runItemActive {
+.run-item-active {
   background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
   border-color: color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
-.runItemAborted {
+.run-item-aborted {
   opacity: 0.7;
 }
 
 /* ── Run Item Header ─────────────────────────────────────── */
 
-.runItemHeader {
+.run-item-header {
   display: flex;
   align-items: center;
   gap: 6px;
   min-width: 0;
 }
 
-.runIndex {
+.run-index {
   font-size: 0.625rem;
   font-weight: 700;
   font-family: var(--font-mono);
@@ -217,13 +217,13 @@
   min-width: 18px;
 }
 
-.runItemActive .runIndex {
+.run-item-active .run-index {
   color: var(--accent-primary);
 }
 
 /* ── Run Item Stats ──────────────────────────────────────── */
 
-.runStats {
+.run-stats {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -231,7 +231,7 @@
   padding-left: 24px;
 }
 
-.statPassed {
+.stat-passed {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -239,7 +239,7 @@
   color: var(--color-success);
 }
 
-.statFailed {
+.stat-failed {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -249,7 +249,7 @@
 
 /* ── Running Indicator ───────────────────────────────────── */
 
-.runningBanner {
+.running-banner {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -265,10 +265,10 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--accent-primary);
-  animation: fadeIn 0.3s ease-out;
+  animation: fade-in 0.3s ease-out;
 }
 
-.spinIcon {
+.spin-icon {
   animation: spin 1s linear infinite;
   flex-shrink: 0;
   color: var(--accent-primary);
@@ -283,7 +283,7 @@
   }
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
   }

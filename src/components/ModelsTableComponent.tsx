@@ -244,7 +244,7 @@ function ModalityCell({
         inputTypes.length > 0 &&
         outputTypes &&
         outputTypes.length > 0 && (
-          <ArrowRight size={10} className={styles.modalityArrow} />
+          <ArrowRight size={10} className={styles['modality-arrow']} />
         )}
       {(outputTypes || []).map((outputType: string) => {
         const modalityEntry = (
@@ -831,18 +831,18 @@ function ModelsTableInner({
         key: "_select",
         label: (
           <span
-            className={`${styles.selectWrap} ${allSelected ? styles.selectWrapActive : ""}`}
+            className={`${styles['select-wrap']} ${allSelected ? styles['select-wrap-active'] : ""}`}
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               handleSelectAll();
             }}
           >
             {allSelected ? (
-              <CheckSquare2 size={14} className={styles.selectCheck} />
+              <CheckSquare2 size={14} className={styles['select-check']} />
             ) : someSelected ? (
-              <CheckSquare2 size={14} className={styles.selectPartial} />
+              <CheckSquare2 size={14} className={styles['select-partial']} />
             ) : (
-              <Square size={14} className={styles.selectBox} />
+              <Square size={14} className={styles['select-box']} />
             )}
           </span>
         ),
@@ -857,16 +857,16 @@ function ModelsTableInner({
           const isSelected = selectedKeys.has(key);
           return (
             <span
-              className={`${styles.selectWrap} ${isSelected ? styles.selectWrapActive : ""}`}
+              className={`${styles['select-wrap']} ${isSelected ? styles['select-wrap-active'] : ""}`}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onToggleSelect(row._raw);
               }}
             >
               {isSelected ? (
-                <CheckSquare2 size={14} className={styles.selectCheck} />
+                <CheckSquare2 size={14} className={styles['select-check']} />
               ) : (
-                <Square size={14} className={styles.selectBox} />
+                <Square size={14} className={styles['select-box']} />
               )}
             </span>
           );
@@ -892,14 +892,14 @@ function ModelsTableInner({
                 ? "var(--color-warning)"
                 : "var(--color-danger)";
           return (
-            <span className={styles.benchRateCell}>
-              <span className={styles.benchRateBar}>
+            <span className={styles['bench-rate-cell']}>
+              <span className={styles['bench-rate-bar']}>
                 <span
-                  className={styles.benchRateBarFill}
+                  className={styles['bench-rate-bar-fill']}
                   style={{ width: `${percentage}%`, background: color }}
                 />
               </span>
-              <span className={styles.benchRateValue} style={{ color }}>
+              <span className={styles['bench-rate-value']} style={{ color }}>
                 {percentage}%
               </span>
             </span>
@@ -914,7 +914,7 @@ function ModelsTableInner({
         align: "right",
         sortValue: (row: RowData) => row._raw._benchPassed || 0,
         render: (row: RowData) => (
-          <span className={styles.benchPassedCell}>
+          <span className={styles['bench-passed-cell']}>
             <CheckCircle2 size={12} />
             {row._raw._benchPassed || 0}
           </span>
@@ -929,7 +929,7 @@ function ModelsTableInner({
         sortValue: (row: RowData) =>
           (row._raw._benchFailed || 0) + (row._raw._benchErrored || 0),
         render: (row: RowData) => (
-          <span className={styles.benchFailedCell}>
+          <span className={styles['bench-failed-cell']}>
             <XCircle size={12} />
             {(row._raw._benchFailed || 0) + (row._raw._benchErrored || 0)}
           </span>
@@ -949,7 +949,7 @@ function ModelsTableInner({
         if (!onToggleFavorite) return "—";
         return (
           <span
-            className={styles.favoriteWrapper}
+            className={styles['favorite-wrapper']}
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onToggleFavorite(row._favKey);
@@ -957,7 +957,7 @@ function ModelsTableInner({
           >
             <Star
               size={14}
-              className={`${styles.favoriteStar} ${isFav ? styles.favoriteStarActive : ""}`}
+              className={`${styles['favorite-star']} ${isFav ? styles['favorite-star-active'] : ""}`}
               fill={isFav ? "currentColor" : "none"}
             />
           </span>
@@ -978,13 +978,13 @@ function ModelsTableInner({
         render: (row: RowData) => {
           if (row._benchAgent) {
             return (
-              <span className={styles.benchAgentBadge}>
+              <span className={styles['bench-agent-badge']}>
                 <Bot size={12} />
                 Agent
               </span>
             );
           }
-          return <span className={styles.benchModelBadge}>Model</span>;
+          return <span className={styles['bench-model-badge']}>Model</span>;
         },
       });
     }
@@ -1000,13 +1000,13 @@ function ModelsTableInner({
         const model = row._model;
         const rawModel = row._raw;
         return (
-          <span className={styles.nameRow}>
+          <span className={styles['name-row']}>
             <ProviderLogo provider={model.provider} size={16} />
-            <span className={styles.modelName}>{model.name}</span>
+            <span className={styles['model-name']}>{model.name}</span>
             {model.provider === "lm-studio" && model.isLoaded && (
-              <span className={styles.loadedBadge}>
+              <span className={styles['loaded-badge']}>
                 <span
-                  className={`${styles.statusDot} ${styles.isActiveState}`}
+                  className={`${styles['status-dot']} ${styles['is-active-state']}`}
                 />
                 Loaded
               </span>
@@ -1014,14 +1014,14 @@ function ModelsTableInner({
             {model.provider === "lm-studio" &&
               !model.isLoaded &&
               loadingModelKey === model.key && (
-                <span className={styles.loadingBadge}>
-                  <Loader2 size={9} className={styles.loadingSpin} />
+                <span className={styles['loading-badge']}>
+                  <Loader2 size={9} className={styles['loading-spin']} />
                   Loading
                 </span>
               )}
             {hasActions && (
               <span
-                className={styles.inlineActions}
+                className={styles['inline-actions']}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
                 {renderActions(row)}
@@ -1095,11 +1095,11 @@ function ModelsTableInner({
         sortValue: (row: RowData) => (row._benchThinking ? 1 : 0),
         render: (row: RowData) =>
           row._benchThinking ? (
-            <span className={styles.benchThinkingOn}>
+            <span className={styles['bench-thinking-on']}>
               <Brain size={12} /> On
             </span>
           ) : (
-            <span className={styles.benchFlagOff}>—</span>
+            <span className={styles['bench-flag-off']}>—</span>
           ),
       });
       cols.push({
@@ -1111,11 +1111,11 @@ function ModelsTableInner({
         sortValue: (row: RowData) => (row._benchTools ? 1 : 0),
         render: (row: RowData) =>
           row._benchTools ? (
-            <span className={styles.benchToolsOn}>
+            <span className={styles['bench-tools-on']}>
               <Wrench size={12} /> On
             </span>
           ) : (
-            <span className={styles.benchFlagOff}>—</span>
+            <span className={styles['bench-flag-off']}>—</span>
           ),
       });
     }
@@ -1145,7 +1145,7 @@ function ModelsTableInner({
           const sortValue = row._raw._benchAvgLatency;
           if (!sortValue || sortValue <= 0) return emptyDash();
           return (
-            <span className={styles.benchLatencyCell}>
+            <span className={styles['bench-latency-cell']}>
               <Clock size={12} />
               {sortValue.toFixed(1)}s
             </span>
@@ -1524,7 +1524,7 @@ function ModelsTableInner({
           onChange={setSearchQuery}
           placeholder="Search models…"
           compact
-          className={styles.searchWrapper}
+          className={styles['search-wrapper']}
         />
       )}
 
@@ -1686,7 +1686,7 @@ function ModelsTableInner({
             : hasSelection && selectedKeys
               ? (row: RowData) => {
                   const key = `${row._model.provider}:${row._model.key}`;
-                  return selectedKeys.has(key) ? styles.selectedRow : "";
+                  return selectedKeys.has(key) ? styles['selected-row'] : "";
                 }
               : undefined
         }

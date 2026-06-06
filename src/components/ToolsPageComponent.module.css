@@ -19,7 +19,7 @@
   flex-shrink: 0;
 }
 
-.headerLeft {
+.header-left {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -33,7 +33,7 @@
   align-items: center;
   gap: 10px;
 
-  & .titleIcon {
+  & .title-icon {
     color: var(--accent-primary);
     opacity: 0.8;
   }
@@ -45,14 +45,14 @@
   font-weight: 400;
 }
 
-.headerRight {
+.header-right {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
 }
 
-.refreshButton {
+.refresh-button {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -91,13 +91,13 @@
 
 /* ── Stats Badges ──────────────────────────────────────────── */
 
-.statsBadges {
+.stats-badges {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.statBadge {
+.stat-badge {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -109,7 +109,7 @@
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
 
-  & .statValue {
+  & .stat-value {
     color: var(--text-primary);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
@@ -118,7 +118,7 @@
 
 /* ── Search / Filter Bar ───────────────────────────────────── */
 
-.filterBar {
+.filter-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -127,7 +127,7 @@
   width: 100%;
 }
 
-.filterBar > * {
+.filter-bar > * {
   flex: 1 1 calc(25% - 12px);
   min-width: 160px;
 }
@@ -136,7 +136,7 @@
   width: 100%;
 }
 
-.domainFilter {
+.domain-filter {
   height: 36px;
   padding: 0 28px 0 10px;
   font-size: 0.8125rem;
@@ -160,7 +160,7 @@
   }
 }
 
-.labelFilter {
+.label-filter {
   height: 36px;
   padding: 0 28px 0 10px;
   font-size: 0.8125rem;
@@ -184,7 +184,7 @@
   }
 }
 
-.viewToggle {
+.view-toggle {
   display: flex;
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
@@ -194,7 +194,7 @@
   margin-left: auto;
 }
 
-.viewButton {
+.view-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,7 +217,7 @@
     background: var(--background-surface);
   }
 
-  &.viewActive {
+  &.view-active {
     color: var(--accent-primary);
     background: var(--calculated-accent-primary-subtle);
   }
@@ -225,11 +225,11 @@
 
 /* ── Tool Grid ─────────────────────────────────────────────── */
 
-.domainSection {
-  animation: fadeIn 0.3s ease-out both;
+.domain-section {
+  animation: fade-in 0.3s ease-out both;
 }
 
-.domainHeader {
+.domain-header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -245,7 +245,7 @@
   }
 }
 
-.domainCount {
+.domain-count {
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-tertiary);
@@ -255,14 +255,14 @@
   border: 1px solid var(--calculated-border-color);
 }
 
-.domainIcon {
+.domain-icon {
   width: 18px;
   height: 18px;
   color: var(--accent-primary);
   opacity: 0.7;
 }
 
-.toolGrid {
+.tool-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 10px;
@@ -271,7 +271,7 @@
 
 /* ── Tool Card ─────────────────────────────────────────────── */
 
-.toolCard {
+.tool-card {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -294,7 +294,7 @@
   }
 }
 
-.toolCardHeader {
+.tool-card-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -302,7 +302,7 @@
   margin-bottom: 8px;
 }
 
-.toolName {
+.tool-name {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -310,7 +310,7 @@
   word-break: break-all;
 }
 
-.toolDomain {
+.tool-domain {
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--accent-primary);
@@ -321,7 +321,7 @@
   flex-shrink: 0;
 }
 
-.toolDescription {
+.tool-description {
   font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-secondary);
@@ -333,7 +333,7 @@
   margin-bottom: 10px;
 }
 
-.toolMeta {
+.tool-meta {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -341,7 +341,7 @@
   margin-top: auto;
 }
 
-.toolLabel {
+.tool-label {
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-tertiary);
@@ -353,13 +353,13 @@
 
 /* ── Agent Badges ──────────────────────────────────────────── */
 
-.agentBadges {
+.agent-badges {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
 }
 
-.agentBadge {
+.agent-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -392,7 +392,7 @@
   }
 }
 
-.agentFilterSelect {
+.agent-filter-select {
   height: 36px;
   padding: 0 28px 0 10px;
   font-size: 0.8125rem;
@@ -416,7 +416,7 @@
   }
 }
 
-.paramCount {
+.param-count {
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-tertiary);
@@ -434,18 +434,18 @@
 
 /* ── Tools Table View ───────────────────────────────────────── */
 
-.tableWrapper {
+.table-wrapper {
   display: flex;
   flex-direction: column;
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
-  animation: fadeIn 0.3s ease-out both;
+  animation: fade-in 0.3s ease-out both;
   flex-shrink: 0;
 }
 
-.tableNameCellMono {
+.table-name-cell-mono {
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: 0.8125rem;
@@ -453,7 +453,7 @@
   white-space: nowrap;
 }
 
-.tableDescCellText {
+.table-desc-cell-text {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   line-height: 1.45;
@@ -465,7 +465,7 @@
   text-overflow: ellipsis;
 }
 
-.tableParamCell {
+.table-param-cell {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -484,7 +484,7 @@
   }
 }
 
-.tableStatValue {
+.table-stat-value {
   font-weight: 600;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
@@ -492,14 +492,14 @@
 
 /* ── Tool List View ────────────────────────────────────────── */
 
-.toolList {
+.tool-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-block-end: 24px;
 }
 
-.toolRow {
+.tool-row {
   display: grid;
   grid-template-columns: 24px minmax(140px, 220px) 60px 90px 70px 70px 75px 80px 1fr;
   align-items: center;
@@ -538,21 +538,21 @@
   user-select: none;
 }
 
-.toolRowEmoji {
+.tool-row-emoji {
   font-size: 1rem;
   line-height: 1;
   flex-shrink: 0;
   filter: drop-shadow(0 1px 2px oklch(0.0% 0.0 0.0 / 0.15));
 }
 
-.toolRowEmojiImage {
+.tool-row-emoji-image {
   width: 1.25rem;
   height: 1.25rem;
   object-fit: contain;
   flex-shrink: 0;
 }
 
-.toolRowName {
+.tool-row-name {
   font-size: 0.8125rem;
   font-weight: 600;
   font-family: var(--font-mono);
@@ -588,7 +588,7 @@
   text-align: left;
 }
 
-.toolRowMeta {
+.tool-row-meta {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -598,7 +598,7 @@
 
 /* ── Expanded Tool Detail ──────────────────────────────────── */
 
-.detailOverlay {
+.detail-overlay {
   position: fixed;
   inset: 0;
   background: oklch(0.0% 0.0 0.0 / 0.55);
@@ -606,11 +606,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeInPure 0.15s ease-out;
+  animation: fade-in-pure 0.15s ease-out;
   backdrop-filter: blur(4px);
 }
 
-.detailPanel {
+.detail-panel {
   width: 680px;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 80px);
@@ -621,10 +621,10 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.2s ease-out;
+  animation: slide-up 0.2s ease-out;
 }
 
-.detailHeader {
+.detail-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -632,21 +632,21 @@
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.detailTitleBlock {
+.detail-title-block {
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 0;
 }
 
-.detailDomainRow {
+.detail-domain-row {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.detailCleanName {
+.detail-clean-name {
   font-size: 1.375rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -656,20 +656,20 @@
   gap: 10px;
 }
 
-.detailEmoji {
+.detail-emoji {
   font-size: 1.5rem;
   line-height: 1;
   filter: drop-shadow(0 1px 2px oklch(0.0% 0.0 0.0 / 0.15));
 }
 
-.detailEmojiImage {
+.detail-emoji-image {
   width: 1.875rem;
   height: 1.875rem;
   object-fit: contain;
   flex-shrink: 0;
 }
 
-.detailTitle {
+.detail-title {
   font-size: 0.8125rem;
   font-weight: 500;
   font-family: var(--font-mono);
@@ -679,7 +679,7 @@
 
 /* ── Data Source Badge ──────────────────────────────────────── */
 
-.dataSourceBadge {
+.data-source-badge {
   display: inline-flex;
   align-items: center;
   gap: 1px;
@@ -690,7 +690,7 @@
   border: 1px solid var(--calculated-border-color);
 }
 
-.dataSourceType {
+.data-source-type {
   padding: 2px 7px;
   background: var(--calculated-color-info-subtle);
   color: var(--color-info);
@@ -700,13 +700,13 @@
   font-size: 0.5625rem;
 }
 
-.dataSourceProvider {
+.data-source-provider {
   padding: 2px 7px;
   background: var(--background-elevated);
   color: var(--text-secondary);
 }
 
-.dataSourceInterval {
+.data-source-interval {
   padding: 2px 7px;
   background: var(--background-base);
   color: var(--text-muted);
@@ -716,13 +716,13 @@
 
 /* ── Output Fields Grid ────────────────────────────────────── */
 
-.outputFieldsGrid {
+.output-fields-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.outputField {
+.output-field {
   font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   color: var(--color-info);
@@ -734,7 +734,7 @@
 
 /* ── Raw Schema Toggle ─────────────────────────────────────── */
 
-.rawToggle {
+.raw-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -746,7 +746,7 @@
   color: inherit;
 }
 
-.rawChevron {
+.raw-chevron {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   transition: transform var(--transition-fast);
@@ -756,7 +756,7 @@
   }
 }
 
-.detailClose {
+.detail-close {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -780,14 +780,14 @@
   }
 }
 
-.detailBody {
+.detail-body {
   padding: 20px 24px 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.tryToolButton {
+.try-tool-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -815,19 +815,19 @@
   }
 }
 
-.detailDescription {
+.detail-description {
   font-size: 0.8125rem;
   line-height: 1.65;
   color: var(--text-secondary);
 }
 
-.detailSection {
+.detail-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.detailSectionTitle {
+.detail-section-title {
   font-size: var(--font-size-xs);
   font-weight: 600;
   text-transform: uppercase;
@@ -844,13 +844,13 @@
 
 /* ── Lifetime Stats Grid ──────────────────────────────────── */
 
-.statsGrid {
+.stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
-.statCell {
+.stat-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -860,7 +860,7 @@
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   text-align: center;
-  animation: fadeIn 0.3s ease-out both;
+  animation: fade-in 0.3s ease-out both;
 
   &:nth-child(1) {
     animation-delay: 0s;
@@ -882,12 +882,12 @@
   }
 }
 
-.statCellIcon {
+.stat-cell-icon {
   color: var(--accent-primary);
   opacity: 0.7;
 }
 
-.statCellValue {
+.stat-cell-value {
   font-size: var(--font-size-lg);
   font-weight: 700;
   color: var(--text-primary);
@@ -895,7 +895,7 @@
   letter-spacing: -0.02em;
 }
 
-.statCellLabel {
+.stat-cell-label {
   font-size: 0.625rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -905,13 +905,13 @@
 
 /* ── Stats Time Range ─────────────────────────────────────── */
 
-.statsTimeRange {
+.stats-time-range {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.statsTimeItem {
+.stats-time-item {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -926,17 +926,17 @@
   }
 }
 
-.statsTimeLabel {
+.stats-time-label {
   color: var(--text-muted);
 }
 
-.statsTimeValue {
+.stats-time-value {
   font-weight: 600;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
 
-.statsTimeValueDanger {
+.stats-time-value-danger {
   font-weight: 600;
   color: var(--color-danger);
   font-variant-numeric: tabular-nums;
@@ -944,19 +944,19 @@
 
 /* ── Stats Breakdown (Top Models / Agents) ────────────────── */
 
-.statsBreakdown {
+.stats-breakdown {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
 }
 
-.statsBreakdownCol {
+.stats-breakdown-col {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.statsBreakdownTitle {
+.stats-breakdown-title {
   font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -966,7 +966,7 @@
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.statsBreakdownRow {
+.stats-breakdown-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -979,7 +979,7 @@
   }
 }
 
-.statsBreakdownName {
+.stats-breakdown-name {
   font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   color: var(--text-secondary);
@@ -989,7 +989,7 @@
   min-width: 0;
 }
 
-.statsBreakdownCount {
+.stats-breakdown-count {
   font-size: var(--font-size-xs);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -1000,7 +1000,7 @@
 
 /* ── Stats Empty State ────────────────────────────────────── */
 
-.statsEmpty {
+.stats-empty {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1018,7 +1018,7 @@
   }
 }
 
-.paramTable {
+.param-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--font-size-sm);
@@ -1051,14 +1051,14 @@
   }
 }
 
-.paramName {
+.param-name {
   font-family: var(--font-mono);
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
 }
 
-.paramRequired {
+.param-required {
   display: inline-block;
   font-size: 0.5625rem;
   font-weight: 700;
@@ -1071,21 +1071,21 @@
   margin-left: 6px;
 }
 
-.paramType {
+.param-type {
   font-size: var(--font-size-xs);
   font-family: var(--font-mono);
   color: var(--accent-primary);
   opacity: 0.8;
 }
 
-.paramEnum {
+.param-enum {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
   margin-top: 4px;
 }
 
-.enumValue {
+.enum-value {
   font-size: 0.625rem;
   font-family: var(--font-mono);
   color: var(--color-success);
@@ -1094,7 +1094,7 @@
   border-radius: var(--border-radius-sm);
 }
 
-.jsonBlock {
+.json-block {
   background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
@@ -1110,7 +1110,7 @@
 
 /* ── Empty State ───────────────────────────────────────────── */
 
-.emptyState {
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1134,7 +1134,7 @@
 
 /* ── Loading ───────────────────────────────────────────────── */
 
-.isLoadingState {
+.is-loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1146,7 +1146,7 @@
 
 /* Spinner is rendered via PanelLoadingSpinnerComponent */
 
-.loadingText {
+.loading-text {
   font-size: 0.8125rem;
   color: var(--text-tertiary);
 }
@@ -1184,25 +1184,25 @@
     gap: 12px;
   }
 
-  .filterBar {
+  .filter-bar {
     flex-direction: column;
     gap: 8px;
   }
 
-  .searchWrapper {
+  .search-wrapper {
     max-width: 100%;
   }
 
-  .toolGrid {
+  .tool-grid {
     grid-template-columns: 1fr;
   }
 
-  .toolRow {
+  .tool-row {
     grid-template-columns: 1fr;
     gap: 4px;
   }
 
-  .detailPanel {
+  .detail-panel {
     width: calc(100vw - 24px);
     max-height: calc(100vh - 48px);
   }

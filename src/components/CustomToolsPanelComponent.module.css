@@ -14,12 +14,12 @@
 
 /* ── Section Headers ───────────────────────────────────────── */
 
-.searchBar {
+.search-bar {
   flex-shrink: 0;
   margin-bottom: 4px;
 }
 
-.sectionHeader {
+.section-header {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -38,21 +38,21 @@
   }
 }
 
-.sectionActions {
+.section-actions {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-left: auto;
 }
 
-.emptyCustom {
+.empty-custom {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   font-style: italic;
   padding: 6px 4px;
 }
 
-.toolCardFooter {
+.tool-card-footer {
   display: flex;
   gap: 6px;
   padding-top: 4px;
@@ -60,13 +60,13 @@
 
 /* ── Domain Group ──────────────────────────────────────────── */
 
-.domainGroup {
+.domain-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.domainHeader {
+.domain-header {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -85,12 +85,12 @@
   }
 }
 
-.domainIcon {
+.domain-icon {
   opacity: 0.7;
   flex-shrink: 0;
 }
 
-.domainLabel {
+.domain-label {
   flex: 1;
   min-width: 0;
   white-space: nowrap;
@@ -98,7 +98,7 @@
   text-overflow: ellipsis;
 }
 
-.domainCount {
+.domain-count {
   font-size: 0.5625rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -106,7 +106,7 @@
   flex-shrink: 0;
 }
 
-.domainActions {
+.domain-actions {
   margin-left: auto;
   display: flex;
   align-items: center;
@@ -115,7 +115,7 @@
 
 /* ── Built-in Card ─────────────────────────────────────────── */
 
-.builtInCard {
+.built-in-card {
   border-left: 2px solid
     color-mix(
       in srgb,
@@ -124,12 +124,12 @@
     );
 }
 
-.offlineCard {
+.offline-card {
   border-left-color: var(--color-danger);
   opacity: 0.45;
 }
 
-.offlineBadge {
+.offline-badge {
   display: inline-flex;
   padding: 1px 5px;
   border-radius: 3px;
@@ -143,7 +143,7 @@
 
 /* ── Data Source Badges ────────────────────────────────────── */
 
-.dataSourceBadge {
+.data-source-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -155,32 +155,32 @@
   text-transform: uppercase;
 }
 
-.dataSourceBadge[data-type="cached"] {
+.data-source-badge[data-type="cached"] {
   background: color-mix(in srgb, oklch(68.5% 0.1479 237.3) 14%, transparent);
   color: oklch(68.5% 0.1479 237.3);
 }
 
-.dataSourceBadge[data-type="onDemand"] {
+.data-source-badge[data-type="onDemand"] {
   background: color-mix(in srgb, var(--color-warning) 14%, transparent);
   color: var(--color-warning);
 }
 
-.dataSourceBadge[data-type="static"] {
+.data-source-badge[data-type="static"] {
   background: color-mix(in srgb, var(--color-purple) 14%, transparent);
   color: var(--color-purple);
 }
 
-.dataSourceBadge[data-type="compute"] {
+.data-source-badge[data-type="compute"] {
   background: color-mix(in srgb, var(--color-emerald) 14%, transparent);
   color: var(--color-emerald);
 }
 
-.dataSourceBadge[data-type="realtime"] {
+.data-source-badge[data-type="realtime"] {
   background: color-mix(in srgb, var(--color-rose) 14%, transparent);
   color: var(--color-rose);
 }
 
-.intervalInline {
+.interval-inline {
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   margin-left: 1px;
@@ -188,7 +188,7 @@
 
 /* ── Data Source Info (expanded view) ──────────────────────── */
 
-.dataSourceInfo {
+.data-source-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -199,7 +199,7 @@
     color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
 }
 
-.dataSourceRow {
+.data-source-row {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -216,14 +216,14 @@
   }
 }
 
-.dataSourceLabel {
+.data-source-label {
   font-weight: 600;
   color: var(--text-primary);
 }
 
 /* ── Tool Card (list view) ─────────────────────────────────── */
 
-.toolCard {
+.tool-card {
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--background-surface);
@@ -240,11 +240,11 @@
   }
 }
 
-.toolDisabled {
+.tool-disabled {
   opacity: 1;
 }
 
-.toolCardHeader {
+.tool-card-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -257,7 +257,7 @@
   }
 }
 
-.expandButton {
+.expand-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,7 +269,7 @@
   padding: 0;
 }
 
-.toolCardInfo {
+.tool-card-info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -277,7 +277,7 @@
   gap: 2px;
 }
 
-.toolCardName {
+.tool-card-name {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
@@ -287,7 +287,7 @@
   white-space: nowrap;
 }
 
-.toolCardSlug {
+.tool-card-slug {
   font-size: 0.5625rem;
   font-weight: 500;
   color: var(--text-tertiary);
@@ -298,7 +298,7 @@
   white-space: nowrap;
 }
 
-.toolCardMeta {
+.tool-card-meta {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -306,7 +306,7 @@
   color: var(--text-tertiary);
 }
 
-.methodBadge {
+.method-badge {
   display: inline-flex;
   padding: 1px 5px;
   border-radius: 3px;
@@ -315,44 +315,44 @@
   letter-spacing: 0.04em;
 }
 
-.methodBadge[data-http-method="GET"] {
+.method-badge[data-http-method="GET"] {
   background: color-mix(in srgb, var(--color-success-bright) 15%, transparent);
   color: var(--color-success-bright);
 }
 
-.methodBadge[data-http-method="POST"] {
+.method-badge[data-http-method="POST"] {
   background: color-mix(in srgb, var(--color-warning) 15%, transparent);
   color: var(--color-warning);
 }
 
-.methodBadge[data-http-method="JS"] {
+.method-badge[data-http-method="JS"] {
   background: color-mix(in srgb, oklch(88.4% 0.1564 100.7) 15%, transparent);
   color: oklch(88.4% 0.1564 100.7);
 }
 
-.toolCardActions {
+.tool-card-actions {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.toolCardBody {
+.tool-card-body {
   padding: 8px 12px 10px;
   border-top: 1px solid var(--calculated-border-color);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  animation: slideDown 0.15s ease;
+  animation: slide-down 0.15s ease;
 }
 
-.toolCardDesc {
+.tool-card-desc {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.4;
   margin: 0;
 }
 
-.toolCardEndpoint {
+.tool-card-endpoint {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -368,13 +368,13 @@
   }
 }
 
-.toolCardParams {
+.tool-card-params {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.toolCardParam {
+.tool-card-param {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -392,12 +392,12 @@
   }
 }
 
-.paramType {
+.param-type {
   color: var(--accent-primary);
   font-size: 0.5625rem;
 }
 
-.paramRequired {
+.param-required {
   color: var(--color-danger);
   font-size: 0.5625rem;
   font-weight: 600;
@@ -405,14 +405,14 @@
 
 /* ── Delete Confirmation ──────────────────────────────────── */
 
-.deleteConfirm {
+.delete-confirm {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  animation: fadeIn 0.15s ease;
+  animation: fade-in 0.15s ease;
 }
 
-.deleteConfirmLabel {
+.delete-confirm-label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-danger);
@@ -420,7 +420,7 @@
 
 /* ── Form View ─────────────────────────────────────────────── */
 
-.formHeader {
+.form-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -444,7 +444,7 @@
   padding-top: 8px;
 }
 
-.formGroup {
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -457,7 +457,7 @@
   }
 }
 
-.formRow {
+.form-row {
   display: flex;
   gap: 8px;
 }
@@ -503,13 +503,13 @@
 
 /* ── Parameters Section ────────────────────────────────────── */
 
-.paramsSection {
+.params-section {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.paramsSectionHeader {
+.params-section-header {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -525,7 +525,7 @@
 
 
 
-.paramsEmpty {
+.params-empty {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   font-style: italic;
@@ -534,21 +534,21 @@
 
 /* ── JSON Import Section ──────────────────────────────────── */
 
-.jsonImportSection {
+.json-import-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  animation: slideDown 0.18s ease;
+  animation: slide-down 0.18s ease;
 }
 
-.jsonImportHint {
+.json-import-hint {
   font-size: 0.625rem;
   color: var(--text-tertiary);
   line-height: 1.45;
   padding: 0 2px;
 }
 
-.jsonTextarea {
+.json-textarea {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   line-height: 1.55;
@@ -558,7 +558,7 @@
   white-space: pre;
 }
 
-.codeTextarea {
+.code-textarea {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   line-height: 1.6;
@@ -569,14 +569,14 @@
   background: color-mix(in srgb, var(--background-surface) 80%, oklch(0.0% 0.0 0.0));
 }
 
-.jsonActions {
+.json-actions {
   display: flex;
   gap: 6px;
 }
 
 
 
-.jsonFeedback {
+.json-feedback {
   display: flex;
   align-items: flex-start;
   gap: 6px;
@@ -584,7 +584,7 @@
   border-radius: var(--border-radius-sm);
   font-size: var(--font-size-xs);
   line-height: 1.4;
-  animation: slideDown 0.15s ease;
+  animation: slide-down 0.15s ease;
 
   & > svg {
     flex-shrink: 0;
@@ -592,28 +592,28 @@
   }
 }
 
-.jsonFeedback[data-content-type="error"] {
+.json-feedback[data-content-type="error"] {
   color: var(--color-danger);
   background: color-mix(in srgb, var(--color-danger) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-danger) 20%, transparent);
 }
 
-.jsonFeedback[data-content-type="success"] {
+.json-feedback[data-content-type="success"] {
   color: var(--color-success-bright);
   background: color-mix(in srgb, var(--color-success-bright) 8%, transparent);
   border: 1px solid
     color-mix(in srgb, var(--color-success-bright) 20%, transparent);
 }
 
-.paramCard {
+.param-card {
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--background-surface);
   overflow: hidden;
-  animation: slideDown 0.15s ease;
+  animation: slide-down 0.15s ease;
 }
 
-.paramCardHeader {
+.param-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -622,7 +622,7 @@
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.paramIndex {
+.param-index {
   font-size: 0.625rem;
   font-weight: 700;
   color: var(--text-tertiary);
@@ -631,20 +631,20 @@
 
 
 
-.paramFields {
+.param-fields {
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 8px;
 }
 
-.paramRow {
+.param-row {
   display: flex;
   gap: 6px;
   align-items: flex-end;
 }
 
-.paramField {
+.param-field {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -658,7 +658,7 @@
   }
 }
 
-.paramFieldToggle {
+.param-field-toggle {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -673,8 +673,8 @@
   }
 }
 
-.inputSmall,
-.selectSmall {
+.input-small,
+.select-small {
   padding: 5px 8px;
   font-size: var(--font-size-sm);
   color: var(--text-primary);
@@ -691,7 +691,7 @@
   }
 }
 
-.selectSmall {
+.select-small {
   cursor: pointer;
 }
 
@@ -699,7 +699,7 @@
 
 /* ── Locked Icon (force-disabled tools) ───────────────────── */
 
-.lockedIcon {
+.locked-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -713,7 +713,7 @@
 
 /* ── Group-by Segmented Toggle ────────────────────────────── */
 
-.groupByBar {
+.group-by-bar {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -721,12 +721,12 @@
   flex-shrink: 0;
 }
 
-.groupByIcon {
+.group-by-icon {
   color: var(--text-tertiary);
   flex-shrink: 0;
 }
 
-.groupByLabel {
+.group-by-label {
   font-size: 0.625rem;
   font-weight: 600;
   color: var(--text-tertiary);
@@ -736,7 +736,7 @@
   margin-right: 2px;
 }
 
-.groupByToggle {
+.group-by-toggle {
   display: flex;
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
@@ -744,7 +744,7 @@
   margin-left: auto;
 }
 
-.groupByButton {
+.group-by-button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -761,13 +761,13 @@
     border-right: 1px solid var(--calculated-border-color);
   }
 
-  &:hover:not(.groupByBtnActive) {
+  &:hover:not(.group-by-btn-active) {
     color: var(--text-secondary);
     background: color-mix(in srgb, var(--background-surface) 60%, transparent);
   }
 }
 
-.groupByBtnActive {
+.group-by-btn-active {
   color: var(--accent-primary);
   background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }

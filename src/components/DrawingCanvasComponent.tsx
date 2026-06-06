@@ -357,20 +357,20 @@ export default function DrawingCanvas({
 
   return createPortal(
     <div className={styles.overlay}>
-      <button className={styles.closeButton} onClick={onClose} title="Close">
+      <button className={styles['close-button']} onClick={onClose} title="Close">
         <X size={22} />
       </button>
 
       {/* Toolbar */}
       <div className={styles.toolbar}>
         {/* Tool buttons */}
-        <div className={styles.toolGroup}>
+        <div className={styles['tool-group']}>
           {TOOLS.map((toolOption) => {
             const Icon = toolOption.icon;
             return (
               <button
                 key={toolOption.id}
-                className={`${styles.toolButton} ${tool === toolOption.id ? styles.toolBtnActive : ""}`}
+                className={`${styles['tool-button']} ${tool === toolOption.id ? styles['tool-btn-active'] : ""}`}
                 onClick={() => setTool(toolOption.id)}
                 title={toolOption.label}
               >
@@ -381,12 +381,12 @@ export default function DrawingCanvas({
         </div>
 
         {/* Colors */}
-        <div className={styles.toolGroup}>
-          <span className={styles.toolLabel}>Color</span>
+        <div className={styles['tool-group']}>
+          <span className={styles['tool-label']}>Color</span>
           {COLORS.map((colorOption) => (
             <button
               key={colorOption.value}
-              className={`${styles.swatch} ${color === colorOption.value && tool !== "eraser" ? styles.swatchActive : ""}`}
+              className={`${styles.swatch} ${color === colorOption.value && tool !== "eraser" ? styles['swatch-active'] : ""}`}
               style={{
                 background: colorOption.value,
                 border: colorOption.value === "#000000" ? "2px solid #555" : undefined,
@@ -401,17 +401,17 @@ export default function DrawingCanvas({
         </div>
 
         {/* Sizes */}
-        <div className={styles.toolGroup}>
-          <span className={styles.toolLabel}>Size</span>
+        <div className={styles['tool-group']}>
+          <span className={styles['tool-label']}>Size</span>
           {SIZES.map((sizeOption, i) => (
             <button
               key={sizeOption.label}
-              className={`${styles.sizeButton} ${sizeIndex === i ? styles.sizeBtnActive : ""}`}
+              className={`${styles['size-button']} ${sizeIndex === i ? styles['size-btn-active'] : ""}`}
               onClick={() => setSizeIndex(i)}
               title={sizeOption.label}
             >
               <span
-                className={styles.sizeDot}
+                className={styles['size-dot']}
                 style={{ width: sizeOption.dot, height: sizeOption.dot }}
               />
             </button>
@@ -419,9 +419,9 @@ export default function DrawingCanvas({
         </div>
 
         {/* Undo / Clear */}
-        <div className={styles.toolGroup}>
+        <div className={styles['tool-group']}>
           <button
-            className={styles.actionButton}
+            className={styles['action-button']}
             onClick={handleUndo}
             disabled={strokes.length === 0}
             title="Undo"
@@ -429,7 +429,7 @@ export default function DrawingCanvas({
             <Undo2 size={14} /> Undo
           </button>
           <button
-            className={styles.actionButton}
+            className={styles['action-button']}
             onClick={handleClear}
             disabled={strokes.length === 0}
             title="Clear all"
@@ -440,13 +440,13 @@ export default function DrawingCanvas({
       </div>
 
       {/* Canvas */}
-      <div className={styles.canvasArea} ref={containerRef}>
+      <div className={styles['canvas-area']} ref={containerRef}>
         {/* Hidden bg canvas for compositing */}
         <canvas ref={bgCanvasRef} style={{ display: "none" }} />
 
         {/* Visible canvas */}
         <div
-          className={styles.canvasWrapper}
+          className={styles['canvas-wrapper']}
           style={{ width: displaySize.width, height: displaySize.height }}
         >
           {/* Background: show source image or white */}
@@ -454,15 +454,15 @@ export default function DrawingCanvas({
             <img
               src={backgroundImageSourceUrl}
               alt="Background"
-              className={styles.backgroundImage}
+              className={styles['background-image']}
               draggable={false}
             />
           ) : (
-            <div className={styles.backgroundWhite} />
+            <div className={styles['background-white']} />
           )}
           <canvas
             ref={canvasRef}
-            className={styles.drawCanvas}
+            className={styles['draw-canvas']}
             style={{ cursor: toolCursor }}
             onMouseDown={handlePointerDown}
             onMouseMove={handlePointerMove}
@@ -476,11 +476,11 @@ export default function DrawingCanvas({
       </div>
 
       {/* Bottom bar */}
-      <div className={styles.bottomBar}>
-        <button className={styles.cancelButton} onClick={onClose}>
+      <div className={styles['bottom-bar']}>
+        <button className={styles['cancel-button']} onClick={onClose}>
           Cancel
         </button>
-        <button className={styles.saveButton} onClick={handleSave}>
+        <button className={styles['save-button']} onClick={handleSave}>
           <Save size={15} /> {backgroundImageSourceUrl ? "Save Changes" : "Use Drawing"}
         </button>
       </div>

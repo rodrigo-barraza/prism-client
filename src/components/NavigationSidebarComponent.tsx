@@ -71,7 +71,7 @@ function RainbowCanvas({
     <RainbowCanvasComponent
       turbo={turbo}
       greyscale={greyscale}
-      className={styles.rainbowCanvas}
+      className={styles['rainbow-canvas']}
     />
   );
 }
@@ -742,19 +742,19 @@ export default function NavigationSidebarComponent({
       <>
         {/* Floating triangle trigger */}
         <button
-          className={styles.mobileHamburger}
+          className={styles['mobile-hamburger']}
           onClick={() => setMobileOpen((isOpenState) => !isOpenState)}
           title={mobileOpen ? "Close navigation" : "Open navigation"}
         >
           {/* Spinning circle with rainbow ring */}
-          <span className={styles.circleSpin}>
-            <span className={styles.triangleOuter}>
+          <span className={styles['circle-spin']}>
+            <span className={styles['triangle-outer']}>
               <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
             </span>
-            <span className={styles.triangleInner} />
+            <span className={styles['triangle-inner']} />
           </span>
           {/* Icon stays centered, doesn't spin */}
-          <span className={styles.triangleIcon}>
+          <span className={styles['triangle-icon']}>
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </span>
         </button>
@@ -763,18 +763,18 @@ export default function NavigationSidebarComponent({
         {mobileOpen && (
           <>
             <div
-              className={styles.mobileBackdrop}
+              className={styles['mobile-backdrop']}
               onClick={() => setMobileOpen(false)}
             />
-            <div className={styles.mobilePopover}>
+            <div className={styles['mobile-popover']}>
               {/* Rainbow strip */}
-              <div className={styles.rainbowStrip}>
+              <div className={styles['rainbow-strip']}>
                 <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
                 <SpinningCatComponent animate={isGenerating} />
               </div>
 
               {/* Navigation links */}
-              <nav className={styles.mobilePopoverNav}>
+              <nav className={styles['mobile-popover-nav']}>
                 {navSections.map(
                   (
                     section: NavigationSection,
@@ -783,7 +783,7 @@ export default function NavigationSidebarComponent({
                     <React.Fragment key={section.label || sectionIndex}>
                       {/* Section divider */}
                       {section.label && (
-                        <div className={styles.navigationDivider}>
+                        <div className={styles['navigation-divider']}>
                           <span>{section.label}</span>
                         </div>
                       )}
@@ -804,7 +804,7 @@ export default function NavigationSidebarComponent({
                             <Link
                               key={item.href}
                               href={item.href}
-                              className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
+                              className={`${styles['navigation-link']} ${isActive ? styles['is-active-state'] : ""}`}
                               onMouseEnter={(mouseEnterEvent: React.MouseEvent) =>
                                 SoundService.playHover({ event: mouseEnterEvent.nativeEvent })
                               }
@@ -822,15 +822,15 @@ export default function NavigationSidebarComponent({
                                 }
                               }}
                             >
-                              <span className={styles.activeStateLayer}>
-                                <Icon className={styles.navigationIcon} />
-                                <span className={styles.navigationLabel}>
+                              <span className={styles['active-state-layer']}>
+                                <Icon className={styles['navigation-icon']} />
+                                <span className={styles['navigation-label']}>
                                   {item.label}
                                 </span>
                                  {item.href === "/settings" &&
                                    settingsWarningCount > 0 && (
                                      <span
-                                       className={styles.attentionDot}
+                                       className={styles['attention-dot']}
                                        title={`${settingsWarningCount} setting${settingsWarningCount > 1 ? "s" : ""} need${settingsWarningCount === 1 ? "s" : ""} to be configured`}
                                      >
                                        {settingsWarningCount}
@@ -839,7 +839,7 @@ export default function NavigationSidebarComponent({
                                 {item.href === "/scheduled-tasks" &&
                                   cronJobNotificationsCount > 0 && (
                                     <span
-                                      className={`${styles.attentionDot} ${styles.informational}`}
+                                      className={`${styles['attention-dot']} ${styles.informational}`}
                                       title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
                                     >
                                       {cronJobNotificationsCount}
@@ -870,43 +870,43 @@ export default function NavigationSidebarComponent({
               </nav>
 
               {/* Footer actions */}
-              <div className={styles.mobilePopoverFooter}>
+              <div className={styles['mobile-popover-footer']}>
                 {authStatus === "authenticated" ? (
                   <button
-                    className={styles.navigationLink}
+                    className={styles['navigation-link']}
                     onClick={() => {
                       signOut();
                       setMobileOpen(false);
                     }}
                   >
-                    <span className={styles.activeStateLayer}>
-                      <LogOut className={styles.navigationIcon} />
-                      <span className={styles.navigationLabel}>Log Out</span>
+                    <span className={styles['active-state-layer']}>
+                      <LogOut className={styles['navigation-icon']} />
+                      <span className={styles['navigation-label']}>Log Out</span>
                     </span>
                   </button>
                 ) : authStatus === "unauthenticated" ? (
                   <button
-                    className={styles.navigationLink}
+                    className={styles['navigation-link']}
                     onClick={() => {
                       signIn("google");
                       setMobileOpen(false);
                     }}
                   >
-                    <span className={styles.activeStateLayer}>
-                      <CircleUser className={styles.navigationIcon} />
-                      <span className={styles.navigationLabel}>Log In</span>
+                    <span className={styles['active-state-layer']}>
+                      <CircleUser className={styles['navigation-icon']} />
+                      <span className={styles['navigation-label']}>Log In</span>
                     </span>
                   </button>
                 ) : null}
                 {isAdmin ? (
                   <Link
                     href="/"
-                    className={styles.navigationLink}
+                    className={styles['navigation-link']}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <span className={styles.activeStateLayer}>
-                      <ShieldCheck className={styles.navigationIcon} />
-                      <span className={styles.navigationLabel}>
+                    <span className={styles['active-state-layer']}>
+                      <ShieldCheck className={styles['navigation-icon']} />
+                      <span className={styles['navigation-label']}>
                         User Side
                       </span>
                     </span>
@@ -914,12 +914,12 @@ export default function NavigationSidebarComponent({
                 ) : isLocal ? (
                   <Link
                     href="/admin"
-                    className={styles.navigationLink}
+                    className={styles['navigation-link']}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <span className={styles.activeStateLayer}>
-                      <Settings className={styles.navigationIcon} />
-                      <span className={styles.navigationLabel}>Admin Side</span>
+                    <span className={styles['active-state-layer']}>
+                      <Settings className={styles['navigation-icon']} />
+                      <span className={styles['navigation-label']}>Admin Side</span>
                     </span>
                   </Link>
                 ) : null}
@@ -941,12 +941,12 @@ export default function NavigationSidebarComponent({
 
   return (
     <div
-      className={`${styles.wrapper} ${!showNav ? styles.isCollapsedState : ""} ${!navReady ? styles.noTransition : ""}`}
+      className={`${styles.wrapper} ${!showNav ? styles['is-collapsed-state'] : ""} ${!navReady ? styles['no-transition'] : ""}`}
     >
       {/* Expanded sidebar */}
       <aside ref={sidebarReference} className={styles.sidebar}>
         {/* Rainbow logo banner */}
-        <div className={styles.logoBanner} ref={bannerRef}>
+        <div className={styles['logo-banner']} ref={bannerRef}>
           <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
           {miniCats.map((cat: MiniCat) => (
             // eslint-disable-next-line @next/next/no-img-element
@@ -958,13 +958,13 @@ export default function NavigationSidebarComponent({
               }}
               src="/cat-spinning.gif"
               alt=""
-              className={styles.miniCat}
+              className={styles['mini-cat']}
               style={{ width: `${cat.size}px`, height: `${cat.size}px` }}
             />
           ))}
           <SpinningCatComponent animate={isGenerating} />
           <button
-            className={styles.collapseButton}
+            className={styles['collapse-button']}
             onClick={toggleNav}
             title="Toggle sidebar"
           >
@@ -973,7 +973,7 @@ export default function NavigationSidebarComponent({
         </div>
 
         {/* Navigation */}
-        <nav className={styles.navigationList}>
+        <nav className={styles['navigation-list']}>
           {navSections.map(
             (
               section: NavigationSection,
@@ -982,7 +982,7 @@ export default function NavigationSidebarComponent({
               <React.Fragment key={section.label || sectionIndex}>
                 {/* Section divider */}
                 {section.label && (
-                  <div className={styles.navigationDivider}>
+                  <div className={styles['navigation-divider']}>
                     <span>{section.label}</span>
                   </div>
                 )}
@@ -1003,7 +1003,7 @@ export default function NavigationSidebarComponent({
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`${styles.navigationLink} ${isActive ? styles.isActiveState : ""}`}
+                        className={`${styles['navigation-link']} ${isActive ? styles['is-active-state'] : ""}`}
                         onMouseEnter={(mouseEnterEvent: React.MouseEvent) =>
                           SoundService.playHover({ event: mouseEnterEvent.nativeEvent })
                         }
@@ -1015,14 +1015,14 @@ export default function NavigationSidebarComponent({
                           }
                         }}
                       >
-                        <span className={styles.activeStateLayer}>
-                          <Icon className={styles.navigationIcon} />
-                          <span className={styles.navigationLabel}>
+                        <span className={styles['active-state-layer']}>
+                          <Icon className={styles['navigation-icon']} />
+                          <span className={styles['navigation-label']}>
                             {item.label}
                           </span>
                            {item.href === "/settings" && settingsWarningCount > 0 && (
                              <span
-                               className={styles.attentionDot}
+                               className={styles['attention-dot']}
                                title={`${settingsWarningCount} setting${settingsWarningCount > 1 ? "s" : ""} need${settingsWarningCount === 1 ? "s" : ""} to be configured`}
                              >
                                {settingsWarningCount}
@@ -1030,7 +1030,7 @@ export default function NavigationSidebarComponent({
                            )}
                           {item.href === "/scheduled-tasks" && cronJobNotificationsCount > 0 && (
                             <span
-                              className={`${styles.attentionDot} ${styles.informational}`}
+                              className={`${styles['attention-dot']} ${styles.informational}`}
                               title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
                             >
                               {cronJobNotificationsCount}
@@ -1061,7 +1061,7 @@ export default function NavigationSidebarComponent({
                         position="right"
                         delay={200}
                         disabled={showNav}
-                        className={styles.tooltipFill}
+                        className={styles['tooltip-fill']}
                       >
                         {link}
                       </TooltipComponent>
@@ -1081,18 +1081,18 @@ export default function NavigationSidebarComponent({
               position="right"
               delay={200}
               disabled={showNav}
-              className={styles.tooltipFill}
+              className={styles['tooltip-fill']}
             >
               <button
-                className={styles.navigationLink}
+                className={styles['navigation-link']}
                 onClick={() => signOut()}
                 onMouseEnter={(e) =>
                   SoundService.playHover({ event: e.nativeEvent })
                 }
               >
-                <span className={styles.activeStateLayer}>
-                  <LogOut className={styles.navigationIcon} />
-                  <span className={styles.navigationLabel}>Log Out</span>
+                <span className={styles['active-state-layer']}>
+                  <LogOut className={styles['navigation-icon']} />
+                  <span className={styles['navigation-label']}>Log Out</span>
                 </span>
               </button>
             </TooltipComponent>
@@ -1102,18 +1102,18 @@ export default function NavigationSidebarComponent({
               position="right"
               delay={200}
               disabled={showNav}
-              className={styles.tooltipFill}
+              className={styles['tooltip-fill']}
             >
               <button
-                className={styles.navigationLink}
+                className={styles['navigation-link']}
                 onClick={() => signIn("google")}
                 onMouseEnter={(e) =>
                   SoundService.playHover({ event: e.nativeEvent })
                 }
               >
-                <span className={styles.activeStateLayer}>
-                  <CircleUser className={styles.navigationIcon} />
-                  <span className={styles.navigationLabel}>Log In</span>
+                <span className={styles['active-state-layer']}>
+                  <CircleUser className={styles['navigation-icon']} />
+                  <span className={styles['navigation-label']}>Log In</span>
                 </span>
               </button>
             </TooltipComponent>
@@ -1124,11 +1124,11 @@ export default function NavigationSidebarComponent({
               position="right"
               delay={200}
               disabled={showNav}
-              className={styles.tooltipFill}
+              className={styles['tooltip-fill']}
             >
               <Link
                 href="/"
-                className={styles.navigationLink}
+                className={styles['navigation-link']}
                 onMouseEnter={(e: React.MouseEvent) =>
                   SoundService.playHover({ event: e.nativeEvent })
                 }
@@ -1136,9 +1136,9 @@ export default function NavigationSidebarComponent({
                   SoundService.playClick({ event: e.nativeEvent })
                 }
               >
-                <span className={styles.activeStateLayer}>
-                  <ShieldCheck className={styles.navigationIcon} />
-                  <span className={styles.navigationLabel}>User Side</span>
+                <span className={styles['active-state-layer']}>
+                  <ShieldCheck className={styles['navigation-icon']} />
+                  <span className={styles['navigation-label']}>User Side</span>
                 </span>
               </Link>
             </TooltipComponent>
@@ -1148,11 +1148,11 @@ export default function NavigationSidebarComponent({
               position="right"
               delay={200}
               disabled={showNav}
-              className={styles.tooltipFill}
+              className={styles['tooltip-fill']}
             >
               <Link
                 href="/admin"
-                className={styles.navigationLink}
+                className={styles['navigation-link']}
                 onMouseEnter={(e: React.MouseEvent) =>
                   SoundService.playHover({ event: e.nativeEvent })
                 }
@@ -1160,17 +1160,17 @@ export default function NavigationSidebarComponent({
                   SoundService.playClick({ event: e.nativeEvent })
                 }
               >
-                <span className={styles.activeStateLayer}>
-                  <Settings className={styles.navigationIcon} />
-                  <span className={styles.navigationLabel}>Admin Side</span>
+                <span className={styles['active-state-layer']}>
+                  <Settings className={styles['navigation-icon']} />
+                  <span className={styles['navigation-label']}>Admin Side</span>
                 </span>
               </Link>
             </TooltipComponent>
           ) : null}
           {isAdmin && (
-            <div className={styles.statusRow}>
+            <div className={styles['status-row']}>
               <span
-                className={`${styles.statusDot} ${systemStatus !== "connected" ? styles.offline : ""}`}
+                className={`${styles['status-dot']} ${systemStatus !== "connected" ? styles.offline : ""}`}
               />
               <span>
                 Prism {systemStatus === "connected" ? "Connected" : "Offline"}

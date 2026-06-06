@@ -328,7 +328,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         isGenerating={generatingCount > 0}
         onNavClick={handleNavClick}
       />
-      <div className={styles.mainArea}>
+      <div className={styles['main-area']}>
         <LayoutHeaderComponent
           title={pageTitle}
           controls={controls}
@@ -336,15 +336,15 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           {hasSessionFilter && (
             <button
               type="button"
-              className={styles.sessionBadge}
+              className={styles['session-badge']}
               onClick={handleClearSession}
               title="Clear session filter and show all conversations"
             >
-              <span className={styles.sessionBadgeLabel}>Trace</span>
-              <span className={styles.sessionBadgeId}>
+              <span className={styles['session-badge-label']}>Trace</span>
+              <span className={styles['session-badge-id']}>
                 {(sessionFilter as string).slice(0, 8)}
               </span>
-              <X size={12} className={styles.sessionBadgeX} />
+              <X size={12} className={styles['session-badge-x']} />
             </button>
           )}
         </LayoutHeaderComponent>
@@ -354,7 +354,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
             pathname.startsWith("/admin/workflows") ||
             pathname.startsWith("/admin/tools") ||
             pathname.startsWith("/admin/sessions")
-              ? styles.noScroll
+              ? styles['no-scroll']
               : ""
           } ${pathname.startsWith("/admin/tools") ? styles["no-padding"] : ""}`}
         >

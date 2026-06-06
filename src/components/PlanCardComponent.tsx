@@ -61,11 +61,11 @@ export default function PlanCardComponent({
         onClick={() => setExpanded((v) => !v)}
         type="button"
       >
-        <div className={styles.headerLeft}>
+        <div className={styles['header-left']}>
           <ClipboardList size={16} style={{ color: statusColor }} />
           <span className={styles.title}>Implementation Plan</span>
           <span
-            className={styles.statusBadge}
+            className={styles['status-badge']}
             style={{
               color: statusColor,
               borderColor: `color-mix(in srgb, ${statusColor} 30%, transparent)`,
@@ -84,7 +84,7 @@ export default function PlanCardComponent({
               <ButtonComponent
                 variant="primary"
                 icon={Check}
-                className={styles.approveButton}
+                className={styles['approve-button']}
                 onClick={onApprove}
               >
                 Execute Plan
@@ -92,7 +92,7 @@ export default function PlanCardComponent({
               <ButtonComponent
                 variant="destructive"
                 icon={X}
-                className={styles.rejectButton}
+                className={styles['reject-button']}
                 onClick={onReject}
               >
                 Cancel
@@ -100,27 +100,27 @@ export default function PlanCardComponent({
             </div>
           )}
 
-          <div className={styles.planContent}>
+          <div className={styles['plan-content']}>
             <MarkdownContent content={planText} />
           </div>
 
           {steps.length > 0 && status === "executing" && (
-            <div className={styles.stepsProgress}>
+            <div className={styles['steps-progress']}>
               {steps.map((step, i) => {
                 const isDone = completedSteps.includes(i);
                 return (
                   <div
                     key={i}
-                    className={`${styles.step} ${isDone ? styles.stepDone : ""}`}
+                    className={`${styles.step} ${isDone ? styles['step-done'] : ""}`}
                   >
-                    <span className={styles.stepCheck}>
+                    <span className={styles['step-check']}>
                       {isDone ? (
                         <Check size={12} />
                       ) : (
-                        <span className={styles.stepDot} />
+                        <span className={styles['step-dot']} />
                       )}
                     </span>
-                    <span className={styles.stepText}>{step}</span>
+                    <span className={styles['step-text']}>{step}</span>
                   </div>
                 );
               })}

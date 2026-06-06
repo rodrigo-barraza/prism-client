@@ -800,7 +800,7 @@ export default function AdminChatViewerComponent({
           disabled={!!activeSession}
         />
         {generatingCount > 0 && (
-          <span className={`${styles.statPill} ${styles.statPillGenerating}`}>
+          <span className={`${styles['stat-pill']} ${styles['stat-pill-generating']}`}>
             <Loader size={10} className={styles.spinning} />
             {generatingDisplay} generating
           </span>
@@ -1020,7 +1020,7 @@ export default function AdminChatViewerComponent({
   // ── Render ───────────────────────────────────────────────────
   return (
     <div className={styles.page}>
-      <div className={styles.chatContainer}>
+      <div className={styles['chat-container']}>
         <ThreePanelLayout
           leftPanel={
             (selectedEntry as Conversation)?.settings || isSelectedAgent ? (
@@ -1095,7 +1095,7 @@ export default function AdminChatViewerComponent({
                 )}
               </div>
             ) : (
-              <div className={styles.emptyPanel}>
+              <div className={styles['empty-panel']}>
                 Select a conversation to view settings
               </div>
             )
@@ -1220,7 +1220,7 @@ export default function AdminChatViewerComponent({
           rightTitle={`${entries.length}${entriesHasMore ? "+" : ""} ${isNoAgent ? "Conversations" : isAgentMode ? "Sessions" : "Entries"}`}
           headerMeta={
             selectedEntry && (
-              <div className={styles.headerMeta}>
+              <div className={styles['header-meta']}>
                 <BadgeComponent
                   type="project"
                   project={selectedEntry.project}
@@ -1240,7 +1240,7 @@ export default function AdminChatViewerComponent({
                   />
                 )}
                 {(selectedEntry as Conversation).isGenerating && (
-                  <span className={styles.generatingBadge}>
+                  <span className={styles['generating-badge']}>
                     <Loader size={12} className={styles.spinning} />
                     Generating
                   </span>
@@ -1302,9 +1302,9 @@ export default function AdminChatViewerComponent({
               </div>
             </div>
 
-            <div className={styles.viewerBody} ref={viewerBodyRef}>
+            <div className={styles['viewer-body']} ref={viewerBodyRef}>
               {!selectedEntry && !loadingDetail ? (
-                <div className={styles.emptyViewer}>
+                <div className={styles['empty-viewer']}>
                   <MessageSquare
                     size={40}
                     style={{ opacity: 0.3, marginBottom: 12 }}
@@ -1312,7 +1312,7 @@ export default function AdminChatViewerComponent({
                   <div>Select a conversation to view</div>
                 </div>
               ) : loadingDetail ? (
-                <div className={styles.emptyViewer}>
+                <div className={styles['empty-viewer']}>
                   Loading conversation...
                 </div>
               ) : (

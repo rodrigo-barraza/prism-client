@@ -62,14 +62,14 @@ function RotatingUploadIcon({ types, size = 18 }: RotatingUploadIconProps) {
   const NextIcon = TYPE_ICON_MAP[nextType as UploadType] || Paperclip;
 
   return (
-    <div className={styles.rotatingIconContainer}>
+    <div className={styles['rotating-icon-container']}>
       <div
-        className={`${styles.rotatingIconTrack} ${isTransitioning ? styles.rotatingIconSlide : ""}`}
+        className={`${styles['rotating-icon-track']} ${isTransitioning ? styles['rotating-icon-slide'] : ""}`}
       >
-        <span className={styles.rotatingIconItem}>
+        <span className={styles['rotating-icon-item']}>
           <CurrentIcon size={size} />
         </span>
-        <span className={styles.rotatingIconItem}>
+        <span className={styles['rotating-icon-item']}>
           <NextIcon size={size} />
         </span>
       </div>
@@ -115,10 +115,10 @@ export default function ChatInputButton({
   const isSubmit = variant === "submit";
 
   const classes = [
-    styles.chatInputButton,
-    isActive ? styles.isActiveState : "",
+    styles['chat-input-button'],
+    isActive ? styles['is-active-state'] : "",
     isSubmit ? styles.submit : "",
-    isSubmit && isGenerating ? styles.submitGenerating : "",
+    isSubmit && isGenerating ? styles['submit-generating'] : "",
     className,
   ]
     .filter(Boolean)

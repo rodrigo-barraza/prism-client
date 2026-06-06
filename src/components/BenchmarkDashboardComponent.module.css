@@ -14,7 +14,7 @@
 
 /* ── Sticky Summary Bar ───────────────────────────────────── */
 
-.stickyBar {
+.sticky-bar {
   position: sticky;
   top: 0;
   z-index: 5;
@@ -42,7 +42,7 @@
   align-self: flex-start;
 }
 
-.segmentedButton {
+.segmented-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -62,12 +62,12 @@
   white-space: nowrap;
 }
 
-.segmentedButton:hover {
+.segmented-button:hover {
   color: var(--text-primary);
   background: color-mix(in srgb, var(--background-surface) 80%, transparent);
 }
 
-.segmentedBtnActive {
+.segmented-btn-active {
   color: var(--text-primary);
   background: var(--background-surface);
   box-shadow:
@@ -75,11 +75,11 @@
     0 0 0 1px color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
-.segmentedBtnActive:hover {
+.segmented-btn-active:hover {
   background: var(--background-surface);
 }
 
-.segmentedCount {
+.segmented-count {
   font-size: 0.625rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -95,14 +95,14 @@
     background 0.2s ease;
 }
 
-.segmentedBtnActive .segmentedCount {
+.segmented-btn-active .segmented-count {
   color: var(--accent-primary);
   background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
 
 /* ── Loading ──────────────────────────────────────────────── */
 
-.loadingState {
+.loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,7 +111,7 @@
 
 /* ── Detail Cards (sidebar + inline grid) ───────────────── */
 
-.sidebarDetailGrid {
+.sidebar-detail-grid {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -121,7 +121,7 @@
   min-height: 0;
 }
 
-.detailCard {
+.detail-card {
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
@@ -132,26 +132,26 @@
   border-left: 3px solid var(--calculated-border-color);
 }
 
-.detailCardPassed {
+.detail-card-passed {
   border-left-color: var(--color-success);
 }
 
-.detailCardFailed {
+.detail-card-failed {
   border-left-color: var(--color-danger);
 }
 
-.detailCardErrored {
+.detail-card-errored {
   border-left-color: var(--color-warning);
 }
 
-.detailHeader {
+.detail-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
 }
 
-.detailName {
+.detail-name {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-primary);
@@ -162,7 +162,7 @@
   flex: 1;
 }
 
-.detailStatus {
+.detail-status {
   font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -173,17 +173,17 @@
   white-space: nowrap;
 }
 
-.detailStatusPassed {
+.detail-status-passed {
   color: var(--color-success);
   background: color-mix(in srgb, var(--color-success) 10%, transparent);
 }
 
-.detailStatusFailed {
+.detail-status-failed {
   color: var(--color-danger);
   background: color-mix(in srgb, var(--color-danger) 10%, transparent);
 }
 
-.detailStats {
+.detail-stats {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -191,26 +191,26 @@
   font-weight: 600;
 }
 
-.detailRuns {
+.detail-runs {
   color: var(--text-muted);
   font-weight: 500;
 }
 
-.detailPassed {
+.detail-passed {
   display: inline-flex;
   align-items: center;
   gap: 3px;
   color: var(--color-success);
 }
 
-.detailFailed {
+.detail-failed {
   display: inline-flex;
   align-items: center;
   gap: 3px;
   color: var(--color-danger);
 }
 
-.detailRate {
+.detail-rate {
   font-family: var(--font-mono);
   font-weight: 700;
   margin-left: auto;
@@ -218,7 +218,7 @@
 
 /* ── Selected Row Highlight ─────────────────────────────── */
 
-.selectedRow td {
+.selected-row td {
   background: color-mix(
     in srgb,
     var(--accent-primary) 8%,
@@ -226,11 +226,11 @@
   ) !important;
 }
 
-.selectedRow td:first-child {
+.selected-row td:first-child {
   box-shadow: inset 3px 0 0 var(--accent-primary);
 }
 
-.selectedRow:hover td {
+.selected-row:hover td {
   background: color-mix(
     in srgb,
     var(--accent-primary) 12%,

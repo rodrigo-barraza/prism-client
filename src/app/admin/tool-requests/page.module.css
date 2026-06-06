@@ -1,9 +1,9 @@
 .page {
-  animation: fadeIn var(--transition-normal) ease-out;
+  animation: fade-in var(--transition-normal) ease-out;
 }
 
 /* Table */
-.tableWrapper {
+.table-wrapper {
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
@@ -11,11 +11,11 @@
 }
 
 /* Detail drawer sections */
-.detailSection {
+.detail-section {
   margin-bottom: 20px;
 }
 
-.detailSectionTitle {
+.detail-section-title {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-muted);
@@ -24,7 +24,7 @@
   margin-bottom: 10px;
 }
 
-.associatedRequestCard {
+.associated-request-card {
   padding: 10px 12px;
   background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
@@ -37,19 +37,19 @@
     background-color var(--transition-fast) ease;
 }
 
-.associatedRequestCard:hover {
+.associated-request-card:hover {
   border-color: var(--accent-primary);
   background: oklch(from var(--accent-primary) l c h / 0.04);
 }
 
-.associatedRequestRow {
+.associated-request-row {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
 }
 
-.associatedRequestModel {
+.associated-request-model {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
@@ -58,14 +58,14 @@
   white-space: nowrap;
 }
 
-.associatedRequestCost {
+.associated-request-cost {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   color: var(--accent-primary);
   font-weight: 600;
 }
 
-.associatedRequestTimestamp {
+.associated-request-timestamp {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   margin-inline-start: auto;

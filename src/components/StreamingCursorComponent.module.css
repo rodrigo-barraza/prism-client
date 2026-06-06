@@ -1,6 +1,6 @@
 /* ── StreamingCursorComponent ─────────────────────────────── */
 
-.streamingCursorWrapper {
+.streaming-cursor-wrapper {
   display: inline;
   position: relative;
   user-select: none;
@@ -10,7 +10,7 @@
 }
 
 /* Scramble character — rainbow gradient text, monospace for fixed width */
-.scrambleChar {
+.scramble-char {
   display: inline-block;
   width: 0.65em;
   text-align: center;
@@ -22,7 +22,7 @@
   background: var(--prism-conic);
   -webkit-background-clip: text;
   background-clip: text;
-  animation: scrambleGlitch 0.15s steps(1) infinite;
+  animation: scramble-glitch 0.15s steps(1) infinite;
 }
 
 /* Caret — rainbow gradient, blinking */
@@ -34,11 +34,11 @@
   background: var(--prism-conic);
   -webkit-background-clip: text;
   background-clip: text;
-  animation: caretBlink 0.8s step-end infinite;
+  animation: caret-blink 0.8s step-end infinite;
 }
 
 /* Subtle opacity flicker on the scramble char for extra glitch feel */
-@keyframes scrambleGlitch {
+@keyframes scramble-glitch {
   0% {
     opacity: 0.9;
   }
@@ -51,15 +51,15 @@
 }
 
 /* Standalone cursor — block-level wrapper used before any text arrives */
-.standaloneCursor {
+.standalone-cursor {
   display: block;
   padding: 2px 0;
   font-size: 0.9375rem;
   line-height: 1.6;
-  animation: standaloneFadeIn 0.3s ease-out both;
+  animation: standalone-fade-in 0.3s ease-out both;
 }
 
-@keyframes standaloneFadeIn {
+@keyframes standalone-fade-in {
   from {
     opacity: 0;
     transform: translateX(-4px);
@@ -71,7 +71,7 @@
 }
 
 /* Caret blink — step-end gives a hard on/off toggle, not a fade */
-@keyframes caretBlink {
+@keyframes caret-blink {
   0%,
   100% {
     opacity: 1;

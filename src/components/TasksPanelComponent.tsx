@@ -230,14 +230,14 @@ export default function TasksPanel({
     onActionsChange?.(
       <>
         <button
-          className={styles.headerButton}
+          className={styles['header-button']}
           onClick={() => setShowNewForm((previousState) => !previousState)}
           title="Create task"
         >
           {showNewForm ? <X size={11} /> : <Plus size={11} />}
         </button>
         <button
-          className={styles.headerButton}
+          className={styles['header-button']}
           onClick={loadTasks}
           disabled={loading}
           title="Refresh"
@@ -289,7 +289,7 @@ export default function TasksPanel({
 
           {/* -- Summary badges ------------------------------------ */}
           {summary && summary.total > 0 && (
-            <div className={styles.summaryRow}>
+            <div className={styles['summary-row']}>
               {STATUS_CYCLE.map((s) => {
                 const config = STATUS_CONFIG[s];
                 const count = summary[s] || 0;
@@ -298,7 +298,7 @@ export default function TasksPanel({
                 return (
                   <button
                     key={s}
-                    className={`${styles.summaryBadge} ${styles[config.colorClass]} ${isActive ? styles.summaryBadgeActive : ""}`}
+                    className={`${styles['summary-badge']} ${styles[config.colorClass]} ${isActive ? styles['summary-badge-active'] : ""}`}
                     onClick={() => setStatusFilter(isActive ? null : s)}
                     title={`${isActive ? "Clear" : "Filter"}: ${config.label}`}
                   >
@@ -314,7 +314,7 @@ export default function TasksPanel({
 
       {/* -- New Task Form ------------------------------------ */}
       {showNewForm && (
-        <form className={styles.newTaskForm} onSubmit={handleCreate}>
+        <form className={styles['new-task-form']} onSubmit={handleCreate}>
           <InputComponent
             placeholder="Task subject…"
             value={newSubject}
@@ -331,10 +331,10 @@ export default function TasksPanel({
             ) => setNewDescription(e.target.value)}
             minRows={2}
           />
-          <div className={styles.newTaskActions}>
+          <div className={styles['new-task-actions']}>
             <button
               type="submit"
-              className={styles.newTaskSubmit}
+              className={styles['new-task-submit']}
               disabled={
                 creating || !newSubject.trim() || !newDescription.trim()
               }
@@ -348,7 +348,7 @@ export default function TasksPanel({
             </button>
             <button
               type="button"
-              className={styles.newTaskCancel}
+              className={styles['new-task-cancel']}
               onClick={() => {
                 setShowNewForm(false);
                 setNewSubject("");
@@ -363,12 +363,12 @@ export default function TasksPanel({
 
       {/* -- Empty ------------------------------------------- */}
       {tasks.length === 0 && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-icon']}>
             <ListChecks size={24} />
           </div>
-          <div className={styles.emptyTitle}>No tasks yet</div>
-          <div className={styles.emptySubtitle}>
+          <div className={styles['empty-title']}>No tasks yet</div>
+          <div className={styles['empty-subtitle']}>
             {statusFilter
               ? `No ${STATUS_CONFIG[statusFilter]?.label.toLowerCase()} tasks. Try clearing the filter.`
               : "Tasks are created by the agent during coding sessions, or you can create them manually."}
@@ -378,9 +378,9 @@ export default function TasksPanel({
 
       {/* -- No results after filtering -------------------------- */}
       {tasks.length > 0 && filteredTasks.length === 0 && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyTitle}>No matching tasks</div>
-          <div className={styles.emptySubtitle}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-title']}>No matching tasks</div>
+          <div className={styles['empty-subtitle']}>
             Try adjusting your search query.
           </div>
         </div>
@@ -397,12 +397,12 @@ export default function TasksPanel({
         return (
           <div
             key={`${task.project}-${task.taskId}`}
-            className={`${styles.taskCard} ${styles[config.colorClass + "Card"]}`}
+            className={`${styles['task-card']} ${styles[config.colorClass + "Card"]}`}
           >
-            <div className={styles.taskCardHeader}>
+            <div className={styles['task-card-header']}>
               {/* Status cycle button */}
               <button
-                className={`${styles.statusButton} ${styles[config.colorClass]}`}
+                className={`${styles['status-button']} ${styles[config.colorClass]}`}
                 onClick={() => handleCycleStatus(task)}
                 title={`Status: ${config.label} — click to cycle`}
               >
@@ -411,29 +411,29 @@ export default function TasksPanel({
 
               {/* Content */}
               <div
-                className={styles.taskInfo}
+                className={styles['task-info']}
                 onClick={() => setExpandedId(isExpanded ? null : task.taskId)}
               >
                 <div
-                  className={`${styles.taskSubject} ${task.status === "completed" ? styles.taskDone : ""}`}
+                  className={`${styles['task-subject']} ${task.status === "completed" ? styles['task-done'] : ""}`}
                 >
-                  <span className={styles.taskIdBadge}>#{task.taskId}</span>
+                  <span className={styles['task-id-badge']}>#{task.taskId}</span>
                   {task.subject}
                 </div>
-                <div className={styles.taskMeta}>
+                <div className={styles['task-meta']}>
                   <span
-                    className={`${styles.taskStatusBadge} ${styles[config.colorClass]}`}
+                    className={`${styles['task-status-badge']} ${styles[config.colorClass]}`}
                   >
                     {config.label}
                   </span>
                   {task.status === "in_progress" && task.activeForm && (
-                    <span className={styles.activeFormBadge}>
-                      <Loader2 size={9} className={styles.activeFormSpin} />
+                    <span className={styles['active-form-badge']}>
+                      <Loader2 size={9} className={styles['active-form-spin']} />
                       {task.activeForm}
                     </span>
                   )}
                   {task.project && (
-                    <span className={styles.taskProjectBadge}>
+                    <span className={styles['task-project-badge']}>
                       {task.project}
                     </span>
                   )}
@@ -445,7 +445,7 @@ export default function TasksPanel({
 
               {/* Expand/collapse */}
               <button
-                className={styles.expandButton}
+                className={styles['expand-button']}
                 onClick={() => setExpandedId(isExpanded ? null : task.taskId)}
                 title={isExpanded ? "Collapse" : "Expand"}
               >
@@ -458,7 +458,7 @@ export default function TasksPanel({
 
               {/* Delete */}
               <button
-                className={styles.deleteButton}
+                className={styles['delete-button']}
                 onClick={() =>
                   setConfirmingDeleteId(isConfirming ? null : task.taskId)
                 }
@@ -470,20 +470,20 @@ export default function TasksPanel({
 
             {/* Expanded detail */}
             {isExpanded && (
-              <div className={styles.taskDetail}>
-                <div className={styles.taskDescription}>{task.description}</div>
+              <div className={styles['task-detail']}>
+                <div className={styles['task-description']}>{task.description}</div>
                 {task.metadata && Object.keys(task.metadata).length > 0 && (
-                  <div className={styles.taskMetadata}>
+                  <div className={styles['task-metadata']}>
                     {Object.entries(task.metadata).map(([key, value]) => (
-                      <span key={key} className={styles.metaTag}>
-                        <span className={styles.metaKey}>{key}</span>
-                        <span className={styles.metaValue}>{String(value)}</span>
+                      <span key={key} className={styles['meta-tag']}>
+                        <span className={styles['meta-key']}>{key}</span>
+                        <span className={styles['meta-value']}>{String(value)}</span>
                       </span>
                     ))}
                   </div>
                 )}
                 {task.conversationId && (
-                  <div className={styles.taskConversation}>
+                  <div className={styles['task-conversation']}>
                     Conv: {task.conversationId.slice(0, 8)}…
                   </div>
                 )}
@@ -492,18 +492,18 @@ export default function TasksPanel({
 
             {/* Delete confirm */}
             {isConfirming && (
-              <div className={styles.confirmLayoutRow}>
-                <span className={styles.confirmLabel}>
+              <div className={styles['confirm-layout-row']}>
+                <span className={styles['confirm-label']}>
                   Delete task #{task.taskId}?
                 </span>
                 <button
-                  className={`${styles.confirmButton} ${styles.confirmBtnYes}`}
+                  className={`${styles['confirm-button']} ${styles['confirm-btn-yes']}`}
                   onClick={() => handleDelete(task)}
                 >
                   Delete
                 </button>
                 <button
-                  className={`${styles.confirmButton} ${styles.confirmBtnNo}`}
+                  className={`${styles['confirm-button']} ${styles['confirm-btn-no']}`}
                   onClick={() => setConfirmingDeleteId(null)}
                 >
                   Cancel

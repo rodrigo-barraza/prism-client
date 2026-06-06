@@ -398,25 +398,25 @@ export default function AudioPlayerRecorderComponent({
   if (streaming && !sourceUrl) {
     return (
       <div
-        className={`${styles.audioThumb} ${styles.audioStreaming} ${compact ? styles.audioCompact : ""}`}
+        className={`${styles['audio-thumb']} ${styles['audio-streaming']} ${compact ? styles['audio-compact'] : ""}`}
       >
-        <div className={styles.streamingCanvasWrap}>
-          <RainbowCanvasComponent turbo className={styles.streamingCanvas} />
+        <div className={styles['streaming-canvas-wrap']}>
+          <RainbowCanvasComponent turbo className={styles['streaming-canvas']} />
         </div>
-        <div className={styles.streamingOverlay}>
-          <div className={styles.streamingIcon}>
+        <div className={styles['streaming-overlay']}>
+          <div className={styles['streaming-icon']}>
             <Radio size={14} />
           </div>
-          <div className={styles.streamingBars}>
+          <div className={styles['streaming-bars']}>
             {Array.from({ length: 24 }).map((_, i) => (
               <span
                 key={i}
-                className={styles.streamingBar}
+                className={styles['streaming-bar']}
                 style={{ animationDelay: `${(i * 0.07).toFixed(2)}s` }}
               />
             ))}
           </div>
-          <span className={styles.streamingLabel}>Playing audio…</span>
+          <span className={styles['streaming-label']}>Playing audio…</span>
         </div>
       </div>
     );
@@ -429,7 +429,7 @@ export default function AudioPlayerRecorderComponent({
     if (square) {
       return (
         <div
-          className={styles.audioSquare}
+          className={styles['audio-square']}
           onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
         >
           <audio
@@ -453,19 +453,19 @@ export default function AudioPlayerRecorderComponent({
             hidden
           />
 
-          <div className={styles.squareWaveWrap} onClick={handleCanvasSeek}>
+          <div className={styles['square-wave-wrap']} onClick={handleCanvasSeek}>
             <canvas
               ref={playerCanvasRef}
-              className={styles.squareWaveCanvas}
+              className={styles['square-wave-canvas']}
               width={200}
               height={100}
             />
           </div>
 
-          <div className={styles.squareControls}>
+          <div className={styles['square-controls']}>
             <button
               type="button"
-              className={styles.playButton}
+              className={styles['play-button']}
               onClick={togglePlayback}
               title={isPlaying ? "Pause" : "Play"}
             >
@@ -476,7 +476,7 @@ export default function AudioPlayerRecorderComponent({
             </span>
             <button
               type="button"
-              className={styles.iconButton}
+              className={styles['icon-button']}
               onClick={toggleMute}
               title={muted ? "Unmute" : "Mute"}
             >
@@ -488,7 +488,7 @@ export default function AudioPlayerRecorderComponent({
     }
     return (
       <div
-        className={`${styles.audioThumb} ${compact ? styles.audioCompact : ""}`}
+        className={`${styles['audio-thumb']} ${compact ? styles['audio-compact'] : ""}`}
       >
         <audio
           ref={audioRef}
@@ -513,17 +513,17 @@ export default function AudioPlayerRecorderComponent({
 
         <button
           type="button"
-          className={styles.playButton}
+          className={styles['play-button']}
           onClick={togglePlayback}
           title={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? <Pause size={11} /> : <Play size={11} />}
         </button>
 
-        <div className={styles.waveformWrap} onClick={handleCanvasSeek}>
+        <div className={styles['waveform-wrap']} onClick={handleCanvasSeek}>
           <canvas
             ref={playerCanvasRef}
-            className={styles.waveformCanvas}
+            className={styles['waveform-canvas']}
             width={300}
             height={28}
           />
@@ -535,14 +535,14 @@ export default function AudioPlayerRecorderComponent({
 
         <button
           type="button"
-          className={styles.iconButton}
+          className={styles['icon-button']}
           onClick={toggleMute}
           title={muted ? "Unmute" : "Mute"}
         >
           {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </button>
 
-        <div className={styles.volumeSliderWrap}>
+        <div className={styles['volume-slider-wrap']}>
           <SliderComponent
             min={0}
             max={1}
@@ -561,7 +561,7 @@ export default function AudioPlayerRecorderComponent({
 
         <button
           type="button"
-          className={styles.iconButton}
+          className={styles['icon-button']}
           onClick={handleDownload}
           title="Download"
         >
@@ -571,7 +571,7 @@ export default function AudioPlayerRecorderComponent({
         {onRemove && (
           <button
             type="button"
-            className={styles.iconButton}
+            className={styles['icon-button']}
             onClick={onRemove}
             title="Remove"
           >
@@ -587,31 +587,31 @@ export default function AudioPlayerRecorderComponent({
   // -------------------------------------------
   if (isRecording) {
     return (
-      <div className={`${styles.audioThumb} ${styles.audioRecording}`}>
+      <div className={`${styles['audio-thumb']} ${styles['audio-recording']}`}>
         <button
           type="button"
-          className={styles.stopButton}
+          className={styles['stop-button']}
           onClick={stopRecording}
           title="Stop recording"
         >
           <Square size={10} />
         </button>
 
-        <div className={styles.waveformWrap}>
+        <div className={styles['waveform-wrap']}>
           <canvas
             ref={recCanvasRef}
-            className={styles.waveformCanvas}
+            className={styles['waveform-canvas']}
             width={300}
             height={28}
           />
         </div>
 
-        <span className={styles.recordingTimer}>{formatTime(recSeconds)}</span>
+        <span className={styles['recording-timer']}>{formatTime(recSeconds)}</span>
 
-        <Volume2 size={14} className={styles.fadedIcon} />
-        <div className={styles.fadedSlider} />
-        <Download size={14} className={styles.fadedIcon} />
-        <X size={14} className={styles.fadedIcon} />
+        <Volume2 size={14} className={styles['faded-icon']} />
+        <div className={styles['faded-slider']} />
+        <Download size={14} className={styles['faded-icon']} />
+        <X size={14} className={styles['faded-icon']} />
       </div>
     );
   }
@@ -623,7 +623,7 @@ export default function AudioPlayerRecorderComponent({
     <TooltipComponent label="Record audio" position="top" trigger="hover">
       <button
         type="button"
-        className={styles.micButton}
+        className={styles['mic-button']}
         onClick={startRecording}
         aria-label="Record Audio"
       >

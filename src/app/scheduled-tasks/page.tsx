@@ -219,22 +219,22 @@ function CronJobDetailPanel({
   }, [onClose]);
 
   return (
-    <div className={styles.detailOverlay} onClick={onClose}>
+    <div className={styles['detail-overlay']} onClick={onClose}>
       <aside
-        className={styles.detailPanel}
+        className={styles['detail-panel']}
         onClick={(clickEvent: React.MouseEvent) => clickEvent.stopPropagation()}
         aria-labelledby="cron-job-detail-title"
       >
         {/* Header */}
-        <header className={styles.detailHeader}>
-          <div className={styles.detailTitleBlock}>
-            <h2 id="cron-job-detail-title" className={styles.detailCleanName}>
+        <header className={styles['detail-header']}>
+          <div className={styles['detail-title-block']}>
+            <h2 id="cron-job-detail-title" className={styles['detail-clean-name']}>
               {task.name}
             </h2>
-            <div className={styles.detailTitle}>{task.id}</div>
+            <div className={styles['detail-title']}>{task.id}</div>
           </div>
           <button
-            className={styles.detailClose}
+            className={styles['detail-close']}
             onClick={onClose}
             title="Close"
             aria-label="Close details"
@@ -244,15 +244,15 @@ function CronJobDetailPanel({
         </header>
 
         {/* Body */}
-        <main className={styles.detailBody}>
+        <main className={styles['detail-body']}>
           {/* Status and Action Buttons */}
-          <section className={styles.detailSection}>
-            <div className={styles.detailSectionTitle}>
+          <section className={styles['detail-section']}>
+            <div className={styles['detail-section-title']}>
               Status & Actions
             </div>
-            <div className={styles.detailActionsRow}>
+            <div className={styles['detail-actions-row']}>
               <button
-                className={`${styles.detailActionButton} ${styles.detailEditButton}`}
+                className={`${styles['detail-action-button']} ${styles['detail-edit-button']}`}
                 onClick={() => {
                   onEdit(task);
                   onClose();
@@ -262,14 +262,14 @@ function CronJobDetailPanel({
                 <Pencil size={14} /> Edit
               </button>
               <button
-                className={`${styles.detailActionButton} ${styles.detailTriggerButton}`}
+                className={`${styles['detail-action-button']} ${styles['detail-trigger-button']}`}
                 onClick={handleRunNow}
                 title="Run scheduled task now"
               >
                 <Play size={14} /> Run Now
               </button>
               <button
-                className={`${styles.detailActionButton} ${styles.detailDeleteButton}`}
+                className={`${styles['detail-action-button']} ${styles['detail-delete-button']}`}
                 onClick={() => {
                   if (confirm("Are you sure you want to delete this Scheduled Task?")) {
                     onDelete(task);
@@ -284,20 +284,20 @@ function CronJobDetailPanel({
           </section>
 
           {/* Schedule */}
-          <section className={styles.detailSection}>
-            <div className={styles.detailSectionTitle}>
+          <section className={styles['detail-section']}>
+            <div className={styles['detail-section-title']}>
               <Clock size={12} /> Schedule
             </div>
-            <div className={styles.detailMetadataGrid}>
-              <div className={styles.detailMetadataItem}>
-                <span className={styles.detailMetadataLabel}>Type</span>
-                <span className={styles.detailMetadataValue}>
+            <div className={styles['detail-metadata-grid']}>
+              <div className={styles['detail-metadata-item']}>
+                <span className={styles['detail-metadata-label']}>Type</span>
+                <span className={styles['detail-metadata-value']}>
                   {task.scheduleType.toUpperCase()}
                 </span>
               </div>
-              <div className={styles.detailMetadataItem}>
-                <span className={styles.detailMetadataLabel}>Details</span>
-                <span className={styles.detailMetadataValue}>
+              <div className={styles['detail-metadata-item']}>
+                <span className={styles['detail-metadata-label']}>Details</span>
+                <span className={styles['detail-metadata-value']}>
                   {formatScheduleText(task)}
                 </span>
               </div>
@@ -305,18 +305,18 @@ function CronJobDetailPanel({
           </section>
 
           {/* Prompt */}
-          <section className={styles.detailSection}>
-            <div className={styles.detailSectionTitle}>
+          <section className={styles['detail-section']}>
+            <div className={styles['detail-section-title']}>
               Prompt
             </div>
-            <div className={styles.detailPromptBlock}>
+            <div className={styles['detail-prompt-block']}>
               {parsePromptWithToolBadges(task.prompt)}
             </div>
           </section>
 
           {/* Execution History */}
-          <section className={styles.detailSection}>
-            <div className={styles.detailSectionTitle}>
+          <section className={styles['detail-section']}>
+            <div className={styles['detail-section-title']}>
               <History size={12} /> Execution History
             </div>
             {isLoadingHistory ? (
@@ -365,34 +365,34 @@ function CronJobDetailPanel({
           </section>
 
           {/* Configuration / Metadata */}
-          <section className={styles.detailSection}>
-            <div className={styles.detailSectionTitle}>
+          <section className={styles['detail-section']}>
+            <div className={styles['detail-section-title']}>
               Configuration
             </div>
-            <div className={styles.detailMetadataGrid}>
-              <div className={styles.detailMetadataItem}>
-                <span className={styles.detailMetadataLabel}>Agent</span>
-                <span className={styles.detailMetadataValue}>
+            <div className={styles['detail-metadata-grid']}>
+              <div className={styles['detail-metadata-item']}>
+                <span className={styles['detail-metadata-label']}>Agent</span>
+                <span className={styles['detail-metadata-value']}>
                   <Bot size={14} style={{ color: "var(--accent-primary)", opacity: 0.7 }} />
                   {agentName}
                 </span>
               </div>
-              <div className={styles.detailMetadataItem}>
-                <span className={styles.detailMetadataLabel}>Model</span>
-                <span className={styles.detailMetadataValue}>
+              <div className={styles['detail-metadata-item']}>
+                <span className={styles['detail-metadata-label']}>Model</span>
+                <span className={styles['detail-metadata-value']}>
                   <Sparkles size={14} style={{ color: "var(--accent-primary)", opacity: 0.7 }} />
                   {task.model.split("/").pop()}
                 </span>
               </div>
-              <div className={styles.detailMetadataItem}>
-                <span className={styles.detailMetadataLabel}>Project</span>
-                <span className={styles.detailMetadataValue}>
+              <div className={styles['detail-metadata-item']}>
+                <span className={styles['detail-metadata-label']}>Project</span>
+                <span className={styles['detail-metadata-value']}>
                   {task.project || "—"}
                 </span>
               </div>
-              <div className={styles.detailMetadataItem}>
-                <span className={styles.detailMetadataLabel}>Status</span>
-                <span className={styles.detailMetadataValue}>
+              <div className={styles['detail-metadata-item']}>
+                <span className={styles['detail-metadata-label']}>Status</span>
+                <span className={styles['detail-metadata-value']}>
                   {task.enabled ? "Enabled" : "Disabled"}
                 </span>
               </div>
@@ -1019,13 +1019,13 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const contentBlock = (
           <div className={styles.content}>
             {/* Sleek toast list */}
-            <div className={styles.toastContainer}>
+            <div className={styles['toast-container']}>
               {toasts.map((toast) => (
                 <div
                   key={toast.id}
                   className={`${styles.toast} ${styles[toast.type]}`}
                 >
-                  <Check size={14} className={styles.toastIcon} />
+                  <Check size={14} className={styles['toast-icon']} />
                   <span>{toast.message}</span>
                 </div>
               ))}
@@ -1033,13 +1033,13 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
             {/* Header */}
             <header className={styles.header}>
-              <div className={styles.headerTopRow}>
-                <div className={styles.headerLeft}>
-                  <div className={styles.headerTitleRow}>
-                    <Clock className={styles.headerIcon} />
-                    <h1 className={styles.headerTitle}>Scheduled Tasks</h1>
+              <div className={styles['header-top-row']}>
+                <div className={styles['header-left']}>
+                  <div className={styles['header-title-row']}>
+                    <Clock className={styles['header-icon']} />
+                    <h1 className={styles['header-title']}>Scheduled Tasks</h1>
                   </div>
-                  <p className={styles.headerSubtitle}>Automate background agent workflows on a schedule</p>
+                  <p className={styles['header-subtitle']}>Automate background agent workflows on a schedule</p>
                   <span className={styles.badge}>
                     {filteredTasks.length} total
                   </span>
@@ -1050,10 +1050,10 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder="Search scheduled tasks…"
-                className={styles.tasksSearch}
+                className={styles['tasks-search']}
               />
 
-              <div className={styles.headerActions}>
+              <div className={styles['header-actions']}>
                 <SelectComponent
                   multiple
                   icon={<ArrowUpDown size={12} />}
@@ -1083,7 +1083,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     resetFormFields();
                     setShowNewModal(true);
                   }}
-                  className={styles.newButton}
+                  className={styles['new-button']}
                   title="Create Scheduled Task"
                 >
                   <Plus size={16} />
@@ -1095,19 +1095,19 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
             {/* Task Content */}
             <div>
               {loading ? (
-                <div className={styles.loadingState}>
+                <div className={styles['loading-state']}>
                   <PanelLoadingSpinner size="large" />
                 </div>
               ) : filteredTasks.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <Clock size={48} className={styles.emptyIcon} />
+                <div className={styles['empty-state']}>
+                  <Clock size={48} className={styles['empty-icon']} />
                   <h2>No Scheduled Tasks found</h2>
                   <p>
                     Create a background agent automation task to get started.
                   </p>
                   <button
                     onClick={() => setShowNewModal(true)}
-                    className={styles.emptyButton}
+                    className={styles['empty-button']}
                   >
                     Create your first task
                   </button>
@@ -1130,7 +1130,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                       label: "Name",
                       render: (row: Task) => (
                         <span
-                          className={styles.tableNameCell}
+                          className={styles['table-name-cell']}
                           onClick={() => setSelectedTask(row)}
                           style={{ cursor: "pointer", textDecoration: "underline" }}
                         >
@@ -1143,7 +1143,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                       label: "Schedule",
                       sortable: false,
                       render: (row: Task) => (
-                        <span className={styles.tableScheduleCell}>
+                        <span className={styles['table-schedule-cell']}>
                           {formatScheduleText(row)}
                         </span>
                       ),
@@ -1183,7 +1183,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             {row.project}
                           </BadgeComponent>
                         ) : (
-                          <span className={styles.tableDash}>—</span>
+                          <span className={styles['table-dash']}>—</span>
                         ),
                     },
                     ...(isAdminMode
@@ -1197,7 +1197,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                   {row.username}
                                 </BadgeComponent>
                               ) : (
-                                <span className={styles.tableDash}>—</span>
+                                <span className={styles['table-dash']}>—</span>
                               ),
                           },
                         ]
@@ -1212,10 +1212,10 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             e.stopPropagation();
                             handleToggleTask(row);
                           }}
-                          className={`${styles.toggleSwitch} ${styles.toggleSwitchSmall} ${row.enabled ? styles.toggleSwitchOn : ""}`}
+                          className={`${styles['toggle-switch']} ${styles['toggle-switch-small']} ${row.enabled ? styles['toggle-switch-on'] : ""}`}
                           title={row.enabled ? "Disable task" : "Enable task"}
                         >
-                          <span className={styles.toggleKnob} />
+                          <span className={styles['toggle-knob']} />
                         </button>
                       ),
                     },
@@ -1231,7 +1231,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             date={row.createdAt}
                           />
                         ) : (
-                          <span className={styles.tableDash}>—</span>
+                          <span className={styles['table-dash']}>—</span>
                         ),
                     },
                     {
@@ -1243,13 +1243,13 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         const isMenuOpen = activeMenuId === row.id;
                         const isTriggering = triggeringId === row.id;
                         return (
-                          <div className={styles.tableActionsCell}>
+                          <div className={styles['table-actions-cell']}>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleTriggerTask(row);
                               }}
-                              className={styles.tableActionButton}
+                              className={styles['table-action-button']}
                               disabled={isTriggering}
                               title="Trigger task"
                             >
@@ -1259,7 +1259,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                 <Play size={13} />
                               )}
                             </button>
-                            <div className={styles.menuContainer}>
+                            <div className={styles['menu-container']}>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1272,7 +1272,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                     setActiveMenuId(row.id);
                                   }
                                 }}
-                                className={styles.menuButton}
+                                className={styles['menu-button']}
                                 title="More Actions"
                               >
                                 <MoreVertical size={14} />
@@ -1280,10 +1280,10 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                               {isMenuOpen && menuAnchorPosition && (
                                 <>
                                   <div
-                                    className={styles.menuBackdrop}
+                                    className={styles['menu-backdrop']}
                                     onClick={() => { setActiveMenuId(null); setMenuAnchorPosition(null); }}
                                   />
-                                  <div className={styles.menuDropdown} style={{ position: 'fixed', top: menuAnchorPosition.top, right: document.documentElement.clientWidth - menuAnchorPosition.left, left: 'auto', marginTop: 0 }}>
+                                  <div className={styles['menu-dropdown']} style={{ position: 'fixed', top: menuAnchorPosition.top, right: document.documentElement.clientWidth - menuAnchorPosition.left, left: 'auto', marginTop: 0 }}>
                                     <button
                                       onClick={() => handleEditTask(row)}
                                     >
@@ -1301,7 +1301,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                         setConfirmDeleteId(row.id);
                                         setActiveMenuId(null);
                                       }}
-                                      className={styles.deleteBtnText}
+                                      className={styles['delete-btn-text']}
                                     >
                                       <Trash2 size={13} />
                                       <span>Delete</span>
@@ -1332,34 +1332,34 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     return (
                       <div
                         key={task.id}
-                        className={`${styles.card} ${!task.enabled ? styles.disabledCard : ""}`}
+                        className={`${styles.card} ${!task.enabled ? styles['disabled-card'] : ""}`}
                         onClick={() => setSelectedTask(task)}
                         style={{ cursor: "pointer" }}
                       >
-                        <div className={styles.cardHeader}>
-                          <div className={styles.cardTitleInfo}>
-                            <h3 className={styles.cardTitle}>{task.name}</h3>
-                            <p className={styles.cardSchedule}>
+                        <div className={styles['card-header']}>
+                          <div className={styles['card-title-info']}>
+                            <h3 className={styles['card-title']}>{task.name}</h3>
+                            <p className={styles['card-schedule']}>
                               {formatScheduleText(task)}
                             </p>
                           </div>
 
-                          <div className={styles.cardActions}>
+                          <div className={styles['card-actions']}>
                             {/* Custom sleek toggle switch */}
                             <button
                               onClick={(clickEvent) => {
                                 clickEvent.stopPropagation();
                                 handleToggleTask(task);
                               }}
-                              className={`${styles.toggleSwitch} ${task.enabled ? styles.toggleSwitchOn : ""}`}
+                              className={`${styles['toggle-switch']} ${task.enabled ? styles['toggle-switch-on'] : ""}`}
                               title={
                                 task.enabled ? "Disable task" : "Enable task"
                               }
                             >
-                              <span className={styles.toggleKnob} />
+                              <span className={styles['toggle-knob']} />
                             </button>
 
-                            <div className={styles.menuContainer}>
+                            <div className={styles['menu-container']}>
                               <button
                                 onClick={(clickEvent) => {
                                   clickEvent.stopPropagation();
@@ -1372,7 +1372,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                     setActiveMenuId(task.id);
                                   }
                                 }}
-                                className={styles.menuButton}
+                                className={styles['menu-button']}
                                 title="More Actions"
                               >
                                 <MoreVertical size={16} />
@@ -1382,7 +1382,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                               {isMenuOpen && menuAnchorPosition && (
                                 <>
                                   <div
-                                    className={styles.menuBackdrop}
+                                    className={styles['menu-backdrop']}
                                     onClick={(clickEvent) => {
                                       clickEvent.stopPropagation();
                                       setActiveMenuId(null);
@@ -1390,7 +1390,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                     }}
                                   />
                                   <div
-                                    className={styles.menuDropdown}
+                                    className={styles['menu-dropdown']}
                                     style={{ position: 'fixed', top: menuAnchorPosition.top, right: document.documentElement.clientWidth - menuAnchorPosition.left, left: 'auto', marginTop: 0 }}
                                     onClick={(clickEvent) => clickEvent.stopPropagation()}
                                   >
@@ -1435,7 +1435,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                         setConfirmDeleteId(task.id);
                                         setActiveMenuId(null);
                                       }}
-                                      className={styles.deleteBtnText}
+                                      className={styles['delete-btn-text']}
                                     >
                                       <Trash2 size={13} />
                                       <span>Delete Task</span>
@@ -1447,12 +1447,12 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                           </div>
                         </div>
 
-                        <div className={styles.cardBody}>
-                          <div className={styles.promptWrapper}>
-                            <p className={styles.promptText}>{task.prompt}</p>
+                        <div className={styles['card-body']}>
+                          <div className={styles['prompt-wrapper']}>
+                            <p className={styles['prompt-text']}>{task.prompt}</p>
                           </div>
 
-                          <div className={styles.tagsRow}>
+                          <div className={styles['tags-row']}>
                             <span className={styles.tag}>
                               <Bot size={11} />
                               <span>
@@ -1477,17 +1477,17 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         {/* Inline Confirm Delete */}
                         {isConfirming && (
                           <div
-                            className={styles.confirmLayoutRow}
+                            className={styles['confirm-layout-row']}
                             onClick={(clickEvent) => clickEvent.stopPropagation()}
                           >
                             <span>Delete task permanently?</span>
-                            <div className={styles.confirmButtons}>
+                            <div className={styles['confirm-buttons']}>
                               <button
                                 onClick={(clickEvent) => {
                                   clickEvent.stopPropagation();
                                   handleDeleteTask(task);
                                 }}
-                                className={styles.confirmYes}
+                                className={styles['confirm-yes']}
                               >
                                 Delete
                               </button>
@@ -1496,7 +1496,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                   clickEvent.stopPropagation();
                                   setConfirmDeleteId(null);
                                 }}
-                                className={styles.confirmNo}
+                                className={styles['confirm-no']}
                               >
                                 Cancel
                               </button>
@@ -1520,7 +1520,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                 }}
                 size="md"
                 footer={
-                  <div className={styles.modalActions}>
+                  <div className={styles['modal-actions']}>
                     <ButtonComponent
                       variant="disabled"
                       onClick={() => {
@@ -1556,7 +1556,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     />
                   </FormGroupComponent>
 
-                  <div className={styles.formRow}>
+                  <div className={styles['form-row']}>
                     {/* Project / Workspace */}
                     <FormGroupComponent label="Project">
                       <SelectComponent
@@ -1610,7 +1610,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   </FormGroupComponent>
 
                   {/* Schedule Selector */}
-                  <div className={styles.scheduleBuilder}>
+                  <div className={styles['schedule-builder']}>
                     <FormGroupComponent label="Schedule">
                       <SelectComponent
                         value={formScheduleType}
@@ -1634,8 +1634,8 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
                     {/* Time picker for daily */}
                     {formScheduleType === "daily" && (
-                      <div className={styles.timePickerRow}>
-                        <span className={styles.pickerLabel}>around</span>
+                      <div className={styles['time-picker-row']}>
+                        <span className={styles['picker-label']}>around</span>
                         <SelectComponent
                           value={formTimeHour}
                           onChange={(value: string) => setFormTimeHour(value)}
@@ -1649,7 +1649,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             };
                           })}
                         />
-                        <span className={styles.timeColon}>:</span>
+                        <span className={styles['time-colon']}>:</span>
                         <SelectComponent
                           value={formTimeMinute}
                           onChange={(value: string) => setFormTimeMinute(value)}
@@ -1671,7 +1671,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
                     {/* Day + time picker for weekly */}
                     {formScheduleType === "weekly" && (
-                      <div className={styles.weeklyPickerRow}>
+                      <div className={styles['weekly-picker-row']}>
                         <SelectComponent
                           value={String(formWeeklyDay)}
                           onChange={(value: string) =>
@@ -1687,7 +1687,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             { value: "6", label: "Saturday" },
                           ]}
                         />
-                        <span className={styles.pickerLabel}>around</span>
+                        <span className={styles['picker-label']}>around</span>
                         <SelectComponent
                           value={formTimeHour}
                           onChange={(value: string) => setFormTimeHour(value)}
@@ -1701,7 +1701,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             };
                           })}
                         />
-                        <span className={styles.timeColon}>:</span>
+                        <span className={styles['time-colon']}>:</span>
                         <SelectComponent
                           value={formTimeMinute}
                           onChange={(value: string) => setFormTimeMinute(value)}
@@ -1723,7 +1723,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
                     {/* Date + time picker for once */}
                     {formScheduleType === "once" && (
-                      <div className={styles.weeklyPickerRow}>
+                      <div className={styles['weekly-picker-row']}>
                         <InputComponent
                           type="date"
                           value={formOnceDate}
@@ -1731,7 +1731,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             setFormOnceDate(e.target.value)
                           }
                         />
-                        <span className={styles.pickerLabel}>around</span>
+                        <span className={styles['picker-label']}>around</span>
                         <SelectComponent
                           value={formTimeHour}
                           onChange={(value: string) => setFormTimeHour(value)}
@@ -1745,7 +1745,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             };
                           })}
                         />
-                        <span className={styles.timeColon}>:</span>
+                        <span className={styles['time-colon']}>:</span>
                         <SelectComponent
                           value={formTimeMinute}
                           onChange={(value: string) => setFormTimeMinute(value)}
@@ -1782,15 +1782,15 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
                     {/* Custom recurrence visual builder panel */}
                     {formScheduleType === "custom" && (
-                      <div className={styles.customRecurrencePanel}>
-                        <div className={styles.recurrenceRow}>
-                          <span className={styles.recurrenceText}>Repeat every</span>
+                      <div className={styles['custom-recurrence-panel']}>
+                        <div className={styles['recurrence-row']}>
+                          <span className={styles['recurrence-text']}>Repeat every</span>
                           <InputComponent
                             type="number"
                             min={1}
                             value={String(formCustomInterval)}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormCustomInterval(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                            className={styles.recurrenceInput}
+                            className={styles['recurrence-input']}
                           />
                           <SelectComponent
                             value={formCustomFrequency}
@@ -1802,7 +1802,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                               { value: "yearly", label: "Year(s)" },
                             ]}
                           />
-                          <span className={styles.recurrenceText}>around</span>
+                          <span className={styles['recurrence-text']}>around</span>
                           <SelectComponent
                             value={formTimeHour}
                             onChange={(value: string) => setFormTimeHour(value)}
@@ -1811,7 +1811,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                               return { value: formattedHour, label: formattedHour };
                             })}
                           />
-                          <span className={styles.timeColon}>:</span>
+                          <span className={styles['time-colon']}>:</span>
                           <SelectComponent
                             value={formTimeMinute}
                             onChange={(value: string) => setFormTimeMinute(value)}
@@ -1828,9 +1828,9 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         </div>
 
                         {formCustomFrequency === "weekly" && (
-                          <div className={styles.weekdayPickerPanel}>
-                            <span className={styles.recurrenceSublabel}>On days:</span>
-                            <div className={styles.weekdayButtonsGrid}>
+                          <div className={styles['weekday-picker-panel']}>
+                            <span className={styles['recurrence-sublabel']}>On days:</span>
+                            <div className={styles['weekday-buttons-grid']}>
                               {["S", "M", "T", "W", "T", "F", "S"].map((label, dayIndex) => {
                                 const isSelected = formCustomWeekdays.includes(dayIndex);
                                 return (
@@ -1844,7 +1844,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                         setFormCustomWeekdays(previousWeekdays => [...previousWeekdays, dayIndex].sort());
                                       }
                                     }}
-                                    className={`${styles.weekdayBadgeButton} ${isSelected ? styles.weekdayBadgeActive : ""}`}
+                                    className={`${styles['weekday-badge-button']} ${isSelected ? styles['weekday-badge-active'] : ""}`}
                                   >
                                     {label}
                                   </button>
@@ -1856,7 +1856,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
                         {formCustomFrequency === "monthly" && (
                           <div className={styles.monthlyPickerPanel}>
-                            <div className={styles.recurrenceSubrow}>
+                            <div className={styles['recurrence-subrow']}>
                               <input
                                 type="radio"
                                 id="monthly-type-day"
@@ -1864,7 +1864,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                 checked={formCustomMonthlyType === "dayOfMonth"}
                                 onChange={() => setFormCustomMonthlyType("dayOfMonth")}
                               />
-                              <label htmlFor="monthly-type-day" className={styles.radioLabel}>
+                              <label htmlFor="monthly-type-day" className={styles['radio-label']}>
                                 On the
                                 <SelectComponent
                                   value={String(formCustomDayOfMonth)}
@@ -1882,7 +1882,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                               </label>
                             </div>
 
-                            <div className={styles.recurrenceSubrow}>
+                            <div className={styles['recurrence-subrow']}>
                               <input
                                 type="radio"
                                 id="monthly-type-nth"
@@ -1890,7 +1890,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                 checked={formCustomMonthlyType === "nthDayOfWeek"}
                                 onChange={() => setFormCustomMonthlyType("nthDayOfWeek")}
                               />
-                              <label htmlFor="monthly-type-nth" className={styles.radioLabel}>
+                              <label htmlFor="monthly-type-nth" className={styles['radio-label']}>
                                 On the
                                 <SelectComponent
                                   value={String(formCustomNthDayOccurrence)}
@@ -1925,9 +1925,9 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         )}
 
                         {formCustomFrequency === "yearly" && (
-                          <div className={styles.yearlyPickerPanel}>
-                            <span className={styles.recurrenceSublabel}>In months:</span>
-                            <div className={styles.monthsGrid}>
+                          <div className={styles['yearly-picker-panel']}>
+                            <span className={styles['recurrence-sublabel']}>In months:</span>
+                            <div className={styles['months-grid']}>
                               {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((label, monthIndex) => {
                                 const monthOneIndexed = monthIndex + 1;
                                 const isSelected = formCustomMonths.includes(monthOneIndexed);
@@ -1942,7 +1942,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                         setFormCustomMonths(previousMonths => [...previousMonths, monthOneIndexed].sort());
                                       }
                                     }}
-                                    className={`${styles.monthBadgeButton} ${isSelected ? styles.monthBadgeActive : ""}`}
+                                    className={`${styles['month-badge-button']} ${isSelected ? styles['month-badge-active'] : ""}`}
                                   >
                                     {label}
                                   </button>
@@ -1950,7 +1950,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                               })}
                             </div>
 
-                            <div className={styles.recurrenceSubrow}>
+                            <div className={styles['recurrence-subrow']}>
                               <input
                                 type="radio"
                                 id="yearly-type-day"
@@ -1958,7 +1958,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                 checked={formCustomYearlyType === "specificDate"}
                                 onChange={() => setFormCustomYearlyType("specificDate")}
                               />
-                              <label htmlFor="yearly-type-day" className={styles.radioLabel}>
+                              <label htmlFor="yearly-type-day" className={styles['radio-label']}>
                                 On the
                                 <SelectComponent
                                   value={String(formCustomDayOfMonth)}
@@ -1976,7 +1976,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                               </label>
                             </div>
 
-                            <div className={styles.recurrenceSubrow}>
+                            <div className={styles['recurrence-subrow']}>
                               <input
                                 type="radio"
                                 id="yearly-type-nth"
@@ -1984,7 +1984,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                 checked={formCustomYearlyType === "nthDayOfWeek"}
                                 onChange={() => setFormCustomYearlyType("nthDayOfWeek")}
                               />
-                              <label htmlFor="yearly-type-nth" className={styles.radioLabel}>
+                              <label htmlFor="yearly-type-nth" className={styles['radio-label']}>
                                 On the
                                 <SelectComponent
                                   value={String(formCustomNthDayOccurrence)}

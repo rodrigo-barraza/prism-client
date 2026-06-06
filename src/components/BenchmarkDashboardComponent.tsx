@@ -242,7 +242,7 @@ export default function BenchmarkDashboardComponent({
   const getRowClassName = useCallback(
     (stat: any) => {
       if (selectedModel && statId(stat) === statId(selectedModel)) {
-        return styles.selectedRow;
+        return styles['selected-row'];
       }
       return "";
     },
@@ -253,28 +253,28 @@ export default function BenchmarkDashboardComponent({
   const sidebarDetail = useMemo(() => {
     if (!selectedModel?.benchmarks?.length) return null;
     return (
-      <div className={styles.sidebarDetailGrid}>
+      <div className={styles['sidebar-detail-grid']}>
         {selectedModel.benchmarks.map((b: any, i: any) => {
           const bRate =
             b.total > 0 ? Math.round((b.passed / b.total) * 100) : 0;
           return (
             <div
               key={i}
-              className={`${styles.detailCard} ${
+              className={`${styles['detail-card']} ${
                 b.latestPassed
-                  ? styles.detailCardPassed
+                  ? styles['detail-card-passed']
                   : b.latestErrored
-                    ? styles.detailCardErrored
-                    : styles.detailCardFailed
+                    ? styles['detail-card-errored']
+                    : styles['detail-card-failed']
               }`}
             >
-              <div className={styles.detailHeader}>
-                <div className={styles.detailName}>{b.name}</div>
+              <div className={styles['detail-header']}>
+                <div className={styles['detail-name']}>{b.name}</div>
                 <span
-                  className={`${styles.detailStatus} ${
+                  className={`${styles['detail-status']} ${
                     b.latestPassed
-                      ? styles.detailStatusPassed
-                      : styles.detailStatusFailed
+                      ? styles['detail-status-passed']
+                      : styles['detail-status-failed']
                   }`}
                 >
                   {b.latestPassed
@@ -284,18 +284,18 @@ export default function BenchmarkDashboardComponent({
                       : "✗ Latest"}
                 </span>
               </div>
-              <div className={styles.detailStats}>
-                <span className={styles.detailRuns}>
+              <div className={styles['detail-stats']}>
+                <span className={styles['detail-runs']}>
                   {b.total} run{b.total !== 1 ? "s" : ""}
                 </span>
-                <span className={styles.detailPassed}>
+                <span className={styles['detail-passed']}>
                   <CheckCircle2 size={10} /> {b.passed}
                 </span>
-                <span className={styles.detailFailed}>
+                <span className={styles['detail-failed']}>
                   <XCircle size={10} /> {b.failed + b.errored}
                 </span>
                 <span
-                  className={styles.detailRate}
+                  className={styles['detail-rate']}
                   style={{
                     color:
                       bRate >= 80
@@ -334,7 +334,7 @@ export default function BenchmarkDashboardComponent({
     >
       <div className={styles.container}>
         {loading ? (
-          <div className={styles.loadingState}>
+          <div className={styles['loading-state']}>
             <PanelLoadingSpinner size="large" />
           </div>
         ) : !stats || stats.models.length === 0 ? (
@@ -353,7 +353,7 @@ export default function BenchmarkDashboardComponent({
         ) : (
           <>
             {/* -- Summary Bar (sticky) ------------- */}
-            <div className={styles.stickyBar}>
+            <div className={styles['sticky-bar']}>
               <SummaryBarComponent
                 items={[
                   {
@@ -410,12 +410,12 @@ export default function BenchmarkDashboardComponent({
                 return (
                   <button
                     key={tab.key}
-                    className={`${styles.segmentedButton} ${isActive ? styles.segmentedBtnActive : ""}`}
+                    className={`${styles['segmented-button']} ${isActive ? styles['segmented-btn-active'] : ""}`}
                     onClick={() => setActiveTab(tab.key)}
                   >
                     {Icon && <Icon size={13} />}
                     {tab.label}
-                    <span className={styles.segmentedCount}>{count}</span>
+                    <span className={styles['segmented-count']}>{count}</span>
                   </button>
                 );
               })}

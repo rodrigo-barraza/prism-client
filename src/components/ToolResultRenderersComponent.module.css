@@ -4,7 +4,7 @@
 
 /* ── Shared layout ─────────────────────────────────────────── */
 
-.rendererBlock {
+.renderer-block {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -12,7 +12,7 @@
   margin-top: 4px;
 }
 
-.rendererHeader {
+.renderer-header {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -21,14 +21,14 @@
   color: var(--text-secondary);
 }
 
-.rendererTitle {
+.renderer-title {
   font-weight: 500;
   color: var(--text-primary);
 }
 
 /* ── Status badge ──────────────────────────────────────────── */
 
-.statusBadge {
+.status-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -39,19 +39,19 @@
   letter-spacing: 0.02em;
 }
 
-.statusSuccess {
+.status-success {
   color: var(--color-success);
   background: oklch(77.3% 0.1535 163.3 / 0.1);
 }
 
-.statusError {
+.status-error {
   color: var(--color-danger-light);
   background: oklch(71.1% 0.1661 22.2 / 0.1);
 }
 
 /* ── Path pill ─────────────────────────────────────────────── */
 
-.pathPill {
+.path-pill {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -67,7 +67,7 @@
   white-space: nowrap;
 }
 
-.pathFull {
+.path-full {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -77,7 +77,7 @@
 
 /* ── Code block ────────────────────────────────────────────── */
 
-.codeBlock {
+.code-block {
   margin: 0;
   padding: 8px 10px;
   border-radius: 6px;
@@ -93,13 +93,13 @@
   white-space: pre;
 }
 
-.codeBlock code {
+.code-block code {
   color: inherit;
 }
 
 /* ── Inline code ───────────────────────────────────────────── */
 
-.inlineCode {
+.inline-code {
   padding: 0 4px;
   border-radius: 3px;
   background: var(--background-elevated);
@@ -111,7 +111,7 @@
 
 /* ── Diff block ────────────────────────────────────────────── */
 
-.diffBlock {
+.diff-block {
   margin: 0;
   padding: 6px 10px;
   border-radius: 6px;
@@ -126,30 +126,30 @@
   white-space: pre;
 }
 
-.diffBlock code {
+.diff-block code {
   color: var(--text-secondary);
 }
 
-.diffAdded {
+.diff-added {
   color: var(--color-success);
   background: oklch(77.3% 0.1535 163.3 / 0.08);
   display: inline;
 }
 
-.diffRemoved {
+.diff-removed {
   color: var(--color-danger-light);
   background: oklch(71.1% 0.1661 22.2 / 0.08);
   display: inline;
 }
 
-.diffHunk {
+.diff-hunk {
   color: var(--color-info);
   opacity: 0.7;
 }
 
 /* ── Error text ────────────────────────────────────────────── */
 
-.errorText {
+.error-text {
   font-size: var(--font-size-xs);
   color: var(--color-danger-light);
   padding: 4px 8px;
@@ -159,12 +159,12 @@
 
 /* ── Raw result toggle ─────────────────────────────────────── */
 
-.rawToggle {
+.raw-toggle {
   width: 100%;
   margin-top: 2px;
 }
 
-.rawToggleButton {
+.raw-toggle-button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -178,16 +178,16 @@
   transition: color 0.15s;
 }
 
-.rawToggleButton:hover {
+.raw-toggle-button:hover {
   color: var(--text-secondary);
   background: var(--background-elevated);
 }
 
-.chevronOpen {
+.chevron-open {
   transform: rotate(90deg);
 }
 
-.rawContent {
+.raw-content {
   margin-top: 4px;
   max-height: 300px;
   overflow-y: auto;
@@ -196,7 +196,7 @@
 
 /* ── Grep search ───────────────────────────────────────────── */
 
-.grepList {
+.grep-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -204,13 +204,13 @@
   overflow-y: auto;
 }
 
-.grepFile {
+.grep-file {
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-.grepFilePath {
+.grep-file-path {
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   font-weight: 600;
@@ -219,7 +219,7 @@
   opacity: 0.9;
 }
 
-.grepLine {
+.grep-line {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -229,7 +229,7 @@
   line-height: 1.5;
 }
 
-.grepLineNum {
+.grep-line-num {
   color: var(--text-muted);
   min-width: 32px;
   text-align: right;
@@ -237,7 +237,7 @@
   user-select: none;
 }
 
-.grepLineContent {
+.grep-line-content {
   color: var(--text-secondary);
   white-space: pre;
   overflow: hidden;
@@ -246,7 +246,7 @@
 
 /* ── Directory list ────────────────────────────────────────── */
 
-.directoryList {
+.directory-list {
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -255,7 +255,7 @@
   padding: 4px 0;
 }
 
-.directoryEntry {
+.directory-entry {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -266,23 +266,23 @@
   border-radius: 3px;
 }
 
-.directoryEntry:hover {
+.directory-entry:hover {
   background: var(--background-elevated);
 }
 
-.directoryIcon {
+.directory-icon {
   color: var(--color-info);
   flex-shrink: 0;
 }
 
-.fileIcon {
+.file-icon {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
 /* ── Web search results ────────────────────────────────────── */
 
-.searchResults {
+.search-results {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -290,14 +290,14 @@
   overflow-y: auto;
 }
 
-.searchResult {
+.search-result {
   padding: 4px 8px;
   border-radius: 4px;
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
 }
 
-.searchLink {
+.search-link {
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-info);
@@ -308,11 +308,11 @@
   white-space: nowrap;
 }
 
-.searchLink:hover {
+.search-link:hover {
   text-decoration: underline;
 }
 
-.searchSnippet {
+.search-snippet {
   margin: 2px 0 0;
   font-size: var(--font-size-xs);
   color: var(--text-muted);
@@ -326,7 +326,7 @@
 
 /* ── Terminal ──────────────────────────────────────────────── */
 
-.terminalBlock {
+.terminal-block {
   width: 100%;
   margin-top: 4px;
   border-radius: 8px;
@@ -337,7 +337,7 @@
   flex-direction: column;
 }
 
-.terminalHeader {
+.terminal-header {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -350,14 +350,14 @@
   flex-shrink: 0;
 }
 
-.terminalLive {
+.terminal-live {
   color: var(--color-github-green);
   font-weight: 700;
   font-size: 0.625rem;
-  animation: livePulse 1.5s ease-in-out infinite;
+  animation: live-pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes livePulse {
+@keyframes live-pulse {
   0%,
   100% {
     opacity: 1;
@@ -367,7 +367,7 @@
   }
 }
 
-.terminalLineCount {
+.terminal-line-count {
   margin-left: auto;
   font-size: 0.625rem;
   color: oklch(100.0% 0.0001 263.3 / 0.2);
@@ -375,7 +375,7 @@
   font-weight: 400;
 }
 
-.terminalBody {
+.terminal-body {
   margin: 0;
   padding: 4px 0;
   font-size: var(--font-size-xs);
@@ -390,7 +390,7 @@
 
 /* ── Terminal Line ─────────────────────────────────────────── */
 
-.termLine {
+.term-line {
   display: flex;
   padding: 0 10px;
   gap: 0;
@@ -399,13 +399,13 @@
   transition: background 60ms ease;
 }
 
-.termLine:hover {
+.term-line:hover {
   background: oklch(100.0% 0.0001 263.3 / 0.02);
 }
 
 /* ── Line Number Gutter ────────────────────────────────────── */
 
-.termLineNum {
+.term-line-num {
   flex-shrink: 0;
   width: 32px;
   text-align: right;
@@ -417,13 +417,13 @@
   margin-right: 10px;
 }
 
-.termLine:hover .termLineNum {
+.term-line:hover .term-line-num {
   color: oklch(100.0% 0.0001 263.3 / 0.18);
 }
 
 /* ── Line Content ──────────────────────────────────────────── */
 
-.termLineContent {
+.term-line-content {
   flex: 1;
   color: var(--text-primary);
   word-break: break-all;
@@ -432,50 +432,50 @@
 
 /* ── Log Level Line Accents ────────────────────────────────── */
 
-.termLineError {
+.term-line-error {
   border-left-color: oklch(71.1% 0.1661 22.2 / 0.5);
   background: oklch(63.7% 0.2078 25.3 / 0.03);
 }
 
-.termLineWarn {
+.term-line-warn {
   border-left-color: oklch(83.7% 0.1643 84.4 / 0.4);
   background: oklch(83.7% 0.1643 84.4 / 0.02);
 }
 
-.termLineSuccess {
+.term-line-success {
   border-left-color: oklch(77.3% 0.1535 163.3 / 0.4);
 }
 
 /* ── Log Level Content Colors ──────────────────────────────── */
 
-.termContentError {
+.term-content-error {
   color: var(--color-danger-light);
 }
 
-.termContentWarn {
+.term-content-warn {
   color: var(--color-warning-light);
 }
 
-.termContentInfo {
+.term-content-info {
   color: var(--color-info);
 }
 
-.termContentSuccess {
+.term-content-success {
   color: var(--color-success);
 }
 
-.termContentDebug {
+.term-content-debug {
   color: var(--color-violet);
 }
 
 /* ── Input / Prompt ────────────────────────────────────────── */
 
-.terminalInput {
+.terminal-input {
   color: var(--color-github-green);
   font-weight: 600;
 }
 
-.terminalCursor {
+.terminal-cursor {
   color: var(--color-github-green);
   animation: blink 1s step-end infinite;
 }
@@ -492,14 +492,14 @@
 
 /* ── Terminal error ───────────────────────────────────────── */
 
-.terminalError {
+.terminal-error {
   color: var(--color-danger-light);
   font-weight: 500;
 }
 
 /* ── Git ───────────────────────────────────────────────────── */
 
-.gitStatus {
+.git-status {
   font-size: 0.625rem;
   font-weight: 700;
   font-family: var(--font-mono, monospace);
@@ -510,7 +510,7 @@
   flex-shrink: 0;
 }
 
-.gitLog {
+.git-log {
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -518,7 +518,7 @@
   overflow-y: auto;
 }
 
-.gitCommit {
+.git-commit {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -527,11 +527,11 @@
   font-size: var(--font-size-xs);
 }
 
-.gitCommit:hover {
+.git-commit:hover {
   background: var(--background-elevated);
 }
 
-.gitHash {
+.git-hash {
   font-family: var(--font-mono, monospace);
   color: var(--color-warning);
   font-weight: 600;
@@ -539,7 +539,7 @@
   flex-shrink: 0;
 }
 
-.gitMsg {
+.git-msg {
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -547,7 +547,7 @@
   flex: 1;
 }
 
-.gitAuthor {
+.git-author {
   color: var(--text-muted);
   font-size: 0.625rem;
   flex-shrink: 0;
@@ -555,14 +555,14 @@
 
 /* ── Move arrow ────────────────────────────────────────────── */
 
-.moveArrow {
+.move-arrow {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
 /* ── Browser Screenshots ──────────────────────────────────── */
 
-.browserScreenshot {
+.browser-screenshot {
   margin-top: 4px;
   border-radius: 8px;
   overflow: hidden;
@@ -571,7 +571,7 @@
   max-width: 100%;
 }
 
-.browserScreenshotImg {
+.browser-screenshot-img {
   display: block;
   width: 100%;
   max-height: 420px;
@@ -581,13 +581,13 @@
   cursor: zoom-in;
 }
 
-.browserScreenshotImg:hover {
+.browser-screenshot-img:hover {
   transform: scale(1.01);
 }
 
 /* ── Turtle Graphics Embed ─────────────────────────────────── */
 
-.turtleEmbedWrapper {
+.turtle-embed-wrapper {
   margin-block-start: 6px;
   border-radius: 8px;
   overflow: hidden;
@@ -597,19 +597,19 @@
   max-width: 480px;
   aspect-ratio: 1 / 1;
   box-shadow: 0 4px 20px oklch(0.0% 0.0 0.0 / 0.15);
-  animation: turtleFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: turtle-fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: transform, opacity;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
-.turtleEmbedWrapper:hover {
+.turtle-embed-wrapper:hover {
   border-color: var(--accent-primary);
   box-shadow: 0 6px 24px oklch(65.5% 0.1932 285.8 / 0.15);
 }
 
-.turtleEmbedFrame {
+.turtle-embed-frame {
   width: 100%;
   height: 100% !important;
   border: none;
@@ -617,7 +617,7 @@
   background: transparent;
 }
 
-@keyframes turtleFadeIn {
+@keyframes turtle-fade-in {
   from {
     opacity: 0;
     transform: translateY(8px);
@@ -630,7 +630,7 @@
 
 /* ── ASCII Art Inline Renderer ─────────────────────────────── */
 
-.asciiArtContainer {
+.ascii-art-container {
   margin-top: 6px;
   border-radius: 8px;
   overflow: auto;
@@ -639,11 +639,11 @@
   max-width: 100%;
   max-height: 520px;
   box-shadow: 0 4px 20px oklch(0.0% 0.0 0.0 / 0.25);
-  animation: turtleFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: turtle-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   scrollbar-width: thin;
 }
 
-.asciiArtPre {
+.ascii-art-pre {
   margin: 0;
   padding: 12px;
   font-family:
@@ -659,19 +659,19 @@
 
 /* ── Terminal error ───────────────────────────────────────── */
 
-.terminalError {
+.terminal-error {
   color: var(--color-danger-light);
   font-weight: 500;
 }
 
 /* ── Input arguments toggle ───────────────────────────────── */
 
-.inputArgsToggle {
+.input-args-toggle {
   width: 100%;
   margin-top: 2px;
 }
 
-.inputArgsCount {
+.input-args-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -686,7 +686,7 @@
   line-height: 1;
 }
 
-.inputArgsContent {
+.input-args-content {
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -699,7 +699,7 @@
   overflow-y: auto;
 }
 
-.inputArgRow {
+.input-arg-row {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -711,11 +711,11 @@
   transition: background 0.1s;
 }
 
-.inputArgRow:hover {
+.input-arg-row:hover {
   background: var(--background-elevated);
 }
 
-.inputArgKey {
+.input-arg-key {
   flex-shrink: 0;
   min-width: 60px;
   color: var(--text-muted);
@@ -723,19 +723,19 @@
   letter-spacing: 0.02em;
 }
 
-.inputArgKey::after {
+.input-arg-key::after {
   content: ":";
   color: var(--text-muted);
   opacity: 0.5;
 }
 
-.inputArgValue {
+.input-arg-value {
   color: var(--text-primary);
   word-break: break-word;
   white-space: pre-wrap;
 }
 
-.inputArgValueLong {
+.input-arg-value-long {
   display: block;
   margin-top: 2px;
   padding: 4px 6px;
@@ -749,12 +749,12 @@
 
 /* ── Output result toggle ──────────────────────────────────── */
 
-.outputResultToggle {
+.output-result-toggle {
   width: 100%;
   margin-top: 2px;
 }
 
-.outputResultCount {
+.output-result-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -769,7 +769,7 @@
   line-height: 1;
 }
 
-.outputResultContent {
+.output-result-content {
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -782,7 +782,7 @@
   overflow-y: auto;
 }
 
-.outputArgRow {
+.output-arg-row {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -794,11 +794,11 @@
   transition: background 0.1s;
 }
 
-.outputArgRow:hover {
+.output-arg-row:hover {
   background: var(--background-elevated);
 }
 
-.outputArgKey {
+.output-arg-key {
   flex-shrink: 0;
   min-width: 60px;
   color: var(--color-teal);
@@ -806,19 +806,19 @@
   letter-spacing: 0.02em;
 }
 
-.outputArgKey::after {
+.output-arg-key::after {
   content: ":";
   color: var(--text-muted);
   opacity: 0.5;
 }
 
-.outputArgValue {
+.output-arg-value {
   color: var(--text-primary);
   word-break: break-word;
   white-space: pre-wrap;
 }
 
-.outputArgValueLong {
+.output-arg-value-long {
   display: block;
   margin-top: 2px;
   padding: 4px 6px;
@@ -830,7 +830,7 @@
   overflow-y: auto;
 }
 
-.outputRawPre {
+.output-raw-pre {
   margin: 0;
   padding: 4px 6px;
   font-size: var(--font-size-xs);
@@ -843,7 +843,7 @@
 
 /* ── Worker result card (absorbed task-notification) ──────── */
 
-.workerResultCard {
+.worker-result-card {
   margin-top: 6px;
   border-radius: 6px;
   border: 1px solid
@@ -858,10 +858,10 @@
     var(--background-surface)
   );
   overflow: hidden;
-  animation: workerResultFadeIn 0.3s ease-out;
+  animation: worker-result-fade-in 0.3s ease-out;
 }
 
-.workerResultToggle {
+.worker-result-toggle {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -876,7 +876,7 @@
   transition: background 0.15s ease;
 }
 
-.workerResultToggle:hover {
+.worker-result-toggle:hover {
   background: color-mix(
     in srgb,
     var(--accent-primary, var(--color-indigo)) 8%,
@@ -884,7 +884,7 @@
   );
 }
 
-.workerResultSummary {
+.worker-result-summary {
   flex: 1;
   font-weight: 500;
   overflow: hidden;
@@ -892,7 +892,7 @@
   white-space: nowrap;
 }
 
-.workerResultMeta {
+.worker-result-meta {
   flex-shrink: 0;
   font-size: 0.625rem;
   color: var(--text-muted);
@@ -906,7 +906,7 @@
   );
 }
 
-.workerResultBody {
+.worker-result-body {
   padding: 10px 6px 10px;
   border-top: 1px solid
     color-mix(
@@ -918,7 +918,7 @@
   color: var(--text-secondary);
 }
 
-@keyframes workerResultFadeIn {
+@keyframes worker-result-fade-in {
   from {
     opacity: 0;
     transform: translateY(4px);
@@ -931,7 +931,7 @@
 
 /* ── Worker live tok/s badge ─────────────────────────────── */
 
-.workerSpeedBadge {
+.worker-speed-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -944,12 +944,12 @@
   color: var(--color-success);
   background: oklch(77.3% 0.1535 163.3 / 0.08);
   border: 1px solid oklch(77.3% 0.1535 163.3 / 0.25);
-  animation: workerSpeedPulse 2s ease-in-out infinite;
+  animation: worker-speed-pulse 2s ease-in-out infinite;
   will-change: opacity;
   flex-shrink: 0;
 }
 
-@keyframes workerSpeedPulse {
+@keyframes worker-speed-pulse {
   0%,
   100% {
     opacity: 1;
@@ -961,7 +961,7 @@
 
 /* ── Emoji Kitchen ─────────────────────────────────────────── */
 
-.emojiCombineContainer {
+.emoji-combine-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -977,7 +977,7 @@
   margin-top: 6px;
 }
 
-.emojiLeftRightGrid {
+.emoji-left-right-grid {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -985,7 +985,7 @@
   flex-wrap: wrap;
 }
 
-.emojiBubble {
+.emoji-bubble {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1001,25 +1001,25 @@
   cursor: help;
 }
 
-.emojiBubble:hover {
+.emoji-bubble:hover {
   transform: translateY(-2px) scale(1.05);
   border-color: var(--accent-primary);
 }
 
-.bubbleEmojiChar {
+.bubble-emoji-char {
   font-size: 2.25rem;
   line-height: 1;
 }
 
-.combinePlus,
-.combineEquals {
+.combine-plus,
+.combine-equals {
   font-size: 1.75rem;
   font-weight: 600;
   color: var(--text-muted);
   user-select: none;
 }
 
-.emojiMergedContainer {
+.emoji-merged-container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1033,7 +1033,7 @@
   overflow: hidden;
 }
 
-.mergedBackdropGlow {
+.merged-backdrop-glow {
   position: absolute;
   width: 140px;
   height: 140px;
@@ -1045,11 +1045,11 @@
   );
   filter: blur(10px);
   z-index: 1;
-  animation: glowPulse 4s ease-in-out infinite;
+  animation: glow-pulse 4s ease-in-out infinite;
   will-change: transform, opacity;
 }
 
-@keyframes glowPulse {
+@keyframes glow-pulse {
   0%,
   100% {
     transform: scale(1);
@@ -1061,7 +1061,7 @@
   }
 }
 
-.mergedEmojiImage {
+.merged-emoji-image {
   display: block;
   width: 150px;
   height: 150px;
@@ -1072,11 +1072,11 @@
   filter: drop-shadow(0 8px 16px oklch(0.0% 0.0 0.0 / 0.25));
 }
 
-.mergedEmojiImage:hover {
+.merged-emoji-image:hover {
   transform: scale(1.1) rotate(2deg);
 }
 
-.emojiMetaRow {
+.emoji-meta-row {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1086,42 +1086,42 @@
   margin-top: 4px;
 }
 
-.metaItem {
+.meta-item {
   font-weight: 500;
 }
 
-.metaSeparator {
+.meta-separator {
   opacity: 0.3;
 }
 
-.downloadLink {
+.download-link {
   color: var(--accent-primary);
   text-decoration: none;
   font-weight: 600;
   transition: opacity 0.15s;
 }
 
-.downloadLink:hover {
+.download-link:hover {
   text-decoration: underline;
   opacity: 0.85;
 }
 
 /* ── Combinations Grid ──────────────────────────────────────── */
 
-.emojiGridScrollContainer {
+.emoji-grid-scroll-container {
   max-height: 380px;
   overflow-y: auto;
   padding: 8px 4px;
   scrollbar-width: thin;
 }
 
-.emojiCombosGrid {
+.emoji-combos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 12px;
 }
 
-.comboOptionCard {
+.combo-option-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1138,14 +1138,14 @@
   overflow: hidden;
 }
 
-.comboOptionCard:hover {
+.combo-option-card:hover {
   transform: translateY(-3px);
   border-color: var(--accent-primary);
   box-shadow: 0 8px 20px
     color-mix(in srgb, var(--accent-primary) 12%, oklch(0.0% 0.0 0.0 / 0.1));
 }
 
-.optionCardHeader {
+.option-card-header {
   display: flex;
   align-items: center;
   gap: 3px;
@@ -1154,17 +1154,17 @@
   z-index: 2;
 }
 
-.miniEmoji {
+.mini-emoji {
   font-size: 1.15rem;
 }
 
-.miniPlus {
+.mini-plus {
   color: var(--text-muted);
   font-weight: 600;
   font-size: 0.75rem;
 }
 
-.optionCardImageContainer {
+.option-card-image-container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1174,11 +1174,11 @@
   transition: transform 0.3s ease;
 }
 
-.comboOptionCard:hover .optionCardImageContainer {
+.combo-option-card:hover .option-card-image-container {
   transform: scale(1.12);
 }
 
-.miniMergedImage {
+.mini-merged-image {
   width: 60px;
   height: 60px;
   object-fit: contain;

@@ -211,7 +211,7 @@ export default function ModelLoadConfigPanel({
           <ProviderLogo provider="lm-studio" size={20} />
           {model.display_name || modelKey}
           {architecture && (
-            <span className={styles.archBadge}>{architecture}</span>
+            <span className={styles['arch-badge']}>{architecture}</span>
           )}
         </>
       }
@@ -220,14 +220,14 @@ export default function ModelLoadConfigPanel({
       footer={
         <>
           <button
-            className={styles.cancelButton}
+            className={styles['cancel-button']}
             onClick={onClose}
             disabled={loading}
           >
             Cancel
           </button>
           <button
-            className={styles.loadButton}
+            className={styles['load-button']}
             onClick={handleLoad}
             disabled={loading}
           >
@@ -242,7 +242,7 @@ export default function ModelLoadConfigPanel({
             ) : (
               <>
                 Load Model
-                <span className={styles.loadBtnShortcut}>Ctrl + Enter</span>
+                <span className={styles['load-btn-shortcut']}>Ctrl + Enter</span>
               </>
             )}
           </button>
@@ -250,60 +250,60 @@ export default function ModelLoadConfigPanel({
       }
     >
       {/* Model info badges */}
-      <div className={styles.modelInfo}>
+      <div className={styles['model-info']}>
         {sizeBytes > 0 && (
-          <span className={styles.infoBadge}>
+          <span className={styles['info-badge']}>
             <HardDrive size={11} />
             {formatFileSize(sizeBytes)}
           </span>
         )}
         {modelParameters && (
-          <span className={styles.infoBadge}>
+          <span className={styles['info-badge']}>
             <Cpu size={11} />
             {modelParameters}
           </span>
         )}
         {quantization && (
-          <span className={styles.infoBadge}>{quantization}</span>
+          <span className={styles['info-badge']}>{quantization}</span>
         )}
         {maxContext > 0 && (
-          <span className={styles.infoBadge}>
+          <span className={styles['info-badge']}>
             Max {formatContextTokens(maxContext)}
           </span>
         )}
       </div>
 
       {/* Estimated Memory Usage */}
-      <div className={styles.memorySection}>
-        <div className={styles.memoryHeader}>
-          <span className={styles.memoryLabel}>
+      <div className={styles['memory-section']}>
+        <div className={styles['memory-header']}>
+          <span className={styles['memory-label']}>
             Estimated Memory Usage
-            <span className={styles.betaBadge}>Beta</span>
+            <span className={styles['beta-badge']}>Beta</span>
           </span>
-          <div className={styles.memoryValues}>
-            <span className={styles.memoryValue}>
-              <span className={styles.memoryValueLabel}>GPU</span>
-              <span className={styles.memoryValueNum}>
+          <div className={styles['memory-values']}>
+            <span className={styles['memory-value']}>
+              <span className={styles['memory-value-label']}>GPU</span>
+              <span className={styles['memory-value-num']}>
                 {formatGiB(memory.gpuGiB)}
               </span>
             </span>
-            <span className={styles.memoryValue}>
-              <span className={styles.memoryValueLabel}>Total</span>
-              <span className={styles.memoryValueNum}>
+            <span className={styles['memory-value']}>
+              <span className={styles['memory-value-label']}>Total</span>
+              <span className={styles['memory-value-num']}>
                 {formatGiB(memory.totalGiB)}
               </span>
             </span>
           </div>
         </div>
-        <div className={styles.memoryBarWrap}>
+        <div className={styles['memory-bar-wrap']}>
           <div
-            className={styles.memoryBarTotal}
+            className={styles['memory-bar-total']}
             style={{
               width: `${Math.min((memory.totalGiB / barMax) * 100, 100)}%`,
             }}
           />
           <div
-            className={styles.memoryBarGpu}
+            className={styles['memory-bar-gpu']}
             style={{
               width: `${Math.min((memory.gpuGiB / barMax) * 100, 100)}%`,
             }}
@@ -312,15 +312,15 @@ export default function ModelLoadConfigPanel({
       </div>
 
       {/* Context Length Slider */}
-      <div className={styles.sliderSection}>
-        <div className={styles.sliderHeader}>
-          <span className={styles.sliderLabel}>
+      <div className={styles['slider-section']}>
+        <div className={styles['slider-header']}>
+          <span className={styles['slider-label']}>
             <Database size={14} />
             Context Length
           </span>
           <InputComponent
             type="number"
-            className={styles.sliderInput}
+            className={styles['slider-input']}
             value={contextLength}
             onChange={handleContextInput}
             min={2048}
@@ -328,7 +328,7 @@ export default function ModelLoadConfigPanel({
             step={1024}
           />
         </div>
-        <span className={styles.sliderHint}>
+        <span className={styles['slider-hint']}>
           Model supports up to {maxContext.toLocaleString()} tokens
         </span>
         <SliderComponent
@@ -341,25 +341,25 @@ export default function ModelLoadConfigPanel({
       </div>
 
       {/* GPU Offload Slider */}
-      <div className={styles.sliderSection}>
-        <div className={styles.sliderHeader}>
-          <span className={styles.sliderLabel}>
+      <div className={styles['slider-section']}>
+        <div className={styles['slider-header']}>
+          <span className={styles['slider-label']}>
             <Cpu size={14} />
             GPU Offload
-            <span className={styles.betaBadge} style={{ marginLeft: 2 }}>
+            <span className={styles['beta-badge']} style={{ marginLeft: 2 }}>
               Est.
             </span>
           </span>
           <InputComponent
             type="number"
-            className={styles.sliderInput}
+            className={styles['slider-input']}
             value={gpuLayers}
             onChange={handleGpuInput}
             min={0}
             max={totalLayers}
           />
         </div>
-        <span className={styles.sliderHint}>
+        <span className={styles['slider-hint']}>
           {gpuLayers} of {archParams.isKnown ? "" : "~"}
           {totalLayers} layers on GPU
         </span>
@@ -375,11 +375,11 @@ export default function ModelLoadConfigPanel({
       <div className={styles.divider} />
 
       {/* Toggle options */}
-      <div className={styles.toggleRow}>
-        <span className={styles.toggleLabel}>
+      <div className={styles['toggle-row']}>
+        <span className={styles['toggle-label']}>
           <Zap size={14} />
           Flash Attention
-          <span className={styles.toggleHint}>
+          <span className={styles['toggle-hint']}>
             — saves memory, improves speed
           </span>
         </span>
@@ -390,11 +390,11 @@ export default function ModelLoadConfigPanel({
         />
       </div>
 
-      <div className={styles.toggleRow}>
-        <span className={styles.toggleLabel}>
+      <div className={styles['toggle-row']}>
+        <span className={styles['toggle-label']}>
           <Database size={14} />
           KV Cache → GPU
-          <span className={styles.toggleHint}>— faster but uses more VRAM</span>
+          <span className={styles['toggle-hint']}>— faster but uses more VRAM</span>
         </span>
         <ToggleSwitch
           checked={offloadKvCache}
@@ -406,13 +406,13 @@ export default function ModelLoadConfigPanel({
       <div className={styles.divider} />
 
       {/* Remember settings */}
-      <div className={styles.rememberRow}>
+      <div className={styles['remember-row']}>
         <CheckboxComponent
           size="compact"
           checked={rememberSettings}
           onChange={setRememberSettings}
           label={
-            <span className={styles.rememberLabel}>
+            <span className={styles['remember-label']}>
               Remember settings for <strong>{modelKey}</strong>
             </span>
           }

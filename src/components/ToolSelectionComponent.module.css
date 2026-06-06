@@ -1,6 +1,6 @@
 /* ── ToolSelectionComponent ─────────────────────────────────────── */
 
-.toolsSection {
+.tools-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -9,7 +9,7 @@
   overflow: hidden;
 }
 
-.toolsSectionHeaderRight {
+.tools-section-header-right {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -18,7 +18,7 @@
   flex-shrink: 0;
 }
 
-.toolsListWrapper {
+.tools-list-wrapper {
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--background-base);
@@ -28,12 +28,12 @@
   overscroll-behavior: contain;
 }
 
-.toolsSearch {
+.tools-search {
   padding: 8px;
   flex-shrink: 0;
 }
 
-.toolsSearchInput {
+.tools-search-input {
   width: 100%;
   height: 30px;
   padding: 0 10px;
@@ -47,25 +47,25 @@
   transition: border-color var(--transition-fast);
 }
 
-.toolsSearchInput:focus {
+.tools-search-input:focus {
   border-color: var(--accent-primary);
 }
 
-.toolsSearchInput::placeholder {
+.tools-search-input::placeholder {
   color: var(--text-tertiary);
 }
 
 /* ── Domain group within tool picker ──────────────────────────── */
 
-.domainGroup {
+.domain-group {
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.domainGroup:last-child {
+.domain-group:last-child {
   border-bottom: none;
 }
 
-.domainHeader {
+.domain-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -80,17 +80,17 @@
   transition: background var(--transition-fast);
 }
 
-.domainHeader:hover {
+.domain-header:hover {
   background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
 }
 
-.domainIcon {
+.domain-icon {
   display: flex;
   align-items: center;
   color: var(--text-tertiary);
 }
 
-.domainCount {
+.domain-count {
   margin-left: auto;
   font-size: 0.625rem;
   font-weight: 400;
@@ -101,7 +101,7 @@
 
 /* ── Tool row within domain ───────────────────────────────────── */
 
-.toolRow {
+.tool-row {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -112,24 +112,24 @@
   border-radius: var(--border-radius-sm);
 }
 
-.toolRow:hover {
+.tool-row:hover {
   background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
-.toolCheckbox {
+.tool-checkbox {
   flex: 1;
   min-width: 0;
   width: 100%;
 }
 
-.toolCheckbox > span:last-child {
+.tool-checkbox > span:last-child {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
 }
 
-.toolName {
+.tool-name {
   font-size: var(--font-size-sm);
   color: var(--text-primary);
   flex: 1;
@@ -139,7 +139,7 @@
   white-space: nowrap;
 }
 
-.toolDomain {
+.tool-domain {
   font-size: 0.625rem;
   color: var(--text-tertiary);
   flex-shrink: 0;
@@ -147,7 +147,7 @@
 
 /* ── Bulk select-all checkbox ─────────────────────────────────── */
 
-.bulkCheckboxRow {
+.bulk-checkbox-row {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -158,11 +158,11 @@
   transition: background var(--transition-fast);
 }
 
-.bulkCheckboxRow:hover {
+.bulk-checkbox-row:hover {
   background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
-.bulkCheckboxLabel {
+.bulk-checkbox-label {
   font-size: 11.5px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -171,12 +171,12 @@
 
 /* ── Core System Tools Section ─────────────────────────────────── */
 
-.coreGroup {
+.core-group {
   border-bottom: 1px solid var(--calculated-border-subtle);
   background: color-mix(in srgb, var(--accent-primary) 2%, transparent);
 }
 
-.coreHeader {
+.core-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -191,21 +191,21 @@
   transition: background var(--transition-fast);
 }
 
-.coreHeader:hover {
+.core-header:hover {
   background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
-.coreIcon {
+.core-icon {
   display: flex;
   align-items: center;
   color: var(--accent-primary);
 }
 
-.coreLabel {
+.core-label {
   flex: 1;
 }
 
-.coreBadge {
+.core-badge {
   font-size: 9px;
   font-weight: 700;
   background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
@@ -216,7 +216,7 @@
   letter-spacing: 0.02em;
 }
 
-.coreToolsList {
+.core-tools-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 4px;
@@ -224,7 +224,7 @@
   padding-inline: 32px 12px;
 }
 
-.toolsGrid {
+.tools-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 4px;
@@ -232,23 +232,23 @@
   padding-inline: 32px 12px;
 }
 
-.coreToolRow {
+.core-tool-row {
   opacity: 0.85;
   cursor: default !important;
 }
 
-.coreToolRow:hover {
+.core-tool-row:hover {
   background: transparent !important;
 }
 
 
 
-.coreToolName {
+.core-tool-name {
   font-weight: 500;
   color: var(--text-secondary) !important;
 }
 
-.lockIcon {
+.lock-icon {
   color: var(--text-tertiary);
   opacity: 0.5;
   margin-left: auto;
@@ -256,35 +256,35 @@
 
 /* ── Locked (settings-dependent) tool rows ────────────────────── */
 
-.lockedToolRow {
+.locked-tool-row {
   opacity: 0.5;
   cursor: default !important;
   pointer-events: auto;
 }
 
-.lockedToolRow:hover {
+.locked-tool-row:hover {
   background: transparent !important;
 }
 
-.lockedToolName {
+.locked-tool-name {
   font-weight: 400;
   color: var(--text-tertiary) !important;
 }
 
 /* ── Selected tab content & layout ────────────────────────────── */
 
-.selectedTabContent {
+.selected-tab-content {
   display: flex;
   flex-direction: column;
 }
 
-.selectedCategorySection {
+.selected-category-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.selectedCategoryHeader {
+.selected-category-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -296,17 +296,17 @@
   letter-spacing: 0.04em;
 }
 
-.selectedCategoryIcon {
+.selected-category-icon {
   display: flex;
   align-items: center;
   color: var(--text-tertiary);
 }
 
-.selectedCategoryTitle {
+.selected-category-title {
   color: var(--text-secondary);
 }
 
-.selectedCategoryCount {
+.selected-category-count {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   font-weight: 400;
@@ -314,7 +314,7 @@
 
 /* ── No selected tools empty state ────────────────────────────── */
 
-.noSelectedToolsContainer {
+.no-selected-tools-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -326,26 +326,26 @@
   gap: 12px;
 }
 
-.noSelectedToolsIcon {
+.no-selected-tools-icon {
   color: var(--text-tertiary);
   opacity: 0.45;
-  animation: pulseAnimation 2s infinite ease-in-out;
+  animation: pulse-animation 2s infinite ease-in-out;
 }
 
-.noSelectedToolsMessage {
+.no-selected-tools-message {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-secondary);
 }
 
-.noSelectedToolsSubtext {
+.no-selected-tools-subtext {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   max-width: 240px;
 }
 
 /* GPU-optimized micro-animations */
-@keyframes pulseAnimation {
+@keyframes pulse-animation {
   0%, 100% {
     opacity: 0.4;
     transform: scale(1);
@@ -356,12 +356,12 @@
   }
 }
 
-.toolsSection[data-read-only="true"] .toolRow,
-.toolsSection[data-read-only="true"] .bulkCheckboxRow {
+.tools-section[data-read-only="true"] .tool-row,
+.tools-section[data-read-only="true"] .bulk-checkbox-row {
   cursor: default;
 }
 
-.toolsSection[data-read-only="true"] .toolRow:hover,
-.toolsSection[data-read-only="true"] .bulkCheckboxRow:hover {
+.tools-section[data-read-only="true"] .tool-row:hover,
+.tools-section[data-read-only="true"] .bulk-checkbox-row:hover {
   background: transparent;
 }

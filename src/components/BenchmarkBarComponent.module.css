@@ -18,7 +18,7 @@
   flex-shrink: 0;
 }
 
-.barHasRuns {
+.bar-has-runs {
   background: var(--color-danger);
 }
 

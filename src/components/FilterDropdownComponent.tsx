@@ -159,46 +159,46 @@ export default function FilterDropdownComponent({
       }
     >
       <div
-        className={styles.filterRow}
+        className={styles['filter-row']}
         style={fullWidth ? { flexDirection: "column" } : undefined}
       >
         {/* -- Dropdown trigger -- */}
         <div
-          className={styles.dropdownWrapper}
+          className={styles['dropdown-wrapper']}
           ref={dropdownRef}
           style={fullWidth ? { width: "100%" } : undefined}
         >
           <button
             type="button"
-            className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ""}`}
+            className={`${styles['dropdown-trigger']} ${isOpen ? styles['dropdown-trigger-open'] : ""}`}
             {...(SoundService.interactive(() => setIsOpen((v) => !v)) as Record<
               string,
               React.MouseEventHandler
             >)}
             style={fullWidth ? { width: "100%" } : undefined}
           >
-            <span className={styles.triggerContent}>
-              <span className={styles.triggerIcon}>
+            <span className={styles['trigger-content']}>
+              <span className={styles['trigger-icon']}>
                 <Filter size={14} />
               </span>
-              <span className={styles.triggerText}>{triggerLabel}</span>
+              <span className={styles['trigger-text']}>{triggerLabel}</span>
               {badges.length > 0 && (
-                <span className={styles.triggerCount}>{badges.length}</span>
+                <span className={styles['trigger-count']}>{badges.length}</span>
               )}
             </span>
             <ChevronDown
               size={14}
-              className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}
+              className={`${styles.chevron} ${isOpen ? styles['chevron-open'] : ""}`}
             />
           </button>
 
           {/* -- Dropdown menu -- */}
           {isOpen && (
-            <div className={styles.dropdownMenu}>
+            <div className={styles['dropdown-menu']}>
               {/* -- Date range presets (top) -- */}
               {showDateRange && (
-                <div className={styles.menuGroup}>
-                  <div className={styles.menuGroupLabel}>Date Range</div>
+                <div className={styles['menu-group']}>
+                  <div className={styles['menu-group-label']}>Date Range</div>
                   {DATE_PRESETS.map(
                     (preset: {
                       label: string;
@@ -210,7 +210,7 @@ export default function FilterDropdownComponent({
                         <button
                           key={preset.label}
                           type="button"
-                          className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                          className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
                           {...(SoundService.interactive(() =>
                             onDateChange(preset.getValue()),
                           ) as Record<string, React.MouseEventHandler>)}
@@ -218,7 +218,7 @@ export default function FilterDropdownComponent({
                           <Calendar size={13} style={{ color: "#6366f1" }} />
                           <span>{preset.label}</span>
                           {isActive && (
-                            <span className={styles.menuCheck}>✓</span>
+                            <span className={styles['menu-check']}>✓</span>
                           )}
                         </button>
                       );
@@ -226,7 +226,7 @@ export default function FilterDropdownComponent({
                   )}
                   <button
                     type="button"
-                    className={`${styles.menuItem} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles.menuItemActive : ""}`}
+                    className={`${styles['menu-item']} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles['menu-item-active'] : ""}`}
                     {...(SoundService.interactive(() => {
                       setShowCustomDatePicker(true);
                       setIsOpen(false);
@@ -236,7 +236,7 @@ export default function FilterDropdownComponent({
                     <span>Custom…</span>
                     {!getActiveDatePreset(dateFrom, dateTo) &&
                       (dateFrom || dateTo) && (
-                        <span className={styles.menuCheck}>✓</span>
+                        <span className={styles['menu-check']}>✓</span>
                       )}
                   </button>
                 </div>
@@ -253,8 +253,8 @@ export default function FilterDropdownComponent({
                 } = group;
                 if (items.length === 0) return null;
                 return (
-                  <div key={label} className={styles.menuGroup}>
-                    <div className={styles.menuGroupLabel}>{label}</div>
+                  <div key={label} className={styles['menu-group']}>
+                    <div className={styles['menu-group-label']}>{label}</div>
                     {items.map((item) => {
                       const Icon = item.icon;
                       const isActive = isSingleSelect
@@ -266,7 +266,7 @@ export default function FilterDropdownComponent({
                         <button
                           key={item.key}
                           type="button"
-                          className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                          className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
                           {...(SoundService.interactive(() =>
                             onToggle(
                               isSingleSelect && isActive ? null : item.key,
@@ -283,7 +283,7 @@ export default function FilterDropdownComponent({
                           )}
                           <span>{item.title}</span>
                           {isActive && (
-                            <span className={styles.menuCheck}>✓</span>
+                            <span className={styles['menu-check']}>✓</span>
                           )}
                         </button>
                       );
@@ -314,7 +314,7 @@ export default function FilterDropdownComponent({
 
       {/* -- Active filter badges -- */}
       {badges.length > 0 && (
-        <div className={styles.badgeList}>
+        <div className={styles['badge-list']}>
           {badges.map((b) => {
             const Icon = b.icon;
             return (
@@ -332,10 +332,10 @@ export default function FilterDropdownComponent({
                 }
               >
                 {Icon && <Icon size={11} />}
-                <span className={styles.badgeLabel}>{b.label}</span>
+                <span className={styles['badge-label']}>{b.label}</span>
                 <button
                   type="button"
-                  className={styles.badgeRemove}
+                  className={styles['badge-remove']}
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     b.onRemove();

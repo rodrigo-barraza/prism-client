@@ -212,7 +212,7 @@ function NodePorts({
                   : color
               }
               strokeWidth={2}
-              className={`${styles.port} ${isCompatible ? styles.portCompatible : ""}`}
+              className={`${styles.port} ${isCompatible ? styles['port-compatible'] : ""}`}
               data-node-id={node.id}
               data-port-type="input"
               data-port-modality={portId}
@@ -247,7 +247,7 @@ function NodePorts({
               x={24}
               y={portY + 1}
               dominantBaseline="middle"
-              className={styles.portLabel}
+              className={styles['port-label']}
             >
               {label}
             </text>
@@ -292,7 +292,7 @@ function NodePorts({
               }
               stroke={isNodeRunning ? nodeStatusGradient : color}
               strokeWidth={2}
-              className={`${styles.port} ${styles.portOutput}`}
+              className={`${styles.port} ${styles['port-output']}`}
               data-node-id={node.id}
               data-port-type="output"
               data-port-modality={modality}
@@ -330,7 +330,7 @@ function NodePorts({
               y={portY + 1}
               dominantBaseline="middle"
               textAnchor="end"
-              className={styles.portLabel}
+              className={styles['port-label']}
             >
               {(
                 MODALITY_ICONS as Record<
@@ -453,7 +453,7 @@ function NodeShell({
     <g
       key={node.id}
       transform={`translate(${node.position?.x ?? 0}, ${node.position?.y ?? 0})`}
-      className={styles.nodeGroup}
+      className={styles['node-group']}
       data-workflow-node
       data-node-id={node.id}
       onMouseDown={(e: React.MouseEvent) => onMouseDown(e, node.id)}
@@ -465,7 +465,7 @@ function NodeShell({
         height={height}
         rx="3"
         ry="3"
-        className={styles.nodeBody}
+        className={styles['node-body']}
         style={bodyStyle}
       />
 
@@ -475,7 +475,7 @@ function NodeShell({
         height={HEADER_HEIGHT}
         rx="3"
         ry="3"
-        className={styles.nodeHeader}
+        className={styles['node-header']}
         {...headerStyle}
       />
       <rect
@@ -483,13 +483,13 @@ function NodeShell({
         y={HEADER_HEIGHT - 3}
         width={width}
         height={3}
-        className={styles.nodeHeader}
+        className={styles['node-header']}
         {...headerStyle}
       />
 
       {/* Drag area with header content */}
       <g
-        className={styles.nodeDragArea}
+        className={styles['node-drag-area']}
         onMouseDown={(e: React.MouseEvent) => onMouseDown(e, node.id)}
         onTouchStart={(e: React.TouchEvent) => onTouchStart?.(e, node.id)}
         style={{ cursor: "grab" }}
@@ -534,13 +534,13 @@ function NodeShell({
         width={headerActionsWidth}
         height={HEADER_HEIGHT}
       >
-        <div className={styles.headerActions}>
+        <div className={styles['header-actions']}>
           {headerActions}
           {typeBadge && (
             <>
-              <span className={styles.headerSeparator} />
+              <span className={styles['header-separator']} />
               <span
-                className={styles.headerTypeBadge}
+                className={styles['header-type-badge']}
                 style={{ color: accentColor }}
               >
                 {typeBadge}
@@ -548,14 +548,14 @@ function NodeShell({
             </>
           )}
           {headerActions && onDelete && (
-            <span className={styles.headerSeparator} />
+            <span className={styles['header-separator']} />
           )}
           {!headerActions && typeBadge && onDelete && (
-            <span className={styles.headerSeparator} />
+            <span className={styles['header-separator']} />
           )}
           {onDelete && (
             <button
-              className={styles.deleteNodeButton}
+              className={styles['delete-node-button']}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onDelete(node.id);
@@ -590,7 +590,7 @@ function NodeShell({
           height={height}
           rx="3"
           ry="3"
-          className={styles.selectedFlash}
+          className={styles['selected-flash']}
           strokeWidth={2}
         />
       )}
@@ -749,29 +749,29 @@ function ModelNode(props: ModelNodeProps) {
           width={width - 8}
           height={CONFIG_AREA_HEIGHT - 4}
         >
-          <div className={styles.nodeConfig}>
-            <div className={styles.nodeConfigMessages}>
+          <div className={styles['node-config']}>
+            <div className={styles['node-config-messages']}>
               <MessageSquare
                 size={11}
                 style={{ color: "var(--text-muted)", flexShrink: 0 }}
               />
-              <span className={styles.nodeConfigMessageCount}>
+              <span className={styles['node-config-message-count']}>
                 {node.messages?.length || (node.systemPrompt ? 2 : 1)} messages
               </span>
-              <span className={styles.nodeConfigMessageHint}>
+              <span className={styles['node-config-message-hint']}>
                 Edit in inspector →
               </span>
             </div>
-            <label className={styles.nodeConfigLabel}>Static Input</label>
-            <div className={styles.nodeConfigUpload}>
+            <label className={styles['node-config-label']}>Static Input</label>
+            <div className={styles['node-config-upload']}>
               {node.staticInputs?.image ? (
                 <span
-                  className={styles.nodeConfigFile}
+                  className={styles['node-config-file']}
                   title="Static image attached"
                 >
                   📎 Image attached
                   <button
-                    className={styles.nodeConfigClearButton}
+                    className={styles['node-config-clear-button']}
                     onClick={() =>
                       onUpdateConfig?.(node.id, "staticInputs", {
                         ...node.staticInputs,
@@ -783,13 +783,13 @@ function ModelNode(props: ModelNodeProps) {
                   </button>
                 </span>
               ) : (
-                <label className={styles.nodeConfigUploadLabel}>
+                <label className={styles['node-config-upload-label']}>
                   <Upload size={10} />
                   <span>Attach image/file</span>
                   <input
                     type="file"
                     accept="image/*,audio/*"
-                    className={styles.assetFileInput}
+                    className={styles['asset-file-input']}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
@@ -821,7 +821,7 @@ function ModelNode(props: ModelNodeProps) {
           width={width - 8}
           height={24}
         >
-          <div className={styles.modelResultError}>{results.error}</div>
+          <div className={styles['model-result-error']}>{results.error}</div>
         </foreignObject>
       )}
     </NodeShell>
@@ -996,7 +996,7 @@ function AssetNode(props: AssetNodeProps) {
       {isRenaming ? (
         <input
           ref={renameInputRef}
-          className={styles.nodeRenameInput}
+          className={styles['node-rename-input']}
           style={{ color: accentColor }}
           value={renameValue}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -1064,7 +1064,7 @@ function AssetNode(props: AssetNodeProps) {
         })}
       {/* Gear / eye button */}
       <button
-        className={`${styles.deleteNodeButton} ${isExpanded ? styles.configBtnActive : ""}`}
+        className={`${styles['delete-node-button']} ${isExpanded ? styles['config-btn-active'] : ""}`}
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onToggleExpand(node.id);
@@ -1119,7 +1119,7 @@ function AssetNode(props: AssetNodeProps) {
                 height={contentH - 8}
               >
                 {isViewer ? (
-                  <div className={styles.viewerContent}>
+                  <div className={styles['viewer-content']}>
                     {node.receivedOutputs &&
                     Object.keys(node.receivedOutputs).length > 0 ? (
                       <>
@@ -1129,11 +1129,11 @@ function AssetNode(props: AssetNodeProps) {
                               node.receivedOutputs.image as string,
                             )}
                             alt="Received image"
-                            className={styles.viewerImage}
+                            className={styles['viewer-image']}
                           />
                         )}
                         {node.receivedOutputs.text && (
-                          <div className={styles.viewerText}>
+                          <div className={styles['viewer-text']}>
                             {node.receivedOutputs.text as string}
                           </div>
                         )}
@@ -1147,7 +1147,7 @@ function AssetNode(props: AssetNodeProps) {
                         )}
                         {node.receivedOutputs.embedding && (
                           <div
-                            className={styles.viewerText}
+                            className={styles['viewer-text']}
                             style={{
                               fontFamily: "monospace",
                               fontSize: "10px",
@@ -1172,7 +1172,7 @@ function AssetNode(props: AssetNodeProps) {
                             src={PrismService.getFileUrl(
                               node.receivedOutputs.video as string,
                             )}
-                            className={styles.viewerImage}
+                            className={styles['viewer-image']}
                             onMouseDown={(e: React.MouseEvent) =>
                               e.stopPropagation()
                             }
@@ -1180,7 +1180,7 @@ function AssetNode(props: AssetNodeProps) {
                         )}
                       </>
                     ) : (
-                      <div className={styles.viewerEmpty}>
+                      <div className={styles['viewer-empty']}>
                         <Eye size={16} style={{ opacity: 0.3 }} />
                         <span>Waiting for input…</span>
                       </div>
@@ -1190,7 +1190,7 @@ function AssetNode(props: AssetNodeProps) {
                   node.content !== undefined &&
                   node.modality !== null ? (
                   <TextAreaComponent
-                    className={styles.assetTextarea}
+                    className={styles['asset-textarea']}
                     value={(node.content as string) || ""}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                       onUpdateContent?.(node.id, e.target.value)
@@ -1205,7 +1205,7 @@ function AssetNode(props: AssetNodeProps) {
                 ) : node.modality === "conversation" ? null : (
                   /* File input: upload / drag-drop zone or preview */
                   <div
-                    className={styles.assetUploadArea}
+                    className={styles['asset-upload-area']}
                     onDragOver={(e: React.DragEvent) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -1219,14 +1219,14 @@ function AssetNode(props: AssetNodeProps) {
                     }}
                   >
                     {node.content ? (
-                      <div className={styles.fileInputPreview}>
+                      <div className={styles['file-input-preview']}>
                         {node.modality === "image" ? (
                           <img
                             src={PrismService.getFileUrl(
                               node.content as string,
                             )}
                             alt="Uploaded asset"
-                            className={styles.assetPreviewImg}
+                            className={styles['asset-preview-img']}
                           />
                         ) : node.modality === "audio" ? (
                           <AudioPlayerRecorderComponent
@@ -1241,7 +1241,7 @@ function AssetNode(props: AssetNodeProps) {
                             src={PrismService.getFileUrl(
                               node.content as string,
                             )}
-                            className={styles.assetVideoPlayer}
+                            className={styles['asset-video-player']}
                             onMouseDown={(e: React.MouseEvent) =>
                               e.stopPropagation()
                             }
@@ -1251,20 +1251,20 @@ function AssetNode(props: AssetNodeProps) {
                             src={PrismService.getFileUrl(
                               node.content as string,
                             )}
-                            className={styles.assetPdfViewer}
+                            className={styles['asset-pdf-viewer']}
                             title="PDF preview"
                             onMouseDown={(e: React.MouseEvent) =>
                               e.stopPropagation()
                             }
                           />
                         ) : (
-                          <div className={styles.assetFileLabel}>
+                          <div className={styles['asset-file-label']}>
                             <Paperclip size={14} />
                             File loaded
                           </div>
                         )}
                         <button
-                          className={styles.fileInputClearButton}
+                          className={styles['file-input-clear-button']}
                           onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             onUpdateFileInput?.(node.id, null, null);
@@ -1309,7 +1309,7 @@ function AssetNode(props: AssetNodeProps) {
           >
             {(node.messages || []).length > 2 && (
               <button
-                className={styles.deleteNodeButton}
+                className={styles['delete-node-button']}
                 onClick={(e: React.MouseEvent) => {
                   e.stopPropagation();
                   const msgs = [...(node.messages || [])];
@@ -1328,7 +1328,7 @@ function AssetNode(props: AssetNodeProps) {
               </button>
             )}
             <button
-              className={styles.deleteNodeButton}
+              className={styles['delete-node-button']}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 const msgs = [...(node.messages || [])];
@@ -1477,7 +1477,7 @@ function ToolNode(props: ToolNodeProps) {
         />
       )}
       <button
-        className={`${styles.deleteNodeButton} ${isExpanded ? styles.configBtnActive : ""}`}
+        className={`${styles['delete-node-button']} ${isExpanded ? styles['config-btn-active'] : ""}`}
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onToggleExpand(node.id);
@@ -1525,14 +1525,14 @@ function ToolNode(props: ToolNodeProps) {
           width={width - 8}
           height={contentH - 8}
         >
-          <div className={styles.toolNodePills}>
+          <div className={styles['tool-node-pills']}>
             {displayedTools.map((name) => (
-              <span key={name} className={styles.toolNodePill}>
+              <span key={name} className={styles['tool-node-pill']}>
                 {renderToolName(name)}
               </span>
             ))}
             {remainingCount > 0 && (
-              <span className={styles.toolNodePillMore}>
+              <span className={styles['tool-node-pill-more']}>
                 +{remainingCount} more
               </span>
             )}

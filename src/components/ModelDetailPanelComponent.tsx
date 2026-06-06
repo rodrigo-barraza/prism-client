@@ -216,9 +216,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
         {/* -- Header ---------------------------------------- */}
         <div className={styles.header}>
           <ProviderLogo provider={modelDetail.provider} size={28} />
-          <div className={styles.headerInfo}>
-            <div className={styles.headerName}>{modelDetail.name}</div>
-            <div className={styles.headerProvider}>
+          <div className={styles['header-info']}>
+            <div className={styles['header-name']}>{modelDetail.name}</div>
+            <div className={styles['header-provider']}>
               {modelDetail.providerLabel}
               {modelDetail.year && <span>· {modelDetail.year}</span>}
               {modelDetail.modelType && (
@@ -230,7 +230,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
             </div>
           </div>
           <button
-            className={styles.closeButton}
+            className={styles['close-button']}
             onClick={onClose}
             title="Close"
           >
@@ -241,7 +241,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
         {/* -- Body ------------------------------------------ */}
         <div className={styles.body}>
           {/* -- Use Model Actions --------------------------- */}
-          <div className={styles.useModelActions}>
+          <div className={styles['use-model-actions']}>
             <ButtonComponent
               variant="primary"
               icon={Bot}
@@ -261,16 +261,16 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
           {/* -- Identity ----------------------------------- */}
           <div className={styles.section}>
-            <div className={styles.sectionTitle}>
+            <div className={styles['section-title']}>
               <Info size={12} />
               Identity
             </div>
-            <div className={styles.keyValueGrid}>
-              <span className={styles.keyValueLabel}>API Name</span>
-              <span className={styles.keyValueContentMono}>{modelDetail.key}</span>
+            <div className={styles['key-value-grid']}>
+              <span className={styles['key-value-label']}>API Name</span>
+              <span className={styles['key-value-content-mono']}>{modelDetail.key}</span>
 
-              <span className={styles.keyValueLabel}>Provider</span>
-              <span className={styles.keyValueContent}>
+              <span className={styles['key-value-label']}>Provider</span>
+              <span className={styles['key-value-content']}>
                 <BadgeComponent
                   type="providers"
                   providers={[modelDetail.provider]}
@@ -279,15 +279,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
               {modelDetail.year && (
                 <>
-                  <span className={styles.keyValueLabel}>Release Year</span>
-                  <span className={styles.keyValueContent}>{modelDetail.year}</span>
+                  <span className={styles['key-value-label']}>Release Year</span>
+                  <span className={styles['key-value-content']}>{modelDetail.year}</span>
                 </>
               )}
 
               {modelDetail.publisher && (
                 <>
-                  <span className={styles.keyValueLabel}>Publisher</span>
-                  <span className={styles.keyValueContent}>
+                  <span className={styles['key-value-label']}>Publisher</span>
+                  <span className={styles['key-value-content']}>
                     {modelDetail.publisher}
                   </span>
                 </>
@@ -295,8 +295,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
               {modelDetail.architecture && (
                 <>
-                  <span className={styles.keyValueLabel}>Architecture</span>
-                  <span className={styles.keyValueContent}>
+                  <span className={styles['key-value-label']}>Architecture</span>
+                  <span className={styles['key-value-content']}>
                     {modelDetail.architecture}
                   </span>
                 </>
@@ -304,10 +304,10 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
               {modelDetail.provider === "lm-studio" && (
                 <>
-                  <span className={styles.keyValueLabel}>Status</span>
-                  <span className={styles.keyValueContent}>
+                  <span className={styles['key-value-label']}>Status</span>
+                  <span className={styles['key-value-content']}>
                     <span
-                      className={`${styles.statusBadge} ${modelDetail.isLoaded ? styles.loaded : styles.available}`}
+                      className={`${styles['status-badge']} ${modelDetail.isLoaded ? styles.loaded : styles.available}`}
                     >
                       {modelDetail.isLoaded ? "● Loaded" : "○ Available"}
                     </span>
@@ -321,11 +321,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
             <>
               <div className={styles.divider} />
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>
+                <div className={styles['section-title']}>
                   <Info size={12} />
                   Description
                 </div>
-                <div className={styles.descriptionText}>
+                <div className={styles['description-text']}>
                   {modelDetail.description}
                 </div>
               </div>
@@ -341,23 +341,23 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
             modelDetail.size) && (
             <>
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>
+                <div className={styles['section-title']}>
                   <Cpu size={12} />
                   Specifications
                 </div>
-                <div className={styles.keyValueGrid}>
+                <div className={styles['key-value-grid']}>
                   {modelDetail.contextLength && (
                     <>
-                      <span className={styles.keyValueLabel}>Context Window</span>
-                      <span className={styles.keyValueContent}>
-                        <div className={styles.contextBar}>
-                          <div className={styles.contextBarTrack}>
+                      <span className={styles['key-value-label']}>Context Window</span>
+                      <span className={styles['key-value-content']}>
+                        <div className={styles['context-bar']}>
+                          <div className={styles['context-bar-track']}>
                             <div
-                              className={styles.contextBarFill}
+                              className={styles['context-bar-fill']}
                               style={{ width: `${contextPercentage}%` }}
                             />
                           </div>
-                          <span className={styles.contextBarLabel}>
+                          <span className={styles['context-bar-label']}>
                             {formatContextTokens(modelDetail.contextLength)}
                           </span>
                         </div>
@@ -367,8 +367,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.maxOutputTokens && (
                     <>
-                      <span className={styles.keyValueLabel}>Max Output</span>
-                      <span className={styles.keyValueContentMono}>
+                      <span className={styles['key-value-label']}>Max Output</span>
+                      <span className={styles['key-value-content-mono']}>
                         {formatContextTokens(modelDetail.maxOutputTokens)}
                       </span>
                     </>
@@ -376,8 +376,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.params && (
                     <>
-                      <span className={styles.keyValueLabel}>Parameters</span>
-                      <span className={styles.keyValueContent}>
+                      <span className={styles['key-value-label']}>Parameters</span>
+                      <span className={styles['key-value-content']}>
                         {modelDetail.params}
                       </span>
                     </>
@@ -385,15 +385,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.size && (
                     <>
-                      <span className={styles.keyValueLabel}>Size on Disk</span>
-                      <span className={styles.keyValueContent}>{modelDetail.size}</span>
+                      <span className={styles['key-value-label']}>Size on Disk</span>
+                      <span className={styles['key-value-content']}>{modelDetail.size}</span>
                     </>
                   )}
 
                   {modelDetail.quantization && (
                     <>
-                      <span className={styles.keyValueLabel}>Quantization</span>
-                      <span className={styles.keyValueContentMono}>
+                      <span className={styles['key-value-label']}>Quantization</span>
+                      <span className={styles['key-value-content-mono']}>
                         {modelDetail.quantization}
                       </span>
                     </>
@@ -401,8 +401,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.bitsPerWeight != null && (
                     <>
-                      <span className={styles.keyValueLabel}>Bits per Weight</span>
-                      <span className={styles.keyValueContentMono}>
+                      <span className={styles['key-value-label']}>Bits per Weight</span>
+                      <span className={styles['key-value-content-mono']}>
                         {modelDetail.bitsPerWeight}
                       </span>
                     </>
@@ -410,8 +410,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                   {modelDetail.defaultTemperature != null && (
                     <>
-                      <span className={styles.keyValueLabel}>Default Temp</span>
-                      <span className={styles.keyValueContentMono}>
+                      <span className={styles['key-value-label']}>Default Temp</span>
+                      <span className={styles['key-value-content-mono']}>
                         {modelDetail.defaultTemperature}
                       </span>
                     </>
@@ -427,11 +427,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
             modelDetail.outputTypes.length > 0) && (
             <>
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>
+                <div className={styles['section-title']}>
                   <Layers size={12} />
                   Modalities
                 </div>
-                <div className={styles.modalitiesRow}>
+                <div className={styles['modalities-row']}>
                   {modelDetail.inputTypes.map((inputType: string) => {
                     const meta = (MODALITY_ICONS as any)[inputType];
                     if (!meta) return null;
@@ -439,7 +439,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                     return (
                       <span
                         key={`in-${inputType}`}
-                        className={styles.modalityChip}
+                        className={styles['modality-chip']}
                         style={{ color: (MODALITY_COLORS as any)[inputType] }}
                       >
                         <Icon size={12} />
@@ -449,7 +449,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                   })}
                   {modelDetail.inputTypes.length > 0 &&
                     modelDetail.outputTypes.length > 0 && (
-                      <ArrowRight size={14} className={styles.modalityArrow} />
+                      <ArrowRight size={14} className={styles['modality-arrow']} />
                     )}
                   {modelDetail.outputTypes.map((outputType: string) => {
                     const meta = (MODALITY_ICONS as any)[outputType];
@@ -458,7 +458,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                     return (
                       <span
                         key={`out-${outputType}`}
-                        className={styles.modalityChip}
+                        className={styles['modality-chip']}
                         style={{ color: (MODALITY_COLORS as any)[outputType] }}
                       >
                         <Icon size={12} />
@@ -477,22 +477,22 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
             Object.keys(modelDetail.mediaLimits).length > 0 && (
               <>
                 <div className={styles.section}>
-                  <div className={styles.sectionTitle}>
+                  <div className={styles['section-title']}>
                     <Box size={12} />
                     Media Limits
                   </div>
-                  <div className={styles.mediaLimitsGrid}>
+                  <div className={styles['media-limits-grid']}>
                     {Object.entries(modelDetail.mediaLimits).map(
                       ([type, limits]: any) => (
-                        <div key={type} className={styles.mediaLimitCard}>
-                          <span className={styles.mediaLimitType}>{type}</span>
+                        <div key={type} className={styles['media-limit-card']}>
+                          <span className={styles['media-limit-type']}>{type}</span>
                           {limits.maxCount && (
-                            <span className={styles.mediaLimitValue}>
+                            <span className={styles['media-limit-value']}>
                               {formatNumber(limits.maxCount)} files
                             </span>
                           )}
                           {limits.maxSizeMB && (
-                            <span className={styles.mediaLimitValue}>
+                            <span className={styles['media-limit-value']}>
                               {limits.maxSizeMB} MB max
                             </span>
                           )}
@@ -509,18 +509,18 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           {modelDetail.tools.length > 0 && (
             <>
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>
+                <div className={styles['section-title']}>
                   <Zap size={12} />
                   Tools & Capabilities
                 </div>
-                <div className={styles.toolsGrid}>
+                <div className={styles['tools-grid']}>
                   {modelDetail.tools.map((tool: string) => {
                     const Icon = (TOOL_ICONS as any)[tool];
                     const color = (TOOL_COLORS as any)[tool];
                     return (
                       <span
                         key={tool}
-                        className={styles.toolChip}
+                        className={styles['tool-chip']}
                         style={
                           color
                             ? ({ color, borderColor: `${color}33` } as any)
@@ -537,9 +537,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
                 {/* Thinking levels */}
                 {modelDetail.thinkingLevels &&
                   modelDetail.thinkingLevels.length > 0 && (
-                    <div className={styles.keyValueGrid} style={{ marginTop: 10 }}>
-                      <span className={styles.keyValueLabel}>Thinking Levels</span>
-                      <span className={styles.keyValueContent}>
+                    <div className={styles['key-value-grid']} style={{ marginTop: 10 }}>
+                      <span className={styles['key-value-label']}>Thinking Levels</span>
+                      <span className={styles['key-value-content']}>
                         {modelDetail.thinkingLevels.join(", ")}
                       </span>
                     </div>
@@ -553,13 +553,13 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           {capabilities.length > 0 && (
             <>
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>
+                <div className={styles['section-title']}>
                   <Shield size={12} />
                   API Features
                 </div>
-                <div className={styles.toolsGrid}>
+                <div className={styles['tools-grid']}>
                   {capabilities.map((cap) => (
-                    <span key={cap} className={styles.toolChip}>
+                    <span key={cap} className={styles['tool-chip']}>
                       {cap}
                     </span>
                   ))}
@@ -573,17 +573,17 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           {pricingEntries.length > 0 && (
             <>
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>
+                <div className={styles['section-title']}>
                   <DollarSign size={12} />
                   Pricing
                 </div>
-                <div className={styles.pricingGrid}>
+                <div className={styles['pricing-grid']}>
                   {pricingEntries.map(([key, value]: any) => (
-                    <div key={key} className={styles.pricingRow}>
-                      <span className={styles.pricingLabel}>
+                    <div key={key} className={styles['pricing-row']}>
+                      <span className={styles['pricing-label']}>
                         {(PRICING_LABELS as any)[key] || key}
                       </span>
-                      <span className={styles.pricingValue}>
+                      <span className={styles['pricing-value']}>
                         $
                         {typeof value === "number"
                           ? value.toFixed(value < 0.01 ? 4 : 2)
@@ -601,15 +601,15 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           {arenaEntries.length > 0 && (
             <>
               <div className={styles.section}>
-                <div className={styles.sectionTitle}>
+                <div className={styles['section-title']}>
                   <Trophy size={12} />
                   LMArena ELO Scores
                 </div>
-                <div className={styles.arenaGrid}>
+                <div className={styles['arena-grid']}>
                   {arenaEntries.map(([key, value]: any) => (
-                    <div key={key} className={styles.arenaCard}>
-                      <span className={styles.arenaScore}>{value as any}</span>
-                      <span className={styles.arenaLabel}>
+                    <div key={key} className={styles['arena-card']}>
+                      <span className={styles['arena-score']}>{value as any}</span>
+                      <span className={styles['arena-label']}>
                         {(ARENA_LABELS as any)[key] || key}
                       </span>
                     </div>
@@ -623,75 +623,75 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
           {/* -- Lifetime Stats ------------------------------ */}
           {modelDetail.usageCount > 0 && (
             <div className={styles.section}>
-              <div className={styles.sectionTitle}>
+              <div className={styles['section-title']}>
                 <Activity size={12} />
                 Lifetime Statistics
               </div>
 
               {/* -- Stat Cards Grid ------------------- */}
-              <div className={styles.statsCardsGrid}>
-                <div className={styles.statsCard}>
-                  <Hash size={14} className={styles.statsCardIcon} />
-                  <span className={styles.statsCardValue}>
+              <div className={styles['stats-cards-grid']}>
+                <div className={styles['stats-card']}>
+                  <Hash size={14} className={styles['stats-card-icon']} />
+                  <span className={styles['stats-card-value']}>
                     {formatNumber(modelDetail.usageCount)}
                   </span>
-                  <span className={styles.statsCardLabel}>Total Requests</span>
+                  <span className={styles['stats-card-label']}>Total Requests</span>
                 </div>
 
                 {modelDetail.totalTokens > 0 && (
-                  <div className={styles.statsCard}>
-                    <Layers size={14} className={styles.statsCardIcon} />
-                    <span className={styles.statsCardValue}>
+                  <div className={styles['stats-card']}>
+                    <Layers size={14} className={styles['stats-card-icon']} />
+                    <span className={styles['stats-card-value']}>
                       {formatTokenCount(modelDetail.totalTokens)}
                     </span>
-                    <span className={styles.statsCardLabel}>Total Tokens</span>
+                    <span className={styles['stats-card-label']}>Total Tokens</span>
                   </div>
                 )}
 
                 {modelDetail.totalCost > 0 && (
                   <div
-                    className={`${styles.statsCard} ${styles.statsCardCost}`}
+                    className={`${styles['stats-card']} ${styles['stats-card-cost']}`}
                   >
-                    <DollarSign size={14} className={styles.statsCardIcon} />
-                    <span className={styles.statsCardValue}>
+                    <DollarSign size={14} className={styles['stats-card-icon']} />
+                    <span className={styles['stats-card-value']}>
                       $
                       {modelDetail.totalCost < 0.01
                         ? modelDetail.totalCost.toFixed(4)
                         : modelDetail.totalCost.toFixed(2)}
                     </span>
-                    <span className={styles.statsCardLabel}>Total Cost</span>
+                    <span className={styles['stats-card-label']}>Total Cost</span>
                   </div>
                 )}
 
                 {modelDetail.avgTokensPerSec > 0 && (
-                  <div className={styles.statsCard}>
-                    <TrendingUp size={14} className={styles.statsCardIcon} />
-                    <span className={styles.statsCardValue}>
+                  <div className={styles['stats-card']}>
+                    <TrendingUp size={14} className={styles['stats-card-icon']} />
+                    <span className={styles['stats-card-value']}>
                       {modelDetail.avgTokensPerSec.toFixed(1)}
                     </span>
-                    <span className={styles.statsCardLabel}>Avg tok/s</span>
+                    <span className={styles['stats-card-label']}>Avg tok/s</span>
                   </div>
                 )}
               </div>
 
               {/* -- Success / Error Rate Bar ---------- */}
               {(modelDetail.successCount > 0 || modelDetail.errorCount > 0) && (
-                <div className={styles.successRateRow}>
-                  <div className={styles.successRateBar}>
+                <div className={styles['success-rate-row']}>
+                  <div className={styles['success-rate-bar']}>
                     <div
-                      className={styles.successRateFill}
+                      className={styles['success-rate-fill']}
                       style={{
                         width: `${(modelDetail.successCount / modelDetail.usageCount) * 100}%`,
                       }}
                     />
                   </div>
-                  <div className={styles.successRateLabels}>
-                    <span className={styles.successLabel}>
+                  <div className={styles['success-rate-labels']}>
+                    <span className={styles['success-label']}>
                       <CheckCircle size={10} />
                       {formatNumber(modelDetail.successCount)}
                     </span>
                     {modelDetail.errorCount > 0 && (
-                      <span className={styles.errorLabel}>
+                      <span className={styles['error-label']}>
                         <XCircle size={10} />
                         {formatNumber(modelDetail.errorCount)}
                       </span>
@@ -701,11 +701,11 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
               )}
 
               {/* -- Detail Rows ----------------------- */}
-              <div className={styles.keyValueGrid} style={{ marginTop: 12 }}>
+              <div className={styles['key-value-grid']} style={{ marginTop: 12 }}>
                 {modelDetail.totalInputTokens > 0 && (
                   <>
-                    <span className={styles.keyValueLabel}>Input Tokens</span>
-                    <span className={styles.keyValueContentMono}>
+                    <span className={styles['key-value-label']}>Input Tokens</span>
+                    <span className={styles['key-value-content-mono']}>
                       {formatTokenCount(modelDetail.totalInputTokens)}
                     </span>
                   </>
@@ -713,8 +713,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                 {modelDetail.totalOutputTokens > 0 && (
                   <>
-                    <span className={styles.keyValueLabel}>Output Tokens</span>
-                    <span className={styles.keyValueContentMono}>
+                    <span className={styles['key-value-label']}>Output Tokens</span>
+                    <span className={styles['key-value-content-mono']}>
                       {formatTokenCount(modelDetail.totalOutputTokens)}
                     </span>
                   </>
@@ -722,8 +722,8 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                 {modelDetail.avgLatency > 0 && (
                   <>
-                    <span className={styles.keyValueLabel}>Avg Latency</span>
-                    <span className={styles.keyValueContentMono}>
+                    <span className={styles['key-value-label']}>Avg Latency</span>
+                    <span className={styles['key-value-content-mono']}>
                       {modelDetail.avgLatency >= 1000
                         ? `${(modelDetail.avgLatency / 1000).toFixed(1)}s`
                         : `${Math.round(modelDetail.avgLatency)}ms`}
@@ -733,14 +733,14 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                 {modelDetail.firstUsed && (
                   <>
-                    <span className={styles.keyValueLabel}>
+                    <span className={styles['key-value-label']}>
                       <Calendar
                         size={10}
                         style={{ marginRight: 4, opacity: 0.5 }}
                       />
                       First Used
                     </span>
-                    <span className={styles.keyValueContentMono}>
+                    <span className={styles['key-value-content-mono']}>
                       {new Date(modelDetail.firstUsed).toLocaleDateString(
                         undefined,
                         {
@@ -755,14 +755,14 @@ export default function ModelDetailPanelComponent({ model, onClose }: any) {
 
                 {modelDetail.lastUsed && (
                   <>
-                    <span className={styles.keyValueLabel}>
+                    <span className={styles['key-value-label']}>
                       <Clock
                         size={10}
                         style={{ marginRight: 4, opacity: 0.5 }}
                       />
                       Last Used
                     </span>
-                    <span className={styles.keyValueContentMono}>
+                    <span className={styles['key-value-content-mono']}>
                       {new Date(modelDetail.lastUsed).toLocaleDateString(
                         undefined,
                         {

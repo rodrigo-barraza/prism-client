@@ -223,7 +223,7 @@ function AdminWorkflowsPageInner() {
       {/* Body */}
       <div className={styles.body}>
         {loadingDetail && !selectedWorkflow ? (
-          <div className={styles.emptyCanvas}>
+          <div className={styles['empty-canvas']}>
             <PanelLoadingSpinner size="large" />
           </div>
         ) : (

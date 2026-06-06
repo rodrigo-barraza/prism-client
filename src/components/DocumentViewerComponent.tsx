@@ -40,9 +40,9 @@ export default function DocumentViewer({
       className={styles.viewer}
     >
       {isPdf ? (
-        <iframe src={dataUrl} className={styles.pdfFrame} title="PDF Viewer" />
+        <iframe src={dataUrl} className={styles['pdf-frame']} title="PDF Viewer" />
       ) : (
-        <pre className={styles.textContent}>{content}</pre>
+        <pre className={styles['text-content']}>{content}</pre>
       )}
     </ModalComponent>
   );

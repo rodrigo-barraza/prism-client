@@ -1,13 +1,13 @@
 /* ── ModelToolsComponent ── */
 
-.toolsRow {
+.tools-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.toolBadge {
+.tool-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -26,17 +26,17 @@
     background 0.2s;
 }
 
-.toolBadge:hover {
+.tool-badge:hover {
   border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
   color: var(--text-primary);
 }
 
-.toolBadge svg {
+.tool-badge svg {
   flex-shrink: 0;
 }
 
 /* ── Usage count label ── */
-.toolCount {
+.tool-count {
   font-size: 0.5625rem;
   font-weight: 600;
   line-height: 1;
@@ -46,6 +46,6 @@
   transition: opacity 0.2s;
 }
 
-.toolBadge:hover .toolCount {
+.tool-badge:hover .tool-count {
   opacity: 1;
 }

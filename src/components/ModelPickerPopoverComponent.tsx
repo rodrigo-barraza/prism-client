@@ -565,7 +565,7 @@ export default function ModelPickerPopoverComponent({
 
   // Build trigger class overrides for multi-select active state
   const triggerClassName = [
-    multiSelect && (selectedKeys?.size ?? 0) > 0 ? styles.triggerActive : "",
+    multiSelect && (selectedKeys?.size ?? 0) > 0 ? styles['trigger-active'] : "",
   ]
     .filter(Boolean)
     .join(" ") || undefined;
@@ -573,7 +573,7 @@ export default function ModelPickerPopoverComponent({
   // Build rich tooltip content showing modality + tool capabilities
   const tooltipContent =
     !disabled && triggerCapabilities && loadingProgress == null ? (
-      <div className={styles.tooltipCapabilities}>
+      <div className={styles['tooltip-capabilities']}>
         <ModalityIconComponent modalities={triggerCapabilities} size={10} />
         <ModelToolsRow tools={triggerCapabilities} variant="condensed" />
       </div>
@@ -608,12 +608,12 @@ export default function ModelPickerPopoverComponent({
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className={`${styles.popover} ${flipped ? styles.popoverFlipped : ""}`}
+            className={`${styles.popover} ${flipped ? styles['popover-flipped'] : ""}`}
             style={popoverStyle}
             data-model-picker-popover
           >
             {/* Header: search + close */}
-            <div className={styles.popoverHeader}>
+            <div className={styles['popover-header']}>
               <SearchInputComponent
                 ref={searchRef}
                 id="input-model-picker-search"
@@ -630,7 +630,7 @@ export default function ModelPickerPopoverComponent({
             </div>
 
             {/* Body: ModelsTableComponent with search disabled (hoisted above) */}
-            <div ref={bodyRef} className={styles.popoverBody}>
+            <div ref={bodyRef} className={styles['popover-body']}>
               <ModelsTableComponent
                 models={filteredModels as unknown as RawModel[]}
                 onSelect={handleSelect as unknown as (model: RawModel) => void}

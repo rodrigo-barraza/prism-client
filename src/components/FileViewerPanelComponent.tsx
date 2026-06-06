@@ -288,18 +288,18 @@ const FileTab = memo(function FileTab({
   return (
     <button
       type="button"
-      className={`${styles.tab} ${isActive ? styles.tabActive : ""}`}
+      className={`${styles.tab} ${isActive ? styles['tab-active'] : ""}`}
       onClick={() => onSelect(file.id)}
       title={file.path}
     >
       <FileTypeIconComponent
         filename={basename}
         size={11}
-        className={styles.tabIcon}
+        className={styles['tab-icon']}
       />
-      <span className={styles.tabName}>{basename}</span>
+      <span className={styles['tab-name']}>{basename}</span>
       <span
-        className={styles.tabClose}
+        className={styles['tab-close']}
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onClose(file.id);
@@ -674,7 +674,7 @@ export default function FileViewerPanelComponent({
           position: "relative" as const,
         },
         "data-line-number": lineNumber,
-        className: `${styles.codeLine} ${isSelected ? styles.codeLineSelected : ""}`,
+        className: `${styles['code-line']} ${isSelected ? styles['code-line-selected'] : ""}`,
       };
     },
     [selectedLines],
@@ -686,7 +686,7 @@ export default function FileViewerPanelComponent({
       const target = e.target as HTMLElement;
 
       // ── Inline @ mention button click ──
-      const mentionButton = target.closest(`.${styles.lineMentionButton}`);
+      const mentionButton = target.closest(`.${styles['line-mention-button']}`);
       if (mentionButton) {
         e.stopPropagation();
         const lineElement = mentionButton.closest(
@@ -759,9 +759,9 @@ export default function FileViewerPanelComponent({
     const injected: HTMLButtonElement[] = [];
     for (const element of Array.from(lineEls)) {
       // Skip if already injected
-      if (element.querySelector(`.${styles.lineMentionButton}`)) continue;
+      if (element.querySelector(`.${styles['line-mention-button']}`)) continue;
       const button = document.createElement("button");
-      button.className = styles.lineMentionButton;
+      button.className = styles['line-mention-button'];
       button.type = "button";
       button.title = "Reference this line in chat";
       button.textContent = "@";
@@ -776,7 +776,7 @@ export default function FileViewerPanelComponent({
 
   return (
     <div
-      className={`${styles.container} ${isCollapsed ? styles.containerCollapsed : ""}`}
+      className={`${styles.container} ${isCollapsed ? styles['container-collapsed'] : ""}`}
       style={
         isCollapsed
           ? undefined
@@ -784,14 +784,14 @@ export default function FileViewerPanelComponent({
       }
     >
       {/* Title bar — VSCode-style header */}
-      <div className={styles.titleBar}>
-        <span className={styles.titleBarLabel}>File Viewer</span>
-        <div className={styles.titleBarActions}>
+      <div className={styles['title-bar']}>
+        <span className={styles['title-bar-label']}>File Viewer</span>
+        <div className={styles['title-bar-actions']}>
           {/* SVG preview / source toggle */}
           {cached?.isSvg && activeFileId && (
             <button
               type="button"
-              className={`${styles.titleBarButton} ${styles.titleBarBtnActive}`}
+              className={`${styles['title-bar-button']} ${styles['title-bar-btn-active']}`}
               onClick={() => {
                 setSvgViewMode((previousState) => ({
                   ...previousState,
@@ -814,7 +814,7 @@ export default function FileViewerPanelComponent({
           )}
           <button
             type="button"
-            className={`${styles.titleBarButton} ${wordWrap ? styles.titleBarBtnActive : ""}`}
+            className={`${styles['title-bar-button']} ${wordWrap ? styles['title-bar-btn-active'] : ""}`}
             onClick={() => setWordWrap((previousWordWrap) => !previousWordWrap)}
             title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
           >
@@ -822,7 +822,7 @@ export default function FileViewerPanelComponent({
           </button>
           <button
             type="button"
-            className={styles.titleBarButton}
+            className={styles['title-bar-button']}
             onClick={handleCloseAll}
             title="Close all tabs"
           >
@@ -832,7 +832,7 @@ export default function FileViewerPanelComponent({
       </div>
 
       {/* Tab bar */}
-      <div className={styles.tabBar} ref={tabBarRef}>
+      <div className={styles['tab-bar']} ref={tabBarRef}>
         {openFiles.map((file) => (
           <FileTab
             key={file.id}
@@ -845,14 +845,14 @@ export default function FileViewerPanelComponent({
       </div>
 
       {/* Content area */}
-      <div className={styles.contentArea}>
+      <div className={styles['content-area']}>
         {/* Breadcrumb path */}
         {activeFile && (
           <div className={styles.breadcrumb}>
             {getPathSegments(activeFile.path).map((seg, i, array) => (
               <span key={i}>
                 {i > 0 && (
-                  <ChevronRight size={8} className={styles.breadcrumbSep} />
+                  <ChevronRight size={8} className={styles['breadcrumb-sep']} />
                 )}
                 <span
                   style={
@@ -870,7 +870,7 @@ export default function FileViewerPanelComponent({
 
         {/* Loading state — only show full spinner for initial loads (no cached content) */}
         {cached?.loading && cached?.content == null && !cached?.isBinary && (
-          <div className={styles.isLoadingState}>
+          <div className={styles['is-loading-state']}>
             <PanelLoadingSpinner size="small" inline />
             Loading…
           </div>
@@ -883,30 +883,30 @@ export default function FileViewerPanelComponent({
 
         {/* Binary media viewer — image / audio / video / PDF */}
         {cached?.isBinary && cached?.rawUrl && (
-          <div className={styles.mediaViewer}>
+          <div className={styles['media-viewer']}>
             {cached.mediaType === "image" && (
-              <div className={styles.mediaImageWrap}>
+              <div className={styles['media-image-wrap']}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={cached.rawUrl}
                   alt={getBasename(activeFile?.path)}
-                  className={styles.mediaImage}
+                  className={styles['media-image']}
                   draggable={false}
                 />
               </div>
             )}
             {cached.mediaType === "audio" && (
-              <div className={styles.mediaAudioWrap}>
-                <Music size={48} className={styles.mediaAudioIcon} />
+              <div className={styles['media-audio-wrap']}>
+                <Music size={48} className={styles['media-audio-icon']} />
                 <AudioPlayerRecorderComponent sourceUrl={cached.rawUrl} />
               </div>
             )}
             {cached.mediaType === "video" && (
-              <div className={styles.mediaVideoWrap}>
+              <div className={styles['media-video-wrap']}>
                 <video
                   src={cached.rawUrl}
                   controls
-                  className={styles.mediaVideo}
+                  className={styles['media-video']}
                   preload="metadata"
                 />
               </div>
@@ -914,12 +914,12 @@ export default function FileViewerPanelComponent({
             {cached.mediaType === "pdf" && (
               <iframe
                 src={cached.rawUrl}
-                className={styles.mediaPdf}
+                className={styles['media-pdf']}
                 title={getBasename(activeFile?.path)}
               />
             )}
             {!cached.mediaType && (
-              <div className={styles.emptyState}>
+              <div className={styles['empty-state']}>
                 <FileCode size={24} />
                 <span>Binary file — preview not available</span>
               </div>
@@ -932,13 +932,13 @@ export default function FileViewerPanelComponent({
           cached?.content &&
           activeFileId &&
           svgViewMode[activeFileId] === "preview" && (
-            <div className={styles.mediaViewer}>
-              <div className={styles.mediaImageWrap}>
+            <div className={styles['media-viewer']}>
+              <div className={styles['media-image-wrap']}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(cached.content)}`}
                   alt={getBasename(activeFile?.path)}
-                  className={styles.mediaSvg}
+                  className={styles['media-svg']}
                   draggable={false}
                 />
               </div>
@@ -951,7 +951,7 @@ export default function FileViewerPanelComponent({
           activeFileId &&
           !(cached?.isSvg && svgViewMode[activeFileId] === "preview") && (
             <div
-              className={`${styles.codeScroll} ${!wordWrap ? styles.codeScrollNoWrap : ""}`}
+              className={`${styles['code-scroll']} ${!wordWrap ? styles['code-scroll-no-wrap'] : ""}`}
               ref={codeScrollRef}
               onClick={handleCodeAreaClick}
             >
@@ -997,7 +997,7 @@ export default function FileViewerPanelComponent({
 
         {/* Empty — no file selected */}
         {!activeFile && openFiles.length === 0 && (
-          <div className={styles.emptyState}>
+          <div className={styles['empty-state']}>
             <FileCode size={24} />
             <span>Select a file from the workspace</span>
           </div>
@@ -1005,7 +1005,7 @@ export default function FileViewerPanelComponent({
 
         {/* Resize handle */}
         <div
-          className={styles.resizeHandle}
+          className={styles['resize-handle']}
           ref={resizeRef}
           onMouseDown={handleResizeStart}
         />
@@ -1013,11 +1013,11 @@ export default function FileViewerPanelComponent({
 
       {/* Meta bar */}
       {activeFile && (cached?.content != null || cached?.isBinary) && (
-        <div className={styles.metaBar}>
+        <div className={styles['meta-bar']}>
           {cached.loading && (
             <>
               <PanelLoadingSpinner size="small" inline />
-              <span className={styles.metaDot} />
+              <span className={styles['meta-dot']} />
             </>
           )}
           {cached.isBinary ? (
@@ -1025,7 +1025,7 @@ export default function FileViewerPanelComponent({
               <span>{cached.mediaType || "Binary"}</span>
               {cached.sizeBytes && cached.sizeBytes > 0 ? (
                 <>
-                  <span className={styles.metaDot} />
+                  <span className={styles['meta-dot']} />
                   <span>
                     {cached.sizeBytes >= 1048576
                       ? `${(cached.sizeBytes / 1048576).toFixed(1)} MB`
@@ -1041,7 +1041,7 @@ export default function FileViewerPanelComponent({
               </span>
               {cached.languageLabel && (
                 <>
-                  <span className={styles.metaDot} />
+                  <span className={styles['meta-dot']} />
                   <span>{cached.languageLabel}</span>
                 </>
               )}

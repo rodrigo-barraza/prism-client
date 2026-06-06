@@ -205,7 +205,7 @@
   transition:
     opacity var(--transition-fast),
     translate var(--transition-fast);
-  animation: calendarChipFadeIn 0.2s ease-out both;
+  animation: calendar-chip-fade-in 0.2s ease-out both;
 
   &:hover {
     opacity: 0.85;
@@ -355,7 +355,7 @@
   padding: 10px;
   box-shadow: var(--calculated-shadow-lg);
   backdrop-filter: blur(16px);
-  animation: calendarPopoverEnter 0.18s ease-out both;
+  animation: calendar-popover-enter 0.18s ease-out both;
 }
 
 .calendar-popover-header {
@@ -465,7 +465,7 @@
 
 /* ── Animations ───────────────────────────────────────────── */
 
-@keyframes calendarChipFadeIn {
+@keyframes calendar-chip-fade-in {
   from {
     opacity: 0;
     translate: -4px 0;
@@ -476,7 +476,7 @@
   }
 }
 
-@keyframes calendarPopoverEnter {
+@keyframes calendar-popover-enter {
   from {
     opacity: 0;
     scale: 0.96;
@@ -568,10 +568,10 @@
   display: flex;
   flex-direction: column;
   background: var(--background-surface);
-  animation: calendarDayViewEnter 0.25s ease-out both;
+  animation: calendar-day-view-enter 0.25s ease-out both;
 }
 
-@keyframes calendarDayViewEnter {
+@keyframes calendar-day-view-enter {
   from {
     opacity: 0;
     transform: translateY(6px);
@@ -667,7 +667,7 @@
   padding: 8px 12px;
   border-radius: var(--border-radius-sm);
   border-inline-start: 4px solid currentColor;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.05);
   cursor: pointer;
   transition:
     transform var(--transition-fast),

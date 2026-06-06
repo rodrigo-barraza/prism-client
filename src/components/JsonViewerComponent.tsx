@@ -49,7 +49,7 @@ export default function JsonViewerComponent({
       <div className={styles.toolbar}>
         {label && <span className={styles.label}>{label}</span>}
         <button
-          className={styles.copyButton}
+          className={styles['copy-button']}
           onClick={handleCopy}
           title="Copy JSON"
         >
@@ -95,13 +95,13 @@ function JsonNode({
     return (
       <div className={styles.node}>
         <div
-          className={styles.jsonRow}
+          className={styles['json-row']}
           onClick={() => !isEmpty && setExpanded((previousExpandedState) => !previousExpandedState)}
           style={{ cursor: isEmpty ? "default" : "pointer" }}
         >
           {!isEmpty && (
             <span
-              className={`${styles.chevron} ${expanded ? styles.chevronOpen : ""}`}
+              className={`${styles.chevron} ${expanded ? styles['chevron-open'] : ""}`}
             >
               <ChevronRight size={12} />
             </span>
@@ -119,7 +119,7 @@ function JsonNode({
           ) : expanded ? (
             <span className={styles.bracket}>{bracket[0]}</span>
           ) : (
-            <span className={styles.isCollapsedState}>
+            <span className={styles['is-collapsed-state']}>
               {bracket[0]}
               <span className={styles.ellipsis}>
                 {entries.length} {type === "array" ? "items" : "keys"}
@@ -143,7 +143,7 @@ function JsonNode({
                 />
               ))}
             </div>
-            <div className={styles.jsonRow}>
+            <div className={styles['json-row']}>
               <span className={styles.bracket}>{bracket[1]}</span>
               {!isLast && <span className={styles.comma}>,</span>}
             </div>
@@ -156,7 +156,7 @@ function JsonNode({
   // Primitive value
   return (
     <div className={styles.node}>
-      <div className={styles.jsonRow}>
+      <div className={styles['json-row']}>
         {keyName !== undefined && (
           <span className={styles.key}>
             {JSON.stringify(String(keyName))}:{" "}

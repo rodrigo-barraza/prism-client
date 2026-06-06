@@ -184,15 +184,15 @@ export default function SkillsPanel({
 
     return (
       <div className={styles.container}>
-        <div className={styles.formHeader}>
+        <div className={styles['form-header']}>
           <h3>{isNew ? "New Skill" : "Edit Skill"}</h3>
-          <button className={styles.cancelButton} onClick={handleCancel}>
+          <button className={styles['cancel-button']} onClick={handleCancel}>
             <X size={16} />
           </button>
         </div>
 
         <div className={styles.form}>
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Skill Name</label>
             <InputComponent
               type="text"
@@ -218,7 +218,7 @@ export default function SkillsPanel({
             </span>
           </div>
 
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Description</label>
             <InputComponent
               type="text"
@@ -242,10 +242,10 @@ export default function SkillsPanel({
             </span>
           </div>
 
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Content (Markdown)</label>
             <TextAreaComponent
-              className={styles.contentTextarea}
+              className={styles['content-textarea']}
               value={editingSkill.content || ""}
               onChange={(
                 e: React.ChangeEvent<HTMLTextAreaElement>,
@@ -261,7 +261,7 @@ export default function SkillsPanel({
               autoResize={false}
             />
             <div
-              className={`${styles.charCounter} ${isOverMax ? styles.charCounterDanger : isOverWarn ? styles.charCounterWarn : ""}`}
+              className={`${styles['char-counter']} ${isOverMax ? styles['char-counter-danger'] : isOverWarn ? styles['char-counter-warn'] : ""}`}
             >
               {contentLen.toLocaleString()} /{" "}
               {CONTENT_MAX_CHARS.toLocaleString()} chars
@@ -269,9 +269,9 @@ export default function SkillsPanel({
             </div>
           </div>
 
-          <div className={styles.formActions}>
+          <div className={styles['form-actions']}>
             <button
-              className={styles.saveButton}
+              className={styles['save-button']}
               onClick={handleSave}
               disabled={
                 saving ||
@@ -282,7 +282,7 @@ export default function SkillsPanel({
               <Save size={14} />
               {saving ? "Saving..." : isNew ? "Create Skill" : "Save Changes"}
             </button>
-            <button className={styles.cancelFormButton} onClick={handleCancel}>
+            <button className={styles['cancel-form-button']} onClick={handleCancel}>
               Cancel
             </button>
           </div>
@@ -305,12 +305,12 @@ export default function SkillsPanel({
       )}
 
       {skills.length === 0 && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-icon']}>
             <Sparkles size={24} />
           </div>
-          <div className={styles.emptyTitle}>No skills yet</div>
-          <div className={styles.emptySubtitle}>
+          <div className={styles['empty-title']}>No skills yet</div>
+          <div className={styles['empty-subtitle']}>
             Skills are Markdown knowledge blocks injected into the agent&apos;s
             system prompt. Add coding conventions, project rules, or
             domain-specific context.
@@ -326,9 +326,9 @@ export default function SkillsPanel({
       )}
 
       {skills.length > 0 && filteredSkills.length === 0 && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyTitle}>No matching skills</div>
-          <div className={styles.emptySubtitle}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-title']}>No matching skills</div>
+          <div className={styles['empty-subtitle']}>
             Try adjusting your search query.
           </div>
         </div>
@@ -341,30 +341,30 @@ export default function SkillsPanel({
         return (
           <div
             key={skillId}
-            className={`${styles.skillCard} ${!skill.enabled ? styles.skillCardDisabled : ""}`}
+            className={`${styles['skill-card']} ${!skill.enabled ? styles['skill-card-disabled'] : ""}`}
           >
-            <div className={styles.skillCardHeader}>
-              <div className={styles.skillIcon}>
+            <div className={styles['skill-card-header']}>
+              <div className={styles['skill-icon']}>
                 <BookOpen size={14} />
               </div>
-              <div className={styles.skillInfo}>
-                <div className={styles.skillName}>{skill.name}</div>
+              <div className={styles['skill-info']}>
+                <div className={styles['skill-name']}>{skill.name}</div>
                 {skill.description && (
-                  <div className={styles.skillDescription}>
+                  <div className={styles['skill-description']}>
                     {skill.description}
                   </div>
                 )}
               </div>
-              <div className={styles.skillActions}>
+              <div className={styles['skill-actions']}>
                 <button
-                  className={styles.skillActionButton}
+                  className={styles['skill-action-button']}
                   onClick={() => handleEdit(skill)}
                   title="Edit skill"
                 >
                   <Edit3 size={13} />
                 </button>
                 <button
-                  className={`${styles.skillActionButton} ${styles.skillDeleteButton}`}
+                  className={`${styles['skill-action-button']} ${styles['skill-delete-button']}`}
                   onClick={() => handleDelete(skillId)}
                   title="Delete skill"
                 >
@@ -374,30 +374,30 @@ export default function SkillsPanel({
             </div>
 
             {skill.content && (
-              <div className={styles.skillContentPreview}>{skill.content}</div>
+              <div className={styles['skill-content-preview']}>{skill.content}</div>
             )}
 
             {skill.content && (
               <div
-                className={`${styles.skillCharCount} ${skill.content.length > CONTENT_WARN_CHARS ? styles.skillCharCountWarn : ""}`}
+                className={`${styles['skill-char-count']} ${skill.content.length > CONTENT_WARN_CHARS ? styles['skill-char-count-warn'] : ""}`}
               >
                 {skill.content.length.toLocaleString()} chars
               </div>
             )}
 
             {isConfirming && (
-              <div className={styles.confirmLayoutRow}>
-                <span className={styles.confirmLabel}>
+              <div className={styles['confirm-layout-row']}>
+                <span className={styles['confirm-label']}>
                   Delete &ldquo;{skill.name}&rdquo;?
                 </span>
                 <button
-                  className={`${styles.confirmButton} ${styles.confirmBtnYes}`}
+                  className={`${styles['confirm-button']} ${styles['confirm-btn-yes']}`}
                   onClick={() => confirmDelete(skillId)}
                 >
                   Delete
                 </button>
                 <button
-                  className={`${styles.confirmButton} ${styles.confirmBtnNo}`}
+                  className={`${styles['confirm-button']} ${styles['confirm-btn-no']}`}
                   onClick={() => setConfirmingDeleteId(null)}
                 >
                   Cancel

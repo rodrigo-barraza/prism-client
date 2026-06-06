@@ -6,7 +6,7 @@
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fade-in 0.3s ease-out forwards;
   border-left: 3px solid var(--accent-primary, var(--color-indigo));
   padding: 8px 0;
   opacity: 0.8;
@@ -16,7 +16,7 @@
     opacity: 1;
   }
 
-  &:hover .actionButton {
+  &:hover .action-button {
     opacity: 1;
   }
 }
@@ -63,7 +63,7 @@
   align-items: center;
 }
 
-.roleLabel {
+.role-label {
   font-size: var(--font-size-sm);
   font-weight: 600;
   text-transform: uppercase;
@@ -73,7 +73,7 @@
   gap: 8px;
 }
 
-.statusIcon {
+.status-icon {
   font-weight: 700;
   margin-right: 2px;
 }
@@ -85,7 +85,7 @@
   gap: 4px;
 }
 
-.actionButton {
+.action-button {
   opacity: 0;
   color: var(--text-secondary);
   padding: 4px;
@@ -114,13 +114,13 @@
 }
 
 /* ── Result body (rendered via MarkdownContent) ── */
-.resultBody {
+.result-body {
   opacity: 0.7;
   font-size: var(--font-size-sm) !important;
   margin-top: 2px;
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
     transform: translateY(6px);

@@ -186,63 +186,63 @@ export default function StatusBarComponent({
 
   return (
     <div
-      className={`${styles.statusBar}${isWorker ? ` ${styles.statusBarWorker}` : ""}${active ? ` ${styles.statusBarActive}` : ""}${isAwaitingPhase ? ` ${styles.statusBarAwaiting}` : ""}${isDelegatingPhase ? ` ${styles.statusBarDelegating}` : ""}`}
+      className={`${styles['status-bar']}${isWorker ? ` ${styles['status-bar-worker']}` : ""}${active ? ` ${styles['status-bar-active']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
     >
       <RainbowCanvasComponent
         turbo={active && !isAwaitingPhase}
         animate={!active || isAwaitingPhase ? false : true}
         greyscale={active ? !isColorPhase || isAwaitingPhase : true}
         palette={activePalette}
-        className={styles.statusBarCanvas}
+        className={styles['status-bar-canvas']}
       />
       {/* Progress fill bar — slides right as prompt processing advances */}
       {active && hasEffectiveProgress && (
         <div
-          className={styles.statusBarProgressFill}
+          className={styles['status-bar-progress-fill']}
           style={{ width: `${progressPercentage}%` }}
         />
       )}
       <div
-        className={`${styles.statusBarOverlay}${phase ? ` ${styles[`phase_${phase}`] || ""}` : ""}`}
+        className={`${styles['status-bar-overlay']}${phase ? ` ${styles[`phase_${phase}`] || ""}` : ""}`}
       >
         {active ? (
           <>
             {resolvedIcon && (
-              <span className={styles.statusBarEmoji}>{resolvedIcon}</span>
+              <span className={styles['status-bar-emoji']}>{resolvedIcon}</span>
             )}
-            <span className={styles.statusBarMessage}>
+            <span className={styles['status-bar-message']}>
               {resolvedLabel}
               {hasEffectiveProgress && (
-                <span className={styles.statusBarProgress}>
+                <span className={styles['status-bar-progress']}>
                   {progressPercentage}%
                 </span>
               )}
               {tokPerSec != null && tokPerSec > 0 && (
-                <span className={styles.statusBarSpeed}>
+                <span className={styles['status-bar-speed']}>
                   ⚡ {tokPerSec.toFixed(1)} tok/s
                 </span>
               )}
               {iteration > 0 && (
-                <span className={styles.statusBarIter}>
+                <span className={styles['status-bar-iter']}>
                   Iteration {iteration}
                   {maxIterations ? `/${maxIterations}` : ""}
                 </span>
               )}
             </span>
             {!isAwaitingPhase && !isDelegatingPhase && (
-              <span className={styles.statusBarPulse} />
+              <span className={styles['status-bar-pulse']} />
             )}
           </>
         ) : (
           <>
             {idleIcon && (
-              <span className={styles.statusBarIcon}>{idleIcon}</span>
+              <span className={styles['status-bar-icon']}>{idleIcon}</span>
             )}
             {idleLabel && (
-              <span className={styles.statusBarMessage}>
+              <span className={styles['status-bar-message']}>
                 {idleLabel}
                 {iteration > 0 && (
-                  <span className={styles.statusBarIter}>
+                  <span className={styles['status-bar-iter']}>
                     Iteration {iteration}
                     {maxIterations ? `/${maxIterations}` : ""}
                   </span>

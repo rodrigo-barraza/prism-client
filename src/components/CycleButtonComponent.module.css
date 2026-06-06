@@ -4,7 +4,7 @@
    and a large ∞ glyph for infinity state.
    ──────────────────────────────────────────────────────────── */
 
-.cycleButton {
+.cycle-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -29,33 +29,33 @@
   flex-shrink: 0;
 }
 
-.cycleButton:hover {
+.cycle-button:hover {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
   background: var(--calculated-accent-primary-glow);
 }
 
-.cycleButton:active {
+.cycle-button:active {
   transform: scale(0.94);
 }
 
 /* Highlighted state — when value differs from the default */
-.cycleButtonActive {
+.cycle-button-active {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: var(--color-white);
   filter: hue-rotate(0deg);
-  animation: cycleHue 4s linear infinite;
+  animation: cycle-hue 4s linear infinite;
   will-change: filter;
 }
 
-@keyframes cycleHue {
+@keyframes cycle-hue {
   to {
     filter: hue-rotate(360deg);
   }
 }
 
-.cycleButtonActive:hover {
+.cycle-button-active:hover {
   background: var(--calculated-accent-primary-hover);
   border-color: var(--calculated-accent-primary-hover);
   color: var(--color-white);
@@ -74,16 +74,16 @@
 .tweening {
   color: oklch(66.8% 0.1972 24.2);
   filter: hue-rotate(0deg);
-  animation: cycleCountRainbow 0.5s linear;
+  animation: cycle-count-rainbow 0.5s linear;
   will-change: filter;
 }
 
 /* Override the slow hue cycle during active tweening */
-.cycleButtonActive.tweening {
-  animation: cycleCountRainbow 0.5s linear;
+.cycle-button-active.tweening {
+  animation: cycle-count-rainbow 0.5s linear;
 }
 
-@keyframes cycleCountRainbow {
+@keyframes cycle-count-rainbow {
   from {
     filter: hue-rotate(0deg);
   }
@@ -99,8 +99,8 @@
   letter-spacing: -0.5px;
   color: oklch(75.6% 0.2525 327.7);
   animation:
-    glitchHue 0.15s linear infinite,
-    glitchJitter 0.05s steps(2) infinite;
+    glitch-hue 0.15s linear infinite,
+    glitch-jitter 0.05s steps(2) infinite;
   will-change: filter, transform, text-shadow;
   text-shadow:
     1px 0 0 oklch(64.8% 0.2376 27.0),
@@ -109,16 +109,16 @@
 }
 
 /* Override active colors during glitch */
-.cycleButtonActive.glitching {
+.cycle-button-active.glitching {
   animation:
-    glitchHue 0.15s linear infinite,
-    glitchJitter 0.05s steps(2) infinite;
+    glitch-hue 0.15s linear infinite,
+    glitch-jitter 0.05s steps(2) infinite;
   color: oklch(86.1% 0.1325 326.6);
   background: oklch(29.2% 0.133 310.5);
   border-color: oklch(70.2% 0.3225 328.4);
 }
 
-@keyframes glitchHue {
+@keyframes glitch-hue {
   0% {
     filter: hue-rotate(0deg) brightness(1.2);
   }
@@ -136,7 +136,7 @@
   }
 }
 
-@keyframes glitchJitter {
+@keyframes glitch-jitter {
   0% {
     transform: translate(0, 0) scale(1);
   }

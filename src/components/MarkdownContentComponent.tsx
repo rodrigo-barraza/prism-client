@@ -28,14 +28,14 @@ function FencedCodeBlock({ language, children }: FencedCodeBlockProps) {
   }
 
   return (
-    <div className={styles.codeBlockWrapper}>
-      <div className={styles.codeBlockHeader}>
-        <span className={styles.codeBlockLang}>{displayLabel}</span>
+    <div className={styles['code-block-wrapper']}>
+      <div className={styles['code-block-header']}>
+        <span className={styles['code-block-lang']}>{displayLabel}</span>
         <CopyButtonComponent
           text={codeString}
           size={12}
           showLabel
-          className={styles.codeBlockCopy}
+          className={styles['code-block-copy']}
         />
       </div>
       <SyntaxHighlighter
@@ -62,7 +62,7 @@ function CodeBlock({ children, className, node, ...rest }: CodeBlockProps) {
   const match = /language-(\w+)/.exec(className || "");
   if (!match) {
     return (
-      <code className={`${styles.inlineCode} ${className || ""}`} {...rest}>
+      <code className={`${styles['inline-code']} ${className || ""}`} {...rest}>
         {children}
       </code>
     );
@@ -107,7 +107,7 @@ function AutoResizeEmbed({
   }, [handleMessage]);
 
   return (
-    <span className={styles.embedWrapper}>
+    <span className={styles['embed-wrapper']}>
       <iframe
         ref={iframeRef}
         src={src}
@@ -134,7 +134,7 @@ function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
         src={src}
         title={alt || "Map"}
         fallbackHeight={360}
-        className={styles.mapEmbed}
+        className={styles['map-embed']}
       />
     );
   }
@@ -144,7 +144,7 @@ function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
         src={src}
         title={alt || "LaTeX"}
         fallbackHeight={160}
-        className={styles.embedFrame}
+        className={styles['embed-frame']}
       />
     );
   }
@@ -154,7 +154,7 @@ function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
         src={src}
         title={alt || "Diagram"}
         fallbackHeight={420}
-        className={styles.embedFrame}
+        className={styles['embed-frame']}
       />
     );
   }
@@ -164,7 +164,7 @@ function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
         src={src}
         title={alt || "3D Scene"}
         fallbackHeight={480}
-        className={styles.embedFrame}
+        className={styles['embed-frame']}
       />
     );
   }
@@ -174,7 +174,7 @@ function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
         src={src}
         title={alt || "ASCII Art"}
         fallbackHeight={600}
-        className={styles.embedFrame}
+        className={styles['embed-frame']}
       />
     );
   }
@@ -184,16 +184,16 @@ function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
         src={src}
         title={alt || "Bonfire"}
         fallbackHeight={480}
-        className={styles.embedFrame}
+        className={styles['embed-frame']}
       />
     );
   }
   if (isStringSrc && src.includes("/compute/turtle/embed")) {
     return (
-      <span className={`${styles.embedWrapper} ${styles.turtleEmbedWrapper}`}>
+      <span className={`${styles['embed-wrapper']} ${styles['turtle-embed-wrapper']}`}>
         <iframe
           src={src}
-          className={`${styles.embedFrame} ${styles.turtleEmbedFrame}`}
+          className={`${styles['embed-frame']} ${styles['turtle-embed-frame']}`}
           title={alt || "Turtle Drawing"}
           loading="lazy"
           referrerPolicy="no-referrer"

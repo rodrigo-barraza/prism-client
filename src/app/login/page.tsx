@@ -132,17 +132,17 @@ function LogInContentComponent() {
   };
 
   return (
-    <div className={styles.loginPageContainer}>
-      <div className={styles.authenticationCard} role="main">
+    <div className={styles['login-page-container']}>
+      <div className={styles['authentication-card']} role="main">
         {/* Brand Header */}
-        <header className={styles.brandSectionHeader}>
-          <div className={styles.brandLogoContainer} aria-hidden="true">
+        <header className={styles['brand-section-header']}>
+          <div className={styles['brand-logo-container']} aria-hidden="true">
             <ShieldCheck size={28} />
           </div>
           <h1 className={styles["mainHeading-element"]}>
             {isSignUpMode ? "Create Account" : "Welcome Back"}
           </h1>
-          <p className={styles.subheadingParagraph}>
+          <p className={styles['subheading-paragraph']}>
             {isSignUpMode 
               ? "Register to access your workspace clients" 
               : "Sign in to access your unified gateway"}
@@ -151,14 +151,14 @@ function LogInContentComponent() {
 
         {/* Status Alerts */}
         {alertError && (
-          <div className={styles.errorMessageAlert} role="alert">
+          <div className={styles['error-message-alert']} role="alert">
             <AlertCircle size={18} />
             <span>{alertError}</span>
           </div>
         )}
 
         {alertSuccess && (
-          <div className={styles.successMessageAlert} role="alert">
+          <div className={styles['success-message-alert']} role="alert">
             <CheckCircle2 size={18} />
             <span>{alertSuccess}</span>
           </div>
@@ -169,8 +169,8 @@ function LogInContentComponent() {
           {isSignUpMode && (
             <>
               {/* Display Name (Optional) */}
-              <div className={styles.formGroupContainer}>
-                <label className={styles.labelElement} htmlFor="displayNameInput">
+              <div className={styles['form-group-container']}>
+                <label className={styles['label-element']} htmlFor="displayNameInput">
                   Display Name
                 </label>
                 <div style={{ position: "relative" }}>
@@ -197,8 +197,8 @@ function LogInContentComponent() {
               </div>
 
               {/* Username (Required for Registration) */}
-              <div className={styles.formGroupContainer}>
-                <label className={styles.labelElement} htmlFor="usernameInput">
+              <div className={styles['form-group-container']}>
+                <label className={styles['label-element']} htmlFor="usernameInput">
                   Username
                 </label>
                 <div style={{ position: "relative" }}>
@@ -228,8 +228,8 @@ function LogInContentComponent() {
           )}
 
           {/* Email Address */}
-          <div className={styles.formGroupContainer}>
-            <label className={styles.labelElement} htmlFor="emailInput">
+          <div className={styles['form-group-container']}>
+            <label className={styles['label-element']} htmlFor="emailInput">
               Email Address
             </label>
             <div style={{ position: "relative" }}>
@@ -257,8 +257,8 @@ function LogInContentComponent() {
           </div>
 
           {/* Password */}
-          <div className={styles.formGroupContainer}>
-            <label className={styles.labelElement} htmlFor="passwordInput">
+          <div className={styles['form-group-container']}>
+            <label className={styles['label-element']} htmlFor="passwordInput">
               Password
             </label>
             <div style={{ position: "relative" }}>
@@ -303,7 +303,7 @@ function LogInContentComponent() {
         </form>
 
         {/* SSO Integration */}
-        <div className={styles.dividerLineElement}>
+        <div className={styles['divider-line-element']}>
           <span>or continue with</span>
         </div>
 

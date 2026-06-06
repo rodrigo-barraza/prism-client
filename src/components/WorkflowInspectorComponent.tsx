@@ -296,18 +296,18 @@ export default function WorkflowInspector({
       className={styles.inspector}
       style={{ width: inspectorWidth, minWidth: MIN_WIDTH }}
     >
-      <div className={styles.resizeHandle} onMouseDown={handleResizeStart} />
+      <div className={styles['resize-handle']} onMouseDown={handleResizeStart} />
       {/* Header */}
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
+        <div className={styles['header-left']}>
           {isModel && (
-            <div className={styles.providerIcon}>
+            <div className={styles['provider-icon']}>
               <ProviderLogo provider={node.provider || ""} size={18} />
             </div>
           )}
           {isInput && (
             <div
-              className={styles.typeIcon}
+              className={styles['type-icon']}
               style={{ color: getModalityIcon(node.modality)?.color }}
             >
               {node.modality === "text" ? (
@@ -325,17 +325,17 @@ export default function WorkflowInspector({
             </div>
           )}
           {isViewer && (
-            <div className={styles.typeIcon} style={{ color: "#a78bfa" }}>
+            <div className={styles['type-icon']} style={{ color: "#a78bfa" }}>
               <Eye size={16} />
             </div>
           )}
           {isTools && (
-            <div className={styles.typeIcon} style={{ color: "#f97316" }}>
+            <div className={styles['type-icon']} style={{ color: "#f97316" }}>
               <Parentheses size={16} />
             </div>
           )}
-          <div className={styles.headerInfo}>
-            <span className={styles.headerTitle}>
+          <div className={styles['header-info']}>
+            <span className={styles['header-title']}>
               {isModel
                 ? (node.displayName as string) || node.modelName
                 : isTools
@@ -357,11 +357,11 @@ export default function WorkflowInspector({
                       "Media"
                     : node.customName || "Output"}
             </span>
-            <span className={styles.headerSubtitle}>
+            <span className={styles['header-subtitle']}>
               {nodeSubtitle}
               {status && (
                 <span
-                  className={`${styles.statusBadge} ${styles[`status_${status}`]}`}
+                  className={`${styles['status-badge']} ${styles[`status_${status}`]}`}
                 >
                   {status}
                 </span>
@@ -369,7 +369,7 @@ export default function WorkflowInspector({
             </span>
           </div>
         </div>
-        <button className={styles.closeButton} onClick={onClose}>
+        <button className={styles['close-button']} onClick={onClose}>
           <X size={14} />
         </button>
       </div>
@@ -379,34 +379,34 @@ export default function WorkflowInspector({
         {/* Model selector — model nodes only, hidden in readOnly */}
         {isModel && !readOnly && (
           <section className={styles.section}>
-            <label className={styles.sectionLabel}>Model</label>
-            <div className={styles.modelSelector}>
+            <label className={styles['section-label']}>Model</label>
+            <div className={styles['model-selector']}>
               <button
-                className={`${styles.modelSelectorTrigger} ${modelDropdownOpen ? styles.modelSelectorTriggerOpen : ""}`}
+                className={`${styles['model-selector-trigger']} ${modelDropdownOpen ? styles['model-selector-trigger-open'] : ""}`}
                 onClick={() => setModelDropdownOpen((previousOpenState) => !previousOpenState)}
               >
-                <span className={styles.modelSelectorContent}>
+                <span className={styles['model-selector-content']}>
                   <ProviderLogo provider={node.provider || ""} size={14} />
-                  <span className={styles.modelSelectorLabel}>
+                  <span className={styles['model-selector-label']}>
                     {(node.displayName as string) || node.modelName}
                   </span>
                 </span>
                 <ChevronDown
                   size={12}
-                  className={`${styles.modelSelectorChevron} ${modelDropdownOpen ? styles.modelSelectorChevronOpen : ""}`}
+                  className={`${styles['model-selector-chevron']} ${modelDropdownOpen ? styles['model-selector-chevron-open'] : ""}`}
                 />
               </button>
 
               {modelDropdownOpen && (
-                <div className={styles.modelDropdown}>
-                  <div className={styles.modelDropdownSearch}>
+                <div className={styles['model-dropdown']}>
+                  <div className={styles['model-dropdown-search']}>
                     <Search
                       size={11}
-                      className={styles.modelDropdownSearchIcon}
+                      className={styles['model-dropdown-search-icon']}
                     />
                     <input
                       type="text"
-                      className={styles.modelDropdownSearchInput}
+                      className={styles['model-dropdown-search-input']}
                       placeholder="Search models…"
                       value={modelSearch}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -416,16 +416,16 @@ export default function WorkflowInspector({
                     />
                     {modelSearch && (
                       <button
-                        className={styles.modelDropdownSearchClear}
+                        className={styles['model-dropdown-search-clear']}
                         onClick={() => setModelSearch("")}
                       >
                         <X size={10} />
                       </button>
                     )}
                   </div>
-                  <div className={styles.modelDropdownList}>
+                  <div className={styles['model-dropdown-list']}>
                     {filteredModels.length === 0 ? (
-                      <div className={styles.modelDropdownEmpty}>
+                      <div className={styles['model-dropdown-empty']}>
                         No compatible models found
                       </div>
                     ) : (
@@ -437,7 +437,7 @@ export default function WorkflowInspector({
                         return (
                           <button
                             key={key}
-                            className={`${styles.modelDropdownItem} ${isCurrent ? styles.modelDropdownItemActive : ""}`}
+                            className={`${styles['model-dropdown-item']} ${isCurrent ? styles['model-dropdown-item-active'] : ""}`}
                             onClick={() => {
                               onChangeModel?.(node.id, modelOption);
                               setModelDropdownOpen(false);
@@ -448,11 +448,11 @@ export default function WorkflowInspector({
                               provider={modelOption.provider || ""}
                               size={13}
                             />
-                            <span className={styles.modelDropdownItemName}>
+                            <span className={styles['model-dropdown-item-name']}>
                               {modelOption.display_name || modelOption.label || modelOption.name}
                             </span>
                             <span
-                              className={styles.modelDropdownItemModalities}
+                              className={styles['model-dropdown-item-modalities']}
                             >
                               {(modelOption.rawInputTypes || modelOption.inputTypes || []).map(
                                 (modalityType: string) => {
@@ -468,7 +468,7 @@ export default function WorkflowInspector({
                                   );
                                 },
                               )}
-                              <span className={styles.modelDropdownItemArrow}>
+                              <span className={styles['model-dropdown-item-arrow']}>
                                 →
                               </span>
                               {(modelOption.outputTypes || []).map((modalityType: string) => {
@@ -498,14 +498,14 @@ export default function WorkflowInspector({
         {/* Model info — readOnly mode */}
         {isModel && readOnly && (
           <section className={styles.section}>
-            <label className={styles.sectionLabel}>Model</label>
+            <label className={styles['section-label']}>Model</label>
             <div
-              className={styles.modelSelectorTrigger}
+              className={styles['model-selector-trigger']}
               style={{ cursor: "default" }}
             >
-              <span className={styles.modelSelectorContent}>
+              <span className={styles['model-selector-content']}>
                 <ProviderLogo provider={node.provider || ""} size={14} />
-                <span className={styles.modelSelectorLabel}>
+                <span className={styles['model-selector-label']}>
                   {(node.displayName as string) || node.modelName}
                 </span>
               </span>
@@ -516,12 +516,12 @@ export default function WorkflowInspector({
         {/* Input Ports */}
         {incoming.length > 0 && (
           <section className={styles.section}>
-            <label className={styles.sectionLabel}>Input Ports</label>
-            <div className={styles.connectionList}>
+            <label className={styles['section-label']}>Input Ports</label>
+            <div className={styles['connection-list']}>
               {incoming.map((edge: WorkflowEdge) => (
                 <div
                   key={edge.id}
-                  className={`${styles.connectionItem} ${styles.connectionItemClickable}`}
+                  className={`${styles['connection-item']} ${styles['connection-item-clickable']}`}
                   role="button"
                   tabIndex={0}
                   onClick={() => onSelectNode?.(edge.sourceNodeId || "")}
@@ -531,17 +531,17 @@ export default function WorkflowInspector({
                   }}
                 >
                   <span
-                    className={styles.connectionDot}
+                    className={styles['connection-dot']}
                     style={{
                       background:
                         getModalityIcon(edge.targetModality)?.color || "#888",
                     }}
                   />
-                  <span className={styles.connectionFrom}>
+                  <span className={styles['connection-from']}>
                     {getNodeLabel(edge.sourceNodeId || "")}
                   </span>
-                  <span className={styles.connectionArrow}>→</span>
-                  <span className={styles.connectionModality}>
+                  <span className={styles['connection-arrow']}>→</span>
+                  <span className={styles['connection-modality']}>
                     {edge.targetModality}
                   </span>
                 </div>
@@ -553,12 +553,12 @@ export default function WorkflowInspector({
         {/* Output Ports */}
         {outgoing.length > 0 && (
           <section className={styles.section}>
-            <label className={styles.sectionLabel}>Output Ports</label>
-            <div className={styles.connectionList}>
+            <label className={styles['section-label']}>Output Ports</label>
+            <div className={styles['connection-list']}>
               {outgoing.map((edge: WorkflowEdge) => (
                 <div
                   key={edge.id}
-                  className={`${styles.connectionItem} ${styles.connectionItemClickable}`}
+                  className={`${styles['connection-item']} ${styles['connection-item-clickable']}`}
                   role="button"
                   tabIndex={0}
                   onClick={() => onSelectNode?.(edge.targetNodeId || "")}
@@ -567,15 +567,15 @@ export default function WorkflowInspector({
                       onSelectNode?.(edge.targetNodeId || "");
                   }}
                 >
-                  <span className={styles.connectionModality}>
+                  <span className={styles['connection-modality']}>
                     {edge.sourceModality}
                   </span>
-                  <span className={styles.connectionArrow}>→</span>
-                  <span className={styles.connectionTo}>
+                  <span className={styles['connection-arrow']}>→</span>
+                  <span className={styles['connection-to']}>
                     {getNodeLabel(edge.targetNodeId || "")}
                   </span>
                   <span
-                    className={styles.connectionDot}
+                    className={styles['connection-dot']}
                     style={{
                       background:
                         getModalityIcon(edge.sourceModality)?.color || "#888",
@@ -589,7 +589,7 @@ export default function WorkflowInspector({
 
         {/* Content — text input assets */}
         {isInput && node.modality === "text" && (
-          <section className={`${styles.section} ${styles.scrollableSection}`}>
+          <section className={`${styles.section} ${styles['scrollable-section']}`}>
             <TextContentComponent
               label="Text Content"
               value={(node.content as string) || ""}
@@ -609,16 +609,16 @@ export default function WorkflowInspector({
           node.modality !== "text" &&
           node.modality !== "conversation" && (
             <section
-              className={`${styles.section} ${styles.scrollableSection}`}
+              className={`${styles.section} ${styles['scrollable-section']}`}
             >
-              <label className={styles.sectionLabel}>Media Content</label>
+              <label className={styles['section-label']}>Media Content</label>
               {node.content ? (
-                <div className={styles.previewContainer}>
+                <div className={styles['preview-container']}>
                   {node.modality === "image" ? (
                     <img /* eslint-disable-line @next/next/no-img-element */
                       src={PrismService.getFileUrl(node.content as string)}
                       alt="Input asset"
-                      className={styles.previewImage}
+                      className={styles['preview-image']}
                     />
                   ) : node.modality === "audio" ? (
                     <AudioPlayerRecorderComponent
@@ -629,24 +629,24 @@ export default function WorkflowInspector({
                     <video
                       controls
                       src={PrismService.getFileUrl(node.content as string)}
-                      className={styles.previewVideo}
+                      className={styles['preview-video']}
                     />
                   ) : node.modality === "pdf" ? (
-                    <div className={styles.previewPdfWrap}>
+                    <div className={styles['preview-pdf-wrap']}>
                       <iframe
                         src={PrismService.getFileUrl(node.content as string)}
-                        className={styles.previewPdf}
+                        className={styles['preview-pdf']}
                         title="PDF preview"
                       />
                     </div>
                   ) : (
-                    <div className={styles.audioIndicator}>
+                    <div className={styles['audio-indicator']}>
                       <Paperclip size={16} />
                       <span>File attached</span>
                     </div>
                   )}
                   <button
-                    className={styles.clearButton}
+                    className={styles['clear-button']}
                     onClick={() => onUpdateFileInput?.(node.id, null, null)}
                   >
                     Remove
@@ -763,24 +763,24 @@ export default function WorkflowInspector({
             );
             return (
               <section
-                className={`${styles.section} ${styles.scrollableSection}`}
+                className={`${styles.section} ${styles['scrollable-section']}`}
               >
-                <div className={styles.sectionHeaderRow}>
-                  <label className={styles.sectionLabel}>
+                <div className={styles['section-header-row']}>
+                  <label className={styles['section-label']}>
                     {conversationView === "json"
                       ? "Conversation JSON"
                       : "Conversation Preview"}
                   </label>
-                  <div className={styles.contentTabs}>
+                  <div className={styles['content-tabs']}>
                     <button
-                      className={`${styles.contentTab} ${conversationView === "json" ? styles.contentTabActive : ""}`}
+                      className={`${styles['content-tab']} ${conversationView === "json" ? styles['content-tab-active'] : ""}`}
                       onClick={() => setConversationView("json")}
                     >
                       <Code size={10} />
                       JSON
                     </button>
                     <button
-                      className={`${styles.contentTab} ${conversationView === "preview" ? styles.contentTabActive : ""}`}
+                      className={`${styles['content-tab']} ${conversationView === "preview" ? styles['content-tab-active'] : ""}`}
                       onClick={() => setConversationView("preview")}
                     >
                       <BookOpen size={10} />
@@ -789,7 +789,7 @@ export default function WorkflowInspector({
                   </div>
                 </div>
                 {conversationView === "preview" ? (
-                  <div className={styles.conversationPreview}>
+                  <div className={styles['conversation-preview']}>
                     <MessageList messages={resolved} readOnly />
                   </div>
                 ) : (
@@ -850,15 +850,15 @@ export default function WorkflowInspector({
                 : t.parameters?.length || 0;
               const displayName = renderToolName(name);
               return (
-                <div key={name} className={styles.toolRow}>
-                  <div className={styles.toolRowLeft}>
+                <div key={name} className={styles['tool-row']}>
+                  <div className={styles['tool-row-left']}>
                     <span
-                      className={`${styles.toolRowName} ${isDisabled ? styles.toolRowNameDisabled : ""}`}
+                      className={`${styles['tool-row-name']} ${isDisabled ? styles['tool-row-name-disabled'] : ""}`}
                     >
                       {displayName}
                     </span>
                     {paramCount > 0 && (
-                      <span className={styles.toolRowParams}>
+                      <span className={styles['tool-row-params']}>
                         {paramCount} params
                       </span>
                     )}
@@ -875,11 +875,11 @@ export default function WorkflowInspector({
             return (
               <>
                 <section className={styles.section}>
-                  <div className={styles.toolSummary}>
-                    <span className={styles.toolSummaryCount}>
+                  <div className={styles['tool-summary']}>
+                    <span className={styles['tool-summary-count']}>
                       {enabledCount}
                     </span>
-                    <span className={styles.toolSummaryLabel}>
+                    <span className={styles['tool-summary-label']}>
                       of {totalCount} tools enabled
                     </span>
                   </div>
@@ -888,7 +888,7 @@ export default function WorkflowInspector({
                 {builtIn.length > 0 && (
                   <section className={styles.section}>
                     <button
-                      className={styles.toolSectionToggle}
+                      className={styles['tool-section-toggle']}
                       onClick={() => setToolBuiltInOpen((v) => !v)}
                     >
                       {toolBuiltInOpen ? (
@@ -903,7 +903,7 @@ export default function WorkflowInspector({
                       </span>
                     </button>
                     {toolBuiltInOpen && (
-                      <div className={styles.toolList}>
+                      <div className={styles['tool-list']}>
                         {builtIn.map((t) => renderTool(t, t.name))}
                       </div>
                     )}
@@ -913,7 +913,7 @@ export default function WorkflowInspector({
                 {custom.length > 0 && (
                   <section className={styles.section}>
                     <button
-                      className={styles.toolSectionToggle}
+                      className={styles['tool-section-toggle']}
                       onClick={() => setToolCustomOpen((v) => !v)}
                     >
                       {toolCustomOpen ? (
@@ -932,7 +932,7 @@ export default function WorkflowInspector({
                       </span>
                     </button>
                     {toolCustomOpen && (
-                      <div className={styles.toolList}>
+                      <div className={styles['tool-list']}>
                         {custom.map((t) =>
                           renderTool(t, t.name || t._id || ""),
                         )}
@@ -946,23 +946,23 @@ export default function WorkflowInspector({
 
         {/* Generated Results — model nodes only */}
         {results && !results.error && !isViewer && !isInput && (
-          <section className={`${styles.section} ${styles.scrollableSection}`}>
-            <label className={styles.sectionLabel}>Generated Output</label>
+          <section className={`${styles.section} ${styles['scrollable-section']}`}>
+            <label className={styles['section-label']}>Generated Output</label>
 
             {results.image && (
-              <div className={styles.resultBlock}>
-                <span className={styles.resultType}>Image</span>
-                <div className={styles.resultImageContainer}>
+              <div className={styles['result-block']}>
+                <span className={styles['result-type']}>Image</span>
+                <div className={styles['result-image-container']}>
                   <img /* eslint-disable-line @next/next/no-img-element */
                     src={PrismService.getFileUrl(results.image)}
                     alt="Generated image"
-                    className={styles.resultImage}
+                    className={styles['result-image']}
                   />
                   <a
                     href={PrismService.getFileUrl(results.image)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={styles.expandButton}
+                    className={styles['expand-button']}
                     title="Open full size"
                   >
                     <Maximize2 size={12} />
@@ -972,7 +972,7 @@ export default function WorkflowInspector({
             )}
 
             {results.text && (
-              <div className={styles.resultBlock}>
+              <div className={styles['result-block']}>
                 <TextContentComponent
                   label="Text"
                   value={results.text}
@@ -982,8 +982,8 @@ export default function WorkflowInspector({
             )}
 
             {results.audio && (
-              <div className={styles.resultBlock}>
-                <span className={styles.resultType}>Audio</span>
+              <div className={styles['result-block']}>
+                <span className={styles['result-type']}>Audio</span>
                 <AudioPlayerRecorderComponent
                   sourceUrl={PrismService.getFileUrl(results.audio)}
                   compact
@@ -992,12 +992,12 @@ export default function WorkflowInspector({
             )}
 
             {results.embedding && (
-              <div className={styles.resultBlock}>
-                <span className={styles.resultType}>
+              <div className={styles['result-block']}>
+                <span className={styles['result-type']}>
                   Embedding [{results.embedding.length} dims]
                 </span>
                 <div
-                  className={styles.resultText}
+                  className={styles['result-text']}
                   style={{
                     fontSize: "11px",
                     fontFamily: "monospace",
@@ -1013,7 +1013,7 @@ export default function WorkflowInspector({
                   {results.embedding.length > 8 ? ", …" : ""}]
                 </div>
                 <button
-                  className={styles.clearButton}
+                  className={styles['clear-button']}
                   style={{ marginTop: "4px" }}
                   onClick={() =>
                     copyToClipboard(JSON.stringify(results.embedding))
@@ -1031,22 +1031,22 @@ export default function WorkflowInspector({
           receivedOutputs &&
           Object.keys(receivedOutputs).length > 0 && (
             <section
-              className={`${styles.section} ${styles.scrollableSection}`}
+              className={`${styles.section} ${styles['scrollable-section']}`}
             >
               {receivedOutputs.image && (
-                <div className={styles.resultBlock}>
-                  <span className={styles.resultType}>Image Content</span>
-                  <div className={styles.resultImageContainer}>
+                <div className={styles['result-block']}>
+                  <span className={styles['result-type']}>Image Content</span>
+                  <div className={styles['result-image-container']}>
                     <img /* eslint-disable-line @next/next/no-img-element */
                       src={PrismService.getFileUrl(receivedOutputs.image)}
                       alt="Received image"
-                      className={styles.resultImage}
+                      className={styles['result-image']}
                     />
                     <a
                       href={PrismService.getFileUrl(receivedOutputs.image)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={styles.expandButton}
+                      className={styles['expand-button']}
                       title="Open full size"
                     >
                       <Maximize2 size={12} />
@@ -1056,7 +1056,7 @@ export default function WorkflowInspector({
               )}
 
               {receivedOutputs.text && (
-                <div className={styles.resultBlock}>
+                <div className={styles['result-block']}>
                   <TextContentComponent
                     label="Text Content"
                     value={receivedOutputs.text}
@@ -1066,8 +1066,8 @@ export default function WorkflowInspector({
               )}
 
               {receivedOutputs.audio && (
-                <div className={styles.resultBlock}>
-                  <span className={styles.resultType}>Audio Content</span>
+                <div className={styles['result-block']}>
+                  <span className={styles['result-type']}>Audio Content</span>
                   <AudioPlayerRecorderComponent
                     sourceUrl={PrismService.getFileUrl(receivedOutputs.audio)}
                     compact
@@ -1076,12 +1076,12 @@ export default function WorkflowInspector({
               )}
 
               {receivedOutputs.embedding && (
-                <div className={styles.resultBlock}>
-                  <span className={styles.resultType}>
+                <div className={styles['result-block']}>
+                  <span className={styles['result-type']}>
                     Embedding Content [{receivedOutputs.embedding.length} dims]
                   </span>
                   <div
-                    className={styles.resultText}
+                    className={styles['result-text']}
                     style={{
                       fontSize: "11px",
                       fontFamily: "monospace",
@@ -1097,7 +1097,7 @@ export default function WorkflowInspector({
                     {receivedOutputs.embedding.length > 8 ? ", …" : ""}]
                   </div>
                   <button
-                    className={styles.clearButton}
+                    className={styles['clear-button']}
                     style={{ marginTop: "4px" }}
                     onClick={() =>
                       copyToClipboard(JSON.stringify(receivedOutputs.embedding))
@@ -1113,8 +1113,8 @@ export default function WorkflowInspector({
         {/* Error */}
         {results?.error && (
           <section className={styles.section}>
-            <label className={styles.sectionLabel}>Error</label>
-            <div className={styles.errorBlock}>{results.error}</div>
+            <label className={styles['section-label']}>Error</label>
+            <div className={styles['error-block']}>{results.error}</div>
           </section>
         )}
       </div>

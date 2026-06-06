@@ -1,4 +1,4 @@
-.chatInputButton {
+.chat-input-button {
   width: 40px;
   height: 40px;
   border-radius: var(--button-border-radius);
@@ -14,25 +14,25 @@
   align-self: center;
 }
 
-.chatInputButton:hover:not(:disabled) {
+.chat-input-button:hover:not(:disabled) {
   color: var(--accent-primary);
   background: var(--background-elevated);
 }
 
-.chatInputButton:disabled {
+.chat-input-button:disabled {
   color: var(--text-secondary);
   background: transparent;
   cursor: not-allowed;
   opacity: 0.4;
 }
 
-.chatInputButton.isActiveState {
+.chat-input-button.is-active-state {
   color: var(--accent-primary);
   background: var(--background-elevated);
 }
 
 /* ── Submit variant ── */
-.chatInputButton.submit {
+.chat-input-button.submit {
   align-self: stretch;
   height: auto;
   min-height: 40px;
@@ -41,18 +41,18 @@
   margin-left: auto;
 }
 
-.chatInputButton.submit:hover:not(:disabled) {
+.chat-input-button.submit:hover:not(:disabled) {
   background: var(--calculated-accent-primary-hover);
   transform: translateY(-1px);
 }
 
-.chatInputButton.submit:disabled {
+.chat-input-button.submit:disabled {
   background: var(--background-base);
   color: var(--text-secondary);
   opacity: 1;
 }
 
-.chatInputButton.submitGenerating {
+.chat-input-button.submit-generating {
   position: relative;
   overflow: hidden;
   background: transparent !important;
@@ -63,7 +63,7 @@
   transition: transform 0.15s ease;
 }
 
-.chatInputButton.submitGenerating::before {
+.chat-input-button.submit-generating::before {
   content: "";
   position: absolute;
   inset: -50%;
@@ -72,33 +72,33 @@
   z-index: -1;
 }
 
-.chatInputButton.submitGenerating:hover {
+.chat-input-button.submit-generating:hover {
   transform: scale(1.08);
 }
 
-.chatInputButton.submitGenerating svg {
+.chat-input-button.submit-generating svg {
   color: white !important;
 }
 
 /* Rotating modality icon */
-.rotatingIconContainer {
+.rotating-icon-container {
   width: 18px;
   height: 18px;
   overflow: hidden;
   position: relative;
 }
 
-.rotatingIconTrack {
+.rotating-icon-track {
   display: flex;
   flex-direction: column;
   transition: none;
 }
 
-.rotatingIconTrack.rotatingIconSlide {
+.rotating-icon-track.rotating-icon-slide {
   animation: iconScrollUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.rotatingIconItem {
+.rotating-icon-item {
   display: flex;
   align-items: center;
   justify-content: center;

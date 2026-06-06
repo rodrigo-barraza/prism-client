@@ -305,7 +305,7 @@ export default function HistoryList({
         onChange={handleSearchChange}
         placeholder={searchPlaceholder}
         compact
-        className={styles.searchWrapper}
+        className={styles['search-wrapper']}
       />
 
       <FilterDropdownComponent
@@ -421,8 +421,8 @@ export default function HistoryList({
       />
 
       {countLabel && (
-        <div className={styles.countRow}>
-          <span className={styles.countLabel}>
+        <div className={styles['count-row']}>
+          <span className={styles['count-label']}>
             {filtered.length === items.length
               ? `${items.length}${hasMore ? "+" : ""} ${countLabel}`
               : `${filtered.length} of ${items.length}${hasMore ? "+" : ""} ${countLabel}`}
@@ -464,7 +464,7 @@ export default function HistoryList({
         {/* Infinite scroll sentinel */}
         {hasMore && <div ref={sentinelRef} className={styles.sentinel} />}
         {loadingMore && (
-          <div className={styles.loadingMore}>
+          <div className={styles['loading-more']}>
             <PanelLoadingSpinner size="small" inline />
           </div>
         )}

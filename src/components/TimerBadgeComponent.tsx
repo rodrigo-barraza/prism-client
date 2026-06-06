@@ -68,17 +68,17 @@ export default function TimerBadgeComponent({
     status === "active" && !isTimerFired && !isTimerCancelled;
 
   let stateLabel = "";
-  let badgeClass = styles.timerBadgeStateActive;
-  let statusIcon = <Clock size={14} className={styles.timerBadgeSpinnerIcon} />;
+  let badgeClass = styles['timer-badge-state-active'];
+  let statusIcon = <Clock size={14} className={styles['timer-badge-spinner-icon']} />;
 
   if (isTimerCancelled) {
     stateLabel = "Cancelled";
-    badgeClass = styles.timerBadgeStateCancelled;
+    badgeClass = styles['timer-badge-state-cancelled'];
     statusIcon = <XCircle size={14} />;
   } else if (isTimerFired) {
     stateLabel = mode === "recurring" ? "Recurring Cron Run" : "Reminder Fired";
-    badgeClass = styles.timerBadgeStateFired;
-    statusIcon = <Play size={14} className={styles.timerBadgeLivePulseIcon} />;
+    badgeClass = styles['timer-badge-state-fired'];
+    statusIcon = <Play size={14} className={styles['timer-badge-live-pulse-icon']} />;
   } else {
     stateLabel = formatCountdown(remainingSeconds);
   }
@@ -91,15 +91,15 @@ export default function TimerBadgeComponent({
 
   return (
     <div
-      className={`${styles.timerBadgeRoot} ${badgeClass}`}
+      className={`${styles['timer-badge-root']} ${badgeClass}`}
       aria-live="polite"
     >
-      <div className={styles.timerBadgeAvatarSection}>{statusIcon}</div>
-      <div className={styles.timerBadgeContentSection}>
-        <div className={styles.timerBadgeHeaderSection}>
-          <div className={styles.timerBadgeRoleLabel}>
-            <span className={styles.timerBadgeStatusLabel}>{stateLabel}</span>
-            <span className={styles.timerBadgeTypeIndicator}>
+      <div className={styles['timer-badge-avatar-section']}>{statusIcon}</div>
+      <div className={styles['timer-badge-content-section']}>
+        <div className={styles['timer-badge-header-section']}>
+          <div className={styles['timer-badge-role-label']}>
+            <span className={styles['timer-badge-status-label']}>{stateLabel}</span>
+            <span className={styles['timer-badge-type-indicator']}>
               {mode === "recurring" ? "Recurring Reminder" : "One-Shot Timer"}
             </span>
             <BadgeComponent type="dateTime" date={firesAt} />
@@ -107,7 +107,7 @@ export default function TimerBadgeComponent({
           {isTimerActive && !readOnly && onCancel && (
             <button
               onClick={handleCancelClick}
-              className={styles.timerBadgeCancelButton}
+              className={styles['timer-badge-cancel-button']}
               title="Cancel reminder"
               aria-label="Cancel scheduled reminder"
             >
@@ -115,7 +115,7 @@ export default function TimerBadgeComponent({
             </button>
           )}
         </div>
-        <div className={styles.timerBadgePromptText}>{prompt}</div>
+        <div className={styles['timer-badge-prompt-text']}>{prompt}</div>
       </div>
     </div>
   );

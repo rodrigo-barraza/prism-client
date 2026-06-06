@@ -1,14 +1,14 @@
 /* ── BenchmarksTableComponent ─────────────────────── */
 
 /* Running-model row: progress bar overlay spanning the full row */
-.runningRow {
+.running-row {
   position: relative;
 }
 
 /* Running cells stay transparent — the ::after progress overlay provides visual feedback */
 
 /* Full-width progress bar overlay on the row itself */
-.runningRow::after {
+.running-row::after {
   content: "";
   position: absolute;
   left: 0;
@@ -30,12 +30,12 @@
 }
 
 /* Keep cell content above the bar */
-.runningRow td {
+.running-row td {
   position: relative;
   z-index: 1;
 }
 
 /* Pending/queued model row — dimmed to indicate not yet started */
-.pendingRow {
+.pending-row {
   opacity: 0.5;
 }

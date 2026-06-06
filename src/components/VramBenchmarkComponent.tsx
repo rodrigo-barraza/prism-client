@@ -3840,7 +3840,7 @@ export default function VramBenchmarkComponent() {
     <>
       <PageHeaderComponent title="VRAM Benchmark" subtitle={subtitle}>
         <button
-          className={styles.refreshButton}
+          className={styles['refresh-button']}
           onClick={() => {
             setLoading(true);
             fetchData();
@@ -3854,7 +3854,7 @@ export default function VramBenchmarkComponent() {
       <div className={styles.content}>
         {/* Stats cards */}
         {stats && (
-          <div className={styles.statsGrid}>
+          <div className={styles['stats-grid']}>
             {/* -- Summary stats (single-width) -- */}
             <StatsCard
               label="Models Profiled"
@@ -3909,7 +3909,7 @@ export default function VramBenchmarkComponent() {
                 return (
                   <StatsCard
                     key={card?.key}
-                    className={styles.statWide}
+                    className={styles['stat-wide']}
                     label={card?.label}
                     value={card?.value}
                     subtitle={card?.subtitle}
@@ -3957,18 +3957,18 @@ export default function VramBenchmarkComponent() {
           tabs={viewTabs}
           activeTab={activeView}
           onChange={(key: string) => setActiveView(key as ChartViewKey)}
-          className={styles.tabBar}
+          className={styles['tab-bar']}
         />
 
         {/* Chart area */}
-        <div className={styles.chartCard}>
+        <div className={styles['chart-card']}>
           {/* Per-tab filters */}
           <FilterBarComponent>
-            <div className={styles.chartSearchGroup}>
-              <Search size={13} className={styles.chartSearchIcon} />
+            <div className={styles['chart-search-group']}>
+              <Search size={13} className={styles['chart-search-icon']} />
               <InputComponent
                 type="text"
-                className={styles.chartSearchInput}
+                className={styles['chart-search-input']}
                 placeholder="Highlight model…"
                 value={chartSearch}
                 onChange={(
@@ -3977,7 +3977,7 @@ export default function VramBenchmarkComponent() {
               />
               {chartSearch && (
                 <button
-                  className={styles.chartSearchClear}
+                  className={styles['chart-search-clear']}
                   onClick={() => setChartSearch("")}
                   aria-label="Clear search"
                 >
@@ -4009,12 +4009,12 @@ export default function VramBenchmarkComponent() {
               }
             />
             {activeView !== "context" && (
-              <div className={styles.vramClipGroup}>
-                <label className={styles.vramClipLabel}>Context Range</label>
-                <div className={styles.vramClipInputs}>
+              <div className={styles['vram-clip-group']}>
+                <label className={styles['vram-clip-label']}>Context Range</label>
+                <div className={styles['vram-clip-inputs']}>
                   <InputComponent
                     type="number"
-                    className={styles.vramClipInput}
+                    className={styles['vram-clip-input']}
                     placeholder="Min"
                     value={ctxMin}
                     onChange={(
@@ -4023,10 +4023,10 @@ export default function VramBenchmarkComponent() {
                     min="0"
                     step="1"
                   />
-                  <span className={styles.vramClipSeparator}>–</span>
+                  <span className={styles['vram-clip-separator']}>–</span>
                   <InputComponent
                     type="number"
-                    className={styles.vramClipInput}
+                    className={styles['vram-clip-input']}
                     placeholder="Max"
                     value={ctxMax}
                     onChange={(
@@ -4035,7 +4035,7 @@ export default function VramBenchmarkComponent() {
                     min="0"
                     step="1"
                   />
-                  <span className={styles.vramClipUnit}>K</span>
+                  <span className={styles['vram-clip-unit']}>K</span>
                 </div>
               </div>
             )}
@@ -4072,14 +4072,14 @@ export default function VramBenchmarkComponent() {
               />
             )}
             {activeView === "scatter" && (
-              <div className={styles.vramClipGroup}>
-                <label className={styles.vramClipLabel}>
+              <div className={styles['vram-clip-group']}>
+                <label className={styles['vram-clip-label']}>
                   {activeScatterMode.xLabel.split(" (")[0]} Range
                 </label>
-                <div className={styles.vramClipInputs}>
+                <div className={styles['vram-clip-inputs']}>
                   <InputComponent
                     type="number"
-                    className={styles.vramClipInput}
+                    className={styles['vram-clip-input']}
                     placeholder="Min"
                     value={scatterClipXMin}
                     onChange={(
@@ -4088,10 +4088,10 @@ export default function VramBenchmarkComponent() {
                     min="0"
                     step="0.5"
                   />
-                  <span className={styles.vramClipSeparator}>–</span>
+                  <span className={styles['vram-clip-separator']}>–</span>
                   <InputComponent
                     type="number"
-                    className={styles.vramClipInput}
+                    className={styles['vram-clip-input']}
                     placeholder="Max"
                     value={scatterClipXMax}
                     onChange={(
@@ -4100,19 +4100,19 @@ export default function VramBenchmarkComponent() {
                     min="0"
                     step="0.5"
                   />
-                  <span className={styles.vramClipUnit}>
+                  <span className={styles['vram-clip-unit']}>
                     {activeScatterMode.xLabel.match(/\(([^)]+)\)/)?.[1] || ""}
                   </span>
                 </div>
               </div>
             )}
             {activeView === "bar" && (
-              <div className={styles.vramClipGroup}>
-                <label className={styles.vramClipLabel}>VRAM Range</label>
-                <div className={styles.vramClipInputs}>
+              <div className={styles['vram-clip-group']}>
+                <label className={styles['vram-clip-label']}>VRAM Range</label>
+                <div className={styles['vram-clip-inputs']}>
                   <InputComponent
                     type="number"
-                    className={styles.vramClipInput}
+                    className={styles['vram-clip-input']}
                     placeholder="Min"
                     value={vramClipMin}
                     onChange={(
@@ -4121,10 +4121,10 @@ export default function VramBenchmarkComponent() {
                     min="0"
                     step="0.5"
                   />
-                  <span className={styles.vramClipSeparator}>–</span>
+                  <span className={styles['vram-clip-separator']}>–</span>
                   <InputComponent
                     type="number"
-                    className={styles.vramClipInput}
+                    className={styles['vram-clip-input']}
                     placeholder="Max"
                     value={vramClipMax}
                     onChange={(
@@ -4133,17 +4133,17 @@ export default function VramBenchmarkComponent() {
                     min="0"
                     step="0.5"
                   />
-                  <span className={styles.vramClipUnit}>GiB</span>
+                  <span className={styles['vram-clip-unit']}>GiB</span>
                 </div>
               </div>
             )}
             {activeView === "efficiency" && (
-              <div className={styles.vramClipGroup}>
-                <label className={styles.vramClipLabel}>TPS Range</label>
-                <div className={styles.vramClipInputs}>
+              <div className={styles['vram-clip-group']}>
+                <label className={styles['vram-clip-label']}>TPS Range</label>
+                <div className={styles['vram-clip-inputs']}>
                   <InputComponent
                     type="number"
-                    className={styles.vramClipInput}
+                    className={styles['vram-clip-input']}
                     placeholder="Min"
                     value={tpsClipMin}
                     onChange={(
@@ -4152,10 +4152,10 @@ export default function VramBenchmarkComponent() {
                     min="0"
                     step="5"
                   />
-                  <span className={styles.vramClipSeparator}>–</span>
+                  <span className={styles['vram-clip-separator']}>–</span>
                   <InputComponent
                     type="number"
-                    className={styles.vramClipInput}
+                    className={styles['vram-clip-input']}
                     placeholder="Max"
                     value={tpsClipMax}
                     onChange={(
@@ -4164,7 +4164,7 @@ export default function VramBenchmarkComponent() {
                     min="0"
                     step="5"
                   />
-                  <span className={styles.vramClipUnit}>t/s</span>
+                  <span className={styles['vram-clip-unit']}>t/s</span>
                 </div>
               </div>
             )}
@@ -4184,14 +4184,14 @@ export default function VramBenchmarkComponent() {
             )}
           </FilterBarComponent>
 
-          <p className={styles.chartDescription}>
+          <p className={styles['chart-description']}>
             {chartDescriptions[activeView]}
           </p>
-          <div className={styles.chartPanels}>
+          <div className={styles['chart-panels']}>
             {viewTabs.map((tab) => (
               <div
                 key={tab.key}
-                className={styles.chartWrapper}
+                className={styles['chart-wrapper']}
                 style={{
                   display: activeView === tab.key ? "block" : "none",
                   height:

@@ -1,13 +1,13 @@
 /* ── ToolIconComponent ─────────────────────────────── */
 
-.toolPills {
+.tool-pills {
   display: inline-flex;
   flex-wrap: nowrap;
   gap: 4px;
   align-items: center;
 }
 
-.toolPill {
+.tool-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -20,6 +20,6 @@
   transition: border-color 0.15s;
 }
 
-.toolPill:hover {
+.tool-pill:hover {
   border-color: var(--accent-primary);
 }

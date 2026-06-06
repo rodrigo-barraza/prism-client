@@ -820,7 +820,7 @@ export default function SynthesisComponent() {
       />
 
       {leftTab === "config" && (
-        <div className={styles.configPanel}>
+        <div className={styles['config-panel']}>
           {/* Model selection */}
           <SettingsPanel
             config={filteredConfig}
@@ -834,15 +834,15 @@ export default function SynthesisComponent() {
       )}
 
       {leftTab === "output" && (
-        <div className={styles.outputPanel}>
+        <div className={styles['output-panel']}>
           {generatedMessages.length > 0 ? (
             <>
-              <div className={styles.outputActions}>
+              <div className={styles['output-actions']}>
                 <CopyButtonComponent
                   text={sftJsonString}
                   showLabel
                   tooltip="Copy SFT JSON"
-                  className={styles.outputActionButton}
+                  className={styles['output-action-button']}
                 />
                 <ButtonComponent
                   variant="secondary"
@@ -856,7 +856,7 @@ export default function SynthesisComponent() {
               <JsonViewerComponent data={sftData} label="SFT Output" />
             </>
           ) : (
-            <div className={styles.outputEmpty}>
+            <div className={styles['output-empty']}>
               <FlaskConical size={24} />
               <p>Generate a conversation to see the SFT output here.</p>
             </div>
@@ -867,7 +867,7 @@ export default function SynthesisComponent() {
   );
 
   return (
-    <main className={styles.appContainer}>
+    <main className={styles['app-container']}>
       <ThreePanelLayout
         leftTitle={undefined}
         leftPanel={leftPanel}
@@ -884,7 +884,7 @@ export default function SynthesisComponent() {
           <NavigationSidebarComponent mode="user" isGenerating={isGenerating} />
         }
         headerCenter={
-          <div className={styles.headerCenterGroup}>
+          <div className={styles['header-center-group']}>
             <ModelPickerPopoverComponent
               config={filteredConfig}
               settings={settings}
@@ -892,7 +892,7 @@ export default function SynthesisComponent() {
               favorites={favoriteKeys}
               onToggleFavorite={handleToggleFavorite}
             />
-            <span className={styles.userSimLabel}>
+            <span className={styles['user-sim-label']}>
               <User size={12} />
             </span>
             <ModelPickerPopoverComponent
@@ -905,7 +905,7 @@ export default function SynthesisComponent() {
           </div>
         }
         headerControls={
-          <div className={styles.headerActions}>
+          <div className={styles['header-actions']}>
             <ButtonComponent
               variant="secondary"
               icon={RotateCcw}
@@ -939,16 +939,16 @@ export default function SynthesisComponent() {
         {/* Main area */}
         <div className={styles.workspace}>
           {/* Conversation Length & Category bar */}
-          <div className={styles.configBar}>
-            <div className={styles.configBarItem}>
-              <div className={styles.configBarLabel}>
+          <div className={styles['config-bar']}>
+            <div className={styles['config-bar-item']}>
+              <div className={styles['config-bar-label']}>
                 <MessageSquare size={13} />
                 Length
               </div>
-              <div className={styles.configBarControl}>
+              <div className={styles['config-bar-control']}>
                 <InputComponent
                   type="number"
-                  className={styles.turnsInput}
+                  className={styles['turns-input']}
                   value={targetTurns}
                   min={MIN_TURNS}
                   max={MAX_TURNS}
@@ -970,11 +970,11 @@ export default function SynthesisComponent() {
                     setTargetTurns(clamped);
                   }}
                 />
-                <span className={styles.turnsValue}>turns</span>
+                <span className={styles['turns-value']}>turns</span>
               </div>
             </div>
-            <div className={styles.configBarItem}>
-              <div className={styles.configBarLabel}>
+            <div className={styles['config-bar-item']}>
+              <div className={styles['config-bar-label']}>
                 <Sparkles size={13} />
                 Category
               </div>
@@ -988,7 +988,7 @@ export default function SynthesisComponent() {
           </div>
 
           {/* System Prompt + User Persona — side by side */}
-          <div className={styles.promptRow}>
+          <div className={styles['prompt-row']}>
             <PromptSectionComponent
               icon={<Settings2 size={14} />}
               label="System Prompt"
@@ -1014,13 +1014,13 @@ export default function SynthesisComponent() {
             label="Seed Templates"
             open={templateExpanded}
             onToggle={setTemplateExpanded}
-            className={styles.collapsibleSection}
+            className={styles['collapsible-section']}
           >
-            <div className={styles.templateGrid}>
+            <div className={styles['template-grid']}>
               {SAMPLE_SEEDS.map((seed) => (
                 <button
                   key={seed.label}
-                  className={styles.templateCard}
+                  className={styles['template-card']}
                   onClick={() =>
                     loadSeedTemplate(
                       seed as unknown as {
@@ -1031,11 +1031,11 @@ export default function SynthesisComponent() {
                     )
                   }
                 >
-                  <span className={styles.templateLabel}>{seed.label}</span>
-                  <span className={styles.templateCategory}>
+                  <span className={styles['template-label']}>{seed.label}</span>
+                  <span className={styles['template-category']}>
                     {seed.category}
                   </span>
-                  <span className={styles.templateMsgCount}>
+                  <span className={styles['template-msg-count']}>
                     {seed.messages.length} messages
                   </span>
                 </button>
@@ -1052,14 +1052,14 @@ export default function SynthesisComponent() {
             }
             open={seedsExpanded}
             onToggle={setSeedsExpanded}
-            className={styles.collapsibleSection}
+            className={styles['collapsible-section']}
           >
-            <div className={styles.seedMessages}>
+            <div className={styles['seed-messages']}>
               {seedMessages.map((message: Message, i: number) => (
-                <div key={i} className={styles.seedMessage}>
-                  <div className={styles.seedMessageHeader}>
+                <div key={i} className={styles['seed-message']}>
+                  <div className={styles['seed-message-header']}>
                     <button
-                      className={`${styles.roleToggle} ${styles[`role_${message.role}`]}`}
+                      className={`${styles['role-toggle']} ${styles[`role_${message.role}`]}`}
                       onClick={() =>
                         updateSeedMessage(
                           i,
@@ -1081,11 +1081,11 @@ export default function SynthesisComponent() {
                       onClick={() => removeSeedMessage(i)}
                       tooltip="Remove message"
                       variant="destructive"
-                      className={styles.removeSeedButton}
+                      className={styles['remove-seed-button']}
                     />
                   </div>
                   <TextAreaComponent
-                    className={styles.seedTextarea}
+                    className={styles['seed-textarea']}
                     value={message.content}
                     onChange={(
                       e: React.ChangeEvent<
@@ -1100,12 +1100,12 @@ export default function SynthesisComponent() {
                   />
                 </div>
               ))}
-              <div className={styles.addSeedRow}>
+              <div className={styles['add-seed-row']}>
                 <ButtonComponent
                   variant="disabled"
                   icon={Plus}
                   onClick={() => addSeedMessage("user")}
-                  className={styles.addSeedButton}
+                  className={styles['add-seed-button']}
                 >
                   User
                 </ButtonComponent>
@@ -1113,7 +1113,7 @@ export default function SynthesisComponent() {
                   variant="disabled"
                   icon={Plus}
                   onClick={() => addSeedMessage("assistant")}
-                  className={styles.addSeedButton}
+                  className={styles['add-seed-button']}
                 >
                   Assistant
                 </ButtonComponent>
@@ -1123,8 +1123,8 @@ export default function SynthesisComponent() {
 
           {/* Generated Preview — live message bubbles */}
           {(generatedMessages.length > 0 || isGenerating) && (
-            <div className={styles.generatedSection}>
-              <div className={styles.generatedHeader}>
+            <div className={styles['generated-section']}>
+              <div className={styles['generated-header']}>
                 <FlaskConical size={14} />
                 <span>Generated Conversation</span>
                 {generatedMessages.length > 0 && (
@@ -1135,7 +1135,7 @@ export default function SynthesisComponent() {
                 {conversationId && !isGenerating && (
                   <a
                     href={`/admin/chat/${conversationId}`}
-                    className={styles.conversationLink}
+                    className={styles['conversation-link']}
                     title="View persisted conversation"
                   >
                     View
@@ -1144,9 +1144,9 @@ export default function SynthesisComponent() {
                 {isGenerating && (
                   <BadgeComponent
                     variant="success"
-                    className={styles.streamingBadge}
+                    className={styles['streaming-badge']}
                   >
-                    <span className={styles.streamingDot} />
+                    <span className={styles['streaming-dot']} />
                     Streaming
                   </BadgeComponent>
                 )}
@@ -1183,7 +1183,7 @@ export default function SynthesisComponent() {
 
           {/* Empty state */}
           {generatedMessages.length === 0 && !isGenerating && (
-            <div className={styles.emptyCenter}>
+            <div className={styles['empty-center']}>
               <EmptyStateComponent
                 icon={<FlaskConical size={40} />}
                 title="SFT Data Synthesis"

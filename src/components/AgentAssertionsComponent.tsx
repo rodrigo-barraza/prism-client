@@ -142,7 +142,7 @@ export default function AgentAssertionsComponent({
         {assertions.length > 1 && (
           <button
             type="button"
-            className={`${styles.operatorToggle} ${operator === "OR" ? styles.operatorOr : ""}`}
+            className={`${styles['operator-toggle']} ${operator === "OR" ? styles['operator-or'] : ""}`}
             onClick={toggleOperator}
             title={`Switch to ${operator === "AND" ? "OR" : "AND"} — currently requires ${operator === "AND" ? "ALL" : "ANY"} to pass`}
           >
@@ -150,7 +150,7 @@ export default function AgentAssertionsComponent({
           </button>
         )}
         {availableTypes.length > 0 && (
-          <div className={styles.addDropdown}>
+          <div className={styles['add-dropdown']}>
             <ButtonComponent
               variant="disabled"
               icon={Plus}
@@ -163,19 +163,19 @@ export default function AgentAssertionsComponent({
       </div>
 
       {assertions.length === 0 && (
-        <div className={styles.emptyState}>
+        <div className={styles['empty-state']}>
           <p>
             No assertions configured. Add at least one to evaluate agent
             behavior.
           </p>
-          <div className={styles.quickAdd}>
+          <div className={styles['quick-add']}>
             {AGENT_ASSERTION_TYPES.map((t) => {
               const Icon = t.icon;
               return (
                 <button
                   key={t.value}
                   type="button"
-                  className={styles.quickAddButton}
+                  className={styles['quick-add-button']}
                   onClick={() => addAssertion(t.value)}
                   title={t.description}
                 >
@@ -195,27 +195,27 @@ export default function AgentAssertionsComponent({
             if (!typeDef) return null;
             const Icon = typeDef.icon;
             return (
-              <div key={`${a.type}-${i}`} className={styles.assertionRow}>
+              <div key={`${a.type}-${i}`} className={styles['assertion-row']}>
                 {/* Operator divider between assertions */}
                 {i > 0 && (
-                  <div className={styles.operatorDivider}>
-                    <span className={styles.operatorDividerLine} />
+                  <div className={styles['operator-divider']}>
+                    <span className={styles['operator-divider-line']} />
                     <BadgeComponent
                       variant={operator === "OR" ? "warning" : "accent"}
                       mini
                     >
                       {operator}
                     </BadgeComponent>
-                    <span className={styles.operatorDividerLine} />
+                    <span className={styles['operator-divider-line']} />
                   </div>
                 )}
                 <div className={styles.fields}>
-                  <div className={styles.typeLabel}>
+                  <div className={styles['type-label']}>
                     <Icon size={13} />
                     <span>{typeDef.label}</span>
                   </div>
                   {typeDef.hasOperand && (
-                    <div className={styles.operandGroup}>
+                    <div className={styles['operand-group']}>
                       <FormGroupComponent label="Condition">
                         <SelectComponent
                           value={a.operator || typeDef.operators[0].value}
@@ -242,13 +242,13 @@ export default function AgentAssertionsComponent({
                     </div>
                   )}
                   {!typeDef.hasOperand && (
-                    <div className={styles.noOperand}>
-                      <span className={styles.noOperandHint}>
+                    <div className={styles['no-operand']}>
+                      <span className={styles['no-operand-hint']}>
                         {typeDef.description}
                       </span>
                     </div>
                   )}
-                  <div className={styles.removeButton}>
+                  <div className={styles['remove-button']}>
                     <IconButtonComponent
                       icon={<Trash2 size={14} />}
                       onClick={() => removeAssertion(i)}

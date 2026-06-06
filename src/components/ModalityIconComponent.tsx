@@ -137,7 +137,7 @@ export default function ModalityIconComponent({
     return (
       <span
         key={definition.key}
-        className={styles.modalityIcon}
+        className={styles['modality-icon']}
         style={{ color: definition.color }}
       >
         <Icon size={size} />
@@ -146,11 +146,11 @@ export default function ModalityIconComponent({
   };
 
   return (
-    <div className={`${styles.modalitiesRow} ${className || ""}`}>
+    <div className={`${styles['modalities-row']} ${className || ""}`}>
       <BadgeComponent variant="modality" tooltip={tooltipContent}>
         {activeInputs.map(renderIcon)}
         {hasInputs && hasOutputs && (
-          <span className={styles.modalityArrow}>→</span>
+          <span className={styles['modality-arrow']}>→</span>
         )}
         {activeOutputs.map(renderIcon)}
       </BadgeComponent>

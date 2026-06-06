@@ -323,7 +323,7 @@ export default function DistributionChartComponent({
   return (
     <div className={styles.container}>
       {/* -- Metric selector + title -- */}
-      <div className={styles.metricRow}>
+      <div className={styles['metric-row']}>
         {title && <h2 className={styles.title}>{title}</h2>}
         <SelectComponent
           value={activeMetric}
@@ -342,10 +342,10 @@ export default function DistributionChartComponent({
           />
         )}
         {isStatus && (
-          <span className={styles.statusLabel}>Success / Error</span>
+          <span className={styles['status-label']}>Success / Error</span>
         )}
         {total > 0 && (
-          <span className={styles.totalBadge}>
+          <span className={styles['total-badge']}>
             {formatValue(displayTotal, activeMetric)} {totalLabel}
           </span>
         )}
@@ -355,7 +355,7 @@ export default function DistributionChartComponent({
       <div className={styles.body}>
         {pieData.length > 0 ? (
           <>
-            <div className={styles.chartArea}>
+            <div className={styles['chart-area']}>
               <ResponsiveContainer width="100%" height={height}>
                 <PieChart>
                   <SafePie
@@ -404,21 +404,21 @@ export default function DistributionChartComponent({
                 return (
                   <div
                     key={name}
-                    className={`${styles.legendRow} ${activeIndex === i ? styles.legendRowActive : ""}`}
+                    className={`${styles['legend-row']} ${activeIndex === i ? styles['legend-row-active'] : ""}`}
                     onMouseEnter={() => setActiveIndex(i)}
                     onMouseLeave={() => setActiveIndex(null)}
                   >
                     <span
-                      className={styles.legendDot}
+                      className={styles['legend-dot']}
                       style={{ background: color }}
                     />
-                    <span className={styles.legendName} title={name}>
+                    <span className={styles['legend-name']} title={name}>
                       {name}
                     </span>
-                    <span className={styles.legendValue}>
+                    <span className={styles['legend-value']}>
                       {formatValue(value, activeMetric)}
                     </span>
-                    <span className={styles.legendPct}>{percentage}%</span>
+                    <span className={styles['legend-pct']}>{percentage}%</span>
                   </div>
                 );
               })}

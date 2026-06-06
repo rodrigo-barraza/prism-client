@@ -27,7 +27,7 @@
 
 /* ── Toast System ──────────────────────────────────────────── */
 
-.toastContainer {
+.toast-container {
   position: fixed;
   top: 20px;
   right: 20px;
@@ -52,7 +52,7 @@
   font-size: var(--font-size-sm);
   min-width: 220px;
   max-width: 380px;
-  animation: slideDown 0.25s ease-out forwards;
+  animation: slide-down 0.25s ease-out forwards;
   pointer-events: auto;
 }
 
@@ -68,7 +68,7 @@
   border-left: 3px solid var(--color-info);
 }
 
-.toastIcon {
+.toast-icon {
   flex-shrink: 0;
   color: inherit;
 }
@@ -82,31 +82,31 @@
   flex-shrink: 0;
 }
 
-.headerTopRow {
+.header-top-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
 }
 
-.headerLeft {
+.header-left {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.headerTitleRow {
+.header-title-row {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.headerIcon {
+.header-icon {
   color: var(--accent-primary);
   opacity: 0.8;
 }
 
-.headerTitle {
+.header-title {
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -114,7 +114,7 @@
   color: var(--text-primary);
 }
 
-.headerSubtitle {
+.header-subtitle {
   margin: 0;
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
@@ -131,7 +131,7 @@
   border: 1px solid var(--calculated-border-color);
 }
 
-.headerActions {
+.header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -140,13 +140,13 @@
 
 /* ── Search Input ────────────────────────────────────────────────── */
 
-.tasksSearch {
+.tasks-search {
   width: 100%;
 }
 
 /* ── New Button ────────────────────────────────────────────── */
 
-.newButton {
+.new-button {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -162,18 +162,18 @@
     transform 0.15s ease;
 }
 
-.newButton:hover {
+.new-button:hover {
   opacity: 0.9;
   transform: translateY(-1px);
 }
 
-.newButton:active {
+.new-button:active {
   transform: translateY(0);
 }
 
 /* ── Loading & Empty States ────────────────────────────────── */
 
-.loadingState {
+.loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -189,7 +189,7 @@
   color: var(--accent-primary);
 }
 
-.emptyState {
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -202,27 +202,27 @@
   background: var(--background-surface);
 }
 
-.emptyIcon {
+.empty-icon {
   color: var(--text-muted);
   opacity: 0.6;
   margin-bottom: 8px;
 }
 
-.emptyState h2 {
+.empty-state h2 {
   font-size: 0.8125rem;
   font-weight: 600;
   margin: 0;
   color: var(--text-primary);
 }
 
-.emptyState p {
+.empty-state p {
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
   max-width: 300px;
   margin: 0;
 }
 
-.emptyButton {
+.empty-button {
   margin-top: 8px;
   padding: 7px 16px;
   background: var(--accent-primary);
@@ -236,7 +236,7 @@
     transform 0.15s ease;
 }
 
-.emptyButton:hover {
+.empty-button:hover {
   opacity: 0.9;
   transform: translateY(-1px);
 }
@@ -289,17 +289,17 @@
   transform: translateY(-1px);
 }
 
-.disabledCard {
+.disabled-card {
   opacity: 0.55;
 }
 
-.disabledCard::before {
+.disabled-card::before {
   opacity: 0.15;
 }
 
 /* ── Card Header ───────────────────────────────────────────── */
 
-.cardHeader {
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -307,21 +307,21 @@
   margin-bottom: 12px;
 }
 
-.cardTitleInfo {
+.card-title-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
 }
 
-.cardTitle {
+.card-title {
   font-size: 0.8125rem;
   font-weight: 600;
   margin: 0;
   color: var(--text-primary);
 }
 
-.cardSchedule {
+.card-schedule {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   margin: 0;
@@ -330,7 +330,7 @@
   gap: 4px;
 }
 
-.cardActions {
+.card-actions {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -339,7 +339,7 @@
 
 /* ── Toggle Switch ─────────────────────────────────────────── */
 
-.toggleSwitch {
+.toggle-switch {
   position: relative;
   width: 40px;
   height: 22px;
@@ -351,13 +351,13 @@
   padding: 0;
 }
 
-.toggleSwitchOn {
+.toggle-switch-on {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   box-shadow: 0 0 8px var(--calculated-accent-primary-glow);
 }
 
-.toggleKnob {
+.toggle-knob {
   position: absolute;
   top: 2px;
   left: 2px;
@@ -369,20 +369,20 @@
   transition: transform var(--transition-fast);
 }
 
-.toggleSwitchOn .toggleKnob {
+.toggle-switch-on .toggle-knob {
   transform: translateX(18px);
   background: var(--calculated-text-inverse);
 }
 
 /* ── Card Body ─────────────────────────────────────────────── */
 
-.cardBody {
+.card-body {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.promptWrapper {
+.prompt-wrapper {
   background: var(--background-base);
   border-radius: var(--border-radius-sm);
   padding: 10px 12px;
@@ -392,7 +392,7 @@
   overflow-y: auto;
 }
 
-.promptText {
+.prompt-text {
   font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-secondary);
@@ -400,7 +400,7 @@
   white-space: pre-wrap;
 }
 
-.tagsRow {
+.tags-row {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -426,11 +426,11 @@
 
 /* ── Three-dot Dropdown Menu ───────────────────────────────── */
 
-.menuContainer {
+.menu-container {
   position: relative;
 }
 
-.menuButton {
+.menu-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -443,12 +443,12 @@
   transition: all var(--transition-fast);
 }
 
-.menuButton:hover {
+.menu-button:hover {
   background: var(--background-elevated);
   color: var(--text-primary);
 }
 
-.menuBackdrop {
+.menu-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -458,7 +458,7 @@
   cursor: default;
 }
 
-.menuDropdown {
+.menu-dropdown {
   position: absolute;
   top: 100%;
   right: 0;
@@ -471,10 +471,10 @@
   min-width: 160px;
   box-shadow: var(--calculated-shadow-lg);
   backdrop-filter: blur(12px);
-  animation: slideDown 0.15s ease-out forwards;
+  animation: slide-down 0.15s ease-out forwards;
 }
 
-.menuDropdown button {
+.menu-dropdown button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -490,28 +490,28 @@
   transition: all var(--transition-fast);
 }
 
-.menuDropdown button:hover {
+.menu-dropdown button:hover {
   background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
   color: var(--text-primary);
 }
 
-.menuDropdown button:disabled {
+.menu-dropdown button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.menuDropdown .deleteBtnText {
+.menu-dropdown .delete-btn-text {
   color: var(--color-danger);
 }
 
-.menuDropdown .deleteBtnText:hover {
+.menu-dropdown .delete-btn-text:hover {
   background: var(--calculated-color-danger-subtle);
   color: var(--color-danger);
 }
 
 /* ── Inline Confirm Delete ─────────────────────────────────── */
 
-.confirmLayoutRow {
+.confirm-layout-row {
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid var(--calculated-border-subtle);
@@ -522,13 +522,13 @@
   color: var(--text-secondary);
 }
 
-.confirmButtons {
+.confirm-buttons {
   display: flex;
   gap: 6px;
 }
 
-.confirmYes,
-.confirmNo {
+.confirm-yes,
+.confirm-no {
   padding: 3px 10px;
   border-radius: var(--border-radius-sm);
   font-size: 0.625rem;
@@ -537,23 +537,23 @@
   transition: all var(--transition-fast);
 }
 
-.confirmYes {
+.confirm-yes {
   background: var(--color-danger);
   border: none;
   color: white;
 }
 
-.confirmYes:hover {
+.confirm-yes:hover {
   filter: brightness(1.1);
 }
 
-.confirmNo {
+.confirm-no {
   background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
 }
 
-.confirmNo:hover {
+.confirm-no:hover {
   background: var(--background-surface);
 }
 
@@ -574,15 +574,15 @@
 }
 
 /* Inline time-picker and weekday-picker row selects should stay compact. */
-.timePickerRow [class*="dropdown"],
-.weeklyPickerRow [class*="dropdown"],
-.recurrenceRow [class*="dropdown"],
-.recurrenceSubrow [class*="dropdown"],
-.radioLabel [class*="dropdown"] {
+.time-picker-row [class*="dropdown"],
+.weekly-picker-row [class*="dropdown"],
+.recurrence-row [class*="dropdown"],
+.recurrence-subrow [class*="dropdown"],
+.radio-label [class*="dropdown"] {
   width: fit-content;
 }
 
-.formRow {
+.form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -590,7 +590,7 @@
 
 /* ── Schedule Builder ──────────────────────────────────────── */
 
-.scheduleBuilder {
+.schedule-builder {
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-subtle);
   border-radius: var(--border-radius-sm);
@@ -600,20 +600,20 @@
   gap: 12px;
 }
 
-.timePickerRow,
-.weeklyPickerRow {
+.time-picker-row,
+.weekly-picker-row {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 4px;
 }
 
-.pickerLabel {
+.picker-label {
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
 }
 
-.timeColon {
+.time-colon {
   font-size: 1rem;
   font-weight: 700;
   color: var(--text-muted);
@@ -621,7 +621,7 @@
 
 /* ── Modal Actions ─────────────────────────────────────────── */
 
-.modalActions {
+.modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -630,43 +630,43 @@
 
 /* ── Table View ────────────────────────────────────────────── */
 
-.toggleSwitchSmall {
+.toggle-switch-small {
   width: 32px;
   height: 18px;
 }
 
-.toggleSwitchSmall .toggleKnob {
+.toggle-switch-small .toggle-knob {
   width: 12px;
   height: 12px;
 }
 
-.toggleSwitchSmall.toggleSwitchOn .toggleKnob {
+.toggle-switch-small.toggle-switch-on .toggle-knob {
   transform: translateX(14px);
 }
 
-.tableNameCell {
+.table-name-cell {
   font-weight: 600;
   color: var(--text-primary);
   font-size: var(--font-size-sm);
 }
 
-.tableScheduleCell {
+.table-schedule-cell {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
 }
 
-.tableDash {
+.table-dash {
   color: var(--text-muted);
 }
 
-.tableActionsCell {
+.table-actions-cell {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
 }
 
-.tableActionButton {
+.table-action-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -680,12 +680,12 @@
   transition: all var(--transition-fast);
 }
 
-.tableActionButton:hover {
+.table-action-button:hover {
   background: var(--background-elevated);
   color: var(--accent-primary);
 }
 
-.tableActionButton:disabled {
+.table-action-button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
@@ -701,7 +701,7 @@
   }
 }
 
-@keyframes slideDown {
+@keyframes slide-down {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -712,7 +712,7 @@
   }
 }
 
-@keyframes slideUp {
+@keyframes slide-up {
   from {
     opacity: 0;
     transform: translateY(12px);
@@ -723,7 +723,7 @@
   }
 }
 
-@keyframes fadeInPure {
+@keyframes fade-in-pure {
   from {
     opacity: 0;
   }
@@ -740,18 +740,18 @@
     gap: 16px;
   }
 
-  .headerTopRow {
+  .header-top-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
 
-  .headerActions {
+  .header-actions {
     width: 100%;
     justify-content: space-between;
   }
 
-  .tasksSearch {
+  .tasks-search {
     flex: 1;
     max-width: 100%;
   }
@@ -760,48 +760,48 @@
     grid-template-columns: 1fr;
   }
 
-  .formRow {
+  .form-row {
     grid-template-columns: 1fr;
     gap: 12px;
   }
 
-  .detailPanel {
+  .detail-panel {
     width: calc(100vw - 24px);
     max-height: calc(100vh - 48px);
   }
 
-  .detailHeader {
+  .detail-header {
     padding: 16px 16px 12px;
   }
 
-  .detailBody {
+  .detail-body {
     padding: 16px;
   }
 
-  .detailMetadataGrid {
+  .detail-metadata-grid {
     grid-template-columns: 1fr;
   }
 
-  .detailActionsRow {
+  .detail-actions-row {
     flex-direction: column;
   }
 
-  .headerActions {
+  .header-actions {
     flex-wrap: wrap;
   }
 
-  .weekdayButtonsGrid {
+  .weekday-buttons-grid {
     flex-wrap: wrap;
   }
 
-  .monthsGrid {
+  .months-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
 /* ── Cron Job Detail Overlay & Panel ── */
 
-.detailOverlay {
+.detail-overlay {
   position: fixed;
   inset: 0;
   background: oklch(0.0% 0.0 0.0 / 0.55);
@@ -809,11 +809,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeInPure 0.15s ease-out;
+  animation: fade-in-pure 0.15s ease-out;
   backdrop-filter: blur(4px);
 }
 
-.detailPanel {
+.detail-panel {
   width: 680px;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 80px);
@@ -824,10 +824,10 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.2s ease-out;
+  animation: slide-up 0.2s ease-out;
 }
 
-.detailHeader {
+.detail-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -835,14 +835,14 @@
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.detailTitleBlock {
+.detail-title-block {
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 0;
 }
 
-.detailCleanName {
+.detail-clean-name {
   font-size: 1.375rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -852,7 +852,7 @@
   gap: 10px;
 }
 
-.detailTitle {
+.detail-title {
   font-size: 0.8125rem;
   font-weight: 500;
   font-family: var(--font-mono);
@@ -860,7 +860,7 @@
   word-break: break-all;
 }
 
-.detailClose {
+.detail-close {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -887,20 +887,20 @@
   }
 }
 
-.detailBody {
+.detail-body {
   padding: 20px 24px 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.detailSection {
+.detail-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.detailSectionTitle {
+.detail-section-title {
   font-size: var(--font-size-xs);
   font-weight: 600;
   text-transform: uppercase;
@@ -915,7 +915,7 @@
   }
 }
 
-.detailPromptBlock {
+.detail-prompt-block {
   background: var(--background-base);
   border-radius: var(--border-radius-sm);
   padding: 16px;
@@ -928,13 +928,13 @@
   overflow-y: auto;
 }
 
-.detailMetadataGrid {
+.detail-metadata-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 
-.detailMetadataItem {
+.detail-metadata-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -944,7 +944,7 @@
   border-radius: var(--border-radius-sm);
 }
 
-.detailMetadataLabel {
+.detail-metadata-label {
   font-size: 0.6875rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -952,7 +952,7 @@
   color: var(--text-muted);
 }
 
-.detailMetadataValue {
+.detail-metadata-value {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
@@ -961,13 +961,13 @@
   gap: 6px;
 }
 
-.detailActionsRow {
+.detail-actions-row {
   display: flex;
   gap: 12px;
   width: 100%;
 }
 
-.detailActionButton {
+.detail-action-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -981,7 +981,7 @@
   transition: all var(--transition-fast);
 }
 
-.detailTriggerButton {
+.detail-trigger-button {
   background: var(--accent-primary);
   color: var(--calculated-text-inverse);
   border: none;
@@ -996,7 +996,7 @@
   }
 }
 
-.detailEditButton {
+.detail-edit-button {
   background: transparent;
   color: var(--accent-primary);
   border: 1px solid var(--accent-primary);
@@ -1006,7 +1006,7 @@
   }
 }
 
-.detailDeleteButton {
+.detail-delete-button {
   background: transparent;
   color: var(--color-danger);
   border: 1px solid var(--color-danger);
@@ -1017,7 +1017,7 @@
 }
 
 /* ── Custom Recurrence Panel ── */
-.customRecurrencePanel {
+.custom-recurrence-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1026,23 +1026,23 @@
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   margin-top: 10px;
-  animation: slideDown 0.2s ease-out forwards;
+  animation: slide-down 0.2s ease-out forwards;
 }
 
-.recurrenceRow {
+.recurrence-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
-.recurrenceText {
+.recurrence-text {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   font-weight: 500;
 }
 
-.recurrenceInput {
+.recurrence-input {
   width: 70px;
   flex-shrink: 0;
 
@@ -1052,7 +1052,7 @@
   }
 }
 
-.recurrenceSublabel {
+.recurrence-sublabel {
   font-size: var(--font-size-xs);
   font-weight: 600;
   text-transform: uppercase;
@@ -1063,18 +1063,18 @@
 }
 
 /* Weekday Selector Grid */
-.weekdayPickerPanel {
+.weekday-picker-panel {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.weekdayButtonsGrid {
+.weekday-buttons-grid {
   display: flex;
   gap: 6px;
 }
 
-.weekdayBadgeButton {
+.weekday-badge-button {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -1100,7 +1100,7 @@
   }
 }
 
-.weekdayBadgeActive {
+.weekday-badge-active {
   background: var(--accent-primary) !important;
   border-color: var(--accent-primary) !important;
   color: var(--calculated-text-inverse) !important;
@@ -1108,7 +1108,7 @@
 }
 
 /* Monthly & Yearly Radio Inputs & Subrows */
-.recurrenceSubrow {
+.recurrence-subrow {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1122,7 +1122,7 @@
   }
 }
 
-.radioLabel {
+.radio-label {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1134,19 +1134,19 @@
 }
 
 /* Yearly Months Selector Grid */
-.yearlyPickerPanel {
+.yearly-picker-panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.monthsGrid {
+.months-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 6px;
 }
 
-.monthBadgeButton {
+.month-badge-button {
   padding: 6px 4px;
   border-radius: var(--border-radius-sm);
   background: var(--background-surface);
@@ -1164,7 +1164,7 @@
   }
 }
 
-.monthBadgeActive {
+.month-badge-active {
   background: var(--accent-primary) !important;
   border-color: var(--accent-primary) !important;
   color: var(--calculated-text-inverse) !important;

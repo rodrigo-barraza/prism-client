@@ -384,7 +384,7 @@ export default function ToolRequestsPage() {
       </FilterBarComponent>
 
       {/* Table */}
-      <div className={styles.tableWrapper}>
+      <div className={styles['table-wrapper']}>
         <TableComponent
           columns={columns}
           data={toolCalls}
@@ -418,31 +418,31 @@ export default function ToolRequestsPage() {
         {selectedCall && (
           <>
             {/* Associated Request */}
-            <div className={styles.detailSection}>
-              <div className={styles.detailSectionTitle}>Associated Request</div>
+            <div className={styles['detail-section']}>
+              <div className={styles['detail-section-title']}>Associated Request</div>
               {loadingAssociatedRequest ? (
                 <span style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Loading…</span>
               ) : associatedRequest ? (
                 <div
-                  className={styles.associatedRequestCard}
+                  className={styles['associated-request-card']}
                   onClick={() => router.push(`/admin/requests?id=${associatedRequest.requestId || associatedRequest._id}`)}
                   role="button"
                   tabIndex={0}
                 >
-                  <div className={styles.associatedRequestRow}>
+                  <div className={styles['associated-request-row']}>
                     <BadgeComponent variant="provider">{associatedRequest.provider || "—"}</BadgeComponent>
                     <BadgeComponent variant="info">{associatedRequest.operation || associatedRequest.endpoint || "—"}</BadgeComponent>
                     {associatedRequest.agent && (
                       <BadgeComponent variant="accent">{associatedRequest.agent}</BadgeComponent>
                     )}
                   </div>
-                  <div className={styles.associatedRequestRow}>
-                    <span className={styles.associatedRequestModel}>{associatedRequest.model || "—"}</span>
+                  <div className={styles['associated-request-row']}>
+                    <span className={styles['associated-request-model']}>{associatedRequest.model || "—"}</span>
                     {associatedRequest.estimatedCost != null && (
-                      <span className={styles.associatedRequestCost}>{formatCost(associatedRequest.estimatedCost)}</span>
+                      <span className={styles['associated-request-cost']}>{formatCost(associatedRequest.estimatedCost)}</span>
                     )}
                     {associatedRequest.timestamp && (
-                      <span className={styles.associatedRequestTimestamp}>{formatDateTime(associatedRequest.timestamp)}</span>
+                      <span className={styles['associated-request-timestamp']}>{formatDateTime(associatedRequest.timestamp)}</span>
                     )}
                     <ExternalLink size={12} style={{ opacity: 0.5, marginInlineStart: "auto" }} />
                   </div>
@@ -455,7 +455,7 @@ export default function ToolRequestsPage() {
             </div>
 
             {selectedCall.args && Object.keys(selectedCall.args).length > 0 && (
-              <div className={styles.detailSection}>
+              <div className={styles['detail-section']}>
                 <JsonViewerComponent
                   data={selectedCall.args}
                   label="Arguments"
@@ -465,7 +465,7 @@ export default function ToolRequestsPage() {
             )}
             {selectedCall.result &&
               Object.keys(selectedCall.result).length > 0 && (
-                <div className={styles.detailSection}>
+                <div className={styles['detail-section']}>
                   <JsonViewerComponent
                     data={selectedCall.result}
                     label="Result (Sanitized)"

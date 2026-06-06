@@ -1,10 +1,10 @@
-.providerList {
+.provider-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.providerCard {
+.provider-card {
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
@@ -16,7 +16,7 @@
   }
 }
 
-.providerHeader {
+.provider-header {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -28,7 +28,7 @@
   text-align: left;
 }
 
-.providerName {
+.provider-name {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -37,20 +37,20 @@
   color: var(--text-primary);
 }
 
-.providerDot {
+.provider-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.modelCount {
+.model-count {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   font-weight: 400;
 }
 
-.rateLimitBadge {
+.rate-limit-badge {
   font-size: 0.625rem;
   font-weight: 500;
   padding: 2px 8px;
@@ -60,32 +60,32 @@
   letter-spacing: 0.02em;
 }
 
-.providerStats {
+.provider-stats {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
 }
 
-.statItem {
+.stat-item {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.statValue {
+.stat-value {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.statLabel {
+.stat-label {
   font-size: 0.625rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
-.shareBar {
+.share-bar {
   width: 100%;
   height: 4px;
   background: var(--background-elevated);
@@ -93,25 +93,25 @@
   overflow: hidden;
 }
 
-.shareBarFill {
+.share-bar-fill {
   height: 100%;
   border-radius: 2px;
   transform-origin: left;
   transition: transform 0.3s ease;
 }
 
-.modelList {
+.model-list {
   padding: 0 20px 16px;
 }
 
 /* ── Rate Limit Panel ─────────────────────────────────────── */
 
-.rateLimitPanel {
+.rate-limit-panel {
   padding: 0 20px 16px;
-  animation: fadeIn 0.2s ease;
+  animation: fade-in 0.2s ease;
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -122,7 +122,7 @@
   }
 }
 
-.rateLimitHeader {
+.rate-limit-header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -131,7 +131,7 @@
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.rateLimitTitle {
+.rate-limit-title {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-secondary);
@@ -139,21 +139,21 @@
   letter-spacing: 0.06em;
 }
 
-.rateLimitMeta {
+.rate-limit-meta {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   font-style: italic;
 }
 
 /* Container for all model cards in a provider */
-.rateLimitModels {
+.rate-limit-models {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 10px;
 }
 
 /* Per-model card */
-.rateLimitModelCard {
+.rate-limit-model-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -163,39 +163,39 @@
   border: 1px solid var(--calculated-border-subtle);
 }
 
-.rateLimitModelHeader {
+.rate-limit-model-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-.rateLimitModelName {
+.rate-limit-model-name {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.rateLimitMetrics {
+.rate-limit-metrics {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
 /* Static metric (Google) */
-.rateLimitMetric {
+.rate-limit-metric {
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-.rateLimitMetricValue {
+.rate-limit-metric-value {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.rateLimitMetricLabel {
+.rate-limit-metric-label {
   font-size: 0.5625rem;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -203,27 +203,27 @@
 }
 
 /* For static metrics, display inline */
-.rateLimitModelCard:not(:has(.limitBar)) .rateLimitMetrics {
+.rate-limit-model-card:not(:has(.limit-bar)) .rate-limit-metrics {
   flex-direction: row;
   gap: 14px;
 }
 
 /* ── Dynamic Limit Bar ──────────────────────────────────────── */
 
-.limitBar {
+.limit-bar {
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-.limitBarHeader {
+.limit-bar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
 }
 
-.limitBarLabel {
+.limit-bar-label {
   font-size: 0.625rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -231,13 +231,13 @@
   letter-spacing: 0.04em;
 }
 
-.limitBarValues {
+.limit-bar-values {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
 
-.progressBarTrack {
+.progress-bar-track {
   width: 100%;
   height: 5px;
   background: var(--calculated-border-subtle);
@@ -245,7 +245,7 @@
   overflow: hidden;
 }
 
-.progressBarFill {
+.progress-bar-fill {
   height: 100%;
   border-radius: 3px;
   transform-origin: left;
@@ -255,18 +255,18 @@
   min-width: 2px;
 }
 
-.rateLimitReset {
+.rate-limit-reset {
   font-size: 0.625rem;
   color: var(--text-muted);
   font-style: italic;
 }
 
 @media (max-width: 767px) {
-  .providerStats {
+  .provider-stats {
     gap: 14px;
   }
 
-  .rateLimitModels {
+  .rate-limit-models {
     grid-template-columns: 1fr;
   }
 }

@@ -12,10 +12,10 @@
   margin-inline: -32px;
   overflow: hidden;
   gap: 16px;
-  animation: fadeInPage 0.4s ease-out;
+  animation: fade-in-page 0.4s ease-out;
 }
 
-@keyframes fadeInPage {
+@keyframes fade-in-page {
   from {
     opacity: 0;
     translate: 0 6px;
@@ -262,7 +262,7 @@
 
 /* ── Node Entrance Animation (live streaming) ────────────── */
 
-@keyframes nodeEntranceScale {
+@keyframes node-entrance-scale {
   0% {
     transform: scale(0);
     opacity: 0;
@@ -282,12 +282,12 @@
 
 .node-entering {
   transform-origin: center;
-  animation: nodeEntranceScale 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: node-entrance-scale 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 /* ── Live Indicator Badge ────────────────────────────────── */
 
-@keyframes liveIndicatorPulse {
+@keyframes live-indicator-pulse {
   0%, 100% {
     opacity: 1;
   }
@@ -315,7 +315,7 @@
   height: 6px;
   border-radius: 50%;
   background: oklch(0.72 0.18 145);
-  animation: liveIndicatorPulse 1.5s ease-in-out infinite;
+  animation: live-indicator-pulse 1.5s ease-in-out infinite;
 }
 
 /* ── Node Detail Tooltip / Popover ───────────────────────── */
@@ -333,10 +333,10 @@
   box-shadow: 0 8px 32px oklch(0 0 0 / 0.2);
   padding: 16px;
   z-index: 10;
-  animation: slideInPopover 0.2s ease-out;
+  animation: slide-in-popover 0.2s ease-out;
 }
 
-@keyframes slideInPopover {
+@keyframes slide-in-popover {
   from {
     opacity: 0;
     translate: 12px 0;
@@ -544,13 +544,13 @@
   color: var(--text-muted);
 }
 
-@keyframes spinAnimation {
+@keyframes spin-animation {
   from { rotate: 0deg; }
   to { rotate: 360deg; }
 }
 
 .spinning-icon {
-  animation: spinAnimation 1s linear infinite;
+  animation: spin-animation 1s linear infinite;
 }
 
 .request-payload-container {
@@ -601,10 +601,10 @@
 
 .request-payload-content {
   padding-block-end: 8px;
-  animation: payloadContentFadeIn 0.15s ease-out;
+  animation: payload-content-fade-in 0.15s ease-out;
 }
 
-@keyframes payloadContentFadeIn {
+@keyframes payload-content-fade-in {
   from {
     opacity: 0;
     translate: 0 -4px;

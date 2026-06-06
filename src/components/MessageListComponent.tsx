@@ -233,15 +233,15 @@ function ThinkingBlock({
 
   return (
     <div
-      className={`${styles.thinkingBlock}${isStreaming ? ` ${styles.thinkingStreaming}` : ""}`}
+      className={`${styles['thinking-block']}${isStreaming ? ` ${styles['thinking-streaming']}` : ""}`}
     >
-      <button className={styles.thinkingToggle} onClick={handleToggle}>
+      <button className={styles['thinking-toggle']} onClick={handleToggle}>
         <Brain size={14} />
         <span>Thoughts</span>
         {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
       </button>
       {!collapsed && (
-        <div className={styles.thinkingContent} ref={contentRef}>
+        <div className={styles['thinking-content']} ref={contentRef}>
           {thinking && <MarkdownContent content={thinking} />}
           {children}
         </div>
@@ -377,48 +377,48 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
       <img
         src={sourceUrl}
         alt="Attached"
-        className={styles.messageImage}
+        className={styles['message-image']}
         onClick={onClick}
       />
     );
   }
   if (cat === "audio") {
     return (
-      <div className={styles.audioCard}>
+      <div className={styles['audio-card']}>
         <AudioPlayerRecorderComponent sourceUrl={sourceUrl} compact />
       </div>
     );
   }
   if (cat === "video") {
     return (
-      <div className={styles.videoCard}>
+      <div className={styles['video-card']}>
         <video
           controls
           src={sourceUrl}
           preload="metadata"
-          className={styles.videoPreview}
+          className={styles['video-preview']}
         />
       </div>
     );
   }
   if (cat === "pdf") {
     return (
-      <div className={styles.pdfViewer}>
-        <div className={styles.pdfHeader}>
-          <FileText size={14} className={styles.pdfHeaderIcon} />
-          <span className={styles.pdfHeaderLabel}>PDF Document</span>
+      <div className={styles['pdf-viewer']}>
+        <div className={styles['pdf-header']}>
+          <FileText size={14} className={styles['pdf-header-icon']} />
+          <span className={styles['pdf-header-label']}>PDF Document</span>
           <a
             href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.pdfOpenLink}
+            className={styles['pdf-open-link']}
           >
             Open ↗
           </a>
         </div>
         <iframe
           src={sourceUrl}
-          className={styles.pdfFrame}
+          className={styles['pdf-frame']}
           title="PDF preview"
         />
       </div>
@@ -427,19 +427,19 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
   if (cat === "text") {
     return (
       <div
-        className={styles.mediaCard}
+        className={styles['media-card']}
         onClick={onClick}
         style={onClick ? { cursor: "pointer" } : undefined}
       >
-        <FileText size={22} className={styles.mediaCardIcon} />
-        <span className={styles.mediaCardLabel}>{cat.toUpperCase()}</span>
+        <FileText size={22} className={styles['media-card-icon']} />
+        <span className={styles['media-card-label']}>{cat.toUpperCase()}</span>
       </div>
     );
   }
   return (
-    <div className={styles.mediaCard}>
-      <FileText size={22} className={styles.mediaCardIcon} />
-      <span className={styles.mediaCardLabel}>{cat.toUpperCase()}</span>
+    <div className={styles['media-card']}>
+      <FileText size={22} className={styles['media-card-icon']} />
+      <span className={styles['media-card-label']}>{cat.toUpperCase()}</span>
     </div>
   );
 }
@@ -600,7 +600,7 @@ function EditableMessage({
       if (prefix) {
         return (
           <div className={styles.text}>
-            <div className={styles.rawPrefix}>{prefix}</div>
+            <div className={styles['raw-prefix']}>{prefix}</div>
             {renderContentWithMentions(rest, knownPaths, onMentionFileOpen)}
           </div>
         );
@@ -1084,10 +1084,10 @@ export default function MessageList({
   }, [displayMessages, swapBefore]);
 
   return (
-    <div ref={containerReference} className={styles.messagesList}>
+    <div ref={containerReference} className={styles['messages-list']}>
       {/* -- Sticky pinned user message -- */}
       <div
-        className={styles.stickyUserMessage}
+        className={styles['sticky-user-message']}
         onMouseEnter={(e: React.MouseEvent) =>
           stickyUserMessage &&
           SoundService.playHoverButton({ event: e.nativeEvent })
@@ -1105,18 +1105,18 @@ export default function MessageList({
           transition: "opacity 0.2s ease, visibility 0.2s ease",
         }}
       >
-        <div className={styles.stickyUserMessageInner}>
-          <div className={styles.stickyUserMessageAvatar}>
+        <div className={styles['sticky-user-message-inner']}>
+          <div className={styles['sticky-user-message-avatar']}>
             <User size={12} />
           </div>
-          <div className={styles.stickyUserMessageContent}>
+          <div className={styles['sticky-user-message-content']}>
             {stickyUserMessage?.images && stickyUserMessage.images.length > 0 && (
-              <span className={styles.stickyUserMessageBadge}>
+              <span className={styles['sticky-user-message-badge']}>
                 {stickyUserMessage.images.length} attachment
                 {stickyUserMessage.images.length > 1 ? "s" : ""}
               </span>
             )}
-            <span className={styles.stickyUserMessageText}>
+            <span className={styles['sticky-user-message-text']}>
               {stickyUserMessage?.content
                 ? renderContentWithMentions(
                     stickyUserMessage.content.length > 200
@@ -1128,24 +1128,24 @@ export default function MessageList({
                 : "(no text)"}
             </span>
           </div>
-          <ChevronDown size={14} className={styles.stickyUserMessageChevron} />
+          <ChevronDown size={14} className={styles['sticky-user-message-chevron']} />
         </div>
       </div>
       {hasSystemPrompt && (
-        <div className={`${styles.message} ${styles.systemNode}`}>
+        <div className={`${styles.message} ${styles['system-node']}`}>
           <div className={styles.avatar}>
             <Terminal size={16} />
           </div>
           <div className={styles.content}>
-            <div className={styles.messageHeader}>
-              <div className={styles.roleLabel}>System Prompt</div>
+            <div className={styles['message-header']}>
+              <div className={styles['role-label']}>System Prompt</div>
               {!readOnly && onSystemPromptEdit && (
-                <div className={styles.messageActions}>
+                <div className={styles['message-actions']}>
                   <IconButtonComponent
                     icon={<Pencil size={14} />}
                     onClick={() => onSystemPromptEdit(systemPrompt || "")}
                     tooltip="Edit system prompt"
-                    className={styles.actionButton}
+                    className={styles['action-button']}
                   />
                 </div>
               )}
@@ -1158,10 +1158,10 @@ export default function MessageList({
       {displayMessages.map((message, i) => {
         const roleClass =
           message.role === "user"
-            ? styles.userNode
+            ? styles['user-node']
             : message.role === "system"
-              ? styles.systemNode
-              : styles.assistantNode;
+              ? styles['system-node']
+              : styles['assistant-node'];
         const isStreaming =
           (isGenerating &&
             message.role === "assistant" &&
@@ -1176,7 +1176,7 @@ export default function MessageList({
           displayMessages[i - 1].deleted &&
           displayMessages[i].deleted;
         const swapDividerClass =
-          `${styles.modelChangeDivider} ${isFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
+          `${styles['model-change-divider']} ${isFadedSwap ? styles['model-change-divider-faded'] : ""}`.trim();
 
         // If message is a non-leader deleted message, skip rendering the whole
         // top-level block so we don't leak the model swap outside the group
@@ -1189,12 +1189,12 @@ export default function MessageList({
           <React.Fragment key={i}>
             {showModelChange && (
               <div className={swapDividerClass}>
-                <span className={styles.modelChangeLine} />
-                <span className={styles.modelChangeLabel}>
+                <span className={styles['model-change-line']} />
+                <span className={styles['model-change-label']}>
                   <RefreshCw size={11} />
                   Model Swap
                 </span>
-                <span className={styles.modelChangeLine} />
+                <span className={styles['model-change-line']} />
               </div>
             )}
             {/* -- Deleted message group: coalesced into a single row -- */}
@@ -1210,13 +1210,13 @@ export default function MessageList({
                 if (!isExpanded) {
                   // -- Collapsed: single summary row --
                   return (
-                    <div className={styles.deletedRow}>
+                    <div className={styles['deleted-row']}>
                       <button
-                        className={styles.deletedToggle}
+                        className={styles['deleted-toggle']}
                         onClick={() => toggleDeletedExpanded(i)}
                       >
                         <ChevronRight size={13} />
-                        <span className={styles.deletedBadge}>
+                        <span className={styles['deleted-badge']}>
                           Deleted{groupCount > 1 ? ` (${groupCount})` : ""}
                         </span>
                         {groupCount === 1 && (
@@ -1242,7 +1242,7 @@ export default function MessageList({
                               />
                             )}
                             {message.content && (
-                              <span className={styles.deletedPreview}>
+                              <span className={styles['deleted-preview']}>
                                 {message.content.length > 80
                                   ? message.content.slice(0, 80) + "…"
                                   : message.content}
@@ -1268,12 +1268,12 @@ export default function MessageList({
                         )}
                       </button>
                       {groupCount === 1 && !readOnly && onRestore && (
-                        <div className={styles.deletedActions}>
+                        <div className={styles['deleted-actions']}>
                           <IconButtonComponent
                             icon={<Undo2 size={14} />}
                             onClick={() => onRestore?.(i)}
                             tooltip="Restore message"
-                            className={styles.actionButton}
+                            className={styles['action-button']}
                           />
                         </div>
                       )}
@@ -1283,14 +1283,14 @@ export default function MessageList({
 
                 // -- Expanded: show all messages in the group --
                 return (
-                  <div className={styles.deletedExpanded}>
-                    <div className={styles.deletedRow}>
+                  <div className={styles['deleted-expanded']}>
+                    <div className={styles['deleted-row']}>
                       <button
-                        className={styles.deletedToggle}
+                        className={styles['deleted-toggle']}
                         onClick={() => toggleDeletedExpanded(i)}
                       >
                         <ChevronDown size={13} />
-                        <span className={styles.deletedBadge}>
+                        <span className={styles['deleted-badge']}>
                           Deleted{groupCount > 1 ? ` (${groupCount})` : ""}
                         </span>
                       </button>
@@ -1299,10 +1299,10 @@ export default function MessageList({
                       const groupMessage = displayMessages[gi];
                       const gRoleClass =
                         groupMessage.role === "user"
-                          ? styles.userNode
+                          ? styles['user-node']
                           : groupMessage.role === "system"
-                            ? styles.systemNode
-                            : styles.assistantNode;
+                            ? styles['system-node']
+                            : styles['assistant-node'];
 
                       const gShowModelChange = swapBefore[gi];
                       const gIsFadedSwap =
@@ -1311,7 +1311,7 @@ export default function MessageList({
                         displayMessages[gi - 1].deleted &&
                         displayMessages[gi].deleted;
                       const gSwapDividerClass =
-                        `${styles.modelChangeDivider} ${gIsFadedSwap ? styles.modelChangeDividerFaded : ""}`.trim();
+                        `${styles['model-change-divider']} ${gIsFadedSwap ? styles['model-change-divider-faded'] : ""}`.trim();
                       const shouldRenderInnerSwap =
                         gShowModelChange && gi !== groupIndices[0];
 
@@ -1319,16 +1319,16 @@ export default function MessageList({
                         <React.Fragment key={gi}>
                           {shouldRenderInnerSwap && (
                             <div className={gSwapDividerClass}>
-                              <span className={styles.modelChangeLine} />
-                              <span className={styles.modelChangeLabel}>
+                              <span className={styles['model-change-line']} />
+                              <span className={styles['model-change-label']}>
                                 <RefreshCw size={11} />
                                 Model Swap
                               </span>
-                              <span className={styles.modelChangeLine} />
+                              <span className={styles['model-change-line']} />
                             </div>
                           )}
-                          <div className={styles.deletedGroupItem}>
-                            <div className={styles.deletedGroupItemHeader}>
+                          <div className={styles['deleted-group-item']}>
+                            <div className={styles['deleted-group-item-header']}>
                               <BadgeComponent
                                 variant="info"
                                 mini
@@ -1350,7 +1350,7 @@ export default function MessageList({
                                 />
                               )}
                               <div
-                                className={styles.deletedActions}
+                                className={styles['deleted-actions']}
                                 style={{ opacity: 1 }}
                               >
                                 {!readOnly && onRestore && (
@@ -1358,24 +1358,24 @@ export default function MessageList({
                                     icon={<Undo2 size={14} />}
                                     onClick={() => onRestore?.(gi)}
                                     tooltip="Restore message"
-                                    className={styles.actionButton}
+                                    className={styles['action-button']}
                                   />
                                 )}
                                 {groupMessage.content && (
                                   <CopyButtonComponent
                                     text={groupMessage.content}
                                     tooltip="Copy raw text"
-                                    className={styles.actionButton}
+                                    className={styles['action-button']}
                                   />
                                 )}
                               </div>
                             </div>
-                            <div className={styles.deletedMessageBody}>
+                            <div className={styles['deleted-message-body']}>
                               <div
                                 className={`${styles.message} ${gRoleClass}`}
                               >
                                 <div
-                                  className={`${styles.avatar} ${styles.deletedAvatar}`}
+                                  className={`${styles.avatar} ${styles['deleted-avatar']}`}
                                 >
                                   {groupMessage.role === "user" ? (
                                     <User size={16} />
@@ -1400,7 +1400,7 @@ export default function MessageList({
                                       />
                                     )}
                                   {groupMessage.images && groupMessage.images.length > 0 && (
-                                    <div className={styles.imagePreviewRow}>
+                                    <div className={styles['image-preview-row']}>
                                       {groupMessage.images.map(
                                         (rawUrl: string, j: number) => {
                                           const resolvedUrl =
@@ -1432,7 +1432,7 @@ export default function MessageList({
                                   ) : null}
                                   {groupMessage.role === "assistant" &&
                                     (groupMessage.usage || groupMessage.provider) && (
-                                      <div className={styles.metaBadges}>
+                                      <div className={styles['meta-badges']}>
                                         {groupMessage.provider && (
                                           <BadgeComponent
                                             type="providers"
@@ -1492,20 +1492,20 @@ export default function MessageList({
                     .replace("🔔 Notification: ", "")
                     .replace("🏮 Reminder fired: ", "");
                   return (
-                    <div className={styles.scheduleFiredDivider}>
-                      <span className={styles.scheduleFiredLine} />
-                      <span className={styles.scheduleFiredLabel}>
+                    <div className={styles['schedule-fired-divider']}>
+                      <span className={styles['schedule-fired-line']} />
+                      <span className={styles['schedule-fired-label']}>
                         Schedule Fired
                       </span>
-                      <span className={styles.scheduleFiredLine} />
-                      <div className={styles.scheduleFiredDetails}>
+                      <span className={styles['schedule-fired-line']} />
+                      <div className={styles['schedule-fired-details']}>
                         {message.timestamp && (
                           <BadgeComponent
                             type="dateTime"
                             date={message.timestamp}
                           />
                         )}
-                        <span className={styles.scheduleFiredPrompt}>
+                        <span className={styles['schedule-fired-prompt']}>
                           {prompt}
                         </span>
                       </div>
@@ -1521,12 +1521,12 @@ export default function MessageList({
                         ? lastUserMessageRef
                         : undefined
                     }
-                    className={`${styles.message} ${roleClass}${coalesce?.isContinuation ? ` ${styles.continuationMessage}` : ""}`}
+                    className={`${styles.message} ${roleClass}${coalesce?.isContinuation ? ` ${styles['continuation-message']}` : ""}`}
                   >
                     {/* Avatar: hidden for continuation messages */}
                     {!coalesce?.isContinuation && (
                       <div
-                        className={`${styles.avatar}${message.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles.prismAvatar}` : ""}`}
+                        className={`${styles.avatar}${message.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles['prism-avatar']}` : ""}`}
                       >
                         {message.role === "user" ? (
                           <User size={16} />
@@ -1542,8 +1542,8 @@ export default function MessageList({
                     <div className={styles.content}>
                       {/* Header: hidden for continuation messages */}
                       {!coalesce?.isContinuation && (
-                        <div className={styles.messageHeader}>
-                          <div className={styles.roleLabel}>
+                        <div className={styles['message-header']}>
+                          <div className={styles['role-label']}>
                             {message.role === "user"
                               ? "User"
                               : message.role === "system"
@@ -1557,7 +1557,7 @@ export default function MessageList({
                             )}
                           </div>
                           {!readOnly && (
-                            <div className={styles.messageActions}>
+                            <div className={styles['message-actions']}>
                               {message.role === "user" && (
                                 <>
                                   <IconButtonComponent
@@ -1569,14 +1569,14 @@ export default function MessageList({
                                     }
                                     disabled={isGenerating}
                                     tooltip="Edit message"
-                                    className={styles.actionButton}
+                                    className={styles['action-button']}
                                   />
                                   <IconButtonComponent
                                     icon={<RotateCcw size={14} />}
                                     onClick={() => onRerun?.(i)}
                                     disabled={isGenerating}
                                     tooltip="Rerun this turn"
-                                    className={styles.actionButton}
+                                    className={styles['action-button']}
                                   />
                                 </>
                               )}
@@ -1591,14 +1591,14 @@ export default function MessageList({
                                     }
                                     disabled={isGenerating}
                                     tooltip="Edit response"
-                                    className={styles.actionButton}
+                                    className={styles['action-button']}
                                   />
                                 )}
                               {message.content && (
                                 <CopyButtonComponent
                                   text={message.content}
                                   tooltip="Copy raw text"
-                                  className={styles.actionButton}
+                                  className={styles['action-button']}
                                 />
                               )}
                               <IconButtonComponent
@@ -1606,16 +1606,16 @@ export default function MessageList({
                                 onClick={() => onDelete?.(i)}
                                 tooltip="Delete message"
                                 variant="destructive"
-                                className={styles.actionButton}
+                                className={styles['action-button']}
                               />
                             </div>
                           )}
                           {readOnly && message.content && (
-                            <div className={styles.messageActions}>
+                            <div className={styles['message-actions']}>
                               <CopyButtonComponent
                                 text={message.content}
                                 tooltip="Copy raw text"
-                                className={styles.actionButton}
+                                className={styles['action-button']}
                               />
                             </div>
                           )}
@@ -1696,7 +1696,7 @@ export default function MessageList({
                                     content={fragmentText}
                                     className={
                                       isStreaming && isLastTextSeg && showCursor
-                                        ? styles.streamingText
+                                        ? styles['streaming-text']
                                         : ""
                                     }
                                   >
@@ -1924,13 +1924,13 @@ export default function MessageList({
                               if (prefix) {
                                 return (
                                   <div className={styles.text}>
-                                    <div className={styles.rawPrefix}>
+                                    <div className={styles['raw-prefix']}>
                                       {prefix}
                                     </div>
                                     <MarkdownContent
                                       content={rest}
                                       className={
-                                        isStreaming ? styles.streamingText : ""
+                                        isStreaming ? styles['streaming-text'] : ""
                                       }
                                     >
                                       <StreamingCursorComponent
@@ -1944,7 +1944,7 @@ export default function MessageList({
                                 <MarkdownContent
                                   content={message.content}
                                   className={
-                                    isStreaming ? styles.streamingText : ""
+                                    isStreaming ? styles['streaming-text'] : ""
                                   }
                                 >
                                   <StreamingCursorComponent
@@ -1957,7 +1957,7 @@ export default function MessageList({
                             <MarkdownContent
                               content={message.content}
                               className={
-                                isStreaming ? styles.streamingText : ""
+                                isStreaming ? styles['streaming-text'] : ""
                               }
                             >
                               <StreamingCursorComponent active={isStreaming} />
@@ -1970,7 +1970,7 @@ export default function MessageList({
 
                       {/* Images / media */}
                       {message.images && message.images.length > 0 && (
-                        <div className={styles.imagePreviewRow}>
+                        <div className={styles['image-preview-row']}>
                           {message.images.map((rawUrl, j) => {
                             const resolvedUrl = PrismService.getFileUrl(rawUrl);
                             const cat = getMimeCategory(rawUrl);
@@ -1996,14 +1996,14 @@ export default function MessageList({
                         message.role === "assistant" &&
                         message._liveStreaming &&
                         !message.audio && (
-                          <div className={styles.audioCard}>
+                          <div className={styles['audio-card']}>
                             <AudioPlayerRecorderComponent streaming compact />
                           </div>
                         )}
 
                       {/* Audio */}
                       {message.audio && (
-                        <div className={styles.imagePreviewRow}>
+                        <div className={styles['image-preview-row']}>
                           {(Array.isArray(message.audio)
                             ? message.audio
                             : [message.audio]
@@ -2019,7 +2019,7 @@ export default function MessageList({
                           ? message.video
                           : [message.video]
                         ).length > 0 && (
-                          <div className={styles.imagePreviewRow}>
+                          <div className={styles['image-preview-row']}>
                             {(Array.isArray(message.video)
                               ? message.video
                               : [message.video]
@@ -2035,7 +2035,7 @@ export default function MessageList({
                           ? message.pdf
                           : [message.pdf]
                         ).length > 0 && (
-                          <div className={styles.imagePreviewRow}>
+                          <div className={styles['image-preview-row']}>
                             {(Array.isArray(message.pdf)
                               ? message.pdf
                               : [message.pdf]
@@ -2055,10 +2055,10 @@ export default function MessageList({
 
                       {/* Error block */}
                       {message.error && (
-                        <div className={styles.errorBlock}>
+                        <div className={styles['error-block']}>
                           <AlertTriangle
                             size={14}
-                            className={styles.errorIcon}
+                            className={styles['error-icon']}
                           />
                           <span>{message.error}</span>
                         </div>
@@ -2066,7 +2066,7 @@ export default function MessageList({
 
                       {/* User metadata */}
                       {message.role === "user" && message.content && (
-                        <div className={styles.metaBadges}>
+                        <div className={styles['meta-badges']}>
                           <BadgeComponent
                             type="words"
                             count={
@@ -2085,7 +2085,7 @@ export default function MessageList({
                         (message.usage ||
                           message.audio ||
                           message.provider) && (
-                          <div className={styles.metaBadges}>
+                          <div className={styles['meta-badges']}>
                             {message.provider && (
                               <BadgeComponent
                                 type="providers"

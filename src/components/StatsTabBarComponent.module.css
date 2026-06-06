@@ -1,4 +1,4 @@
-.statsTabBar {
+.stats-tab-bar {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -8,7 +8,7 @@
   padding: 2px;
 }
 
-.statsTabButton {
+.stats-tab-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -22,7 +22,7 @@
   line-height: 1;
 }
 
-.statsTabButton:hover {
+.stats-tab-button:hover {
   color: var(--text-primary);
   background: color-mix(
     in srgb,
@@ -31,14 +31,14 @@
   );
 }
 
-.statsTabBtnActive {
+.stats-tab-btn-active {
   color: var(--accent-primary);
   background: var(--calculated-accent-primary-glow);
   box-shadow: 0 0 0 1px
     color-mix(in srgb, var(--accent-primary) 20%, transparent);
 }
 
-.statsTabBtnActive:hover {
+.stats-tab-btn-active:hover {
   background: var(--calculated-accent-primary-glow);
   color: var(--accent-primary);
 }

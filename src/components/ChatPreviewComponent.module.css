@@ -1,6 +1,6 @@
 /* ── Chat Preview Container ──────────────────────────── */
 
-.chatPreviewContainer {
+.chat-preview-container {
   display: flex;
   flex-direction: column;
   background: var(--background-base);
@@ -11,7 +11,7 @@
   width: 100%;
 }
 
-.chatPreviewHeader {
+.chat-preview-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -24,7 +24,7 @@
   z-index: 5;
 }
 
-.chatPreviewHeaderTitle {
+.chat-preview-header-title {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -32,13 +32,13 @@
   letter-spacing: 0.05em;
 }
 
-.debugToggleContainer {
+.debug-toggle-container {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.debugToggleButton {
+.debug-toggle-button {
   height: 24px !important;
   min-height: 24px !important;
   padding: 0 8px !important;
@@ -51,15 +51,15 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.debugToggleButton:hover {
+.debug-toggle-button:hover {
   transform: translateY(-1px);
 }
 
-.debugToggleButton:active {
+.debug-toggle-button:active {
   transform: translateY(0);
 }
 
-.chatPreview {
+.chat-preview {
   background: var(--background-base);
   flex: 1;
   min-height: 0;
@@ -68,23 +68,23 @@
 }
 
 /* Override MessageList's max-width and gap inside the preview */
-.chatPreview > div {
+.chat-preview > div {
   gap: 16px;
 }
 
-.chatPreview > div > div {
+.chat-preview > div > div {
   max-width: 100%;
 }
 
 /* ── Prompt Preview (system / user prompt blocks) ────── */
 
-.promptPreview {
+.prompt-preview {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.promptBlock {
+.prompt-block {
   background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
   padding: 14px 16px;
@@ -95,24 +95,24 @@
   word-break: break-word;
 }
 
-.promptBlock:first-child {
+.prompt-block:first-child {
   border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
 }
 
-.promptBlock:last-child {
+.prompt-block:last-child {
   border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
 }
 
-.promptBlock:only-child {
+.prompt-block:only-child {
   border-radius: var(--border-radius-sm);
 }
 
 /* Collapse double borders between stacked blocks */
-.promptBlock + .promptBlock {
+.prompt-block + .prompt-block {
   border-top: none;
 }
 
-.promptLabel {
+.prompt-label {
   display: block;
   font-size: 0.625rem;
   font-weight: 600;
@@ -122,26 +122,26 @@
   color: var(--text-tertiary);
 }
 
-.promptLabelSystem {
+.prompt-label-system {
   color: var(--color-warning);
 }
 
-.promptLabelUser {
+.prompt-label-user {
   color: var(--accent-primary);
 }
 
-.promptContent {
+.prompt-content {
   color: var(--text-primary);
 }
 
 /* System block gets a subtle left accent */
-.promptBlockSystem {
+.prompt-block-system {
   border-left: 2px solid
     color-mix(in srgb, var(--color-warning) 40%, transparent);
 }
 
 /* User block gets accent left border */
-.promptBlockUser {
+.prompt-block-user {
   border-left: 2px solid
     color-mix(in srgb, var(--accent-primary) 40%, transparent);
 }
@@ -194,11 +194,11 @@
 }
 
 /* Mini prompt-block mode */
-.mini.promptPreview .promptBlock {
+.mini.prompt-preview .prompt-block {
   padding: 8px 10px;
 }
 
-.mini.promptPreview .promptLabel {
+.mini.prompt-preview .prompt-label {
   font-size: 0.5625rem !important;
   margin-bottom: 4px;
 }

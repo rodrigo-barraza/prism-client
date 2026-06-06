@@ -10,7 +10,7 @@
 }
 
 /* Header */
-.sidebarHeader {
+.sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -23,16 +23,16 @@
   letter-spacing: 0.05em;
 }
 
-.sidebarCount {
+.sidebar-count {
   opacity: 0.7;
 }
 
-.sidebarHeaderActions {
+.sidebar-header-actions {
   display: flex;
   gap: 2px;
 }
 
-.headerButton {
+.header-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,12 +51,12 @@
 }
 
 /* Workflow name */
-.nameInputWrapper {
+.name-input-wrapper {
   padding: 4px 12px 6px;
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.nameInput {
+.name-input {
   width: 100%;
   height: 28px;
   padding: 0 8px;
@@ -74,12 +74,12 @@
 }
 
 /* Asset buttons (user mode) */
-.assetSection {
+.asset-section {
   padding: 8px 12px;
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.assetSectionLabel {
+.asset-section-label {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -91,13 +91,13 @@
   margin-bottom: 6px;
 }
 
-.assetButtons {
+.asset-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
 }
 
-.assetButton {
+.asset-button {
   display: flex;
   align-items: center;
   gap: 5px;

@@ -20,11 +20,11 @@ export default function CountLinkComponent({
   className?: string;
 }) {
   if (!count || count <= 0) {
-    return <span className={styles.countLinkZero}>0</span>;
+    return <span className={styles['count-link-zero']}>0</span>;
   }
 
   return (
-    <Link href={href} className={className || styles.countLink}>
+    <Link href={href} className={className || styles['count-link']}>
       <Icon size={12} />
       {count}
     </Link>

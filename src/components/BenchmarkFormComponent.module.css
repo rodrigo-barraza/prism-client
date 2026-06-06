@@ -1,25 +1,25 @@
 /* ── Assertions Section ─────────────────────────────────── */
 
-.assertionsSection {
+.assertions-section {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.assertionsHeader {
+.assertions-header {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.assertionsLabel {
+.assertions-label {
   font-size: 0.8125rem;
   color: var(--text-secondary);
   font-weight: 500;
   flex: 1;
 }
 
-.operatorToggle {
+.operator-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -36,35 +36,35 @@
   border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
-.operatorToggle:hover {
+.operator-toggle:hover {
   background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
   border-color: var(--accent-primary);
 }
 
-.operatorOr {
+.operator-or {
   background: color-mix(in srgb, var(--color-warning) 12%, transparent);
   color: var(--color-warning);
   border-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
 }
 
-.operatorOr:hover {
+.operator-or:hover {
   background: color-mix(in srgb, var(--color-warning) 20%, transparent);
   border-color: var(--color-warning);
 }
 
 /* ── Assertions List ────────────────────────────────────── */
 
-.assertionsList {
+.assertions-list {
   display: flex;
   flex-direction: column;
 }
 
-.assertionRow {
+.assertion-row {
   display: flex;
   flex-direction: column;
 }
 
-.assertionFields {
+.assertion-fields {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 10px;
@@ -76,15 +76,15 @@
 }
 
 /* When there's only one assertion (no remove button), span full width */
-.assertionFields:has(> :nth-child(3)) {
+.assertion-fields:has(> :nth-child(3)) {
   grid-template-columns: 1fr auto auto;
 }
 
-.assertionFields:not(:has(> :nth-child(3))) {
+.assertion-fields:not(:has(> :nth-child(3))) {
   grid-template-columns: 1fr auto;
 }
 
-.assertionRemove {
+.assertion-remove {
   display: flex;
   align-items: center;
   padding-bottom: 2px;
@@ -92,14 +92,14 @@
 
 /* ── Operator Divider ───────────────────────────────────── */
 
-.operatorDivider {
+.operator-divider {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 4px 0;
 }
 
-.operatorDividerLine {
+.operator-divider-line {
   flex: 1;
   height: 1px;
   background: var(--calculated-border-color);

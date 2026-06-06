@@ -684,31 +684,31 @@ export default function VisionPageComponent() {
 
   // ── Render ─────────────────────────────────────────────────────
   return (
-    <div className={styles.visionLayoutWrapper}>
+    <div className={styles['vision-layout-wrapper']}>
       <ThreePanelLayout
         navSidebar={<NavigationSidebarComponent mode="user" />}
         title="Vision"
         leftPanel={
           <div className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <Video size={15} className={styles.panelTitleIcon} />
-              <span className={styles.panelTitle}>Video Source</span>
+            <div className={styles['panel-header']}>
+              <Video size={15} className={styles['panel-title-icon']} />
+              <span className={styles['panel-title']}>Video Source</span>
               {isAnalyzing && (
-                <span className={styles.statusActive}>
+                <span className={styles['status-active']}>
                   <Eye size={10} /> Active
                 </span>
               )}
             </div>
 
-            <div className={styles.sourceContent}>
+            <div className={styles['source-content']}>
               {/* Source type buttons */}
-              <div className={styles.sourceSelector}>
+              <div className={styles['source-selector']}>
                 {SOURCE_TYPES.map((source) => {
                   const Icon = source.icon;
                   return (
                     <button
                       key={source.key}
-                      className={`${styles.sourceButton} ${sourceType === source.key ? styles.sourceBtnActive : ""}`}
+                      className={`${styles['source-button']} ${sourceType === source.key ? styles['source-btn-active'] : ""}`}
                       onClick={() => handleSourceSelect(source.key)}
                     >
                       <Icon size={14} />
@@ -720,7 +720,7 @@ export default function VisionPageComponent() {
 
               {/* IP Camera URL input */}
               {sourceType === "ipcam" && (
-                <div className={styles.urlInputRow}>
+                <div className={styles['url-input-row']}>
                   <InputComponent
                     type="text"
                     placeholder="rtsp://user:pass@192.168.1.100/stream1 or http://…/mjpeg"
@@ -730,7 +730,7 @@ export default function VisionPageComponent() {
                     ) => setIpCamUrl(e.target.value)}
                   />
                   <button
-                    className={styles.urlConnectButton}
+                    className={styles['url-connect-button']}
                     onClick={() => startIpCamera(ipCamUrl)}
                     disabled={!ipCamUrl.trim()}
                   >
@@ -741,39 +741,39 @@ export default function VisionPageComponent() {
 
               {/* Video preview — single persistent element to avoid ref-swapping race conditions */}
               <div
-                className={`${styles.videoContainer} ${!isStreaming ? styles.videoContainerHidden : ""}`}
+                className={`${styles['video-container']} ${!isStreaming ? styles['video-container-hidden'] : ""}`}
               >
                 <video
                   ref={videoRef}
-                  className={styles.videoElement}
+                  className={styles['video-element']}
                   autoPlay
                   playsInline
                   muted
                   onLoadedMetadata={handleVideoMetadata}
                 />
-                <canvas ref={canvasRef} className={styles.canvasHidden} />
+                <canvas ref={canvasRef} className={styles['canvas-hidden']} />
 
                 {/* Live indicator */}
                 {isStreaming && (
-                  <div className={styles.liveIndicator}>
-                    <span className={styles.liveDot} />
+                  <div className={styles['live-indicator']}>
+                    <span className={styles['live-dot']} />
                     LIVE
                   </div>
                 )}
 
                 {/* Resolution badge */}
                 {resolution && (
-                  <div className={styles.resolutionBadge}>{resolution}</div>
+                  <div className={styles['resolution-badge']}>{resolution}</div>
                 )}
 
                 {/* Screenshot flash */}
-                {showFlash && <div className={styles.screenshotFlash} />}
+                {showFlash && <div className={styles['screenshot-flash']} />}
 
                 {/* Analyzing overlay */}
                 {isCapturing && (
-                  <div className={styles.analyzingOverlay}>
-                    <div className={styles.analyzingBadge}>
-                      <Loader2 size={14} className={styles.spinIcon} />
+                  <div className={styles['analyzing-overlay']}>
+                    <div className={styles['analyzing-badge']}>
+                      <Loader2 size={14} className={styles['spin-icon']} />
                       Analyzing…
                     </div>
                   </div>
@@ -781,24 +781,24 @@ export default function VisionPageComponent() {
 
                 {/* Snapshot counter */}
                 {snapshotCount > 0 && (
-                  <div className={styles.snapshotCounter}>#{snapshotCount}</div>
+                  <div className={styles['snapshot-counter']}>#{snapshotCount}</div>
                 )}
 
                 {/* Progress ring */}
                 {isAnalyzing && (
-                  <div className={styles.captureProgress}>
+                  <div className={styles['capture-progress']}>
                     <svg
-                      className={styles.captureProgressRing}
+                      className={styles['capture-progress-ring']}
                       viewBox="0 0 32 32"
                     >
                       <circle
-                        className={styles.captureProgressTrack}
+                        className={styles['capture-progress-track']}
                         cx="16"
                         cy="16"
                         r="14"
                       />
                       <circle
-                        className={styles.captureProgressFill}
+                        className={styles['capture-progress-fill']}
                         cx="16"
                         cy="16"
                         r="14"
@@ -814,11 +814,11 @@ export default function VisionPageComponent() {
 
               {/* Empty state — no source selected */}
               {!isStreaming && (
-                <div className={styles.emptySource}>
-                  <div className={styles.emptyIcon}>
+                <div className={styles['empty-source']}>
+                  <div className={styles['empty-icon']}>
                     <Scan size={36} />
                   </div>
-                  <span className={styles.emptyLabel}>
+                  <span className={styles['empty-label']}>
                     Select a video source above to begin.
                     <br />
                     Webcam, screen capture, or IP camera.
@@ -831,19 +831,19 @@ export default function VisionPageComponent() {
         leftTitle="Video Source"
       >
         <div className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <Eye size={15} className={styles.panelTitleIcon} />
-            <span className={styles.panelTitle}>Vision Center</span>
+          <div className={styles['panel-header']}>
+            <Eye size={15} className={styles['panel-title-icon']} />
+            <span className={styles['panel-title']}>Vision Center</span>
 
-            <div className={styles.modeTabs}>
+            <div className={styles['mode-tabs']}>
               <button
-                className={`${styles.modeTab} ${mode === "analysis" ? styles.modeTabActive : ""}`}
+                className={`${styles['mode-tab']} ${mode === "analysis" ? styles['mode-tab-active'] : ""}`}
                 onClick={() => setMode("analysis")}
               >
                 Analysis
               </button>
               <button
-                className={`${styles.modeTab} ${mode === "agent" ? styles.modeTabActive : ""}`}
+                className={`${styles['mode-tab']} ${mode === "agent" ? styles['mode-tab-active'] : ""}`}
                 onClick={() => setMode("agent")}
               >
                 Live Agent
@@ -852,7 +852,7 @@ export default function VisionPageComponent() {
 
             {mode === "analysis" && results.length > 0 && (
               <button
-                className={styles.clearButton}
+                className={styles['clear-button']}
                 onClick={() => {
                   setResults([]);
                   setSnapshotCount(0);
@@ -864,7 +864,7 @@ export default function VisionPageComponent() {
 
             {mode === "agent" && chatMessages.length > 0 && (
               <button
-                className={styles.clearButton}
+                className={styles['clear-button']}
                 onClick={() => setChatMessages([])}
               >
                 <Trash2 size={10} /> Reset Chat
@@ -873,11 +873,11 @@ export default function VisionPageComponent() {
           </div>
 
           {mode === "analysis" ? (
-            <div className={styles.analysisContent}>
+            <div className={styles['analysis-content']}>
               {/* Controls */}
-              <div className={styles.controlsBar}>
+              <div className={styles['controls-bar']}>
                 {/* Model picker */}
-                <div className={styles.modelPickerWrap}>
+                <div className={styles['model-picker-wrap']}>
                   <ModelPickerPopoverComponent
                     config={visionConfig}
                     settings={settings}
@@ -888,14 +888,14 @@ export default function VisionPageComponent() {
                   />
                 </div>
 
-                <div className={styles.controlDivider} />
+                <div className={styles['control-divider']} />
 
                 {/* Interval */}
-                <div className={styles.controlGroup}>
-                  <span className={styles.controlLabel}>Every</span>
+                <div className={styles['control-group']}>
+                  <span className={styles['control-label']}>Every</span>
                   <InputComponent
                     type="number"
-                    className={styles.intervalInput}
+                    className={styles['interval-input']}
                     value={intervalSec}
                     onChange={(
                       e: React.ChangeEvent<HTMLInputElement>,
@@ -906,15 +906,15 @@ export default function VisionPageComponent() {
                     max={300}
                     disabled={isAnalyzing}
                   />
-                  <span className={styles.unitLabel}>sec</span>
+                  <span className={styles['unit-label']}>sec</span>
                 </div>
 
-                <div className={styles.controlDivider} />
+                <div className={styles['control-divider']} />
 
                 {/* Start / Stop */}
                 {!isAnalyzing ? (
                   <button
-                    className={styles.startButton}
+                    className={styles['start-button']}
                     onClick={startAnalysis}
                     disabled={
                       !isStreaming || !settings.provider || !settings.model
@@ -931,7 +931,7 @@ export default function VisionPageComponent() {
                     Start
                   </button>
                 ) : (
-                  <button className={styles.stopButton} onClick={stopAnalysis}>
+                  <button className={styles['stop-button']} onClick={stopAnalysis}>
                     <Square size={10} />
                     Stop
                   </button>
@@ -939,9 +939,9 @@ export default function VisionPageComponent() {
               </div>
 
               {/* Prompt */}
-              <div className={styles.promptRow}>
+              <div className={styles['prompt-row']}>
                 <TextAreaComponent
-                  className={styles.promptTextarea}
+                  className={styles['prompt-textarea']}
                   value={prompt}
                   onChange={(
                     e: React.ChangeEvent<HTMLTextAreaElement>,
@@ -953,11 +953,11 @@ export default function VisionPageComponent() {
               </div>
 
               {/* Results */}
-              <div className={styles.resultsArea} ref={resultsAreaRef}>
+              <div className={styles['results-area']} ref={resultsAreaRef}>
                 {results.length === 0 ? (
-                  <div className={styles.emptyResults}>
-                    <EyeOff size={36} className={styles.emptyResultsIcon} />
-                    <span className={styles.emptyResultsText}>
+                  <div className={styles['empty-results']}>
+                    <EyeOff size={36} className={styles['empty-results-icon']} />
+                    <span className={styles['empty-results-text']}>
                       No analysis results yet.
                       <br />
                       Select a source, pick a model, and press Start.
@@ -965,27 +965,27 @@ export default function VisionPageComponent() {
                   </div>
                 ) : (
                   results.map((result) => (
-                    <div key={result.id} className={styles.resultCard}>
-                      <div className={styles.resultHeader}>
-                        <span className={styles.resultTimestamp}>
+                    <div key={result.id} className={styles['result-card']}>
+                      <div className={styles['result-header']}>
+                        <span className={styles['result-timestamp']}>
                           {result.timestamp.toLocaleTimeString()}
                         </span>
-                        <span className={styles.resultModel}>
+                        <span className={styles['result-model']}>
                           <ProviderLogo provider={result.provider} size={12} />{" "}
                           {result.model.split("/").pop()}
                         </span>
                       </div>
-                      <div className={styles.resultBody}>
+                      <div className={styles['result-body']}>
                         <img
                           src={result.thumbnail}
                           alt=""
-                          className={styles.resultThumb}
+                          className={styles['result-thumb']}
                         />
                         <span
                           className={
                             result.streaming
-                              ? styles.resultTextStreaming
-                              : styles.resultText
+                              ? styles['result-text-streaming']
+                              : styles['result-text']
                           }
                         >
                           {result.text || (result.streaming ? "" : "No output")}
@@ -997,11 +997,11 @@ export default function VisionPageComponent() {
               </div>
             </div>
           ) : (
-            <div className={styles.agentContent}>
+            <div className={styles['agent-content']}>
               {/* Controls */}
-              <div className={styles.controlsBar}>
+              <div className={styles['controls-bar']}>
                 {/* Model picker */}
-                <div className={styles.modelPickerWrap}>
+                <div className={styles['model-picker-wrap']}>
                   <ModelPickerPopoverComponent
                     config={visionConfig}
                     settings={settings}
@@ -1012,15 +1012,15 @@ export default function VisionPageComponent() {
                   />
                 </div>
 
-                <div className={styles.controlDivider} />
+                <div className={styles['control-divider']} />
 
-                <span className={styles.liveVisionStatus}>
+                <span className={styles['live-vision-status']}>
                   {isStreaming ? (
-                    <span className={styles.liveVisionStatusActive}>
+                    <span className={styles['live-vision-status-active']}>
                       <Cpu size={12} /> Feed Streaming
                     </span>
                   ) : (
-                    <span className={styles.liveVisionStatusInactive}>
+                    <span className={styles['live-vision-status-inactive']}>
                       Feed Offline
                     </span>
                   )}
@@ -1028,11 +1028,11 @@ export default function VisionPageComponent() {
               </div>
 
               {/* Chat Messages */}
-              <div className={styles.chatArea} ref={chatAreaRef}>
+              <div className={styles['chat-area']} ref={chatAreaRef}>
                 {chatMessages.length === 0 ? (
-                  <div className={styles.emptyChat}>
-                    <MessageSquare size={36} className={styles.emptyChatIcon} />
-                    <span className={styles.emptyChatText}>
+                  <div className={styles['empty-chat']}>
+                    <MessageSquare size={36} className={styles['empty-chat-icon']} />
+                    <span className={styles['empty-chat-text']}>
                       Start a video feed, select a vision model, and ask the
                       live agent a question!
                       <br />
@@ -1046,37 +1046,37 @@ export default function VisionPageComponent() {
                     return (
                       <div
                         key={message.id}
-                        className={`${styles.chatMessage} ${isUser ? styles.chatMessageUser : styles.chatMessageAssistant}`}
+                        className={`${styles['chat-message']} ${isUser ? styles['chat-message-user'] : styles['chat-message-assistant']}`}
                       >
-                        <div className={styles.chatMessageHeader}>
+                        <div className={styles['chat-message-header']}>
                           {isUser ? (
-                            <span className={styles.chatMessageSender}>
+                            <span className={styles['chat-message-sender']}>
                               You
                             </span>
                           ) : (
-                            <span className={styles.chatMessageSender}>
+                            <span className={styles['chat-message-sender']}>
                               <Bot size={13} /> Vision Agent
                             </span>
                           )}
-                          <span className={styles.chatMessageTime}>
+                          <span className={styles['chat-message-time']}>
                             {message.timestamp.toLocaleTimeString()}
                           </span>
                         </div>
 
-                        <div className={styles.chatMessageBody}>
+                        <div className={styles['chat-message-body']}>
                           {/* Assistant Thinking Segment */}
                           {!isUser && message.thinking && (
-                            <div className={styles.thinkingContainer}>
+                            <div className={styles['thinking-container']}>
                               <button
-                                className={styles.thinkingHeader}
+                                className={styles['thinking-header']}
                                 onClick={() => toggleThinking(message.id)}
                               >
                                 <Sparkles
                                   size={11}
-                                  className={styles.thinkingIcon}
+                                  className={styles['thinking-icon']}
                                 />
                                 <span>Agent Reasoning Process</span>
-                                <span className={styles.thinkingCollapseToggle}>
+                                <span className={styles['thinking-collapse-toggle']}>
                                   {expandedThinkingIds[message.id]
                                     ? "Hide"
                                     : "Show"}
@@ -1084,7 +1084,7 @@ export default function VisionPageComponent() {
                               </button>
 
                               {expandedThinkingIds[message.id] && (
-                                <div className={styles.thinkingBody}>
+                                <div className={styles['thinking-body']}>
                                   {message.thinking}
                                 </div>
                               )}
@@ -1093,20 +1093,20 @@ export default function VisionPageComponent() {
 
                           {/* Text Message Content */}
                           {message.content && (
-                            <div className={styles.messageText}>
+                            <div className={styles['message-text']}>
                               {message.content}
                             </div>
                           )}
 
                           {/* Message Images */}
                           {message.images && message.images.length > 0 && (
-                            <div className={styles.chatMessageImages}>
+                            <div className={styles['chat-message-images']}>
                               {message.images.map((imgUrl: string, idx: number) => (
                                 <img
                                   key={idx}
                                   src={PrismService.getFileUrl(imgUrl)}
                                   alt="Analyzed frame"
-                                  className={styles.chatMessageImage}
+                                  className={styles['chat-message-image']}
                                 />
                               ))}
                             </div>
@@ -1114,8 +1114,8 @@ export default function VisionPageComponent() {
 
                           {/* Streaming cursor */}
                           {!isUser && message.streaming && !message.content && (
-                            <div className={styles.agentLoadingText}>
-                              <Loader2 size={12} className={styles.spinIcon} />{" "}
+                            <div className={styles['agent-loading-text']}>
+                              <Loader2 size={12} className={styles['spin-icon']} />{" "}
                               Thinking...
                             </div>
                           )}
@@ -1124,30 +1124,30 @@ export default function VisionPageComponent() {
                           {!isUser &&
                             message.toolCalls &&
                             message.toolCalls.length > 0 && (
-                              <div className={styles.chatToolCalls}>
+                              <div className={styles['chat-tool-calls']}>
                                 {message.toolCalls.map(
                                   (toolCallItem: any, index: number) => (
                                     <div
                                       key={index}
-                                      className={styles.chatToolCallBadge}
+                                      className={styles['chat-tool-call-badge']}
                                     >
                                       <Cpu size={10} />
                                       <span>{toolCallItem.name}</span>
                                       {toolCallItem.status === "calling" && (
                                         <span
-                                          className={styles.toolStatusRunning}
+                                          className={styles['tool-status-running']}
                                         >
                                           running
                                         </span>
                                       )}
                                       {toolCallItem.status === "done" && (
-                                        <span className={styles.toolStatusDone}>
+                                        <span className={styles['tool-status-done']}>
                                           done
                                         </span>
                                       )}
                                       {toolCallItem.status === "error" && (
                                         <span
-                                          className={styles.toolStatusError}
+                                          className={styles['tool-status-error']}
                                         >
                                           error
                                         </span>
@@ -1165,9 +1165,9 @@ export default function VisionPageComponent() {
               </div>
 
               {/* Chat Input Row */}
-              <div className={styles.chatInputRow}>
+              <div className={styles['chat-input-row']}>
                 <TextAreaComponent
-                  className={styles.chatInput}
+                  className={styles['chat-input']}
                   value={chatInput}
                   onChange={(
                     e: React.ChangeEvent<HTMLTextAreaElement>,
@@ -1183,14 +1183,14 @@ export default function VisionPageComponent() {
                   minRows={2}
                 />
                 <button
-                  className={styles.sendButton}
+                  className={styles['send-button']}
                   onClick={handleSendChatMessage}
                   disabled={
                     !chatInput.trim() || isAgentStreaming || !settings.model
                   }
                 >
                   {isAgentStreaming ? (
-                    <Loader2 size={14} className={styles.spinIcon} />
+                    <Loader2 size={14} className={styles['spin-icon']} />
                   ) : (
                     <Send size={14} />
                   )}

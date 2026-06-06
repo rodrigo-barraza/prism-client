@@ -85,19 +85,19 @@ function QuestionBlock({
     previewIdx !== null ? options[previewIdx]?.preview : null;
 
   return (
-    <div className={styles.questionBlock}>
+    <div className={styles['question-block']}>
       {/* Header chip */}
-      {header && <span className={styles.headerChip}>{header}</span>}
+      {header && <span className={styles['header-chip']}>{header}</span>}
 
       {/* Question text */}
-      <div className={styles.questionText}>{question}</div>
+      <div className={styles['question-text']}>{question}</div>
 
       {/* Options + Preview side-by-side layout */}
       {isPending && options.length > 0 && (
         <div
-          className={`${styles.optionsRow} ${activePreview ? styles.withPreview : ""}`}
+          className={`${styles['options-row']} ${activePreview ? styles['with-preview'] : ""}`}
         >
-          <div className={styles.optionsList}>
+          <div className={styles['options-list']}>
             {options.map((opt: any, i: number) => {
               const isSelected = multiSelect
                 ? selected?.includes(opt.label)
@@ -107,21 +107,21 @@ function QuestionBlock({
               return (
                 <button
                   key={i}
-                  className={`${styles.optionButton} ${isSelected ? styles.optionSelected : ""} ${isFocused ? styles.optionFocused : ""}`}
+                  className={`${styles['option-button']} ${isSelected ? styles['option-selected'] : ""} ${isFocused ? styles['option-focused'] : ""}`}
                   onClick={() => handleOptionClick(opt.label)}
                   onMouseEnter={() => (opt.preview ? setPreviewIdx(i) : null)}
                   onMouseLeave={() => setPreviewIdx(null)}
                 >
                   {multiSelect && (
                     <span
-                      className={`${styles.checkbox} ${isSelected ? styles.checkboxChecked : ""}`}
+                      className={`${styles.checkbox} ${isSelected ? styles['checkbox-checked'] : ""}`}
                     >
                       {isSelected && <Check size={10} />}
                     </span>
                   )}
-                  <span className={styles.optionLabel}>{opt.label}</span>
+                  <span className={styles['option-label']}>{opt.label}</span>
                   {opt.preview && (
-                    <ChevronRight size={12} className={styles.previewHint} />
+                    <ChevronRight size={12} className={styles['preview-hint']} />
                   )}
                 </button>
               );
@@ -130,8 +130,8 @@ function QuestionBlock({
 
           {/* Preview pane — shown when hovering an option with preview content */}
           {activePreview && (
-            <div className={styles.previewPane}>
-              <pre className={styles.previewContent}>{activePreview}</pre>
+            <div className={styles['preview-pane']}>
+              <pre className={styles['preview-content']}>{activePreview}</pre>
             </div>
           )}
         </div>
@@ -139,7 +139,7 @@ function QuestionBlock({
 
       {/* Free-text input (always available) */}
       {isPending && (
-        <div className={styles.inputRow}>
+        <div className={styles['input-row']}>
           <InputComponent
             ref={inputRef}
             type="text"
@@ -156,14 +156,14 @@ function QuestionBlock({
           />
           {/* Annotation toggle */}
           <button
-            className={`${styles.annotateButton} ${showAnnotations ? styles.annotateBtnActive : ""}`}
+            className={`${styles['annotate-button']} ${showAnnotations ? styles['annotate-btn-active'] : ""}`}
             onClick={() => setShowAnnotations((v) => !v)}
             title="Add notes"
           >
             <StickyNote size={14} />
           </button>
           <button
-            className={styles.sendButton}
+            className={styles['send-button']}
             onClick={handleSubmit}
             disabled={
               !freeText.trim() &&
@@ -178,7 +178,7 @@ function QuestionBlock({
 
       {/* Annotations textarea */}
       {isPending && showAnnotations && (
-        <div className={styles.annotationsRow}>
+        <div className={styles['annotations-row']}>
           <TextAreaComponent
             placeholder="Add notes or context for this answer…"
             value={annotations}
@@ -192,9 +192,9 @@ function QuestionBlock({
 
       {/* Resolved state */}
       {!isPending && answeredWith && (
-        <div className={styles.answeredRow}>
-          <CornerDownLeft size={12} className={styles.answeredIcon} />
-          <span className={styles.answeredText}>
+        <div className={styles['answered-row']}>
+          <CornerDownLeft size={12} className={styles['answered-icon']} />
+          <span className={styles['answered-text']}>
             {Array.isArray(answeredWith)
               ? answeredWith.join(", ")
               : answeredWith}
@@ -274,7 +274,7 @@ export default function UserQuestionCardComponent({
           Agent Question{normalizedQuestions.length > 1 ? "s" : ""}
         </span>
         {normalizedQuestions.length > 1 && (
-          <span className={styles.countBadge}>
+          <span className={styles['count-badge']}>
             {Object.keys(collectedAnswers).length}/{normalizedQuestions.length}
           </span>
         )}
@@ -283,7 +283,7 @@ export default function UserQuestionCardComponent({
       {/* Context block */}
       {context && (
         <div className={styles.context}>
-          <pre className={styles.contextPre}>{context}</pre>
+          <pre className={styles['context-pre']}>{context}</pre>
         </div>
       )}
 
@@ -308,9 +308,9 @@ export default function UserQuestionCardComponent({
 
       {/* Multi-question batch submit */}
       {isPending && isMultiQuestion && (
-        <div className={styles.batchSubmit}>
+        <div className={styles['batch-submit']}>
           <button
-            className={`${styles.submitAllButton} ${allAnswered ? styles.submitAllReady : ""}`}
+            className={`${styles['submit-all-button']} ${allAnswered ? styles['submit-all-ready'] : ""}`}
             onClick={handleSubmitAll}
             disabled={!allAnswered}
           >

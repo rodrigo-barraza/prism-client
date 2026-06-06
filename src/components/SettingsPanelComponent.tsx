@@ -245,7 +245,7 @@ export default function SettingsPanel({
     );
 
     return (
-      <div className={styles.statsBadges}>
+      <div className={styles['stats-badges']}>
         <BadgeComponent
           type="messages"
           count={stats.messageCount}
@@ -253,7 +253,7 @@ export default function SettingsPanel({
         />
         <BadgeComponent type="requests" count={stats.requestCount} />
         {sessionType === "agent" && settings.agents?.harness && (
-          <span className={styles.statBadge}>
+          <span className={styles['stat-badge']}>
             <Brain size={10} />
             {formatHarnessLabel(settings.agents.harness)}
           </span>
@@ -349,13 +349,13 @@ export default function SettingsPanel({
         {/* TTFT badge — live during processing, latched after first token, static after completion */}
         {liveTtft !== null ? (
           <span
-            className={`${styles.statBadge} ${isLiveTtft ? styles.ttftBadgeLive : styles.ttftBadge}`}
+            className={`${styles['stat-badge']} ${isLiveTtft ? styles['ttft-badge-live'] : styles['ttft-badge']}`}
           >
             ⏱ {liveTtft.toFixed(isLiveTtft ? 1 : 2)}s TTFT
           </span>
         ) : (
           timeToFirstTokenValue != null && (
-            <span className={`${styles.statBadge} ${styles.ttftBadge}`}>
+            <span className={`${styles['stat-badge']} ${styles['ttft-badge']}`}>
               ⏱ {timeToFirstTokenValue.toFixed(2)}s TTFT
             </span>
           )
@@ -363,7 +363,7 @@ export default function SettingsPanel({
         <BadgeComponent type="cost" cost={estimatedLiveCost} />
         {stats.originalTotalCost > 0 &&
           stats.originalTotalCost !== estimatedLiveCost && (
-            <span className={`${styles.statBadge} ${styles.statBadgeSub}`}>
+            <span className={`${styles['stat-badge']} ${styles['stat-badge-sub']}`}>
               ({formatCost(stats.originalTotalCost)} total)
             </span>
           )}
@@ -471,8 +471,8 @@ export default function SettingsPanel({
     <>
       <div className={styles.container}>
         {sessionStats && (
-          <div className={styles.sessionStats}>
-            <div className={styles.statsHeader}>
+          <div className={styles['session-stats']}>
+            <div className={styles['stats-header']}>
               <Layers size={12} style={{ marginRight: 4 }} /> {sessionLabel}
               {showStatsTabBar && (
                 <StatsTabBarComponent
@@ -484,7 +484,7 @@ export default function SettingsPanel({
             {activeStats ? (
               renderStatsBadges(activeStats, statsTab === "all")
             ) : (
-              <div className={styles.statsBadges}>
+              <div className={styles['stats-badges']}>
                 <BadgeComponent type="messages" count={0} />
               </div>
             )}
@@ -493,22 +493,22 @@ export default function SettingsPanel({
 
         {workflows.length > 0 && (
           <div className={styles.section} style={{ marginBottom: 12 }}>
-            <div className={styles.sectionHeader}>
+            <div className={styles['section-header']}>
               <GitBranch size={12} style={{ marginRight: 4 }} /> Workflow
             </div>
             {workflows.map((wf) => (
               <a
                 key={wf._id}
                 href={`/workflows/${wf._id}`}
-                className={styles.workflowLink}
+                className={styles['workflow-link']}
               >
-                <span className={styles.modalityIcon}>
+                <span className={styles['modality-icon']}>
                   <GitBranch size={12} />
                 </span>
-                <span className={styles.modalityName}>
+                <span className={styles['modality-name']}>
                   {wf.workflowName || "Untitled Workflow"}
                 </span>
-                <span className={styles.modalityStatus}>
+                <span className={styles['modality-status']}>
                   <ExternalLink size={10} />
                 </span>
               </a>
@@ -517,15 +517,15 @@ export default function SettingsPanel({
         )}
 
         {readOnly && !hideProviderModel && (
-          <div className={styles.sectionTitle}>
+          <div className={styles['section-title']}>
             <Cpu size={16} /> Model Settings
           </div>
         )}
 
         {readOnly && !hideProviderModel && (
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Provider</label>
-            <div className={styles.readOnlyValue}>
+            <div className={styles['read-only-value']}>
               <ProviderLogo provider={settings.provider} size={16} />
               {resolveProviderLabel(settings.provider) || "-"}
             </div>
@@ -533,10 +533,10 @@ export default function SettingsPanel({
         )}
 
         {readOnly && !hideProviderModel && settings.provider && (
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Model</label>
             <div
-              className={styles.readOnlyValue}
+              className={styles['read-only-value']}
               style={{
                 flexDirection: "column",
                 alignItems: "flex-start",
@@ -576,9 +576,9 @@ export default function SettingsPanel({
             const currentVoice = settings.voice || defaultVoice;
             if (readOnly) {
               return currentVoice ? (
-                <div className={styles.formGroup}>
+                <div className={styles['form-group']}>
                   <label>Voice</label>
-                  <div className={styles.readOnlyValue}>
+                  <div className={styles['read-only-value']}>
                     <Mic size={14} /> {currentVoice}
                   </div>
                 </div>
@@ -597,7 +597,7 @@ export default function SettingsPanel({
               },
             );
             return voiceOptions.length > 0 ? (
-              <div className={styles.formGroup}>
+              <div className={styles['form-group']}>
                 <label>Voice</label>
                 <SelectComponent
                   value={currentVoice}
@@ -631,7 +631,7 @@ export default function SettingsPanel({
                 ? "none"
                 : settings.thinkingLevel || "high";
             return (
-              <div className={styles.formGroup}>
+              <div className={styles['form-group']}>
                 <label>Thinking Level</label>
                 <SelectComponent
                   value={currentValue}
@@ -661,7 +661,7 @@ export default function SettingsPanel({
               icon: <AudioLines size={18} />,
             }));
             return voiceOptions.length > 0 ? (
-              <div className={styles.formGroup}>
+              <div className={styles['form-group']}>
                 <label>Voice</label>
                 <SelectComponent
                   value={currentLiveVoice}
@@ -690,7 +690,7 @@ export default function SettingsPanel({
               })),
             ];
             return (
-              <div className={styles.formGroup}>
+              <div className={styles['form-group']}>
                 <label>Thinking Level</label>
                 <SelectComponent
                   value={
@@ -711,9 +711,9 @@ export default function SettingsPanel({
           })()}
 
         {!!(readOnly && selectedModelDef?.liveAPI && settings.liveVoice) && (
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Voice</label>
-            <div className={styles.readOnlyValue}>
+            <div className={styles['read-only-value']}>
               <AudioLines size={14} /> {settings.liveVoice}
             </div>
           </div>
@@ -732,9 +732,9 @@ export default function SettingsPanel({
               settings.liveThinkingLevel ||
               (canDisable ? "none" : selectedModelDef.thinkingLevels![0]);
             return (
-              <div className={styles.formGroup}>
+              <div className={styles['form-group']}>
                 <label>Thinking Level</label>
-                <div className={styles.readOnlyValue}>
+                <div className={styles['read-only-value']}>
                   <Brain size={14} />{" "}
                   {currentValue === "none"
                     ? "No Thinking"
@@ -759,9 +759,9 @@ export default function SettingsPanel({
                 ? "none"
                 : settings.thinkingLevel || "high";
             return (
-              <div className={styles.formGroup}>
+              <div className={styles['form-group']}>
                 <label>Thinking Level</label>
-                <div className={styles.readOnlyValue}>
+                <div className={styles['read-only-value']}>
                   <Brain size={14} />{" "}
                   {currentValue === "none"
                     ? "No Thinking"
@@ -778,9 +778,9 @@ export default function SettingsPanel({
           !selectedModelDef?.liveAPI &&
           settings.voice
         ) && (
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Voice</label>
-            <div className={styles.readOnlyValue}>
+            <div className={styles['read-only-value']}>
               <Mic size={14} /> {settings.voice}
             </div>
           </div>
@@ -789,14 +789,14 @@ export default function SettingsPanel({
         {/* -- Agent Toggles (Plan, Auto, Iterations) ---------------- */}
         {(agentToggles?.length ?? 0) > 0 && (
           <div className={styles.section}>
-            <div className={styles.sectionHeader}>Agent</div>
+            <div className={styles['section-header']}>Agent</div>
             {agentToggles?.map((toggle) => (
               <div
                 key={toggle.key}
-                className={`${styles.modalityRow} ${styles.toolToggleRow}`}
+                className={`${styles['modality-row']} ${styles['tool-toggle-row']}`}
               >
-                <span className={styles.modalityIcon}>{toggle.icon}</span>
-                <span className={styles.modalityName}>{toggle.label}</span>
+                <span className={styles['modality-icon']}>{toggle.icon}</span>
+                <span className={styles['modality-name']}>{toggle.label}</span>
                 {toggle.type === "cycle" ? (
                   <CycleButton
                     value={toggle.value ?? 0}
@@ -940,7 +940,7 @@ export default function SettingsPanel({
 
             return (
               <div className={styles.section}>
-                <div className={styles.sectionHeader}>Native Tools</div>
+                <div className={styles['section-header']}>Native Tools</div>
                 {selectedModelDef.tools.map((tool) => {
                   const toggle = TOGGLEABLE_TOOLS.has(tool)
                     ? getToolToggle(tool)
@@ -948,7 +948,7 @@ export default function SettingsPanel({
                   return (
                     <div
                       key={tool}
-                      className={`${styles.modalityRow} ${toggle ? styles.toolToggleRow : ""}`}
+                      className={`${styles['modality-row']} ${toggle ? styles['tool-toggle-row'] : ""}`}
                     >
                       <ToolBadgeComponent
                         name={getToolLabel(tool)}
@@ -958,7 +958,7 @@ export default function SettingsPanel({
                       {readOnly ? (
                         toggle ? (
                           <span
-                            className={`${styles.modalityStatus} ${toggle.checked ? styles.modalityActive : ""}`}
+                            className={`${styles['modality-status']} ${toggle.checked ? styles['modality-active'] : ""}`}
                           >
                             {tool === "Image Generation"
                               ? toggle.checked
@@ -970,7 +970,7 @@ export default function SettingsPanel({
                           </span>
                         ) : (
                           <span
-                            className={`${styles.modalityStatus} ${styles.modalityActive}`}
+                            className={`${styles['modality-status']} ${styles['modality-active']}`}
                           >
                             Supported
                           </span>
@@ -984,7 +984,7 @@ export default function SettingsPanel({
                         />
                       ) : (
                         <span
-                          className={`${styles.modalityStatus} ${styles.modalityActive}`}
+                          className={`${styles['modality-status']} ${styles['modality-active']}`}
                         >
                           Supported
                         </span>
@@ -1006,7 +1006,7 @@ export default function SettingsPanel({
             }}
           >
             <button
-              className={`${styles.systemPromptButton} ${settings.systemPrompt ? styles.systemPromptActive : ""}`}
+              className={`${styles['system-prompt-button']} ${settings.systemPrompt ? styles['system-prompt-active'] : ""}`}
               onClick={() => {
                 setIsSystemPromptOpen((previousOpenState) => !previousOpenState);
                 onSystemPromptClick?.();
@@ -1017,7 +1017,7 @@ export default function SettingsPanel({
             </button>
             {isSystemPromptOpen && (
               <TextAreaComponent
-                className={styles.systemPromptTextArea}
+                className={styles['system-prompt-text-area']}
                 value={settings.systemPrompt || ""}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                   onChange({ systemPrompt: e.target.value });
@@ -1031,11 +1031,11 @@ export default function SettingsPanel({
         )}
 
         {!!(readOnly && !hideSystemPrompt && settings.systemPrompt) && (
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>
               <Edit3 size={12} /> System Prompt
             </label>
-            <div className={styles.readOnlySystemPrompt}>
+            <div className={styles['read-only-system-prompt']}>
               {settings.systemPrompt}
             </div>
           </div>

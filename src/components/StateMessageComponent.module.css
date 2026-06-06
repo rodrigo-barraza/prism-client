@@ -9,7 +9,7 @@
   font-size: var(--font-size-base);
 }
 
-.errorBanner {
+.error-banner {
   background: var(--calculated-color-danger-subtle);
   border: 1px solid oklch(63.7% 0.2078 25.3 / 0.2);
   border-radius: var(--border-radius-md);

@@ -8,7 +8,7 @@
   );
   margin: 10px 0;
   overflow: visible;
-  animation: slideIn 0.25s ease-out;
+  animation: slide-in 0.25s ease-out;
 
   &.approved {
     border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
@@ -56,7 +56,7 @@
   }
 }
 
-.headerLeft {
+.header-left {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -68,7 +68,7 @@
   color: var(--text-primary);
 }
 
-.statusBadge {
+.status-badge {
   font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -79,7 +79,7 @@
   background: color-mix(in srgb, currentColor 8%, transparent);
 }
 
-.planContent {
+.plan-content {
   padding: 0 14px 12px;
   font-size: 0.8125rem;
   max-height: 240px;
@@ -87,7 +87,7 @@
   border-top: 1px solid var(--calculated-border-subtle);
 }
 
-.stepsProgress {
+.steps-progress {
   padding: 0 14px 12px;
   display: flex;
   flex-direction: column;
@@ -104,12 +104,12 @@
   color: var(--text-muted);
   line-height: 1.5;
 
-  &.stepDone {
+  &.step-done {
     color: var(--color-success);
   }
 }
 
-.stepCheck {
+.step-check {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -119,7 +119,7 @@
   margin-top: 1px;
 }
 
-.stepDot {
+.step-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -127,7 +127,7 @@
   opacity: 0.4;
 }
 
-.stepText {
+.step-text {
   flex: 1;
 }
 
@@ -140,7 +140,7 @@
 
 /* ── ButtonComponent overrides ─────────────────────────── */
 
-.approveButton {
+.approve-button {
   background: var(--color-success);
   border-color: var(--color-success);
 
@@ -152,7 +152,7 @@
   }
 }
 
-@keyframes slideIn {
+@keyframes slide-in {
   from {
     opacity: 0;
     transform: translateY(-6px);

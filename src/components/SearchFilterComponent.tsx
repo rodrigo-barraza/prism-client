@@ -105,10 +105,10 @@ export default function SearchFilterComponent({
       {/* -- Trigger -- */}
       <div className={styles.container} ref={containerRef}>
         <div
-          className={`${styles.trigger} ${open ? styles.triggerOpen : ""}`}
+          className={`${styles.trigger} ${open ? styles['trigger-open'] : ""}`}
           onClick={() => inputRef.current?.focus()}
         >
-          <span className={styles.triggerIcon}>
+          <span className={styles['trigger-icon']}>
             <Icon size={14} />
           </span>
           <input
@@ -123,7 +123,7 @@ export default function SearchFilterComponent({
           />
           <ChevronDown
             size={14}
-            className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}
+            className={`${styles.chevron} ${open ? styles['chevron-open'] : ""}`}
           />
         </div>
 
@@ -132,24 +132,24 @@ export default function SearchFilterComponent({
           <div className={styles.menu}>
             <button
               type="button"
-              className={`${styles.menuItem} ${!value ? styles.menuItemActive : ""}`}
+              className={`${styles['menu-item']} ${!value ? styles['menu-item-active'] : ""}`}
               onClick={() => handleSelect("")}
             >
               <span>{allLabel}</span>
-              {!value && <span className={styles.menuCheck}>✓</span>}
+              {!value && <span className={styles['menu-check']}>✓</span>}
             </button>
             {filtered.length === 0 && (
-              <div className={styles.noResults}>No matches</div>
+              <div className={styles['no-results']}>No matches</div>
             )}
             {filtered.map((opt) => (
               <button
                 key={opt}
                 type="button"
-                className={`${styles.menuItem} ${opt === value ? styles.menuItemActive : ""}`}
+                className={`${styles['menu-item']} ${opt === value ? styles['menu-item-active'] : ""}`}
                 onClick={() => handleSelect(opt)}
               >
                 <span>{opt}</span>
-                {opt === value && <span className={styles.menuCheck}>✓</span>}
+                {opt === value && <span className={styles['menu-check']}>✓</span>}
               </button>
             ))}
           </div>
@@ -158,7 +158,7 @@ export default function SearchFilterComponent({
 
       {/* -- Selected value badge -- */}
       {value && (
-        <div className={styles.badgeList}>
+        <div className={styles['badge-list']}>
           <span
             className={styles.badge}
             style={
@@ -172,10 +172,10 @@ export default function SearchFilterComponent({
             }
           >
             <Icon size={11} />
-            <span className={styles.badgeLabel}>{value}</span>
+            <span className={styles['badge-label']}>{value}</span>
             <button
               type="button"
-              className={styles.badgeRemove}
+              className={styles['badge-remove']}
               onClick={handleClear}
               aria-label={`Clear ${value}`}
             >

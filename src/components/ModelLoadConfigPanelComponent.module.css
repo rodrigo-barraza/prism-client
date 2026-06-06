@@ -1,4 +1,4 @@
-.archBadge {
+.arch-badge {
   font-size: 0.625rem;
   font-weight: 500;
   padding: 2px 7px;
@@ -10,21 +10,21 @@
 }
 
 /* ── Estimated Memory Bar ── */
-.memorySection {
+.memory-section {
   background: oklch(0.0% 0.0 0.0 / 0.25);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   padding: 14px 16px;
 }
 
-.memoryHeader {
+.memory-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
 }
 
-.memoryLabel {
+.memory-label {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -33,7 +33,7 @@
   color: var(--text-secondary);
 }
 
-.betaBadge {
+.beta-badge {
   font-size: 0.5625rem;
   font-weight: 600;
   padding: 1px 6px;
@@ -44,7 +44,7 @@
   letter-spacing: 0.5px;
 }
 
-.memoryValues {
+.memory-values {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -52,23 +52,23 @@
   color: var(--text-primary);
 }
 
-.memoryValue {
+.memory-value {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.memoryValueLabel {
+.memory-value-label {
   color: var(--text-tertiary);
   font-size: var(--font-size-sm);
 }
 
-.memoryValueNum {
+.memory-value-num {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-.memoryBarWrap {
+.memory-bar-wrap {
   height: 6px;
   background: oklch(100.0% 0.0001 263.3 / 0.06);
   border-radius: 3px;
@@ -76,7 +76,7 @@
   position: relative;
 }
 
-.memoryBarGpu {
+.memory-bar-gpu {
   position: absolute;
   top: 0;
   left: 0;
@@ -92,7 +92,7 @@
   min-width: 2px;
 }
 
-.memoryBarTotal {
+.memory-bar-total {
   position: absolute;
   top: 0;
   left: 0;
@@ -104,19 +104,19 @@
 }
 
 /* ── Slider Section ── */
-.sliderSection {
+.slider-section {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.sliderHeader {
+.slider-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.sliderLabel {
+.slider-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -125,13 +125,13 @@
   color: var(--text-primary);
 }
 
-.sliderHint {
+.slider-hint {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   margin-top: -2px;
 }
 
-.sliderInput {
+.slider-input {
   width: 100px;
   height: 30px;
   text-align: right;
@@ -153,14 +153,14 @@
 }
 
 /* ── Toggle Row ── */
-.toggleRow {
+.toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 0;
 }
 
-.toggleLabel {
+.toggle-label {
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-primary);
@@ -169,7 +169,7 @@
   gap: 6px;
 }
 
-.toggleHint {
+.toggle-hint {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   font-weight: 400;
@@ -182,7 +182,7 @@
   margin: 0;
 }
 
-.cancelButton {
+.cancel-button {
   padding: 8px 20px;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -199,7 +199,7 @@
   }
 }
 
-.loadButton {
+.load-button {
   padding: 8px 24px;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -224,21 +224,21 @@
   }
 }
 
-.loadBtnShortcut {
+.load-btn-shortcut {
   font-size: var(--font-size-xs);
   opacity: 0.6;
   font-weight: 400;
 }
 
 /* ── Model Info Row ── */
-.modelInfo {
+.model-info {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.infoBadge {
+.info-badge {
   font-size: var(--font-size-xs);
   padding: 3px 8px;
   border-radius: var(--border-radius-sm);
@@ -252,7 +252,7 @@
 }
 
 /* ── Persist Checkbox ── */
-.rememberRow {
+.remember-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -261,7 +261,7 @@
 
 
 
-.rememberLabel {
+.remember-label {
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   cursor: pointer;

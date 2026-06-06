@@ -8,7 +8,7 @@
 }
 
 .page {
-  animation: fadeIn var(--transition-normal) ease-out;
+  animation: fade-in var(--transition-normal) ease-out;
 }
 
 .search-wrapper {
@@ -304,7 +304,7 @@
   border: 1px solid var(--accent-primary);
   border-radius: var(--border-radius-md);
   overflow: hidden;
-  animation: fadeIn var(--transition-normal) ease-out;
+  animation: fade-in var(--transition-normal) ease-out;
 }
 
 .form-body {
@@ -412,7 +412,7 @@
   border-top: 1px solid oklch(62.8% 0.2577 29.2 / 0.15);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  animation: fadeIn var(--transition-fast) ease-out;
+  animation: fade-in var(--transition-fast) ease-out;
 }
 
 
@@ -427,10 +427,10 @@
   justify-content: center;
   background: oklch(0% 0 0 / 0.5);
   backdrop-filter: blur(4px);
-  animation: modalOverlayFadeIn 0.2s ease-out;
+  animation: modal-overlay-fade-in 0.2s ease-out;
 }
 
-@keyframes modalOverlayFadeIn {
+@keyframes modal-overlay-fade-in {
   from {
     opacity: 0;
   }
@@ -450,10 +450,10 @@
   border-radius: var(--border-radius-md);
   box-shadow: 0 24px 80px oklch(0% 0 0 / 0.3);
   overflow: hidden;
-  animation: modalSlideIn 0.25s cubic-bezier(0.2, 0, 0, 1);
+  animation: modal-slide-in 0.25s cubic-bezier(0.2, 0, 0, 1);
 }
 
-@keyframes modalSlideIn {
+@keyframes modal-slide-in {
   from {
     opacity: 0;
     transform: translateY(12px) scale(0.97);

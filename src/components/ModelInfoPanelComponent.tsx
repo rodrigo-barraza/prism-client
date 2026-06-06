@@ -88,9 +88,9 @@ export default function ModelInfoPanel({
     return (
       <div className={styles.container}>
         <div className={styles.section}>
-          <div className={styles.sectionHeader}>Model Info</div>
-          <div className={styles.modalityRow}>
-            <span className={styles.modalityName} style={{ opacity: 0.5 }}>
+          <div className={styles['section-header']}>Model Info</div>
+          <div className={styles['modality-row']}>
+            <span className={styles['modality-name']} style={{ opacity: 0.5 }}>
               Select a model to view details
             </span>
           </div>
@@ -112,9 +112,9 @@ export default function ModelInfoPanel({
       {/* Model Description */}
       {selectedModelDef.description && (
         <div className={styles.section} style={{ paddingBottom: 8 }}>
-          <div className={styles.sectionHeader}>Description</div>
-          <div className={styles.modalityRow}>
-            <span className={styles.modalityName} style={{ opacity: 0.8, lineHeight: 1.5, fontSize: "0.75rem" }}>
+          <div className={styles['section-header']}>Description</div>
+          <div className={styles['modality-row']}>
+            <span className={styles['modality-name']} style={{ opacity: 0.8, lineHeight: 1.5, fontSize: "0.75rem" }}>
               {selectedModelDef.description}
             </span>
           </div>
@@ -147,11 +147,11 @@ export default function ModelInfoPanel({
         if (mods.length === 0) return null;
         return (
           <div className={styles.section}>
-            <div className={styles.sectionHeader}>Modalities</div>
+            <div className={styles['section-header']}>Modalities</div>
             {mods.map((m) => (
-              <div key={m.type} className={styles.modalityRow}>
+              <div key={m.type} className={styles['modality-row']}>
                 <span
-                  className={styles.modalityIcon}
+                  className={styles['modality-icon']}
                   style={{
                     color:
                       MODALITY_COLORS[m.type as keyof typeof MODALITY_COLORS],
@@ -159,9 +159,9 @@ export default function ModelInfoPanel({
                 >
                   {iconMap[m.type]}
                 </span>
-                <span className={styles.modalityName}>{m.type}</span>
+                <span className={styles['modality-name']}>{m.type}</span>
                 <span
-                  className={`${styles.modalityStatus} ${styles.modalityActive}`}
+                  className={`${styles['modality-status']} ${styles['modality-active']}`}
                 >
                   {m.status}
                 </span>
@@ -174,22 +174,22 @@ export default function ModelInfoPanel({
       {/* Token Limits */}
       {(selectedModelDef.contextLength || selectedModelDef.maxOutputTokens) && (
         <div className={styles.section}>
-          <div className={styles.sectionHeader}>Token Limits</div>
+          <div className={styles['section-header']}>Token Limits</div>
           {selectedModelDef.contextLength && (
-            <div className={styles.modalityRow}>
-              <span className={styles.modalityName}>Context Window</span>
+            <div className={styles['modality-row']}>
+              <span className={styles['modality-name']}>Context Window</span>
               <span
-                className={`${styles.modalityStatus} ${styles.modalityActive}`}
+                className={`${styles['modality-status']} ${styles['modality-active']}`}
               >
                 {selectedModelDef.contextLength.toLocaleString()} tokens
               </span>
             </div>
           )}
           {selectedModelDef.maxOutputTokens && (
-            <div className={styles.modalityRow}>
-              <span className={styles.modalityName}>Max Output</span>
+            <div className={styles['modality-row']}>
+              <span className={styles['modality-name']}>Max Output</span>
               <span
-                className={`${styles.modalityStatus} ${styles.modalityActive}`}
+                className={`${styles['modality-status']} ${styles['modality-active']}`}
               >
                 {selectedModelDef.maxOutputTokens.toLocaleString()} tokens
               </span>
@@ -243,15 +243,15 @@ export default function ModelInfoPanel({
           }));
         return entries.length > 0 ? (
           <div className={styles.section}>
-            <div className={styles.sectionHeader}>Pricing</div>
+            <div className={styles['section-header']}>Pricing</div>
             {entries.map((e) => (
-              <div key={e.label} className={styles.modalityRow}>
-                <span className={styles.modalityIcon}>
+              <div key={e.label} className={styles['modality-row']}>
+                <span className={styles['modality-icon']}>
                   <DollarSign size={12} />
                 </span>
-                <span className={styles.modalityName}>{e.label}</span>
+                <span className={styles['modality-name']}>{e.label}</span>
                 <span
-                  className={`${styles.modalityStatus} ${styles.pricingValue}`}
+                  className={`${styles['modality-status']} ${styles['pricing-value']}`}
                 >
                   ${e.value} {e.unit}
                 </span>
@@ -281,17 +281,17 @@ export default function ModelInfoPanel({
         if (entries.length === 0) return null;
         return (
           <div className={styles.section}>
-            <div className={styles.sectionHeader}>Arena Scores</div>
+            <div className={styles['section-header']}>Arena Scores</div>
             {entries.map(([key, value]) => (
-              <div key={key} className={styles.modalityRow}>
-                <span className={styles.modalityIcon}>
+              <div key={key} className={styles['modality-row']}>
+                <span className={styles['modality-icon']}>
                   <Brain size={12} />
                 </span>
-                <span className={styles.modalityName}>
+                <span className={styles['modality-name']}>
                   {arenaLabels[key] || key}
                 </span>
                 <span
-                  className={`${styles.modalityStatus} ${styles.arenaValue}`}
+                  className={`${styles['modality-status']} ${styles['arena-value']}`}
                 >
                   {value}
                 </span>

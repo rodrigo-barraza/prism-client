@@ -413,7 +413,7 @@ export default function DashboardPage() {
       <AdminFiltersCardComponent />
       <ErrorMessage message={error} />
       {/* -- Resource Navigation -- */}
-      <div className={styles.resourceNav}>
+      <div className={styles['resource-nav']}>
         <ResourceCardComponent
           href="#"
           icon={Box}
@@ -478,7 +478,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Row */}
-      <div className={styles.statsGrid}>
+      <div className={styles['stats-grid']}>
         <StatsCard
           label="Total Tokens"
           value={
@@ -557,9 +557,9 @@ export default function DashboardPage() {
       </div>
 
       {/* -- Charts Row -- */}
-      <div className={styles.chartsRow}>
+      <div className={styles['charts-row']}>
         {/* Requests Timeline — Tabbed Chart */}
-        <div className={styles.chartCard}>
+        <div className={styles['chart-card']}>
           <TimelineChartComponent
             data={chartData}
             loading={loading}
@@ -572,7 +572,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Distribution — Tabbed Pie Chart */}
-        <div className={styles.chartCard}>
+        <div className={styles['chart-card']}>
           <DistributionChartComponent
             projectStats={projectStats}
             providerStats={providerData}
@@ -634,7 +634,7 @@ export default function DashboardPage() {
             }}
           >
             Recent Traces
-            <Link href="/admin/traces" className={styles.sectionAction}>
+            <Link href="/admin/traces" className={styles['section-action']}>
               View all →
             </Link>
           </span>
@@ -655,7 +655,7 @@ export default function DashboardPage() {
             }}
           >
             Conversations
-            <Link href="/admin/chat" className={styles.sectionAction}>
+            <Link href="/admin/chat" className={styles['section-action']}>
               View all →
             </Link>
           </span>
@@ -677,7 +677,7 @@ export default function DashboardPage() {
             }}
           >
             Recent Requests
-            <Link href="/admin/requests" className={styles.sectionAction}>
+            <Link href="/admin/requests" className={styles['section-action']}>
               View all →
             </Link>
           </span>

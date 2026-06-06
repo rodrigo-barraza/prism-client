@@ -12,7 +12,7 @@
     var(--background-surface)
   );
   padding: 14px 16px;
-  animation: slideIn 0.25s ease-out;
+  animation: slide-in 0.25s ease-out;
 
   &.resolved {
     opacity: 0.6;
@@ -43,7 +43,7 @@
   letter-spacing: 0.5px;
 }
 
-.countBadge {
+.count-badge {
   font-size: 0.6875rem;
   font-weight: 600;
   padding: 2px 7px;
@@ -62,7 +62,7 @@
   border: 1px solid var(--calculated-border-subtle);
 }
 
-.contextPre {
+.context-pre {
   margin: 0;
   font-size: 11.5px;
   line-height: 1.45;
@@ -74,7 +74,7 @@
 
 /* ─── Question block ──────────────────────────────────── */
 
-.questionBlock {
+.question-block {
   padding: 10px 0;
   border-top: 1px solid var(--calculated-border-subtle);
 
@@ -84,7 +84,7 @@
   }
 }
 
-.headerChip {
+.header-chip {
   display: inline-block;
   font-size: 0.625rem;
   font-weight: 600;
@@ -98,7 +98,7 @@
   background: color-mix(in srgb, var(--color-info) 8%, transparent);
 }
 
-.questionText {
+.question-text {
   font-size: 0.875rem;
   line-height: 1.5;
   color: var(--text-primary);
@@ -108,18 +108,18 @@
 
 /* ─── Options + Preview layout ────────────────────────── */
 
-.optionsRow {
+.options-row {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
 
-  &.withPreview {
+  &.with-preview {
     /* Side-by-side when preview is visible */
     align-items: flex-start;
   }
 }
 
-.optionsList {
+.options-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -127,7 +127,7 @@
   min-width: 0;
 }
 
-.optionButton {
+.option-button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -148,14 +148,14 @@
     transform: translateX(2px);
   }
 
-  &.optionSelected {
+  &.option-selected {
     background: color-mix(in srgb, var(--color-info) 18%, transparent);
     border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
     color: var(--color-info);
     font-weight: 500;
   }
 
-  &.optionFocused {
+  &.option-focused {
     border-color: color-mix(in srgb, var(--color-info) 60%, transparent);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-info) 15%, transparent);
   }
@@ -174,25 +174,25 @@
   flex-shrink: 0;
   transition: all 0.15s ease;
 
-  &.checkboxChecked {
+  &.checkbox-checked {
     background: var(--color-info);
     border-color: var(--color-info);
     color: var(--background-base);
   }
 }
 
-.optionLabel {
+.option-label {
   flex: 1;
   min-width: 0;
 }
 
-.previewHint {
+.preview-hint {
   color: var(--text-muted);
   flex-shrink: 0;
   opacity: 0.5;
   transition: opacity 0.15s ease;
 
-  .optionFocused & {
+  .option-focused & {
     opacity: 1;
     color: var(--color-info);
   }
@@ -200,7 +200,7 @@
 
 /* ─── Preview pane ────────────────────────────────────── */
 
-.previewPane {
+.preview-pane {
   flex: 1;
   min-width: 200px;
   max-width: 50%;
@@ -210,10 +210,10 @@
   border-radius: 6px;
   border: 1px solid color-mix(in srgb, var(--color-info) 20%, transparent);
   background: var(--background-elevated);
-  animation: fadeIn 0.15s ease-out;
+  animation: fade-in 0.15s ease-out;
 }
 
-.previewContent {
+.preview-content {
   margin: 0;
   font-size: 11.5px;
   line-height: 1.5;
@@ -225,7 +225,7 @@
 
 /* ─── Free-text input ─────────────────────────────────── */
 
-.inputRow {
+.input-row {
   display: flex;
   gap: 6px;
   align-items: center;
@@ -252,7 +252,7 @@
   }
 }
 
-.sendButton {
+.send-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -276,7 +276,7 @@
 
 /* ─── Annotations toggle + textarea ───────────────────── */
 
-.annotateButton {
+.annotate-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -293,19 +293,19 @@
     background: var(--background-elevated);
   }
 
-  &.annotateBtnActive {
+  &.annotate-btn-active {
     color: var(--color-info);
     border-color: color-mix(in srgb, var(--color-info) 30%, transparent);
     background: color-mix(in srgb, var(--color-info) 8%, transparent);
   }
 }
 
-.annotationsRow {
+.annotations-row {
   margin-top: 6px;
-  animation: fadeIn 0.15s ease-out;
+  animation: fade-in 0.15s ease-out;
 }
 
-.annotationsInput {
+.annotations-input {
   width: 100%;
   padding: 7px 10px;
   border-radius: 6px;
@@ -330,19 +330,19 @@
 
 /* ─── Answered (resolved) state ───────────────────────── */
 
-.answeredRow {
+.answered-row {
   display: flex;
   align-items: center;
   gap: 6px;
   padding-top: 4px;
 }
 
-.answeredIcon {
+.answered-icon {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.answeredText {
+.answered-text {
   font-size: 0.8125rem;
   color: var(--text-secondary);
   font-style: italic;
@@ -350,13 +350,13 @@
 
 /* ─── Batch submit (multi-question) ───────────────────── */
 
-.batchSubmit {
+.batch-submit {
   padding-top: 10px;
   border-top: 1px solid var(--calculated-border-subtle);
   margin-top: 4px;
 }
 
-.submitAllButton {
+.submit-all-button {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -372,7 +372,7 @@
   transition: all 0.2s ease;
   justify-content: center;
 
-  &.submitAllReady {
+  &.submit-all-ready {
     cursor: pointer;
     background: color-mix(in srgb, var(--color-info) 15%, transparent);
     border-color: color-mix(in srgb, var(--color-info) 35%, transparent);
@@ -393,7 +393,7 @@
 
 /* ─── Animations ──────────────────────────────────────── */
 
-@keyframes slideIn {
+@keyframes slide-in {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -404,7 +404,7 @@
   }
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
   }

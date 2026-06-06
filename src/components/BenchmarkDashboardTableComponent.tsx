@@ -48,7 +48,7 @@ export default function BenchmarkDashboardTableComponent({
         row.model === selectedModel.model &&
         row.provider === selectedModel.provider
       ) {
-        return styles.selectedRow;
+        return styles['selected-row'];
       }
       return "";
     },

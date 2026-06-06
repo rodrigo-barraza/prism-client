@@ -20,7 +20,7 @@
 
 /* ── Inner gradient surface ────────────────────────── */
 
-.badgeInner {
+.badge-inner {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,11 +32,11 @@
 
 /* ── Per-agent gradient defaults ────────────────────── */
 
-.badgeInner[data-agent-identifier="CODING"] {
+.badge-inner[data-agent-identifier="CODING"] {
   background: linear-gradient(135deg, var(--color-indigo) 0%, oklch(68.0% 0.1584 276.9) 100%);
 }
 
-.badgeInner[data-agent-identifier="LUPOS"] {
+.badge-inner[data-agent-identifier="LUPOS"] {
   background: linear-gradient(
     135deg,
     var(--color-danger) 0%,
@@ -44,7 +44,7 @@
   );
 }
 
-.badgeInner[data-agent-identifier="STICKERS"] {
+.badge-inner[data-agent-identifier="STICKERS"] {
   background: linear-gradient(
     135deg,
     var(--color-emerald) 0%,
@@ -52,7 +52,7 @@
   );
 }
 
-.badgeInner[data-agent-identifier="DIGEST"] {
+.badge-inner[data-agent-identifier="DIGEST"] {
   background: linear-gradient(
     135deg,
     var(--color-warning) 0%,
@@ -60,11 +60,11 @@
   );
 }
 
-.badgeInner[data-agent-identifier="LIGHTS"] {
+.badge-inner[data-agent-identifier="LIGHTS"] {
   background: linear-gradient(135deg, oklch(79.5% 0.1616 86.0) 0%, var(--color-warning) 100%);
 }
 
-.badgeInner[data-agent-identifier="OOG"] {
+.badge-inner[data-agent-identifier="OOG"] {
   background: linear-gradient(
     135deg,
     var(--text-muted) 0%,
@@ -72,16 +72,16 @@
   );
 }
 
-.badgeInner[data-agent-identifier="OMNI"] {
+.badge-inner[data-agent-identifier="OMNI"] {
   background: linear-gradient(135deg, oklch(50.5% 0.1905 27.5) 0%, oklch(57.7% 0.2151 27.3) 100%);
 }
 
-.badgeInner[data-agent-identifier="IMAGE"] {
+.badge-inner[data-agent-identifier="IMAGE"] {
   background: linear-gradient(135deg, oklch(65.6% 0.2118 354.3) 0%, oklch(60.6% 0.219 292.7) 100%);
 }
 
 /* Custom agents — fallback gradient for any agent not in the hardcoded list */
-.badgeInner:not([data-agent-identifier="CODING"]):not(
+.badge-inner:not([data-agent-identifier="CODING"]):not(
     [data-agent-identifier="OMNI"]
   ):not([data-agent-identifier="LUPOS"]):not(
     [data-agent-identifier="STICKERS"]
@@ -96,23 +96,23 @@
 }
 
 /* Avatar images must not carry their own border-radius */
-.badgeInner img {
+.badge-inner img {
   border-radius: 0;
 }
 
-.badgeInner[data-agent-identifier="LUPOS"] img {
+.badge-inner[data-agent-identifier="LUPOS"] img {
   border-radius: 0 !important;
 }
 
 /* Ensure SVGs fill the badge space */
-.badgeInner svg {
+.badge-inner svg {
   display: block;
   flex-shrink: 0;
 }
 
 /* ── 3D Coin-spin animation ───────────────────────── */
 
-.coinWrap {
+.coin-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -122,18 +122,18 @@
   transition: scale 800ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.coinWrap:has([data-is-typing-state="true"]) {
+.coin-wrap:has([data-is-typing-state="true"]) {
   scale: 1.1;
   transition: scale 150ms ease-out;
 }
 
-.coinCanvas {
+.coin-canvas {
   display: block;
   border-radius: 0;
   overflow: visible;
 }
 
-.hiddenIcon {
+.hidden-icon {
   position: absolute;
   left: -9999px;
   top: -9999px;

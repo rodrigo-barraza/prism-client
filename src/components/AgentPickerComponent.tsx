@@ -238,7 +238,7 @@ export default function AgentPickerComponent({
 
   // Build trigger icon: in add-mode use Bot icon, otherwise the agent badge
   const triggerIcon = addMode ? (
-    <Bot size={14} className={styles.triggerAddIcon} />
+    <Bot size={14} className={styles['trigger-add-icon']} />
   ) : (
     <BadgeComponent
       type="agent"
@@ -255,7 +255,7 @@ export default function AgentPickerComponent({
   // Build tooltip content for default mode (not add-mode, not disabled, not agentless)
   const triggerTooltipContent =
     !addMode && !disabled && activeAgent?.id !== "NONE" ? (
-      <div className={styles.tooltipCapabilities}>
+      <div className={styles['tooltip-capabilities']}>
         <ToolBadgeComponent
           name="Tool Calling"
           count={activeAgent?.toolCount}
@@ -267,7 +267,7 @@ export default function AgentPickerComponent({
 
   // Resolve trigger class based on mode
   const triggerClassName = addMode
-    ? `${styles.triggerAdd} ${isPopoverOpen ? styles.triggerAddOpen : ""} ${addCount > 0 ? styles.triggerAddActive : ""}`
+    ? `${styles['trigger-add']} ${isPopoverOpen ? styles['trigger-add-open'] : ""} ${addCount > 0 ? styles['trigger-add-active'] : ""}`
     : undefined;
 
   const triggerContent = (
@@ -311,7 +311,7 @@ export default function AgentPickerComponent({
                     return (
                       <button
                         key={agent.id}
-                        className={styles.agentItem}
+                        className={styles['agent-item']}
                         data-is-active-state={isActive}
                         data-is-highlighted-state={isHighlighted}
                         role="option"
@@ -347,11 +347,11 @@ export default function AgentPickerComponent({
                           agent={agent}
                           animation={shouldAnimate}
                         />
-                        <div className={styles.agentInfo}>
-                          <div className={styles.agentName}>{agent.name}</div>
-                          <div className={styles.agentMeta}>
+                        <div className={styles['agent-info']}>
+                          <div className={styles['agent-name']}>{agent.name}</div>
+                          <div className={styles['agent-meta']}>
                             {agent.id !== "NONE" && (
-                              <span className={styles.toolBadge}>
+                              <span className={styles['tool-badge']}>
                                 <Wrench size={9} />
                                 {agent.toolCount === -1
                                   ? "All tools"
@@ -361,14 +361,14 @@ export default function AgentPickerComponent({
                           </div>
                         </div>
                         {addMode ? (
-                          <span className={styles.addButton}>
+                          <span className={styles['add-button']}>
                             <Plus size={12} />
                             Add
                           </span>
                         ) : isActive ? (
                           <Check
                             size={14}
-                            className={styles.activeCheck}
+                            className={styles['active-check']}
                             style={agent.color ? { color: agent.color } : undefined}
                           />
                         ) : null}

@@ -242,11 +242,11 @@
 }
 
 .spinner-icon-element {
-  animation: rotateSpinner 800ms linear infinite;
+  animation: rotate-spinner 800ms linear infinite;
   margin-inline-end: 8px;
 }
 
-@keyframes rotateSpinner {
+@keyframes rotate-spinner {
   100% {
     transform: rotate(360deg);
   }
@@ -344,7 +344,7 @@
   font-size: 13px;
   font-weight: 550;
   margin-block-end: 24px;
-  animation: slideDownIn var(--transition-duration-fast) var(--transition-timing-cubic);
+  animation: slide-down-in var(--transition-duration-fast) var(--transition-timing-cubic);
 }
 
 .success-message-alert {
@@ -360,10 +360,10 @@
   font-size: 13px;
   font-weight: 550;
   margin-block-end: 24px;
-  animation: slideDownIn var(--transition-duration-fast) var(--transition-timing-cubic);
+  animation: slide-down-in var(--transition-duration-fast) var(--transition-timing-cubic);
 }
 
-@keyframes slideDownIn {
+@keyframes slide-down-in {
   from {
     opacity: 0;
     transform: translate3d(0, -8px, 0);

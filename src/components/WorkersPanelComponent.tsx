@@ -169,12 +169,12 @@ export default function WorkersPanel({
     <div className={styles.container}>
       {/* -- Empty ------------------------------------------- */}
       {workers.length === 0 && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-icon']}>
             <Users size={24} />
           </div>
-          <div className={styles.emptyTitle}>No workers</div>
-          <div className={styles.emptySubtitle}>
+          <div className={styles['empty-title']}>No workers</div>
+          <div className={styles['empty-subtitle']}>
             Workers are spawned by the coordinator when it decomposes tasks into
             parallel sub-agents. Use the
             <strong> team_create</strong> tool to create workers.
@@ -196,21 +196,21 @@ export default function WorkersPanel({
         return (
           <div
             key={worker.agentId}
-            className={`${styles.workerCard} ${cardClass ? styles[cardClass] : ""}`}
+            className={`${styles['worker-card']} ${cardClass ? styles[cardClass] : ""}`}
           >
             {/* -- Title row (HistoryItem-style) --------------- */}
-            <div className={styles.titleRow}>
-              <span className={styles.agentBadge}>
+            <div className={styles['title-row']}>
+              <span className={styles['agent-badge']}>
                 Agent {getAgentNumber(worker.agentId)}
               </span>
-              <span className={`${styles.workerStatus} ${styles[statusClass]}`}>
+              <span className={`${styles['worker-status']} ${styles[statusClass]}`}>
                 {statusLabel}
               </span>
             </div>
 
             {/* Description */}
             {worker.description && (
-              <div className={styles.workerDescription}>
+              <div className={styles['worker-description']}>
                 {worker.description}
               </div>
             )}
@@ -219,7 +219,7 @@ export default function WorkersPanel({
             <div className={styles.meta}>
               {worker.durationMs > 0 && (
                 <span
-                  className={`${styles.metaItem} ${isLive ? styles.durationLive : ""}`}
+                  className={`${styles['meta-item']} ${isLive ? styles['duration-live'] : ""}`}
                 >
                   <Clock size={10} />
                   {formatDuration(worker.durationMs)}
@@ -239,14 +239,14 @@ export default function WorkersPanel({
                   worker.toolCallCount || 0,
                 );
                 return toolCount > 0 ? (
-                  <span className={styles.metaItem}>
+                  <span className={styles['meta-item']}>
                     <Wrench size={10} />
                     {toolCount} tool{toolCount !== 1 ? "s" : ""}
                   </span>
                 ) : null;
               })()}
               {worker.branchName && (
-                <span className={styles.metaItem}>
+                <span className={styles['meta-item']}>
                   <GitBranch size={10} />
                   {worker.branchName}
                 </span>
@@ -260,7 +260,7 @@ export default function WorkersPanel({
                 models={[worker.resolvedModel.replace(/-\d{8}$/, "")]}
                 provider={worker.provider}
                 mini
-                className={styles.modelBadge}
+                className={styles['model-badge']}
               />
             )}
 
@@ -271,16 +271,16 @@ export default function WorkersPanel({
 
             {/* -- Live tool activity (SSE-driven) -------------- */}
             {isLive && workerToolActivity[worker.agentId]?.currentTool && (
-              <div className={styles.liveActivity}>
-                <span className={styles.liveDot} />
+              <div className={styles['live-activity']}>
+                <span className={styles['live-dot']} />
                 <Wrench size={9} />
-                <span className={styles.liveToolName}>
+                <span className={styles['live-tool-name']}>
                   {renderToolName(
                     workerToolActivity[worker.agentId].currentTool,
                   )}
                 </span>
                 {workerToolActivity[worker.agentId].iteration > 0 && (
-                  <span className={styles.liveIteration}>
+                  <span className={styles['live-iteration']}>
                     iter {workerToolActivity[worker.agentId].iteration}
                   </span>
                 )}
@@ -289,9 +289,9 @@ export default function WorkersPanel({
 
             {/* Files */}
             {worker.files?.length > 0 && (
-              <div className={styles.workerFiles}>
+              <div className={styles['worker-files']}>
                 {worker.files.map((filePath: string, fileIndex: number) => (
-                  <span key={fileIndex} className={styles.workerFile} title={filePath}>
+                  <span key={fileIndex} className={styles['worker-file']} title={filePath}>
                     <FileCode
                       size={9}
                       style={{

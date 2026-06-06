@@ -25,7 +25,7 @@
   flex-shrink: 0;
 }
 
-.headerTitle {
+.header-title {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-secondary);
@@ -35,7 +35,7 @@
 
 /* ── Empty State ────────────────────────────────────────────── */
 
-.emptyState {
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,7 +45,7 @@
   text-align: center;
 }
 
-.emptyIcon {
+.empty-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,13 +60,13 @@
   color: var(--panel-accent, var(--color-violet));
 }
 
-.emptyTitle {
+.empty-title {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.emptySubtitle {
+.empty-subtitle {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   line-height: 1.5;
@@ -75,7 +75,7 @@
 
 /* ── Loading ────────────────────────────────────────────────── */
 
-.isLoadingState {
+.is-loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,7 +87,7 @@
 
 /* ── Confirm Delete Row ─────────────────────────────────────── */
 
-.confirmButton {
+.confirm-button {
   padding: 3px 10px;
   font-size: 0.625rem;
   font-weight: 600;

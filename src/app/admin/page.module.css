@@ -2,24 +2,24 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  animation: fadeIn var(--transition-normal) ease-out;
+  animation: fade-in var(--transition-normal) ease-out;
 }
 
 /* ── Resource Navigation Strip ── */
-.resourceNav {
+.resource-nav {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   gap: 12px;
 }
 
 /* Stats grid */
-.statsGrid {
+.stats-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 16px;
 }
 
-.sectionAction {
+.section-action {
   font-size: 0.8125rem;
   color: var(--accent-primary);
   cursor: pointer;
@@ -33,13 +33,13 @@
 }
 
 /* Charts row */
-.chartsRow {
+.charts-row {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 16px;
 }
 
-.chartCard {
+.chart-card {
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-md);
@@ -48,33 +48,33 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
-  .resourceNav {
+  .resource-nav {
     grid-template-columns: repeat(4, 1fr);
   }
 
-  .statsGrid {
+  .stats-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media (max-width: 900px) {
-  .chartsRow {
+  .charts-row {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 767px) {
-  .resourceNav {
+  .resource-nav {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .timeToolbar {
+  .time-toolbar {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
 
-  .statsGrid {
+  .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }

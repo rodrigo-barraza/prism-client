@@ -60,16 +60,16 @@ export default function ChatPreviewComponent({
     const showHeader = hasSystemContextMessage && !mini;
 
     return (
-      <div className={styles.chatPreviewContainer}>
+      <div className={styles['chat-preview-container']}>
         {showHeader && (
-          <div className={styles.chatPreviewHeader}>
-            <span className={styles.chatPreviewHeaderTitle}>Chat Preview</span>
-            <div className={styles.debugToggleContainer}>
+          <div className={styles['chat-preview-header']}>
+            <span className={styles['chat-preview-header-title']}>Chat Preview</span>
+            <div className={styles['debug-toggle-container']}>
               <ButtonComponent
                 variant={!showRaw ? "tonal" : "text"}
                 size="small"
                 onClick={() => setShowRaw(false)}
-                className={styles.debugToggleButton}
+                className={styles['debug-toggle-button']}
               >
                 Clean
               </ButtonComponent>
@@ -77,7 +77,7 @@ export default function ChatPreviewComponent({
                 variant={showRaw ? "tonal" : "text"}
                 size="small"
                 onClick={() => setShowRaw(true)}
-                className={styles.debugToggleButton}
+                className={styles['debug-toggle-button']}
               >
                 Raw
               </ButtonComponent>
@@ -85,7 +85,7 @@ export default function ChatPreviewComponent({
           </div>
         )}
         <div
-          className={`${styles.chatPreview} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}
+          className={`${styles['chat-preview']} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}
           style={maxHeight ? { maxHeight } : undefined}
         >
           <MessageList
@@ -107,22 +107,22 @@ export default function ChatPreviewComponent({
 
   return (
     <div
-      className={`${styles.promptPreview} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}
+      className={`${styles['prompt-preview']} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}
     >
       {hasSystem && (
-        <div className={`${styles.promptBlock} ${styles.promptBlockSystem}`}>
-          <span className={`${styles.promptLabel} ${styles.promptLabelSystem}`}>
+        <div className={`${styles['prompt-block']} ${styles['prompt-block-system']}`}>
+          <span className={`${styles['prompt-label']} ${styles['prompt-label-system']}`}>
             System Prompt
           </span>
-          <span className={styles.promptContent}>{systemPrompt}</span>
+          <span className={styles['prompt-content']}>{systemPrompt}</span>
         </div>
       )}
       {hasUser && (
-        <div className={`${styles.promptBlock} ${styles.promptBlockUser}`}>
-          <span className={`${styles.promptLabel} ${styles.promptLabelUser}`}>
+        <div className={`${styles['prompt-block']} ${styles['prompt-block-user']}`}>
+          <span className={`${styles['prompt-label']} ${styles['prompt-label-user']}`}>
             User Prompt
           </span>
-          <span className={styles.promptContent}>{userPrompt}</span>
+          <span className={styles['prompt-content']}>{userPrompt}</span>
         </div>
       )}
     </div>

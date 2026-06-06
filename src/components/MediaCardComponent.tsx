@@ -41,7 +41,7 @@ function MediaTypeIcon({ type, size = 32 }: { type: string; size?: number }) {
 function OriginBadge({ origin }: { origin: string }) {
   return (
     <span
-      className={`${styles.originBadge} ${origin === "ai" ? styles.originAi : styles.originUser}`}
+      className={`${styles['origin-badge']} ${origin === "ai" ? styles['origin-ai'] : styles['origin-user']}`}
     >
       {origin === "ai" ? (
         <>
@@ -97,7 +97,7 @@ export default function MediaCardComponent({
     <div className={cardClasses}>
       {showFavorite && (
         <button
-          className={`${styles.favoriteButton} ${isFavorite ? styles.favoriteButtonActive : ""}`}
+          className={`${styles['favorite-button']} ${isFavorite ? styles['favorite-button-active'] : ""}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onFavorite?.();
@@ -114,7 +114,7 @@ export default function MediaCardComponent({
           <img
             src={resolvedUrl}
             alt=""
-            className={styles.previewImage}
+            className={styles['preview-image']}
             loading="lazy"
             onClick={() => onImageClick?.(resolvedUrl)}
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -133,7 +133,7 @@ export default function MediaCardComponent({
         ) : mediaItem.mediaType === "video" && resolvedUrl ? (
           <video
             src={resolvedUrl}
-            className={styles.previewVideo}
+            className={styles['preview-video']}
             muted
             preload="metadata"
             onMouseEnter={(e: React.MouseEvent<HTMLVideoElement>) => {
@@ -148,7 +148,7 @@ export default function MediaCardComponent({
           />
         ) : mediaItem.mediaType === "audio" && resolvedUrl ? (
           <div
-            className={styles.previewAudio}
+            className={styles['preview-audio']}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             <AudioPlayerRecorderComponent sourceUrl={resolvedUrl} square />
@@ -156,7 +156,7 @@ export default function MediaCardComponent({
         ) : mediaItem.mediaType === "pdf" && resolvedUrl ? (
           <iframe
             src={resolvedUrl}
-            className={styles.previewPdf}
+            className={styles['preview-pdf']}
             title="PDF preview"
           />
         ) : (
@@ -176,7 +176,7 @@ export default function MediaCardComponent({
           {mediaItem.convId && mediaItem.convTitle && (
             <Link
               href={`${convBasePath}/${mediaItem.convId}`}
-              className={styles.conversationLink}
+              className={styles['conversation-link']}
               title={mediaItem.convTitle}
             >
               <ExternalLink size={10} />

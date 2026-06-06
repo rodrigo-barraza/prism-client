@@ -231,7 +231,7 @@ export default function TracesPage() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <div className={styles.isLoadingState}>
+        <div className={styles['is-loading-state']}>
           <PanelLoadingSpinner size="large" />
         </div>
       </div>
@@ -289,18 +289,18 @@ export default function TracesPage() {
       >
         {selectedRequest && (
           <>
-            <div className={styles.detailSection}>
-              <div className={styles.detailSectionTitle}>Associations</div>
+            <div className={styles['detail-section']}>
+              <div className={styles['detail-section-title']}>Associations</div>
               {loadingAssociations ? (
                 <span style={{ color: "var(--text-muted)" }}>Loading…</span>
               ) : (
-                <div className={styles.associationGrid}>
-                  <div className={styles.associationGroup}>
-                    <span className={styles.associationGroupLabel}>
+                <div className={styles['association-grid']}>
+                  <div className={styles['association-group']}>
+                    <span className={styles['association-group-label']}>
                       <MessageSquare size={12} /> Conversations
                     </span>
                     {(associations?.conversations?.length ?? 0) > 0 ? (
-                      <div className={styles.associationList}>
+                      <div className={styles['association-list']}>
                         {associations?.conversations?.map(
                           (conversation: TraceConversation) => (
                             <HistoryItemComponent
@@ -336,15 +336,15 @@ export default function TracesPage() {
                         )}
                       </div>
                     ) : (
-                      <span className={styles.associationEmpty}>—</span>
+                      <span className={styles['association-empty']}>—</span>
                     )}
                   </div>
-                  <div className={styles.associationGroup}>
-                    <span className={styles.associationGroupLabel}>
+                  <div className={styles['association-group']}>
+                    <span className={styles['association-group-label']}>
                       <GitBranch size={12} /> Workflows
                     </span>
                     {(associations?.workflows?.length ?? 0) > 0 ? (
-                      <div className={styles.associationList}>
+                      <div className={styles['association-list']}>
                         {associations?.workflows?.map((workflow: TraceWorkflow) => (
                           <HistoryItemComponent
                             key={workflow.id}
@@ -370,15 +370,15 @@ export default function TracesPage() {
                         ))}
                       </div>
                     ) : (
-                      <span className={styles.associationEmpty}>—</span>
+                      <span className={styles['association-empty']}>—</span>
                     )}
                   </div>
-                  <div className={styles.associationGroup}>
-                    <span className={styles.associationGroupLabel}>
+                  <div className={styles['association-group']}>
+                    <span className={styles['association-group-label']}>
                       <FolderOpen size={12} /> Traces
                     </span>
                     {(associations?.traces?.length ?? 0) > 0 ? (
-                      <div className={styles.associationList}>
+                      <div className={styles['association-list']}>
                         {associations?.traces?.map((s: TraceEntry) => (
                           <HistoryItemComponent
                             key={s.id}
@@ -405,7 +405,7 @@ export default function TracesPage() {
                         ))}
                       </div>
                     ) : (
-                      <span className={styles.associationEmpty}>—</span>
+                      <span className={styles['association-empty']}>—</span>
                     )}
                   </div>
                 </div>
@@ -417,9 +417,9 @@ export default function TracesPage() {
               );
               if (!mediaAssets.length) return null;
               return (
-                <div className={styles.detailSection}>
-                  <div className={styles.detailSectionTitle}>Media Assets</div>
-                  <div className={styles.mediaGrid}>
+                <div className={styles['detail-section']}>
+                  <div className={styles['detail-section-title']}>Media Assets</div>
+                  <div className={styles['media-grid']}>
                     {mediaAssets.map((asset, index: number) => (
                       <MediaCardComponent
                         key={index}
@@ -452,8 +452,8 @@ export default function TracesPage() {
               );
               if (!chat) return null;
               return (
-                <div className={styles.detailSection}>
-                  <div className={styles.detailSectionTitle}>Chat Preview</div>
+                <div className={styles['detail-section']}>
+                  <div className={styles['detail-section-title']}>Chat Preview</div>
                   <ChatPreviewComponent
                     messages={chat.messages}
                     systemPrompt={chat.systemPrompt}
@@ -463,7 +463,7 @@ export default function TracesPage() {
               );
             })()}
             {selectedRequest.requestPayload && (
-              <div className={styles.detailSection}>
+              <div className={styles['detail-section']}>
                 <JsonViewerComponent
                   data={selectedRequest.requestPayload}
                   label="Request Payload"
@@ -472,7 +472,7 @@ export default function TracesPage() {
               </div>
             )}
             {selectedRequest.responsePayload && (
-              <div className={styles.detailSection}>
+              <div className={styles['detail-section']}>
                 <JsonViewerComponent
                   data={selectedRequest.responsePayload}
                   label="Response Payload"

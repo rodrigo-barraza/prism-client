@@ -10,14 +10,14 @@
 
 /* ── Filter Bar ────────────────────────────────────────────── */
 
-.filterBar {
+.filter-bar {
   display: flex;
   flex-direction: column;
   gap: 6px;
   flex-shrink: 0;
 }
 
-.searchField {
+.search-field {
   /* No overrides — render SearchInputComponent at its default size */
 }
 
@@ -25,21 +25,21 @@
 
 /* ── Empty State ────────────────────────────────────────────── */
 
-.emptyState {
-  composes: emptyState from "./PanelShared.module.css";
+.empty-state {
+  composes: empty-state from "./PanelShared.module.css";
 }
 
-.emptyIcon {
-  composes: emptyIcon from "./PanelShared.module.css";
+.empty-icon {
+  composes: empty-icon from "./PanelShared.module.css";
 }
 
-.emptyIconDisabled {
+.empty-icon-disabled {
   background: color-mix(in srgb, var(--text-tertiary) 10%, transparent);
   color: var(--text-tertiary);
   opacity: 0.5;
 }
 
-.settingsLink {
+.settings-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -55,7 +55,7 @@
   margin-top: 4px;
 }
 
-.settingsLink:hover {
+.settings-link:hover {
   background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
   border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
   transform: translateY(-1px);
@@ -63,17 +63,17 @@
     color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
-.emptyTitle {
-  composes: emptyTitle from "./PanelShared.module.css";
+.empty-title {
+  composes: empty-title from "./PanelShared.module.css";
 }
 
-.emptySubtitle {
-  composes: emptySubtitle from "./PanelShared.module.css";
+.empty-subtitle {
+  composes: empty-subtitle from "./PanelShared.module.css";
 }
 
 /* ── Loading state ──────────────────────────────────────────── */
 
-.isLoadingState {
+.is-loading-state {
   composes: loading from "./PanelShared.module.css";
 }
 
@@ -98,10 +98,10 @@
   border-radius: 6px;
   font-size: var(--font-size-xs);
   line-height: 1.4;
-  animation: toastSlideIn 0.25s ease-out;
+  animation: toast-slide-in 0.25s ease-out;
 }
 
-@keyframes toastSlideIn {
+@keyframes toast-slide-in {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -112,19 +112,19 @@
   }
 }
 
-.toastSuccess {
+.toast-success {
   background: color-mix(in srgb, var(--color-success) 12%, transparent);
   color: var(--color-success);
   border: 1px solid color-mix(in srgb, var(--color-success) 25%, transparent);
 }
 
-.toastInfo {
+.toast-info {
   background: color-mix(in srgb, var(--color-info) 12%, transparent);
   color: var(--color-info);
   border: 1px solid color-mix(in srgb, var(--color-info) 25%, transparent);
 }
 
-.toastError {
+.toast-error {
   background: color-mix(in srgb, var(--color-danger-light) 12%, transparent);
   color: var(--color-danger-light);
   border: 1px solid
@@ -133,7 +133,7 @@
 
 /* ── Consolidation History Section ─────────────────────────── */
 
-.historySection {
+.history-section {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -141,16 +141,16 @@
   background: color-mix(in srgb, var(--background-elevated) 40%, transparent);
   border: 1px solid var(--calculated-border-color);
   border-radius: 6px;
-  animation: toastSlideIn 0.2s ease-out;
+  animation: toast-slide-in 0.2s ease-out;
 }
 
-.historySectionHeader {
+.history-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.historySectionTitle {
+.history-section-title {
   font-size: 0.625rem;
   font-weight: 700;
   color: var(--text-muted);
@@ -158,14 +158,14 @@
   letter-spacing: 0.05em;
 }
 
-.historyEmpty {
+.history-empty {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   text-align: center;
   padding: 12px 0;
 }
 
-.historyEntry {
+.history-entry {
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -185,14 +185,14 @@
   }
 }
 
-.historyEntryHeader {
+.history-entry-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
 }
 
-.historyTrigger {
+.history-trigger {
   display: inline-flex;
   align-items: center;
   padding: 1px 6px;
@@ -205,12 +205,12 @@
   color: var(--color-violet);
 }
 
-.triggerManual {
+.trigger-manual {
   background: color-mix(in srgb, var(--color-info) 12%, transparent);
   color: var(--color-info);
 }
 
-.triggerScheduled {
+.trigger-scheduled {
   background: color-mix(in srgb, var(--color-violet) 12%, transparent);
   color: var(--color-violet);
 }
@@ -221,18 +221,18 @@
   color: var(--color-warning);
 }
 
-.historyTime {
+.history-time {
   font-size: 0.625rem;
   color: var(--text-muted);
 }
 
-.historySummary {
+.history-summary {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.4;
 }
 
-.historyStats {
+.history-stats {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -256,7 +256,7 @@
   padding: 12px 0;
 }
 
-.endOfList {
+.end-of-list {
   display: flex;
   align-items: center;
   justify-content: center;

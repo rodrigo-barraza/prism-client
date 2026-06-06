@@ -1,5 +1,5 @@
 /* ── Message list container ── */
-.messagesList {
+.messages-list {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -12,19 +12,19 @@
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fade-in 0.3s ease-out forwards;
 
-  &.userNode {
+  &.user-node {
     scroll-margin-top: 56px; /* clear the sticky pinned header when scrollIntoView fires */
   }
 
-  &:hover .actionButton {
+  &:hover .action-button {
     opacity: 1;
   }
 }
 
 /* ── Coalesced continuation messages ── */
-.continuationMessage {
+.continuation-message {
   margin-top: -18px;
   padding-left: 48px; /* avatar 32px + gap 16px */
   animation: none;
@@ -52,19 +52,19 @@
 }
 
 /* ── Role node avatar variants ── */
-.userNode .avatar {
+.user-node .avatar {
   background: var(--background-surface);
   border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
 }
 
-.assistantNode .avatar {
+.assistant-node .avatar {
   background: var(--calculated-accent-primary-glow);
   color: var(--accent-primary);
   border: 1px solid var(--accent-primary);
 }
 
-.prismAvatar {
+.prism-avatar {
   position: relative;
   overflow: hidden;
   background: transparent !important;
@@ -82,14 +82,14 @@
   }
 }
 
-.systemNode .avatar {
+.system-node .avatar {
   background: var(--calculated-color-warning-subtle, oklch(76.9% 0.1646 70.1 / 0.08));
   color: var(--color-warning, var(--color-warning));
   border: 1px solid var(--color-warning, var(--color-warning));
 }
 
 /* ── Task notification card (worker results) ── */
-.notificationNode {
+.notification-node {
   border-left: 3px solid var(--accent-primary, var(--color-indigo));
   padding: 8px 0;
   margin-left: auto;
@@ -127,13 +127,13 @@
   min-width: 0;
 }
 
-.messageHeader {
+.message-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.roleLabel {
+.role-label {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-secondary);
@@ -145,13 +145,13 @@
 }
 
 /* ── Actions (hidden until hover) ── */
-.messageActions {
+.message-actions {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.actionButton {
+.action-button {
   opacity: 0;
   color: var(--text-secondary);
   padding: 4px;
@@ -167,7 +167,7 @@
 }
 
 /* ── Thinking block ── */
-.thinkingBlock {
+.thinking-block {
   position: relative;
   margin-bottom: 8px;
   border: 1px solid var(--calculated-border-color);
@@ -175,7 +175,7 @@
   overflow: hidden;
 }
 
-.thinkingToggle {
+.thinking-toggle {
   position: relative;
   z-index: 1;
   display: flex;
@@ -197,7 +197,7 @@
   }
 }
 
-.thinkingContent {
+.thinking-content {
   position: relative;
   z-index: 1;
   padding: 4px 12px 20px;
@@ -214,7 +214,7 @@
 }
 
 /* ── Active thinking streaming state ── */
-.thinkingStreaming {
+.thinking-streaming {
   border-color: transparent;
   box-shadow:
     0 0 12px -2px oklch(58.5% 0.2041 277.1 / 0.4),
@@ -240,16 +240,16 @@
     z-index: 0;
   }
 
-  & .thinkingToggle {
+  & .thinking-toggle {
     color: var(--accent-primary);
 
     & svg:first-child {
-      animation: thinkingPulse 1.5s ease-in-out infinite;
+      animation: thinking-pulse 1.5s ease-in-out infinite;
     }
   }
 
   /* Streaming chunk fade-in for thinking content */
-  & .thinkingContent {
+  & .thinking-content {
     & p,
     & li,
     & h1,
@@ -258,19 +258,19 @@
     & h4,
     & blockquote,
     & pre {
-      animation: streamChunkFadeIn 1s ease-out both;
+      animation: stream-chunk-fade-in 1s ease-out both;
     }
 
     & > div > :last-child {
       & p:last-of-type,
       & li:last-of-type {
-        animation: streamChunkFadeIn 1s ease-out both;
+        animation: stream-chunk-fade-in 1s ease-out both;
       }
     }
   }
 }
 
-@keyframes thinkingPulse {
+@keyframes thinking-pulse {
   0%,
   100% {
     opacity: 1;
@@ -281,14 +281,14 @@
 }
 
 /* ── Images / media ── */
-.imagePreviewRow {
+.image-preview-row {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 8px;
 }
 
-.messageImage {
+.message-image {
   width: 100%;
   border-radius: 2px;
   border: 1px solid var(--calculated-border-color);
@@ -301,7 +301,7 @@
   }
 }
 
-.mediaCard {
+.media-card {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -311,18 +311,18 @@
   background: var(--background-elevated);
 }
 
-.mediaCardIcon {
+.media-card-icon {
   color: var(--text-secondary);
 }
 
-.mediaCardLabel {
+.media-card-label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 /* ── Video ── */
-.videoCard {
+.video-card {
   width: 100%;
   border-radius: 6px;
   overflow: hidden;
@@ -330,7 +330,7 @@
   background: var(--background-elevated);
 }
 
-.videoPreview {
+.video-preview {
   width: 100%;
   max-height: 320px;
   display: block;
@@ -339,7 +339,7 @@
 }
 
 /* ── Audio Card ── */
-.audioCard {
+.audio-card {
   width: 100%;
   border-radius: 6px;
   border: 1px solid var(--calculated-border-color);
@@ -349,7 +349,7 @@
 }
 
 /* ── PDF Viewer ── */
-.pdfViewer {
+.pdf-viewer {
   width: 100%;
   border-radius: 6px;
   border: 1px solid var(--calculated-border-color);
@@ -357,7 +357,7 @@
   overflow: hidden;
 }
 
-.pdfHeader {
+.pdf-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -365,19 +365,19 @@
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.pdfHeaderIcon {
+.pdf-header-icon {
   color: var(--accent-primary);
   flex-shrink: 0;
 }
 
-.pdfHeaderLabel {
+.pdf-header-label {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-secondary);
   flex: 1;
 }
 
-.pdfOpenLink {
+.pdf-open-link {
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--accent-primary);
@@ -391,7 +391,7 @@
   }
 }
 
-.pdfFrame {
+.pdf-frame {
   width: 100%;
   height: 500px;
   border: none;
@@ -490,7 +490,7 @@
 /* Badge styles moved to MentionBadgeComponent.module.css */
 
 /* ── Metadata badges row ── */
-.metaBadges {
+.meta-badges {
   margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
@@ -500,7 +500,7 @@
 }
 
 /* ── Model Change Divider ── */
-.modelChangeDivider {
+.model-change-divider {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -508,23 +508,23 @@
   margin: 0 auto;
   width: 100%;
 
-  &.modelChangeDividerFaded {
+  &.model-change-divider-faded {
     opacity: 0.4;
 
-    & .modelChangeLabel {
+    & .model-change-label {
       color: var(--text-muted);
     }
   }
 }
 
-.modelChangeLine {
+.model-change-line {
   flex: 1;
   height: 1px;
   background: var(--calculated-border-color);
   opacity: 0.5;
 }
 
-.modelChangeLabel {
+.model-change-label {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -538,7 +538,7 @@
 }
 
 /* ── Schedule Fired Divider ── */
-.scheduleFiredDivider {
+.schedule-fired-divider {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -548,14 +548,14 @@
   width: 100%;
 }
 
-.scheduleFiredLine {
+.schedule-fired-line {
   flex: 1;
   height: 1px;
   background: oklch(0.7 0.2 140 / 0.4);
   opacity: 0.6;
 }
 
-.scheduleFiredLabel {
+.schedule-fired-label {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -568,7 +568,7 @@
   opacity: 0.7;
 }
 
-.scheduleFiredDetails {
+.schedule-fired-details {
   flex-basis: 100%;
   display: flex;
   align-items: center;
@@ -577,7 +577,7 @@
   opacity: 0.55;
 }
 
-.scheduleFiredPrompt {
+.schedule-fired-prompt {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
   line-height: 1.4;
@@ -585,7 +585,7 @@
 }
 
 /* ── Streaming Text Effect ── */
-.streamingText {
+.streaming-text {
   position: relative;
 
   /* Make the last markdown block inline so the cursor sits at end of text */
@@ -601,11 +601,11 @@
   & h4,
   & blockquote,
   & pre {
-    animation: streamChunkFadeIn 1s ease-out both;
+    animation: stream-chunk-fade-in 1s ease-out both;
   }
 }
 
-@keyframes streamChunkFadeIn {
+@keyframes stream-chunk-fade-in {
   from {
     opacity: 0;
     transform: translateY(3px);
@@ -617,25 +617,25 @@
 }
 
 /* ── Soft-deleted messages (compact collapsible disclosure) ── */
-.deletedRow {
+.deleted-row {
   display: flex;
   align-items: center;
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
 
-  &:hover .deletedActions {
+  &:hover .deleted-actions {
     opacity: 1;
   }
 }
 
-.deletedExpanded {
+.deleted-expanded {
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
 }
 
-.deletedToggle {
+.deleted-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -662,7 +662,7 @@
   }
 }
 
-.deletedPreview {
+.deleted-preview {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
   opacity: 0.6;
@@ -673,7 +673,7 @@
   flex: 1;
 }
 
-.deletedActions {
+.deleted-actions {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -683,17 +683,17 @@
   transition: opacity 0.15s ease;
 }
 
-.deletedMessageBody {
+.deleted-message-body {
   opacity: 0.3;
   transition: opacity 0.2s ease;
-  animation: deletedBodyReveal 0.2s ease-out;
+  animation: deleted-body-reveal 0.2s ease-out;
 
   &:hover {
     opacity: 0.5;
   }
 }
 
-@keyframes deletedBodyReveal {
+@keyframes deleted-body-reveal {
   from {
     opacity: 0;
   }
@@ -702,11 +702,11 @@
   }
 }
 
-.deletedAvatar {
+.deleted-avatar {
   filter: grayscale(1);
 }
 
-.deletedBadge {
+.deleted-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -733,7 +733,7 @@
 }
 
 /* ── Grouped deleted items (shown when expanded) ── */
-.deletedGroupItem {
+.deleted-group-item {
   border-top: 1px solid
     color-mix(in srgb, var(--calculated-border-color) 40%, transparent);
   padding: 4px 0;
@@ -744,7 +744,7 @@
   }
 }
 
-.deletedGroupItemHeader {
+.deleted-group-item-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -755,7 +755,7 @@
 }
 
 /* ── Error block ── */
-.errorBlock {
+.error-block {
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -780,17 +780,17 @@
     var(--text-primary)
   );
   word-break: break-word;
-  animation: fadeIn 0.3s ease-out;
+  animation: fade-in 0.3s ease-out;
 }
 
-.errorIcon {
+.error-icon {
   flex-shrink: 0;
   margin-top: 2px;
   color: var(--color-danger, var(--color-danger));
-  animation: errorPulse 2s ease-in-out 3;
+  animation: error-pulse 2s ease-in-out 3;
 }
 
-@keyframes errorPulse {
+@keyframes error-pulse {
   0%,
   100% {
     opacity: 1;
@@ -801,7 +801,7 @@
 }
 
 /* ── Sticky Pinned User Message ── */
-.stickyUserMsg {
+.sticky-user-message {
   position: sticky;
   top: -30px;
   z-index: 20;
@@ -809,7 +809,7 @@
   will-change: opacity;
 }
 
-.stickyUserMsgInner {
+.sticky-user-message-inner {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -848,24 +848,24 @@
       0 2px 6px oklch(0.0% 0.0 0.0 / 0.15);
     transform: translateY(1px);
 
-    & .stickyUserMsgText {
+    & .sticky-user-message-text {
       color: var(--color-white);
       opacity: 1;
     }
 
-    & .stickyUserMsgAvatar {
+    & .sticky-user-message-avatar {
       background: oklch(100.0% 0.0001 263.3 / 0.15);
       border-color: oklch(100.0% 0.0001 263.3 / 0.25);
       color: var(--color-white);
     }
 
-    & .stickyUserMsgBadge {
+    & .sticky-user-message-badge {
       background: oklch(100.0% 0.0001 263.3 / 0.15);
       color: var(--color-white);
       border-color: oklch(100.0% 0.0001 263.3 / 0.25);
     }
 
-    & .stickyUserMsgChevron {
+    & .sticky-user-message-chevron {
       opacity: 1;
       color: var(--color-white);
       transform: translateY(2px);
@@ -873,7 +873,7 @@
   }
 }
 
-.stickyUserMsgAvatar {
+.sticky-user-message-avatar {
   flex-shrink: 0;
   width: 24px;
   height: 24px;
@@ -886,7 +886,7 @@
   color: var(--text-secondary);
 }
 
-.stickyUserMsgContent {
+.sticky-user-message-content {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -894,7 +894,7 @@
   gap: 8px;
 }
 
-.stickyUserMsgText {
+.sticky-user-message-text {
   font-size: var(--font-size-sm);
   font-weight: 600;
   line-height: 1.4;
@@ -907,7 +907,7 @@
     opacity 0.2s ease;
 }
 
-.stickyUserMsgBadge {
+.sticky-user-message-badge {
   flex-shrink: 0;
   font-size: 0.625rem;
   font-weight: 600;
@@ -920,7 +920,7 @@
   white-space: nowrap;
 }
 
-.stickyUserMsgChevron {
+.sticky-user-message-chevron {
   flex-shrink: 0;
   color: var(--text-muted);
   opacity: 0.5;
@@ -929,7 +929,7 @@
     transform 0.15s;
 }
 
-@keyframes stickySlideIn {
+@keyframes sticky-slide-in {
   to {
     opacity: 1;
     transform: translateY(0);
@@ -937,7 +937,7 @@
 }
 
 /* ── Raw Prefix (faded system context text) ── */
-.rawPrefix {
+.raw-prefix {
   color: var(--raw-prefix-contrast-color, var(--text-muted));
   opacity: var(--raw-prefix-contrast-opacity, 0.4);
   font-size: var(--font-size-sm);

@@ -58,7 +58,7 @@ export default function ModelCardComponent({
         </span>
         {dupeCount > 1 && (
           <span
-            className={styles.dupeBadge}
+            className={styles['dupe-badge']}
             title={`${dupeCount} instances of this model`}
           >
             <Copy size={8} />
@@ -66,7 +66,7 @@ export default function ModelCardComponent({
           </span>
         )}
         <button
-          className={styles.removeButton}
+          className={styles['remove-button']}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onRemove?.(model.instanceId);

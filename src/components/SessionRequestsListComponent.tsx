@@ -49,12 +49,12 @@ export default function SessionRequestsListComponent({
     if (error) {
       return (
         <div className={styles.container}>
-          <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>
+          <div className={styles['empty-state']}>
+            <div className={styles['empty-icon']}>
               <AlertCircle size={24} />
             </div>
-            <div className={styles.emptyTitle}>Failed to load requests</div>
-            <div className={styles.emptySubtitle}>{error}</div>
+            <div className={styles['empty-title']}>Failed to load requests</div>
+            <div className={styles['empty-subtitle']}>{error}</div>
           </div>
         </div>
       );
@@ -68,12 +68,12 @@ export default function SessionRequestsListComponent({
     }
     return (
       <div className={styles.container}>
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-icon']}>
             <Activity size={24} />
           </div>
-          <div className={styles.emptyTitle}>No requests</div>
-          <div className={styles.emptySubtitle}>
+          <div className={styles['empty-title']}>No requests</div>
+          <div className={styles['empty-subtitle']}>
             No requests have been made in this session yet.
           </div>
         </div>
@@ -106,41 +106,41 @@ export default function SessionRequestsListComponent({
         <div className={styles.header}>
           <Activity size={12} />
           <span>Requests</span>
-          <span className={styles.headerCount}>{(data as any).total}</span>
+          <span className={styles['header-count']}>{(data as any).total}</span>
         </div>
 
-        <div className={styles.requestList}>
+        <div className={styles['request-list']}>
           {requests.map((request, index) => {
             const isError = !request.success;
             return (
               <div
                 key={`${request.requestId || "request"}-${index}`}
-                className={`${styles.requestRow} ${isError ? styles.requestError : ""} ${request.isWorker ? styles.requestWorker : ""}`}
+                className={`${styles['request-row']} ${isError ? styles['request-error'] : ""} ${request.isWorker ? styles['request-worker'] : ""}`}
               >
-                <div className={styles.requestMeta}>
+                <div className={styles['request-meta']}>
                   {request.isWorker && (
                     <span
-                      className={styles.workerTag}
+                      className={styles['worker-tag']}
                       title={`Worker ${request.workerShortId}`}
                     >
                       <Users size={8} />
                     </span>
                   )}
                   <ProviderLogo provider={request.provider} size={12} />
-                  <span className={styles.requestProvider}>
+                  <span className={styles['request-provider']}>
                     {resolveProviderLabel(request.provider)}
                   </span>
                   <span className={styles.divider}>•</span>
-                  <span className={styles.requestModel} title={request.model}>
+                  <span className={styles['request-model']} title={request.model}>
                     {request.model ? cleanModelName(request.model) : "—"}
                   </span>
                   {request.operation && (
-                    <span className={styles.requestOperation}>
+                    <span className={styles['request-operation']}>
                       {request.operation}
                     </span>
                   )}
                 </div>
-                <div className={styles.requestStats}>
+                <div className={styles['request-stats']}>
                   {request.inputTokens > 0 && (
                     <BadgeComponent
                       type="tokens"
@@ -176,7 +176,7 @@ export default function SessionRequestsListComponent({
                   {request.totalTime > 0 && (
                     <BadgeComponent type="stopwatch" seconds={request.totalTime} />
                   )}
-                  <span className={styles.requestCost} title="Cost">
+                  <span className={styles['request-cost']} title="Cost">
                     {formatCost(request.estimatedCost ?? 0)}
                   </span>
                   <BadgeComponent type="dateTime" date={request.timestamp} />

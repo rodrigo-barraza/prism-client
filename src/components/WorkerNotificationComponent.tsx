@@ -62,8 +62,8 @@ export default function WorkerNotificationComponent({
       </div>
       <div className={styles.content}>
         <div className={styles.header}>
-          <div className={styles.roleLabel} style={{ color: statusColor }}>
-            <span className={styles.statusIcon}>{statusIcon}</span>
+          <div className={styles['role-label']} style={{ color: statusColor }}>
+            <span className={styles['status-icon']}>{statusIcon}</span>
             Worker
             {timestamp && <BadgeComponent type="dateTime" date={timestamp} />}
           </div>
@@ -74,7 +74,7 @@ export default function WorkerNotificationComponent({
                 onClick={onDelete}
                 tooltip="Delete notification"
                 variant="destructive"
-                className={styles.actionButton}
+                className={styles['action-button']}
               />
             </div>
           )}
@@ -93,7 +93,7 @@ export default function WorkerNotificationComponent({
         {taskNotif.result && (
           <MarkdownContent
             content={taskNotif.result}
-            className={styles.resultBody}
+            className={styles['result-body']}
           />
         )}
       </div>

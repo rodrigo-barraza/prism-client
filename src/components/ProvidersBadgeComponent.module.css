@@ -9,7 +9,7 @@
   font-size: 0.625rem;
   font-weight: 500;
   letter-spacing: 0.2px;
-  color: rgb(99, 102, 241);
+  color: oklch(0.566 0.2532 291.3);
   background: oklch(58.5% 0.2041 277.1 / 0.08);
   border: 1px solid oklch(58.5% 0.2041 277.1 / 0.2);
   white-space: nowrap;
@@ -28,7 +28,7 @@
   flex-shrink: 0;
 }
 
-.providerName {
+.provider-name {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
@@ -42,6 +42,6 @@
   gap: 2px;
 }
 
-.mini .providerName {
+.mini .provider-name {
   max-width: 120px;
 }

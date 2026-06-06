@@ -25,13 +25,13 @@
   justify-content: center;
 }
 
-.toolGroup {
+.tool-group {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.toolGroup::after {
+.tool-group::after {
   content: "";
   display: block;
   width: 1px;
@@ -40,11 +40,11 @@
   margin-left: 6px;
 }
 
-.toolGroup:last-child::after {
+.tool-group:last-child::after {
   display: none;
 }
 
-.toolLabel {
+.tool-label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-secondary);
@@ -69,14 +69,14 @@
   transform: scale(1.15);
 }
 
-.swatchActive {
+.swatch-active {
   border-color: var(--text-primary);
   box-shadow: 0 0 8px var(--calculated-accent-primary-glow);
   transform: scale(1.15);
 }
 
 /* Brush size buttons */
-.sizeButton {
+.size-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,24 +91,24 @@
   padding: 0;
 }
 
-.sizeButton:hover {
+.size-button:hover {
   background: var(--background-elevated);
   color: var(--text-primary);
 }
 
-.sizeBtnActive {
+.size-btn-active {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: white;
 }
 
-.sizeDot {
+.size-dot {
   border-radius: 50%;
   background: currentColor;
 }
 
 /* Action buttons */
-.actionButton {
+.action-button {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -123,18 +123,18 @@
   transition: all 0.15s;
 }
 
-.actionButton:hover {
+.action-button:hover {
   background: var(--calculated-accent-primary-glow);
   color: var(--text-primary);
 }
 
-.actionButton:disabled {
+.action-button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
 /* Canvas area */
-.canvasArea {
+.canvas-area {
   position: relative;
   display: flex;
   align-items: center;
@@ -143,7 +143,7 @@
   max-height: calc(90vh - 120px);
 }
 
-.canvasArea img {
+.canvas-area img {
   display: block;
   max-width: 90vw;
   max-height: calc(90vh - 120px);
@@ -154,7 +154,7 @@
   pointer-events: none;
 }
 
-.drawCanvas {
+.draw-canvas {
   position: absolute;
   top: 0;
   left: 0;
@@ -164,14 +164,14 @@
 }
 
 /* Bottom bar */
-.bottomBar {
+.bottom-bar {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 12px;
 }
 
-.useButton {
+.use-button {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -186,13 +186,13 @@
   transition: all 0.2s;
 }
 
-.useButton:hover {
+.use-button:hover {
   background: var(--calculated-accent-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px var(--calculated-accent-primary-glow);
 }
 
-.closeButton {
+.close-button {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -210,11 +210,11 @@
   z-index: 10;
 }
 
-.closeButton:hover {
+.close-button:hover {
   background: oklch(100.0% 0.0001 263.3 / 0.2);
 }
 
 /* Eraser mode cursor */
-.eraserCursor {
+.eraser-cursor {
   cursor: cell;
 }

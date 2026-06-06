@@ -10,7 +10,7 @@
 
 /* ── Header wrapper (holds header + dropdown) ── */
 
-.headerWrapper {
+.header-wrapper {
   position: relative;
   flex-shrink: 0;
 }
@@ -32,7 +32,7 @@
   user-select: none;
 }
 
-.headerClickable {
+.header-clickable {
   cursor: pointer;
   transition:
     background 0.15s,
@@ -44,37 +44,37 @@
   }
 }
 
-.headerIcon {
+.header-icon {
   opacity: 0.7;
   color: var(--accent-primary);
   flex-shrink: 0;
 }
 
-.headerLabel {
+.header-label {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.headerChevron {
+.header-chevron {
   flex-shrink: 0;
   color: var(--text-secondary);
   opacity: 0.5;
   transition: transform 0.2s ease;
 }
 
-.headerChevronOpen {
+.header-chevron-open {
   transform: rotate(180deg);
 }
 
-.headerLock {
+.header-lock {
   flex-shrink: 0;
   color: var(--text-secondary);
   opacity: 0.4;
 }
 
-.headerCount {
+.header-count {
   font-size: 0.5625rem;
   font-weight: 500;
   color: var(--text-secondary);
@@ -85,7 +85,7 @@
 
 /* ── Workspace switcher dropdown ── */
 
-.switcherDropdown {
+.switcher-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -97,10 +97,10 @@
   border-radius: 0 0 6px 6px;
   box-shadow: 0 4px 12px oklch(0.0% 0.0 0.0 / 0.15);
   padding: 4px 0;
-  animation: switcherSlideIn 0.15s ease-out;
+  animation: switcher-slide-in 0.15s ease-out;
 }
 
-@keyframes switcherSlideIn {
+@keyframes switcher-slide-in {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -111,7 +111,7 @@
   }
 }
 
-.switcherItem {
+.switcher-item {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -132,28 +132,28 @@
   }
 }
 
-.switcherItemActive {
+.switcher-item-active {
   color: var(--accent-primary);
   font-weight: 600;
 }
 
-.switcherItemIcon {
+.switcher-item-icon {
   flex-shrink: 0;
   opacity: 0.6;
 }
 
-.switcherItemActive .switcherItemIcon {
+.switcher-item-active .switcher-item-icon {
   opacity: 1;
   color: var(--accent-primary);
 }
 
-.switcherItemName {
+.switcher-item-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.switcherItemCheck {
+.switcher-item-check {
   flex-shrink: 0;
   color: var(--accent-primary);
   opacity: 0.8;
@@ -161,24 +161,24 @@
 
 /* ── Scrollable tree area — fills all remaining vertical space ── */
 
-.treeScroll {
+.tree-scroll {
   flex: 1 1 auto;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--calculated-border-color) transparent;
 }
 
-.treeRoot {
+.tree-root {
   padding: 2px 0;
 }
 
 /* ── Tree nodes ── */
 
-.treeNode {
+.tree-node {
   display: contents;
 }
 
-.treeRow {
+.tree-row {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -199,50 +199,50 @@
     background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
   }
 
-  &:hover .treeMentionButton {
+  &:hover .tree-mention-button {
     opacity: 1;
     pointer-events: auto;
   }
 }
 
-.treeRowDir {
+.tree-row-dir {
   cursor: pointer;
   font-weight: 500;
 }
 
-.treeRowFile {
+.tree-row-file {
   cursor: pointer;
 }
 
-.treeChevron {
+.tree-chevron {
   flex-shrink: 0;
   color: var(--text-secondary);
   opacity: 0.6;
   width: 10px;
 }
 
-.treeChevronSpacer {
+.tree-chevron-spacer {
   width: 10px;
   flex-shrink: 0;
 }
 
-.treeFolderIcon {
+.tree-folder-icon {
   flex-shrink: 0;
   color: var(--accent-primary);
   opacity: 0.8;
 }
 
-.treeFileIcon {
+.tree-file-icon {
   flex-shrink: 0;
 }
 
-.treeName {
+.tree-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.treeCount {
+.tree-count {
   font-size: 0.5625rem;
   color: var(--text-secondary);
   opacity: 0.4;
@@ -251,7 +251,7 @@
   flex-shrink: 0;
 }
 
-.treeMentionButton {
+.tree-mention-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -282,11 +282,11 @@
   }
 }
 
-.treeChildren {
+.tree-children {
   display: block;
 }
 
-.treeLoading {
+.tree-loading {
   padding: 12px 16px;
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
@@ -295,17 +295,17 @@
 
 /* ── Workspace unavailable empty state ── */
 
-.unavailableState {
+.unavailable-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   padding: 32px 20px;
   text-align: center;
-  animation: unavailableFadeIn 0.3s ease-out;
+  animation: unavailable-fade-in 0.3s ease-out;
 }
 
-@keyframes unavailableFadeIn {
+@keyframes unavailable-fade-in {
   from {
     opacity: 0;
     transform: translateY(6px);
@@ -316,14 +316,14 @@
   }
 }
 
-.unavailableIcon {
+.unavailable-icon {
   color: var(--text-secondary);
   opacity: 0.4;
-  animation: unavailablePulse 3s ease-in-out infinite;
+  animation: unavailable-pulse 3s ease-in-out infinite;
   will-change: opacity;
 }
 
-@keyframes unavailablePulse {
+@keyframes unavailable-pulse {
   0%,
   100% {
     opacity: 0.3;
@@ -333,14 +333,14 @@
   }
 }
 
-.unavailableTitle {
+.unavailable-title {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-secondary);
   letter-spacing: 0.2px;
 }
 
-.unavailablePath {
+.unavailable-path {
   font-size: var(--font-size-xs);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   color: var(--text-secondary);
@@ -353,7 +353,7 @@
   max-width: 100%;
 }
 
-.unavailableHint {
+.unavailable-hint {
   font-size: var(--font-size-xxs, 0.625rem);
   color: var(--text-secondary);
   opacity: 0.45;
@@ -371,11 +371,11 @@
   background-color: var(--background-surface);
   border-bottom: 1px solid var(--calculated-border-color);
   transition: border-color var(--transition-speed-normal, 0.2s) ease;
-  animation: searchBarSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: search-bar-slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform, opacity;
 }
 
-@keyframes searchBarSlideIn {
+@keyframes search-bar-slide-in {
   from {
     opacity: 0;
     transform: translateY(-8px);
@@ -397,11 +397,11 @@
   gap: 6px;
   padding: 32px 16px;
   text-align: center;
-  animation: noResultsFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: no-results-fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: opacity, transform;
 }
 
-@keyframes noResultsFadeIn {
+@keyframes no-results-fade-in {
   from {
     opacity: 0;
     transform: translateY(4px);

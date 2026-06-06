@@ -10,14 +10,14 @@
 }
 
 .content {
-  animation: fadeIn 0.3s ease-out;
+  animation: fade-in 0.3s ease-out;
 }
 
-.adminContent {
-  animation: fadeIn 0.3s ease-out;
+.admin-content {
+  animation: fade-in 0.3s ease-out;
 }
 
-.adminActions {
+.admin-actions {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 16px;
@@ -33,7 +33,7 @@
   flex-shrink: 0;
 }
 
-.headerLeft {
+.header-left {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -47,7 +47,7 @@
   align-items: center;
   gap: 10px;
 
-  & .titleIcon {
+  & .title-icon {
     color: var(--accent-primary);
     opacity: 0.8;
   }
@@ -59,14 +59,14 @@
   font-weight: 400;
 }
 
-.headerRight {
+.header-right {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
 }
 
-.refreshButton {
+.refresh-button {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -106,13 +106,13 @@
 
 /* ── Stats Badges ──────────────────────────────────────────── */
 
-.statsBadges {
+.stats-badges {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.statBadge {
+.stat-badge {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -124,7 +124,7 @@
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
 
-  & .statValue {
+  & .stat-value {
     color: var(--text-primary);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
@@ -132,7 +132,7 @@
 }
 
 /* Loading state */
-.loadingState {
+.loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -144,7 +144,7 @@
 }
 
 /* Action buttons */
-.actionButton {
+.action-button {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -160,7 +160,7 @@
   white-space: nowrap;
 }
 
-.loadButton {
+.load-button {
   background: oklch(58.5% 0.2041 277.1 / 0.1);
   color: var(--accent-primary);
 
@@ -174,14 +174,14 @@
   }
 }
 
-.loadingButton {
+.loading-button {
   background: oklch(58.5% 0.2041 277.1 / 0.1);
   color: var(--accent-primary);
   opacity: 0.7;
   cursor: wait;
 }
 
-.unloadButton {
+.unload-button {
   background: oklch(63.7% 0.2078 25.3 / 0.1);
   color: var(--color-danger);
 
@@ -200,7 +200,7 @@
   animation: spin 1s linear infinite;
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
   }

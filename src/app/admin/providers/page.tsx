@@ -197,7 +197,7 @@ export default function ProvidersPage() {
     <div className={styles.page}>
       {loading && <LoadingMessage message="Loading provider data..." />}
 
-      <div className={styles.providerList}>
+      <div className={styles['provider-list']}>
         {providers.map((provider, providerIndex: number) => {
           const color = PROVIDER_COLORS[providerIndex % PROVIDER_COLORS.length];
           const share = ((provider.totalRequests / totalRequests) * 100).toFixed(1);
@@ -205,55 +205,55 @@ export default function ProvidersPage() {
           const providerLimits = rateLimits[provider.provider];
 
           return (
-            <div key={provider.provider} className={styles.providerCard}>
+            <div key={provider.provider} className={styles['provider-card']}>
               <button
-                className={styles.providerHeader}
+                className={styles['provider-header']}
                 onClick={() =>
                   setExpandedProvider(isExpanded ? null : provider.provider)
                 }
               >
-                <div className={styles.providerName}>
+                <div className={styles['provider-name']}>
                   <span
-                    className={styles.providerDot}
+                    className={styles['provider-dot']}
                     style={{ background: color }}
                   />
                   <span>{resolveProviderLabel(provider.provider)}</span>
-                  <span className={styles.modelCount}>
+                  <span className={styles['model-count']}>
                     {provider.models.length} models
                   </span>
                   {providerLimits && (
-                    <span className={styles.rateLimitBadge}>
+                    <span className={styles['rate-limit-badge']}>
                       {providerLimits.dynamic ? "⚡ Live" : "📋 Static"}
                     </span>
                   )}
                 </div>
-                <div className={styles.providerStats}>
-                  <span className={styles.statItem}>
-                    <span className={styles.statValue}>
+                <div className={styles['provider-stats']}>
+                  <span className={styles['stat-item']}>
+                    <span className={styles['stat-value']}>
                       {formatNumber(provider.totalRequests)}
                     </span>
-                    <span className={styles.statLabel}>requests</span>
+                    <span className={styles['stat-label']}>requests</span>
                   </span>
-                  <span className={styles.statItem}>
-                    <span className={styles.statValue}>
+                  <span className={styles['stat-item']}>
+                    <span className={styles['stat-value']}>
                       {formatCost(provider.totalCost)}
                     </span>
-                    <span className={styles.statLabel}>cost</span>
+                    <span className={styles['stat-label']}>cost</span>
                   </span>
-                  <span className={styles.statItem}>
-                    <span className={styles.statValue}>
+                  <span className={styles['stat-item']}>
+                    <span className={styles['stat-value']}>
                       {formatLatency(provider.avgLatency)}
                     </span>
-                    <span className={styles.statLabel}>avg latency</span>
+                    <span className={styles['stat-label']}>avg latency</span>
                   </span>
-                  <span className={styles.statItem}>
-                    <span className={styles.statValue}>{share}%</span>
-                    <span className={styles.statLabel}>share</span>
+                  <span className={styles['stat-item']}>
+                    <span className={styles['stat-value']}>{share}%</span>
+                    <span className={styles['stat-label']}>share</span>
                   </span>
                 </div>
-                <div className={styles.shareBar}>
+                <div className={styles['share-bar']}>
                   <div
-                    className={styles.shareBarFill}
+                    className={styles['share-bar-fill']}
                     style={{ width: `${share}%`, background: color }}
                   />
                 </div>
@@ -263,7 +263,7 @@ export default function ProvidersPage() {
               {providerLimits && <RateLimitPanel data={providerLimits} />}
 
               {isExpanded && (
-                <div className={styles.modelList}>
+                <div className={styles['model-list']}>
                   <TableComponent
                     columns={modelColumns}
                     data={provider.models}
@@ -291,12 +291,12 @@ function RateLimitPanel({ data }: { data: RateLimitData }) {
   if (!models || Object.keys(models).length === 0) return null;
 
   return (
-    <div className={styles.rateLimitPanel}>
-      <div className={styles.rateLimitHeader}>
-        <span className={styles.rateLimitTitle}>Rate Limits</span>
-        {note && <span className={styles.rateLimitMeta}>{note}</span>}
+    <div className={styles['rate-limit-panel']}>
+      <div className={styles['rate-limit-header']}>
+        <span className={styles['rate-limit-title']}>Rate Limits</span>
+        {note && <span className={styles['rate-limit-meta']}>{note}</span>}
       </div>
-      <div className={styles.rateLimitModels}>
+      <div className={styles['rate-limit-models']}>
         {Object.entries(models).map(
           ([modelName, modelData]: [string, ModelRateLimitData]) => (
             <ModelRateLimitCard
@@ -329,9 +329,9 @@ function ModelRateLimitCard({
   // Static model (Google) — simple metric display
   if (!dynamic) {
     return (
-      <div className={styles.rateLimitModelCard}>
-        <span className={styles.rateLimitModelName}>{modelName}</span>
-        <div className={styles.rateLimitMetrics}>
+      <div className={styles['rate-limit-model-card']}>
+        <span className={styles['rate-limit-model-name']}>{modelName}</span>
+        <div className={styles['rate-limit-metrics']}>
           <RateLimitMetric label="RPM" value={modelData.rpm} />
           <RateLimitMetric label="TPM" value={modelData.tpm} />
           {modelData.rpd != null && (
@@ -349,12 +349,12 @@ function ModelRateLimitCard({
   const timeAgo = updatedAt ? formatTimeAgo(updatedAt) : null;
 
   return (
-    <div className={styles.rateLimitModelCard}>
-      <div className={styles.rateLimitModelHeader}>
-        <span className={styles.rateLimitModelName}>{modelName}</span>
-        {timeAgo && <span className={styles.rateLimitMeta}>{timeAgo}</span>}
+    <div className={styles['rate-limit-model-card']}>
+      <div className={styles['rate-limit-model-header']}>
+        <span className={styles['rate-limit-model-name']}>{modelName}</span>
+        {timeAgo && <span className={styles['rate-limit-meta']}>{timeAgo}</span>}
       </div>
-      <div className={styles.rateLimitMetrics}>
+      <div className={styles['rate-limit-metrics']}>
         {/* Requests per minute */}
         {rateLimits.requests?.limit != null && (
           <LimitBar
@@ -418,23 +418,23 @@ function LimitBar({
   const hue = Math.round((percentage / 100) * 120);
 
   return (
-    <div className={styles.limitBar}>
-      <div className={styles.limitBarHeader}>
-        <span className={styles.limitBarLabel}>{label}</span>
-        <span className={styles.limitBarValues}>
+    <div className={styles['limit-bar']}>
+      <div className={styles['limit-bar-header']}>
+        <span className={styles['limit-bar-label']}>{label}</span>
+        <span className={styles['limit-bar-values']}>
           {formatCompact(rem)} / {formatCompact(limit)}
         </span>
       </div>
-      <div className={styles.progressBarTrack}>
+      <div className={styles['progress-bar-track']}>
         <div
-          className={styles.progressBarFill}
+          className={styles['progress-bar-fill']}
           style={{
             width: `${percentage}%`,
             background: `hsl(${hue}, 70%, 50%)`,
           }}
         />
       </div>
-      {reset && <span className={styles.rateLimitReset}>resets {reset}</span>}
+      {reset && <span className={styles['rate-limit-reset']}>resets {reset}</span>}
     </div>
   );
 }
@@ -447,11 +447,11 @@ function RateLimitMetric({
   value: number | undefined;
 }) {
   return (
-    <span className={styles.rateLimitMetric}>
-      <span className={styles.rateLimitMetricValue}>
+    <span className={styles['rate-limit-metric']}>
+      <span className={styles['rate-limit-metric-value']}>
         {value != null ? formatCompact(value) : "∞"}
       </span>
-      <span className={styles.rateLimitMetricLabel}>{label}</span>
+      <span className={styles['rate-limit-metric-label']}>{label}</span>
     </span>
   );
 }

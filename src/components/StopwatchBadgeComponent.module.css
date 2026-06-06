@@ -35,11 +35,11 @@
 .live {
   color: var(--accent-primary);
   border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
-  animation: stopwatchPulse 2s ease-in-out infinite;
+  animation: stopwatch-pulse 2s ease-in-out infinite;
   will-change: opacity;
 }
 
-@keyframes stopwatchPulse {
+@keyframes stopwatch-pulse {
   0%,
   100% {
     opacity: 1;

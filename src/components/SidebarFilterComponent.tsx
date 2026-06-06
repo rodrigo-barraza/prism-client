@@ -300,37 +300,37 @@ export default function SidebarFilterComponent({
   }
 
   return (
-    <div className={styles.filterSection}>
-      <div className={styles.filterRow}>
+    <div className={styles['filter-section']}>
+      <div className={styles['filter-row']}>
         {/* -- Dropdown trigger -- */}
-        <div className={styles.dropdownWrapper} ref={dropdownRef}>
+        <div className={styles['dropdown-wrapper']} ref={dropdownRef}>
           <button
             type="button"
-            className={`${styles.dropdownTrigger} ${isOpen ? styles.dropdownTriggerOpen : ""}`}
+            className={`${styles['dropdown-trigger']} ${isOpen ? styles['dropdown-trigger-open'] : ""}`}
             onClick={() => setIsOpen((v) => !v)}
           >
-            <span className={styles.triggerContent}>
-              <span className={styles.triggerIcon}>
+            <span className={styles['trigger-content']}>
+              <span className={styles['trigger-icon']}>
                 <Filter size={14} />
               </span>
-              <span className={styles.triggerText}>{triggerLabel}</span>
+              <span className={styles['trigger-text']}>{triggerLabel}</span>
               {badges.length > 0 && (
-                <span className={styles.triggerCount}>{badges.length}</span>
+                <span className={styles['trigger-count']}>{badges.length}</span>
               )}
             </span>
             <ChevronDown
               size={14}
-              className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ""}`}
+              className={`${styles.chevron} ${isOpen ? styles['chevron-open'] : ""}`}
             />
           </button>
 
           {/* -- Dropdown menu -- */}
           {isOpen && (
-            <div className={styles.dropdownMenu}>
+            <div className={styles['dropdown-menu']}>
               {/* -- Date range presets (top) -- */}
               {showDateRange && (
-                <div className={styles.menuGroup}>
-                  <div className={styles.menuGroupLabel}>Date Range</div>
+                <div className={styles['menu-group']}>
+                  <div className={styles['menu-group-label']}>Date Range</div>
                   {DATE_PRESETS.map((preset: DatePreset) => {
                     const isActive =
                       getActiveDatePreset(dateFrom, dateTo) === preset.label;
@@ -338,20 +338,20 @@ export default function SidebarFilterComponent({
                       <button
                         key={preset.label}
                         type="button"
-                        className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
                         onClick={() => onDateChange(preset.getValue())}
                       >
                         <Calendar size={13} style={{ color: "#6366f1" }} />
                         <span>{preset.label}</span>
                         {isActive && (
-                          <span className={styles.menuCheck}>✓</span>
+                          <span className={styles['menu-check']}>✓</span>
                         )}
                       </button>
                     );
                   })}
                   <button
                     type="button"
-                    className={`${styles.menuItem} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles.menuItemActive : ""}`}
+                    className={`${styles['menu-item']} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles['menu-item-active'] : ""}`}
                     onClick={() => {
                       setShowCustomDatePicker(true);
                       setIsOpen(false);
@@ -361,18 +361,18 @@ export default function SidebarFilterComponent({
                     <span>Custom…</span>
                     {!getActiveDatePreset(dateFrom, dateTo) &&
                       (dateFrom || dateTo) && (
-                        <span className={styles.menuCheck}>✓</span>
+                        <span className={styles['menu-check']}>✓</span>
                       )}
                   </button>
                 </div>
               )}
 
               {showFavoriteRow && (
-                <div className={styles.menuGroup}>
-                  <div className={styles.menuGroupLabel}>Favorites</div>
+                <div className={styles['menu-group']}>
+                  <div className={styles['menu-group-label']}>Favorites</div>
                   <button
                     type="button"
-                    className={`${styles.menuItem} ${showFavoritesOnly ? styles.menuItemActive : ""}`}
+                    className={`${styles['menu-item']} ${showFavoritesOnly ? styles['menu-item-active'] : ""}`}
                     onClick={() => {
                       onFavoritesToggle();
                     }}
@@ -380,15 +380,15 @@ export default function SidebarFilterComponent({
                     <Star size={13} style={{ color: "#eab308" }} />
                     <span>Favorites Only</span>
                     {showFavoritesOnly && (
-                      <span className={styles.menuCheck}>✓</span>
+                      <span className={styles['menu-check']}>✓</span>
                     )}
                   </button>
                 </div>
               )}
 
               {showModalityRow && (
-                <div className={styles.menuGroup}>
-                  <div className={styles.menuGroupLabel}>Modality</div>
+                <div className={styles['menu-group']}>
+                  <div className={styles['menu-group-label']}>Modality</div>
                   {modalities.map((m: SidebarFilterItem) => {
                     const Icon = m.icon;
                     const isActive = activeModalities.has(m.key);
@@ -396,7 +396,7 @@ export default function SidebarFilterComponent({
                       <button
                         key={m.key}
                         type="button"
-                        className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
                         onClick={() => toggleModality(m.key)}
                       >
                         <Icon
@@ -405,7 +405,7 @@ export default function SidebarFilterComponent({
                         />
                         <span>{m.title}</span>
                         {isActive && (
-                          <span className={styles.menuCheck}>✓</span>
+                          <span className={styles['menu-check']}>✓</span>
                         )}
                       </button>
                     );
@@ -414,8 +414,8 @@ export default function SidebarFilterComponent({
               )}
 
               {showToolRow && (
-                <div className={styles.menuGroup}>
-                  <div className={styles.menuGroupLabel}>{toolsGroupLabel}</div>
+                <div className={styles['menu-group']}>
+                  <div className={styles['menu-group-label']}>{toolsGroupLabel}</div>
                   {tools.map((t: SidebarFilterItem) => {
                     const Icon = t.icon;
                     const isActive = activeTools.has(t.key);
@@ -423,7 +423,7 @@ export default function SidebarFilterComponent({
                       <button
                         key={t.key}
                         type="button"
-                        className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
                         onClick={() => toggleTool(t.key)}
                       >
                         <Icon
@@ -432,7 +432,7 @@ export default function SidebarFilterComponent({
                         />
                         <span>{t.title}</span>
                         {isActive && (
-                          <span className={styles.menuCheck}>✓</span>
+                          <span className={styles['menu-check']}>✓</span>
                         )}
                       </button>
                     );
@@ -441,21 +441,21 @@ export default function SidebarFilterComponent({
               )}
 
               {showProviderRow && (
-                <div className={styles.menuGroup}>
-                  <div className={styles.menuGroupLabel}>Providers</div>
+                <div className={styles['menu-group']}>
+                  <div className={styles['menu-group-label']}>Providers</div>
                   {providers.map((p: string) => {
                     const isActive = activeProviders.has(p);
                     return (
                       <button
                         key={p}
                         type="button"
-                        className={`${styles.menuItem} ${isActive ? styles.menuItemActive : ""}`}
+                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
                         onClick={() => toggleProvider(p)}
                       >
                         <ProviderLogo provider={p} size={13} />
                         <span>{resolveProviderLabel(p)}</span>
                         {isActive && (
-                          <span className={styles.menuCheck}>✓</span>
+                          <span className={styles['menu-check']}>✓</span>
                         )}
                       </button>
                     );
@@ -484,7 +484,7 @@ export default function SidebarFilterComponent({
 
         {/* -- Active filter badges (display-only) -- */}
         {badges.length > 0 && (
-          <div className={styles.badgeList}>
+          <div className={styles['badge-list']}>
             {badges.map((b: FilterBadge) => {
               const Icon = b.icon;
               return (
@@ -506,10 +506,10 @@ export default function SidebarFilterComponent({
                   ) : Icon ? (
                     <Icon size={11} />
                   ) : null}
-                  <span className={styles.badgeLabel}>{b.label}</span>
+                  <span className={styles['badge-label']}>{b.label}</span>
                   <button
                     type="button"
-                    className={styles.badgeRemove}
+                    className={styles['badge-remove']}
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       b.onRemove();

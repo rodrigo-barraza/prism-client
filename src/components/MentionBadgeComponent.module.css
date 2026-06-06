@@ -4,7 +4,7 @@
  * (MessageList). Tooltip, hover, and stale states live here.
  * ─────────────────────────────────────────────────────────────── */
 
-.mentionBadge {
+.mention-badge {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -38,7 +38,7 @@
     filter 0.2s;
 }
 
-.mentionBadge:hover {
+.mention-badge:hover {
   background: color-mix(
     in srgb,
     var(--accent-primary) 16%,
@@ -53,7 +53,7 @@
 
 /* ── Tooltip (full path on hover) ────────────────────────────── */
 
-.mentionBadge::after {
+.mention-badge::after {
   content: attr(data-mention-path);
   position: absolute;
   bottom: calc(100% + 6px);
@@ -76,24 +76,24 @@
   z-index: 200;
 }
 
-.mentionBadge:hover::after {
+.mention-badge:hover::after {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
 
 /* Inside contentEditable inputs, overflow-y:auto clips the ::after tooltip.
    These badges have contenteditable="false" and use native `title` instead. */
-.mentionBadge[contenteditable="false"]::after {
+.mention-badge[contenteditable="false"]::after {
   display: none;
 }
 
 /* ── Clickable state (file badges that open in viewer) ──────── */
 
-.mentionBadgeClickable {
+.mention-badge-clickable {
   cursor: pointer;
 }
 
-.mentionBadgeClickable:hover {
+.mention-badge-clickable:hover {
   background: color-mix(
     in srgb,
     var(--accent-primary) 22%,
@@ -104,13 +104,13 @@
     color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
-.mentionBadgeClickable:active {
+.mention-badge-clickable:active {
   transform: scale(0.97);
 }
 
 /* ── Stale state (file/directory no longer exists) ───────────── */
 
-.mentionBadgeStale {
+.mention-badge-stale {
   opacity: 0.45;
   filter: grayscale(1);
   border-style: dashed;
@@ -127,7 +127,7 @@
   );
 }
 
-.mentionBadgeStale:hover {
+.mention-badge-stale:hover {
   opacity: 0.6;
   background: color-mix(
     in srgb,
@@ -142,14 +142,14 @@
 }
 
 /* Tooltip suffix for stale badges */
-.mentionBadgeStale::after {
+.mention-badge-stale::after {
   content: attr(data-mention-path) " (deleted)";
   color: var(--text-muted);
 }
 
 /* ── Mention Icon ────────────────────────────────────────────── */
 
-.mentionIcon {
+.mention-icon {
   font-size: var(--font-size-xs);
   line-height: 1;
   flex-shrink: 0;
@@ -157,7 +157,7 @@
 
 /* ── Slash Command Badge (inline rule activation) ────────────── */
 
-.slashCommandBadge {
+.slash-command-badge {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -190,7 +190,7 @@
     opacity 0.2s;
 }
 
-.slashCommandBadge:hover {
+.slash-command-badge:hover {
   background: color-mix(
     in srgb,
     var(--color-amber) 16%,

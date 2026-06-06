@@ -34,7 +34,7 @@ export default function BenchmarkBarComponent({
       <div
         className={`${styles.wrapper} ${mini ? styles.mini : ""} ${className}`}
       >
-        <div className={`${styles.bar} ${hasRuns ? styles.barHasRuns : ""}`}>
+        <div className={`${styles.bar} ${hasRuns ? styles['bar-has-runs'] : ""}`}>
           <div className={styles.fill} style={{ width: `${passRate}%` }} />
         </div>
         {label && !mini && <span className={styles.label}>{label}</span>}

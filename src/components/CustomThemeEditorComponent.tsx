@@ -264,7 +264,7 @@ export default function CustomThemeEditorComponent({
       {!editing && (
         <>
           {themes.length > 0 && (
-            <div className={styles.themeList}>
+            <div className={styles['theme-list']}>
               {themes.map((theme) => {
                 const isActive = activeTheme === getCustomThemeAttr(theme.id);
                 const isConfirmingDelete = confirmDeleteId === theme.id;
@@ -272,35 +272,35 @@ export default function CustomThemeEditorComponent({
                 return (
                   <div
                     key={theme.id}
-                    className={`${styles.themeItem} ${isActive ? styles.themeItemActive : ""}`}
+                    className={`${styles['theme-item']} ${isActive ? styles['theme-item-active'] : ""}`}
                   >
                     <button
-                      className={styles.themeItemMain}
+                      className={styles['theme-item-main']}
                       onClick={() => handleApplyTheme(theme)}
                       type="button"
                       title={`Apply ${theme.name}`}
                     >
-                      <span className={styles.themeSwatchDual}>
+                      <span className={styles['theme-swatch-dual']}>
                         <span
-                          className={styles.themeSwatchHalf}
+                          className={styles['theme-swatch-half']}
                           style={{ background: theme.tokens.primary }}
                         />
                         <span
-                          className={styles.themeSwatchHalf}
+                          className={styles['theme-swatch-half']}
                           style={{ background: theme.tokens.secondary }}
                         />
                       </span>
-                      <span className={styles.themeItemName}>{theme.name}</span>
+                      <span className={styles['theme-item-name']}>{theme.name}</span>
                       {isActive && (
-                        <span className={styles.activeBadge}>
+                        <span className={styles['active-badge']}>
                           <Check size={10} strokeWidth={3} />
                           Active
                         </span>
                       )}
                     </button>
-                    <div className={styles.themeItemActions}>
+                    <div className={styles['theme-item-actions']}>
                       <button
-                        className={styles.actionButton}
+                        className={styles['action-button']}
                         onClick={() => handleEditTheme(theme)}
                         title="Edit"
                         type="button"
@@ -308,7 +308,7 @@ export default function CustomThemeEditorComponent({
                         <Pencil size={13} />
                       </button>
                       <button
-                        className={styles.actionButton}
+                        className={styles['action-button']}
                         onClick={() => handleDuplicate(theme.id)}
                         title="Duplicate"
                         type="button"
@@ -317,7 +317,7 @@ export default function CustomThemeEditorComponent({
                       </button>
                       {isConfirmingDelete ? (
                         <button
-                          className={`${styles.actionButton} ${styles.actionBtnDanger}`}
+                          className={`${styles['action-button']} ${styles['action-btn-danger']}`}
                           onClick={() => handleDelete(theme.id)}
                           title="Confirm delete"
                           type="button"
@@ -326,7 +326,7 @@ export default function CustomThemeEditorComponent({
                         </button>
                       ) : (
                         <button
-                          className={styles.actionButton}
+                          className={styles['action-button']}
                           onClick={() => handleConfirmDelete(theme.id)}
                           title="Delete"
                           type="button"
@@ -342,10 +342,10 @@ export default function CustomThemeEditorComponent({
           )}
 
           {/* New Theme button */}
-          <div className={styles.newThemeRow}>
-            <div className={styles.newThemeButtonWrapper}>
+          <div className={styles['new-theme-row']}>
+            <div className={styles['new-theme-button-wrapper']}>
               <button
-                className={styles.newThemeButton}
+                className={styles['new-theme-button']}
                 onClick={() => setShowCloneMenu(!showCloneMenu)}
                 type="button"
               >
@@ -353,22 +353,22 @@ export default function CustomThemeEditorComponent({
                 New Theme
                 <ChevronDown
                   size={12}
-                  className={`${styles.newThemeChevron} ${showCloneMenu ? styles.newThemeChevronOpen : ""}`}
+                  className={`${styles['new-theme-chevron']} ${showCloneMenu ? styles['new-theme-chevron-open'] : ""}`}
                 />
               </button>
 
               {showCloneMenu && (
-                <div className={styles.cloneMenu}>
-                  <span className={styles.cloneMenuTitle}>Clone from</span>
+                <div className={styles['clone-menu']}>
+                  <span className={styles['clone-menu-title']}>Clone from</span>
                   {CLONE_BASES.map((base) => (
                     <button
                       key={base.id}
-                      className={styles.cloneMenuItem}
+                      className={styles['clone-menu-item']}
                       onClick={() => handleNewTheme(base.id)}
                       type="button"
                     >
                       <span
-                        className={styles.cloneMenuSwatch}
+                        className={styles['clone-menu-swatch']}
                         style={{
                           background:
                             CustomThemeService.BUILT_IN_PRESETS[base.id]
@@ -384,13 +384,13 @@ export default function CustomThemeEditorComponent({
           </div>
 
           {themes.length === 0 && (
-            <div className={styles.emptyState}>
+            <div className={styles['empty-state']}>
               <Palette
                 size={24}
                 style={{ color: "var(--text-muted)", margin: "0 auto" }}
               />
-              <span className={styles.emptyTitle}>No custom themes yet</span>
-              <span className={styles.emptyDescription}>
+              <span className={styles['empty-title']}>No custom themes yet</span>
+              <span className={styles['empty-description']}>
                 Create a custom theme by cloning from a built-in base and
                 tweaking the colors to your liking.
               </span>
@@ -403,13 +403,13 @@ export default function CustomThemeEditorComponent({
       {editing && editTokens && (
         <div className={styles.editor}>
           {/* Editor header */}
-          <div className={styles.editorHeader}>
-            <span className={styles.editorTitle}>
+          <div className={styles['editor-header']}>
+            <span className={styles['editor-title']}>
               {isNew ? "New Theme" : "Edit Theme"}
             </span>
-            <div className={styles.editorActions}>
+            <div className={styles['editor-actions']}>
               <button
-                className={styles.editorCancelButton}
+                className={styles['editor-cancel-button']}
                 onClick={handleCancel}
                 type="button"
               >
@@ -417,7 +417,7 @@ export default function CustomThemeEditorComponent({
                 Cancel
               </button>
               <button
-                className={styles.editorSaveButton}
+                className={styles['editor-save-button']}
                 onClick={handleSave}
                 type="button"
               >
@@ -428,8 +428,8 @@ export default function CustomThemeEditorComponent({
           </div>
 
           {/* Name input */}
-          <div className={styles.editorNameRow}>
-            <label className={styles.editorLabel}>Name</label>
+          <div className={styles['editor-name-row']}>
+            <label className={styles['editor-label']}>Name</label>
             <InputComponent
               type="text"
               value={editName}
@@ -441,7 +441,7 @@ export default function CustomThemeEditorComponent({
 
           {/* Live preview strip */}
           <div
-            className={styles.livePreview}
+            className={styles['live-preview']}
             style={
               {
                 "--preview-background": editTokens.backgroundBase,
@@ -460,73 +460,73 @@ export default function CustomThemeEditorComponent({
               } as React.CSSProperties
             }
           >
-            <span className={styles.previewLabel}>Preview</span>
-            <div className={styles.previewContent}>
-              <div className={styles.previewSidebar}>
+            <span className={styles['preview-label']}>Preview</span>
+            <div className={styles['preview-content']}>
+              <div className={styles['preview-sidebar']}>
                 <div
-                  className={styles.previewNavItem}
+                  className={styles['preview-nav-item']}
                   data-is-active-state="true"
                 >
                   <span
-                    className={styles.previewDot}
+                    className={styles['preview-dot']}
                     data-color-variant="accent"
                   />
                   <span>Active</span>
                 </div>
-                <div className={styles.previewNavItem}>
+                <div className={styles['preview-nav-item']}>
                   <span
-                    className={styles.previewDot}
+                    className={styles['preview-dot']}
                     data-color-variant="accent2"
                   />
                   <span>Nav Item</span>
                 </div>
-                <div className={styles.previewNavItem}>
+                <div className={styles['preview-nav-item']}>
                   <span
-                    className={styles.previewDot}
+                    className={styles['preview-dot']}
                     data-color-variant="muted"
                   />
                   <span>Another</span>
                 </div>
               </div>
-              <div className={styles.previewMain}>
-                <div className={styles.previewCard}>
-                  <span className={styles.previewHeading}>Card Title</span>
-                  <span className={styles.previewBody}>
+              <div className={styles['preview-main']}>
+                <div className={styles['preview-card']}>
+                  <span className={styles['preview-heading']}>Card Title</span>
+                  <span className={styles['preview-body']}>
                     Secondary text content with tertiary meta
                   </span>
-                  <div className={styles.previewBadges}>
+                  <div className={styles['preview-badges']}>
                     <span
-                      className={styles.previewBadge}
+                      className={styles['preview-badge']}
                       data-color-variant="accent"
                     >
                       Accent
                     </span>
                     <span
-                      className={styles.previewBadge}
+                      className={styles['preview-badge']}
                       data-color-variant="accent2"
                     >
                       Secondary
                     </span>
                     <span
-                      className={styles.previewBadge}
+                      className={styles['preview-badge']}
                       data-color-variant="success"
                     >
                       Success
                     </span>
                     <span
-                      className={styles.previewBadge}
+                      className={styles['preview-badge']}
                       data-color-variant="danger"
                     >
                       Error
                     </span>
                     <span
-                      className={styles.previewBadge}
+                      className={styles['preview-badge']}
                       data-color-variant="warning"
                     >
                       Warning
                     </span>
                     <span
-                      className={styles.previewBadge}
+                      className={styles['preview-badge']}
                       data-color-variant="info"
                     >
                       Info
@@ -538,29 +538,29 @@ export default function CustomThemeEditorComponent({
           </div>
 
           {/* Token groups */}
-          <div className={styles.tokenGroups}>
+          <div className={styles['token-groups']}>
             {TOKEN_GROUPS.map((group) => {
               const isExpanded = expandedGroups.has(group.title);
 
               return (
-                <div key={group.title} className={styles.tokenGroup}>
+                <div key={group.title} className={styles['token-group']}>
                   <button
-                    className={`${styles.tokenGroupHeader} ${isExpanded ? styles.tokenGroupExpanded : ""}`}
+                    className={`${styles['token-group-header']} ${isExpanded ? styles['token-group-expanded'] : ""}`}
                     onClick={() => toggleGroup(group.title)}
                     type="button"
                   >
                     <ChevronRight
                       size={13}
-                      className={styles.tokenGroupChevron}
+                      className={styles['token-group-chevron']}
                     />
-                    <span className={styles.tokenGroupTitle}>
+                    <span className={styles['token-group-title']}>
                       {group.title}
                     </span>
-                    <div className={styles.tokenGroupSwatches}>
+                    <div className={styles['token-group-swatches']}>
                       {group.fields.map((field) => (
                         <span
                           key={field.key}
-                          className={styles.tokenGroupMiniSwatch}
+                          className={styles['token-group-mini-swatch']}
                           style={{ background: editTokens[field.key] }}
                         />
                       ))}
@@ -568,30 +568,30 @@ export default function CustomThemeEditorComponent({
                   </button>
 
                   {isExpanded && (
-                    <div className={styles.tokenGroupBody}>
+                    <div className={styles['token-group-body']}>
                       {group.fields.map((field) => (
-                        <div key={field.key} className={styles.tokenRow}>
-                          <label className={styles.tokenLabel}>
+                        <div key={field.key} className={styles['token-row']}>
+                          <label className={styles['token-label']}>
                             {field.label}
                           </label>
-                          <div className={styles.tokenControl}>
-                            <div className={styles.colorInputWrapper}>
+                          <div className={styles['token-control']}>
+                            <div className={styles['color-input-wrapper']}>
                               <input
                                 type="color"
-                                className={styles.colorInput}
+                                className={styles['color-input']}
                                 value={editTokens[field.key]}
                                 onChange={(e) =>
                                   handleTokenChange(field.key, e.target.value)
                                 }
                               />
                               <span
-                                className={styles.colorSwatch}
+                                className={styles['color-swatch']}
                                 style={{ background: editTokens[field.key] }}
                               />
                             </div>
                             <InputComponent
                               type="text"
-                              className={styles.hexInput}
+                              className={styles['hex-input']}
                               value={editTokens[field.key]}
                               onChange={(e) =>
                                 handleTokenChange(field.key, e.target.value)
@@ -609,9 +609,9 @@ export default function CustomThemeEditorComponent({
           </div>
 
           {/* Apply button */}
-          <div className={styles.editorFooter}>
+          <div className={styles['editor-footer']}>
             <button
-              className={styles.applyPreviewButton}
+              className={styles['apply-preview-button']}
               onClick={() => {
                 if (editing) {
                   handleSave();

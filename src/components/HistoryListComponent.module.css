@@ -5,14 +5,14 @@
   min-height: 0;
 }
 
-.searchWrapper {
+.search-wrapper {
   position: relative;
   margin: 0;
   padding: 12px;
 }
 
 /* ── Count Row ── */
-.countRow {
+.count-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -26,7 +26,7 @@
     color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
 }
 
-.countLabel {
+.count-label {
   text-transform: uppercase;
   font-weight: 500;
 }
@@ -55,7 +55,7 @@
   flex-shrink: 0;
 }
 
-.loadingMore {
+.loading-more {
   display: flex;
   align-items: center;
   justify-content: center;

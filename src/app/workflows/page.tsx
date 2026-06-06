@@ -1177,16 +1177,16 @@ export default function WorkflowsPage({
       navSidebar={<NavigationSidebarComponent mode="user" />}
       leftTitle="Assets"
       leftPanel={
-        <div className={styles.leftPanel}>
+        <div className={styles['left-panel']}>
           {/* Asset buttons */}
-          <div className={styles.assetSection}>
-            <div className={styles.assetSectionLabel}>
+          <div className={styles['asset-section']}>
+            <div className={styles['asset-section-label']}>
               <Package size={11} />
               Assets
             </div>
-            <div className={styles.assetButtons}>
+            <div className={styles['asset-buttons']}>
               <button
-                className={styles.assetButton}
+                className={styles['asset-button']}
                 onClick={() => handleAddAsset("model", "model")}
                 title="Add AI Model"
               >
@@ -1194,7 +1194,7 @@ export default function WorkflowsPage({
                 <span>AI Model</span>
               </button>
               <button
-                className={styles.assetButton}
+                className={styles['asset-button']}
                 onClick={() => handleAddAsset("conversation", "input")}
                 title="Add Chat History"
               >
@@ -1202,7 +1202,7 @@ export default function WorkflowsPage({
                 <span>Chat History</span>
               </button>
               <button
-                className={styles.assetButton}
+                className={styles['asset-button']}
                 onClick={() => handleAddAsset("text", "input")}
                 title="Add Text"
               >
@@ -1210,7 +1210,7 @@ export default function WorkflowsPage({
                 <span>Text</span>
               </button>
               <button
-                className={styles.assetButton}
+                className={styles['asset-button']}
                 onClick={() => handleAddAsset("file", "input")}
                 title="Add Media"
               >
@@ -1218,7 +1218,7 @@ export default function WorkflowsPage({
                 <span>Media</span>
               </button>
               <button
-                className={styles.assetButton}
+                className={styles['asset-button']}
                 onClick={() => handleAddAsset("text", "viewer")}
                 title="Add Output"
               >
@@ -1226,7 +1226,7 @@ export default function WorkflowsPage({
                 <span>Output</span>
               </button>
               <button
-                className={styles.assetButton}
+                className={styles['asset-button']}
                 onClick={() => handleAddAsset("tools", "tools")}
                 title="Add Tool Calling Tools"
               >
@@ -1238,7 +1238,7 @@ export default function WorkflowsPage({
 
           {/* Inspector — shows when a node is selected */}
           {selectedNode && (
-            <div className={styles.inspectorContainer}>
+            <div className={styles['inspector-container']}>
               <WorkflowInspector
                 node={selectedNode}
                 connections={edges as any}
@@ -1259,14 +1259,14 @@ export default function WorkflowsPage({
       }
       rightTitle={`${savedWorkflows.length} Workflows`}
       rightPanel={
-        <div className={styles.rightPanel}>
+        <div className={styles['right-panel']}>
           {/* New Workflow button */}
           <ButtonComponent
             variant="primary"
             icon={Plus}
             onClick={handleNewWorkflow}
             disabled={!workflowId && nodes.length === 0}
-            className={styles.newWorkflowButton}
+            className={styles['new-workflow-button']}
           >
             New Workflow
           </ButtonComponent>
@@ -1325,7 +1325,7 @@ export default function WorkflowsPage({
         <WorkflowHeaderStatsComponent nodes={nodes} edgeCount={edges.length} />
       }
       headerControls={
-        <div className={styles.headerControls}>
+        <div className={styles['header-controls']}>
           <ButtonComponent
             variant="disabled"
             icon={Download}
@@ -1340,14 +1340,14 @@ export default function WorkflowsPage({
               URL.revokeObjectURL(url);
             }}
             title="Export workflow"
-            className={styles.headerActionButton}
+            className={styles['header-action-button']}
           />
           <ButtonComponent
             variant="disabled"
             icon={Upload}
             onClick={() => (importRef.current as HTMLInputElement)?.click()}
             title="Import workflow"
-            className={styles.headerActionButton}
+            className={styles['header-action-button']}
           />
           <ButtonComponent
             variant="disabled"
@@ -1355,7 +1355,7 @@ export default function WorkflowsPage({
             onClick={handleUndo}
             disabled={undoCount === 0}
             title={`Undo (Ctrl+Z) · ${undoCount} states`}
-            className={styles.headerActionButton}
+            className={styles['header-action-button']}
           />
           <ButtonComponent
             variant="disabled"
@@ -1363,7 +1363,7 @@ export default function WorkflowsPage({
             onClick={handleResetWorkflow}
             disabled={isRunning || Object.keys(nodeStatuses).length === 0}
             title="Reset execution state"
-            className={styles.headerActionButton}
+            className={styles['header-action-button']}
           />
           <input
             ref={importRef}
@@ -1391,7 +1391,7 @@ export default function WorkflowsPage({
           />
           {isRunning ? (
             <button
-              className={`${styles.runButton} ${styles.runBtnStop}`}
+              className={`${styles['run-button']} ${styles['run-btn-stop']}`}
               onClick={handleStopWorkflow}
             >
               <Square size={14} />
@@ -1399,7 +1399,7 @@ export default function WorkflowsPage({
             </button>
           ) : (
             <button
-              className={styles.runButton}
+              className={styles['run-button']}
               onClick={handleRunWorkflow}
               disabled={nodes.length === 0}
             >
@@ -1412,9 +1412,9 @@ export default function WorkflowsPage({
       }
     >
       {/* Center: Workflow Canvas */}
-      <div className={styles.canvasWrapper}>
+      <div className={styles['canvas-wrapper']}>
         {isLoadingWorkflow && (
-          <div className={styles.loadingOverlay}>
+          <div className={styles['loading-overlay']}>
             <PanelLoadingSpinner />
           </div>
         )}
@@ -1439,11 +1439,11 @@ export default function WorkflowsPage({
       </div>
 
       {/* Footer: save workflow (matches ChatArea inputWrapper) */}
-      <div className={styles.inputWrapper}>
-        <div className={styles.inputBox}>
+      <div className={styles['input-wrapper']}>
+        <div className={styles['input-box']}>
           <InputComponent
             type="text"
-            className={styles.nameInput}
+            className={styles['name-input']}
             placeholder="Untitled Workflow"
             value={workflowName || ""}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -1459,7 +1459,7 @@ export default function WorkflowsPage({
             onClick={handleSaveWorkflow}
             disabled={!hasUnsavedChanges}
             title="Save Workflow"
-            className={styles.saveButton}
+            className={styles['save-button']}
           />
         </div>
       </div>

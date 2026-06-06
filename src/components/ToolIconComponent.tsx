@@ -62,7 +62,7 @@ export default function ToolIconComponent({
   }
 
   return (
-    <span className={`${styles.toolPills} ${className || ""}`}>
+    <span className={`${styles['tool-pills']} ${className || ""}`}>
       {[...resolved.entries()].map(
         ([label, Icon]: [
           string,
@@ -76,7 +76,7 @@ export default function ToolIconComponent({
 
           return (
             <TooltipComponent key={label} label={tooltipLabel} position="top">
-              <span className={styles.toolPill}>
+              <span className={styles['tool-pill']}>
                 <Icon
                   size={size}
                   style={{

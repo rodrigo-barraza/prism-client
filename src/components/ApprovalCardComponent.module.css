@@ -10,7 +10,7 @@
     var(--background-surface)
   );
   padding: 12px 14px;
-  animation: slideIn 0.2s ease-out;
+  animation: slide-in 0.2s ease-out;
 
   &.resolved {
     opacity: 0.6;
@@ -27,24 +27,24 @@
   margin-bottom: 8px;
 }
 
-.headerLeft {
+.header-left {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.tierIcon {
+.tier-icon {
   flex-shrink: 0;
 }
 
-.toolName {
+.tool-name {
   font-weight: 600;
   font-size: 0.8125rem;
   color: var(--text-primary);
   font-family: var(--font-mono, "JetBrains Mono", monospace);
 }
 
-.tierBadge {
+.tier-badge {
   font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -65,14 +65,14 @@
   border-radius: 6px;
 }
 
-.argumentRow {
+.argument-row {
   display: flex;
   gap: 8px;
   font-size: 11.5px;
   line-height: 1.4;
 }
 
-.argumentKey {
+.argument-key {
   color: var(--text-muted);
   font-family: var(--font-mono, monospace);
   flex-shrink: 0;
@@ -83,7 +83,7 @@
   }
 }
 
-.argumentValue {
+.argument-value {
   color: var(--text-secondary);
   word-break: break-all;
   font-family: var(--font-mono, monospace);
@@ -95,9 +95,9 @@
   padding-top: 2px;
 }
 
-.approveButton,
-.approveAllButton,
-.rejectButton {
+.approve-button,
+.approve-all-button,
+.reject-button {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -110,7 +110,7 @@
   transition: all 0.15s ease;
 }
 
-.approveButton {
+.approve-button {
   background: color-mix(in srgb, var(--color-success) 15%, transparent);
   color: var(--color-success);
   border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
@@ -120,7 +120,7 @@
   }
 }
 
-.approveAllButton {
+.approve-all-button {
   background: color-mix(in srgb, var(--color-info) 12%, transparent);
   color: var(--color-info);
   border-color: color-mix(in srgb, var(--color-info) 20%, transparent);
@@ -130,7 +130,7 @@
   }
 }
 
-.rejectButton {
+.reject-button {
   background: color-mix(in srgb, var(--color-danger) 12%, transparent);
   color: var(--color-danger);
   border-color: color-mix(in srgb, var(--color-danger) 20%, transparent);
@@ -140,7 +140,7 @@
   }
 }
 
-@keyframes slideIn {
+@keyframes slide-in {
   from {
     opacity: 0;
     transform: translateY(-4px);

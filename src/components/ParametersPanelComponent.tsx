@@ -229,7 +229,7 @@ export default function ParametersPanelComponent({
         const clampedValue = Math.min(numericValue, sliderMax ?? numericValue);
 
         return (
-          <div className={styles.formGroup} key={descriptor.key}>
+          <div className={styles['form-group']} key={descriptor.key}>
             <label>
               {descriptor.label} ({clampedValue})
               {isLocked && (
@@ -259,7 +259,7 @@ export default function ParametersPanelComponent({
             : effectiveOptions;
 
         return (
-          <div className={styles.formGroup} key={descriptor.key}>
+          <div className={styles['form-group']} key={descriptor.key}>
             <label>
               {descriptor.label}
               {isLocked && (
@@ -269,7 +269,7 @@ export default function ParametersPanelComponent({
               )}
             </label>
             {readOnly ? (
-              <div className={styles.readOnlyValue}>
+              <div className={styles['read-only-value']}>
                 {String(currentValue) ||
                   selectOptions?.find((option) => option.value === currentValue)?.label ||
                   "Default"}
@@ -298,7 +298,7 @@ export default function ParametersPanelComponent({
                 : "";
 
         return (
-          <div className={styles.formGroup} key={descriptor.key}>
+          <div className={styles['form-group']} key={descriptor.key}>
             <label>{descriptor.label}</label>
             {!readOnly && (
               <InputComponent
@@ -326,7 +326,7 @@ export default function ParametersPanelComponent({
       case "toggle": {
         const isChecked = currentValue === true || currentValue === "true";
         return (
-          <div className={styles.formGroup} key={descriptor.key}>
+          <div className={styles['form-group']} key={descriptor.key}>
             <label
               style={{ display: "flex", alignItems: "center", gap: 8, cursor: readOnly || isLocked ? "default" : "pointer" }}
             >
@@ -358,7 +358,7 @@ export default function ParametersPanelComponent({
   if (isSpecialModel || settings.provider === "ollama") {
     return (
       <div className={styles.container}>
-        <div className={styles.sectionTitle}>
+        <div className={styles['section-title']}>
           <Settings2 size={16} /> Parameters
         </div>
         <p style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
@@ -370,7 +370,7 @@ export default function ParametersPanelComponent({
 
   return (
     <div className={styles.container}>
-      <div className={styles.sectionTitle}>
+      <div className={styles['section-title']}>
         <Settings2 size={16} /> Parameters
         {isAgentMode && (
           <span

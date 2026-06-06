@@ -88,7 +88,7 @@
 }
 
 /* ── Empty state ── */
-.emptyState {
+.empty-state {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -101,20 +101,20 @@
   pointer-events: none;
 }
 
-.emptyIcon {
+.empty-icon {
   font-size: 3rem;
   opacity: 0.2;
   color: var(--accent-primary);
 }
 
-.emptyTitle {
+.empty-title {
   font-size: var(--font-size-md);
   font-weight: 600;
   color: var(--text-secondary);
   opacity: 0.6;
 }
 
-.emptySubtitle {
+.empty-subtitle {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   max-width: 240px;
@@ -147,45 +147,45 @@
 }
 
 /* ── Connections ── */
-.connectionGroup {
+.connection-group {
   pointer-events: auto;
 }
 
-.connectionHitArea {
+.connection-hit-area {
   cursor: pointer;
 }
 
-.connectionLine {
+.connection-line {
   pointer-events: none;
   transition: stroke-opacity var(--transition-fast);
 }
 
-@keyframes edgeFlow {
+@keyframes edge-flow {
   to {
     stroke-dashoffset: -24;
   }
 }
 
-.connectionSelected .connectionLine {
+.connection-selected .connection-line {
   stroke-dasharray: 8 6;
-  animation: edgeFlow 0.6s linear infinite;
+  animation: edge-flow 0.6s linear infinite;
 }
 
-.connectionGroup:hover .connectionLine {
+.connection-group:hover .connection-line {
   stroke-opacity: 1;
   stroke-width: 3;
 }
 
-.connectionDeleteWrapper {
+.connection-delete-wrapper {
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
 
-.connectionGroup:hover .connectionDeleteWrapper {
+.connection-group:hover .connection-delete-wrapper {
   opacity: 1;
 }
 
-.connectionDeleteButton {
+.connection-delete-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -199,12 +199,12 @@
   box-shadow: 0 1px 4px oklch(0.0% 0.0 0.0 / 0.3);
 }
 
-.connectingLine {
+.connecting-line {
   pointer-events: none;
 }
 
 /* ── Canvas toolbar (top-left) ── */
-.canvasToolbar {
+.canvas-toolbar {
   position: absolute;
   top: 12px;
   left: 12px;
@@ -213,7 +213,7 @@
   z-index: 3;
 }
 
-.toolbarButton {
+.toolbar-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,7 +235,7 @@
   }
 }
 
-.toolbarBtnActive {
+.toolbar-btn-active {
   background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
   border-color: var(--accent-primary);
@@ -243,7 +243,7 @@
 
 /* ── Mobile: ensure toolbar stays accessible ── */
 @media (max-width: 767px) {
-  .canvasToolbar {
+  .canvas-toolbar {
     z-index: 10;
   }
 

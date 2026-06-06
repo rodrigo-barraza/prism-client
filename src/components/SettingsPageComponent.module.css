@@ -4,7 +4,7 @@
   padding: 32px 48px;
   max-width: 900px;
   margin: 0 auto;
-  animation: fadeIn var(--transition-normal) ease-out;
+  animation: fade-in var(--transition-normal) ease-out;
 }
 
 /* ── Page header ──────────────────────────────────────────────────── */
@@ -18,7 +18,7 @@
   margin-bottom: 8px;
 }
 
-.headerLeft {
+.header-left {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -33,7 +33,7 @@
   gap: 10px;
   margin: 0;
 
-  & .titleIcon {
+  & .title-icon {
     color: var(--accent-primary);
     opacity: 0.8;
   }
@@ -46,7 +46,7 @@
   margin: 0;
 }
 
-.headerRight {
+.header-right {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -61,7 +61,7 @@
 
 /* ── Settings row ─────────────────────────────────────────────────── */
 
-.settingsRow {
+.settings-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -71,15 +71,15 @@
   transition: background var(--transition-fast);
 }
 
-.settingsRow:hover {
+.settings-row:hover {
   background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
 }
 
-.settingsRow + .settingsRow {
+.settings-row + .settings-row {
   border-top: 1px solid var(--calculated-border-subtle);
 }
 
-.rowLabel {
+.row-label {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -87,25 +87,25 @@
   flex: 1 1 200px;
 }
 
-.rowTitle {
+.row-title {
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-primary);
 }
 
-.rowDescription {
+.row-description {
   font-size: 11.5px;
   color: var(--text-tertiary);
   line-height: 1.4;
 }
 
-.rowControl {
+.row-control {
   flex-shrink: 0;
 }
 
 /* ── Loading state ────────────────────────────────────────────────── */
 
-.isLoadingState {
+.is-loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,7 +121,7 @@
 
 /* ── Saved toast ──────────────────────────────────────────────────── */
 
-.savedIndicator {
+.saved-indicator {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -132,13 +132,13 @@
   transition: opacity 0.3s ease;
 }
 
-.savedIndicator.isVisibleState {
+.saved-indicator.is-visible-state {
   opacity: 1;
 }
 
 /* ── Agent status banner ─────────────────────────────────────────── */
 
-.agentStatusBanner {
+.agent-status-banner {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -147,14 +147,14 @@
   font-size: var(--font-size-sm);
 }
 
-.agentStatusDot {
+.agent-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.agentStatusDot.connected {
+.agent-status-dot.connected {
   background: var(--color-success, var(--color-success-bright));
   box-shadow: 0 0 6px
     color-mix(
@@ -162,15 +162,15 @@
       var(--color-success, var(--color-success-bright)) 50%,
       transparent
     );
-  animation: statusPulse 2s ease-in-out infinite;
+  animation: status-pulse 2s ease-in-out infinite;
 }
 
-.agentStatusDot.disconnected {
+.agent-status-dot.disconnected {
   background: var(--text-muted);
   opacity: 0.5;
 }
 
-@keyframes statusPulse {
+@keyframes status-pulse {
   0%,
   100% {
     opacity: 1;
@@ -180,17 +180,17 @@
   }
 }
 
-.agentStatusText {
+.agent-status-text {
   color: var(--text-secondary);
   font-weight: 500;
 }
 
-.agentStatusText strong {
+.agent-status-text strong {
   color: var(--text-primary);
   font-weight: 600;
 }
 
-.agentStatusMeta {
+.agent-status-meta {
   margin-left: auto;
   color: var(--text-muted);
   font-size: var(--font-size-xs);
@@ -198,7 +198,7 @@
 
 /* ── Section label ───────────────────────────────────────────────── */
 
-.sectionLabel {
+.section-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -212,26 +212,26 @@
 
 /* ── Agent card ──────────────────────────────────────────────────── */
 
-.agentCard {
+.agent-card {
   padding: 14px 24px;
   transition: background var(--transition-fast);
 }
 
-.agentCard:hover {
+.agent-card:hover {
   background: color-mix(in srgb, var(--accent-primary) 2%, transparent);
 }
 
-.agentCard + .agentCard {
+.agent-card + .agent-card {
   border-top: 1px solid var(--calculated-border-subtle);
 }
 
-.agentCardHeader {
+.agent-card-header {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.agentIcon {
+.agent-icon {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -243,7 +243,7 @@
   color: var(--accent-primary);
 }
 
-.agentInfo {
+.agent-info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -251,19 +251,19 @@
   gap: 2px;
 }
 
-.agentNameRow {
+.agent-name-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.agentName {
+.agent-name {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.agentVersion {
+.agent-version {
   font-size: 0.625rem;
   font-weight: 500;
   padding: 1px 5px;
@@ -273,7 +273,7 @@
   letter-spacing: 0.2px;
 }
 
-.agentMeta {
+.agent-meta {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -281,13 +281,13 @@
   color: var(--text-tertiary);
 }
 
-.agentMetaItem {
+.agent-meta-item {
   display: inline-flex;
   align-items: center;
   gap: 3px;
 }
 
-.agentMetaSeparator {
+.agent-meta-separator {
   width: 3px;
   height: 3px;
   border-radius: 50%;
@@ -297,14 +297,14 @@
 
 /* ── Agent capability tags ───────────────────────────────────────── */
 
-.agentCapabilities {
+.agent-capabilities {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   flex-shrink: 0;
 }
 
-.capabilityTag {
+.capability-tag {
   font-size: 0.625rem;
   font-weight: 500;
   padding: 2px 6px;
@@ -317,7 +317,7 @@
 
 /* ── Agent roots list ────────────────────────────────────────────── */
 
-.agentRoots {
+.agent-roots {
   margin-top: 10px;
   padding-left: 42px;
   display: flex;
@@ -325,7 +325,7 @@
   gap: 4px;
 }
 
-.agentRootItem {
+.agent-root-item {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -338,11 +338,11 @@
   transition: background var(--transition-fast);
 }
 
-.agentRootItem:hover {
+.agent-root-item:hover {
   background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
 }
 
-.agentRootIcon {
+.agent-root-icon {
   flex-shrink: 0;
   color: var(--text-muted);
   opacity: 0.5;
@@ -350,7 +350,7 @@
 
 /* ── Workspace list ──────────────────────────────────────────────── */
 
-.workspaceItem {
+.workspace-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -359,15 +359,15 @@
   transition: background var(--transition-fast);
 }
 
-.workspaceItem:hover {
+.workspace-item:hover {
   background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
 }
 
-.workspaceItem + .workspaceItem {
+.workspace-item + .workspace-item {
   border-top: 1px solid var(--calculated-border-subtle);
 }
 
-.workspaceItemInfo {
+.workspace-item-info {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -375,19 +375,19 @@
   flex: 1;
 }
 
-.workspaceItemIcon {
+.workspace-item-icon {
   flex-shrink: 0;
   color: var(--text-tertiary);
 }
 
-.workspaceItemDetails {
+.workspace-item-details {
   display: flex;
   flex-direction: column;
   gap: 1px;
   min-width: 0;
 }
 
-.workspaceItemName {
+.workspace-item-name {
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-primary);
@@ -396,7 +396,7 @@
   gap: 6px;
 }
 
-.workspaceItemPath {
+.workspace-item-path {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   font-family: var(--font-mono, monospace);
@@ -405,7 +405,7 @@
   text-overflow: ellipsis;
 }
 
-.pinnedBadge {
+.pinned-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -419,7 +419,7 @@
   text-transform: uppercase;
 }
 
-.staticBadge {
+.static-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -433,7 +433,7 @@
   text-transform: uppercase;
 }
 
-.removeButton {
+.remove-button {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -448,7 +448,7 @@
   transition: all var(--transition-fast);
 }
 
-.removeButton:hover {
+.remove-button:hover {
   background: color-mix(
     in srgb,
     var(--color-danger, var(--color-danger)) 12%,
@@ -459,7 +459,7 @@
 
 /* ── Add workspace input ─────────────────────────────────────────── */
 
-.addWorkspaceRow {
+.add-workspace-row {
   display: none; /* temporarily disabled */
   /* display: flex; */
   align-items: center;
@@ -468,7 +468,7 @@
   border-top: 1px solid var(--calculated-border-subtle);
 }
 
-.addWorkspaceInput {
+.add-workspace-input {
   flex: 1;
   font-size: 12.5px;
   font-family: var(--font-mono, monospace);
@@ -481,23 +481,23 @@
   transition: border-color var(--transition-fast);
 }
 
-.addWorkspaceInput::placeholder {
+.add-workspace-input::placeholder {
   color: var(--text-muted);
 }
 
-.addWorkspaceInput:focus {
+.add-workspace-input:focus {
   border-color: var(--accent-primary);
 }
 
-.addWorkspaceInput.invalid {
+.add-workspace-input.invalid {
   border-color: var(--color-danger, var(--color-danger));
 }
 
-.addWorkspaceInput.valid {
+.add-workspace-input.valid {
   border-color: var(--color-success, var(--color-success-bright));
 }
 
-.addButton {
+.add-button {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -515,39 +515,39 @@
   white-space: nowrap;
 }
 
-.addButton:hover:not(:disabled) {
+.add-button:hover:not(:disabled) {
   filter: brightness(1.1);
 }
 
-.addButton:disabled {
+.add-button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
 /* ── Validation feedback ─────────────────────────────────────────── */
 
-.validationRow {
+.validation-row {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px 24px 8px;
   font-size: var(--font-size-xs);
-  animation: fadeIn 0.15s ease-out;
+  animation: fade-in 0.15s ease-out;
 }
 
-.validationRow.success {
+.validation-row.success {
   color: var(--color-success, var(--color-success-bright));
 }
 
-.validationRow.error {
+.validation-row.error {
   color: var(--color-danger, var(--color-danger));
 }
 
-.validationRow.info {
+.validation-row.info {
   color: var(--text-tertiary);
 }
 
-.wslTranslation {
+.wsl-translation {
   font-family: var(--font-mono, monospace);
   font-size: 10.5px;
   color: var(--accent-primary);
@@ -556,29 +556,29 @@
 
 /* ── Empty / onboarding state ────────────────────────────────────── */
 
-.emptyWorkspaces {
+.empty-workspaces {
   padding: 24px;
   text-align: center;
   color: var(--text-tertiary);
   font-size: 12.5px;
 }
 
-.onboardingCard {
+.onboarding-card {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 20px 24px;
   text-align: center;
-  animation: fadeIn 0.2s ease-out;
+  animation: fade-in 0.2s ease-out;
 }
 
-.onboardingTitle {
+.onboarding-title {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
-.onboardingDescription {
+.onboarding-description {
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   line-height: 1.5;
@@ -586,7 +586,7 @@
   margin: 0 auto;
 }
 
-.onboardingCode {
+.onboarding-code {
   display: inline-block;
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-xs);
@@ -598,7 +598,7 @@
 
 /* ── Divider between sections ────────────────────────────────────── */
 
-.workspaceDivider {
+.workspace-divider {
   height: 1px;
   background: var(--calculated-border-subtle);
   margin: 0;
@@ -606,14 +606,14 @@
 
 /* ── Harness selector ────────────────────────────────────────────── */
 
-.harnessGrid {
+.harness-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 10px;
   padding: 0 24px 14px;
 }
 
-.harnessCard {
+.harness-card {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -636,40 +636,40 @@
   animation: prismRotate var(--prism-speed) linear infinite;
 }
 
-.harnessCard:hover {
+.harness-card:hover {
   filter: saturate(0.6) brightness(0.85);
 }
 
-.harnessCard.harnessActive {
+.harness-card.harness-active {
   filter: saturate(1) brightness(1);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--accent-primary) 15%, transparent),
     0 2px 12px color-mix(in srgb, var(--accent-primary) 10%, transparent);
 }
 
-.harnessCardHeader {
+.harness-card-header {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.harnessIcon {
+.harness-icon {
   color: var(--text-muted);
   flex-shrink: 0;
   transition: color var(--transition-fast);
 }
 
-.harnessActive .harnessIcon {
+.harness-active .harness-icon {
   color: var(--accent-primary);
 }
 
-.harnessLabel {
+.harness-label {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.harnessBadge {
+.harness-badge {
   margin-left: auto;
   font-size: 0.5625rem;
   font-weight: 600;
@@ -679,16 +679,16 @@
   border-radius: 4px;
   background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
   color: var(--accent-primary);
-  animation: fadeIn 0.2s ease-out;
+  animation: fade-in 0.2s ease-out;
 }
 
-.harnessDescription {
+.harness-description {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.45;
 }
 
-.harnessDivider {
+.harness-divider {
   height: 1px;
   background: var(--calculated-border-subtle);
   margin: 4px 24px 0;
@@ -696,15 +696,15 @@
 
 /* ── Workspace Setup Guide ───────────────────────────────────────── */
 
-.setupGuide {
+.setup-guide {
   margin: 16px 24px 8px;
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 10px;
   overflow: hidden;
-  animation: fadeIn 0.2s ease-out;
+  animation: fade-in 0.2s ease-out;
 }
 
-.setupGuideHeader {
+.setup-guide-header {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -712,14 +712,14 @@
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.setupGuideTitle {
+.setup-guide-title {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.2px;
 }
 
-.setupGuideSubtitle {
+.setup-guide-subtitle {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.4;
@@ -727,7 +727,7 @@
 
 /* ── Guide toggle buttons ────────────────────────────────────────── */
 
-.guideToggle {
+.guide-toggle {
   width: 100%;
   display: flex;
   align-items: center;
@@ -742,29 +742,29 @@
   transition: background var(--transition-fast);
 }
 
-.guideToggle:first-of-type {
+.guide-toggle:first-of-type {
   border-top: none;
 }
 
-.guideToggle:hover {
+.guide-toggle:hover {
   background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
 }
 
-.guideToggle.guideExpanded {
+.guide-toggle.guide-expanded {
   background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
 }
 
-.guideToggleIcon {
+.guide-toggle-icon {
   flex-shrink: 0;
   color: var(--text-muted);
   transition: color var(--transition-fast);
 }
 
-.guideExpanded .guideToggleIcon {
+.guide-expanded .guide-toggle-icon {
   color: var(--accent-primary);
 }
 
-.guideToggleLabel {
+.guide-toggle-label {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -772,37 +772,37 @@
   min-width: 0;
 }
 
-.guideToggleTitle {
+.guide-toggle-title {
   font-size: 0.8125rem;
   font-weight: 600;
 }
 
-.guideToggleHint {
+.guide-toggle-hint {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
-.guideChevron {
+.guide-chevron {
   flex-shrink: 0;
   color: var(--text-muted);
   transition: transform 0.2s ease;
   will-change: transform;
 }
 
-.guideExpanded .guideChevron {
+.guide-expanded .guide-chevron {
   transform: rotate(90deg);
 }
 
 /* ── Guide content panel ─────────────────────────────────────────── */
 
-.guideContent {
+.guide-content {
   padding: 6px 16px 16px;
   border-top: 1px solid var(--calculated-border-subtle);
   background: color-mix(in srgb, var(--accent-primary) 1.5%, transparent);
-  animation: guideSlideIn 0.2s ease-out;
+  animation: guide-slide-in 0.2s ease-out;
 }
 
-@keyframes guideSlideIn {
+@keyframes guide-slide-in {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -815,19 +815,19 @@
 
 /* ── Numbered steps ──────────────────────────────────────────────── */
 
-.guideStep {
+.guide-step {
   display: flex;
   gap: 12px;
   padding: 12px 0 0;
 }
 
-.guideStep + .guideStep {
+.guide-step + .guide-step {
   border-top: 1px solid
     color-mix(in srgb, var(--calculated-border-subtle) 50%, transparent);
   margin-top: 12px;
 }
 
-.stepNumber {
+.step-number {
   flex-shrink: 0;
   width: 22px;
   height: 22px;
@@ -842,7 +842,7 @@
   margin-top: 1px;
 }
 
-.stepBody {
+.step-body {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -850,14 +850,14 @@
   min-width: 0;
 }
 
-.stepTitle {
+.step-title {
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-primary);
   line-height: 1.4;
 }
 
-.stepHint {
+.step-hint {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.5;
@@ -865,7 +865,7 @@
 
 /* ── Code blocks ─────────────────────────────────────────────────── */
 
-.codeBlock {
+.code-block {
   position: relative;
   display: flex;
   align-items: flex-start;
@@ -875,7 +875,7 @@
   overflow: hidden;
 }
 
-.codeBlock code {
+.code-block code {
   flex: 1;
   display: block;
   padding: 8px 10px;
@@ -887,7 +887,7 @@
   overflow-x: auto;
 }
 
-.copyButton {
+.copy-button {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -903,12 +903,12 @@
   transition: all var(--transition-fast);
 }
 
-.copyButton:hover {
+.copy-button:hover {
   background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
   color: var(--accent-primary);
 }
 
-.inlineCode {
+.inline-code {
   display: inline-block;
   font-family: var(--font-mono, monospace);
   font-size: 0.9em;
@@ -920,14 +920,14 @@
 
 /* ── Environment variable table ──────────────────────────────────── */
 
-.guideEnvTable {
+.guide-env-table {
   margin-top: 14px;
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 6px;
   overflow: hidden;
 }
 
-.environmentTableTitle {
+.environment-table-title {
   display: block;
   padding: 8px 10px;
   font-size: 0.6875rem;
@@ -939,7 +939,7 @@
   border-bottom: 1px solid var(--calculated-border-subtle);
 }
 
-.environmentRow {
+.environment-row {
   display: flex;
   align-items: baseline;
   gap: 12px;
@@ -947,12 +947,12 @@
   font-size: var(--font-size-xs);
 }
 
-.environmentRow + .environmentRow {
+.environment-row + .environment-row {
   border-top: 1px solid
     color-mix(in srgb, var(--calculated-border-subtle) 50%, transparent);
 }
 
-.environmentKey {
+.environment-key {
   flex-shrink: 0;
   font-family: var(--font-mono, monospace);
   font-size: 10.5px;
@@ -961,21 +961,21 @@
   min-width: 190px;
 }
 
-.environmentDescription {
+.environment-description {
   color: var(--text-tertiary);
   line-height: 1.4;
 }
 
 /* ── Comparison table (Docker vs Local) ──────────────────────────── */
 
-.guideCompareTable {
+.guide-compare-table {
   margin-top: 14px;
   border: 1px solid var(--calculated-border-subtle);
   border-radius: 6px;
   overflow: hidden;
 }
 
-.compareRow {
+.compare-row {
   display: grid;
   grid-template-columns: 100px 1fr 1fr;
   gap: 8px;
@@ -983,27 +983,27 @@
   font-size: var(--font-size-xs);
 }
 
-.compareRow + .compareRow {
+.compare-row + .compare-row {
   border-top: 1px solid
     color-mix(in srgb, var(--calculated-border-subtle) 50%, transparent);
 }
 
-.compareLabel {
+.compare-label {
   font-weight: 600;
   color: var(--text-secondary);
 }
 
-.compareDocker {
+.compare-docker {
   color: var(--text-tertiary);
 }
 
-.compareLocal {
+.compare-local {
   color: var(--text-tertiary);
 }
 
 /* ── Guide footnote ──────────────────────────────────────────────── */
 
-.guideFootnote {
+.guide-footnote {
   padding: 8px 16px 10px;
   border-top: 1px solid var(--calculated-border-subtle);
   font-size: var(--font-size-xs);
@@ -1013,14 +1013,14 @@
 
 /* ── Single-file download explainer ──────────────────────────────── */
 
-.singleFileExplainer {
+.single-file-explainer {
   display: flex;
   align-items: flex-start;
   gap: 14px;
   padding: 14px 0 6px;
 }
 
-.singleFileExplainerIcon {
+.single-file-explainer-icon {
   width: 38px;
   height: 38px;
   display: flex;
@@ -1032,21 +1032,21 @@
   flex-shrink: 0;
 }
 
-.singleFileExplainerText {
+.single-file-explainer-text {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
 
-.singleFileExplainerHeadline {
+.single-file-explainer-headline {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
 }
 
-.singleFileExplainerDescription {
+.single-file-explainer-description {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   line-height: 1.5;
@@ -1054,7 +1054,7 @@
 
 /* ── Download button ─────────────────────────────────────────────── */
 
-.singleFileDownloadButton {
+.single-file-download-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1075,13 +1075,13 @@
     transform var(--transition-fast);
 }
 
-.singleFileDownloadButton:hover {
+.single-file-download-button:hover {
   opacity: 0.9;
   box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
   transform: translateY(-1px);
 }
 
-.singleFileDownloadButton:active {
+.single-file-download-button:active {
   transform: translateY(0);
 }
 
@@ -1097,7 +1097,7 @@
     gap: 12px;
   }
 
-  .harnessGrid {
+  .harness-grid {
     grid-template-columns: 1fr;
     padding: 0 16px 14px;
   }

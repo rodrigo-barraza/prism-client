@@ -1,6 +1,6 @@
 /* ── SessionsTable expanded panels ──────────────────── */
 
-.expandedPanels {
+.expanded-panels {
   display: flex;
   flex-direction: column;
   gap: 2px;

@@ -11,25 +11,25 @@
 
 /* ── Empty State ────────────────────────────────────────────── */
 
-.emptyState {
-  composes: emptyState from "./PanelShared.module.css";
+.empty-state {
+  composes: empty-state from "./PanelShared.module.css";
 }
 
-.emptyIcon {
-  composes: emptyIcon from "./PanelShared.module.css";
+.empty-icon {
+  composes: empty-icon from "./PanelShared.module.css";
 }
 
-.emptyTitle {
-  composes: emptyTitle from "./PanelShared.module.css";
+.empty-title {
+  composes: empty-title from "./PanelShared.module.css";
 }
 
-.emptySubtitle {
-  composes: emptySubtitle from "./PanelShared.module.css";
+.empty-subtitle {
+  composes: empty-subtitle from "./PanelShared.module.css";
 }
 
 /* ── Server Card ────────────────────────────────────────────── */
 
-.serverCard {
+.server-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -49,13 +49,13 @@
   }
 }
 
-.serverCardHeader {
+.server-card-header {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.statusDot {
+.status-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -64,13 +64,13 @@
   transition: all 0.3s ease;
 }
 
-.statusDotConnected {
+.status-dot-connected {
   background: var(--color-emerald);
   box-shadow: 0 0 8px color-mix(in srgb, var(--color-emerald) 50%, transparent);
-  animation: statusPulse 2s ease-in-out infinite;
+  animation: status-pulse 2s ease-in-out infinite;
 }
 
-@keyframes statusPulse {
+@keyframes status-pulse {
   0%,
   100% {
     opacity: 1;
@@ -80,12 +80,12 @@
   }
 }
 
-.serverInfo {
+.server-info {
   flex: 1;
   min-width: 0;
 }
 
-.serverName {
+.server-name {
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
@@ -94,7 +94,7 @@
   text-overflow: ellipsis;
 }
 
-.serverMeta {
+.server-meta {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -103,7 +103,7 @@
   margin-top: 2px;
 }
 
-.transportBadge {
+.transport-badge {
   display: inline-flex;
   align-items: center;
   padding: 1px 5px;
@@ -116,7 +116,7 @@
   color: var(--text-muted);
 }
 
-.toolCountBadge {
+.tool-count-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -128,14 +128,14 @@
   color: var(--color-cyan);
 }
 
-.serverActions {
+.server-actions {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
 }
 
-.connectButton {
+.connect-button {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -159,7 +159,7 @@
   }
 }
 
-.disconnectButton {
+.disconnect-button {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -181,14 +181,14 @@
 
 /* ── Tool list ──────────────────────────────────────────────── */
 
-.toolList {
+.tool-list {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   padding-top: 4px;
 }
 
-.toolTag {
+.tool-tag {
   display: inline-flex;
   align-items: center;
   padding: 2px 7px;
@@ -201,14 +201,14 @@
 
 /* ── Confirm Delete ─────────────────────────────────────────── */
 
-.confirmLayoutRow {
+.confirm-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 0;
 }
 
-.confirmLabel {
+.confirm-label {
   flex: 1;
   font-size: var(--font-size-xs);
   color: var(--color-rose);
@@ -218,7 +218,7 @@
 
 /* ── Add / Edit Form ────────────────────────────────────────── */
 
-.formHeader {
+.form-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -244,7 +244,7 @@
   overflow-y: auto;
 }
 
-.formGroup {
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -284,7 +284,7 @@
   line-height: 1.4;
 }
 
-.transportTabs {
+.transport-tabs {
   display: flex;
   gap: 0;
   border: 1px solid var(--calculated-border-color);
@@ -292,7 +292,7 @@
   overflow: hidden;
 }
 
-.transportTab {
+.transport-tab {
   flex: 1;
   padding: 6px 10px;
   font-size: var(--font-size-xs);
@@ -315,12 +315,12 @@
   }
 }
 
-.transportTabActive {
+.transport-tab-active {
   background: color-mix(in srgb, var(--color-cyan) 12%, transparent);
   color: var(--color-cyan);
 }
 
-.formActions {
+.form-actions {
   display: flex;
   gap: 8px;
   padding-top: 8px;
@@ -331,7 +331,7 @@
 
 /* ── Error message ──────────────────────────────────────────── */
 
-.errorMsg {
+.error-msg {
   font-size: var(--font-size-xs);
   color: var(--color-rose);
   padding: 6px 8px;

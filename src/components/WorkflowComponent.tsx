@@ -132,7 +132,7 @@ export default function WorkflowComponent({
   return (
     <div className={styles.body}>
       <div
-        className={`${styles.sidebarWrapper} ${sidebarVisible ? "" : styles.sidebarHidden}`}
+        className={`${styles['sidebar-wrapper']} ${sidebarVisible ? "" : styles['sidebar-hidden']}`}
       >
         <WorkflowSidebar
           admin={admin}
@@ -156,7 +156,7 @@ export default function WorkflowComponent({
       </div>
       {/* Mobile sidebar backdrop */}
       {isMobile && sidebarVisible && (
-        <div className={styles.sidebarBackdrop} onClick={handleToggleSidebar} />
+        <div className={styles['sidebar-backdrop']} onClick={handleToggleSidebar} />
       )}
       <WorkflowCanvas
         nodes={nodes}
@@ -183,9 +183,9 @@ export default function WorkflowComponent({
       {selectedNode && (
         <>
           {isMobile && (
-            <div className={styles.inspectorBackdrop} onClick={handleClose} />
+            <div className={styles['inspector-backdrop']} onClick={handleClose} />
           )}
-          <div className={styles.inspectorWrapper}>
+          <div className={styles['inspector-wrapper']}>
             <WorkflowInspector
               node={selectedNode}
               connections={connections}

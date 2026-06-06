@@ -28,7 +28,7 @@
 
 /* ── Chart area ── */
 
-.chartArea {
+.chart-area {
   width: 100%;
 }
 
@@ -57,13 +57,13 @@
   box-shadow: 0 8px 24px oklch(0.0% 0.0 0.0 / 0.4);
 }
 
-.tooltipLabel {
+.tooltip-label {
   font-size: var(--font-size-xs);
   color: oklch(49.3% 0.0392 273.9);
   font-weight: 500;
 }
 
-.tooltipValue {
+.tooltip-value {
   font-size: 0.8125rem;
   font-weight: 600;
 }

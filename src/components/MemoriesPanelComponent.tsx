@@ -440,17 +440,17 @@ export default function MemoriesPanel({
   if (!memoryConfigured) {
     return (
       <div className={styles.container}>
-        <div className={styles.emptyState}>
-          <div className={`${styles.emptyIcon} ${styles.emptyIconDisabled}`}>
+        <div className={styles['empty-state']}>
+          <div className={`${styles['empty-icon']} ${styles['empty-icon-disabled']}`}>
             <Brain size={24} />
           </div>
-          <div className={styles.emptyTitle}>Memories Not Available</div>
-          <div className={styles.emptySubtitle}>
+          <div className={styles['empty-title']}>Memories Not Available</div>
+          <div className={styles['empty-subtitle']}>
             Memory models need to be configured before memories can be extracted
             and stored. Set the extraction, consolidation, and embedding models
             in Settings.
           </div>
-          <Link href="/settings" className={styles.settingsLink}>
+          <Link href="/settings" className={styles['settings-link']}>
             <Settings size={13} />
             Go to Settings
           </Link>
@@ -481,12 +481,12 @@ export default function MemoriesPanel({
   if (memories.length === 0) {
     return (
       <div className={styles.container}>
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-icon']}>
             <Brain size={24} />
           </div>
-          <div className={styles.emptyTitle}>No memories yet</div>
-          <div className={styles.emptySubtitle}>
+          <div className={styles['empty-title']}>No memories yet</div>
+          <div className={styles['empty-subtitle']}>
             Memories are automatically extracted from your conversations. They
             capture user preferences, feedback, project context, and external
             references.
@@ -508,13 +508,13 @@ export default function MemoriesPanel({
       )}
 
       {/* -- Search & Filters ------------------------------------- */}
-      <div className={styles.filterBar}>
+      <div className={styles['filter-bar']}>
         <SearchInputComponent
           value={searchQuery}
           onChange={setSearchQuery}
           placeholder="Search memories…"
           compact
-          className={styles.searchField}
+          className={styles['search-field']}
         />
         <FilterDropdownComponent
           fullWidth
@@ -540,9 +540,9 @@ export default function MemoriesPanel({
 
       {/* -- Consolidation History ------------------------------- */}
       {historyOpen && (
-        <div className={styles.historySection}>
-          <div className={styles.historySectionHeader}>
-            <span className={styles.historySectionTitle}>
+        <div className={styles['history-section']}>
+          <div className={styles['history-section-header']}>
+            <span className={styles['history-section-title']}>
               Consolidation History
             </span>
             {historyIsLoadingState && (
@@ -550,24 +550,24 @@ export default function MemoriesPanel({
             )}
           </div>
           {history.length === 0 && !historyIsLoadingState && (
-            <div className={styles.historyEmpty}>No consolidation runs yet</div>
+            <div className={styles['history-empty']}>No consolidation runs yet</div>
           )}
           {history.map((run, i) => (
-            <div key={i} className={styles.historyEntry}>
-              <div className={styles.historyEntryHeader}>
+            <div key={i} className={styles['history-entry']}>
+              <div className={styles['history-entry-header']}>
                 <span
-                  className={`${styles.historyTrigger} ${styles[`trigger${run.trigger?.charAt(0).toUpperCase()}${run.trigger?.slice(1)}`] || ""}`}
+                  className={`${styles['history-trigger']} ${styles[`trigger${run.trigger?.charAt(0).toUpperCase()}${run.trigger?.slice(1)}`] || ""}`}
                 >
                   {TRIGGER_LABELS[run.trigger ?? ""] ||
                     run.trigger ||
                     "unknown"}
                 </span>
-                <span className={styles.historyTime}>
+                <span className={styles['history-time']}>
                   {formatTimeAgo(run.runAt)}
                 </span>
               </div>
-              <div className={styles.historySummary}>{run.summary}</div>
-              <div className={styles.historyStats}>
+              <div className={styles['history-summary']}>{run.summary}</div>
+              <div className={styles['history-stats']}>
                 <span>
                   <GitMerge size={9} /> {run.actionsApplied} action
                   {run.actionsApplied !== 1 ? "s" : ""}
@@ -586,9 +586,9 @@ export default function MemoriesPanel({
 
       {/* -- No results after filtering -------------------------- */}
       {isFiltered && filteredMemories.length === 0 && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyTitle}>No matching memories</div>
-          <div className={styles.emptySubtitle}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-title']}>No matching memories</div>
+          <div className={styles['empty-subtitle']}>
             Try adjusting your search query or time range.
           </div>
         </div>
@@ -620,7 +620,7 @@ export default function MemoriesPanel({
 
       {/* End of list indicator */}
       {!hasMore && memories.length > 0 && (
-        <div className={styles.endOfList}>
+        <div className={styles['end-of-list']}>
           <Brain size={12} />
           <span>All memories loaded</span>
         </div>

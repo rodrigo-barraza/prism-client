@@ -1,9 +1,9 @@
 .page {
-  animation: fadeIn var(--transition-normal) ease-out;
+  animation: fade-in var(--transition-normal) ease-out;
 }
 
 /* Loading */
-.isLoadingState {
+.is-loading-state {
   padding: 60px 20px;
   text-align: center;
   color: var(--text-muted);
@@ -11,7 +11,7 @@
 }
 
 /* ── Grid View ── */
-.mediaGrid {
+.media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px;
@@ -26,22 +26,22 @@
 }
 
 @media (max-width: 767px) {
-  .filterBar {
+  .filter-bar {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
 
-  .searchBox {
+  .search-box {
     max-width: none;
     width: 100%;
   }
 
-  .viewToggle {
+  .view-toggle {
     margin-left: 0;
   }
 
-  .mediaGrid {
+  .media-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
   }

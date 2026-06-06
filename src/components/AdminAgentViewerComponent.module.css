@@ -1,6 +1,6 @@
 /* ── Mini header ─────────────────────────────────────────────── */
 
-.viewerHeader {
+.viewer-header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -12,7 +12,7 @@
   flex-shrink: 0;
 }
 
-.viewerTitle {
+.viewer-title {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -22,7 +22,7 @@
   max-width: 300px;
 }
 
-.panelToggle {
+.panel-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -37,18 +37,18 @@
   flex-shrink: 0;
 }
 
-.panelToggle:hover {
+.panel-toggle:hover {
   color: var(--text-primary);
   background: var(--background-elevated);
 }
 
-.panelToggle.panelToggleHidden {
+.panel-toggle.panel-toggle-hidden {
   color: var(--accent-primary);
 }
 
 /* ── Body — 3-column flex ──────────────────────────────────── */
 
-.viewerBody {
+.viewer-body {
   display: flex;
   flex: 1;
   min-height: 0;
@@ -57,7 +57,7 @@
 
 /* ── Left panel (settings/tools tabs) ─────────────────────── */
 
-.leftPanel {
+.left-panel {
   width: 300px;
   min-width: 300px;
   border-right: 1px solid var(--calculated-border-color);
@@ -70,7 +70,7 @@
     opacity 0.2s ease;
 }
 
-.leftPanel.panelHidden {
+.left-panel.panel-hidden {
   width: 0;
   min-width: 0;
   opacity: 0;
@@ -80,7 +80,7 @@
 
 /* ── Center panel (messages) ──────────────────────────────── */
 
-.centerPanel {
+.center-panel {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -91,7 +91,7 @@
 
 /* ── Right panel (sessions list) ──────────────────────────── */
 
-.rightPanel {
+.right-panel {
   width: 320px;
   min-width: 320px;
   border-left: 1px solid var(--calculated-border-color);
@@ -104,7 +104,7 @@
     opacity 0.2s ease;
 }
 
-.rightPanel.panelHidden {
+.right-panel.panel-hidden {
   width: 0;
   min-width: 0;
   opacity: 0;
@@ -114,7 +114,7 @@
 
 /* ── Read-only banner ─────────────────────────────────────── */
 
-.readOnlyBanner {
+.read-only-banner {
   padding: 10px 16px;
   font-size: var(--font-size-sm);
   color: var(--text-muted);
@@ -130,11 +130,11 @@
 /* ── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 1200px) {
-  .leftPanel {
+  .left-panel {
     width: 260px;
     min-width: 260px;
   }
-  .rightPanel {
+  .right-panel {
     width: 280px;
     min-width: 280px;
   }
@@ -146,8 +146,8 @@
     height: calc(100% + 32px);
   }
 
-  .leftPanel,
-  .rightPanel {
+  .left-panel,
+  .right-panel {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -156,15 +156,15 @@
     min-width: 300px;
   }
 
-  .leftPanel {
+  .left-panel {
     left: 0;
   }
 
-  .rightPanel {
+  .right-panel {
     right: 0;
   }
 
-  .viewerBody {
+  .viewer-body {
     position: relative;
   }
 }

@@ -57,11 +57,11 @@ export default function ToolCallsBlockComponent({
 
   return (
     <div
-      className={`${styles.toolCallsBlock}${hasActiveCalls ? ` ${styles.toolCallsStreaming}` : ""}`}
+      className={`${styles['tool-calls-block']}${hasActiveCalls ? ` ${styles['tool-calls-streaming']}` : ""}`}
     >
       {/* -- Header toggle -- */}
       <button
-        className={styles.toolCallsToggle}
+        className={styles['tool-calls-toggle']}
         onClick={() => setHeaderCollapsed((c) => !c)}
       >
         <Zap size={13} />
@@ -75,7 +75,7 @@ export default function ToolCallsBlockComponent({
 
       {/* -- Always-visible tool cards -- */}
       {!headerCollapsed && (
-        <div className={styles.toolCallsContent}>
+        <div className={styles['tool-calls-content']}>
           {toolCalls.map((toolCall, j) => {
             const name =
               toolCall.name === "googleSearch"
@@ -87,13 +87,13 @@ export default function ToolCallsBlockComponent({
             const isError = toolCall.status === "error";
 
             return (
-              <div key={j} className={styles.toolCallItem}>
+              <div key={j} className={styles['tool-call-item']}>
                 {/* Status indicator */}
                 <span
-                  className={`${styles.toolCallStatusIcon}${isCalling ? ` ${styles.toolCallStatusCalling}` : ""}${isError ? ` ${styles.toolCallStatusError}` : ""}`}
+                  className={`${styles['tool-call-status-icon']}${isCalling ? ` ${styles['tool-call-status-calling']}` : ""}${isError ? ` ${styles['tool-call-status-error']}` : ""}`}
                 >
                   {isCalling ? (
-                    <Loader size={12} className={styles.toolCallSpinner} />
+                    <Loader size={12} className={styles['tool-call-spinner']} />
                   ) : isError ? (
                     <AlertTriangle size={12} />
                   ) : (
@@ -101,10 +101,10 @@ export default function ToolCallsBlockComponent({
                   )}
                 </span>
 
-                <span className={styles.toolCallIcon} style={{ color }}>
+                <span className={styles['tool-call-icon']} style={{ color }}>
                   <Icon size={13} />
                 </span>
-                <span className={styles.toolCallName}>{name}</span>
+                <span className={styles['tool-call-name']}>{name}</span>
                 {toolCall.durationMs != null && toolCall.durationMs > 0 && (
                   <span className={styles["tool-call-latency"]}>
                     ({formatLatencyMs(toolCall.durationMs)})

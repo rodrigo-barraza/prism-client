@@ -8,7 +8,7 @@
 }
 
 /* ── Container Layout ── */
-.timerBadgeRoot {
+.timer-badge-root {
   display: flex;
   gap: 16px;
   max-width: 800px;
@@ -18,7 +18,7 @@
   padding-inline: 16px;
   padding-block: 12px;
   border-radius: var(--timer-badge-border-radius);
-  animation: timerBadgeFadeIn var(--timer-badge-animation-duration)
+  animation: timer-badge-fade-in var(--timer-badge-animation-duration)
     cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transition:
     transform var(--timer-badge-transition-speed) ease,
@@ -30,35 +30,35 @@
   backdrop-filter: blur(10px);
 }
 
-.timerBadgeRoot:hover {
+.timer-badge-root:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 20px oklch(0 0 0 / 0.25);
 }
 
 /* ── Status Theme Scopes ── */
-.timerBadgeStateActive {
+.timer-badge-state-active {
   border-color: var(--accent-primary, oklch(0.6 0.18 240));
   background: oklch(0.6 0.18 240 / 0.05);
 }
 
-.timerBadgeStateCancelled {
+.timer-badge-state-cancelled {
   border-color: oklch(0.5 0.15 0); /* Muted Danger Crimson */
   background: oklch(0.5 0.15 0 / 0.05);
   opacity: 0.7;
 }
 
-.timerBadgeStateCancelled:hover {
+.timer-badge-state-cancelled:hover {
   opacity: 0.9;
 }
 
-.timerBadgeStateFired {
+.timer-badge-state-fired {
   border-color: oklch(0.7 0.2 140); /* Emerald Green Success */
   background: oklch(0.7 0.2 140 / 0.08);
   box-shadow: 0 4px 20px oklch(0.7 0.2 140 / 0.1);
 }
 
 /* ── Avatar Circle Indicator ── */
-.timerBadgeAvatarSection {
+.timer-badge-avatar-section {
   flex-shrink: 0;
   width: 36px;
   height: 36px;
@@ -70,26 +70,26 @@
   transition: background-color var(--timer-badge-transition-speed) ease;
 }
 
-.timerBadgeStateActive .timerBadgeAvatarSection {
+.timer-badge-state-active .timer-badge-avatar-section {
   background: oklch(0.6 0.18 240 / 0.15);
   color: oklch(0.7 0.18 240);
   border: 1px solid oklch(0.6 0.18 240 / 0.3);
 }
 
-.timerBadgeStateCancelled .timerBadgeAvatarSection {
+.timer-badge-state-cancelled .timer-badge-avatar-section {
   background: oklch(0.5 0.15 0 / 0.15);
   color: oklch(0.6 0.15 0);
   border: 1px solid oklch(0.5 0.15 0 / 0.3);
 }
 
-.timerBadgeStateFired .timerBadgeAvatarSection {
+.timer-badge-state-fired .timer-badge-avatar-section {
   background: oklch(0.7 0.2 140 / 0.15);
   color: oklch(0.8 0.2 140);
   border: 1px solid oklch(0.7 0.2 140 / 0.3);
 }
 
 /* ── Content Area ── */
-.timerBadgeContentSection {
+.timer-badge-content-section {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -97,40 +97,40 @@
   min-width: 0;
 }
 
-.timerBadgeHeaderSection {
+.timer-badge-header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
 }
 
-.timerBadgeRoleLabel {
+.timer-badge-role-label {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.timerBadgeStatusLabel {
+.timer-badge-status-label {
   font-size: var(--font-size-sm, 13px);
   font-weight: 700;
   letter-spacing: 0.5px;
   text-shadow: 0 1px 2px oklch(0 0 0 / 0.4);
 }
 
-.timerBadgeStateActive .timerBadgeStatusLabel {
+.timer-badge-state-active .timer-badge-status-label {
   color: oklch(0.8 0.12 240);
 }
 
-.timerBadgeStateCancelled .timerBadgeStatusLabel {
+.timer-badge-state-cancelled .timer-badge-status-label {
   color: oklch(0.7 0.12 0);
 }
 
-.timerBadgeStateFired .timerBadgeStatusLabel {
+.timer-badge-state-fired .timer-badge-status-label {
   color: oklch(0.85 0.15 140);
 }
 
-.timerBadgeTypeIndicator {
+.timer-badge-type-indicator {
   font-size: var(--font-size-xs, 11px);
   font-weight: 500;
   opacity: 0.6;
@@ -139,7 +139,7 @@
 }
 
 /* ── Cancel Button Microinteraction ── */
-.timerBadgeCancelButton {
+.timer-badge-cancel-button {
   font-size: var(--font-size-xs, 11px);
   font-weight: 600;
   color: oklch(0.8 0.08 0 / 0.85);
@@ -153,19 +153,19 @@
   backdrop-filter: blur(5px);
 }
 
-.timerBadgeCancelButton:hover {
+.timer-badge-cancel-button:hover {
   background: oklch(0.5 0.15 0 / 0.25);
   color: oklch(0.85 0.12 0);
   border-color: oklch(0.6 0.15 0 / 0.5);
   transform: scale(1.03);
 }
 
-.timerBadgeCancelButton:active {
+.timer-badge-cancel-button:active {
   transform: scale(0.97);
 }
 
 /* ── Prompt Summary Text ── */
-.timerBadgePromptText {
+.timer-badge-prompt-text {
   font-size: var(--font-size-base, 14px);
   line-height: 1.5;
   color: var(--text-primary, oklch(0.9 0 0));
@@ -176,16 +176,16 @@
 }
 
 /* ── Micro-Animations ── */
-.timerBadgeSpinnerIcon {
-  animation: timerBadgeSpinAnimation 4s linear infinite;
+.timer-badge-spinner-icon {
+  animation: timer-badge-spin-animation 4s linear infinite;
 }
 
-.timerBadgeLivePulseIcon {
-  animation: timerBadgeLivePulseAnimation var(--timer-badge-live-pulse-duration)
+.timer-badge-live-pulse-icon {
+  animation: timer-badge-live-pulse-animation var(--timer-badge-live-pulse-duration)
     cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@keyframes timerBadgeFadeIn {
+@keyframes timer-badge-fade-in {
   from {
     opacity: 0;
     transform: translateY(8px);
@@ -196,7 +196,7 @@
   }
 }
 
-@keyframes timerBadgeSpinAnimation {
+@keyframes timer-badge-spin-animation {
   from {
     transform: rotate(0deg);
   }
@@ -205,7 +205,7 @@
   }
 }
 
-@keyframes timerBadgeLivePulseAnimation {
+@keyframes timer-badge-live-pulse-animation {
   0%,
   100% {
     opacity: 1;

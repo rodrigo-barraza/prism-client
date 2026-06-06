@@ -1,4 +1,4 @@
-.filterBar {
+.filter-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -6,13 +6,13 @@
   margin-bottom: 16px;
 }
 
-.filterGroup {
+.filter-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.filterLabel {
+.filter-label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-muted);
@@ -49,13 +49,13 @@
   color: var(--text-primary);
 }
 
-.pillActive {
+.pill-active {
   background: var(--background-surface);
   color: var(--text-primary);
   box-shadow: var(--calculated-shadow-sm);
 }
 
-.searchBox {
+.search-box {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -68,13 +68,13 @@
   margin-left: auto;
 }
 
-.searchBox:focus-within {
+.search-box:focus-within {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
   background: var(--background-surface);
 }
 
-.searchInput {
+.search-input {
   border: none;
   background: transparent;
   width: 160px;
@@ -83,11 +83,11 @@
   outline: none;
 }
 
-.searchInput::placeholder {
+.search-input::placeholder {
   color: var(--text-muted);
 }
 
-.viewToggle {
+.view-toggle {
   display: flex;
   align-items: center;
   background: var(--background-elevated);
@@ -96,7 +96,7 @@
   border: 1px solid var(--calculated-border-subtle);
 }
 
-.viewButton {
+.view-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -110,41 +110,41 @@
   transition: all var(--transition-fast);
 }
 
-.viewButton:hover {
+.view-button:hover {
   color: var(--text-primary);
 }
 
 @media (max-width: 767px) {
-  .filterBar {
+  .filter-bar {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
 
-  .searchBox {
+  .search-box {
     max-width: none;
     width: 100%;
   }
 
-  .viewToggle {
+  .view-toggle {
     margin-left: 0;
   }
 }
 
-.viewBtnActive {
+.view-btn-active {
   background: var(--background-surface);
   color: var(--text-primary);
   box-shadow: var(--calculated-shadow-sm);
 }
 
-.discreteGroup {
+.discrete-group {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
 }
 
-.discreteButton {
+.discrete-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -159,18 +159,18 @@
   padding: 0;
 }
 
-.discreteButton:hover {
+.discrete-button:hover {
   background: var(--background-elevated);
   color: var(--text-primary);
 }
 
-.discreteBtnActive {
+.discrete-btn-active {
   background: var(--calculated-accent-primary-glow);
   border-color: var(--accent-primary);
   color: var(--accent-primary);
 }
 
-.filterInput {
+.filter-input {
   padding: 6px 10px;
   font-size: 0.8125rem;
   min-width: 140px;
@@ -182,11 +182,11 @@
   transition: border-color var(--transition-fast);
 }
 
-.filterInput:focus {
+.filter-input:focus {
   border-color: var(--accent-primary);
 }
 
-.filterSelect {
+.filter-select {
   padding: 6px 10px;
   font-size: 0.8125rem;
   min-width: 120px;
@@ -199,11 +199,11 @@
   transition: border-color var(--transition-fast);
 }
 
-.filterSelect:focus {
+.filter-select:focus {
   border-color: var(--accent-primary);
 }
 
-.clearButton {
+.clear-button {
   align-self: flex-end;
   padding: 6px 12px;
   font-size: var(--font-size-sm);
@@ -214,6 +214,6 @@
   transition: color var(--transition-fast);
 }
 
-.clearButton:hover {
+.clear-button:hover {
   color: var(--text-primary);
 }

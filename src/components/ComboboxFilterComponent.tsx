@@ -92,7 +92,7 @@ export default function ComboboxFilter({
   return (
     <div className={styles.combobox} ref={containerRef}>
       <div
-        className={`${styles.inputWrapper} ${open ? styles.inputWrapperOpen : ""}`}
+        className={`${styles['input-wrapper']} ${open ? styles['input-wrapper-open'] : ""}`}
       >
         <input
           ref={inputRef}
@@ -106,7 +106,7 @@ export default function ComboboxFilter({
         />
         {value ? (
           <button
-            className={styles.clearButton}
+            className={styles['clear-button']}
             onClick={handleClear}
             title="Clear"
           >
@@ -115,7 +115,7 @@ export default function ComboboxFilter({
         ) : (
           <ChevronDown
             size={12}
-            className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`}
+            className={`${styles.chevron} ${open ? styles['chevron-open'] : ""}`}
           />
         )}
       </div>
@@ -124,19 +124,19 @@ export default function ComboboxFilter({
         <div className={styles.menu}>
           <button
             type="button"
-            className={`${styles.option} ${!value ? styles.optionSelected : ""}`}
+            className={`${styles.option} ${!value ? styles['option-selected'] : ""}`}
             onClick={() => handleSelect("")}
           >
             {allLabel}
           </button>
           {filtered.length === 0 && (
-            <div className={styles.noResults}>No matches</div>
+            <div className={styles['no-results']}>No matches</div>
           )}
           {filtered.map((opt: string) => (
             <button
               key={opt}
               type="button"
-              className={`${styles.option} ${opt === value ? styles.optionSelected : ""}`}
+              className={`${styles.option} ${opt === value ? styles['option-selected'] : ""}`}
               onClick={() => handleSelect(opt)}
             >
               {opt}

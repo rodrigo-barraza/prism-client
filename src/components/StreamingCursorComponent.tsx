@@ -49,14 +49,14 @@ export default function StreamingCursorComponent({
   if (!active) return null;
 
   const cursor = (
-    <span className={styles.streamingCursorWrapper} aria-hidden="true">
-      <span className={styles.scrambleChar}>{char}</span>
+    <span className={styles['streaming-cursor-wrapper']} aria-hidden="true">
+      <span className={styles['scramble-char']}>{char}</span>
       <span className={styles.caret}>▎</span>
     </span>
   );
 
   if (standalone) {
-    return <div className={styles.standaloneCursor}>{cursor}</div>;
+    return <div className={styles['standalone-cursor']}>{cursor}</div>;
   }
 
   return cursor;

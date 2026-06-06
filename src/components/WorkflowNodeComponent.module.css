@@ -1,9 +1,9 @@
 /* ── Node group ── */
-.nodeGroup {
+.node-group {
   cursor: default;
 }
 
-.nodeBody {
+.node-body {
   fill: var(--background-surface);
   stroke: var(--accent-primary);
   stroke-width: 1.5;
@@ -14,26 +14,26 @@
     stroke-opacity var(--transition-fast);
 }
 
-.nodeGroup:hover .nodeBody {
+.node-group:hover .node-body {
   stroke: var(--accent-primary);
   stroke-opacity: 0.5;
 }
 
-.nodeHeader {
+.node-header {
   fill: var(--background-elevated);
   stroke: none;
 }
 
-.nodeDragArea {
+.node-drag-area {
   cursor: grab;
 }
 
-.nodeDragArea:active {
+.node-drag-area:active {
   cursor: grabbing;
 }
 
 /* ── Header right-side actions ── */
-.headerActions {
+.header-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -42,7 +42,7 @@
   padding-right: 6px;
 }
 
-.headerSeparator {
+.header-separator {
   width: 1px;
   height: 12px;
   background: var(--calculated-border-color);
@@ -50,7 +50,7 @@
   flex-shrink: 0;
 }
 
-.headerTypeBadge {
+.header-type-badge {
   font-size: 0.5625rem;
   font-weight: 500;
   font-family: var(--font-sans);
@@ -59,7 +59,7 @@
   flex-shrink: 0;
 }
 
-.deleteNodeButton {
+.delete-node-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,16 +92,16 @@
   }
 }
 
-.portCompatible {
+.port-compatible {
   cursor: crosshair;
-  animation: pulsePort 1s ease-in-out infinite;
+  animation: pulse-port 1s ease-in-out infinite;
 }
 
-.portOutput {
+.port-output {
   cursor: crosshair;
 }
 
-.portLabel {
+.port-label {
   font-size: 0.625rem;
   fill: var(--text-secondary);
   font-family: var(--font-sans);
@@ -109,7 +109,7 @@
 
 /* ── Asset nodes (accent-color overrides come via inline style) ── */
 
-.nodeRenameInput {
+.node-rename-input {
   font-size: var(--font-size-sm);
   font-weight: 600;
   font-family: var(--font-sans);
@@ -122,7 +122,7 @@
   min-width: 0;
 }
 
-.assetTextarea {
+.asset-textarea {
   width: 100%;
   height: 100%;
   padding: 4px 6px;
@@ -147,7 +147,7 @@
   }
 }
 
-.assetUploadArea {
+.asset-upload-area {
   width: 100%;
   height: 100%;
   display: flex;
@@ -155,18 +155,18 @@
   justify-content: center;
 }
 
-.assetFileInput {
+.asset-file-input {
   display: none;
 }
 
-.assetPreviewImg {
+.asset-preview-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   border-radius: 2px;
 }
 
-.assetPdfViewer {
+.asset-pdf-viewer {
   width: calc(100% + 20px);
   height: calc(100% + 10px);
   border: none;
@@ -174,14 +174,14 @@
   background: oklch(100.0% 0.0001 263.3);
 }
 
-.assetVideoPlayer {
+.asset-video-player {
   width: 100%;
   height: 100%;
   object-fit: contain;
   border-radius: 2px;
 }
 
-.assetFileLabel {
+.asset-file-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -189,7 +189,7 @@
   color: var(--text-secondary);
 }
 
-.fileInputPreview {
+.file-input-preview {
   position: relative;
   width: 100%;
   height: 100%;
@@ -199,7 +199,7 @@
   overflow: hidden;
 }
 
-.fileInputClearButton {
+.file-input-clear-button {
   position: absolute;
   top: 2px;
   right: 2px;
@@ -229,7 +229,7 @@
 }
 
 /* ── Viewer content ── */
-.viewerContent {
+.viewer-content {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -240,7 +240,7 @@
   flex-direction: column;
 }
 
-.viewerEmpty {
+.viewer-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -252,7 +252,7 @@
   opacity: 0.6;
 }
 
-.viewerText {
+.viewer-text {
   padding: 4px 6px;
   font-size: 0.625rem;
   line-height: 1.4;
@@ -263,7 +263,7 @@
   word-break: break-word;
 }
 
-.viewerImage {
+.viewer-image {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -271,7 +271,7 @@
   border-radius: 2px;
 }
 
-.modelResultError {
+.model-result-error {
   display: flex;
   align-items: center;
   padding: 4px 6px;
@@ -286,12 +286,12 @@
 }
 
 /* ── Node config panel ── */
-.configBtnActive {
+.config-btn-active {
   color: var(--accent-primary) !important;
   background: var(--calculated-accent-primary-subtle) !important;
 }
 
-.nodeConfig {
+.node-config {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -300,7 +300,7 @@
   box-sizing: border-box;
 }
 
-.nodeConfigMessages {
+.node-config-messages {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -310,20 +310,20 @@
   border-radius: 2px;
 }
 
-.nodeConfigMessageCount {
+.node-config-message-count {
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
 
-.nodeConfigMessageHint {
+.node-config-message-hint {
   font-size: 0.5625rem;
   color: var(--text-muted);
   opacity: 0.6;
   margin-left: auto;
 }
 
-.nodeConfigLabel {
+.node-config-label {
   font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -332,12 +332,12 @@
   margin-top: 2px;
 }
 
-.nodeConfigUpload {
+.node-config-upload {
   display: flex;
   align-items: center;
 }
 
-.nodeConfigUploadLabel {
+.node-config-upload-label {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -358,7 +358,7 @@
   }
 }
 
-.nodeConfigFile {
+.node-config-file {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -369,7 +369,7 @@
   border-radius: 2px;
 }
 
-.nodeConfigClearButton {
+.node-config-clear-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -390,16 +390,16 @@
 }
 
 /* ── Selected node flash overlay ── */
-.selectedFlash {
+.selected-flash {
   fill: none;
   stroke: var(--accent-primary);
   pointer-events: none;
   filter: drop-shadow(0 0 4px var(--accent-primary));
-  animation: flashSelect 1.6s ease-in-out infinite;
+  animation: flash-select 1.6s ease-in-out infinite;
 }
 
 /* ── Tool node pills ── */
-.toolNodePills {
+.tool-node-pills {
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -407,7 +407,7 @@
   overflow: hidden;
 }
 
-.toolNodePill {
+.tool-node-pill {
   display: block;
   padding: 2px 6px;
   font-size: 0.5625rem;
@@ -424,7 +424,7 @@
   line-height: 1.4;
 }
 
-.toolNodePillMore {
+.tool-node-pill-more {
   display: block;
   padding: 2px 6px;
   font-size: 0.5625rem;
@@ -435,7 +435,7 @@
 }
 
 /* ── Animations ── */
-@keyframes flashSelect {
+@keyframes flash-select {
   0%,
   100% {
     stroke-opacity: 0.45;
@@ -445,7 +445,7 @@
   }
 }
 
-@keyframes pulsePort {
+@keyframes pulse-port {
   0%,
   100% {
     opacity: 1;

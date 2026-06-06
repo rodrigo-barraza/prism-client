@@ -1,19 +1,19 @@
 /* ── ModalityIconComponent ── */
 
-.modalitiesRow {
+.modalities-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.modalityIcon {
+.modality-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.modalityArrow {
+.modality-arrow {
   font-size: 0.5625rem;
   color: var(--text-secondary);
   opacity: 0.4;

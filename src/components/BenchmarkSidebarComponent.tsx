@@ -133,14 +133,14 @@ export default function BenchmarkSidebarComponent({
         icon={Plus}
         onClick={navigateToNew}
         disabled={isOnNewPage}
-        className={styles.newButton}
+        className={styles['new-button']}
         data-panel-close
       >
         New Benchmark
       </ButtonComponent>
 
       {/* Search */}
-      <div className={styles.searchWrap}>
+      <div className={styles['search-wrap']}>
         <SearchInputComponent
           value={search}
           onChange={setSearch}
@@ -151,20 +151,20 @@ export default function BenchmarkSidebarComponent({
 
       {/* "All Benchmarks" link */}
       <button
-        className={`${styles.allLink} ${pathname === "/benchmarks" && !activeBenchmarkId ? styles.allLinkActive : ""}`}
+        className={`${styles['all-link']} ${pathname === "/benchmarks" && !activeBenchmarkId ? styles['all-link-active'] : ""}`}
         onClick={() => router.push("/benchmarks")}
         data-panel-close
       >
         <Target size={13} />
         All Benchmarks
-        <span className={styles.allLinkCount}>{benchmarks.length}</span>
+        <span className={styles['all-link-count']}>{benchmarks.length}</span>
       </button>
 
       {/* List */}
       <div className={styles.list}>
         {loading ? (
           <div className={styles.empty}>
-            <Loader2 size={16} className={styles.spinIcon} />
+            <Loader2 size={16} className={styles['spin-icon']} />
             Loading…
           </div>
         ) : filtered.length === 0 ? (
@@ -180,34 +180,34 @@ export default function BenchmarkSidebarComponent({
             return (
               <div
                 key={b.id}
-                className={`${styles.item} ${isActive ? styles.itemActive : ""} ${isRunning ? styles.itemRunning : ""}`}
+                className={`${styles.item} ${isActive ? styles['item-active'] : ""} ${isRunning ? styles['item-running'] : ""}`}
                 {...SoundService.interactive(() => navigate(b))}
                 data-panel-close
               >
                 {/* Row 1: date (left) · cost (right) */}
-                <div className={styles.topRow}>
+                <div className={styles['top-row']}>
                   <BadgeComponent
                     type="dateTime"
                     date={b.updatedAt || b.createdAt}
                   />
                   {isRunning && (
-                    <Loader2 size={10} className={styles.spinIcon} />
+                    <Loader2 size={10} className={styles['spin-icon']} />
                   )}
                   <BadgeComponent type="cost" cost={b.cumulativeCost} />
                 </div>
 
                 {/* Row 2: name */}
-                <span className={styles.itemName}>{b.name}</span>
+                <span className={styles['item-name']}>{b.name}</span>
 
                 {/* Row 3: passed/failed (left) · pass bar (right) */}
                 {run ? (
-                  <div className={styles.bottomRow}>
-                    <div className={styles.statsLeft}>
-                      <span className={styles.statPassed}>
+                  <div className={styles['bottom-row']}>
+                    <div className={styles['stats-left']}>
+                      <span className={styles['stat-passed']}>
                         <CheckCircle2 size={10} />
                         {run.summary?.passed}
                       </span>
-                      <span className={styles.statFailed}>
+                      <span className={styles['stat-failed']}>
                         <XCircle size={10} />
                         {(run.summary?.failed ?? 0) +
                           (run.summary?.errored || 0)}
@@ -220,10 +220,10 @@ export default function BenchmarkSidebarComponent({
                     />
                   </div>
                 ) : (
-                  <div className={styles.bottomRow}>
-                    <div className={styles.statsLeft}>
+                  <div className={styles['bottom-row']}>
+                    <div className={styles['stats-left']}>
                       <Clock size={10} />
-                      <span className={styles.noRuns}>No runs yet</span>
+                      <span className={styles['no-runs']}>No runs yet</span>
                     </div>
                   </div>
                 )}

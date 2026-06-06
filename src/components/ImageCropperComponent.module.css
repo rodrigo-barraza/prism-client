@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.65);
+  background-color: oklch(0 0 0 / 0.65);
   backdrop-filter: blur(8px);
   z-index: 1000;
   animation: fade-in-animation 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -12,11 +12,11 @@
 
 .crop-modal-content {
   background-color: var(--background-surface, #1e1e24);
-  border: 1px solid var(--calculated-border-color, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--calculated-border-color, oklch(1 0 0 / 0.08));
   border-radius: 12px;
   width: 320px;
   max-width: 90vw;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 32px oklch(0 0 0 / 0.4);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -28,7 +28,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--calculated-border-color, rgba(255, 255, 255, 0.08));
+  border-bottom: 1px solid var(--calculated-border-color, oklch(1 0 0 / 0.08));
 }
 
 .crop-modal-header h3 {
@@ -52,7 +52,7 @@
 }
 
 .close-button:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: oklch(1 0 0 / 0.05);
   color: var(--text-primary, #ffffff);
 }
 
@@ -70,7 +70,7 @@
   overflow: hidden;
   border-radius: 8px;
   background-color: #0f0f11;
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 0 12px oklch(0 0 0 / 0.6);
   cursor: grab;
   touch-action: none;
 }
@@ -94,7 +94,7 @@
 .crop-mask-overlay {
   position: absolute;
   inset: 0;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 9999px oklch(0 0 0 / 0.5);
   pointer-events: none;
   border-radius: 8px;
 }
@@ -104,7 +104,7 @@
   position: absolute;
   inset: 0;
   border: 2px solid var(--color-primary, #6366f1);
-  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 8px oklch(0.566 0.2532 291.3 / 0.4);
   pointer-events: none;
   border-radius: 8px;
 }
@@ -144,7 +144,7 @@
   height: 16px;
   border-radius: 50%;
   background: var(--color-primary, #6366f1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 6px oklch(0 0 0 / 0.3);
   transition: transform 0.1s ease;
 }
 
@@ -158,7 +158,7 @@
   border: none;
   border-radius: 50%;
   background: var(--color-primary, #6366f1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 6px oklch(0 0 0 / 0.3);
   transition: transform 0.1s ease;
 }
 
@@ -178,7 +178,7 @@
   justify-content: flex-end;
   gap: 8px;
   background-color: var(--background-elevated, #16161a);
-  border-top: 1px solid var(--calculated-border-color, rgba(255, 255, 255, 0.08));
+  border-top: 1px solid var(--calculated-border-color, oklch(1 0 0 / 0.08));
 }
 
 @keyframes fade-in-animation {

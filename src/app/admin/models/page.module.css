@@ -1,9 +1,9 @@
 .page {
-  animation: fadeIn 0.3s ease-out;
+  animation: fade-in 0.3s ease-out;
 }
 
 /* Loading state */
-.loadingState {
+.loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;

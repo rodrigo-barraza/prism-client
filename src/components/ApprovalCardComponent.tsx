@@ -42,15 +42,15 @@ export default function ApprovalCardComponent({
   return (
     <div className={`${styles.card} ${!isPending ? styles.resolved : ""}`}>
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
+        <div className={styles['header-left']}>
           <TierIcon
             size={16}
-            className={styles.tierIcon}
+            className={styles['tier-icon']}
             style={{ color: tierInfo.color }}
           />
-          <span className={styles.toolName}>{toolName}</span>
+          <span className={styles['tool-name']}>{toolName}</span>
           <span
-            className={styles.tierBadge}
+            className={styles['tier-badge']}
             style={{
               color: tierInfo.color,
               borderColor: `color-mix(in srgb, ${tierInfo.color} 30%, transparent)`,
@@ -69,9 +69,9 @@ export default function ApprovalCardComponent({
             const truncated =
               stringValue.length > 120 ? stringValue.slice(0, 117) + "..." : stringValue;
             return (
-              <div key={key} className={styles.argumentRow}>
-                <span className={styles.argumentKey}>{key}</span>
-                <span className={styles.argumentValue}>{truncated}</span>
+              <div key={key} className={styles['argument-row']}>
+                <span className={styles['argument-key']}>{key}</span>
+                <span className={styles['argument-value']}>{truncated}</span>
               </div>
             );
           })}
@@ -80,15 +80,15 @@ export default function ApprovalCardComponent({
 
       {isPending && (
         <div className={styles.actions}>
-          <button className={styles.approveButton} onClick={onApprove}>
+          <button className={styles['approve-button']} onClick={onApprove}>
             <Check size={14} />
             Approve
           </button>
-          <button className={styles.approveAllButton} onClick={onApproveAll}>
+          <button className={styles['approve-all-button']} onClick={onApproveAll}>
             <Zap size={14} />
             Approve All
           </button>
-          <button className={styles.rejectButton} onClick={onReject}>
+          <button className={styles['reject-button']} onClick={onReject}>
             <X size={14} />
             Reject
           </button>

@@ -30,18 +30,18 @@
   }
 }
 
-.isActiveState {
+.is-active-state {
   background: var(--background-surface);
   border-left-color: var(--accent-primary);
   transform: translateX(-6px);
 }
 
-.isActiveState:hover {
+.is-active-state:hover {
   background: var(--background-surface);
   border-left-color: var(--accent-primary);
 }
 
-.isActiveState .icon {
+.is-active-state .icon {
   color: var(--accent-primary);
 }
 
@@ -55,21 +55,21 @@
 }
 
 /* ── Row 1: time (left) · cost (right) ── */
-.topRow {
+.top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
 }
 
-.topLeft {
+.top-left {
   display: flex;
   align-items: center;
   gap: 6px;
   min-width: 0;
 }
 
-.topRight {
+.top-right {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -89,7 +89,7 @@
   gap: 6px;
 }
 
-.newBadge {
+.new-badge {
   flex-shrink: 0;
   font-size: 0.5625rem;
   font-weight: 700;
@@ -100,17 +100,17 @@
   color: var(--background-base);
 }
 
-.generatingDot {
+.generating-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--accent-primary);
   flex-shrink: 0;
-  animation: historyItemPulse 1.4s ease-in-out infinite;
+  animation: history-item-pulse 1.4s ease-in-out infinite;
   box-shadow: 0 0 6px var(--calculated-accent-primary-glow);
 }
 
-@keyframes historyItemPulse {
+@keyframes history-item-pulse {
   0%,
   100% {
     opacity: 1;
@@ -124,16 +124,16 @@
 }
 
 /* ── Row 3: model badge ── */
-.modelBadge {
+.model-badge {
   width: fit-content;
   max-width: 100%;
 }
 
-.modelBadge span {
+.model-badge span {
   max-width: none;
 }
 
-.modelBadgeAndCostContainer {
+.model-badge-and-cost-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -141,20 +141,20 @@
   width: 100%;
 }
 
-.costBadgeRightAligned {
+.cost-badge-right-aligned {
   margin-inline-start: auto;
   flex-shrink: 0;
 }
 
 /* ── Row 4: modalities (left) · tools (right) ── */
-.bottomRow {
+.bottom-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
 }
 
-.bottomLeft {
+.bottom-left {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -172,18 +172,18 @@
   color: var(--accent-primary);
 }
 
-.usernameTag {
+.username-tag {
   display: inline-flex;
   padding: 1px 5px;
   border-radius: 2px;
   font-size: 0.625rem;
   font-weight: 600;
   background: oklch(76.9% 0.1646 70.1 / 0.12);
-  color: rgb(245, 158, 11);
+  color: oklch(0.774 0.1784 79.8);
 }
 
 /* ── Agent Badge (Dynamic Chip Pill) ── */
-.agentBadge {
+.agent-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -203,104 +203,104 @@
   will-change: transform, box-shadow;
 }
 
-.agentBadge:hover {
+.agent-badge:hover {
   transform: translateY(-0.5px);
   box-shadow: 0 2px 6px oklch(58.5% 0.2041 277.1 / 0.15);
 }
 
-.agentBadgeName {
+.agent-badge-name {
   white-space: nowrap;
   letter-spacing: 0.2px;
 }
 
 /* ── Dynamic Agent Theme Styling ── */
 
-.agentBadge[data-agent-identifier="CODING"] {
+.agent-badge[data-agent-identifier="CODING"] {
   background: oklch(58.5% 0.2041 277.1 / 0.08);
   border-color: oklch(58.5% 0.2041 277.1 / 0.22);
   color: oklch(68.0% 0.1584 276.9);
 }
 
-.agentBadge[data-agent-identifier="CODING"]:hover {
+.agent-badge[data-agent-identifier="CODING"]:hover {
   background: oklch(58.5% 0.2041 277.1 / 0.12);
   border-color: oklch(58.5% 0.2041 277.1 / 0.3);
   box-shadow: 0 2px 8px oklch(58.5% 0.2041 277.1 / 0.2);
 }
 
-.agentBadge[data-agent-identifier="LUPOS"] {
+.agent-badge[data-agent-identifier="LUPOS"] {
   background: oklch(63.7% 0.2078 25.3 / 0.06);
   border-color: oklch(63.7% 0.2078 25.3 / 0.18);
   color: oklch(70.5% 0.1867 47.6);
 }
 
-.agentBadge[data-agent-identifier="LUPOS"]:hover {
+.agent-badge[data-agent-identifier="LUPOS"]:hover {
   background: oklch(63.7% 0.2078 25.3 / 0.1);
   border-color: oklch(63.7% 0.2078 25.3 / 0.25);
   box-shadow: 0 2px 8px oklch(63.7% 0.2078 25.3 / 0.15);
 }
 
-.agentBadge[data-agent-identifier="STICKERS"] {
+.agent-badge[data-agent-identifier="STICKERS"] {
   background: oklch(69.6% 0.1491 162.5 / 0.06);
   border-color: oklch(69.6% 0.1491 162.5 / 0.18);
   color: oklch(77.3% 0.1535 163.3);
 }
 
-.agentBadge[data-agent-identifier="STICKERS"]:hover {
+.agent-badge[data-agent-identifier="STICKERS"]:hover {
   background: oklch(69.6% 0.1491 162.5 / 0.1);
   border-color: oklch(69.6% 0.1491 162.5 / 0.25);
   box-shadow: 0 2px 8px oklch(69.6% 0.1491 162.5 / 0.15);
 }
 
-.agentBadge[data-agent-identifier="LIGHTS"] {
+.agent-badge[data-agent-identifier="LIGHTS"] {
   background: oklch(79.5% 0.1616 86.0 / 0.06);
   border-color: oklch(79.5% 0.1616 86.0 / 0.18);
   color: oklch(83.7% 0.1643 84.4);
 }
 
-.agentBadge[data-agent-identifier="LIGHTS"]:hover {
+.agent-badge[data-agent-identifier="LIGHTS"]:hover {
   background: oklch(79.5% 0.1616 86.0 / 0.1);
   border-color: oklch(79.5% 0.1616 86.0 / 0.25);
   box-shadow: 0 2px 8px oklch(79.5% 0.1616 86.0 / 0.15);
 }
 
-.agentBadge[data-agent-identifier="OOG"] {
+.agent-badge[data-agent-identifier="OOG"] {
   background: oklch(55.3% 0.0116 58.0 / 0.06);
   border-color: oklch(55.3% 0.0116 58.0 / 0.18);
   color: oklch(71.6% 0.009 56.1);
 }
 
-.agentBadge[data-agent-identifier="OOG"]:hover {
+.agent-badge[data-agent-identifier="OOG"]:hover {
   background: oklch(55.3% 0.0116 58.0 / 0.1);
   border-color: oklch(55.3% 0.0116 58.0 / 0.25);
   box-shadow: 0 2px 8px oklch(55.3% 0.0116 58.0 / 0.15);
 }
 
-.agentBadge[data-agent-identifier="OMNI"] {
+.agent-badge[data-agent-identifier="OMNI"] {
   background: oklch(50.5% 0.1905 27.5 / 0.06);
   border-color: oklch(50.5% 0.1905 27.5 / 0.18);
   color: oklch(57.7% 0.2151 27.3);
 }
 
-.agentBadge[data-agent-identifier="OMNI"]:hover {
+.agent-badge[data-agent-identifier="OMNI"]:hover {
   background: oklch(50.5% 0.1905 27.5 / 0.1);
   border-color: oklch(50.5% 0.1905 27.5 / 0.25);
   box-shadow: 0 2px 8px oklch(50.5% 0.1905 27.5 / 0.15);
 }
 
-.agentBadge[data-agent-identifier="IMAGE"] {
+.agent-badge[data-agent-identifier="IMAGE"] {
   background: oklch(65.6% 0.2118 354.3 / 0.06);
   border-color: oklch(65.6% 0.2118 354.3 / 0.18);
   color: oklch(72.5% 0.1752 349.7);
 }
 
-.agentBadge[data-agent-identifier="IMAGE"]:hover {
+.agent-badge[data-agent-identifier="IMAGE"]:hover {
   background: oklch(65.6% 0.2118 354.3 / 0.1);
   border-color: oklch(65.6% 0.2118 354.3 / 0.25);
   box-shadow: 0 2px 8px oklch(65.6% 0.2118 354.3 / 0.15);
 }
 
 /* Fallback for other custom agents */
-.agentBadge:not([data-agent-identifier="CODING"]):not(
+.agent-badge:not([data-agent-identifier="CODING"]):not(
     [data-agent-identifier="OMNI"]
   ):not([data-agent-identifier="LUPOS"]):not(
     [data-agent-identifier="STICKERS"]
@@ -312,7 +312,7 @@
   color: oklch(70.9% 0.1592 293.5);
 }
 
-.agentBadge:not([data-agent-identifier="CODING"]):not(
+.agent-badge:not([data-agent-identifier="CODING"]):not(
     [data-agent-identifier="OMNI"]
   ):not([data-agent-identifier="LUPOS"]):not(
     [data-agent-identifier="STICKERS"]
@@ -338,7 +338,7 @@
 }
 
 /* ── Favorite Star ── */
-.favoriteButton {
+.favorite-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,7 +360,7 @@
   }
 }
 
-.favoriteButtonActive {
+.favorite-button-active {
   color: var(--color-warning);
   opacity: 1;
 

@@ -54,12 +54,12 @@
   border-color: transparent;
 }
 
-.button[data-is-unavailable] .buttonIcon {
+.button[data-is-unavailable] .button-icon {
   color: var(--text-muted);
   opacity: 0.5;
 }
 
-.unavailableLabel {
+.unavailable-label {
   color: var(--text-muted);
   opacity: 0.65;
   font-style: italic;
@@ -67,14 +67,14 @@
   text-decoration-color: color-mix(in srgb, var(--text-muted) 40%, transparent);
 }
 
-.buttonIcon {
+.button-icon {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
   color: var(--text-muted);
 }
 
-.lockIcon {
+.lock-icon {
   width: 11px;
   height: 11px;
   flex-shrink: 0;
@@ -82,7 +82,7 @@
   opacity: 0.7;
 }
 
-.chevronOpen {
+.chevron-open {
   transform: rotate(180deg);
   transition: transform 0.15s ease;
 }
@@ -105,10 +105,10 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  animation: wsSlideDown 0.12s ease-out;
+  animation: ws-slide-down 0.12s ease-out;
 }
 
-@keyframes wsSlideDown {
+@keyframes ws-slide-down {
   from {
     opacity: 0;
     transform: translateY(-4px);
@@ -121,7 +121,7 @@
 
 /* ── Menu items ──────────────────────────────────────────────────── */
 
-.menuItem {
+.menu-item {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -138,22 +138,22 @@
   transition: background 0.12s;
 }
 
-.menuItem:hover {
+.menu-item:hover {
   background: var(--calculated-accent-primary-subtle);
   color: var(--text-primary);
 }
 
-.menuItemActive {
+.menu-item-active {
   color: var(--accent-primary);
   background: var(--calculated-accent-primary-subtle);
 }
 
-.menuItemIcon {
+.menu-item-icon {
   flex-shrink: 0;
   opacity: 0.5;
 }
 
-.menuItemName {
+.menu-item-name {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -161,7 +161,7 @@
   white-space: nowrap;
 }
 
-.menuItemPinned {
+.menu-item-pinned {
   flex-shrink: 0;
   color: var(--text-muted);
   opacity: 0.5;
@@ -169,7 +169,7 @@
 
 /* ── Divider ─────────────────────────────────────────────────────── */
 
-.menuDivider {
+.menu-divider {
   height: 1px;
   background: var(--calculated-border-color);
   margin: 4px 0;
@@ -177,33 +177,33 @@
 
 /* ── Add workspace item ──────────────────────────────────────────── */
 
-.addItem {
+.add-item {
   color: var(--accent-primary);
   opacity: 0.85;
 }
 
-.addItem:hover {
+.add-item:hover {
   opacity: 1;
   color: var(--accent-primary);
 }
 
 /* ── Add workspace inline form ───────────────────────────────────── */
 
-.addSection {
+.add-section {
   padding: 6px 6px 4px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  animation: wsSlideDown 0.1s ease-out;
+  animation: ws-slide-down 0.1s ease-out;
 }
 
-.addInputRow {
+.add-input-row {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.addInput {
+.add-input {
   flex: 1;
   font-size: 11.5px;
   font-family: var(--font-mono, monospace);
@@ -217,23 +217,23 @@
   min-width: 0;
 }
 
-.addInput::placeholder {
+.add-input::placeholder {
   color: var(--text-muted);
 }
 
-.addInput:focus {
+.add-input:focus {
   border-color: var(--accent-primary);
 }
 
-.addInput.invalid {
+.add-input.invalid {
   border-color: var(--color-danger, var(--color-danger));
 }
 
-.addInput.valid {
+.add-input.valid {
   border-color: var(--color-success, var(--color-success-bright));
 }
 
-.addButton {
+.add-button {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -251,35 +251,35 @@
     color 0.15s;
 }
 
-.addButton:hover:not(:disabled) {
+.add-button:hover:not(:disabled) {
   filter: brightness(1.1);
 }
 
-.addButton:disabled {
+.add-button:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
 
 /* ── Validation feedback ─────────────────────────────────────────── */
 
-.validationRow {
+.validation-row {
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 2px 4px;
   font-size: 0.625rem;
-  animation: wsSlideDown 0.1s ease-out;
+  animation: ws-slide-down 0.1s ease-out;
 }
 
-.validationRow.success {
+.validation-row.success {
   color: var(--color-success, var(--color-success-bright));
 }
 
-.validationRow.error {
+.validation-row.error {
   color: var(--color-danger, var(--color-danger));
 }
 
-.validationRow.info {
+.validation-row.info {
   color: var(--text-tertiary);
   font-family: var(--font-mono, monospace);
 }

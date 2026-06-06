@@ -68,9 +68,9 @@ const TreeNode = memo(function TreeNode({
   };
 
   return (
-    <div className={styles.treeNode}>
+    <div className={styles['tree-node']}>
       <div
-        className={`${styles.treeRow} ${isDir ? styles.treeRowDir : styles.treeRowFile}`}
+        className={`${styles['tree-row']} ${isDir ? styles['tree-row-dir'] : styles['tree-row-file']}`}
         style={{ paddingLeft: `${8 + depth * 14}px` }}
         onClick={() => {
           if (isDir) {
@@ -85,27 +85,27 @@ const TreeNode = memo(function TreeNode({
         {isDir ? (
           <>
             {expanded ? (
-              <ChevronDown size={10} className={styles.treeChevron} />
+              <ChevronDown size={10} className={styles['tree-chevron']} />
             ) : (
-              <ChevronRight size={10} className={styles.treeChevron} />
+              <ChevronRight size={10} className={styles['tree-chevron']} />
             )}
-            <FolderOpen size={11} className={styles.treeFolderIcon} />
+            <FolderOpen size={11} className={styles['tree-folder-icon']} />
           </>
         ) : (
           <>
-            <span className={styles.treeChevronSpacer} />
+            <span className={styles['tree-chevron-spacer']} />
             <FileTypeIconComponent
               filename={node.name}
               size={10}
-              className={styles.treeFileIcon}
+              className={styles['tree-file-icon']}
             />
           </>
         )}
-        <span className={styles.treeName}>{node.name}</span>
+        <span className={styles['tree-name']}>{node.name}</span>
         {onMentionFile && (
           <button
             type="button"
-            className={styles.treeMentionButton}
+            className={styles['tree-mention-button']}
             onClick={handleMention}
             title={`Mention @${nodePath}`}
           >
@@ -113,11 +113,11 @@ const TreeNode = memo(function TreeNode({
           </button>
         )}
         {isDir && hasChildren && (
-          <span className={styles.treeCount}>{node.children!.length}</span>
+          <span className={styles['tree-count']}>{node.children!.length}</span>
         )}
       </div>
       {isDir && expanded && hasChildren && (
-        <div className={styles.treeChildren}>
+        <div className={styles['tree-children']}>
           {node.children!.map((child: WorkspaceTreeNode) => (
             <TreeNode
               key={child.name}
@@ -340,23 +340,23 @@ export default function WorkspaceTreePanelComponent({
     return (
       <div className={styles.container}>
         {!hideHeader && (
-          <div className={styles.headerWrapper}>
+          <div className={styles['header-wrapper']}>
             <div className={styles.header}>
-              <FolderOpen size={11} className={styles.headerIcon} />
-              <span className={styles.headerLabel}>{label}</span>
+              <FolderOpen size={11} className={styles['header-icon']} />
+              <span className={styles['header-label']}>{label}</span>
             </div>
           </div>
         )}
-        <div className={styles.treeScroll}>
-          <div className={styles.unavailableState}>
-            <WifiOff size={20} className={styles.unavailableIcon} />
-            <span className={styles.unavailableTitle}>
+        <div className={styles['tree-scroll']}>
+          <div className={styles['unavailable-state']}>
+            <WifiOff size={20} className={styles['unavailable-icon']} />
+            <span className={styles['unavailable-title']}>
               Workspace Unavailable
             </span>
-            <span className={styles.unavailablePath}>
+            <span className={styles['unavailable-path']}>
               {unavailableWorkspace}
             </span>
-            <span className={styles.unavailableHint}>
+            <span className={styles['unavailable-hint']}>
               This session&apos;s workspace is not currently connected. Connect
               the workspace or switch to an available one to browse files.
             </span>
@@ -373,9 +373,9 @@ export default function WorkspaceTreePanelComponent({
     <div className={styles.container}>
       {/* ── Header — static label or workspace switcher ── */}
       {!hideHeader && (
-        <div className={styles.headerWrapper} ref={switcherRef}>
+        <div className={styles['header-wrapper']} ref={switcherRef}>
           <div
-            className={`${styles.header} ${hasMultiple ? styles.headerClickable : ""}`}
+            className={`${styles.header} ${hasMultiple ? styles['header-clickable'] : ""}`}
             onClick={hasMultiple ? () => setSwitcherOpen((v) => !v) : undefined}
             role={hasMultiple ? "button" : undefined}
             tabIndex={hasMultiple ? 0 : undefined}
@@ -385,18 +385,18 @@ export default function WorkspaceTreePanelComponent({
                 : currentWorkspace!.path
             }
           >
-            <FolderOpen size={11} className={styles.headerIcon} />
-            <span className={styles.headerLabel}>{currentWorkspace!.name}</span>
-            {locked && <Lock size={9} className={styles.headerLock} />}
+            <FolderOpen size={11} className={styles['header-icon']} />
+            <span className={styles['header-label']}>{currentWorkspace!.name}</span>
+            {locked && <Lock size={9} className={styles['header-lock']} />}
             {hasMultiple && (
               <ChevronDown
                 size={10}
-                className={`${styles.headerChevron} ${switcherOpen ? styles.headerChevronOpen : ""}`}
+                className={`${styles['header-chevron']} ${switcherOpen ? styles['header-chevron-open'] : ""}`}
               />
             )}
             {treeData?.totalEntries !== undefined &&
               treeData.totalEntries > 0 && (
-                <span className={styles.headerCount}>
+                <span className={styles['header-count']}>
                   {treeData.totalEntries}
                   {treeData.truncated ? "+" : ""}
                 </span>
@@ -405,24 +405,24 @@ export default function WorkspaceTreePanelComponent({
 
           {/* ── Workspace switcher dropdown ── */}
           {switcherOpen && (
-            <div className={styles.switcherDropdown}>
+            <div className={styles['switcher-dropdown']}>
               {workspaces.map((w: WorkspaceItem) => {
                 const isActive = currentWorkspace?.path === w.path;
                 return (
                   <button
                     key={w.id}
                     type="button"
-                    className={`${styles.switcherItem} ${isActive ? styles.switcherItemActive : ""}`}
+                    className={`${styles['switcher-item']} ${isActive ? styles['switcher-item-active'] : ""}`}
                     onClick={() => {
                       setCurrentWorkspace(w);
                       setSwitcherOpen(false);
                     }}
                     title={w.path}
                   >
-                    <FolderOpen size={10} className={styles.switcherItemIcon} />
-                    <span className={styles.switcherItemName}>{w.name}</span>
+                    <FolderOpen size={10} className={styles['switcher-item-icon']} />
+                    <span className={styles['switcher-item-name']}>{w.name}</span>
                     {isActive && (
-                      <Check size={10} className={styles.switcherItemCheck} />
+                      <Check size={10} className={styles['switcher-item-check']} />
                     )}
                   </button>
                 );
@@ -432,7 +432,7 @@ export default function WorkspaceTreePanelComponent({
         </div>
       )}
 
-      <div className={styles.treeScroll}>
+      <div className={styles['tree-scroll']}>
         {/* Search input is ALWAYS rendered here once the tree is loaded and not empty */}
         {!treeLoading && treeData?.tree && treeData.tree.length > 0 && (
           <div className={styles["search-input-container-section"]}>
@@ -448,7 +448,7 @@ export default function WorkspaceTreePanelComponent({
 
         {treeLoading && <PanelLoadingSpinner />}
         {!treeLoading && treeData?.tree && filteredTree.length > 0 && (
-          <div className={styles.treeRoot}>
+          <div className={styles['tree-root']}>
             {filteredTree.map((node: WorkspaceTreeNode) => (
               <TreeNode
                 key={node.name}
@@ -478,10 +478,10 @@ export default function WorkspaceTreePanelComponent({
         {!treeLoading &&
           treeData &&
           (!treeData.tree || treeData.tree.length === 0) && (
-            <div className={styles.treeLoading}>Empty directory</div>
+            <div className={styles['tree-loading']}>Empty directory</div>
           )}
         {!treeLoading && hasTreeFetchFailed && (
-          <div className={styles.treeLoading}>Unable to load tree</div>
+          <div className={styles['tree-loading']}>Unable to load tree</div>
         )}
       </div>
     </div>

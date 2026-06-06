@@ -27,7 +27,7 @@ export default function StatsTabBarComponent({
   onChange,
 }: StatsTabBarProps) {
   return (
-    <div className={styles.statsTabBar}>
+    <div className={styles['stats-tab-bar']}>
       {TABS.map((tab) => (
         <TooltipComponent
           key={tab.key}
@@ -36,7 +36,7 @@ export default function StatsTabBarComponent({
           delay={200}
         >
           <button
-            className={`${styles.statsTabButton}${activeTab === tab.key ? ` ${styles.statsTabBtnActive}` : ""}`}
+            className={`${styles['stats-tab-button']}${activeTab === tab.key ? ` ${styles['stats-tab-btn-active']}` : ""}`}
             onClick={() => onChange(tab.key)}
           >
             {tab.icon}

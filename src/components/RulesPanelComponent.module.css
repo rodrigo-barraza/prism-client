@@ -11,19 +11,19 @@
 /* ── Empty State ────────────────────────────────────────────── */
 
 .empty-state {
-  composes: emptyState from "./PanelShared.module.css";
+  composes: empty-state from "./PanelShared.module.css";
 }
 
 .empty-icon {
-  composes: emptyIcon from "./PanelShared.module.css";
+  composes: empty-icon from "./PanelShared.module.css";
 }
 
 .empty-title {
-  composes: emptyTitle from "./PanelShared.module.css";
+  composes: empty-title from "./PanelShared.module.css";
 }
 
 .empty-subtitle {
-  composes: emptySubtitle from "./PanelShared.module.css";
+  composes: empty-subtitle from "./PanelShared.module.css";
 }
 
 /* ── Rule Card ──────────────────────────────────────────────── */
@@ -179,7 +179,7 @@
 }
 
 .confirm-button {
-  composes: confirmButton from "./PanelShared.module.css";
+  composes: confirm-button from "./PanelShared.module.css";
 }
 
 .confirm-button-yes {

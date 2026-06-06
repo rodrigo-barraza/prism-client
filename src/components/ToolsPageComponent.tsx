@@ -307,48 +307,48 @@ function ToolDetailModal({
     : 0;
 
   return (
-    <div className={styles.detailOverlay} onClick={onClose}>
+    <div className={styles['detail-overlay']} onClick={onClose}>
       <div
-        className={styles.detailPanel}
+        className={styles['detail-panel']}
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={styles.detailHeader}>
-          <div className={styles.detailTitleBlock}>
-            <div className={styles.detailCleanName}>
+        <div className={styles['detail-header']}>
+          <div className={styles['detail-title-block']}>
+            <div className={styles['detail-clean-name']}>
               {tool.emoji && (
                 tool.emoji.startsWith("http") ? (
-                  <img src={tool.emoji} alt={tool.name} className={styles.detailEmojiImage} />
+                  <img src={tool.emoji} alt={tool.name} className={styles['detail-emoji-image']} />
                 ) : (
-                  <span className={styles.detailEmoji}>{tool.emoji}</span>
+                  <span className={styles['detail-emoji']}>{tool.emoji}</span>
                 )
               )}
               {cleanName}
             </div>
-            <div className={styles.detailTitle}>{tool.name}</div>
-            <div className={styles.detailDomainRow}>
+            <div className={styles['detail-title']}>{tool.name}</div>
+            <div className={styles['detail-domain-row']}>
               {tool.domain && (
-                <span className={styles.toolDomain}>{tool.domain}</span>
+                <span className={styles['tool-domain']}>{tool.domain}</span>
               )}
               {tool.dataSource && (
-                <span className={styles.dataSourceBadge}>
-                  <span className={styles.dataSourceType}>
+                <span className={styles['data-source-badge']}>
+                  <span className={styles['data-source-type']}>
                     {tool.dataSource.type}
                   </span>
                   {tool.dataSource.provider && (
-                    <span className={styles.dataSourceProvider}>
+                    <span className={styles['data-source-provider']}>
                       {tool.dataSource.provider}
                     </span>
                   )}
                   {tool.dataSource.intervalSeconds && (
-                    <span className={styles.dataSourceInterval}>
+                    <span className={styles['data-source-interval']}>
                       ~{tool.dataSource.intervalSeconds}s
                     </span>
                   )}
                 </span>
               )}
               {tool.labels?.map((l: string) => (
-                <span key={l} className={styles.toolLabel}>
+                <span key={l} className={styles['tool-label']}>
                   {l}
                 </span>
               ))}
@@ -356,7 +356,7 @@ function ToolDetailModal({
                 agents.map((a: { id: string; name: string }) => (
                   <span
                     key={a.id}
-                    className={styles.agentBadge}
+                    className={styles['agent-badge']}
                     style={
                       {
                         "--agent-color": getAgentColor(a.id),
@@ -370,7 +370,7 @@ function ToolDetailModal({
             </div>
           </div>
           <button
-            className={styles.detailClose}
+            className={styles['detail-close']}
             onClick={onClose}
             title="Close"
           >
@@ -379,90 +379,90 @@ function ToolDetailModal({
         </div>
 
         {/* Body */}
-        <div className={styles.detailBody}>
-          <button className={styles.tryToolButton} onClick={handleTryTool}>
+        <div className={styles['detail-body']}>
+          <button className={styles['try-tool-button']} onClick={handleTryTool}>
             <Play size={14} /> Try Tool in Direct Chat
           </button>
 
           {/* Description */}
-          <div className={styles.detailDescription}>{tool.description}</div>
+          <div className={styles['detail-description']}>{tool.description}</div>
 
           {/* Lifetime Stats */}
-          <div className={styles.detailSection}>
-            <div className={styles.detailSectionTitle}>
+          <div className={styles['detail-section']}>
+            <div className={styles['detail-section-title']}>
               <BarChart3 size={12} /> Lifetime Usage Stats
             </div>
             {stats ? (
               <>
-                <div className={styles.statsGrid}>
-                  <div className={styles.statCell}>
-                    <Hash size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>
+                <div className={styles['stats-grid']}>
+                  <div className={styles['stat-cell']}>
+                    <Hash size={14} className={styles['stat-cell-icon']} />
+                    <div className={styles['stat-cell-value']}>
                       {formatCompact(stats.totalCalls)}
                     </div>
-                    <div className={styles.statCellLabel}>Total Calls</div>
+                    <div className={styles['stat-cell-label']}>Total Calls</div>
                   </div>
-                  <div className={styles.statCell}>
-                    <Activity size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>
+                  <div className={styles['stat-cell']}>
+                    <Activity size={14} className={styles['stat-cell-icon']} />
+                    <div className={styles['stat-cell-value']}>
                       {formatCompact(stats.totalRequests)}
                     </div>
-                    <div className={styles.statCellLabel}>Requests</div>
+                    <div className={styles['stat-cell-label']}>Requests</div>
                   </div>
-                  <div className={styles.statCell}>
-                    <DollarSign size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>
+                  <div className={styles['stat-cell']}>
+                    <DollarSign size={14} className={styles['stat-cell-icon']} />
+                    <div className={styles['stat-cell-value']}>
                       {formatCostAdaptive(stats.totalCost)}
                     </div>
-                    <div className={styles.statCellLabel}>Total Cost</div>
+                    <div className={styles['stat-cell-label']}>Total Cost</div>
                   </div>
-                  <div className={styles.statCell}>
-                    <TrendingUp size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>
+                  <div className={styles['stat-cell']}>
+                    <TrendingUp size={14} className={styles['stat-cell-icon']} />
+                    <div className={styles['stat-cell-value']}>
                       {formatLatencyMs(stats.avgLatency)}
                     </div>
-                    <div className={styles.statCellLabel}>Avg Latency</div>
+                    <div className={styles['stat-cell-label']}>Avg Latency</div>
                   </div>
-                  <div className={styles.statCell}>
-                    <Zap size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>
+                  <div className={styles['stat-cell']}>
+                    <Zap size={14} className={styles['stat-cell-icon']} />
+                    <div className={styles['stat-cell-value']}>
                       {formatCompact(
                         (stats.totalInputTokens || 0) +
                           (stats.totalOutputTokens || 0),
                       )}
                     </div>
-                    <div className={styles.statCellLabel}>Total Tokens</div>
+                    <div className={styles['stat-cell-label']}>Total Tokens</div>
                   </div>
-                  <div className={styles.statCell}>
-                    <CheckCircle2 size={14} className={styles.statCellIcon} />
-                    <div className={styles.statCellValue}>
+                  <div className={styles['stat-cell']}>
+                    <CheckCircle2 size={14} className={styles['stat-cell-icon']} />
+                    <div className={styles['stat-cell-value']}>
                       {successRate.toFixed(0)}%
                     </div>
-                    <div className={styles.statCellLabel}>Success Rate</div>
+                    <div className={styles['stat-cell-label']}>Success Rate</div>
                   </div>
                 </div>
 
                 {/* Time Range */}
-                <div className={styles.statsTimeRange}>
-                  <div className={styles.statsTimeItem}>
+                <div className={styles['stats-time-range']}>
+                  <div className={styles['stats-time-item']}>
                     <Calendar size={12} />
-                    <span className={styles.statsTimeLabel}>First used</span>
-                    <span className={styles.statsTimeValue}>
+                    <span className={styles['stats-time-label']}>First used</span>
+                    <span className={styles['stats-time-value']}>
                       {formatTimeAgo(stats.firstUsed)}
                     </span>
                   </div>
-                  <div className={styles.statsTimeItem}>
+                  <div className={styles['stats-time-item']}>
                     <Clock size={12} />
-                    <span className={styles.statsTimeLabel}>Last used</span>
-                    <span className={styles.statsTimeValue}>
+                    <span className={styles['stats-time-label']}>Last used</span>
+                    <span className={styles['stats-time-value']}>
                       {formatTimeAgo(stats.lastUsed)}
                     </span>
                   </div>
                   {(stats.failureCount || 0) > 0 && (
-                    <div className={styles.statsTimeItem}>
+                    <div className={styles['stats-time-item']}>
                       <XCircle size={12} />
-                      <span className={styles.statsTimeLabel}>Failures</span>
-                      <span className={styles.statsTimeValueDanger}>
+                      <span className={styles['stats-time-label']}>Failures</span>
+                      <span className={styles['stats-time-value-danger']}>
                         {stats.failureCount}
                       </span>
                     </div>
@@ -472,21 +472,21 @@ function ToolDetailModal({
                 {/* Top Models / Agents */}
                 {((stats.topModels && stats.topModels.length > 0) ||
                   (stats.topAgents && stats.topAgents.length > 0)) && (
-                  <div className={styles.statsBreakdown}>
+                  <div className={styles['stats-breakdown']}>
                     {stats.topModels && stats.topModels.length > 0 && (
-                      <div className={styles.statsBreakdownCol}>
-                        <div className={styles.statsBreakdownTitle}>
+                      <div className={styles['stats-breakdown-col']}>
+                        <div className={styles['stats-breakdown-title']}>
                           Top Models
                         </div>
                         {stats.topModels.map((m: TopModelStat) => (
                           <div
                             key={m.model}
-                            className={styles.statsBreakdownRow}
+                            className={styles['stats-breakdown-row']}
                           >
-                            <span className={styles.statsBreakdownName}>
+                            <span className={styles['stats-breakdown-name']}>
                               {m.model}
                             </span>
-                            <span className={styles.statsBreakdownCount}>
+                            <span className={styles['stats-breakdown-count']}>
                               {m.count}
                             </span>
                           </div>
@@ -494,19 +494,19 @@ function ToolDetailModal({
                       </div>
                     )}
                     {stats.topAgents && stats.topAgents.length > 0 && (
-                      <div className={styles.statsBreakdownCol}>
-                        <div className={styles.statsBreakdownTitle}>
+                      <div className={styles['stats-breakdown-col']}>
+                        <div className={styles['stats-breakdown-title']}>
                           Top Agents
                         </div>
                         {stats.topAgents.map((a: TopAgentStat) => (
                           <div
                             key={a.agent}
-                            className={styles.statsBreakdownRow}
+                            className={styles['stats-breakdown-row']}
                           >
-                            <span className={styles.statsBreakdownName}>
+                            <span className={styles['stats-breakdown-name']}>
                               {a.agent}
                             </span>
-                            <span className={styles.statsBreakdownCount}>
+                            <span className={styles['stats-breakdown-count']}>
                               {a.count}
                             </span>
                           </div>
@@ -517,7 +517,7 @@ function ToolDetailModal({
                 )}
               </>
             ) : (
-              <div className={styles.statsEmpty}>
+              <div className={styles['stats-empty']}>
                 <Activity size={16} />
                 No usage data recorded yet
               </div>
@@ -526,11 +526,11 @@ function ToolDetailModal({
 
           {/* Payload (Input Parameters) */}
           {inputParams.length > 0 && (
-            <div className={styles.detailSection}>
-              <div className={styles.detailSectionTitle}>
+            <div className={styles['detail-section']}>
+              <div className={styles['detail-section-title']}>
                 Payload — Input Parameters ({inputParams.length})
               </div>
-              <table className={styles.paramTable}>
+              <table className={styles['param-table']}>
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -550,19 +550,19 @@ function ToolDetailModal({
                     ]) => (
                       <tr key={name}>
                         <td>
-                          <span className={styles.paramName}>{name}</span>
+                          <span className={styles['param-name']}>{name}</span>
                           {required.has(name) && (
-                            <span className={styles.paramRequired}>req</span>
+                            <span className={styles['param-required']}>req</span>
                           )}
                         </td>
                         <td>
-                          <span className={styles.paramType}>
+                          <span className={styles['param-type']}>
                             {schema.type || "any"}
                           </span>
                           {schema.enum && (
-                            <div className={styles.paramEnum}>
+                            <div className={styles['param-enum']}>
                               {schema.enum.map((v: string | number) => (
-                                <span key={v} className={styles.enumValue}>
+                                <span key={v} className={styles['enum-value']}>
                                   {String(v)}
                                 </span>
                               ))}
@@ -580,13 +580,13 @@ function ToolDetailModal({
 
           {/* Output Fields */}
           {outputFields && outputFields.length > 0 && (
-            <div className={styles.detailSection}>
-              <div className={styles.detailSectionTitle}>
+            <div className={styles['detail-section']}>
+              <div className={styles['detail-section-title']}>
                 Output — Available Fields ({outputFields.length})
               </div>
-              <div className={styles.outputFieldsGrid}>
+              <div className={styles['output-fields-grid']}>
                 {outputFields.map((f: string) => (
-                  <span key={f} className={styles.outputField}>
+                  <span key={f} className={styles['output-field']}>
                     {f}
                   </span>
                 ))}
@@ -595,18 +595,18 @@ function ToolDetailModal({
           )}
 
           {/* Raw JSON schema (collapsible) */}
-          <div className={styles.detailSection}>
+          <div className={styles['detail-section']}>
             <button
-              className={styles.rawToggle}
+              className={styles['raw-toggle']}
               onClick={() => setShowRaw(!showRaw)}
             >
-              <span className={styles.detailSectionTitle}>Raw Schema</span>
-              <span className={styles.rawChevron} data-is-open={showRaw}>
+              <span className={styles['detail-section-title']}>Raw Schema</span>
+              <span className={styles['raw-chevron']} data-is-open={showRaw}>
                 ▾
               </span>
             </button>
             {showRaw && (
-              <pre className={styles.jsonBlock}>
+              <pre className={styles['json-block']}>
                 {JSON.stringify(tool, null, 2)}
               </pre>
             )}
@@ -638,17 +638,17 @@ function ToolCard({
       onClick={() => onClick(tool)}
     >
       {agents?.length > 0 && (
-        <div className={styles.agentBadges}>
+        <div className={styles['agent-badges']}>
           <BadgeComponent type="agent" agents={agents} size={20} iconSize={11} />
         </div>
       )}
       {tool.labels?.slice(0, 4).map((l: string) => (
-        <span key={l} className={styles.toolLabel}>
+        <span key={l} className={styles['tool-label']}>
           {l}
         </span>
       ))}
       {paramCount > 0 && (
-        <span className={styles.paramCount}>
+        <span className={styles['param-count']}>
           <Braces /> {paramCount} param{paramCount !== 1 ? "s" : ""}
         </span>
       )}
@@ -678,17 +678,17 @@ function ToolRow({
   const totalTransferBytes = statistics?.totalTransferBytes ?? 0;
 
   return (
-    <div className={styles.toolRow} onClick={() => onClick(tool)}>
+    <div className={styles['tool-row']} onClick={() => onClick(tool)}>
       {tool.emoji ? (
         tool.emoji.startsWith("http") ? (
-          <img src={tool.emoji} alt={tool.name} className={styles.toolRowEmojiImage} />
+          <img src={tool.emoji} alt={tool.name} className={styles['tool-row-emoji-image']} />
         ) : (
-          <span className={styles.toolRowEmoji}>{tool.emoji}</span>
+          <span className={styles['tool-row-emoji']}>{tool.emoji}</span>
         )
       ) : (
-        <span className={styles.toolRowEmoji} />
+        <span className={styles['tool-row-emoji']} />
       )}
-      <span className={styles.toolRowName} title={tool.name}>
+      <span className={styles['tool-row-name']} title={tool.name}>
         {tool.name}
       </span>
       <span className={styles["statistic-cell"]}>
@@ -709,15 +709,15 @@ function ToolRow({
       <span className={styles["statistic-cell"]}>
         {totalTransferBytes > 0 ? formatCompact(totalTransferBytes) : "—"}
       </span>
-      <div className={styles.toolRowMeta}>
+      <div className={styles['tool-row-meta']}>
         {agents?.length > 0 && (
           <BadgeComponent type="agent" agents={agents} size={20} iconSize={11} />
         )}
         {tool.domain && (
-          <span className={styles.toolDomain}>{tool.domain}</span>
+          <span className={styles['tool-domain']}>{tool.domain}</span>
         )}
         {parameterCount > 0 && (
-          <span className={styles.paramCount}>
+          <span className={styles['param-count']}>
             <Braces /> {parameterCount}
           </span>
         )}
@@ -831,7 +831,7 @@ export default function ToolsPageComponent() {
 
     setControls(
       <button
-        className={`${styles.refreshButton} ${refreshing ? styles.spinning : ""}`}
+        className={`${styles['refresh-button']} ${refreshing ? styles.spinning : ""}`}
         onClick={handleRefresh}
         disabled={refreshing}
         title="Re-fetch schemas from tools-api"
@@ -939,7 +939,7 @@ export default function ToolsPageComponent() {
         sortable: true,
         sortValue: (row: ClientToolSchema) => row.name.toLowerCase(),
         render: (row: ClientToolSchema) => (
-          <span className={styles.tableNameCellMono}>
+          <span className={styles['table-name-cell-mono']}>
             {row.name}
           </span>
         ),
@@ -951,7 +951,7 @@ export default function ToolsPageComponent() {
         sortValue: (row: ClientToolSchema) => (row.domain || "").toLowerCase(),
         render: (row: ClientToolSchema) => (
           row.domain ? (
-            <span className={styles.toolDomain}>{row.domain}</span>
+            <span className={styles['tool-domain']}>{row.domain}</span>
           ) : (
             <span style={{ color: "var(--text-muted)" }}>—</span>
           )
@@ -965,7 +965,7 @@ export default function ToolsPageComponent() {
         render: (row: ClientToolSchema) => {
           const paramCount = countParams(row);
           return paramCount > 0 ? (
-            <span className={styles.tableParamCell}>
+            <span className={styles['table-param-cell']}>
               <Braces size={12} /> {paramCount}
             </span>
           ) : (
@@ -1007,7 +1007,7 @@ export default function ToolsPageComponent() {
         render: (row: ClientToolSchema) => {
           const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
           return stat?.totalCalls ? (
-            <span className={styles.tableStatValue}>
+            <span className={styles['table-stat-value']}>
               {formatCompact(stat.totalCalls)}
             </span>
           ) : (
@@ -1027,7 +1027,7 @@ export default function ToolsPageComponent() {
         render: (row: ClientToolSchema) => {
           const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
           return stat?.avgLatency ? (
-            <span className={styles.tableStatValue}>
+            <span className={styles['table-stat-value']}>
               {formatLatencyMs(stat.avgLatency)}
             </span>
           ) : (
@@ -1047,7 +1047,7 @@ export default function ToolsPageComponent() {
         render: (row: ClientToolSchema) => {
           const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
           return stat?.minLatency ? (
-            <span className={styles.tableStatValue}>
+            <span className={styles['table-stat-value']}>
               {formatLatencyMs(stat.minLatency)}
             </span>
           ) : (
@@ -1067,7 +1067,7 @@ export default function ToolsPageComponent() {
         render: (row: ClientToolSchema) => {
           const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
           return stat?.maxLatency ? (
-            <span className={styles.tableStatValue}>
+            <span className={styles['table-stat-value']}>
               {formatLatencyMs(stat.maxLatency)}
             </span>
           ) : (
@@ -1113,7 +1113,7 @@ export default function ToolsPageComponent() {
         render: (row: ClientToolSchema) => {
           const stat = (toolStats as Record<string, ExtendedToolStats>)[row.name];
           return stat?.totalTransferBytes ? (
-            <span className={styles.tableStatValue}>
+            <span className={styles['table-stat-value']}>
               {formatCompact(stat.totalTransferBytes)}
             </span>
           ) : (
@@ -1136,9 +1136,9 @@ export default function ToolsPageComponent() {
         hideHeader={isAdministratorMode}
       >
         <div className={styles.container}>
-          <div className={styles.isLoadingState}>
+          <div className={styles['is-loading-state']}>
             <PanelLoadingSpinner size="large" />
-            <span className={styles.loadingText}>Loading tools from Prism…</span>
+            <span className={styles['loading-text']}>Loading tools from Prism…</span>
           </div>
         </div>
       </ThreePanelLayout>
@@ -1160,7 +1160,7 @@ export default function ToolsPageComponent() {
       headerControls={
         isAdministratorMode ? null : (
           <button
-            className={`${styles.refreshButton} ${refreshing ? styles.spinning : ""}`}
+            className={`${styles['refresh-button']} ${refreshing ? styles.spinning : ""}`}
             onClick={handleRefresh}
             disabled={refreshing}
             title="Re-fetch schemas from tools-api"
@@ -1172,9 +1172,9 @@ export default function ToolsPageComponent() {
     >
       <div className={styles.container} ref={scrollContainerRef}>
         <div className={styles.header}>
-          <div className={styles.headerLeft}>
+          <div className={styles['header-left']}>
             <h2 className={styles.title}>
-              <Wrench className={styles.titleIcon} size={20} />
+              <Wrench className={styles['title-icon']} size={20} />
               Tools
             </h2>
             <p className={styles.subtitle}>
@@ -1183,16 +1183,16 @@ export default function ToolsPageComponent() {
           </div>
         </div>
 
-        <div className={styles.statsBadges}>
-          <div className={styles.statBadge}>
-            <span className={styles.statValue}>{tools.length}</span> tools
+        <div className={styles['stats-badges']}>
+          <div className={styles['stat-badge']}>
+            <span className={styles['stat-value']}>{tools.length}</span> tools
           </div>
-          <div className={styles.statBadge}>
-            <span className={styles.statValue}>{allDomains.length}</span>{" "}
+          <div className={styles['stat-badge']}>
+            <span className={styles['stat-value']}>{allDomains.length}</span>{" "}
             domains
           </div>
-          <div className={styles.statBadge}>
-            <span className={styles.statValue}>{allLabels.length}</span>{" "}
+          <div className={styles['stat-badge']}>
+            <span className={styles['stat-value']}>{allLabels.length}</span>{" "}
             labels
           </div>
         </div>
@@ -1214,7 +1214,7 @@ export default function ToolsPageComponent() {
       />
 
       {/* Filter bar */}
-      <div className={styles.filterBar}>
+      <div className={styles['filter-bar']}>
         <SelectComponent
           value={domainFilter}
           multiple
@@ -1248,23 +1248,23 @@ export default function ToolsPageComponent() {
           onChange={(val: string[]) => setAgentFilter(val)}
         />
 
-        <div className={styles.viewToggle}>
+        <div className={styles['view-toggle']}>
           <button
-            className={`${styles.viewButton} ${view === "grid" ? styles.viewActive : ""}`}
+            className={`${styles['view-button']} ${view === "grid" ? styles['view-active'] : ""}`}
             onClick={() => setView("grid")}
             title="Grid view"
           >
             <LayoutGrid />
           </button>
           <button
-            className={`${styles.viewButton} ${view === "list" ? styles.viewActive : ""}`}
+            className={`${styles['view-button']} ${view === "list" ? styles['view-active'] : ""}`}
             onClick={() => setView("list")}
             title="List view"
           >
             <List />
           </button>
           <button
-            className={`${styles.viewButton} ${view === "table" ? styles.viewActive : ""}`}
+            className={`${styles['view-button']} ${view === "table" ? styles['view-active'] : ""}`}
             onClick={() => setView("table")}
             title="Table view"
           >
@@ -1275,12 +1275,12 @@ export default function ToolsPageComponent() {
 
       {/* Tools display */}
       {filtered.length === 0 ? (
-        <div className={styles.emptyState}>
+        <div className={styles['empty-state']}>
           <Search />
           <p>No tools match your filters.</p>
         </div>
       ) : view === "table" ? (
-        <div className={styles.tableWrapper}>
+        <div className={styles['table-wrapper']}>
           <TableComponent
             columns={tableColumns as any}
             data={filtered}
@@ -1297,19 +1297,19 @@ export default function ToolsPageComponent() {
             return (
               <div
                 key={domain}
-                className={styles.domainSection}
+                className={styles['domain-section']}
                 data-domain-section={domain}
               >
-                <div className={styles.domainHeader}>
-                  <DomainIcon className={styles.domainIcon} />
+                <div className={styles['domain-header']}>
+                  <DomainIcon className={styles['domain-icon']} />
                   <h2>{domain}</h2>
-                  <span className={styles.domainCount}>
+                  <span className={styles['domain-count']}>
                     {domainTools.length}
                   </span>
                 </div>
 
                 {view === "grid" ? (
-                  <div className={styles.toolGrid}>
+                  <div className={styles['tool-grid']}>
                     {domainTools.map((tool: ClientToolSchema) => (
                       <ToolCard
                         key={tool.name}
@@ -1327,7 +1327,7 @@ export default function ToolsPageComponent() {
                     ))}
                   </div>
                 ) : (
-                  <div className={styles.tableWrapper}>
+                  <div className={styles['table-wrapper']}>
                     <TableComponent
                       columns={tableColumns as any}
                       data={domainTools}

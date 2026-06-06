@@ -246,15 +246,15 @@ export default function BenchmarkFormComponent({
 
       {/* -- Model Assertions (text match) -- */}
       {showModelAssertions && (
-        <div className={styles.assertionsSection}>
-          <div className={styles.assertionsHeader}>
-            <span className={styles.assertionsLabel}>
+        <div className={styles['assertions-section']}>
+          <div className={styles['assertions-header']}>
+            <span className={styles['assertions-label']}>
               {mode === "combined" ? "Output Assertions" : "Assertions"}
             </span>
             {assertions.length > 1 && (
               <button
                 type="button"
-                className={`${styles.operatorToggle} ${operator === "OR" ? styles.operatorOr : ""}`}
+                className={`${styles['operator-toggle']} ${operator === "OR" ? styles['operator-or'] : ""}`}
                 onClick={toggleOperator}
                 title={`Switch to ${operator === "AND" ? "OR" : "AND"} — currently requires ${operator === "AND" ? "ALL" : "ANY"} to pass`}
               >
@@ -270,23 +270,23 @@ export default function BenchmarkFormComponent({
             </ButtonComponent>
           </div>
 
-          <div className={styles.assertionsList}>
+          <div className={styles['assertions-list']}>
             {assertions.map((a, i: number) => (
-              <div key={i} className={styles.assertionRow}>
+              <div key={i} className={styles['assertion-row']}>
                 {/* Operator divider between assertions */}
                 {i > 0 && (
-                  <div className={styles.operatorDivider}>
-                    <span className={styles.operatorDividerLine} />
+                  <div className={styles['operator-divider']}>
+                    <span className={styles['operator-divider-line']} />
                     <BadgeComponent
                       variant={operator === "OR" ? "warning" : "accent"}
                       mini
                     >
                       {operator}
                     </BadgeComponent>
-                    <span className={styles.operatorDividerLine} />
+                    <span className={styles['operator-divider-line']} />
                   </div>
                 )}
-                <div className={styles.assertionFields}>
+                <div className={styles['assertion-fields']}>
                   <FormGroupComponent
                     label={
                       i === 0 ? "Expected Value" : `Expected Value ${i + 1}`
@@ -322,7 +322,7 @@ export default function BenchmarkFormComponent({
                   </FormGroupComponent>
 
                   {assertions.length > 1 && (
-                    <div className={styles.assertionRemove}>
+                    <div className={styles['assertion-remove']}>
                       <IconButtonComponent
                         icon={<Trash2 size={14} />}
                         onClick={() => removeAssertion(i)}

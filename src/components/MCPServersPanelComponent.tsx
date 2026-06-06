@@ -201,13 +201,13 @@ export default function MCPServersPanel({
 
     return (
       <div className={styles.container}>
-        <div className={styles.formHeader}>
+        <div className={styles['form-header']}>
           <h3>{isNew ? "Add MCP Server" : "Edit Server"}</h3>
           <CloseButtonComponent onClick={handleCancel} />
         </div>
 
         <div className={styles.form}>
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Server Name</label>
             <InputComponent
               type="text"
@@ -233,7 +233,7 @@ export default function MCPServersPanel({
             </span>
           </div>
 
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Display Name</label>
             <InputComponent
               type="text"
@@ -254,11 +254,11 @@ export default function MCPServersPanel({
             />
           </div>
 
-          <div className={styles.formGroup}>
+          <div className={styles['form-group']}>
             <label>Transport</label>
-            <div className={styles.transportTabs}>
+            <div className={styles['transport-tabs']}>
               <button
-                className={`${styles.transportTab} ${isStdio ? styles.transportTabActive : ""}`}
+                className={`${styles['transport-tab']} ${isStdio ? styles['transport-tab-active'] : ""}`}
                 onClick={() =>
                   setEditingServer((s: MCPServer | null) =>
                     s ? { ...s, transport: "stdio" } : null,
@@ -268,7 +268,7 @@ export default function MCPServersPanel({
                 stdio
               </button>
               <button
-                className={`${styles.transportTab} ${!isStdio ? styles.transportTabActive : ""}`}
+                className={`${styles['transport-tab']} ${!isStdio ? styles['transport-tab-active'] : ""}`}
                 onClick={() =>
                   setEditingServer((s: MCPServer | null) =>
                     s
@@ -287,7 +287,7 @@ export default function MCPServersPanel({
 
           {isStdio ? (
             <>
-              <div className={styles.formGroup}>
+              <div className={styles['form-group']}>
                 <label>Command</label>
                 <InputComponent
                   type="text"
@@ -307,7 +307,7 @@ export default function MCPServersPanel({
                   placeholder="npx"
                 />
               </div>
-              <div className={styles.formGroup}>
+              <div className={styles['form-group']}>
                 <label>Arguments</label>
                 <InputComponent
                   type="text"
@@ -334,7 +334,7 @@ export default function MCPServersPanel({
               </div>
             </>
           ) : (
-            <div className={styles.formGroup}>
+            <div className={styles['form-group']}>
               <label>Server URL</label>
               <InputComponent
                 type="text"
@@ -351,9 +351,9 @@ export default function MCPServersPanel({
             </div>
           )}
 
-          {error && <div className={styles.errorMsg}>{error}</div>}
+          {error && <div className={styles['error-msg']}>{error}</div>}
 
-          <div className={styles.formActions}>
+          <div className={styles['form-actions']}>
             <ButtonComponent
               variant="primary"
               size="small"
@@ -377,15 +377,15 @@ export default function MCPServersPanel({
 
   return (
     <div className={styles.container}>
-      {error && <div className={styles.errorMsg}>{error}</div>}
+      {error && <div className={styles['error-msg']}>{error}</div>}
 
       {servers.length === 0 && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>
+        <div className={styles['empty-state']}>
+          <div className={styles['empty-icon']}>
             <Plug size={24} />
           </div>
-          <div className={styles.emptyTitle}>No MCP servers</div>
-          <div className={styles.emptySubtitle}>
+          <div className={styles['empty-title']}>No MCP servers</div>
+          <div className={styles['empty-subtitle']}>
             Connect external tool providers via the Model Context Protocol. Add
             servers to give the agent access to databases, APIs, and more.
           </div>
@@ -407,21 +407,21 @@ export default function MCPServersPanel({
         const isConnecting = connecting === serverId;
 
         return (
-          <div key={serverId} className={styles.serverCard}>
-            <div className={styles.serverCardHeader}>
+          <div key={serverId} className={styles['server-card']}>
+            <div className={styles['server-card-header']}>
               <div
-                className={`${styles.statusDot} ${server.connected ? styles.statusDotConnected : ""}`}
+                className={`${styles['status-dot']} ${server.connected ? styles['status-dot-connected'] : ""}`}
               />
-              <div className={styles.serverInfo}>
-                <div className={styles.serverName}>
+              <div className={styles['server-info']}>
+                <div className={styles['server-name']}>
                   {server.displayName || server.name}
                 </div>
-                <div className={styles.serverMeta}>
-                  <span className={styles.transportBadge}>
+                <div className={styles['server-meta']}>
+                  <span className={styles['transport-badge']}>
                     {server.transport}
                   </span>
                   {server.connected && (server.toolCount ?? 0) > 0 && (
-                    <span className={styles.toolCountBadge}>
+                    <span className={styles['tool-count-badge']}>
                       <Wrench size={9} />
                       {server.toolCount} tools
                     </span>
@@ -429,10 +429,10 @@ export default function MCPServersPanel({
                 </div>
               </div>
               {!readOnly && (
-                <div className={styles.serverActions}>
+                <div className={styles['server-actions']}>
                   {server.connected ? (
                     <button
-                      className={styles.disconnectButton}
+                      className={styles['disconnect-button']}
                       onClick={() => handleDisconnect(server)}
                       disabled={isConnecting}
                     >
@@ -441,7 +441,7 @@ export default function MCPServersPanel({
                     </button>
                   ) : (
                     <button
-                      className={styles.connectButton}
+                      className={styles['connect-button']}
                       onClick={() => handleConnect(server)}
                       disabled={isConnecting}
                     >
@@ -466,10 +466,10 @@ export default function MCPServersPanel({
 
             {/* Show discovered tools when connected */}
             {server.connected && (server.tools?.length ?? 0) > 0 && (
-              <div className={styles.toolList}>
+              <div className={styles['tool-list']}>
                 {server.tools?.map(
                   (tool: { name: string; description?: string }) => (
-                    <span key={tool.name} className={styles.toolTag}>
+                    <span key={tool.name} className={styles['tool-tag']}>
                       {tool.name}
                     </span>
                   ),
@@ -478,8 +478,8 @@ export default function MCPServersPanel({
             )}
 
             {isConfirming && (
-              <div className={styles.confirmLayoutRow}>
-                <span className={styles.confirmLabel}>
+              <div className={styles['confirm-layout-row']}>
+                <span className={styles['confirm-label']}>
                   Delete &ldquo;{server.name}&rdquo;?
                 </span>
                 <ButtonComponent

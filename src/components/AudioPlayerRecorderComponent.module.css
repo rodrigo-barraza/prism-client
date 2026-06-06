@@ -1,5 +1,5 @@
 /* Mic trigger button */
-.micButton {
+.mic-button {
   width: 40px;
   height: 40px;
   border-radius: var(--border-radius-sm);
@@ -22,7 +22,7 @@
 }
 
 /* ── Shared thumb (play + record) ── */
-.audioThumb {
+.audio-thumb {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -33,36 +33,36 @@
   height: 40px;
 }
 
-.audioCompact {
+.audio-compact {
   height: 38px;
 }
 
-.audioRecording {
+.audio-recording {
   border-color: oklch(63.7% 0.2078 25.3 / 0.25);
   background: oklch(63.7% 0.2078 25.3 / 0.04);
 }
 
-.audioStreaming {
+.audio-streaming {
   position: relative;
   border: none;
   overflow: hidden;
   padding: 0;
 }
 
-.streamingCanvasWrap {
+.streaming-canvas-wrap {
   position: absolute;
   inset: 0;
   overflow: hidden;
   image-rendering: pixelated;
 }
 
-.streamingCanvas {
+.streaming-canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
 }
 
-.streamingOverlay {
+.streaming-overlay {
   position: relative;
   z-index: 1;
   display: flex;
@@ -73,7 +73,7 @@
   height: 100%;
 }
 
-.streamingIcon {
+.streaming-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,7 +82,7 @@
   filter: drop-shadow(0 1px 3px oklch(0.0% 0.0 0.0 / 0.4));
 }
 
-.streamingBars {
+.streaming-bars {
   flex: 1;
   display: flex;
   align-items: center;
@@ -93,18 +93,18 @@
   overflow: hidden;
 }
 
-.streamingBar {
+.streaming-bar {
   width: 2px;
   height: 18px;
   border-radius: 1px;
   background: oklch(100.0% 0.0001 263.3 / 0.9);
   transform-origin: center;
   will-change: transform, opacity;
-  animation: streamingBarPulse 1.2s ease-in-out infinite;
+  animation: streaming-bar-pulse 1.2s ease-in-out infinite;
   filter: drop-shadow(0 0 2px oklch(100.0% 0.0001 263.3 / 0.3));
 }
 
-@keyframes streamingBarPulse {
+@keyframes streaming-bar-pulse {
   0%,
   100% {
     transform: scaleY(0.17);
@@ -116,7 +116,7 @@
   }
 }
 
-.streamingLabel {
+.streaming-label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: white;
@@ -126,7 +126,7 @@
 }
 
 /* ── Waveform area (shared) ── */
-.waveformWrap {
+.waveform-wrap {
   flex: 1;
   min-width: 50px;
   height: 28px;
@@ -136,14 +136,14 @@
   cursor: pointer;
 }
 
-.waveformCanvas {
+.waveform-canvas {
   width: 100%;
   height: 28px;
   display: block;
 }
 
 /* ── Play / Pause ── */
-.playButton {
+.play-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,7 +166,7 @@
 }
 
 /* ── Stop recording ── */
-.stopButton {
+.stop-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,7 +198,7 @@
   flex-shrink: 0;
 }
 
-.recordingTimer {
+.recording-timer {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-danger);
@@ -208,7 +208,7 @@
 }
 
 /* ── Icon buttons ── */
-.iconButton {
+.icon-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,19 +232,19 @@
 }
 
 /* ── Volume slider ── */
-.volumeSliderWrap {
+.volume-slider-wrap {
   width: 52px;
   flex-shrink: 0;
 }
 
 /* ── Faded elements for recording state (mirror player icons) ── */
-.fadedIcon {
+.faded-icon {
   color: var(--text-secondary);
   opacity: 0.2;
   flex-shrink: 0;
 }
 
-.fadedSlider {
+.faded-slider {
   width: 48px;
   height: 4px;
   background: var(--calculated-border-color);
@@ -254,7 +254,7 @@
 }
 
 /* ── Square layout (for workflow nodes) ── */
-.audioSquare {
+.audio-square {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -264,7 +264,7 @@
   overflow: hidden;
 }
 
-.squareWaveWrap {
+.square-wave-wrap {
   flex: 1;
   display: flex;
   align-items: center;
@@ -274,13 +274,13 @@
   padding: 8px 4px 0;
 }
 
-.squareWaveCanvas {
+.square-wave-canvas {
   width: 100%;
   height: 100%;
   display: block;
 }
 
-.squareControls {
+.square-controls {
   display: flex;
   align-items: center;
   gap: 6px;

@@ -343,7 +343,7 @@ export default function CycleButton({
   return (
     <button
       type="button"
-      className={`${styles.cycleButton} ${isActive ? styles.cycleButtonActive : ""} ${tweening ? styles.tweening : ""} ${showInfinity ? styles.infinity : ""} ${glitching ? styles.glitching : ""}`}
+      className={`${styles['cycle-button']} ${isActive ? styles['cycle-button-active'] : ""} ${tweening ? styles.tweening : ""} ${showInfinity ? styles.infinity : ""} ${glitching ? styles.glitching : ""}`}
       onClick={(e: React.MouseEvent) => {
         SoundService.playClickButton({ event: e.nativeEvent });
         onClick?.();

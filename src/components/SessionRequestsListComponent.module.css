@@ -22,7 +22,7 @@
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.headerCount {
+.header-count {
   margin-left: auto;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
@@ -35,12 +35,12 @@
 
 /* ── Request List ── */
 
-.requestList {
+.request-list {
   display: flex;
   flex-direction: column;
 }
 
-.requestRow {
+.request-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -60,7 +60,7 @@
   }
 }
 
-.requestError {
+.request-error {
   background: color-mix(in srgb, var(--color-danger) 5%, transparent);
 
   &:hover {
@@ -69,12 +69,12 @@
 }
 
 /* Worker rows get a left accent bar */
-.requestWorker {
+.request-worker {
   border-left: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
   padding-left: 8px;
 }
 
-.requestMeta {
+.request-meta {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -83,7 +83,7 @@
   overflow: hidden;
 }
 
-.workerTag {
+.worker-tag {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -95,7 +95,7 @@
   flex-shrink: 0;
 }
 
-.requestProvider {
+.request-provider {
   color: var(--text-secondary);
   font-weight: 500;
   white-space: nowrap;
@@ -111,7 +111,7 @@
   flex-shrink: 0;
 }
 
-.requestModel {
+.request-model {
   color: var(--text-primary);
   font-weight: 500;
   white-space: nowrap;
@@ -120,7 +120,7 @@
   max-width: 120px;
 }
 
-.requestOperation {
+.request-operation {
   font-size: 0.5625rem;
   color: var(--text-muted);
   white-space: nowrap;
@@ -128,14 +128,14 @@
   flex-shrink: 0;
 }
 
-.requestStats {
+.request-stats {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
 }
 
-.requestCost {
+.request-cost {
   font-size: 0.5625rem;
   font-weight: 600;
   color: var(--color-success);
@@ -145,18 +145,18 @@
 
 /* ── Empty State ── */
 
-.emptyState {
-  composes: emptyState from "./PanelShared.module.css";
+.empty-state {
+  composes: empty-state from "./PanelShared.module.css";
 }
 
-.emptyIcon {
-  composes: emptyIcon from "./PanelShared.module.css";
+.empty-icon {
+  composes: empty-icon from "./PanelShared.module.css";
 }
 
-.emptyTitle {
-  composes: emptyTitle from "./PanelShared.module.css";
+.empty-title {
+  composes: empty-title from "./PanelShared.module.css";
 }
 
-.emptySubtitle {
-  composes: emptySubtitle from "./PanelShared.module.css";
+.empty-subtitle {
+  composes: empty-subtitle from "./PanelShared.module.css";
 }

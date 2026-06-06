@@ -88,8 +88,8 @@ function ChartTooltipComponent({ active, payload, label, tab }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div className={styles.tooltip}>
-      <span className={styles.tooltipLabel}>{label}</span>
-      <span className={styles.tooltipValue} style={{ color: tab.color }}>
+      <span className={styles['tooltip-label']}>{label}</span>
+      <span className={styles['tooltip-value']} style={{ color: tab.color }}>
         {formatValue(payload[0].value, tab)}
       </span>
     </div>
@@ -246,7 +246,7 @@ export default function TimelineChartComponent({
         )}
       </div>
 
-      <div className={styles.chartArea} style={{ height }}>
+      <div className={styles['chart-area']} style={{ height }}>
         {data.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart

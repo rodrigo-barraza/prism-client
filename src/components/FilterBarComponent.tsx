@@ -17,7 +17,7 @@ export function FilterBarComponent({
   children,
   className = "",
 }: FilterBarProps) {
-  return <div className={`${styles.filterBar} ${className}`}>{children}</div>;
+  return <div className={`${styles['filter-bar']} ${className}`}>{children}</div>;
 }
 
 export interface FilterGroupProps {
@@ -27,8 +27,8 @@ export interface FilterGroupProps {
 
 export function FilterGroupComponent({ label, children }: FilterGroupProps) {
   return (
-    <div className={styles.filterGroup}>
-      {label && <span className={styles.filterLabel}>{label}</span>}
+    <div className={styles['filter-group']}>
+      {label && <span className={styles['filter-label']}>{label}</span>}
       {children}
     </div>
   );
@@ -60,7 +60,7 @@ export function FilterPillsComponent({
           <button
             key={f.key}
             type="button"
-            className={`${styles.pill} ${value === f.key ? styles.pillActive : ""}`}
+            className={`${styles.pill} ${value === f.key ? styles['pill-active'] : ""}`}
             onClick={() => onChange(f.key)}
           >
             {Icon && (
@@ -91,7 +91,7 @@ export function SearchInputComponent({
   placeholder = "Search...",
 }: SearchInputProps) {
   return (
-    <form className={styles.searchBox} onSubmit={onSubmit}>
+    <form className={styles['search-box']} onSubmit={onSubmit}>
       <Search size={14} />
       <InputComponent
         type="text"
@@ -100,7 +100,7 @@ export function SearchInputComponent({
         onChange={(
           e: React.ChangeEvent<HTMLInputElement>,
         ) => onChange(e.target.value)}
-        className={styles.searchInput}
+        className={styles['search-input']}
       />
     </form>
   );
@@ -124,14 +124,14 @@ export function ViewModeToggleComponent({
   modes,
 }: ViewModeToggleProps) {
   return (
-    <div className={styles.viewToggle}>
+    <div className={styles['view-toggle']}>
       {modes.map((m) => {
         const Icon = m.icon;
         return (
           <TooltipComponent key={m.key} label={m.title} position="bottom">
             <button
               type="button"
-              className={`${styles.viewButton} ${mode === m.key ? styles.viewBtnActive : ""}`}
+              className={`${styles['view-button']} ${mode === m.key ? styles['view-btn-active'] : ""}`}
               onClick={() => onChange(m.key)}
             >
               <Icon size={14} />
@@ -165,7 +165,7 @@ export function FilterIconButtonGroupComponent({
   isSingleSelect = false,
 }: FilterIconButtonGroupProps) {
   return (
-    <div className={styles.discreteGroup}>
+    <div className={styles['discrete-group']}>
       {options.map((opt) => {
         const Icon = opt.icon;
         const isActive = isSingleSelect
@@ -176,7 +176,7 @@ export function FilterIconButtonGroupComponent({
           <TooltipComponent key={opt.key} label={opt.label} position="bottom">
             <button
               type="button"
-              className={`${styles.discreteButton} ${isActive ? styles.discreteBtnActive : ""}`}
+              className={`${styles['discrete-button']} ${isActive ? styles['discrete-btn-active'] : ""}`}
               onClick={() => {
                 if (isSingleSelect) {
                   onChange(isActive ? null : opt.key);
@@ -219,7 +219,7 @@ export function FilterInputComponent({
   return (
     <InputComponent
       type="text"
-      className={`${styles.filterInput} ${className}`}
+      className={`${styles['filter-input']} ${className}`}
       placeholder={placeholder}
       value={value}
       onChange={(
@@ -266,7 +266,7 @@ export function FilterClearButton({
   children = "Clear",
 }: FilterClearButtonProps) {
   return (
-    <button type="button" className={styles.clearButton} onClick={onClick}>
+    <button type="button" className={styles['clear-button']} onClick={onClick}>
       {children}
     </button>
   );

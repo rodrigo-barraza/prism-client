@@ -16,7 +16,7 @@
     border-color 0.25s ease,
     transform 0.25s ease,
     box-shadow 0.25s ease;
-  animation: fadeIn 0.4s ease-out both;
+  animation: fade-in 0.4s ease-out both;
   cursor: pointer;
   user-select: none;
 
@@ -36,13 +36,13 @@
 
 /* ── Glow — cross-component hover linking ───────────────────── */
 
-.cardGlow {
+.card-glow {
   border-color: color-mix(in srgb, var(--tool-color) 35%, transparent);
-  animation: cardGlowPulse 1.4s ease-in-out infinite;
+  animation: card-glow-pulse 1.4s ease-in-out infinite;
   will-change: filter;
 }
 
-@keyframes cardGlowPulse {
+@keyframes card-glow-pulse {
   0%,
   100% {
     filter: drop-shadow(
@@ -58,7 +58,7 @@
 
 /* ── Disabled card ─────────────────────────────────────────── */
 
-.cardDisabled {
+.card-disabled {
   --tool-color-muted: var(--text-tertiary);
   background: var(--background-surface);
   border-color: var(--calculated-border-color);
@@ -86,7 +86,7 @@
 
 /* ── Locked card (always-on, non-toggleable) ──────────────── */
 
-.cardLocked {
+.card-locked {
   opacity: 0.5;
   cursor: default;
 
@@ -185,23 +185,23 @@
     color 0.25s ease,
     border-color 0.25s ease;
   filter: hue-rotate(0deg);
-  animation: rainbowHue 4s linear infinite;
+  animation: rainbow-hue 4s linear infinite;
   will-change: filter;
 }
 
-@keyframes rainbowHue {
+@keyframes rainbow-hue {
   to {
     filter: hue-rotate(360deg);
   }
 }
 
-.badgeDisabled {
+.badge-disabled {
   background: color-mix(in srgb, var(--text-tertiary) 8%, transparent);
   color: var(--text-tertiary);
   border-color: color-mix(in srgb, var(--text-tertiary) 12%, transparent);
 }
 
-.badgeLocked {
+.badge-locked {
   display: inline-flex;
   align-items: center;
   gap: 4px;

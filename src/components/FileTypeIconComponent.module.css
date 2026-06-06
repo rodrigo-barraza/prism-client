@@ -1,6 +1,6 @@
 /* ── FileTypeIcon — language-aware icon coloring ─────── */
 
-.fileIcon {
+.file-icon {
   flex-shrink: 0;
   color: var(--text-secondary);
   opacity: 0.5;
@@ -9,393 +9,393 @@
 /* ── Language / filetype icon colors ─────────────────── */
 
 /* JavaScript family — warm yellow */
-.iconJs {
+.icon-js {
   color: oklch(85.1% 0.1662 96.9);
   opacity: 0.85;
 }
-.iconJsx {
+.icon-jsx {
   color: oklch(75.2% 0.1393 227.5);
   opacity: 0.85;
 }
 /* TypeScript family — blue */
-.iconTs {
+.icon-ts {
   color: oklch(62.6% 0.1655 253.3);
   opacity: 0.85;
 }
-.iconTsx {
+.icon-tsx {
   color: oklch(62.6% 0.1655 253.3);
   opacity: 0.85;
 }
-.iconDts {
+.icon-dts {
   color: oklch(66.3% 0.096 250.8);
   opacity: 0.7;
 }
 /* Web */
-.iconHtml {
+.icon-html {
   color: oklch(65.2% 0.1929 36.9);
   opacity: 0.85;
 }
-.iconCss {
+.icon-css {
   color: oklch(56.8% 0.1997 268.5);
   opacity: 0.85;
 }
-.iconScss {
+.icon-scss {
   color: oklch(63.1% 0.186 353.0);
   opacity: 0.85;
 }
-.iconSvg {
+.icon-svg {
   color: oklch(78.1% 0.1626 69.6);
   opacity: 0.85;
 }
 /* Frameworks */
-.iconVue {
+.icon-vue {
   color: oklch(76.3% 0.1753 156.8);
   opacity: 0.85;
 }
-.iconSvelte {
+.icon-svelte {
   color: oklch(65.6% 0.1903 37.8);
   opacity: 0.85;
 }
-.iconAstro {
+.icon-astro {
   color: oklch(60.2% 0.212 312.6);
   opacity: 0.85;
 }
 /* Data / Config */
-.iconJson {
+.icon-json {
   color: oklch(79.4% 0.1549 97.1);
   opacity: 0.8;
 }
-.iconYaml {
+.icon-yaml {
   color: oklch(59.1% 0.1743 24.2);
   opacity: 0.75;
 }
-.iconToml {
+.icon-toml {
   color: oklch(66.0% 0.0783 231.8);
   opacity: 0.75;
 }
-.iconXml {
+.icon-xml {
   color: oklch(70.9% 0.1353 62.5);
   opacity: 0.75;
 }
-.iconCsv {
+.icon-csv {
   color: oklch(72.8% 0.1773 150.2);
   opacity: 0.8;
 }
-.iconConfig {
+.icon-config {
   color: var(--text-secondary);
   opacity: 0.65;
 }
 /* Python — blue/green */
-.iconPython {
+.icon-python {
   color: oklch(62.7% 0.1346 250.6);
   opacity: 0.85;
 }
-.iconNotebook {
+.icon-notebook {
   color: oklch(71.7% 0.1597 56.1);
   opacity: 0.85;
 }
 /* Ruby — red gem */
-.iconRuby {
+.icon-ruby {
   color: oklch(58.2% 0.2108 26.8);
   opacity: 0.85;
 }
 /* Rust — burnt orange */
-.iconRust {
+.icon-rust {
   color: oklch(66.9% 0.1708 49.1);
   opacity: 0.85;
 }
 /* Go — cyan */
-.iconGo {
+.icon-go {
   color: oklch(75.5% 0.1313 216.8);
   opacity: 0.85;
 }
 /* C family */
-.iconC {
+.icon-c {
   color: oklch(62.6% 0.1159 250.2);
   opacity: 0.8;
 }
-.iconCpp {
+.icon-cpp {
   color: oklch(59.1% 0.1585 252.5);
   opacity: 0.85;
 }
-.iconCsharp {
+.icon-csharp {
   color: oklch(54.3% 0.1875 299.0);
   opacity: 0.85;
 }
 /* Objective-C — steely blue */
-.iconObjc {
+.icon-objc {
   color: oklch(63.9% 0.1112 234.5);
   opacity: 0.85;
 }
 /* Java — orange/red */
-.iconJava {
+.icon-java {
   color: oklch(63.4% 0.2042 37.0);
   opacity: 0.85;
 }
 /* Kotlin — purple/orange gradient */
-.iconKotlin {
+.icon-kotlin {
   color: oklch(57.7% 0.1928 303.8);
   opacity: 0.85;
 }
 /* Swift — orange */
-.iconSwift {
+.icon-swift {
   color: oklch(68.3% 0.186 43.0);
   opacity: 0.85;
 }
 /* PHP — indigo */
-.iconPhp {
+.icon-php {
   color: oklch(54.8% 0.1474 280.4);
   opacity: 0.85;
 }
 /* Perl — dark teal */
-.iconPerl {
+.icon-perl {
   color: oklch(69.4% 0.1061 195.0);
   opacity: 0.85;
 }
 /* Lua — navy blue */
-.iconLua {
+.icon-lua {
   color: oklch(54.6% 0.1773 266.7);
   opacity: 0.85;
 }
 /* R — statistical blue */
-.iconR {
+.icon-r {
   color: oklch(55.2% 0.1788 259.0);
   opacity: 0.85;
 }
 /* Dart — teal */
-.iconDart {
+.icon-dart {
   color: oklch(70.3% 0.1358 229.0);
   opacity: 0.85;
 }
 /* Scala — red */
-.iconScala {
+.icon-scala {
   color: oklch(57.8% 0.222 27.9);
   opacity: 0.85;
 }
 /* Groovy — teal/blue */
-.iconGroovy {
+.icon-groovy {
   color: oklch(65.7% 0.1097 224.4);
   opacity: 0.85;
 }
 /* Julia — purple/green */
-.iconJulia {
+.icon-julia {
   color: oklch(56.4% 0.2069 307.7);
   opacity: 0.85;
 }
 /* CoffeeScript — brown */
-.iconCoffee {
+.icon-coffee {
   color: oklch(58.9% 0.1154 54.1);
   opacity: 0.85;
 }
 /* Solidity — grey/charcoal */
-.iconSolidity {
+.icon-solidity {
   color: oklch(58.8% 0.0368 248.5);
   opacity: 0.85;
 }
 /* CUDA — green */
-.iconCuda {
+.icon-cuda {
   color: oklch(69.7% 0.2191 142.8);
   opacity: 0.85;
 }
 /* Assembly — steel */
-.iconAssembly {
+.icon-assembly {
   color: oklch(58.7% 0.0495 249.7);
   opacity: 0.8;
 }
 /* Fortran — dark purple */
-.iconFortran {
+.icon-fortran {
   color: oklch(52.7% 0.1591 312.8);
   opacity: 0.8;
 }
 /* MATLAB — orange */
-.iconMatlab {
+.icon-matlab {
   color: oklch(66.1% 0.187 42.3);
   opacity: 0.85;
 }
 /* Nix — light blue */
-.iconNix {
+.icon-nix {
   color: oklch(64.9% 0.1182 250.4);
   opacity: 0.85;
 }
 /* Elixir — purple */
-.iconElixir {
+.icon-elixir {
   color: oklch(55.8% 0.1754 304.6);
   opacity: 0.85;
 }
 /* Erlang — dark magenta */
-.iconErlang {
+.icon-erlang {
   color: oklch(52.8% 0.1718 354.0);
   opacity: 0.85;
 }
 /* Haskell — violet */
-.iconHaskell {
+.icon-haskell {
   color: oklch(54.1% 0.2021 307.7);
   opacity: 0.85;
 }
 /* Clojure — green */
-.iconClojure {
+.icon-clojure {
   color: oklch(71.1% 0.1411 164.6);
   opacity: 0.85;
 }
 /* OCaml — orange */
-.iconOcaml {
+.icon-ocaml {
   color: oklch(70.3% 0.1667 56.4);
   opacity: 0.85;
 }
 /* F# — blue/purple */
-.iconFsharp {
+.icon-fsharp {
   color: oklch(52.9% 0.1786 270.6);
   opacity: 0.85;
 }
 /* Zig — golden amber */
-.iconZig {
+.icon-zig {
   color: oklch(78.8% 0.1661 74.0);
   opacity: 0.85;
 }
 /* Nim — crown gold */
-.iconNim {
+.icon-nim {
   color: oklch(82.2% 0.1653 92.1);
   opacity: 0.85;
 }
 /* V lang — blue */
-.iconVlang {
+.icon-vlang {
   color: oklch(61.3% 0.1801 253.6);
   opacity: 0.85;
 }
 /* Shell — terminal green */
-.iconShell {
+.icon-shell {
   color: oklch(72.0% 0.1837 149.6);
   opacity: 0.85;
 }
 /* Markdown / Docs */
-.iconMarkdown {
+.icon-markdown {
   color: oklch(67.5% 0.0288 246.5);
   opacity: 0.8;
 }
-.iconText {
+.icon-text {
   color: var(--text-secondary);
   opacity: 0.6;
 }
-.iconLog {
+.icon-log {
   color: var(--text-secondary);
   opacity: 0.5;
 }
-.iconLicense {
+.icon-license {
   color: oklch(75.0% 0.1406 88.7);
   opacity: 0.75;
 }
 /* Templates */
-.iconPug {
+.icon-pug {
   color: oklch(65.0% 0.1125 63.4);
   opacity: 0.85;
 }
-.iconEjs {
+.icon-ejs {
   color: oklch(70.6% 0.1721 150.0);
   opacity: 0.8;
 }
-.iconHandlebars {
+.icon-handlebars {
   color: oklch(65.1% 0.1335 61.2);
   opacity: 0.85;
 }
 /* LaTeX — dark teal */
-.iconLatex {
+.icon-latex {
   color: oklch(62.3% 0.0931 186.8);
   opacity: 0.85;
 }
 /* Cucumber / BDD — green */
-.iconCucumber {
+.icon-cucumber {
   color: oklch(68.2% 0.1795 137.2);
   opacity: 0.85;
 }
 /* Shaders — electric green */
-.iconShader {
+.icon-shader {
   color: oklch(72.1% 0.1718 154.5);
   opacity: 0.85;
 }
 /* Diff / Patch */
-.iconDiff {
+.icon-diff {
   color: oklch(66.5% 0.1302 61.4);
   opacity: 0.8;
 }
 /* GraphQL — magenta/pink */
-.iconGraphql {
+.icon-graphql {
   color: oklch(63.1% 0.2313 345.3);
   opacity: 0.85;
 }
 /* Protocol Buffers — blue */
-.iconProto {
+.icon-proto {
   color: oklch(61.7% 0.1277 244.1);
   opacity: 0.8;
 }
 /* Prisma — dark navy/teal */
-.iconPrisma {
+.icon-prisma {
   color: oklch(62.5% 0.1061 249.5);
   opacity: 0.85;
 }
 /* Terraform / HCL — purple */
-.iconTerraform {
+.icon-terraform {
   color: oklch(53.8% 0.2022 298.3);
   opacity: 0.85;
 }
 /* Nginx — green */
-.iconNginx {
+.icon-nginx {
   color: oklch(69.3% 0.1593 150.9);
   opacity: 0.8;
 }
 /* Design files — pink/magenta */
-.iconDesign {
+.icon-design {
   color: oklch(63.4% 0.215 327.7);
   opacity: 0.85;
 }
 /* Images — purple/magenta */
-.iconImage {
+.icon-image {
   color: oklch(60.3% 0.1994 312.7);
   opacity: 0.85;
 }
 /* Video — warm magenta */
-.iconVideo {
+.icon-video {
   color: oklch(61.5% 0.2083 354.4);
   opacity: 0.85;
 }
 /* Audio — teal */
-.iconAudio {
+.icon-audio {
   color: oklch(70.3% 0.1185 178.6);
   opacity: 0.85;
 }
 /* Archives — brown/khaki */
-.iconArchive {
+.icon-archive {
   color: oklch(66.2% 0.102 74.1);
   opacity: 0.75;
 }
 /* Fonts */
-.iconFont {
+.icon-font {
   color: oklch(64.0% 0.0001 263.3);
   opacity: 0.7;
 }
 /* Database — warm amber */
-.iconDatabase {
+.icon-database {
   color: oklch(71.6% 0.1486 68.2);
   opacity: 0.85;
 }
 /* Documents */
-.iconPdf {
+.icon-pdf {
   color: oklch(57.0% 0.2116 27.2);
   opacity: 0.85;
 }
-.iconDoc {
+.icon-doc {
   color: oklch(59.8% 0.1693 257.8);
   opacity: 0.8;
 }
-.iconSpreadsheet {
+.icon-spreadsheet {
   color: oklch(66.6% 0.175 149.1);
   opacity: 0.85;
 }
-.iconPresentation {
+.icon-presentation {
   color: oklch(65.5% 0.1783 43.0);
   opacity: 0.85;
 }
 /* Subtitles — muted blue */
-.iconSubtitle {
+.icon-subtitle {
   color: oklch(62.6% 0.0862 249.4);
   opacity: 0.75;
 }
@@ -405,57 +405,57 @@
   opacity: 0.85;
 }
 /* Binaries — dark grey */
-.iconBinary {
+.icon-binary {
   color: oklch(54.7% 0.023 250.6);
   opacity: 0.6;
 }
 /* Env / Secrets — muted yellow */
-.iconEnv {
+.icon-env {
   color: oklch(74.1% 0.1379 97.6);
   opacity: 0.8;
 }
 /* Certificates */
-.iconCert {
+.icon-cert {
   color: oklch(66.1% 0.1526 150.7);
   opacity: 0.8;
 }
 /* Docker — docker blue */
-.iconDocker {
+.icon-docker {
   color: oklch(66.6% 0.1482 245.0);
   opacity: 0.85;
 }
 /* Git */
-.iconGit {
+.icon-git {
   color: oklch(61.2% 0.1947 33.2);
   opacity: 0.8;
 }
 /* Test files — green vial */
-.iconTest {
+.icon-test {
   color: oklch(72.2% 0.172 152.6);
   opacity: 0.85;
 }
 /* Storybook — magenta-pink */
-.iconStorybook {
+.icon-storybook {
   color: oklch(61.0% 0.203 0.1);
   opacity: 0.85;
 }
 /* Lock files */
-.iconLock {
+.icon-lock {
   color: var(--text-secondary);
   opacity: 0.5;
 }
 /* Source maps */
-.iconMap {
+.icon-map {
   color: var(--text-secondary);
   opacity: 0.45;
 }
 /* WebAssembly — purple/blue */
-.iconWasm {
+.icon-wasm {
   color: oklch(51.7% 0.2273 291.7);
   opacity: 0.85;
 }
 /* Default fallback */
-.iconDefault {
+.icon-default {
   color: var(--text-secondary);
   opacity: 0.5;
 }

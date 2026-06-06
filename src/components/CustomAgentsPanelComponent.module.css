@@ -8,14 +8,14 @@
 
 /* ── Agent card list ──────────────────────────────────────────── */
 
-.agentList {
+.agent-list {
   display: flex;
   flex-direction: column;
   gap: 1px;
   background: var(--calculated-border-subtle);
 }
 
-.agentCard {
+.agent-card {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -25,7 +25,7 @@
   transition: background var(--transition-fast);
 }
 
-.agentCard:hover {
+.agent-card:hover {
   background: color-mix(
     in srgb,
     var(--accent-primary) 3%,
@@ -33,7 +33,7 @@
   );
 }
 
-.agentInfo {
+.agent-info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -41,7 +41,7 @@
   gap: 2px;
 }
 
-.agentName {
+.agent-name {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -50,7 +50,7 @@
   text-overflow: ellipsis;
 }
 
-.agentDesc {
+.agent-desc {
   font-size: 11.5px;
   color: var(--text-tertiary);
   line-height: 1.3;
@@ -61,14 +61,14 @@
   overflow: hidden;
 }
 
-.agentMeta {
+.agent-meta {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 2px;
 }
 
-.agentBadge {
+.agent-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -80,11 +80,11 @@
   border-radius: 4px;
 }
 
-.agentBadge svg {
+.agent-badge svg {
   opacity: 0.7;
 }
 
-.agentActions {
+.agent-actions {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -93,11 +93,11 @@
   transition: opacity var(--transition-fast);
 }
 
-.agentCard:hover .agentActions {
+.agent-card:hover .agent-actions {
   opacity: 1;
 }
 
-.actionButton {
+.action-button {
   all: unset;
   display: flex;
   align-items: center;
@@ -110,19 +110,19 @@
   transition: all var(--transition-fast);
 }
 
-.actionButton:hover {
+.action-button:hover {
   background: var(--background-elevated);
   color: var(--text-primary);
 }
 
-.actionBtnDanger:hover {
+.action-btn-danger:hover {
   background: color-mix(in srgb, var(--color-danger) 12%, transparent);
   color: var(--color-danger);
 }
 
 /* ── Empty state ──────────────────────────────────────────────── */
 
-.emptyState {
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -132,7 +132,7 @@
   text-align: center;
 }
 
-.emptyIcon {
+.empty-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -144,13 +144,13 @@
   opacity: 0.6;
 }
 
-.emptyTitle {
+.empty-title {
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
 
-.emptyHint {
+.empty-hint {
   font-size: 11.5px;
   color: var(--text-tertiary);
   max-width: 320px;
@@ -159,7 +159,7 @@
 
 /* ── Header with add button ───────────────────────────────────── */
 
-.panelHeader {
+.panel-header {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -168,13 +168,13 @@
 
 /* ── Delete confirmation ──────────────────────────────────────── */
 
-.confirmLayoutRow {
+.confirm-layout-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.confirmText {
+.confirm-text {
   font-size: var(--font-size-xs);
   color: var(--color-danger);
   font-weight: 500;
@@ -182,11 +182,11 @@
 
 /* ── Form overlay ─────────────────────────────────────────────── */
 
-.formOverlay {
-  animation: fadeIn 0.15s ease-out;
+.form-overlay {
+  animation: fade-in 0.15s ease-out;
 }
 
-.formHeader {
+.form-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -199,14 +199,14 @@
   );
 }
 
-.formHeader h3 {
+.form-header h3 {
   font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
-.cancelButton {
+.cancel-button {
   all: unset;
   display: flex;
   align-items: center;
@@ -219,7 +219,7 @@
   transition: all var(--transition-fast);
 }
 
-.cancelButton:hover {
+.cancel-button:hover {
   background: var(--background-elevated);
   color: var(--text-primary);
 }
@@ -231,20 +231,20 @@
   gap: 20px;
 }
 
-.formGroup {
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.formGroup label {
+.form-group label {
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
   letter-spacing: 0.02em;
 }
 
-.formRow {
+.form-row {
   display: flex;
   gap: 12px;
 }
@@ -302,7 +302,7 @@
 
 /* ── Toggle row ───────────────────────────────────────────────── */
 
-.toggleRow {
+.toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -310,30 +310,30 @@
   padding: 10px 0;
 }
 
-.toggleRow + .toggleRow {
+.toggle-row + .toggle-row {
   border-top: 1px solid var(--calculated-border-subtle);
 }
 
-.toggleLabel {
+.toggle-label {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.toggleTitle {
+.toggle-title {
   font-size: 12.5px;
   font-weight: 500;
   color: var(--text-primary);
 }
 
-.toggleHint {
+.toggle-hint {
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 
 /* ── Form footer ──────────────────────────────────────────────── */
 
-.formFooter {
+.form-footer {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -343,7 +343,7 @@
 
 /* ── Icon Picker Grid ─────────────────────────────────────────── */
 
-.iconGrid {
+.icon-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -356,7 +356,7 @@
   overscroll-behavior: contain;
 }
 
-.iconOption {
+.icon-option {
   all: unset;
   display: flex;
   align-items: center;
@@ -370,7 +370,7 @@
   border: 1.5px solid transparent;
 }
 
-.iconOption:hover {
+.icon-option:hover {
   background: color-mix(
     in srgb,
     var(--agent-color, var(--accent-primary)) 8%,
@@ -379,7 +379,7 @@
   color: var(--text-primary);
 }
 
-.iconOption[data-is-selected="true"] {
+.icon-option[data-is-selected="true"] {
   background: color-mix(
     in srgb,
     var(--agent-color, var(--accent-primary)) 15%,
@@ -397,7 +397,7 @@
 
 /* ── Color Picker Grid ────────────────────────────────────────── */
 
-.colorGrid {
+.color-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -407,7 +407,7 @@
   background: var(--background-base);
 }
 
-.colorSwatch {
+.color-swatch {
   all: unset;
   width: 24px;
   height: 24px;
@@ -435,7 +435,7 @@
   }
 }
 
-.colorPreviewDot {
+.color-preview-dot {
   display: inline-block;
   width: 10px;
   height: 10px;
@@ -447,7 +447,7 @@
 
 /* ── Background Image Preview ─────────────────────────────────── */
 
-.backgroundPreview {
+.background-preview {
   position: relative;
   margin-top: 6px;
   border-radius: var(--border-radius-sm);
@@ -456,7 +456,7 @@
   max-width: 240px;
 }
 
-.backgroundPreviewImg {
+.background-preview-img {
   display: block;
   width: 100%;
   height: 80px;
@@ -464,7 +464,7 @@
   opacity: 0.7;
 }
 
-.backgroundPreviewClear {
+.background-preview-clear {
   all: unset;
   position: absolute;
   top: 4px;
@@ -481,13 +481,13 @@
   transition: background 0.15s;
 }
 
-.backgroundPreviewClear:hover {
+.background-preview-clear:hover {
   background: oklch(63.7% 0.2078 25.3 / 0.8);
 }
 
 /* ── Policy Editor ───────────────────────────────────────────── */
 
-.policyRow {
+.policy-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -495,14 +495,14 @@
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   background: var(--background-base);
-  animation: fadeIn 0.15s ease-out;
+  animation: fade-in 0.15s ease-out;
 }
 
-.policyRow + .policyRow {
+.policy-row + .policy-row {
   margin-top: 4px;
 }
 
-.policySelect {
+.policy-select {
   height: 28px;
   min-width: 90px;
   padding: 0 6px;
@@ -520,11 +520,11 @@
   letter-spacing: 0.04em;
 }
 
-.policySelect:focus {
+.policy-select:focus {
   border-color: var(--accent-primary);
 }
 
-.policyInput {
+.policy-input {
   flex: 1;
   height: 28px;
   min-width: 0;
@@ -539,16 +539,16 @@
   transition: border-color var(--transition-fast);
 }
 
-.policyInput:focus {
+.policy-input:focus {
   border-color: var(--accent-primary);
 }
 
-.policyInput::placeholder {
+.policy-input::placeholder {
   color: var(--text-tertiary);
   font-family: inherit;
 }
 
-.policyRemoveButton {
+.policy-remove-button {
   all: unset;
   display: flex;
   align-items: center;
@@ -562,12 +562,12 @@
   transition: all var(--transition-fast);
 }
 
-.policyRemoveButton:hover {
+.policy-remove-button:hover {
   background: color-mix(in srgb, var(--color-danger) 12%, transparent);
   color: var(--color-danger);
 }
 
-.policyAddButton {
+.policy-add-button {
   all: unset;
   display: inline-flex;
   align-items: center;
@@ -583,13 +583,13 @@
   border: 1px dashed var(--calculated-border-color);
 }
 
-.policyAddButton:hover {
+.policy-add-button:hover {
   background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
   color: var(--accent-primary);
   border-color: var(--accent-primary);
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from {
     opacity: 0;
     transform: translateY(4px);
@@ -600,7 +600,7 @@
   }
 }
 
-.customIconPreview {
+.custom-icon-preview {
   width: 20px;
   height: 20px;
   border-radius: 50%;

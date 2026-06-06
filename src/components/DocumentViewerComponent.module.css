@@ -2,14 +2,14 @@
   height: 85vh;
 }
 
-.pdfFrame {
+.pdf-frame {
   width: 100%;
   height: 100%;
   border: none;
   background: white;
 }
 
-.textContent {
+.text-content {
   margin: 0;
   padding: 24px;
   font-size: 0.8125rem;

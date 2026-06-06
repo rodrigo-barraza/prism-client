@@ -11,14 +11,14 @@
 
 /* ── Conversation Stats Badges ── */
 
-.sessionStats {
+.session-stats {
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   background: var(--background-surface);
 }
 
-.statsHeader {
+.stats-header {
   display: flex;
   align-items: center;
   font-size: 0.625rem;
@@ -31,14 +31,14 @@
   gap: 6px;
 }
 
-.statsBadges {
+.stats-badges {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
   padding: 8px 10px;
 }
 
-.statBadge {
+.stat-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -58,8 +58,8 @@
 }
 
 /* ── TTFT badge (retroactive, after completion) ── */
-.ttftBadge {
-  color: rgb(147, 197, 253);
+.ttft-badge {
+  color: oklch(0.803 0.1036 265.1);
   background: oklch(62.3% 0.1881 259.8 / 0.06);
   border-color: oklch(62.3% 0.1881 259.8 / 0.15);
   font-variant-numeric: tabular-nums;
@@ -67,15 +67,15 @@
 }
 
 /* ── TTFT badge (live, during processing) ── */
-.ttftBadgeLive {
-  color: rgb(147, 197, 253);
+.ttft-badge-live {
+  color: oklch(0.803 0.1036 265.1);
   background: oklch(62.3% 0.1881 259.8 / 0.1);
   border-color: oklch(71.4% 0.1435 254.6 / 0.3);
   font-variant-numeric: tabular-nums;
-  animation: ttftPulse 1.6s ease-in-out infinite;
+  animation: ttft-pulse 1.6s ease-in-out infinite;
 }
 
-@keyframes ttftPulse {
+@keyframes ttft-pulse {
   0%,
   100% {
     opacity: 1;
@@ -85,23 +85,23 @@
   }
 }
 
-.statBadge:hover {
+.stat-badge:hover {
   border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
   color: var(--text-primary);
 }
 
-.statBadge svg {
+.stat-badge svg {
   flex-shrink: 0;
   opacity: 0.6;
 }
 
-.statBadgeSub {
+.stat-badge-sub {
   font-size: 0.5625rem;
   opacity: 0.55;
   font-weight: 400;
 }
 
-.statBadgeCount {
+.stat-badge-count {
   font-size: 0.5625rem;
   opacity: 0.6;
   font-weight: 600;
@@ -112,7 +112,7 @@
   flex-shrink: 0;
 }
 
-.sectionTitle {
+.section-title {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -124,23 +124,23 @@
   margin-top: 10px;
 }
 
-.formGroup {
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.formGroup > div[class*="dropdown"] {
+.form-group > div[class*="dropdown"] {
   width: 100%;
 }
 
-.formGroup label {
+.form-group label {
   font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 
-.formGroup select,
-.inputField {
+.form-group select,
+.input-field {
   height: var(--input-height);
   padding: 0 10px;
   background: var(--calculated-select-background-color);
@@ -151,7 +151,7 @@
   font-size: var(--font-size-base);
 }
 
-.formGroup textarea {
+.form-group textarea {
   height: auto;
   padding: 10px;
   background: var(--calculated-select-background-color);
@@ -162,14 +162,14 @@
   font-size: var(--font-size-base);
 }
 
-.formGroup select:focus,
-.formGroup textarea:focus,
-.inputField:focus {
+.form-group select:focus,
+.form-group textarea:focus,
+.input-field:focus {
   border-color: var(--accent-primary);
   outline: none;
 }
 
-.formGroup input[type="range"] {
+.form-group input[type="range"] {
   accent-color: var(--accent-primary);
   width: 100%;
 }
@@ -182,7 +182,7 @@
   background: var(--background-surface);
 }
 
-.sectionHeader {
+.section-header {
   font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -192,7 +192,7 @@
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.modalityRow {
+.modality-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -200,36 +200,36 @@
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.modalityRow:last-child {
+.modality-row:last-child {
   border-bottom: none;
 }
 
-.modalityIcon {
+.modality-icon {
   display: flex;
   align-items: center;
   color: var(--accent-primary);
   flex-shrink: 0;
 }
 
-.modalityName {
+.modality-name {
   font-size: var(--font-size-xs);
   color: var(--text-primary);
   text-transform: capitalize;
   flex: 1;
 }
 
-.modalityStatus {
+.modality-status {
   font-size: 0.5625rem;
   color: var(--text-secondary);
   opacity: 0.5;
 }
 
-.modalityStatus.modalityActive {
+.modality-status.modality-active {
   color: var(--color-success);
   opacity: 1;
 }
 
-.systemPromptButton {
+.system-prompt-button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -248,34 +248,34 @@
     color 0.2s;
 }
 
-.systemPromptButton:hover {
+.system-prompt-button:hover {
   border-color: var(--accent-primary);
   color: var(--text-primary);
 }
 
-.systemPromptActive {
+.system-prompt-active {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
   background: var(--calculated-accent-primary-glow);
 }
 
-.systemPromptActive:hover {
+.system-prompt-active:hover {
   background: var(--calculated-accent-primary-glow);
   border-color: var(--calculated-accent-primary-hover);
 }
 
-.toolToggleRow {
+.tool-toggle-row {
   padding: 6px 10px;
 }
 
-.pricingValue {
+.pricing-value {
   font-size: 0.625rem;
   color: var(--text-primary);
   opacity: 0.7;
   font-variant-numeric: tabular-nums;
 }
 
-.arenaValue {
+.arena-value {
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--accent-primary);
@@ -285,7 +285,7 @@
 
 /* ── Read-only mode ── */
 
-.readOnlyValue {
+.read-only-value {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -300,7 +300,7 @@
   word-break: break-all;
 }
 
-.readOnlySystemPrompt {
+.read-only-system-prompt {
   font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--text-secondary);
@@ -316,7 +316,7 @@
 
 /* ── Workflow link ── */
 
-.workflowLink {
+.workflow-link {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -335,22 +335,22 @@
     background: var(--calculated-accent-primary-glow);
   }
 
-  & .modalityName {
+  & .modality-name {
     color: var(--accent-primary);
     font-weight: 500;
   }
 
-  & .modalityStatus {
+  & .modality-status {
     opacity: 0;
     transition: opacity 0.15s;
   }
 
-  &:hover .modalityStatus {
+  &:hover .modality-status {
     opacity: 0.7;
   }
 }
 
-.systemPromptTextArea {
+.system-prompt-text-area {
   resize: vertical;
   min-height: 80px;
   width: 100%;
@@ -365,12 +365,12 @@
   transition: border-color var(--transition-fast, 0.2s);
 }
 
-.systemPromptTextArea:focus {
+.system-prompt-text-area:focus {
   outline: none;
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px var(--calculated-accent-primary-glow);
 }
 
-.systemPromptTextArea::placeholder {
+.system-prompt-text-area::placeholder {
   color: var(--text-muted);
 }

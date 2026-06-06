@@ -31,7 +31,7 @@ export default function ToggleButtonComponent({
 }) {
   return (
     <button
-      className={`${styles.toggle} ${active ? styles.isActiveState : ""}`}
+      className={`${styles.toggle} ${active ? styles['is-active-state'] : ""}`}
       onClick={onClick}
       title={title}
     >

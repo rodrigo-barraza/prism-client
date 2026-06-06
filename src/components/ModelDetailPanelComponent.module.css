@@ -8,7 +8,7 @@
   z-index: 900;
   display: flex;
   justify-content: flex-end;
-  animation: overlayIn 0.3s ease-out;
+  animation: overlay-in 0.3s ease-out;
 }
 
 .backdrop {
@@ -19,7 +19,7 @@
   -webkit-backdrop-filter: blur(4px);
 }
 
-@keyframes overlayIn {
+@keyframes overlay-in {
   from {
     opacity: 0;
   }
@@ -38,11 +38,11 @@
   display: flex;
   flex-direction: column;
   z-index: 1;
-  animation: panelSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: panel-slide-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: -8px 0 32px oklch(0.0% 0.0 0.0 / 0.3);
 }
 
-@keyframes panelSlideIn {
+@keyframes panel-slide-in {
   from {
     transform: translateX(100%);
   }
@@ -65,7 +65,7 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-.headerInfo {
+.header-info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -73,7 +73,7 @@
   gap: 2px;
 }
 
-.headerName {
+.header-name {
   font-size: 0.9375rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -83,7 +83,7 @@
   letter-spacing: -0.01em;
 }
 
-.headerProvider {
+.header-provider {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   display: flex;
@@ -91,7 +91,7 @@
   gap: 6px;
 }
 
-.closeButton {
+.close-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,7 +123,7 @@
 
 /* ── Use Model Action Buttons ───────────────────────── */
 
-.useModelActions {
+.use-model-actions {
   display: flex;
   gap: 8px;
   padding: 14px 20px;
@@ -139,7 +139,7 @@
   padding: 16px 20px 0;
 }
 
-.sectionTitle {
+.section-title {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -157,13 +157,13 @@
 
 /* ── Key-Value Grid ─────────────────────────────────── */
 
-.keyValueGrid {
+.key-value-grid {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 2px 12px;
 }
 
-.keyValueLabel {
+.key-value-label {
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-tertiary);
@@ -171,7 +171,7 @@
   white-space: nowrap;
 }
 
-.keyValueContent {
+.key-value-content {
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-primary);
@@ -184,7 +184,7 @@
   text-overflow: ellipsis;
 }
 
-.keyValueContentMono {
+.key-value-content-mono {
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--text-primary);
@@ -208,14 +208,14 @@
 
 /* ── Modalities row ─────────────────────────────────── */
 
-.modalitiesRow {
+.modalities-row {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
 }
 
-.modalityChip {
+.modality-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -228,7 +228,7 @@
   border: 1px solid var(--calculated-border-color);
 }
 
-.modalityArrow {
+.modality-arrow {
   color: var(--text-tertiary);
   opacity: 0.4;
   margin: 0 2px;
@@ -237,13 +237,13 @@
 
 /* ── Tools Grid ─────────────────────────────────────── */
 
-.toolsGrid {
+.tools-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.toolChip {
+.tool-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -264,7 +264,7 @@
 
 /* ── Pricing Table ──────────────────────────────────── */
 
-.pricingGrid {
+.pricing-grid {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0;
@@ -273,7 +273,7 @@
   overflow: hidden;
 }
 
-.pricingRow {
+.pricing-row {
   display: contents;
 
   &:nth-child(even) > * {
@@ -281,14 +281,14 @@
   }
 }
 
-.pricingLabel {
+.pricing-label {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   padding: 7px 12px;
   border-bottom: 1px solid var(--calculated-border-color);
 }
 
-.pricingValue {
+.pricing-value {
   font-size: var(--font-size-xs);
   font-weight: 600;
   font-family: var(--font-mono);
@@ -298,20 +298,20 @@
   text-align: right;
 }
 
-.pricingRow:last-child .pricingLabel,
-.pricingRow:last-child .pricingValue {
+.pricing-row:last-child .pricing-label,
+.pricing-row:last-child .pricing-value {
   border-bottom: none;
 }
 
 /* ── Arena Scores ───────────────────────────────────── */
 
-.arenaGrid {
+.arena-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
   gap: 6px;
 }
 
-.arenaCard {
+.arena-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -322,7 +322,7 @@
   border: 1px solid var(--calculated-border-color);
 }
 
-.arenaScore {
+.arena-score {
   font-size: var(--font-size-md);
   font-weight: 700;
   font-family: var(--font-mono);
@@ -330,7 +330,7 @@
   letter-spacing: -0.03em;
 }
 
-.arenaLabel {
+.arena-label {
   font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -340,7 +340,7 @@
 
 /* ── Status badges ──────────────────────────────────── */
 
-.statusBadge {
+.status-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -364,13 +364,13 @@
 
 /* ── Context bar ────────────────────────────────────── */
 
-.contextBar {
+.context-bar {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.contextBarTrack {
+.context-bar-track {
   flex: 1;
   height: 6px;
   background: var(--background-elevated);
@@ -378,7 +378,7 @@
   overflow: hidden;
 }
 
-.contextBarFill {
+.context-bar-fill {
   height: 100%;
   border-radius: 3px;
   background: var(--accent-primary);
@@ -386,7 +386,7 @@
   transition: transform 0.4s ease-out;
 }
 
-.contextBarLabel {
+.context-bar-label {
   font-size: var(--font-size-xs);
   font-weight: 600;
   font-family: var(--font-mono);
@@ -396,13 +396,13 @@
 
 /* ── Media limits ───────────────────────────────────── */
 
-.mediaLimitsGrid {
+.media-limits-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 6px;
 }
 
-.mediaLimitCard {
+.media-limit-card {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -412,7 +412,7 @@
   border: 1px solid var(--calculated-border-color);
 }
 
-.mediaLimitType {
+.media-limit-type {
   font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -420,7 +420,7 @@
   color: var(--text-tertiary);
 }
 
-.mediaLimitValue {
+.media-limit-value {
   font-size: var(--font-size-xs);
   font-weight: 600;
   font-family: var(--font-mono);
@@ -429,13 +429,13 @@
 
 /* ── Lifetime Stats Cards ───────────────────────────── */
 
-.statsCardsGrid {
+.stats-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
 }
 
-.statsCard {
+.stats-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -458,7 +458,7 @@
   }
 }
 
-.statsCardCost {
+.stats-card-cost {
   background: color-mix(
     in srgb,
     var(--accent-primary) 6%,
@@ -471,13 +471,13 @@
   );
 }
 
-.statsCardIcon {
+.stats-card-icon {
   color: var(--text-tertiary);
   opacity: 0.5;
   margin-bottom: 2px;
 }
 
-.statsCardValue {
+.stats-card-value {
   font-size: var(--font-size-lg);
   font-weight: 700;
   font-family: var(--font-mono);
@@ -486,7 +486,7 @@
   line-height: 1.1;
 }
 
-.statsCardLabel {
+.stats-card-label {
   font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -496,14 +496,14 @@
 
 /* ── Success / Error Rate ──────────────────────────── */
 
-.successRateRow {
+.success-rate-row {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.successRateBar {
+.success-rate-bar {
   height: 6px;
   border-radius: 3px;
   background: color-mix(
@@ -514,7 +514,7 @@
   overflow: hidden;
 }
 
-.successRateFill {
+.success-rate-fill {
   height: 100%;
   border-radius: 3px;
   background: var(--color-success, var(--color-emerald));
@@ -522,7 +522,7 @@
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.successRateLabels {
+.success-rate-labels {
   display: flex;
   justify-content: space-between;
   font-size: 0.625rem;
@@ -530,14 +530,14 @@
   font-family: var(--font-mono);
 }
 
-.successLabel {
+.success-label {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   color: var(--color-success, var(--color-emerald));
 }
 
-.errorLabel {
+.error-label {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -546,7 +546,7 @@
 
 /* ── Responsive ─────────────────────────────────────── */
 
-.descriptionText {
+.description-text {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.5;

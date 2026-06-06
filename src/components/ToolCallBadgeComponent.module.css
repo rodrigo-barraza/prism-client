@@ -51,18 +51,18 @@
 }
 
 /* ── Active state (currently executing) ── */
-.badgeActive {
+.badge-active {
   border-color: currentColor;
   background: color-mix(in srgb, currentColor 8%, var(--background-elevated));
   box-shadow: 0 0 6px -1px color-mix(in srgb, currentColor 30%, transparent);
 }
 
-.badgeActive svg {
+.badge-active svg {
   opacity: 1;
-  animation: toolCallPulse 1.2s ease-in-out infinite;
+  animation: tool-call-pulse 1.2s ease-in-out infinite;
 }
 
-@keyframes toolCallPulse {
+@keyframes tool-call-pulse {
   0%,
   100% {
     opacity: 1;
@@ -86,7 +86,7 @@
 }
 
 /* ── Container for a row of badges ── */
-.badgeRow {
+.badge-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;

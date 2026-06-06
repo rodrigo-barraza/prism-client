@@ -9,7 +9,7 @@
   font-size: 0.625rem;
   font-weight: 500;
   letter-spacing: 0.2px;
-  color: rgb(245, 158, 11);
+  color: oklch(0.774 0.1784 79.8);
   background: oklch(76.9% 0.1646 70.1 / 0.08);
   border: 1px solid oklch(76.9% 0.1646 70.1 / 0.2);
   white-space: nowrap;
