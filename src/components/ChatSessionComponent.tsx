@@ -2279,6 +2279,34 @@ export default function ChatSessionComponent({
               return updated;
             });
           },
+          onAudio: (dataString: string, _mimeType: string) => {
+            if (isStale()) return;
+            if (!dataString) return;
+            setMessages((previousPixelSize) => {
+              const updated = [...previousPixelSize];
+              const last = updated[updated.length - 1];
+              if (last?.role === "assistant") {
+                const existingAudio = Array.isArray(last.audio)
+                  ? last.audio
+                  : last.audio
+                    ? [last.audio]
+                    : [];
+                if (!existingAudio.includes(dataString)) {
+                  updated[updated.length - 1] = {
+                    ...last,
+                    audio: [...existingAudio, dataString],
+                  };
+                }
+              } else {
+                updated.push({
+                  role: "assistant",
+                  content: "",
+                  audio: [dataString],
+                });
+              }
+              return updated;
+            });
+          },
           onToolExecution: (data: SSEData) => {
             if (isStale()) return;
             const toolData = data.tool;
@@ -3212,6 +3240,20 @@ export default function ChatSessionComponent({
                   `[onDone setMessages] previousPixelSize=${previousPixelSize.length}, last.role=${last?.role}`,
                 );
                 if (last?.role === "assistant") {
+                  const audioFromDone = data.audioRef
+                    ? (() => {
+                        const existing = Array.isArray(last.audio)
+                          ? last.audio
+                          : last.audio
+                            ? [last.audio]
+                            : [];
+                        return existing.includes(data.audioRef as string)
+                          ? existing.length > 0
+                            ? existing
+                            : undefined
+                          : [...existing, data.audioRef as string];
+                      })()
+                    : last.audio;
                   updated[updated.length - 1] = {
                     ...last,
                     provider: settings.provider,
@@ -3224,6 +3266,7 @@ export default function ChatSessionComponent({
                     completedAt: new Date().toISOString(),
                     status: undefined,
                     statusPhase: undefined,
+                    ...(audioFromDone ? { audio: audioFromDone } : {}),
                   };
                 }
                 return updated;
