@@ -940,14 +940,36 @@ export default function SessionGraphPageComponent() {
   const sessionListItems = useMemo(() =>
     sessions.map((session) => {
       const sessionId = session.id || session._id;
+      const sessionStats = session.stats;
+
+      const totalCost = sessionStats?.totalCost ?? 0;
+
+      const modelNames =
+        (sessionStats?.models?.length ?? 0) > 0
+          ? sessionStats!.models
+          : session.model
+            ? [session.model]
+            : [];
+
+      const derivedProviders =
+        (sessionStats?.providers?.length ?? 0) > 0
+          ? sessionStats!.providers!
+          : session.provider
+            ? [session.provider]
+            : [];
+
+      const modalities = sessionStats?.modalities ?? {};
+
       return {
         id: sessionId,
         title: session.title || "Untitled Session",
         updatedAt: session.updatedAt,
         createdAt: session.createdAt,
-        totalCost: session.stats?.totalCost ?? 0,
-        providers: session.provider ? [session.provider] : [],
+        totalCost,
+        providers: derivedProviders,
+        modelNames,
         modelName: session.model || null,
+        modalities,
         agent: session.agent,
         tags: session.project
           ? [{

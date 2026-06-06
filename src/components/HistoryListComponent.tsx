@@ -31,6 +31,7 @@ interface HistoryListItem {
   providers?: string[];
   tags?: Array<{ label: string; style?: React.CSSProperties }>;
   modelName?: string | null;
+  modelNames?: string[];
   username?: string;
   agent?: string | { id: string; name?: string };
 }
