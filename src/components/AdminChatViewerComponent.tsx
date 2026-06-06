@@ -46,6 +46,7 @@ import {
   TabBarComponent,
   tabBarStyles,
   ButtonComponent,
+  SegmentedControlComponent,
 } from "@rodrigo-barraza/components-library";
 
 import AgentPickerComponent from "./AgentPickerComponent";
@@ -1281,22 +1282,15 @@ export default function AdminChatViewerComponent({
               <div className={chatStyles['chat-header-actions']}>
                 {hasSystemContextMessage && (
                   <div className={chatStyles['debug-toggle-container']}>
-                    <ButtonComponent
-                      variant={!showRaw ? "tonal" : "text"}
-                      size="small"
-                      onClick={() => setShowRaw(false)}
-                      className={chatStyles['debug-toggle-button']}
-                    >
-                      Clean
-                    </ButtonComponent>
-                    <ButtonComponent
-                      variant={showRaw ? "tonal" : "text"}
-                      size="small"
-                      onClick={() => setShowRaw(true)}
-                      className={chatStyles['debug-toggle-button']}
-                    >
-                      Raw
-                    </ButtonComponent>
+                    <SegmentedControlComponent
+                      value={showRaw ? "raw" : "clean"}
+                      onChange={(segment: string) => setShowRaw(segment === "raw")}
+                      compact
+                      segments={[
+                        { value: "clean", label: "Clean" },
+                        { value: "raw", label: "Raw" },
+                      ]}
+                    />
                   </div>
                 )}
               </div>
