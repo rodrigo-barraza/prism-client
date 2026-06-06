@@ -21,7 +21,10 @@ import { resolveProviderLabel } from "./ProviderLogosComponent";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 import AdminFiltersCardComponent from "./AdminFiltersCardComponent";
-import { StatsCardComponent as StatsCard } from "@rodrigo-barraza/components-library";
+import {
+  StatsCardComponent as StatsCard,
+  useDebounce,
+} from "@rodrigo-barraza/components-library";
 import HistoryList from "./HistoryListComponent";
 import {
   formatNumber,
@@ -425,6 +428,11 @@ export default function SessionGraphPageComponent() {
   const [sessionPage, setSessionPage] = useState(1);
   const [isSessionsLoading, setIsSessionsLoading] = useState(true);
   const [isLoadingMoreSessions, setIsLoadingMoreSessions] = useState(false);
+  const [serverSearchQuery, setServerSearchQuery] = useState("");
+
+  const debouncedSetServerSearch = useDebounce(((query: unknown) => {
+    setServerSearchQuery(query as string);
+  }) as (...args: unknown[]) => void, 300);
 
   // Selected session + graph state
   const [selectedSession, setSelectedSession] = useState<AgentSession | null>(null);
@@ -525,6 +533,7 @@ export default function SessionGraphPageComponent() {
       if (providerFilter) params.provider = providerFilter;
       if (modelFilter) params.model = modelFilter;
       if (workspaceFilter) params.workspace = workspaceFilter;
+      if (serverSearchQuery.trim()) params.search = serverSearchQuery.trim();
 
       const response = await IrisService.getAgentSessions(params);
       const incomingSessions = response.data || [];
@@ -542,7 +551,7 @@ export default function SessionGraphPageComponent() {
       setIsSessionsLoading(false);
       setIsLoadingMoreSessions(false);
     }
-  }, [dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter]);
+  }, [dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter, serverSearchQuery]);
 
   // Reset to page 1 whenever filters change
   useEffect(() => {
@@ -1040,6 +1049,7 @@ export default function SessionGraphPageComponent() {
             hasMore={hasMoreSessions}
             loadingMore={isLoadingMoreSessions}
             onLoadMore={handleLoadMoreSessions}
+            onSearchChange={debouncedSetServerSearch}
           />
         </div>
 

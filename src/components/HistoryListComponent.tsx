@@ -78,6 +78,7 @@ interface HistoryListProps {
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => void;
+  onSearchChange?: (query: string) => void;
   dateRange?: { from: string; to: string };
   onDateChange?: (range: { from: string; to: string }) => void;
 }
@@ -128,10 +129,16 @@ export default function HistoryList({
   hasMore = false,
   loadingMore = false,
   onLoadMore,
+  onSearchChange,
   dateRange: controlledDateRange,
   onDateChange: controlledOnDateChange,
 }: HistoryListProps) {
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    if (onSearchChange) onSearchChange(query);
+  };
   const [activeModalities, setActiveModalities] = useState<Set<string>>(
     new Set(),
   );
@@ -294,7 +301,7 @@ export default function HistoryList({
     <div className={styles.container}>
       <SearchInputComponent
         value={searchQuery}
-        onChange={setSearchQuery}
+        onChange={handleSearchChange}
         placeholder={searchPlaceholder}
         compact
         className={styles.searchWrapper}
