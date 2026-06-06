@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import {
   Network,
   Server,
-  FolderKanban,
   Bot,
   X,
   ZoomIn,
@@ -22,7 +21,8 @@ import { resolveProviderLabel } from "./ProviderLogosComponent";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 import AdminFiltersCardComponent from "./AdminFiltersCardComponent";
-import { PaginationComponent, StatsCardComponent as StatsCard } from "@rodrigo-barraza/components-library";
+import { StatsCardComponent as StatsCard } from "@rodrigo-barraza/components-library";
+import HistoryList from "./HistoryListComponent";
 import {
   formatNumber,
   formatCost,
@@ -898,7 +898,30 @@ export default function SessionGraphPageComponent() {
     return `${originX} ${originY} ${scaledWidth} ${scaledHeight}`;
   }, [canvasWidth, canvasHeight, zoom, panOffset]);
 
-  const totalSessionPages = Math.ceil(totalSessions / PAGE_SIZE);
+  const sessionListItems = useMemo(() =>
+    sessions.map((session) => {
+      const sessionId = session.id || session._id;
+      return {
+        id: sessionId,
+        title: session.title || "Untitled Session",
+        updatedAt: session.updatedAt,
+        createdAt: session.createdAt,
+        totalCost: session.stats?.totalCost ?? 0,
+        providers: session.provider ? [session.provider] : [],
+        modelName: session.model || null,
+        agent: session.agent,
+        tags: session.project
+          ? [{
+              label: session.project,
+              style: {
+                background: "var(--accent-primary-subtle)",
+                color: "var(--accent-primary)",
+              },
+            }]
+          : [],
+      };
+    }),
+  [sessions]);
 
   // ── Loading state ─────────────────────────────────────────────
   if (isSessionsLoading && sessions.length === 0) {
@@ -967,73 +990,24 @@ export default function SessionGraphPageComponent() {
       <div className={styles["split-layout"]}>
         {/* ── Session List Panel ── */}
         <div className={styles["session-list-panel"]}>
-          <div className={styles["session-list-header"]}>
-            <Network size={14} />
-            <span>Sessions</span>
-            <span className={styles["session-list-header-count"]}>
-              {totalSessions}
-            </span>
-          </div>
-
-          <div className={styles["session-list-scroll"]}>
-            {sessions.map((session) => {
-              const sessionId = session.id || session._id;
-              const isActive = selectedSession && (selectedSession.id || selectedSession._id) === sessionId;
-              return (
-                <div
-                  key={sessionId}
-                  className={`${styles["session-item"]} ${isActive ? styles["session-item-is-active-state"] : ""}`}
-                  onClick={() => handleSessionSelect(session)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className={styles["session-item-title"]}>
-                    {session.title || "Untitled Session"}
-                  </div>
-                  <div className={styles["session-item-meta"]}>
-                    {session.agent && (
-                      <span className={`${styles["session-item-tag"]} ${styles["session-item-tag-agent"]}`}>
-                        <Bot size={9} />
-                        {session.agent}
-                      </span>
-                    )}
-                    {session.model && (
-                      <span className={`${styles["session-item-tag"]} ${styles["session-item-tag-model"]}`}>
-                        <Server size={9} />
-                        {cleanModelName(session.model)}
-                      </span>
-                    )}
-                    {session.project && (
-                      <span className={styles["session-item-tag"]}>
-                        <FolderKanban size={9} />
-                        {session.project}
-                      </span>
-                    )}
-                    <span className={styles["session-item-meta-divider"]}>•</span>
-                    <span>{formatTimeAgo(session.updatedAt)}</span>
-                    {session.stats?.totalCost && session.stats.totalCost > 0 && (
-                      <>
-                        <span className={styles["session-item-meta-divider"]}>•</span>
-                        <span>{formatCost(session.stats.totalCost)}</span>
-                      </>
-                    )}
-                  </div>
-                </div>
+          <HistoryList
+            items={sessionListItems}
+            activeId={selectedSession ? (selectedSession.id || selectedSession._id) : null}
+            onSelect={(item: { id: string }) => {
+              const session = sessions.find(
+                (sessionEntry) => (sessionEntry.id || sessionEntry._id) === item.id,
               );
-            })}
-          </div>
-
-          {totalSessionPages > 1 && (
-            <div className={styles["pagination-footer"]}>
-              <PaginationComponent
-                page={sessionPage}
-                totalPages={totalSessionPages}
-                totalItems={totalSessions}
-                onPageChange={setSessionPage}
-                limit={PAGE_SIZE}
-              />
-            </div>
-          )}
+              if (session) handleSessionSelect(session);
+            }}
+            icon={Network}
+            readOnly
+            emptyLabel="No sessions"
+            searchPlaceholder="Search sessions..."
+            showProviderFilters={false}
+            showModalityFilters={false}
+            showCostFilters={false}
+            countLabel="sessions"
+          />
         </div>
 
         {/* ── Graph Panel ── */}
