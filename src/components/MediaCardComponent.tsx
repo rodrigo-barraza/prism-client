@@ -21,7 +21,7 @@ import type { MediaItem } from "./MediaPageComponent";
 
 /* -- Helpers -- */
 
-function resolveUrl(url: any) {
+function resolveUrl(url: string | undefined | null) {
   if (!url || typeof url !== "string") return null;
   if (url.startsWith("minio://")) return PrismService.getFileUrl(url);
   if (url.startsWith("data:")) return url;
@@ -83,12 +83,12 @@ export default function MediaCardComponent({
   onImageClick,
 }: MediaCardProps) {
   const resolvedUrl = resolveUrl(media.url);
-  const mediaItem = media as any;
+
 
   const cardClasses = [
-    styles.card,
-    compact && styles.compact,
-    !showInfo && styles.standalone,
+    styles['card'],
+    compact && styles['compact'],
+    !showInfo && styles['standalone'],
   ]
     .filter(Boolean)
     .join(" ");
@@ -108,8 +108,8 @@ export default function MediaCardComponent({
         </button>
       )}
 
-      <div className={styles.preview}>
-        {mediaItem.mediaType === "image" && resolvedUrl ? (
+      <div className={styles['preview']}>
+        {media.mediaType === "image" && resolvedUrl ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={resolvedUrl}
@@ -121,7 +121,7 @@ export default function MediaCardComponent({
               const target = e.target as HTMLImageElement;
               target.style.display = "none";
               if (target.parentElement) {
-                target.parentElement.classList.add(styles.placeholder);
+                target.parentElement.classList.add(styles['placeholder']);
                 const icon = document.createElement("span");
                 icon.textContent = "🖼";
                 icon.style.fontSize = "32px";
@@ -130,7 +130,7 @@ export default function MediaCardComponent({
               }
             }}
           />
-        ) : mediaItem.mediaType === "video" && resolvedUrl ? (
+        ) : media.mediaType === "video" && resolvedUrl ? (
           <video
             src={resolvedUrl}
             className={styles['preview-video']}
@@ -146,54 +146,54 @@ export default function MediaCardComponent({
               target.currentTime = 0;
             }}
           />
-        ) : mediaItem.mediaType === "audio" && resolvedUrl ? (
+        ) : media.mediaType === "audio" && resolvedUrl ? (
           <div
             className={styles['preview-audio']}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             <AudioPlayerRecorderComponent sourceUrl={resolvedUrl} square />
           </div>
-        ) : mediaItem.mediaType === "pdf" && resolvedUrl ? (
+        ) : media.mediaType === "pdf" && resolvedUrl ? (
           <iframe
             src={resolvedUrl}
             className={styles['preview-pdf']}
             title="PDF preview"
           />
         ) : (
-          <div className={styles.placeholder}>
-            <MediaTypeIcon type={mediaItem.mediaType} />
-            <span>{mediaItem.mediaType}</span>
+          <div className={styles['placeholder']}>
+            <MediaTypeIcon type={media.mediaType} />
+            <span>{media.mediaType}</span>
           </div>
         )}
 
-        {showOrigin && mediaItem.origin && (
-          <OriginBadge origin={mediaItem.origin} />
+        {showOrigin && media.origin && (
+          <OriginBadge origin={media.origin} />
         )}
       </div>
 
       {showInfo && (
-        <div className={styles.info}>
-          {mediaItem.convId && mediaItem.convTitle && (
+        <div className={styles['info']}>
+          {media.convId && media.convTitle && (
             <Link
-              href={`${convBasePath}/${mediaItem.convId}`}
+              href={`${convBasePath}/${media.convId}`}
               className={styles['conversation-link']}
-              title={mediaItem.convTitle}
+              title={media.convTitle}
             >
               <ExternalLink size={10} />
-              <span>{mediaItem.convTitle}</span>
+              <span>{media.convTitle}</span>
             </Link>
           )}
-          <div className={styles.meta}>
-            {mediaItem.model && (
+          <div className={styles['meta']}>
+            {media.model && (
               <BadgeComponent
                 type="model"
-                models={[mediaItem.model.split("/").pop() || ""]}
-                provider={mediaItem.provider}
+                models={[media.model.split("/").pop() || ""]}
+                provider={media.provider}
                 mini
               />
             )}
-            {mediaItem.timestamp && (
-              <BadgeComponent type="dateTime" date={mediaItem.timestamp} />
+            {media.timestamp && (
+              <BadgeComponent type="dateTime" date={media.timestamp} />
             )}
           </div>
         </div>

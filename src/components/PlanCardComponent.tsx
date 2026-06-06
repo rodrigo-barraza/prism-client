@@ -55,15 +55,15 @@ export default function PlanCardComponent({
   }, [status]);
 
   return (
-    <div className={`${styles.card} ${styles[status] || ""}`}>
+    <div className={`${styles['card']} ${styles[status] || ""}`}>
       <button
-        className={styles.header}
+        className={styles['header']}
         onClick={() => setExpanded((v) => !v)}
         type="button"
       >
         <div className={styles['header-left']}>
           <ClipboardList size={16} style={{ color: statusColor }} />
-          <span className={styles.title}>Implementation Plan</span>
+          <span className={styles['title']}>Implementation Plan</span>
           <span
             className={styles['status-badge']}
             style={{
@@ -80,7 +80,7 @@ export default function PlanCardComponent({
       {expanded && (
         <>
           {status === "pending" && (
-            <div className={styles.actions}>
+            <div className={styles['actions']}>
               <ButtonComponent
                 variant="primary"
                 icon={Check}
@@ -111,7 +111,7 @@ export default function PlanCardComponent({
                 return (
                   <div
                     key={i}
-                    className={`${styles.step} ${isDone ? styles['step-done'] : ""}`}
+                    className={`${styles['step']} ${isDone ? styles['step-done'] : ""}`}
                   >
                     <span className={styles['step-check']}>
                       {isDone ? (

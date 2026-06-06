@@ -15,7 +15,7 @@ import {
 import BenchmarkModeSelector from "./BenchmarkModeSelectorComponent";
 import AgentAssertionsComponent from "./AgentAssertionsComponent";
 import { benchmarkPresets } from "../utils/benchmarkPresets";
-import { AgentBenchmarkAssertion } from "../types/types";
+import { type AgentAssertion } from "./AgentAssertionsComponent";
 import styles from "./BenchmarkFormComponent.module.css";
 
 /**
@@ -38,7 +38,7 @@ export interface BenchmarkFormState {
     matchMode: string;
   }>;
   assertionOperator: string;
-  agentAssertions: AgentBenchmarkAssertion[];
+  agentAssertions: AgentAssertion[];
   agentAssertionOperator: string;
   benchmarkMode: string;
   expectedValue?: string;
@@ -165,7 +165,7 @@ export default function BenchmarkFormComponent({
   // -- Agent Assertion helpers ---------------------------------
   const agentAssertions = form.agentAssertions || [];
 
-  const handleAgentAssertionsChange = (next: AgentBenchmarkAssertion[]) => {
+  const handleAgentAssertionsChange = (next: AgentAssertion[]) => {
     onChange((f) => ({ ...f, agentAssertions: next }));
   };
 

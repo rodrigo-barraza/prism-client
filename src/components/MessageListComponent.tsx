@@ -138,8 +138,8 @@ function renderContentWithMentions(
         key={i}
         type="mention"
         path={cleanPath}
-        lineStart={(seg as any).lineStart}
-        lineEnd={(seg as any).lineEnd}
+        lineStart={seg.lineStart}
+        lineEnd={seg.lineEnd}
         knownPaths={knownPaths}
         onFileOpen={onMentionFileOpen}
       />
@@ -264,22 +264,25 @@ export function prepareDisplayMessages(
 
   // Normalize any snake_case tool_calls to camelCase toolCalls
   const normalizedMessages = rawMessages.map((message) => {
-    if ((message as any).tool_calls && !message.toolCalls) {
-      const normalizedCalls = (message as any).tool_calls.map(
-        (toolCall: any) => ({
-          id: toolCall.id,
-          name: toolCall.name || toolCall.function?.name,
-          args:
+    if (message.tool_calls && !message.toolCalls) {
+      const normalizedCalls: ToolCallEvent[] = message.tool_calls.map(
+        (toolCall) => {
+          const parsedArguments: Record<string, unknown> =
             typeof toolCall.args === "string"
-              ? JSON.parse(toolCall.args)
-              : toolCall.args ||
+              ? (JSON.parse(toolCall.args) as Record<string, unknown>)
+              : (toolCall.args as Record<string, unknown>) ||
                 (typeof toolCall.function?.arguments === "string"
-                  ? JSON.parse(toolCall.function.arguments)
-                  : toolCall.function?.arguments) ||
-                {},
-          result: toolCall.result,
-          status: toolCall.status,
-        }),
+                  ? (JSON.parse(toolCall.function.arguments) as Record<string, unknown>)
+                  : (toolCall.function?.arguments as Record<string, unknown>)) ||
+                {};
+          return {
+            id: toolCall.id,
+            name: toolCall.name || toolCall.function?.name || "",
+            args: parsedArguments,
+            result: toolCall.result,
+            status: toolCall.status,
+          };
+        },
       );
       return { ...message, toolCalls: normalizedCalls };
     }
@@ -344,7 +347,7 @@ export function prepareDisplayMessages(
             result:
               toolCall.result ||
               toolResults[toolCall.id] ||
-              toolResults[(toolCall as any).tool_call_id || ""] ||
+              toolResults[toolCall.tool_call_id || ""] ||
               null,
           }),
         );
@@ -356,12 +359,16 @@ export function prepareDisplayMessages(
         const audioSources: string[] = [];
         for (const toolCall of enrichedCalls) {
           if (toolCall.result) {
-            let parsedResult: any = null;
+            interface ParsedToolCallAudioResult {
+              audioRef?: string;
+              audio?: { data?: string; mimeType?: string };
+            }
+            let parsedResult: ParsedToolCallAudioResult | null = null;
             if (typeof toolCall.result === "object" && toolCall.result !== null) {
-              parsedResult = toolCall.result;
+              parsedResult = toolCall.result as ParsedToolCallAudioResult;
             } else if (typeof toolCall.result === "string") {
               try {
-                parsedResult = JSON.parse(toolCall.result);
+                parsedResult = JSON.parse(toolCall.result) as ParsedToolCallAudioResult;
               } catch {
                 // Ignore parsing errors for non-JSON results
               }
@@ -653,7 +660,7 @@ function EditableMessage({
       const { prefix, rest } = splitRawContent(content);
       if (prefix) {
         return (
-          <div className={styles.text}>
+          <div className={styles['text']}>
             <div className={styles['raw-prefix']}>{prefix}</div>
             {renderContentWithMentions(rest, knownPaths, onMentionFileOpen)}
           </div>
@@ -661,7 +668,7 @@ function EditableMessage({
       }
     }
     return (
-      <div className={styles.text}>
+      <div className={styles['text']}>
         {renderContentWithMentions(content, knownPaths, onMentionFileOpen)}
       </div>
     );
@@ -680,7 +687,7 @@ export interface MessageListProps {
   headerContent?: React.ReactNode;
   systemPrompt?: string | null;
   onSystemPromptEdit?: (editedPromptValue: string) => void;
-  planProposal?: { plan: string; steps?: string[]; status?: string } | null;
+  planProposal?: { plan: string; steps?: string[]; status?: "pending" | "approved" | "rejected" | "executing" } | null;
   onPlanApprove?: () => void;
   onPlanReject?: () => void;
   knownPaths?: string[];
@@ -1186,11 +1193,11 @@ export default function MessageList({
         </div>
       </div>
       {hasSystemPrompt && (
-        <div className={`${styles.message} ${styles['system-node']}`}>
-          <div className={styles.avatar}>
+        <div className={`${styles['message']} ${styles['system-node']}`}>
+          <div className={styles['avatar']}>
             <Terminal size={16} />
           </div>
-          <div className={styles.content}>
+          <div className={styles['content']}>
             <div className={styles['message-header']}>
               <div className={styles['role-label']}>System Prompt</div>
               {!readOnly && onSystemPromptEdit && (
@@ -1426,10 +1433,10 @@ export default function MessageList({
                             </div>
                             <div className={styles['deleted-message-body']}>
                               <div
-                                className={`${styles.message} ${gRoleClass}`}
+                                className={`${styles['message']} ${gRoleClass}`}
                               >
                                 <div
-                                  className={`${styles.avatar} ${styles['deleted-avatar']}`}
+                                  className={`${styles['avatar']} ${styles['deleted-avatar']}`}
                                 >
                                   {groupMessage.role === "user" ? (
                                     <User size={16} />
@@ -1439,7 +1446,7 @@ export default function MessageList({
                                     <Bot size={16} />
                                   )}
                                 </div>
-                                <div className={styles.content}>
+                                <div className={styles['content']}>
                                   {groupMessage.thinking && (
                                     <ThinkingBlock
                                       thinking={groupMessage.thinking}
@@ -1575,12 +1582,12 @@ export default function MessageList({
                         ? lastUserMessageRef
                         : undefined
                     }
-                    className={`${styles.message} ${roleClass}${coalesce?.isContinuation ? ` ${styles['continuation-message']}` : ""}`}
+                    className={`${styles['message']} ${roleClass}${coalesce?.isContinuation ? ` ${styles['continuation-message']}` : ""}`}
                   >
                     {/* Avatar: hidden for continuation messages */}
                     {!coalesce?.isContinuation && (
                       <div
-                        className={`${styles.avatar}${message.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles['prism-avatar']}` : ""}`}
+                        className={`${styles['avatar']}${message.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles['prism-avatar']}` : ""}`}
                       >
                         {message.role === "user" ? (
                           <User size={16} />
@@ -1593,7 +1600,7 @@ export default function MessageList({
                         )}
                       </div>
                     )}
-                    <div className={styles.content}>
+                    <div className={styles['content']}>
                       {/* Header: hidden for continuation messages */}
                       {!coalesce?.isContinuation && (
                         <div className={styles['message-header']}>
@@ -1779,7 +1786,7 @@ export default function MessageList({
                                   key={`seg-p-${si}`}
                                   planText={planProposal.plan}
                                   steps={planProposal.steps}
-                                  status={planProposal.status as any}
+                                  status={planProposal.status}
                                   onApprove={onPlanApprove}
                                   onReject={onPlanReject}
                                 />
@@ -1819,7 +1826,7 @@ export default function MessageList({
                                   content={message.content}
                                   index={i}
                                   role="assistant"
-                                  onEdit={onEdit as any}
+                                  onEdit={onEdit!}
                                   editing={true}
                                   onCancelEdit={() => setEditingIndex(null)}
                                   knownPaths={knownPathsSet}
@@ -1950,7 +1957,7 @@ export default function MessageList({
                               content={message.content}
                               index={i}
                               role="user"
-                              onEdit={onEdit as any}
+                              onEdit={onEdit!}
                               editing={editingIndex === i}
                               onCancelEdit={() => setEditingIndex(null)}
                               knownPaths={knownPathsSet}
@@ -1964,7 +1971,7 @@ export default function MessageList({
                               content={message.content}
                               index={i}
                               role="assistant"
-                              onEdit={onEdit as any}
+                              onEdit={onEdit!}
                               editing={true}
                               onCancelEdit={() => setEditingIndex(null)}
                               knownPaths={knownPathsSet}
@@ -1977,7 +1984,7 @@ export default function MessageList({
                               );
                               if (prefix) {
                                 return (
-                                  <div className={styles.text}>
+                                  <div className={styles['text']}>
                                     <div className={styles['raw-prefix']}>
                                       {prefix}
                                     </div>
@@ -2191,8 +2198,8 @@ export default function MessageList({
                                   inLabel = `in (${parts.join(" · ")})`;
                                 }
                                 const reasoning =
-                                  (message.usage as any)
-                                    .reasoningOutputTokens || 0;
+                                  message.usage
+                                    ?.reasoningOutputTokens || 0;
                                 let outLabel = "out";
                                 if (reasoning > 0) {
                                   outLabel = `out (${reasoning.toLocaleString()} reasoning)`;
@@ -2283,7 +2290,7 @@ export default function MessageList({
                           <PlanCardComponent
                             planText={planProposal.plan}
                             steps={planProposal.steps}
-                            status={planProposal.status as any}
+                            status={planProposal.status}
                             onApprove={onPlanApprove}
                             onReject={onPlanReject}
                           />

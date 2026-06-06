@@ -93,6 +93,22 @@ const SYNTHETIC_TICK_MS = 200;
  * />
  * ```
  */
+export type StatusBarPhase = "starting" | "loading" | "processing" | "generating" | "thinking" | "delegating" | "awaiting";
+
+interface StatusBarProps {
+  active?: boolean;
+  variant?: "orchestrator" | "worker";
+  phase?: StatusBarPhase;
+  label?: string;
+  icon?: React.ReactNode;
+  progress?: number | null;
+  tokPerSec?: number | null;
+  iteration?: number;
+  maxIterations?: number;
+  idleIcon?: React.ReactNode;
+  idleLabel?: string;
+}
+
 export default function StatusBarComponent({
   active = false,
   variant = "orchestrator",
@@ -105,14 +121,10 @@ export default function StatusBarComponent({
   maxIterations,
   idleIcon,
   idleLabel,
-}: any) {
+}: StatusBarProps) {
   const isWorker = variant === "worker";
-  // -- Synthetic progress when backend reports 0 --------------
-  // The OpenAI-compat path (agentic mode) doesn't receive
-  // prompt_processing.progress events from LM Studio, so progress
-  // stays at 0. We fill in an asymptotic estimate client-side.
   const [syntheticProgress, setSyntheticProgress] = useState(0);
-  const syntheticStartRef = useRef<any>(null);
+  const syntheticStartRef = useRef<number | null>(null);
 
   const isProgressPhase = phase === "processing" || phase === "loading";
   const backendStuck = isProgressPhase && progress != null && progress === 0;
@@ -130,7 +142,7 @@ export default function StatusBarComponent({
     }
 
     const id = setInterval(() => {
-      const elapsed = performance.now() - syntheticStartRef.current;
+      const elapsed = performance.now() - (syntheticStartRef.current ?? 0);
       // Asymptotic: approaches 0.95 over SYNTHETIC_EXPECTED_MS
       const percentage = Math.min(
         0.95,
@@ -152,7 +164,7 @@ export default function StatusBarComponent({
 
   // Strip trailing " 45%" / " done" from label when structured progress is shown via chip
   const rawLabel =
-    label || (PHASE_LABELS as Record<string, any>)[phase] || "Starting...";
+    label || (PHASE_LABELS as Record<string, string>)[phase ?? ""] || "Starting...";
   const hasEffectiveProgress =
     effectiveProgress != null && effectiveProgress >= 0;
   const resolvedLabel = hasEffectiveProgress
@@ -163,7 +175,7 @@ export default function StatusBarComponent({
   const resolvedIcon =
     icon !== undefined
       ? icon
-      : (PHASE_ICONS as Record<string, any>)[phase] || null;
+      : (PHASE_ICONS as Record<string, string>)[phase ?? ""] || null;
 
   // Rainbow visuals: colour when the model is actively producing tokens (text or reasoning)
   const isColorPhase =
@@ -176,7 +188,7 @@ export default function StatusBarComponent({
   // Resolve per-phase canvas palette (null = default rainbow)
   const activePalette =
     active && isColorPhase
-      ? (PHASE_PALETTES as Record<string, any>)[phase] || null
+      ? (PHASE_PALETTES as Record<string, number[][]>)[phase ?? ""] || null
       : null;
 
   // Progress percentage
@@ -203,7 +215,7 @@ export default function StatusBarComponent({
         />
       )}
       <div
-        className={`${styles['status-bar-overlay']}${phase ? ` ${styles[`phase_${phase}`] || ""}` : ""}`}
+        className={`${styles['status-bar-overlay']}${phase ? ` ${styles[`phase-is-${phase}-state`] || ""}` : ""}`}
       >
         {active ? (
           <>
@@ -222,7 +234,7 @@ export default function StatusBarComponent({
                   ⚡ {tokPerSec.toFixed(1)} tok/s
                 </span>
               )}
-              {iteration > 0 && (
+              {(iteration ?? 0) > 0 && (
                 <span className={styles['status-bar-iter']}>
                   Iteration {iteration}
                   {maxIterations ? `/${maxIterations}` : ""}
@@ -241,7 +253,7 @@ export default function StatusBarComponent({
             {idleLabel && (
               <span className={styles['status-bar-message']}>
                 {idleLabel}
-                {iteration > 0 && (
+                {(iteration ?? 0) > 0 && (
                   <span className={styles['status-bar-iter']}>
                     Iteration {iteration}
                     {maxIterations ? `/${maxIterations}` : ""}

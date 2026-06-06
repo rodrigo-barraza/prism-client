@@ -219,9 +219,9 @@ function AdminWorkflowsPageInner() {
   }, [setTitleBadge, workflows.length]);
 
   return (
-    <div className={styles.page}>
+    <div className={styles['page']}>
       {/* Body */}
-      <div className={styles.body}>
+      <div className={styles['body']}>
         {loadingDetail && !selectedWorkflow ? (
           <div className={styles['empty-canvas']}>
             <PanelLoadingSpinner size="large" />

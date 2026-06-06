@@ -430,7 +430,7 @@ export default function CustomToolsPanel({
 
   if (editingTool) {
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <div className={styles['form-header']}>
           <h3>{isNew ? "New Tool" : "Edit Tool"}</h3>
           <IconButtonComponent
@@ -440,7 +440,7 @@ export default function CustomToolsPanel({
           />
         </div>
 
-        <div className={styles.form}>
+        <div className={styles['form']}>
           <div className={styles['form-group']}>
             <label>Function Name</label>
             <InputComponent
@@ -462,7 +462,7 @@ export default function CustomToolsPanel({
               }
               placeholder="get_stock_price"
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               snake_case — this is what the AI calls
             </span>
           </div>
@@ -470,7 +470,7 @@ export default function CustomToolsPanel({
           <div className={styles['form-group']}>
             <label>Description</label>
             <TextAreaComponent
-              className={styles.textarea}
+              className={styles['textarea']}
               value={editingTool.description}
               onChange={(
                 e: React.ChangeEvent<
@@ -490,7 +490,7 @@ export default function CustomToolsPanel({
               minRows={3}
               maxRows={8}
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               Tell the AI when to use this tool
             </span>
           </div>
@@ -498,7 +498,7 @@ export default function CustomToolsPanel({
           <div className={styles['form-group']}>
             <label>Code</label>
             <TextAreaComponent
-              className={`${styles.textarea} ${styles['code-textarea']}`}
+              className={`${styles['textarea']} ${styles['code-textarea']}`}
               value={editingTool.code}
               onChange={(
                 e: React.ChangeEvent<
@@ -514,7 +514,7 @@ export default function CustomToolsPanel({
               maxRows={20}
               spellCheck={false}
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               Sandboxed JavaScript — access args via <code>args</code> object.
               Last expression is returned.
             </span>
@@ -620,7 +620,7 @@ export default function CustomToolsPanel({
                       <div className={styles['param-field']}>
                         <label>
                           Enum values{" "}
-                          <span className={styles.optional}>
+                          <span className={styles['optional']}>
                             (comma-separated, optional)
                           </span>
                         </label>
@@ -647,7 +647,7 @@ export default function CustomToolsPanel({
                   be auto-populated.
                 </div>
                 <TextAreaComponent
-                  className={`${styles.textarea} ${styles['json-textarea']}`}
+                  className={`${styles['textarea']} ${styles['json-textarea']}`}
                   value={jsonText}
                   onChange={(
                     e: React.ChangeEvent<
@@ -769,7 +769,7 @@ export default function CustomToolsPanel({
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       <SegmentedControlComponent
         value={activeSubtab}
         onChange={(value: string) => setActiveSubtab(value as "tools" | "custom")}

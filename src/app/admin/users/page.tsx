@@ -106,7 +106,7 @@ export default function AdminUsersPage() {
   }, [setTitleBadge]);
 
   return (
-    <div className={styles.page}>
+    <div className={styles['page']}>
       <section className={styles["page-header-section"]}>
         <h2 className={styles["page-title"]}>User Analytics</h2>
         <p className={styles["page-subtitle"]}>

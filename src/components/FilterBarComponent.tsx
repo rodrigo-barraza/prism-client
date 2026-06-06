@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentType } from "react";
 import { Search } from "lucide-react";
 import {
   InputComponent,
@@ -37,7 +38,7 @@ export function FilterGroupComponent({ label, children }: FilterGroupProps) {
 export interface PillOption {
   key: string;
   label: string;
-  icon?: any;
+  icon?: ComponentType<{ size?: number; style?: React.CSSProperties }>;
   color?: string;
 }
 
@@ -53,14 +54,14 @@ export function FilterPillsComponent({
   onChange,
 }: FilterPillsProps) {
   return (
-    <div className={styles.pills}>
+    <div className={styles['pills']}>
       {options.map((f) => {
         const Icon = f.icon;
         return (
           <button
             key={f.key}
             type="button"
-            className={`${styles.pill} ${value === f.key ? styles['pill-active'] : ""}`}
+            className={`${styles['pill']} ${value === f.key ? styles['pill-active'] : ""}`}
             onClick={() => onChange(f.key)}
           >
             {Icon && (
@@ -109,7 +110,7 @@ export function SearchInputComponent({
 export interface ViewModeOption {
   key: string;
   title: string;
-  icon: any;
+  icon: ComponentType<{ size?: number }>;
 }
 
 export interface ViewModeToggleProps {
@@ -146,15 +147,15 @@ export function ViewModeToggleComponent({
 export interface FilterIconButtonOption {
   key: string;
   label: string;
-  icon?: any;
+  icon?: ComponentType<{ size?: number; style?: React.CSSProperties }>;
   color?: string;
   customRender?: () => React.ReactNode;
 }
 
 export interface FilterIconButtonGroupProps {
   options: FilterIconButtonOption[];
-  activeKeys: any;
-  onChange: (keys: any) => void;
+  activeKeys: Set<string> | string | null;
+  onChange: (keys: Set<string> | string | null) => void;
   isSingleSelect?: boolean;
 }
 
@@ -170,7 +171,7 @@ export function FilterIconButtonGroupComponent({
         const Icon = opt.icon;
         const isActive = isSingleSelect
           ? activeKeys === opt.key
-          : activeKeys?.has?.(opt.key);
+          : activeKeys instanceof Set && activeKeys.has(opt.key);
 
         return (
           <TooltipComponent key={opt.key} label={opt.label} position="bottom">
@@ -189,12 +190,12 @@ export function FilterIconButtonGroupComponent({
             >
               {opt.customRender ? (
                 opt.customRender()
-              ) : (
+              ) : Icon ? (
                 <Icon
                   size={14}
                   style={opt.color ? { color: opt.color } : undefined}
                 />
-              )}
+              ) : null}
             </button>
           </TooltipComponent>
         );

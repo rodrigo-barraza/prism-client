@@ -90,14 +90,14 @@ export default function ComboboxFilter({
   }, [open]);
 
   return (
-    <div className={styles.combobox} ref={containerRef}>
+    <div className={styles['combobox']} ref={containerRef}>
       <div
         className={`${styles['input-wrapper']} ${open ? styles['input-wrapper-open'] : ""}`}
       >
         <input
           ref={inputRef}
           type="text"
-          className={styles.input}
+          className={styles['input']}
           placeholder={value || placeholder}
           value={query}
           onChange={handleInputChange}
@@ -115,16 +115,16 @@ export default function ComboboxFilter({
         ) : (
           <ChevronDown
             size={12}
-            className={`${styles.chevron} ${open ? styles['chevron-open'] : ""}`}
+            className={`${styles['chevron']} ${open ? styles['chevron-open'] : ""}`}
           />
         )}
       </div>
 
       {open && (
-        <div className={styles.menu}>
+        <div className={styles['menu']}>
           <button
             type="button"
-            className={`${styles.option} ${!value ? styles['option-selected'] : ""}`}
+            className={`${styles['option']} ${!value ? styles['option-selected'] : ""}`}
             onClick={() => handleSelect("")}
           >
             {allLabel}
@@ -136,7 +136,7 @@ export default function ComboboxFilter({
             <button
               key={opt}
               type="button"
-              className={`${styles.option} ${opt === value ? styles['option-selected'] : ""}`}
+              className={`${styles['option']} ${opt === value ? styles['option-selected'] : ""}`}
               onClick={() => handleSelect(opt)}
             >
               {opt}

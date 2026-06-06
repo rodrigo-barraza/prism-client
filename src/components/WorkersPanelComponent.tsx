@@ -18,6 +18,8 @@ import { renderToolName, formatDuration } from "@rodrigo-barraza/utilities-libra
 import ModalityIconComponent from "./ModalityIconComponent";
 import BadgeComponent from "./BadgeComponent";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
+import type { WorkerToolActivityItem } from "./MessageListComponent";
+import type { CoordinatorWorker } from "../types/types";
 import styles from "./WorkersPanelComponent.module.css";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -43,22 +45,12 @@ const CARD_CLASS: Record<string, string> = {
   stopped: "workerCardStopped",
 };
 
-/**
- * Extract a short agent number from an agentId like "agent-1" → "1"
- */
 function getAgentNumber(agentId: string | undefined) {
   const match =
     typeof agentId === "string" ? agentId.match(/agent-([a-zA-Z0-9_]+)/) : null;
   return match ? match[1].toUpperCase() : agentId;
 }
 
-/**
- * WorkersPanel — displays coordinator workers spawned during this agent session.
- *
- * Polls the coordinator /workers endpoint filtered by the current conversationId.
- * Workers represent parallel sub-agents spawned via the `team_create` tool
- * during agentic coding sessions.
- */
 export default function WorkersPanel({
   conversationId,
   refreshKey,
@@ -70,9 +62,9 @@ export default function WorkersPanel({
   refreshKey?: number;
   onCountChange?: (count: number) => void;
   onActionsChange?: (actions: ReactNode) => void;
-  workerToolActivity?: Record<string, any>;
+  workerToolActivity?: Record<string, WorkerToolActivityItem>;
 }) {
-  const [workers, setWorkers] = useState<any[]>([]);
+  const [workers, setWorkers] = useState<CoordinatorWorker[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const hasData = useRef<boolean>(false);
@@ -147,7 +139,7 @@ export default function WorkersPanel({
 
   if (loading) {
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <PanelLoadingSpinner />
       </div>
     );
@@ -157,8 +149,8 @@ export default function WorkersPanel({
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.error}>Failed to load workers: {error}</div>
+      <div className={styles['container']}>
+        <div className={styles['error']}>Failed to load workers: {error}</div>
       </div>
     );
   }
@@ -166,7 +158,7 @@ export default function WorkersPanel({
   // ═══ Render ═══════════════════════════════════════════════
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {/* -- Empty ------------------------------------------- */}
       {workers.length === 0 && (
         <div className={styles['empty-state']}>
@@ -216,13 +208,13 @@ export default function WorkersPanel({
             )}
 
             {/* -- Meta row (time, cost — HistoryItem-style) -- */}
-            <div className={styles.meta}>
-              {worker.durationMs > 0 && (
+            <div className={styles['meta']}>
+              {(worker.durationMs ?? 0) > 0 && (
                 <span
                   className={`${styles['meta-item']} ${isLive ? styles['duration-live'] : ""}`}
                 >
                   <Clock size={10} />
-                  {formatDuration(worker.durationMs)}
+                  {formatDuration(worker.durationMs ?? 0)}
                 </span>
               )}
               <BadgeComponent
@@ -233,7 +225,8 @@ export default function WorkersPanel({
               />
               {/* Live tool count from SSE (or fallback to API count) */}
               {(() => {
-                const liveActivity = workerToolActivity[worker.agentId];
+                const workerAgentId = worker.agentId ?? worker.id;
+                const liveActivity = workerToolActivity[workerAgentId];
                 const toolCount = Math.max(
                   liveActivity?.toolCount || 0,
                   worker.toolCallCount || 0,
@@ -270,27 +263,30 @@ export default function WorkersPanel({
             )}
 
             {/* -- Live tool activity (SSE-driven) -------------- */}
-            {isLive && workerToolActivity[worker.agentId]?.currentTool && (
+            {isLive && (() => {
+              const workerAgentId = worker.agentId ?? worker.id;
+              const activity = workerToolActivity[workerAgentId];
+              if (!activity?.currentTool) return null;
+              return (
               <div className={styles['live-activity']}>
                 <span className={styles['live-dot']} />
                 <Wrench size={9} />
                 <span className={styles['live-tool-name']}>
-                  {renderToolName(
-                    workerToolActivity[worker.agentId].currentTool,
-                  )}
+                  {renderToolName(activity.currentTool)}
                 </span>
-                {workerToolActivity[worker.agentId].iteration > 0 && (
+                {(activity.iteration ?? 0) > 0 && (
                   <span className={styles['live-iteration']}>
-                    iter {workerToolActivity[worker.agentId].iteration}
+                    iter {activity.iteration}
                   </span>
                 )}
               </div>
-            )}
+              );
+            })()}
 
             {/* Files */}
-            {worker.files?.length > 0 && (
+            {(worker.files?.length ?? 0) > 0 && (
               <div className={styles['worker-files']}>
-                {worker.files.map((filePath: string, fileIndex: number) => (
+                {worker.files!.map((filePath: string, fileIndex: number) => (
                   <span key={fileIndex} className={styles['worker-file']} title={filePath}>
                     <FileCode
                       size={9}

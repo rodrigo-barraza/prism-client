@@ -48,7 +48,7 @@ export default function BenchmarkModeSelector({
   const updatePill = useCallback(() => {
     if (!containerRef.current) return;
     const index = BENCHMARK_MODES.findIndex((m) => m.value === value);
-    const buttons = containerRef.current!.querySelectorAll(`.${styles.option}`);
+    const buttons = containerRef.current!.querySelectorAll(`.${styles['option']}`);
     if (!buttons[index]) return;
 
     const containerRect = containerRef.current!.getBoundingClientRect();
@@ -69,9 +69,9 @@ export default function BenchmarkModeSelector({
   const activeMode = BENCHMARK_MODES.find((m) => m.value === value);
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.container} ref={containerRef}>
-        <div className={styles.pill} style={pillStyle} />
+    <div className={styles['wrapper']}>
+      <div className={styles['container']} ref={containerRef}>
+        <div className={styles['pill']} style={pillStyle} />
         {BENCHMARK_MODES.map((mode) => {
           const Icon = mode.icon;
           const isActive = mode.value === value;
@@ -79,7 +79,7 @@ export default function BenchmarkModeSelector({
             <button
               key={mode.value}
               type="button"
-              className={`${styles.option} ${isActive ? styles['is-active-state'] : ""}`}
+              className={`${styles['option']} ${isActive ? styles['is-active-state'] : ""}`}
               onClick={() => onChange(mode.value)}
               title={mode.description}
             >
@@ -90,7 +90,7 @@ export default function BenchmarkModeSelector({
         })}
       </div>
       {activeMode && (
-        <div className={styles.description}>{activeMode.description}</div>
+        <div className={styles['description']}>{activeMode.description}</div>
       )}
     </div>
   );

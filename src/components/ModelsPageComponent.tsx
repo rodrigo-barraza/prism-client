@@ -22,7 +22,26 @@ import styles from "./ModelsPageComponent.module.css";
  * Flatten all model groups from the config into a single array,
  * tagging each model with its provider.
  */
-function flattenConfigModels(config: any) {
+import type { PrismConfig, ModelOption, ModalityConfig } from "../types/types";
+
+interface ModelActionState {
+  id: string;
+  type: "load" | "unload";
+}
+
+interface LmStudioApiModel {
+  key: string;
+  type: string;
+  loaded_instances?: Array<{ id: string; [key: string]: unknown }>;
+  max_context_length?: number;
+  size_bytes?: number;
+  params_string?: string;
+  architecture?: string;
+  archParams?: Record<string, unknown>;
+  display_name?: string;
+}
+
+function flattenConfigModels(config: PrismConfig | null) {
   if (!config) return [];
 
   const modelsMap = new Map();
@@ -37,17 +56,18 @@ function flattenConfigModels(config: any) {
   ];
 
   for (const section of MODEL_SECTIONS) {
-    const providers = config[section]?.models || {};
+    const configSection = (config as unknown as Record<string, ModalityConfig | undefined>)[section];
+    const providers = configSection?.models || {};
     for (const [provider, models] of Object.entries(providers)) {
-      for (const m of models as any[]) {
-        const key = `${provider}:${m.name}`;
+      for (const modelOption of models as ModelOption[]) {
+        const key = `${provider}:${modelOption.name}`;
         if (!modelsMap.has(key)) {
-          modelsMap.set(key, { ...m, provider });
+          modelsMap.set(key, { ...modelOption, provider });
         } else {
           const existing = modelsMap.get(key);
           modelsMap.set(key, {
             ...existing,
-            arena: { ...(existing.arena || {}), ...(m.arena || {}) },
+            arena: { ...(existing.arena || {}), ...((modelOption as unknown as Record<string, unknown>).arena as Record<string, unknown> || {}) },
           });
         }
       }
@@ -68,10 +88,10 @@ export default function ModelsPageComponent({
   onCountChange,
 }: ModelsPageComponentProps) {
   const isAdmin = mode === "admin";
-  const [allModels, setAllModels] = useState<any[]>([]);
+  const [allModels, setAllModels] = useState<RawModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionInProgress, setActionInProgress] = useState<any>(null);
+  const [actionInProgress, setActionInProgress] = useState<ModelActionState | null>(null);
   const { toasts, addToast, removeToast } = useToast(4000);
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [loadConfigModel, setLoadConfigModel] = useState<RawModel | null>(null);
@@ -80,12 +100,12 @@ export default function ModelsPageComponent({
 
   // Helper: merge config + LM data + stats into the allModels array
   const buildMergedModels = useCallback(
-    (config: any, lmData: any, modelStats: any) => {
+    (config: PrismConfig | null, lmData: { models: LmStudioApiModel[] }, modelStats: Array<Record<string, number | string | null>>) => {
       const flat = flattenConfigModels(config);
       const lmApiModels = (lmData?.models || []).filter(
-        (m: any) => m.type === "llm",
+        (modelEntry: LmStudioApiModel) => modelEntry.type === "llm",
       );
-      const lmApiMap = new Map(lmApiModels.map((m: any) => [m.key, m]));
+      const lmApiMap = new Map(lmApiModels.map((modelEntry: LmStudioApiModel) => [modelEntry.key, modelEntry]));
 
       // Build usage map: "provider:model" → stats object
       const usageMap = new Map();
@@ -175,7 +195,7 @@ export default function ModelsPageComponent({
         };
 
         if (m.provider === "lm-studio") {
-          const apiModel: any = lmApiMap.get(m.name);
+          const apiModel = lmApiMap.get(m.name);
           if (apiModel) {
             result = {
               ...result,
@@ -228,7 +248,8 @@ export default function ModelsPageComponent({
 
       // Fire both in parallel, each with their own error handling
       const [localResult, lmData] = await Promise.all([
-        (config as any)?.localProviders?.length > 0
+        (config as unknown as Record<string, unknown>)?.localProviders &&
+          ((config as unknown as Record<string, unknown>).localProviders as unknown[])?.length > 0
           ? localService.getLocalConfig().catch(() => ({ models: {} }))
           : { models: {} },
         lmService.getLmStudioModels().catch(() => ({ models: [] })),
@@ -237,7 +258,7 @@ export default function ModelsPageComponent({
       // Merge local models into config using shared utility
       const mergedConfig = PrismService.mergeLocalModels(
         config!,
-        (localResult as any)?.models,
+        (localResult as unknown as Record<string, unknown>)?.models,
       );
 
       // Rebuild with local models + LM Studio API data
@@ -283,7 +304,7 @@ export default function ModelsPageComponent({
   };
 
   // Open the config panel instead of loading immediately
-  const handleLoad = (modelKey: any) => {
+  const handleLoad = (modelKey: string) => {
     // Find the raw LM Studio API model data for this key
     const rawModel = allModels.find(
       (m) =>
@@ -296,7 +317,7 @@ export default function ModelsPageComponent({
   };
 
   // Called from the config panel with load options
-  const handleConfigLoad = async (modelKey: any, options: any) => {
+  const handleConfigLoad = async (modelKey: string, options: Record<string, unknown>) => {
     setActionInProgress({ id: modelKey, type: "load" });
     setLoadConfigModel(null);
     try {
@@ -333,7 +354,7 @@ export default function ModelsPageComponent({
   const providerSet = new Set(allModels.map((m) => m.provider));
 
   const renderActions = isAdmin
-    ? (model: any) => {
+    ? (model: RawModel) => {
         if (model.provider !== "lm-studio") return null;
 
         const isLoaded = model.loaded_instances?.length > 0;
@@ -351,7 +372,7 @@ export default function ModelsPageComponent({
               className={`${styles['action-button']} ${actionType === "unload" ? styles['unload-button'] : styles['loading-button']}`}
               disabled
             >
-              <Loader2 size={10} className={styles.spinning} />
+              <Loader2 size={10} className={styles['spinning']} />
               {actionType === "load" ? "Loading\u2026" : "Unloading\u2026"}
             </button>
           );
@@ -394,15 +415,15 @@ export default function ModelsPageComponent({
   return (
     <>
       {!isAdmin ? (
-        <div className={styles.container}>
+        <div className={styles['container']}>
           {/* Header */}
-          <div className={styles.header}>
+          <div className={styles['header']}>
             <div className={styles['header-left']}>
-              <h1 className={styles.title}>
+              <h1 className={styles['title']}>
                 <Cpu className={styles['title-icon']} size={22} />
                 Models
               </h1>
-              <p className={styles.subtitle}>
+              <p className={styles['subtitle']}>
                 All available models configured in the ecosystem across different providers.
               </p>
             </div>
@@ -419,7 +440,7 @@ export default function ModelsPageComponent({
               </div>
 
               <button
-                className={`${styles['refresh-button']} ${loading ? styles.spinning : ""}`}
+                className={`${styles['refresh-button']} ${loading ? styles['spinning'] : ""}`}
                 onClick={handleRefresh}
                 disabled={loading}
                 title="Refresh models status"
@@ -429,7 +450,7 @@ export default function ModelsPageComponent({
             </div>
           </div>
 
-          <div className={styles.content}>
+          <div className={styles['content']}>
             <ErrorMessage message={error} />
 
             <ToastComponent toasts={toasts} onRemove={removeToast} />
@@ -453,7 +474,7 @@ export default function ModelsPageComponent({
         <>
           <div className={styles['admin-actions']}>
             <button
-              className={`${styles['refresh-button']} ${loading ? styles.spinning : ""}`}
+              className={`${styles['refresh-button']} ${loading ? styles['spinning'] : ""}`}
               onClick={handleRefresh}
               disabled={loading}
             >

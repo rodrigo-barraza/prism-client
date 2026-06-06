@@ -338,10 +338,10 @@ export default function WorkspaceTreePanelComponent({
       unavailableWorkspace.split("/").filter(Boolean).pop() ||
       unavailableWorkspace;
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         {!hideHeader && (
           <div className={styles['header-wrapper']}>
-            <div className={styles.header}>
+            <div className={styles['header']}>
               <FolderOpen size={11} className={styles['header-icon']} />
               <span className={styles['header-label']}>{label}</span>
             </div>
@@ -370,12 +370,12 @@ export default function WorkspaceTreePanelComponent({
   const expandedPaths = autoExpandedPaths || expandedPathsRef.current;
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {/* ── Header — static label or workspace switcher ── */}
       {!hideHeader && (
         <div className={styles['header-wrapper']} ref={switcherRef}>
           <div
-            className={`${styles.header} ${hasMultiple ? styles['header-clickable'] : ""}`}
+            className={`${styles['header']} ${hasMultiple ? styles['header-clickable'] : ""}`}
             onClick={hasMultiple ? () => setSwitcherOpen((v) => !v) : undefined}
             role={hasMultiple ? "button" : undefined}
             tabIndex={hasMultiple ? 0 : undefined}

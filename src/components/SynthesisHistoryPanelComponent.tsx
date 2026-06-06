@@ -2,23 +2,26 @@
 
 import { FlaskConical } from "lucide-react";
 import HistoryPanel from "./HistoryPanelComponent";
+import type { SynthesisRun, Conversation } from "../types/types";
 
-/**
- * Thin wrapper around HistoryPanel with synthesis-specific labels.
- * Shares the same base component, styling, and HistoryList as the
- * conversations panel for full visual consistency.
- */
+interface SynthesisHistoryPanelProps {
+  conversations?: SynthesisRun[];
+  activeId?: string | null;
+  onSelect?: (session: SynthesisRun) => void | Promise<void>;
+  onDelete?: (id: string) => void;
+}
+
 export default function SynthesisHistoryPanel({
   conversations,
   activeId,
   onSelect,
   onDelete,
-}: any) {
+}: SynthesisHistoryPanelProps) {
   return (
     <HistoryPanel
-      sessions={conversations}
+      sessions={conversations as unknown as Conversation[]}
       activeId={activeId}
-      onSelect={onSelect}
+      onSelect={onSelect as ((session: Conversation) => void | Promise<void>) | undefined}
       onDelete={onDelete}
       readOnly={false}
       newLabel="New Synthesis"

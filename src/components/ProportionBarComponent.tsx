@@ -27,17 +27,17 @@ export default function ProportionBarComponent({
   const percentage = total > 0 ? (value / total) * 100 : 0;
 
   return (
-    <div className={`${styles.container} ${mini ? styles.mini : ""}`}>
-      <div className={styles.track}>
+    <div className={`${styles['container']} ${mini ? styles['mini'] : ""}`}>
+      <div className={styles['track']}>
         <div
-          className={styles.fill}
+          className={styles['fill']}
           style={{
             width: `${percentage}%`,
             ...(color ? { background: color } : {}),
           }}
         />
       </div>
-      <span className={styles.label}>{percentage.toFixed(1)}%</span>
+      <span className={styles['label']}>{percentage.toFixed(1)}%</span>
     </div>
   );
 }

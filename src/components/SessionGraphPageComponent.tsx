@@ -1356,7 +1356,7 @@ export default function SessionGraphPageComponent() {
             ref={canvasWrapperRef}
           >
             <StarfieldComponent
-              className={styles.starfield}
+              className={styles['starfield']}
               panX={panOffset.x}
               panY={panOffset.y}
             />

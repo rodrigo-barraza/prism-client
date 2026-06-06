@@ -330,7 +330,7 @@
     linear-gradient(var(--prism-angle, 0deg), var(--prism-colors));
   background-origin: border-box;
   background-clip: padding-box, border-box;
-  animation: prismRotate var(--prism-speed) linear infinite;
+  animation: prism-rotate var(--prism-speed) linear infinite;
   box-shadow:
     0 0 12px oklch(58.5% 0.2041 277.1 / 0.15),
     0 4px 20px oklch(0.0% 0.0 0.0 / 0.3);
@@ -416,7 +416,7 @@
   display: flex;
   flex-direction: column;
   padding: 4px 0;
-  animation: popoverInUp 0.12s ease-out;
+  animation: popover-in-up 0.12s ease-out;
 }
 
 .mention-item {

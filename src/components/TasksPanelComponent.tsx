@@ -242,7 +242,7 @@ export default function TasksPanel({
           disabled={loading}
           title="Refresh"
         >
-          <RefreshCw size={11} className={loading ? styles.spin : ""} />
+          <RefreshCw size={11} className={loading ? styles['spin'] : ""} />
         </button>
       </>,
     );
@@ -256,7 +256,7 @@ export default function TasksPanel({
 
   if (loading) {
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <PanelLoadingSpinner />
       </div>
     );
@@ -266,8 +266,8 @@ export default function TasksPanel({
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.error}>Failed to load tasks: {error}</div>
+      <div className={styles['container']}>
+        <div className={styles['error']}>Failed to load tasks: {error}</div>
       </div>
     );
   }
@@ -275,7 +275,7 @@ export default function TasksPanel({
   // -- Render -------------------------------------------------
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {/* -- Search & Filters ------------------------------------- */}
       {((summary && summary.total > 0) || tasks.length > 0) && (
         <div className={styles["filter-controls-section"]}>
@@ -340,7 +340,7 @@ export default function TasksPanel({
               }
             >
               {creating ? (
-                <RefreshCw size={10} className={styles.spin} />
+                <RefreshCw size={10} className={styles['spin']} />
               ) : (
                 <Plus size={10} />
               )}

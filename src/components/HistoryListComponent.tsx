@@ -299,7 +299,7 @@ export default function HistoryList({
   }, [hasMore, onLoadMore, loadingMore]);
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       <SearchInputComponent
         value={searchQuery}
         onChange={handleSearchChange}
@@ -430,7 +430,7 @@ export default function HistoryList({
         </div>
       )}
 
-      <div className={styles.list} ref={listRef}>
+      <div className={styles['list']} ref={listRef}>
         {filtered.map((item: HistoryListItem) => (
           <HistoryItemComponent
             key={item.id}
@@ -457,12 +457,12 @@ export default function HistoryList({
           />
         ))}
         {filtered.length === 0 && !loadingMore && (
-          <div className={styles.empty}>
+          <div className={styles['empty']}>
             {searchQuery.trim() ? "No matches" : emptyLabel}
           </div>
         )}
         {/* Infinite scroll sentinel */}
-        {hasMore && <div ref={sentinelRef} className={styles.sentinel} />}
+        {hasMore && <div ref={sentinelRef} className={styles['sentinel']} />}
         {loadingMore && (
           <div className={styles['loading-more']}>
             <PanelLoadingSpinner size="small" inline />

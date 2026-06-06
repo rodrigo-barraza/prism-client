@@ -320,7 +320,7 @@ body {
 
 /* ── Prism Rainbow Gradient ────────────────────────────────── */
 
-@keyframes prismRotate {
+@keyframes prism-rotate {
   from {
     --prism-angle: 0deg;
   }
@@ -342,7 +342,7 @@ body {
     linear-gradient(var(--prism-angle, 0deg), var(--prism-colors));
   background-origin: border-box;
   background-clip: padding-box, border-box;
-  animation: prismRotate var(--prism-speed) linear infinite;
+  animation: prism-rotate var(--prism-speed) linear infinite;
 }
 
 .prism-glow-text {
@@ -350,5 +350,5 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: prismRotate var(--prism-speed) linear infinite;
+  animation: prism-rotate var(--prism-speed) linear infinite;
 }

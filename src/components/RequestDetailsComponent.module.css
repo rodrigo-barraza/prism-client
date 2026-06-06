@@ -12,7 +12,7 @@
   z-index: 200;
   display: flex;
   flex-direction: column;
-  animation: slideInRight var(--transition-normal) ease-out;
+  animation: slide-in-right var(--transition-normal) ease-out;
   overflow: hidden;
 }
 

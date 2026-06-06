@@ -126,7 +126,7 @@ export default function BenchmarkSidebarComponent({
   const isOnNewPage = pathname === "/benchmarks/new";
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {/* New Benchmark */}
       <ButtonComponent
         variant="primary"
@@ -161,14 +161,14 @@ export default function BenchmarkSidebarComponent({
       </button>
 
       {/* List */}
-      <div className={styles.list}>
+      <div className={styles['list']}>
         {loading ? (
-          <div className={styles.empty}>
+          <div className={styles['empty']}>
             <Loader2 size={16} className={styles['spin-icon']} />
             Loading…
           </div>
         ) : filtered.length === 0 ? (
-          <div className={styles.empty}>
+          <div className={styles['empty']}>
             {search ? "No matches" : "No benchmarks yet"}
           </div>
         ) : (
@@ -180,7 +180,7 @@ export default function BenchmarkSidebarComponent({
             return (
               <div
                 key={b.id}
-                className={`${styles.item} ${isActive ? styles['item-active'] : ""} ${isRunning ? styles['item-running'] : ""}`}
+                className={`${styles['item']} ${isActive ? styles['item-active'] : ""} ${isRunning ? styles['item-running'] : ""}`}
                 {...SoundService.interactive(() => navigate(b))}
                 data-panel-close
               >

@@ -200,13 +200,13 @@ export default function MCPServersPanel({
     const isStdio = editingServer.transport === "stdio";
 
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <div className={styles['form-header']}>
           <h3>{isNew ? "Add MCP Server" : "Edit Server"}</h3>
           <CloseButtonComponent onClick={handleCancel} />
         </div>
 
-        <div className={styles.form}>
+        <div className={styles['form']}>
           <div className={styles['form-group']}>
             <label>Server Name</label>
             <InputComponent
@@ -228,7 +228,7 @@ export default function MCPServersPanel({
               }
               placeholder="filesystem"
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               Unique slug — used in tool names (mcp__{"{name}"}__tool)
             </span>
           </div>
@@ -330,7 +330,7 @@ export default function MCPServersPanel({
                   }
                   placeholder="-y, @modelcontextprotocol/server-filesystem, /home"
                 />
-                <span className={styles.hint}>Comma-separated arguments</span>
+                <span className={styles['hint']}>Comma-separated arguments</span>
               </div>
             </>
           ) : (
@@ -376,7 +376,7 @@ export default function MCPServersPanel({
   // -- List View ------------------------------------------------
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {error && <div className={styles['error-msg']}>{error}</div>}
 
       {servers.length === 0 && (

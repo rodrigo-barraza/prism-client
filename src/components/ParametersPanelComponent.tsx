@@ -357,7 +357,7 @@ export default function ParametersPanelComponent({
 
   if (isSpecialModel || settings.provider === "ollama") {
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <div className={styles['section-title']}>
           <Settings2 size={16} /> Parameters
         </div>
@@ -369,7 +369,7 @@ export default function ParametersPanelComponent({
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       <div className={styles['section-title']}>
         <Settings2 size={16} /> Parameters
         {isAgentMode && (
@@ -393,7 +393,7 @@ export default function ParametersPanelComponent({
 
         return (
           <div key={group}>
-            {group !== "output" && <div className={styles.sectionSeparator} />}
+            {group !== "output" && <hr style={{ border: 'none', borderTop: '1px solid var(--calculated-border-subtle)', margin: '8px 0' }} />}
             <div
               style={{
                 display: "flex",

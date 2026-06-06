@@ -508,7 +508,7 @@ export default function AdminAgentViewerComponent() {
 
   // -- Layout (within AdminShell's main area) ------------------
   return (
-    <div className={styles.viewer}>
+    <div className={styles['viewer']}>
       {/* Mini header: session title + model badge + panel toggles */}
       <header className={styles['viewer-header']}>
         <button

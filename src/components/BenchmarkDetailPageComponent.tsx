@@ -46,8 +46,9 @@ import type {
   SSECallbacks,
   SSEData,
   Message,
-  AgentBenchmarkAssertion,
 } from "../types/types";
+import { type AgentAssertion } from "./AgentAssertionsComponent";
+import { type ClientAgent } from "./BadgeComponent";
 
 export interface ModelInstance {
   instanceId: string;
@@ -187,7 +188,7 @@ interface BenchmarkFormState {
   benchmarkMode: string;
   assertions: Array<{ expectedValue: string; matchMode: string }>;
   assertionOperator: string;
-  agentAssertions: AgentBenchmarkAssertion[];
+  agentAssertions: AgentAssertion[];
   agentAssertionOperator: string;
 }
 
@@ -833,7 +834,10 @@ export default function BenchmarkDetailPageComponent({
       benchmarkMode: benchmark.benchmarkMode || "model",
       assertions,
       assertionOperator: benchmark.assertionOperator || "AND",
-      agentAssertions: benchmark.agentAssertions || [],
+      agentAssertions: (benchmark.agentAssertions || []).map((assertion) => ({
+        ...assertion,
+        type: assertion.type || "",
+      })),
       agentAssertionOperator: benchmark.agentAssertionOperator || "AND",
     });
     setShowModal(true);
@@ -1092,12 +1096,12 @@ export default function BenchmarkDetailPageComponent({
   );
 
   const handleAddAgent = useCallback(
-    (agentDef: AgentPersona) => {
+    (agentDef: ClientAgent) => {
       const instance: AgentInstance = {
         instanceId: generateUUID(),
-        agentId: agentDef.id,
-        name: agentDef.name,
-        description: agentDef.description,
+        agentId: agentDef.id || "",
+        name: agentDef.name || "",
+        description: agentDef.description || "",
       };
       setAgentInstances((prev) => {
         const next = [...prev, instance];
@@ -1464,7 +1468,7 @@ export default function BenchmarkDetailPageComponent({
                   </span>
                 ))}
               {benchmark.tags?.map((tag) => (
-                <span key={tag} className={styles.tag}>
+                <span key={tag} className={styles['tag']}>
                   {tag}
                 </span>
               ))}
@@ -1575,7 +1579,7 @@ export default function BenchmarkDetailPageComponent({
                   />
 
                   {/* Progressive results table (includes active model row) */}
-                  <div className={styles.streamingTableWrapper}>
+                  <div>
                     <BenchmarksTableComponent
                       results={streamingResults}
                       expectedValue={benchmark.expectedValue}

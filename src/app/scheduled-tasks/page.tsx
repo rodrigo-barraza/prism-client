@@ -38,7 +38,7 @@ import {
   TableComponent,
   BadgeComponent,
 } from "@rodrigo-barraza/components-library";
-import { AgentPersona, PrismConfig, ModelOption, CustomTool, ToolSchema } from "../../types/types";
+import { AgentPersona, PrismConfig, ModelOption, CustomTool, ToolSchema, Conversation } from "../../types/types";
 import ToolBadgeComponent from "../../components/ToolBadgeComponent";
 import AgentPickerComponent from "../../components/AgentPickerComponent";
 import { getErrorMessage } from "../../utils/errorMessage";
@@ -149,7 +149,7 @@ function CronJobDetailPanel({
   allToolNames,
 }: CronJobDetailPanelProps) {
   const router = useRouter();
-  const [conversations, setConversations] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   const parsePromptWithToolBadges = useCallback((promptText: string) => {
@@ -321,7 +321,7 @@ function CronJobDetailPanel({
             </div>
             {isLoadingHistory ? (
               <div className={styles["history-is-loading-state"]}>
-                <Loader2 className={styles.spin} size={16} /> Loading execution history...
+                <Loader2 className={styles['spin']} size={16} /> Loading execution history...
               </div>
             ) : conversations.length === 0 ? (
               <div className={styles["history-empty"]}>
@@ -344,9 +344,9 @@ function CronJobDetailPanel({
                       </div>
                       <div className={styles["history-item-metadata"]}>
                         <span>{new Date(conv.createdAt).toLocaleString()}</span>
-                        {conv.totalCost > 0 && (
+                        {(conv.totalCost ?? 0) > 0 && (
                           <span className={styles["history-item-cost"]}>
-                            ${conv.totalCost.toFixed(4)}
+                            ${(conv.totalCost ?? 0).toFixed(4)}
                           </span>
                         )}
                       </div>
@@ -1017,13 +1017,13 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   }, [tasks, searchQuery, activeSortKeys]);
 
   const contentBlock = (
-          <div className={styles.content}>
+          <div className={styles['content']}>
             {/* Sleek toast list */}
             <div className={styles['toast-container']}>
               {toasts.map((toast) => (
                 <div
                   key={toast.id}
-                  className={`${styles.toast} ${styles[toast.type]}`}
+                  className={`${styles['toast']} ${styles[toast.type]}`}
                 >
                   <Check size={14} className={styles['toast-icon']} />
                   <span>{toast.message}</span>
@@ -1032,7 +1032,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
             </div>
 
             {/* Header */}
-            <header className={styles.header}>
+            <header className={styles['header']}>
               <div className={styles['header-top-row']}>
                 <div className={styles['header-left']}>
                   <div className={styles['header-title-row']}>
@@ -1040,7 +1040,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     <h1 className={styles['header-title']}>Scheduled Tasks</h1>
                   </div>
                   <p className={styles['header-subtitle']}>Automate background agent workflows on a schedule</p>
-                  <span className={styles.badge}>
+                  <span className={styles['badge']}>
                     {filteredTasks.length} total
                   </span>
                 </div>
@@ -1254,7 +1254,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                               title="Trigger task"
                             >
                               {isTriggering ? (
-                                <Loader2 size={13} className={styles.spin} />
+                                <Loader2 size={13} className={styles['spin']} />
                               ) : (
                                 <Play size={13} />
                               )}
@@ -1322,7 +1322,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                 />
               ) : (
                 /* ── Card View ── */
-                <div className={styles.grid}>
+                <div className={styles['grid']}>
                   {filteredTasks.map((task) => {
                     const isMenuOpen = activeMenuId === task.id;
                     const isConfirming = confirmDeleteId === task.id;
@@ -1332,7 +1332,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     return (
                       <div
                         key={task.id}
-                        className={`${styles.card} ${!task.enabled ? styles['disabled-card'] : ""}`}
+                        className={`${styles['card']} ${!task.enabled ? styles['disabled-card'] : ""}`}
                         onClick={() => setSelectedTask(task)}
                         style={{ cursor: "pointer" }}
                       >
@@ -1422,7 +1422,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                       {isTriggering ? (
                                         <Loader2
                                           size={13}
-                                          className={styles.spin}
+                                          className={styles['spin']}
                                         />
                                       ) : (
                                         <Play size={13} />
@@ -1453,21 +1453,21 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                           </div>
 
                           <div className={styles['tags-row']}>
-                            <span className={styles.tag}>
+                            <span className={styles['tag']}>
                               <Bot size={11} />
                               <span>
                                 {taskAgent ? taskAgent.name : "Direct Chat"}
                               </span>
                             </span>
                             <span
-                              className={styles.tag}
+                              className={styles['tag']}
                               title={`${task.provider}/${task.model}`}
                             >
                               <Sparkles size={11} />
                               <span>{task.model.split("/").pop()}</span>
                             </span>
                             {task.project && (
-                              <span className={styles.tag}>
+                              <span className={styles['tag']}>
                                 <span>{task.project}</span>
                               </span>
                             )}
@@ -1542,7 +1542,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   </div>
                 }
               >
-                <form onSubmit={handleSubmitTask} className={styles.form}>
+                <form onSubmit={handleSubmitTask} className={styles['form']}>
                   {/* Task Name */}
                   <FormGroupComponent label="Name">
                     <InputComponent
@@ -1855,7 +1855,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         )}
 
                         {formCustomFrequency === "monthly" && (
-                          <div className={styles.monthlyPickerPanel}>
+                          <div>
                             <div className={styles['recurrence-subrow']}>
                               <input
                                 type="radio"

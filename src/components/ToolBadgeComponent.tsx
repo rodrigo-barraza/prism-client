@@ -87,21 +87,21 @@ export default function ToolBadgeComponent({
 }: ToolBadgeProps) {
   const isCompact = variant === "compact";
   const displayName = resolveDisplayName(name, variant);
-  const { Icon, color } = resolveToolVisuals(name) as any;
+  const { Icon, color } = resolveToolVisuals(name);
   const tooltipLabel = tooltip || name;
 
   const badge = (
     <span
-      className={`${styles.badge}${active ? ` ${styles['badge-active']}` : ""}`}
+      className={`${styles['badge']}${active ? ` ${styles['badge-active']}` : ""}`}
       style={{
         color,
         borderColor: `color-mix(in srgb, ${color} 30%, transparent)`,
       }}
     >
       <Icon size={10} />
-      {!isCompact && <span className={styles.label}>{displayName}</span>}
+      {!isCompact && <span className={styles['label']}>{displayName}</span>}
       {count != null && count > 1 && (
-        <span className={styles.count}>×{count}</span>
+        <span className={styles['count']}>×{count}</span>
       )}
     </span>
   );
@@ -173,7 +173,7 @@ const TOOL_DEFS = [
 ];
 
 export interface ModelToolsRowProps {
-  tools?: Record<string, any> | null;
+  tools?: Record<string, boolean | number> | null;
   variant?: "default" | "compact" | "condensed";
   className?: string;
 }

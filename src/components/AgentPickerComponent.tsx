@@ -17,10 +17,20 @@ import {
 } from "lucide-react";
 import { SelectComponent, SearchInputComponent } from "@rodrigo-barraza/components-library";
 import { resolveIconComponent } from "./CustomAgentsPanelComponent";
-import BadgeComponent from "./BadgeComponent";
+import BadgeComponent, { type ClientAgent } from "./BadgeComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import SoundService from "@/services/SoundService";
 import styles from "./AgentPickerComponent.module.css";
+
+interface AgentPickerComponentProps {
+  agents?: ClientAgent[];
+  activeAgentId?: string;
+  onSelect?: (agentId: string) => void;
+  disabled?: boolean;
+  addMode?: boolean;
+  addCount?: number;
+  onAddAgent?: (agent: ClientAgent) => void;
+}
 
 /** Image-based agent icons (rendered as <img> instead of SVG). */
 const AGENT_IMAGES: Record<string, string> = {
@@ -33,7 +43,7 @@ const AGENT_IMAGES: Record<string, string> = {
  * Icon mapping per agent ID — built-in agents only.
  * Custom agents use the `icon` field stored in their data.
  */
-const AGENT_ICONS: Record<string, any> = {
+const AGENT_ICONS: Record<string, React.ElementType> = {
   NONE: MessageSquare,
   CODING: Bot,
   OMNI: Infinity,
@@ -46,14 +56,17 @@ const AGENT_ICONS: Record<string, any> = {
 };
 
 /** Render the correct icon for an agent — image logo > avatar > icon > built-in map. */
-export function renderAgentIcon(agent: any, size = 15) {
+export function renderAgentIcon(agent: ClientAgent | string | null | undefined, size = 15) {
+  // Normalize string agent IDs to ClientAgent objects
+  const normalizedAgent: ClientAgent | null | undefined =
+    typeof agent === "string" ? { id: agent, name: agent } : agent;
   // Image-based agent logos (e.g. OMNI)
-  const imageSrc = AGENT_IMAGES[agent?.id];
+  const imageSrc = AGENT_IMAGES[normalizedAgent?.id || ""];
   if (imageSrc) {
     return (
       <img
         src={imageSrc}
-        alt={agent?.name || agent?.id}
+        alt={normalizedAgent?.name || normalizedAgent?.id}
         width={size}
         height={size}
         style={{ objectFit: "contain", borderRadius: 2 }}
@@ -61,11 +74,11 @@ export function renderAgentIcon(agent: any, size = 15) {
     );
   }
   // Avatar field — image URL or data URL for custom avatar images
-  if (typeof agent?.avatar === "string" && agent.avatar) {
+  if (typeof normalizedAgent?.avatar === "string" && normalizedAgent.avatar) {
     return (
       <img
-        src={agent.avatar}
-        alt={agent?.name || agent?.id}
+        src={normalizedAgent.avatar}
+        alt={normalizedAgent?.name || normalizedAgent?.id}
         width={size}
         height={size}
         style={{ objectFit: "cover", borderRadius: "50%" }}
@@ -73,12 +86,12 @@ export function renderAgentIcon(agent: any, size = 15) {
     );
   }
   // Icon field — Lucide icon name string (e.g. "Bot", "Skull", "Palette")
-  if (typeof agent?.icon === "string" && agent.icon) {
-    const Resolved = resolveIconComponent(agent.icon) as any;
+  if (typeof normalizedAgent?.icon === "string" && normalizedAgent.icon) {
+    const Resolved = resolveIconComponent(normalizedAgent.icon) as React.ElementType;
     return <Resolved size={size} />;
   }
   // Built-in agents use the hardcoded map
-  const BuiltIn = (AGENT_ICONS[agent?.id] || Bot) as any;
+  const BuiltIn = (AGENT_ICONS[normalizedAgent?.id || ""] || Bot) as React.ElementType;
   return <BuiltIn size={size} />;
 }
 
@@ -97,11 +110,11 @@ export default function AgentPickerComponent({
   addMode = false,
   addCount = 0,
   onAddAgent,
-}: any) {
+}: AgentPickerComponentProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
-  const triggerRef = useRef<any>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   // Move "NONE" / "Agentless" to the bottom of the list
   const sortedAgents = useMemo(() => {
@@ -115,7 +128,7 @@ export default function AgentPickerComponent({
   const filteredAgents = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return sortedAgents;
-    return sortedAgents.filter((agent: any) => {
+    return sortedAgents.filter((agent: ClientAgent) => {
       const nameMatches = agent.name?.toLowerCase().includes(query);
       const descriptionMatches = agent.description?.toLowerCase().includes(query);
       const idMatches = agent.id?.toLowerCase().includes(query);
@@ -125,10 +138,10 @@ export default function AgentPickerComponent({
 
   const activeAgent = addMode
     ? null
-    : sortedAgents.find((agent: any) => agent.id === activeAgentId) || sortedAgents[0];
+    : sortedAgents.find((agent: ClientAgent) => agent.id === activeAgentId) || sortedAgents[0];
 
   const handleSelect = useCallback(
-    (agentId: any) => {
+    (agentId: string) => {
       if (agentId !== activeAgentId) {
         onSelect?.(agentId);
       }
@@ -140,7 +153,7 @@ export default function AgentPickerComponent({
   );
 
   const handleAdd = useCallback(
-    (agent: any) => {
+    (agent: ClientAgent) => {
       onAddAgent?.(agent);
     },
     [onAddAgent],
@@ -197,7 +210,7 @@ export default function AgentPickerComponent({
           if (addMode) {
             handleAdd(selectedAgent);
           } else {
-            handleSelect(selectedAgent.id);
+            handleSelect(selectedAgent.id || "");
           }
         }
         return;
@@ -242,7 +255,7 @@ export default function AgentPickerComponent({
   ) : (
     <BadgeComponent
       type="agent"
-      agent={activeAgent}
+      agent={activeAgent ?? undefined}
       animation={!isPopoverOpen}
     />
   );
@@ -285,10 +298,10 @@ export default function AgentPickerComponent({
         {isPopoverOpen && (
           <>
             <div
-              className={styles.backdrop}
+              className={styles['backdrop']}
               onClick={() => setIsPopoverOpen(false)}
             />
-            <div className={styles.popover} role="listbox">
+            <div className={styles['popover']} role="listbox">
               <SearchInputComponent
                 value={searchQuery}
                 onChange={setSearchQuery}
@@ -303,7 +316,7 @@ export default function AgentPickerComponent({
                     No agents found
                   </div>
                 ) : (
-                  filteredAgents.map((agent: any, agentIndex: number) => {
+                  filteredAgents.map((agent: ClientAgent, agentIndex: number) => {
                     const isActive = !addMode && agent.id === activeAgentId;
                     const isHighlighted = agentIndex === highlightedIndex;
                     const shouldAnimate = agent.id === spinningAgentId;
@@ -330,7 +343,7 @@ export default function AgentPickerComponent({
                           if (addMode) {
                             handleAdd(agent);
                           } else {
-                            handleSelect(agent.id);
+                            handleSelect(agent.id || "");
                           }
                         }}
                         type="button"

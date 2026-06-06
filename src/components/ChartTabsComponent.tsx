@@ -30,12 +30,12 @@ export default function ChartTabsComponent({
   onChange,
 }: ChartTabsProps) {
   return (
-    <div className={styles.tabs}>
+    <div className={styles['tabs']}>
       {tabs.map((tab) => (
         <button
           key={tab.key}
           type="button"
-          className={`${styles.tab} ${activeTab === tab.key ? styles['tab-active'] : ""}`}
+          className={`${styles['tab']} ${activeTab === tab.key ? styles['tab-active'] : ""}`}
           {...SoundService.interactive(() => onChange(tab.key))}
           style={
             activeTab === tab.key && tab.color

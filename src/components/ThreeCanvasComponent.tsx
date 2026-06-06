@@ -173,10 +173,10 @@ export default function ThreeCanvasComponent({
   return (
     <div
       ref={containerRef}
-      className={`${styles.container} ${className}`}
+      className={`${styles['container']} ${className}`}
       style={style}
     >
-      <canvas ref={canvasRef} className={styles.canvas} />
+      <canvas ref={canvasRef} className={styles['canvas']} />
     </div>
   );
 }

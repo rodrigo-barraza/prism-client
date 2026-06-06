@@ -372,7 +372,7 @@ export default function ModelLoadConfigPanel({
         />
       </div>
 
-      <div className={styles.divider} />
+      <div className={styles['divider']} />
 
       {/* Toggle options */}
       <div className={styles['toggle-row']}>
@@ -403,7 +403,7 @@ export default function ModelLoadConfigPanel({
         />
       </div>
 
-      <div className={styles.divider} />
+      <div className={styles['divider']} />
 
       {/* Remember settings */}
       <div className={styles['remember-row']}>

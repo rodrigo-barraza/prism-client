@@ -19,6 +19,36 @@ import {
 } from "@rodrigo-barraza/components-library";
 import styles from "./AgentAssertionsComponent.module.css";
 
+interface AssertionOperatorOption {
+  value: string;
+  label: string;
+}
+
+export interface AgentAssertionTypeDefinition {
+  value: string;
+  label: string;
+  icon: React.ElementType;
+  hasOperand: boolean;
+  operators?: AssertionOperatorOption[];
+  placeholder?: string;
+  description: string;
+}
+
+export interface AgentAssertion {
+  type: string;
+  operator?: string;
+  operand?: string | number;
+  expectedValue?: string;
+  matchMode?: string;
+}
+
+interface AgentAssertionsComponentProps {
+  assertions: AgentAssertion[];
+  assertionOperator?: string;
+  onAssertionsChange: (assertions: AgentAssertion[]) => void;
+  onOperatorChange: (operator: string) => void;
+}
+
 /**
  * Agent Assertion Types — behavioral assertions for agent benchmarks.
  *
@@ -81,8 +111,8 @@ export const AGENT_ASSERTION_TYPES = [
   },
 ];
 
-const ASSERTION_TYPE_MAP: Record<string, any> = Object.fromEntries(
-  AGENT_ASSERTION_TYPES.map((t) => [t.value, t]),
+const ASSERTION_TYPE_MAP: Record<string, AgentAssertionTypeDefinition> = Object.fromEntries(
+  AGENT_ASSERTION_TYPES.map((assertionType) => [assertionType.value, assertionType]),
 );
 
 /**
@@ -96,18 +126,18 @@ export default function AgentAssertionsComponent({
   assertionOperator,
   onAssertionsChange,
   onOperatorChange,
-}: any) {
+}: AgentAssertionsComponentProps) {
   const operator = assertionOperator || "AND";
 
   // Which assertion types are already used (for the "Add" dropdown)
-  const usedTypes = new Set(assertions.map((a: any) => a.type));
+  const usedTypes = new Set(assertions.map((assertion: AgentAssertion) => assertion.type));
 
-  const addAssertion = (type: any) => {
+  const addAssertion = (type: string) => {
     const typeDef = ASSERTION_TYPE_MAP[type];
     const newAssertion = {
       type,
-      ...(typeDef?.hasOperand && {
-        operator: typeDef.operators[0].value,
+      ...(typeDef?.hasOperand && typeDef.operators && {
+        operator: typeDef.operators![0].value,
         operand: "",
       }),
     };
@@ -115,13 +145,13 @@ export default function AgentAssertionsComponent({
   };
 
   const removeAssertion = (index: number) => {
-    const next = assertions.filter((_: any, i: number) => i !== index);
+    const next = assertions.filter((_: AgentAssertion, filterIndex: number) => filterIndex !== index);
     onAssertionsChange(next.length > 0 ? next : []);
   };
 
-  const updateAssertion = (index: number, field: string, value: any) => {
-    const next = assertions.map((a: any, i: number) =>
-      i === index ? { ...a, [field]: value } : a,
+  const updateAssertion = (index: number, field: string, value: string) => {
+    const next = assertions.map((assertion: AgentAssertion, assertionIndex: number) =>
+      assertionIndex === index ? { ...assertion, [field]: value } : assertion,
     );
     onAssertionsChange(next);
   };
@@ -132,13 +162,13 @@ export default function AgentAssertionsComponent({
 
   // Available types that haven't been added yet
   const availableTypes = AGENT_ASSERTION_TYPES.filter(
-    (t: any) => !usedTypes.has(t.value),
+    (assertionType) => !usedTypes.has(assertionType.value),
   );
 
   return (
-    <div className={styles.section}>
-      <div className={styles.header}>
-        <span className={styles.label}>Agent Assertions</span>
+    <div className={styles['section']}>
+      <div className={styles['header']}>
+        <span className={styles['label']}>Agent Assertions</span>
         {assertions.length > 1 && (
           <button
             type="button"
@@ -189,15 +219,15 @@ export default function AgentAssertionsComponent({
       )}
 
       {assertions.length > 0 && (
-        <div className={styles.list}>
-          {assertions.map((a: any, i: number) => {
-            const typeDef = ASSERTION_TYPE_MAP[a.type];
+        <div className={styles['list']}>
+          {assertions.map((assertion: AgentAssertion, assertionIndex: number) => {
+            const typeDef = ASSERTION_TYPE_MAP[assertion.type];
             if (!typeDef) return null;
             const Icon = typeDef.icon;
             return (
-              <div key={`${a.type}-${i}`} className={styles['assertion-row']}>
+              <div key={`${assertion.type}-${assertionIndex}`} className={styles['assertion-row']}>
                 {/* Operator divider between assertions */}
-                {i > 0 && (
+                {assertionIndex > 0 && (
                   <div className={styles['operator-divider']}>
                     <span className={styles['operator-divider-line']} />
                     <BadgeComponent
@@ -209,7 +239,7 @@ export default function AgentAssertionsComponent({
                     <span className={styles['operator-divider-line']} />
                   </div>
                 )}
-                <div className={styles.fields}>
+                <div className={styles['fields']}>
                   <div className={styles['type-label']}>
                     <Icon size={13} />
                     <span>{typeDef.label}</span>
@@ -218,13 +248,13 @@ export default function AgentAssertionsComponent({
                     <div className={styles['operand-group']}>
                       <FormGroupComponent label="Condition">
                         <SelectComponent
-                          value={a.operator || typeDef.operators[0].value}
-                          options={typeDef.operators.map((op: any) => ({
-                            value: op.value,
-                            label: op.label,
+                          value={assertion.operator || typeDef.operators![0].value}
+                          options={typeDef.operators!.map((operatorOption: AssertionOperatorOption) => ({
+                            value: operatorOption.value,
+                            label: operatorOption.label,
                           }))}
                           onChange={(value: string) =>
-                            updateAssertion(i, "operator", value)
+                            updateAssertion(assertionIndex, "operator", value)
                           }
                         />
                       </FormGroupComponent>
@@ -232,10 +262,10 @@ export default function AgentAssertionsComponent({
                         <InputComponent
                           type="number"
                           min={0}
-                          value={a.operand ?? ""}
+                          value={assertion.operand ?? ""}
                           onChange={(
                             e: React.ChangeEvent<HTMLInputElement>,
-                          ) => updateAssertion(i, "operand", e.target.value)}
+                          ) => updateAssertion(assertionIndex, "operand", e.target.value)}
                           placeholder={typeDef.placeholder}
                         />
                       </FormGroupComponent>
@@ -251,7 +281,7 @@ export default function AgentAssertionsComponent({
                   <div className={styles['remove-button']}>
                     <IconButtonComponent
                       icon={<Trash2 size={14} />}
-                      onClick={() => removeAssertion(i)}
+                      onClick={() => removeAssertion(assertionIndex)}
                       variant="destructive"
                       tooltip="Remove assertion"
                     />

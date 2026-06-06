@@ -450,7 +450,7 @@ export default function RequestsPage() {
   }, [setTitleBadge, total]);
 
   return (
-    <div className={styles.page}>
+    <div className={styles['page']}>
       {/* Filters */}
       <div className={styles['filter-bar']}>
         <div className={styles['filter-row']}>

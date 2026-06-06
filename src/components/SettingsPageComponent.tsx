@@ -500,14 +500,14 @@ export default function SettingsPageComponent() {
   // -- Loading state --------------------------------------------------
   if (!config || !settings) {
     return (
-      <div className={styles.container}>
-        <div className={styles.header}>
+      <div className={styles['container']}>
+        <div className={styles['header']}>
           <div className={styles['header-left']}>
-            <h1 className={styles.title}>
+            <h1 className={styles['title']}>
               <Settings2 className={styles['title-icon']} size={22} />
               Settings
             </h1>
-            <p className={styles.subtitle}>
+            <p className={styles['subtitle']}>
               Configure system-wide preferences
             </p>
           </div>
@@ -526,14 +526,14 @@ export default function SettingsPageComponent() {
   const hasAnyWorkspaces = wsWorkspaces.length > 0;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
+    <div className={styles['container']}>
+      <div className={styles['header']}>
         <div className={styles['header-left']}>
-          <h1 className={styles.title}>
+          <h1 className={styles['title']}>
             <Settings2 className={styles['title-icon']} size={22} />
             Settings
           </h1>
-          <p className={styles.subtitle}>
+          <p className={styles['subtitle']}>
             Configure system-wide preferences
           </p>
         </div>
@@ -548,7 +548,7 @@ export default function SettingsPageComponent() {
       </div>
 
       {/* -- Memory Models Section ------------------------------------ */}
-      <CardComponent className={styles.section} data-settings-section="memory-models">
+      <CardComponent className={styles['section']} data-settings-section="memory-models">
         <CardComponent.Header
           icon={Brain}
           title="Memory Models"
@@ -637,7 +637,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Agent Defaults Section ----------------------------------- */}
-      <CardComponent className={styles.section} data-settings-section="agent-defaults">
+      <CardComponent className={styles['section']} data-settings-section="agent-defaults">
         <CardComponent.Header
           icon={Network}
           title="Agent Defaults"
@@ -745,7 +745,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Creative Tools Section ------------------------------------ */}
-      <CardComponent className={styles.section} data-settings-section="creative-tools">
+      <CardComponent className={styles['section']} data-settings-section="creative-tools">
         <CardComponent.Header
           icon={Palette}
           title="Creative Tools"
@@ -814,7 +814,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Audio Tools Section -------------------------------------- */}
-      <CardComponent className={styles.section} data-settings-section="audio-tools">
+      <CardComponent className={styles['section']} data-settings-section="audio-tools">
         <CardComponent.Header
           icon={Volume2}
           title="Audio Tools"
@@ -883,7 +883,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Workspaces Section ---------------------------------------- */}
-      <CardComponent className={styles.section} data-settings-section="workspaces">
+      <CardComponent className={styles['section']} data-settings-section="workspaces">
         <CardComponent.Header
           icon={FolderOpen}
           title="Workspaces"
@@ -894,7 +894,7 @@ export default function SettingsPageComponent() {
           {/* Agent status banner */}
           <div className={styles['agent-status-banner']}>
             <div
-              className={`${styles['agent-status-dot']} ${hasAgents ? styles.connected : styles.disconnected}`}
+              className={`${styles['agent-status-dot']} ${hasAgents ? styles['connected'] : styles['disconnected']}`}
             />
             <span className={styles['agent-status-text']}>
               {hasAgents ? (
@@ -969,7 +969,7 @@ export default function SettingsPageComponent() {
                       {agent.roots.map(
                         (root: { path: string; isAgentServed?: boolean }) => (
                           <div key={root.path} className={styles['agent-root-item']}>
-                            <FolderOpen size={13} className={styles.dimIcon} />
+                            <FolderOpen size={13} />
                             {root.path}
                           </div>
                         ),
@@ -1073,7 +1073,7 @@ export default function SettingsPageComponent() {
           <div className={styles['add-workspace-row']}>
             <InputComponent
               type="text"
-              className={`${wsValidation ? (wsValidation.valid ? styles.valid : styles.invalid) : ""}`}
+              className={`${wsValidation ? (wsValidation.valid ? styles['valid'] : styles['invalid']) : ""}`}
               placeholder="Add workspace path (e.g. /home/user/projects or C:\Users\...)"
               value={wsAddPath}
               onChange={(
@@ -1103,7 +1103,7 @@ export default function SettingsPageComponent() {
           {/* Validation feedback */}
           {wsAddPath.trim() && wsValidation && (
             <div
-              className={`${styles['validation-row']} ${wsValidation.valid ? styles.success : styles.error}`}
+              className={`${styles['validation-row']} ${wsValidation.valid ? styles['success'] : styles['error']}`}
             >
               {wsValidation.valid ? (
                 <>
@@ -1120,7 +1120,7 @@ export default function SettingsPageComponent() {
 
           {/* Windows → WSL translation preview */}
           {wsAddPath.trim() && isWindowsPath(wsAddPath.trim()) && (
-            <div className={`${styles['validation-row']} ${styles.info}`}>
+            <div className={`${styles['validation-row']} ${styles['info']}`}>
               <ArrowRight size={12} />
               <span>Translates to: </span>
               <span className={styles['wsl-translation']}>
@@ -1686,7 +1686,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Security & Sandboxing Section ---------------------------- */}
-      <CardComponent className={styles.section} data-settings-section="security-sandboxing">
+      <CardComponent className={styles['section']} data-settings-section="security-sandboxing">
         <CardComponent.Header
           icon={Lock}
           title="Security & Sandboxing"
@@ -1733,7 +1733,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- MCP Servers Section ---------------------------------------- */}
-      <CardComponent className={styles.section} data-settings-section="mcp-servers">
+      <CardComponent className={styles['section']} data-settings-section="mcp-servers">
         <CardComponent.Header
           icon={Plug}
           title="MCP Servers"
@@ -1747,7 +1747,7 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Custom Themes Section ------------------------------------ */}
-      <CardComponent className={styles.section} data-settings-section="custom-themes">
+      <CardComponent className={styles['section']} data-settings-section="custom-themes">
         <CardComponent.Header
           icon={Palette}
           title="Custom Themes"

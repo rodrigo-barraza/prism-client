@@ -17,6 +17,61 @@ import styles from "./TimelineChartComponent.module.css";
 import ChartTabsComponent from "./ChartTabsComponent";
 import { formatNumber } from "@rodrigo-barraza/utilities-library";
 import { GRANULARITY_TIERS } from "../utils/timelineGranularity";
+
+interface RechartsChartOffset {
+  top?: number;
+  height?: number;
+}
+
+interface RechartsDataPoint {
+  x: number;
+  y: number;
+}
+
+interface RechartsFormattedItem {
+  props?: { points?: RechartsDataPoint[] };
+  points?: RechartsDataPoint[];
+}
+
+interface RechartsCustomizedProps {
+  formattedGraphicalItems?: RechartsFormattedItem[];
+  offset?: RechartsChartOffset;
+}
+
+type RechartsValueType = number | string | readonly (string | number)[];
+
+interface RechartsTooltipPayloadEntry {
+  value?: RechartsValueType;
+}
+
+interface RechartsTooltipProps {
+  active?: boolean;
+  payload?: readonly RechartsTooltipPayloadEntry[];
+  label?: string | number;
+}
+
+interface RechartsDotProps {
+  cx?: number;
+  cy?: number;
+}
+
+interface RechartsTickPayload {
+  index: number;
+  value: string;
+}
+
+interface RechartsTickProps {
+  x: string | number;
+  y: string | number;
+  payload?: RechartsTickPayload;
+}
+
+interface TimelineTabDefinition {
+  key: string;
+  label: string;
+  color: string;
+  unit: string;
+}
 const TABS = [
   { key: "requests", label: "Requests", color: "#6366f1", unit: "" },
   { key: "tokens", label: "Tokens", color: "#a855f7", unit: "" },
@@ -32,7 +87,7 @@ const TABS = [
  *
  * Injected via Recharts' <Customized /> component.
  */
-function VerticalGridLines(props: any) {
+function VerticalGridLines(props: RechartsCustomizedProps) {
   const { formattedGraphicalItems, offset } = props;
 
   const areaItem = formattedGraphicalItems?.[0];
@@ -44,9 +99,9 @@ function VerticalGridLines(props: any) {
 
   return (
     <g className="vertical-grid-lines">
-      {points.map((point: any, i: number) => (
+      {points.map((point: RechartsDataPoint, pointIndex: number) => (
         <line
-          key={`vg-${i}`}
+          key={`vg-${pointIndex}`}
           x1={point.x}
           y1={yTop}
           x2={point.x}
@@ -59,8 +114,8 @@ function VerticalGridLines(props: any) {
   );
 }
 
-function formatValue(value: any, tab: any) {
-  if (value === null || value === undefined) return "—";
+function formatValue(value: RechartsValueType | null | undefined, tab: TimelineTabDefinition): string {
+  if (value === null || value === undefined || typeof value !== "number") return "—";
   if (tab.key === "cost") {
     return value >= 0.01 ? `$${value.toFixed(4)}` : `$${value.toFixed(6)}`;
   }
@@ -75,7 +130,7 @@ function formatValue(value: any, tab: any) {
   return formatNumber(value);
 }
 
-function yTickFormatter(value: any, tabKey: any) {
+function yTickFormatter(value: number, tabKey: string): string {
   if (tabKey === "cost") return `$${value.toFixed(2)}`;
   if (tabKey === "avgLatency")
     return value >= 1000 ? `${(value / 1000).toFixed(1)}s` : `${value}ms`;
@@ -84,10 +139,10 @@ function yTickFormatter(value: any, tabKey: any) {
 }
 
 /* Custom tooltip — uses `label` field (always present, e.g. "14:10") */
-function ChartTooltipComponent({ active, payload, label, tab }: any) {
+function ChartTooltipComponent({ active, payload, label, tab }: RechartsTooltipProps & { tab: TimelineTabDefinition }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className={styles.tooltip}>
+    <div className={styles['tooltip']}>
       <span className={styles['tooltip-label']}>{label}</span>
       <span className={styles['tooltip-value']} style={{ color: tab.color }}>
         {formatValue(payload[0].value, tab)}
@@ -97,7 +152,7 @@ function ChartTooltipComponent({ active, payload, label, tab }: any) {
 }
 
 /* Custom glow dot */
-function GlowDotComponent({ cx, cy, color }: any) {
+function GlowDotComponent({ cx, cy, color }: RechartsDotProps & { color: string }) {
   if (cx == null || cy == null) return null;
   return (
     <g>
@@ -118,12 +173,12 @@ function GlowDotComponent({ cx, cy, color }: any) {
  * Custom XAxis tick — only renders text when `tickLabel` is non-empty.
  * This keeps the axis sparse for 10-min granularity (label only at hour marks).
  */
-function SparseTick({ x, y, payload, data }: any) {
-  const entry = data?.[payload?.index];
+function SparseTick({ x, y, payload, data }: RechartsTickProps & { data?: TimelineDataPoint[] }) {
+  const entry = data?.[payload?.index ?? 0];
   const text = entry?.tickLabel;
   if (!text) return null;
   return (
-    <text x={x} y={y + 12} textAnchor="middle" fill="#5a6078" fontSize={11}>
+    <text x={x} y={Number(y) + 12} textAnchor="middle" fill="#5a6078" fontSize={11}>
       {text}
     </text>
   );
@@ -137,8 +192,19 @@ function SparseTick({ x, y, payload, data }: any) {
  *   loading  — boolean
  *   height   — chart height in px (default: 260)
  */
+interface TimelineDataPoint {
+  hour?: string;
+  requests?: number;
+  tokens?: number;
+  cost?: number;
+  avgLatency?: number;
+  successRate?: number;
+  label?: string;
+  tickLabel?: string;
+}
+
 interface TimelineChartProps {
-  data?: any[];
+  data?: TimelineDataPoint[];
   loading?: boolean;
   height?: number;
   title?: string;
@@ -169,14 +235,14 @@ export default function TimelineChartComponent({
   }, [tab.key]);
 
   const renderTooltip = useCallback(
-    (props: any) => {
+    (props: RechartsTooltipProps) => {
       return <ChartTooltipComponent {...props} tab={tab} />;
     },
     [tab],
   );
 
   const renderDot = useCallback(
-    (props: any) => {
+    (props: RechartsDotProps) => {
       return <GlowDotComponent {...props} color={tab.color} />;
     },
     [tab],
@@ -198,7 +264,7 @@ export default function TimelineChartComponent({
 
   // Custom tick renderer that pulls tickLabel from data
   const renderTick = useCallback(
-    (props: any) => <SparseTick {...props} data={data} />,
+    (props: RechartsTickProps) => <SparseTick {...props} data={data} />,
     [data],
   );
 
@@ -224,9 +290,9 @@ export default function TimelineChartComponent({
   const isAutoGranularity = !granularity;
 
   return (
-    <div className={styles.container}>
-      {title && <h2 className={styles.title}>{title}</h2>}
-      <div className={styles.header}>
+    <div className={styles['container']}>
+      {title && <h2 className={styles['title']}>{title}</h2>}
+      <div className={styles['header']}>
         <ChartTabsComponent
           tabs={TABS}
           activeTab={activeTab}
@@ -306,7 +372,7 @@ export default function TimelineChartComponent({
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className={styles.empty}>
+          <div className={styles['empty']}>
             {loading ? "Loading..." : "No data yet"}
           </div>
         )}

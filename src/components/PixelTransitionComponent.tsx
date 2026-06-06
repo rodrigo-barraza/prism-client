@@ -25,20 +25,28 @@ import { useEffect, useRef, useCallback } from "react";
  *   onComplete   — callback fired when the transition finishes
  *   targetRef    — ref to the DOM element to apply the effect to
  */
+interface PixelTransitionComponentProps {
+  phase?: "out" | "in" | null;
+  duration?: number;
+  maxBlockSize?: number;
+  onComplete?: () => void;
+  targetRef?: React.RefObject<HTMLElement | null>;
+}
+
 export default function PixelTransitionComponent({
   phase = null,
   duration = 3000,
   maxBlockSize = 24,
   onComplete,
   targetRef,
-}: any) {
+}: PixelTransitionComponentProps) {
   const rafRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const lastBlockRef = useRef<number>(0);
-  const filterCacheRef = useRef<Map<any, string>>(new Map());
+  const filterCacheRef = useRef<Map<number, string>>(new Map());
 
   // Latest props always available inside the rAF closure
-  const propsRef = useRef<any>({
+  const propsRef = useRef<PixelTransitionComponentProps>({
     phase,
     duration,
     maxBlockSize,
@@ -48,17 +56,17 @@ export default function PixelTransitionComponent({
   propsRef.current = { phase, duration, maxBlockSize, onComplete, targetRef };
 
   /** Ease-out cubic — fast initial ramp, decelerates toward end */
-  const easeOut = useCallback((t: any) => 1 - Math.pow(1 - t, 3), []);
+  const easeOut = useCallback((t: number) => 1 - Math.pow(1 - t, 3), []);
 
   /** Ease-in cubic — slow start, accelerates toward end */
-  const easeIn = useCallback((t: any) => t * t * t, []);
+  const easeIn = useCallback((t: number) => t * t * t, []);
 
   /**
    * Build (or retrieve from cache) a CSS `filter: url(...)` value for a given
    * blockSize. The entire SVG filter is encoded as an inline data URI — no
    * live DOM nodes, no getElementById lookups, no per-frame mutations.
    */
-  const getFilterCSS = useCallback((blockSize: any) => {
+  const getFilterCSS = useCallback((blockSize: number) => {
     if (blockSize <= 1) return "none";
 
     const cached = filterCacheRef.current.get(blockSize);
@@ -89,24 +97,24 @@ export default function PixelTransitionComponent({
   }, []);
 
   /** rAF animation tick — stored in a ref to avoid stale closures */
-  const tickRef = useRef<any>(null);
-  tickRef.current = (timestamp: any) => {
+  const tickRef = useRef<((timestamp: number) => void) | null>(null);
+  tickRef.current = (timestamp: number) => {
     if (!startTimeRef.current) startTimeRef.current = timestamp;
 
     const currentProps = propsRef.current;
     const elapsed = timestamp - (startTimeRef.current ?? 0);
-    const rawProgress = Math.min(elapsed / currentProps.duration, 1);
+    const rawProgress = Math.min(elapsed / (currentProps.duration || 3000), 1);
 
     let blockSize;
     if (currentProps.phase === "out") {
       // Ease-out: pixelation ramps up fast then decelerates
       const progress = easeOut(rawProgress);
-      blockSize = Math.round(1 + (currentProps.maxBlockSize - 1) * progress);
+      blockSize = Math.round(1 + ((currentProps.maxBlockSize || 24) - 1) * progress);
     } else if (currentProps.phase === "in") {
       // Ease-in: depixelation starts slow then accelerates to sharp
       const progress = easeIn(rawProgress);
       blockSize = Math.round(
-        currentProps.maxBlockSize - (currentProps.maxBlockSize - 1) * progress,
+        (currentProps.maxBlockSize || 24) - ((currentProps.maxBlockSize || 24) - 1) * progress,
       );
     } else {
       return;
@@ -122,7 +130,7 @@ export default function PixelTransitionComponent({
     }
 
     if (rawProgress < 1) {
-      rafRef.current = requestAnimationFrame(tickRef.current);
+      rafRef.current = requestAnimationFrame(tickRef.current!);
     } else {
       // Transition complete
       const element = currentProps.targetRef?.current;
@@ -155,7 +163,7 @@ export default function PixelTransitionComponent({
 
     startTimeRef.current = null;
     lastBlockRef.current = 0;
-    rafRef.current = requestAnimationFrame(tickRef.current);
+    rafRef.current = requestAnimationFrame(tickRef.current!);
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);

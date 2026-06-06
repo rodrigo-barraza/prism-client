@@ -17,6 +17,39 @@ import { InputComponent } from "@rodrigo-barraza/components-library";
 import HistoryList from "./HistoryListComponent";
 import styles from "./WorkflowSidebarComponent.module.css";
 
+interface WorkflowRecord {
+  _id?: string;
+  id?: string;
+  name?: string;
+  userContent?: string;
+  updatedAt?: string;
+  createdAt?: string;
+  totalCost?: number;
+  modalities?: Record<string, number | boolean>;
+  providers?: string[];
+  userName?: string;
+}
+
+interface WorkflowSidebarProps {
+  admin?: boolean;
+  workflows?: WorkflowRecord[];
+  activeWorkflowId?: string;
+  onLoadWorkflow?: (id: string) => void;
+  onDeleteWorkflow?: (id: string) => void;
+  onDownloadWorkflow?: (id: string) => void;
+  onCopyWorkflow?: (id: string) => void;
+  onAddAsset?: (type: string, nodeType?: string) => void;
+  onNewWorkflow?: () => void;
+  onSaveWorkflow?: () => void;
+  workflowName?: string;
+  onWorkflowNameChange?: (name: string) => void;
+  loading?: boolean;
+  favorites?: string[];
+  onToggleFavorite?: (id: string) => void;
+  initialProviders?: string[];
+  initialSearch?: string;
+}
+
 export default function WorkflowSidebar({
   admin = false,
   workflows = [],
@@ -35,34 +68,33 @@ export default function WorkflowSidebar({
   onToggleFavorite,
   initialProviders,
   initialSearch = "",
-}: any) {
-  // Normalize workflows into HistoryList items
+}: WorkflowSidebarProps) {
   const items = useMemo(() => {
-    return workflows.map((wf: any) => {
-      const id = wf._id || wf.id;
+    return (workflows || []).map((workflow) => {
+      const id = workflow._id || workflow.id || "";
       const name =
-        wf.name ||
-        (wf.userContent
-          ? wf.userContent.substring(0, 80) +
-            (wf.userContent.length > 80 ? "…" : "")
+        workflow.name ||
+        (workflow.userContent
+          ? workflow.userContent.substring(0, 80) +
+            (workflow.userContent.length > 80 ? "…" : "")
           : "Untitled Workflow");
 
       return {
         id,
         title: name,
-        updatedAt: wf.updatedAt,
-        createdAt: wf.createdAt,
-        totalCost: wf.totalCost || 0,
-        modalities: wf.modalities || {},
-        providers: wf.providers || [],
-        username: wf.userName,
-        searchText: wf.userName || "",
+        updatedAt: workflow.updatedAt,
+        createdAt: workflow.createdAt,
+        totalCost: workflow.totalCost || 0,
+        modalities: workflow.modalities || {},
+        providers: workflow.providers || [],
+        username: workflow.userName,
+        searchText: workflow.userName || "",
       };
     });
   }, [workflows]);
 
   return (
-    <div className={styles.sidebar}>
+    <div className={styles['sidebar']}>
       <div className={styles['sidebar-header']}>
         <span className={styles['sidebar-count']}>
           {workflows.length} workflows
@@ -165,7 +197,7 @@ export default function WorkflowSidebar({
       <HistoryList
         items={items}
         activeId={activeWorkflowId}
-        onSelect={(item: any) => onLoadWorkflow?.(item.id)}
+        onSelect={(item) => onLoadWorkflow?.(item.id)}
         onDelete={!admin ? onDeleteWorkflow : undefined}
         onDownload={onDownloadWorkflow}
         onCopy={onCopyWorkflow}

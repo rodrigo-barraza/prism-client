@@ -105,7 +105,7 @@ export default function AssetInputOptions({
   if (showWebcam) {
     return (
       <div
-        className={`${styles.container} ${compact ? styles.compact : ""}`}
+        className={`${styles['container']} ${compact ? styles['compact'] : ""}`}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
@@ -142,7 +142,7 @@ export default function AssetInputOptions({
   if (showAudioRec) {
     return (
       <div
-        className={`${styles.container} ${compact ? styles.compact : ""}`}
+        className={`${styles['container']} ${compact ? styles['compact'] : ""}`}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
@@ -168,7 +168,7 @@ export default function AssetInputOptions({
   return (
     <>
       <div
-        className={`${styles.container} ${compact ? styles.compact : ""}`}
+        className={`${styles['container']} ${compact ? styles['compact'] : ""}`}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >

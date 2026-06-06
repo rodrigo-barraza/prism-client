@@ -259,7 +259,7 @@ export default function CustomThemeEditorComponent({
   // ── Render ──────────────────────────────────────────────────────────
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles['wrapper']}>
       {/* Theme list */}
       {!editing && (
         <>
@@ -401,7 +401,7 @@ export default function CustomThemeEditorComponent({
 
       {/* Editor panel */}
       {editing && editTokens && (
-        <div className={styles.editor}>
+        <div className={styles['editor']}>
           {/* Editor header */}
           <div className={styles['editor-header']}>
             <span className={styles['editor-title']}>

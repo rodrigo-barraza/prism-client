@@ -3816,7 +3816,7 @@ export default function VramBenchmarkComponent() {
     return (
       <>
         <PageHeaderComponent title="VRAM Benchmark" subtitle="Loading…" />
-        <div className={styles.content}>
+        <div className={styles['content']}>
           <LoadingMessage message="Fetching VRAM benchmarks…" />
         </div>
       </>
@@ -3827,7 +3827,7 @@ export default function VramBenchmarkComponent() {
     return (
       <>
         <PageHeaderComponent title="VRAM Benchmark" subtitle="Error" />
-        <div className={styles.content}>
+        <div className={styles['content']}>
           <ErrorMessage message={error} />
         </div>
       </>
@@ -3851,7 +3851,7 @@ export default function VramBenchmarkComponent() {
         </button>
       </PageHeaderComponent>
 
-      <div className={styles.content}>
+      <div className={styles['content']}>
         {/* Stats cards */}
         {stats && (
           <div className={styles['stats-grid']}>

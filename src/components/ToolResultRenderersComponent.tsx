@@ -209,6 +209,42 @@ export interface ParsedToolResult {
   isAppend?: boolean;
   voice?: string;
   durationEstimate?: number;
+  // Schedule renderer
+  timer?: {
+    id: string;
+    firesAt: string;
+    prompt: string;
+    mode: "one_shot" | "recurring";
+  };
+  // 3D mesh renderer
+  vertexCount?: number;
+  faceCount?: number;
+  totalVertices?: number;
+  totalFaces?: number;
+  sceneEmbedUrl?: string;
+  // Emoji Kitchen renderer
+  leftEmoji?: string;
+  leftEmojiCodepoint?: string;
+  rightEmoji?: string;
+  rightEmojiCodepoint?: string;
+  gStaticUrl?: string;
+  alt?: string;
+  date?: string;
+  isLatest?: boolean;
+  gBoardOrder?: string;
+  emoji?: string;
+  combinations?: Array<{
+    emoji: string;
+    combination: {
+      gStaticUrl: string;
+      alt: string;
+    };
+  }>;
+  // Vector animation renderer
+  animation?: {
+    layers?: Array<unknown>;
+    duration?: number;
+  };
 }
 
 export interface RendererProps {
@@ -1270,11 +1306,11 @@ function TerminalRenderer({
 
 function ScheduleRenderer({ result }: RendererProps) {
   const parsed = tryParse(result);
-  if (!parsed || !parsed.success || !(parsed as any).timer) {
+  if (!parsed || !parsed.success || !parsed.timer) {
     return <RawResultToggle result={result} />;
   }
 
-  const timer = (parsed as any).timer;
+  const timer = parsed.timer;
   return (
     <div className={styles['renderer-block']}>
       <TimerBadgeComponent
@@ -1614,9 +1650,9 @@ function VectorAnimationRenderer({ result, args }: RendererProps) {
   if (!parsed) return <RawResultToggle result={result} />;
 
   const hasError = !!parsed.error;
-  const layerCount = parsed.layerCount || (args?.animation as any)?.layers?.length || 0;
+  const layerCount = parsed.layerCount || (args?.animation as { layers?: unknown[] })?.layers?.length || 0;
   const totalKeyframes = parsed.totalKeyframes || 0;
-  const duration = parsed.duration || (args?.animation as any)?.duration || 0;
+  const duration = parsed.duration || (args?.animation as { duration?: number })?.duration || 0;
   const canvasSize = parsed.canvasSize || "800x600";
   const embedUrl = parsed.embedUrl || "";
   const isAppend = !!parsed.isAppend;
@@ -1644,12 +1680,12 @@ function VectorAnimationRenderer({ result, args }: RendererProps) {
 // -- 13.5 3D Mesh Rendering --------------------------------------------------
 
 function ThreeMeshRenderer({ result, args }: RendererProps) {
-  const parsed = tryParse(result) as any;
+  const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 
   const hasError = !!parsed.error;
-  const vertexCount = parsed.vertexCount || (args as any)?.vertices?.length || 0;
-  const faceCount = parsed.faceCount || (args as any)?.faces?.length || 0;
+  const vertexCount = parsed.vertexCount || (args as { vertices?: unknown[] })?.vertices?.length || 0;
+  const faceCount = parsed.faceCount || (args as { faces?: unknown[] })?.faces?.length || 0;
   const totalVertices = parsed.totalVertices || vertexCount;
   const totalFaces = parsed.totalFaces || faceCount;
   const isAppend = !!parsed.isAppend;
@@ -1721,7 +1757,7 @@ function AsciiImageRenderer({ result, args }: RendererProps) {
 }
 
 function EmojiCombinationRenderer({ result }: RendererProps) {
-  const parsed = tryParse(result) as any;
+  const parsed = tryParse(result);
   if (!parsed || !parsed.success) return <RawResultToggle result={result} />;
 
   const {
@@ -1795,10 +1831,10 @@ function EmojiCombinationRenderer({ result }: RendererProps) {
 }
 
 function EmojiCombinationsRenderer({ result, args }: RendererProps) {
-  const parsed = tryParse(result) as any;
+  const parsed = tryParse(result);
   if (!parsed || !parsed.success) return <RawResultToggle result={result} />;
 
-  const baseEmoji = parsed.emoji || args?.emoji || "";
+  const baseEmoji = parsed.emoji || (args?.emoji as string) || "";
   const count = parsed.count || 0;
   const combinations = parsed.combinations || [];
 
@@ -1812,7 +1848,7 @@ function EmojiCombinationsRenderer({ result, args }: RendererProps) {
       </div>
       <div className={styles['emoji-grid-scroll-container']}>
         <div className={styles['emoji-combos-grid']}>
-          {combinations.map((option: any, index: number) => {
+          {(parsed.combinations || []).map((option: { emoji: string; combination: { gStaticUrl: string; alt: string } }, index: number) => {
             const combo = option.combination;
             return (
               <div key={index} className={styles['combo-option-card']}>
@@ -1900,8 +1936,8 @@ function WorkerStatusBar({ activity }: { activity: WorkerActivity | null }) {
     <StatusBarComponent
       active={isActive}
       variant="worker"
-      phase={effectivePhase}
-      label={label}
+      phase={(effectivePhase ?? undefined) as import("./StatusBarComponent").StatusBarPhase | undefined}
+      label={label ?? undefined}
       icon={icon}
       progress={progress}
       tokPerSec={tokPerSec}

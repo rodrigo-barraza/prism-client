@@ -224,6 +224,7 @@ export interface TokenUsage {
   outputTokens?: number;
   cacheReadInputTokens?: number;
   cacheCreationInputTokens?: number;
+  reasoningOutputTokens?: number;
   requests?: number;
 }
 
@@ -313,6 +314,17 @@ export interface Message {
   voice?: string;
   tool_call_id?: string;
   toolCallId?: string;
+  tool_calls?: Array<{
+    id: string;
+    name?: string;
+    args?: string | Record<string, unknown>;
+    result?: string;
+    status?: string;
+    function?: {
+      name?: string;
+      arguments?: string | Record<string, unknown>;
+    };
+  }>;
 }
 
 export interface Conversation {
@@ -657,6 +669,7 @@ export interface ContentSegment {
 
 export interface ToolCallEvent {
   id: string;
+  tool_call_id?: string;
   name: string;
   args: Record<string, unknown>;
   result?: unknown;
@@ -953,15 +966,23 @@ export interface MCPServer {
 
 export interface CoordinatorWorker {
   id: string;
+  agentId?: string;
   agentSessionId: string;
   status: string;
   task?: string;
+  description?: string;
   model?: string;
+  resolvedModel?: string;
   provider?: string;
   startedAt?: string;
   completedAt?: string;
   phase?: string;
   currentTool?: string | null;
+  durationMs?: number;
+  totalCost?: number;
+  toolCallCount?: number;
+  branchName?: string;
+  files?: string[];
 }
 
 // ─── Favorites ──────────────────────────────────────────────
@@ -1093,13 +1114,35 @@ export interface BenchmarkListResponse {
   count: number;
 }
 
+export interface BenchmarkBreakdown {
+  name: string;
+  total: number;
+  passed: number;
+  failed: number;
+  errored: number;
+  latestPassed?: boolean;
+  latestErrored?: boolean;
+}
+
 export interface BenchmarkModelStat {
   model: string;
   provider: string;
+  label?: string;
+  total: number;
+  passed: number;
+  failed: number;
+  errored: number;
+  passRate: number;
+  avgLatency: number;
+  totalCost: number;
   runs?: number;
   avgLatencyMs?: number;
   avgTokensPerSecond?: number;
   avgCost?: number;
+  thinkingEnabled?: boolean;
+  toolsEnabled?: boolean;
+  agent?: string | null;
+  benchmarks?: BenchmarkBreakdown[];
 }
 
 export interface BenchmarkModelStats {

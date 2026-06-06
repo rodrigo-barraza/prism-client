@@ -650,7 +650,7 @@ export default function SynthesisComponent() {
       ) {
         setGeneratedMessages((previous) => [
           ...previous.filter(
-            (message: any) => !(message as Message & { _streaming?: boolean })._streaming,
+            (message: Message & { _streaming?: boolean }) => !message._streaming,
           ),
           {
             role: "assistant",
@@ -686,7 +686,7 @@ export default function SynthesisComponent() {
     // Clean up any in-flight streaming messages
     setGeneratedMessages((previous) =>
       previous.filter(
-        (message: any) => !(message as Message & { _streaming?: boolean })._streaming,
+        (message: Message & { _streaming?: boolean }) => !message._streaming,
       ),
     );
   }, []);
@@ -937,7 +937,7 @@ export default function SynthesisComponent() {
         }
       >
         {/* Main area */}
-        <div className={styles.workspace}>
+        <div className={styles['workspace']}>
           {/* Conversation Length & Category bar */}
           <div className={styles['config-bar']}>
             <div className={styles['config-bar-item']}>
@@ -1059,7 +1059,7 @@ export default function SynthesisComponent() {
                 <div key={i} className={styles['seed-message']}>
                   <div className={styles['seed-message-header']}>
                     <button
-                      className={`${styles['role-toggle']} ${styles[`role_${message.role}`]}`}
+                      className={`${styles['role-toggle']} ${styles[`role-${message.role}`] || ""}`}
                       onClick={() =>
                         updateSeedMessage(
                           i,

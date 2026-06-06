@@ -48,7 +48,7 @@ export default function SessionRequestsListComponent({
   if (!conversationId || loading || error || !(data as any)?.requests?.length) {
     if (error) {
       return (
-        <div className={styles.container}>
+        <div className={styles['container']}>
           <div className={styles['empty-state']}>
             <div className={styles['empty-icon']}>
               <AlertCircle size={24} />
@@ -61,13 +61,13 @@ export default function SessionRequestsListComponent({
     }
     if (loading) {
       return (
-        <div className={styles.container}>
+        <div className={styles['container']}>
           <PanelLoadingSpinner />
         </div>
       );
     }
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <div className={styles['empty-state']}>
           <div className={styles['empty-icon']}>
             <Activity size={24} />
@@ -101,9 +101,9 @@ export default function SessionRequestsListComponent({
     });
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <div className={styles.header}>
+    <div className={styles['container']}>
+      <div className={styles['card']}>
+        <div className={styles['header']}>
           <Activity size={12} />
           <span>Requests</span>
           <span className={styles['header-count']}>{(data as any).total}</span>
@@ -130,7 +130,7 @@ export default function SessionRequestsListComponent({
                   <span className={styles['request-provider']}>
                     {resolveProviderLabel(request.provider)}
                   </span>
-                  <span className={styles.divider}>•</span>
+                  <span className={styles['divider']}>•</span>
                   <span className={styles['request-model']} title={request.model}>
                     {request.model ? cleanModelName(request.model) : "—"}
                   </span>

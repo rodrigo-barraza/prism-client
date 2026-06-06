@@ -3,10 +3,49 @@
 import { useState, useEffect, useCallback } from "react";
 import WorkflowSidebar from "./WorkflowSidebarComponent";
 import WorkflowCanvas from "./WorkflowCanvasComponent";
-import WorkflowInspector from "./WorkflowInspectorComponent";
+import WorkflowInspector, { type NodeResult } from "./WorkflowInspectorComponent";
+import type { WorkflowNode, WorkflowConnection, ModelOption } from "../types/types";
 import styles from "./WorkflowComponent.module.css";
 
 const noop = () => {};
+
+interface WorkflowComponentProps {
+  readOnly?: boolean;
+  admin?: boolean;
+  nodes?: WorkflowNode[];
+  connections?: WorkflowConnection[];
+  selectedNodeId?: string | null;
+  onSelectNode?: (nodeId: string | null) => void;
+  nodeStatuses?: Record<string, string>;
+  nodeResults?: Record<string, NodeResult | null | undefined>;
+  onUpdateNodePosition?: (nodeId: string, position: { x: number; y: number }) => void;
+  onDeleteNode?: (nodeId: string) => void;
+  onAddConnection?: (connection: { sourceNodeId: string; sourceModality: string; targetNodeId: string; targetModality: string }) => void;
+  onDeleteConnection?: (connectionId: string) => void;
+  onUpdateNodeContent?: (nodeId: string, content: string) => void;
+  onUpdateNodeConfig?: (nodeId: string, key: string, value: unknown) => void;
+  onUpdateFileInput?: (nodeId: string, fileData: string | ArrayBuffer | null, mimeType: string | null) => void;
+  onDuplicateNode?: (node: WorkflowNode) => void;
+  workflows?: Array<Record<string, unknown>>;
+  activeWorkflowId?: string;
+  onLoadWorkflow?: (id: string) => void;
+  onDeleteWorkflow?: (id: string) => void;
+  onDownloadWorkflow?: (id: string) => void;
+  onCopyWorkflow?: (id: string) => void;
+  onAddAsset?: (type: string, nodeType?: string) => void;
+  onNewWorkflow?: () => void;
+  onSaveWorkflow?: () => void;
+  workflowName?: string;
+  onWorkflowNameChange?: (name: string) => void;
+  loading?: boolean;
+  isLoadingWorkflow?: boolean;
+  favorites?: string[];
+  onToggleFavorite?: (id: string) => void;
+  initialProviders?: string[];
+  initialSearch?: string;
+  allModels?: ModelOption[];
+  onChangeModel?: (nodeId: string, model: ModelOption) => void;
+}
 
 /**
  * WorkflowComponent — unified wrapper that composes WorkflowSidebar,
@@ -75,7 +114,7 @@ export default function WorkflowComponent({
 
   allModels,
   onChangeModel,
-}: any) {
+}: WorkflowComponentProps) {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -90,7 +129,7 @@ export default function WorkflowComponent({
     ? onUpdateNodePosition || noop
     : onUpdateNodePosition || noop;
 
-  const selectedNode = nodes.find((n: any) => n.id === selectedNodeId) || null;
+  const selectedNode = nodes.find((node) => node.id === selectedNodeId) || null;
 
   const handleClose = useCallback(() => {
     onSelectNode?.(null);
@@ -109,18 +148,18 @@ export default function WorkflowComponent({
 
   // When loading a workflow on mobile, auto-hide sidebar
   const handleLoadWorkflowWithHide = useCallback(
-    (...args: any[]) => {
+    (workflowId: string) => {
       if (window.innerWidth < 768) {
         setSidebarVisible(false);
       }
-      onLoadWorkflow?.(...args);
+      onLoadWorkflow?.(workflowId);
     },
     [onLoadWorkflow],
   );
 
   // On mobile, close sidebar when selecting a node (opening inspector)
   const handleSelectNode = useCallback(
-    (nodeId: any) => {
+    (nodeId: string | null) => {
       if (nodeId && window.innerWidth < 768) {
         setSidebarVisible(false);
       }
@@ -130,7 +169,7 @@ export default function WorkflowComponent({
   );
 
   return (
-    <div className={styles.body}>
+    <div className={styles['body']}>
       <div
         className={`${styles['sidebar-wrapper']} ${sidebarVisible ? "" : styles['sidebar-hidden']}`}
       >

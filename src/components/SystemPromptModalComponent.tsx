@@ -181,10 +181,10 @@ export default function SystemPromptModal({
       title="System Instructions"
       onClose={onClose}
       size="md"
-      className={styles.modal}
+      className={styles['modal']}
     >
-      <div className={styles.body}>
-        <div className={styles.field}>
+      <div className={styles['body']}>
+        <div className={styles['field']}>
           <label>Saved Instructions</label>
           <SelectComponent
             value={selectedId || ""}
@@ -194,7 +194,7 @@ export default function SystemPromptModal({
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={styles['field']}>
           <label>Title</label>
           <InputComponent
             placeholder="e.g. Code Review Assistant"
@@ -203,10 +203,10 @@ export default function SystemPromptModal({
           />
         </div>
 
-        <div className={styles.field}>
+        <div className={styles['field']}>
           <label>System Prompt</label>
           <TextAreaComponent
-            className={styles.textarea}
+            className={styles['textarea']}
             minRows={10}
             maxRows={20}
             placeholder="You are a helpful AI assistant..."

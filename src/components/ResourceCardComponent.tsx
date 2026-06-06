@@ -1,26 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
 import SoundService from "@/services/SoundService";
 import styles from "./ResourceCardComponent.module.css";
 
-/**
- * ResourceCardComponent — a navigable stats card showing an icon, count, and
- * label. Used in dashboards for quick resource navigation.
- *
- * Props:
- *   href       — Link destination (uses Next.js Link)
- *   icon       — Lucide icon component (e.g. Box, Server, …)
- *   count      — Formatted count string to display
- *   label      — Text label beneath the count
- *   onClick    — Optional click handler (e.g. for scroll-to targets)
- */
 interface ResourceCardProps {
   href: string;
-  icon: any;
+  icon: LucideIcon;
   count: string | number;
   label: string;
-  onClick?: (e: any) => void;
+  onClick?: (event: React.SyntheticEvent) => void;
 }
 
 export default function ResourceCardComponent({
@@ -33,14 +23,14 @@ export default function ResourceCardComponent({
   return (
     <Link
       href={href}
-      className={styles.card}
+      className={styles['card']}
       {...SoundService.interactive((e: React.SyntheticEvent) => {
         onClick?.(e);
       })}
     >
-      <Icon size={18} className={styles.icon} />
-      <span className={styles.count}>{count}</span>
-      <span className={styles.label}>{label}</span>
+      <Icon size={18} className={styles['icon']} />
+      <span className={styles['count']}>{count}</span>
+      <span className={styles['label']}>{label}</span>
     </Link>
   );
 }

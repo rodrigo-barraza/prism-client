@@ -225,7 +225,7 @@ function AgentsPageInner() {
   }, [activeAgentId]);
 
   return (
-    <main className={styles.container}>
+    <main className={styles['container']}>
       <ChatSessionComponent
         key={activeAgentId}
         agentId={activeAgentId}

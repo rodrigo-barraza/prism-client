@@ -30,7 +30,7 @@ import styles from "./WorkflowInspectorComponent.module.css";
 import { LS_WORKFLOW_INSPECTOR_WIDTH } from "../constants";
 import {
   ModelOption,
-  WorkflowEdge,
+  WorkflowConnection,
   WorkflowNode,
   WorkflowNodeStatus,
   Message,
@@ -68,12 +68,12 @@ export interface NodeResult {
 
 interface WorkflowInspectorProps {
   node: WorkflowNode | null;
-  connections: WorkflowEdge[];
+  connections: WorkflowConnection[];
   nodes: WorkflowNode[];
   allModels?: ModelOption[];
   nodeResults?: Record<string, NodeResult | null | undefined>;
   nodeStatuses?: Record<string, string>;
-  onUpdateNodeConfig?: (nodeId: string, key: string, value: any) => void;
+  onUpdateNodeConfig?: (nodeId: string, key: string, value: unknown) => void;
   onUpdateNodeContent?: (nodeId: string, content: string) => void;
   onUpdateFileInput?: (
     nodeId: string,
@@ -176,14 +176,14 @@ export default function WorkflowInspector({
   const incoming = useMemo(
     () =>
       (connections || []).filter(
-        (edge: WorkflowEdge) => node && edge.targetNodeId === node.id,
+        (edge: WorkflowConnection) => node && edge.targetNodeId === node.id,
       ),
     [connections, node],
   );
   const outgoing = useMemo(
     () =>
       (connections || []).filter(
-        (edge: WorkflowEdge) => node && edge.sourceNodeId === node.id,
+        (edge: WorkflowConnection) => node && edge.sourceNodeId === node.id,
       ),
     [connections, node],
   );
@@ -191,8 +191,8 @@ export default function WorkflowInspector({
   // Compute compatible models based on connections
   const compatibleModels = useMemo(() => {
     if (!isModel) return [];
-    const requiredInputs = incoming.map((edge: WorkflowEdge) => edge.targetModality);
-    const requiredOutputs = outgoing.map((edge: WorkflowEdge) => edge.sourceModality);
+    const requiredInputs = incoming.map((edge: WorkflowConnection) => edge.targetModality);
+    const requiredOutputs = outgoing.map((edge: WorkflowConnection) => edge.sourceModality);
 
     return allModels.filter((modelOption: ModelOption) => {
       const mInputs = modelOption.inputTypes || [];
@@ -293,12 +293,12 @@ export default function WorkflowInspector({
 
   return (
     <div
-      className={styles.inspector}
+      className={styles['inspector']}
       style={{ width: inspectorWidth, minWidth: MIN_WIDTH }}
     >
       <div className={styles['resize-handle']} onMouseDown={handleResizeStart} />
       {/* Header */}
-      <div className={styles.header}>
+      <div className={styles['header']}>
         <div className={styles['header-left']}>
           {isModel && (
             <div className={styles['provider-icon']}>
@@ -361,7 +361,7 @@ export default function WorkflowInspector({
               {nodeSubtitle}
               {status && (
                 <span
-                  className={`${styles['status-badge']} ${styles[`status_${status}`]}`}
+                  className={`${styles['status-badge']} ${styles[`status-${status}`] || ""}`}
                 >
                   {status}
                 </span>
@@ -375,10 +375,10 @@ export default function WorkflowInspector({
       </div>
 
       {/* Scrollable body */}
-      <div className={styles.body}>
+      <div className={styles['body']}>
         {/* Model selector — model nodes only, hidden in readOnly */}
         {isModel && !readOnly && (
-          <section className={styles.section}>
+          <section className={styles['section']}>
             <label className={styles['section-label']}>Model</label>
             <div className={styles['model-selector']}>
               <button
@@ -497,7 +497,7 @@ export default function WorkflowInspector({
 
         {/* Model info — readOnly mode */}
         {isModel && readOnly && (
-          <section className={styles.section}>
+          <section className={styles['section']}>
             <label className={styles['section-label']}>Model</label>
             <div
               className={styles['model-selector-trigger']}
@@ -515,10 +515,10 @@ export default function WorkflowInspector({
 
         {/* Input Ports */}
         {incoming.length > 0 && (
-          <section className={styles.section}>
+          <section className={styles['section']}>
             <label className={styles['section-label']}>Input Ports</label>
             <div className={styles['connection-list']}>
-              {incoming.map((edge: WorkflowEdge) => (
+              {incoming.map((edge: WorkflowConnection) => (
                 <div
                   key={edge.id}
                   className={`${styles['connection-item']} ${styles['connection-item-clickable']}`}
@@ -552,10 +552,10 @@ export default function WorkflowInspector({
 
         {/* Output Ports */}
         {outgoing.length > 0 && (
-          <section className={styles.section}>
+          <section className={styles['section']}>
             <label className={styles['section-label']}>Output Ports</label>
             <div className={styles['connection-list']}>
-              {outgoing.map((edge: WorkflowEdge) => (
+              {outgoing.map((edge: WorkflowConnection) => (
                 <div
                   key={edge.id}
                   className={`${styles['connection-item']} ${styles['connection-item-clickable']}`}
@@ -589,7 +589,7 @@ export default function WorkflowInspector({
 
         {/* Content — text input assets */}
         {isInput && node.modality === "text" && (
-          <section className={`${styles.section} ${styles['scrollable-section']}`}>
+          <section className={`${styles['section']} ${styles['scrollable-section']}`}>
             <TextContentComponent
               label="Text Content"
               value={(node.content as string) || ""}
@@ -609,7 +609,7 @@ export default function WorkflowInspector({
           node.modality !== "text" &&
           node.modality !== "conversation" && (
             <section
-              className={`${styles.section} ${styles['scrollable-section']}`}
+              className={`${styles['section']} ${styles['scrollable-section']}`}
             >
               <label className={styles['section-label']}>Media Content</label>
               {node.content ? (
@@ -763,7 +763,7 @@ export default function WorkflowInspector({
             );
             return (
               <section
-                className={`${styles.section} ${styles['scrollable-section']}`}
+                className={`${styles['section']} ${styles['scrollable-section']}`}
               >
                 <div className={styles['section-header-row']}>
                   <label className={styles['section-label']}>
@@ -874,7 +874,7 @@ export default function WorkflowInspector({
 
             return (
               <>
-                <section className={styles.section}>
+                <section className={styles['section']}>
                   <div className={styles['tool-summary']}>
                     <span className={styles['tool-summary-count']}>
                       {enabledCount}
@@ -886,7 +886,7 @@ export default function WorkflowInspector({
                 </section>
 
                 {builtIn.length > 0 && (
-                  <section className={styles.section}>
+                  <section className={styles['section']}>
                     <button
                       className={styles['tool-section-toggle']}
                       onClick={() => setToolBuiltInOpen((v) => !v)}
@@ -911,7 +911,7 @@ export default function WorkflowInspector({
                 )}
 
                 {custom.length > 0 && (
-                  <section className={styles.section}>
+                  <section className={styles['section']}>
                     <button
                       className={styles['tool-section-toggle']}
                       onClick={() => setToolCustomOpen((v) => !v)}
@@ -946,7 +946,7 @@ export default function WorkflowInspector({
 
         {/* Generated Results — model nodes only */}
         {results && !results.error && !isViewer && !isInput && (
-          <section className={`${styles.section} ${styles['scrollable-section']}`}>
+          <section className={`${styles['section']} ${styles['scrollable-section']}`}>
             <label className={styles['section-label']}>Generated Output</label>
 
             {results.image && (
@@ -1031,7 +1031,7 @@ export default function WorkflowInspector({
           receivedOutputs &&
           Object.keys(receivedOutputs).length > 0 && (
             <section
-              className={`${styles.section} ${styles['scrollable-section']}`}
+              className={`${styles['section']} ${styles['scrollable-section']}`}
             >
               {receivedOutputs.image && (
                 <div className={styles['result-block']}>
@@ -1112,7 +1112,7 @@ export default function WorkflowInspector({
 
         {/* Error */}
         {results?.error && (
-          <section className={styles.section}>
+          <section className={styles['section']}>
             <label className={styles['section-label']}>Error</label>
             <div className={styles['error-block']}>{results.error}</div>
           </section>

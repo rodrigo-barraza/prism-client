@@ -633,7 +633,7 @@
     box-shadow var(--transition-fast);
   color: var(--text-secondary);
   filter: saturate(0.3) brightness(0.7);
-  animation: prismRotate var(--prism-speed) linear infinite;
+  animation: prism-rotate var(--prism-speed) linear infinite;
 }
 
 .harness-card:hover {

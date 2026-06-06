@@ -32,16 +32,53 @@ const ORIGIN_FILTERS = [
   { key: "ai", label: "Responses", icon: Sparkles },
 ];
 
+interface TextItem {
+  convId: string;
+  convTitle: string;
+  origin: string;
+  content: string;
+  model?: string;
+  hasImages?: boolean;
+  timestamp?: string;
+  estimatedCost?: number;
+}
+
+interface TextSearchParams {
+  page: number;
+  limit: number;
+  origin?: string;
+  search?: string;
+  provider?: string;
+  model?: string;
+  agent?: string;
+  from?: string;
+  to?: string;
+}
+
+interface TextSearchResponse {
+  data: TextItem[];
+  total: number;
+  providers?: string[];
+  models?: string[];
+}
+
+interface TextPageComponentProps {
+  mode?: string;
+  dateRange?: { from: string; to: string };
+  agent?: string;
+  onCountChange?: (count: number) => void;
+}
+
 export default function TextPageComponent({
   mode = "user",
   dateRange: externalDateRange,
   agent: externalAgent,
   onCountChange,
-}: any) {
+}: TextPageComponentProps) {
   const isAdmin = mode === "admin";
   const convBasePath = "/admin/chat";
 
-  const [texts, setTexts] = useState<any[]>([]);
+  const [texts, setTexts] = useState<TextItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [origin, setOrigin] = useState("all");
@@ -49,8 +86,8 @@ export default function TextPageComponent({
   const [searchInput, setSearchInput] = useState("");
   const [provider, setProvider] = useState("");
   const [model, setModel] = useState("");
-  const [providers, setProviders] = useState<any[]>([]);
-  const [models, setModels] = useState<any[]>([]);
+  const [providers, setProviders] = useState<string[]>([]);
+  const [models, setModels] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [internalDateRange, setInternalDateRange] = useState({
     from: "",
@@ -64,7 +101,7 @@ export default function TextPageComponent({
   const loadText = useCallback(async () => {
     try {
       setLoading(true);
-      const params: any = { page, limit: PAGE_SIZE };
+      const params: Record<string, string | number | boolean> = { page, limit: PAGE_SIZE };
       if (origin !== "all") params.origin = origin;
       if (search) params.search = search;
       if (provider) params.provider = provider;
@@ -73,7 +110,7 @@ export default function TextPageComponent({
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
-      const result: any = await service.getText(params);
+      const result = await service.getText(params) as unknown as TextSearchResponse;
       setTexts(result.data || []);
       setTotal(result.total || 0);
       if (result.providers) setProviders(result.providers);
@@ -102,7 +139,7 @@ export default function TextPageComponent({
       .catch(() => {});
   }, []);
 
-  const toggleFavorite = async (textKey: any) => {
+  const toggleFavorite = async (textKey: string) => {
     if (favoriteKeys.includes(textKey)) {
       setFavoriteKeys((previousKeys) => previousKeys.filter((key) => key !== textKey));
       PrismService.removeFavorite("text", textKey).catch(() => {});
@@ -112,7 +149,7 @@ export default function TextPageComponent({
     }
   };
 
-  const getTextKey = (textItem: any, index: any) => `${textItem.convId}-${textItem.origin}-${index}`;
+  const getTextKey = (textItem: TextItem, index: number) => `${textItem.convId}-${textItem.origin}-${index}`;
 
   const displayTexts = showFavoritesOnly
     ? texts.filter((textItem, index) => favoriteKeys.includes(getTextKey(textItem, index)))
@@ -123,15 +160,15 @@ export default function TextPageComponent({
   return (
     <>
       {!isAdmin ? (
-        <div className={styles.container}>
+        <div className={styles['container']}>
           {/* Header */}
-          <div className={styles.header}>
+          <div className={styles['header']}>
             <div className={styles['header-left']}>
-              <h1 className={styles.title}>
+              <h1 className={styles['title']}>
                 <FileText className={styles['title-icon']} size={22} />
                 Text
               </h1>
-              <p className={styles.subtitle}>
+              <p className={styles['subtitle']}>
                 All text message segments and prompts recorded across conversations.
               </p>
             </div>
@@ -146,10 +183,10 @@ export default function TextPageComponent({
             </div>
           </div>
 
-          <div className={styles.page}>
+          <div className={styles['page']}>
             <SearchInputComponent
               value={searchInput}
-              onChange={(value: any) => {
+              onChange={(value: string) => {
                 setSearchInput(value);
                 setSearch(value);
                 setPage(1);
@@ -280,7 +317,7 @@ export default function TextPageComponent({
                           </span>
                         )}
                         {textItem.timestamp && (
-                          <span className={styles.time}>
+                          <span className={styles['time']}>
                             {new Date(textItem.timestamp).toLocaleDateString()}
                           </span>
                         )}
@@ -452,7 +489,7 @@ export default function TextPageComponent({
                         </span>
                       )}
                       {textItem.timestamp && (
-                        <span className={styles.time}>
+                        <span className={styles['time']}>
                           {new Date(textItem.timestamp).toLocaleDateString()}
                         </span>
                       )}

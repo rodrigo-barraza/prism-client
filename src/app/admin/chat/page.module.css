@@ -34,7 +34,7 @@
 .stat-pill-generating {
   background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
-  animation: fadeInOut 1.5s ease-in-out infinite;
+  animation: fade-in-out 1.5s ease-in-out infinite;
 }
 
 /* Chat-like 3-panel container */
@@ -69,7 +69,7 @@
   white-space: nowrap;
   background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
-  animation: fadeInOut 1.5s ease-in-out infinite;
+  animation: fade-in-out 1.5s ease-in-out infinite;
 }
 
 .spinning {

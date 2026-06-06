@@ -194,7 +194,7 @@ export default function ProvidersPage() {
   }, [setTitleBadge, providers.length]);
 
   return (
-    <div className={styles.page}>
+    <div className={styles['page']}>
       {loading && <LoadingMessage message="Loading provider data..." />}
 
       <div className={styles['provider-list']}>

@@ -15,13 +15,21 @@ import styles from "./BenchmarkBarComponent.module.css";
  *   label     — optional label text below the bar
  *   className — additional class
  */
+interface BenchmarkBarProps {
+  passed?: number;
+  total?: number;
+  mini?: boolean;
+  label?: string;
+  className?: string;
+}
+
 export default function BenchmarkBarComponent({
   passed = 0,
   total = 0,
   mini = false,
   label,
   className = "",
-}: any) {
+}: BenchmarkBarProps) {
   const passRate = total > 0 ? (passed / total) * 100 : 0;
   const hasRuns = total > 0;
 
@@ -32,12 +40,12 @@ export default function BenchmarkBarComponent({
   return (
     <TooltipComponent label={tooltipLabel} position="top">
       <div
-        className={`${styles.wrapper} ${mini ? styles.mini : ""} ${className}`}
+        className={`${styles['wrapper']} ${mini ? styles['mini'] : ""} ${className}`}
       >
-        <div className={`${styles.bar} ${hasRuns ? styles['bar-has-runs'] : ""}`}>
-          <div className={styles.fill} style={{ width: `${passRate}%` }} />
+        <div className={`${styles['bar']} ${hasRuns ? styles['bar-has-runs'] : ""}`}>
+          <div className={styles['fill']} style={{ width: `${passRate}%` }} />
         </div>
-        {label && !mini && <span className={styles.label}>{label}</span>}
+        {label && !mini && <span className={styles['label']}>{label}</span>}
       </div>
     </TooltipComponent>
   );

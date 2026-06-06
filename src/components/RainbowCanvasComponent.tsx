@@ -1,13 +1,29 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from "react";
-import { RAINBOW, paletteAt } from "../utils/rainbow";
+import { RAINBOW, paletteAt, type RgbTriplet } from "../utils/rainbow";
 
 /** 8-bit dithered rainbow — auto-animates, turbo during LLM generation */
 const PIXEL_SIZE = 6;
 const BASE_SPEED = 30; // degrees/sec
 const TURBO_ACCEL = 20; // quadratic coefficient — velocity = TURBO_ACCEL × t²
 const TURBO_RELEASE = 0.02; // per-frame smoothing toward zero (at 60fps ≈ 3s wind-down)
+
+interface RainbowCanvasComponentProps {
+  turbo?: boolean;
+  animate?: boolean;
+  greyscale?: boolean;
+  palette?: RgbTriplet[];
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+interface RainbowAnimationState {
+  offset: number;
+  turboVelocity: number;
+  turboTime: number;
+  lastTime: number;
+}
 
 export default function RainbowCanvasComponent({
   turbo = false,
@@ -16,17 +32,17 @@ export default function RainbowCanvasComponent({
   palette,
   className,
   style,
-}: any) {
+}: RainbowCanvasComponentProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const stateRef = useRef<any>({
+  const stateRef = useRef<RainbowAnimationState>({
     offset: 0,
     turboVelocity: 0,
     turboTime: 0,
     lastTime: 0,
   });
-  const turboRef = useRef<any>(turbo);
+  const turboRef = useRef<boolean>(turbo);
   const animateRef = useRef<boolean>(animate);
-  const paletteRef = useRef<any>(palette || null);
+  const paletteRef = useRef<RgbTriplet[] | null>(palette || null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -78,7 +94,7 @@ export default function RainbowCanvasComponent({
 
     if (shouldRun && !rafRef.current) {
       stateRef.current.lastTime = 0;
-      const tick = (now: any) => {
+      const tick = (now: number) => {
         const animationState = stateRef.current;
         if (!animationState.lastTime) animationState.lastTime = now;
         const dt = (now - animationState.lastTime) / 1000;
@@ -133,17 +149,17 @@ export default function RainbowCanvasComponent({
     resize();
     window.addEventListener("resize", resize);
 
-    let ro: any;
+    let resizeObserver: ResizeObserver | null = null;
     if (typeof ResizeObserver !== "undefined") {
-      ro = new ResizeObserver(resize);
-      ro.observe(parent);
+      resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(parent);
     }
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
       window.removeEventListener("resize", resize);
-      ro?.disconnect();
+      resizeObserver?.disconnect();
     };
   }, [draw]);
 

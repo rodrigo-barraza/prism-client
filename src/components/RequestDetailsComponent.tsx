@@ -1,19 +1,25 @@
 "use client";
 
 import { DrawerComponent } from "@rodrigo-barraza/components-library";
+import type { ReactNode } from "react";
 
-/**
- * RequestDetailsComponent — a slide-in drawer for displaying request detail views.
- *
- * Thin wrapper around the shared DrawerComponent, preserving the existing API
- * so all consumers continue to work without changes.
- */
+interface DrawerSectionItem {
+  label: ReactNode;
+  value: ReactNode;
+  mono?: boolean;
+}
+
+interface DrawerSection {
+  title: string;
+  items: DrawerSectionItem[];
+}
+
 export interface RequestDetailsProps {
   open: boolean;
   onClose: () => void;
   title?: string;
-  sections?: any[];
-  children?: React.ReactNode;
+  sections?: DrawerSection[];
+  children?: ReactNode;
 }
 
 export default function RequestDetailsComponent({

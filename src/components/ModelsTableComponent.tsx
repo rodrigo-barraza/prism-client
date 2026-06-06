@@ -88,7 +88,7 @@ export interface RawModel {
   _benchAgent?: string | null;
   inputTypes?: string[];
   outputTypes?: string[];
-  _benchStat?: Record<string, string | number | boolean | null>;
+  _benchStat?: unknown;
   _benchTotal?: number;
   _benchPassed?: number;
   _benchFailed?: number;
@@ -217,7 +217,7 @@ function ModalityCell({
 }) {
   if (!inputTypes?.length && !outputTypes?.length) return "—";
   return (
-    <span className={styles.modalities}>
+    <span className={styles['modalities']}>
       {(inputTypes || []).map((inputType: string) => {
         const modalityEntry = (
           MODALITY_ICONS as Record<
@@ -1517,7 +1517,7 @@ function ModelsTableInner({
   ]);
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {showSearch && (
         <SearchInputComponent
           value={searchQuery}

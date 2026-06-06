@@ -469,7 +469,7 @@ export default function SettingsPanel({
 
   return (
     <>
-      <div className={styles.container}>
+      <div className={styles['container']}>
         {sessionStats && (
           <div className={styles['session-stats']}>
             <div className={styles['stats-header']}>
@@ -492,7 +492,7 @@ export default function SettingsPanel({
         )}
 
         {workflows.length > 0 && (
-          <div className={styles.section} style={{ marginBottom: 12 }}>
+          <div className={styles['section']} style={{ marginBottom: 12 }}>
             <div className={styles['section-header']}>
               <GitBranch size={12} style={{ marginRight: 4 }} /> Workflow
             </div>
@@ -788,7 +788,7 @@ export default function SettingsPanel({
 
         {/* -- Agent Toggles (Plan, Auto, Iterations) ---------------- */}
         {(agentToggles?.length ?? 0) > 0 && (
-          <div className={styles.section}>
+          <div className={styles['section']}>
             <div className={styles['section-header']}>Agent</div>
             {agentToggles?.map((toggle) => (
               <div
@@ -939,7 +939,7 @@ export default function SettingsPanel({
             };
 
             return (
-              <div className={styles.section}>
+              <div className={styles['section']}>
                 <div className={styles['section-header']}>Native Tools</div>
                 {selectedModelDef.tools.map((tool) => {
                   const toggle = TOGGLEABLE_TOOLS.has(tool)

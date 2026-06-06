@@ -356,13 +356,13 @@ export default function DrawingCanvas({
   const toolCursor = tool === "eraser" ? "cell" : "crosshair";
 
   return createPortal(
-    <div className={styles.overlay}>
+    <div className={styles['overlay']}>
       <button className={styles['close-button']} onClick={onClose} title="Close">
         <X size={22} />
       </button>
 
       {/* Toolbar */}
-      <div className={styles.toolbar}>
+      <div className={styles['toolbar']}>
         {/* Tool buttons */}
         <div className={styles['tool-group']}>
           {TOOLS.map((toolOption) => {
@@ -386,7 +386,7 @@ export default function DrawingCanvas({
           {COLORS.map((colorOption) => (
             <button
               key={colorOption.value}
-              className={`${styles.swatch} ${color === colorOption.value && tool !== "eraser" ? styles['swatch-active'] : ""}`}
+              className={`${styles['swatch']} ${color === colorOption.value && tool !== "eraser" ? styles['swatch-active'] : ""}`}
               style={{
                 background: colorOption.value,
                 border: colorOption.value === "#000000" ? "2px solid #555" : undefined,

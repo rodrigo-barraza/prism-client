@@ -10,7 +10,7 @@ export function LoadingMessage({
   message = "Loading...",
 }: LoadingMessageProps) {
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       <PanelLoadingSpinner size="small" inline />
       <span>{message}</span>
     </div>
@@ -25,7 +25,7 @@ export function EmptyMessage({
   message = "No records found.",
 }: EmptyMessageProps) {
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       <span>{message}</span>
     </div>
   );

@@ -192,7 +192,7 @@ export default function RulesPanel({
     const slugifiedName = editingRule.name || "rule-name";
 
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <div className={styles["form-header"]}>
           <h3>{isNew ? "New Rule" : "Edit Rule"}</h3>
           <button className={styles["cancel-button"]} onClick={handleCancel}>
@@ -200,7 +200,7 @@ export default function RulesPanel({
           </button>
         </div>
 
-        <div className={styles.form}>
+        <div className={styles['form']}>
           <div className={styles["form-group"]}>
             <label>Rule Name</label>
             <InputComponent
@@ -223,7 +223,7 @@ export default function RulesPanel({
             {editingRule.name && (
               <span className={styles["slash-preview"]}>/{slugifiedName}</span>
             )}
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               kebab-case identifier — becomes your slash command
             </span>
           </div>
@@ -245,7 +245,7 @@ export default function RulesPanel({
               }
               placeholder="Enforce TypeScript coding standards"
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               Shown in the slash command picker dropdown
             </span>
           </div>
@@ -305,7 +305,7 @@ export default function RulesPanel({
   // -- List View ------------------------------------------------
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {rules.length > 0 && (
         <SearchInputComponent
           value={searchQuery}

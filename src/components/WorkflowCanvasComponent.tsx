@@ -235,7 +235,7 @@ export default function WorkflowCanvas({
         element === containerRef.current ||
         element === (svgRef.current as unknown as HTMLElement);
       const isGridBg =
-        element.classList?.contains?.(styles.starfield) ||
+        element.classList?.contains?.(styles['starfield']) ||
         element.tagName === "CANVAS";
       const isInsideInteractive = element.closest?.(
         "[data-workflow-node], [data-workflow-connection]",
@@ -862,7 +862,7 @@ export default function WorkflowCanvas({
           strokeWidth={isActive ? 3 : 2}
           fill="none"
           strokeOpacity={isActive ? 1 : 0.7}
-          className={`${styles['connection-line']}${isActive ? ` ${styles.prismLine}` : ""}`}
+          className={styles['connection-line']}
         />
         {!readOnly && (
           <foreignObject
@@ -931,11 +931,11 @@ export default function WorkflowCanvas({
   return (
     <div
       ref={containerRef}
-      className={`${styles.canvas}${isPanning ? ` ${styles.panning}` : ""}`}
+      className={`${styles['canvas']}${isPanning ? ` ${styles['panning']}` : ""}`}
       onMouseDown={handleCanvasMouseDown}
     >
       <StarfieldComponent
-        className={styles.starfield}
+        className={styles['starfield']}
         panX={pan.x}
         panY={pan.y}
       />
@@ -951,7 +951,7 @@ export default function WorkflowCanvas({
         </div>
       )}
 
-      <svg ref={svgRef} className={styles.svg} style={{ overflow: "visible" }}>
+      <svg ref={svgRef} className={styles['svg']} style={{ overflow: "visible" }}>
         <defs>
           <linearGradient
             id="prism-gradient"
@@ -1061,7 +1061,7 @@ export default function WorkflowCanvas({
       )}
 
       {nodes.length > 0 && !readOnly && (
-        <div className={styles.instructions}>
+        <div className={styles['instructions']}>
           Click an <strong>output port</strong> then an{" "}
           <strong>input port</strong> of the same type to connect
         </div>

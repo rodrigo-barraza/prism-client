@@ -288,7 +288,7 @@ const FileTab = memo(function FileTab({
   return (
     <button
       type="button"
-      className={`${styles.tab} ${isActive ? styles['tab-active'] : ""}`}
+      className={`${styles['tab']} ${isActive ? styles['tab-active'] : ""}`}
       onClick={() => onSelect(file.id)}
       title={file.path}
     >
@@ -776,7 +776,7 @@ export default function FileViewerPanelComponent({
 
   return (
     <div
-      className={`${styles.container} ${isCollapsed ? styles['container-collapsed'] : ""}`}
+      className={`${styles['container']} ${isCollapsed ? styles['container-collapsed'] : ""}`}
       style={
         isCollapsed
           ? undefined
@@ -848,7 +848,7 @@ export default function FileViewerPanelComponent({
       <div className={styles['content-area']}>
         {/* Breadcrumb path */}
         {activeFile && (
-          <div className={styles.breadcrumb}>
+          <div className={styles['breadcrumb']}>
             {getPathSegments(activeFile.path).map((seg, i, array) => (
               <span key={i}>
                 {i > 0 && (
@@ -878,7 +878,7 @@ export default function FileViewerPanelComponent({
 
         {/* Error state */}
         {cached?.error && !cached?.content && !cached?.isBinary && (
-          <div className={styles.error}>{cached.error}</div>
+          <div className={styles['error']}>{cached.error}</div>
         )}
 
         {/* Binary media viewer — image / audio / video / PDF */}

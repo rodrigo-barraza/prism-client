@@ -15,6 +15,34 @@ import {
 } from "@rodrigo-barraza/components-library";
 import styles from "./UserQuestionCardComponent.module.css";
 
+interface QuestionOption {
+  label: string;
+  preview?: string | null;
+}
+
+interface QuestionAnswerData {
+  answer: string | string[];
+  annotations?: string;
+}
+
+interface NormalizedQuestion {
+  question: string;
+  header?: string | null;
+  options: QuestionOption[];
+  multiSelect?: boolean;
+}
+
+interface QuestionBlockProps {
+  _index?: number;
+  question: string;
+  header?: string | null;
+  options?: QuestionOption[];
+  multiSelect?: boolean;
+  isPending: boolean;
+  onAnswer?: (answerData: QuestionAnswerData) => void;
+  answeredWith?: string | string[] | null;
+}
+
 /**
  * Individual question sub-card — handles single or multi-select options,
  * optional preview pane, free-text input, and annotations.
@@ -28,8 +56,8 @@ function QuestionBlock({
   isPending,
   onAnswer,
   answeredWith = null,
-}: any) {
-  const [selected, setSelected] = useState<any>(multiSelect ? [] : null);
+}: QuestionBlockProps) {
+  const [selected, setSelected] = useState<string | string[] | null>(multiSelect ? [] : null);
   const [freeText, setFreeText] = useState("");
   const [annotations, setAnnotations] = useState("");
   const [showAnnotations, setShowAnnotations] = useState(false);
@@ -43,13 +71,14 @@ function QuestionBlock({
     }
   }, [isPending, options.length]);
 
-  const handleOptionClick = (label: any) => {
+  const handleOptionClick = (label: string) => {
     if (multiSelect) {
-      setSelected((prev: any) =>
-        prev.includes(label)
-          ? prev.filter((l: any) => l !== label)
-          : [...prev, label],
-      );
+      setSelected((previous) => {
+        const previousArray = Array.isArray(previous) ? previous : [];
+        return previousArray.includes(label)
+          ? previousArray.filter((selectedLabel: string) => selectedLabel !== label)
+          : [...previousArray, label];
+      });
     } else {
       setSelected(label);
       // In single-select with no annotation needed, auto-submit on click
@@ -60,10 +89,10 @@ function QuestionBlock({
   };
 
   const handleSubmit = () => {
-    let answer;
-    if (multiSelect && selected && selected.length > 0) {
+    let answer: string | string[] | undefined;
+    if (multiSelect && Array.isArray(selected) && selected.length > 0) {
       answer = selected;
-    } else if (!multiSelect && selected) {
+    } else if (!multiSelect && selected && typeof selected === "string") {
       answer = selected;
     } else if (freeText.trim()) {
       answer = freeText.trim();
@@ -98,29 +127,29 @@ function QuestionBlock({
           className={`${styles['options-row']} ${activePreview ? styles['with-preview'] : ""}`}
         >
           <div className={styles['options-list']}>
-            {options.map((opt: any, i: number) => {
+            {options.map((option: QuestionOption, optionIndex: number) => {
               const isSelected = multiSelect
-                ? selected?.includes(opt.label)
-                : selected === opt.label;
-              const isFocused = previewIdx === i;
+                ? Array.isArray(selected) && selected.includes(option.label)
+                : selected === option.label;
+              const isFocused = previewIdx === optionIndex;
 
               return (
                 <button
-                  key={i}
+                  key={optionIndex}
                   className={`${styles['option-button']} ${isSelected ? styles['option-selected'] : ""} ${isFocused ? styles['option-focused'] : ""}`}
-                  onClick={() => handleOptionClick(opt.label)}
-                  onMouseEnter={() => (opt.preview ? setPreviewIdx(i) : null)}
+                  onClick={() => handleOptionClick(option.label)}
+                  onMouseEnter={() => (option.preview ? setPreviewIdx(optionIndex) : null)}
                   onMouseLeave={() => setPreviewIdx(null)}
                 >
                   {multiSelect && (
                     <span
-                      className={`${styles.checkbox} ${isSelected ? styles['checkbox-checked'] : ""}`}
+                      className={`${styles['checkbox']} ${isSelected ? styles['checkbox-checked'] : ""}`}
                     >
                       {isSelected && <Check size={10} />}
                     </span>
                   )}
-                  <span className={styles['option-label']}>{opt.label}</span>
-                  {opt.preview && (
+                  <span className={styles['option-label']}>{option.label}</span>
+                  {option.preview && (
                     <ChevronRight size={12} className={styles['preview-hint']} />
                   )}
                 </button>
@@ -168,7 +197,7 @@ function QuestionBlock({
             disabled={
               !freeText.trim() &&
               !selected &&
-              !(multiSelect && selected && selected.length > 0)
+              !(multiSelect && Array.isArray(selected) && selected.length > 0)
             }
           >
             <Send size={14} />
@@ -205,6 +234,16 @@ function QuestionBlock({
   );
 }
 
+interface UserQuestionCardComponentProps {
+  questions?: NormalizedQuestion[];
+  context?: string | null;
+  onAnswer?: (answers: QuestionAnswerData[]) => void;
+  isPending?: boolean;
+  answeredWith?: Array<QuestionAnswerData | string> | null;
+  question?: string;
+  choices?: string[];
+}
+
 /**
  * Inline card for agent-initiated user questions.
  * Supports multi-question batching, header chips, multi-select,
@@ -219,16 +258,16 @@ export default function UserQuestionCardComponent({
   // ── Backward compat (single question) ─────
   question,
   choices = [],
-}: any) {
+}: UserQuestionCardComponentProps) {
   // Normalize: single question props → questions array
-  const normalizedQuestions = useMemo(() => {
+  const normalizedQuestions = useMemo((): NormalizedQuestion[] => {
     if (questions.length > 0) return questions;
     if (question) {
       return [
         {
           question,
           header: null,
-          options: choices.map((c: any) => ({ label: c, preview: null })),
+          options: choices.map((choice: string) => ({ label: choice, preview: null })),
           multiSelect: false,
         },
       ];
@@ -237,17 +276,17 @@ export default function UserQuestionCardComponent({
   }, [questions, question, choices]);
 
   // Track answers per question index
-  const [collectedAnswers, setCollectedAnswers] = useState<any>({});
+  const [collectedAnswers, setCollectedAnswers] = useState<Record<number, QuestionAnswerData>>({});
   const isMultiQuestion = normalizedQuestions.length > 1;
   const allAnswered = isMultiQuestion
     ? Object.keys(collectedAnswers).length === normalizedQuestions.length
     : false;
 
   const handleQuestionAnswer = useCallback(
-    (index: any, answerData: any) => {
+    (index: number, answerData: QuestionAnswerData) => {
       if (isMultiQuestion) {
         // Collect answers for batch submission
-        setCollectedAnswers((prev: any) => ({ ...prev, [index]: answerData }));
+        setCollectedAnswers((previous: Record<number, QuestionAnswerData>) => ({ ...previous, [index]: answerData }));
       } else {
         // Single question — submit immediately
         onAnswer?.([answerData]);
@@ -259,7 +298,7 @@ export default function UserQuestionCardComponent({
   const handleSubmitAll = useCallback(() => {
     if (!allAnswered) return;
     const orderedAnswers = normalizedQuestions.map(
-      (_: any, i: number) => (collectedAnswers as any)[i],
+      (_: NormalizedQuestion, questionIndex: number) => collectedAnswers[questionIndex],
     );
     onAnswer?.(orderedAnswers);
   }, [allAnswered, normalizedQuestions, collectedAnswers, onAnswer]);
@@ -267,10 +306,10 @@ export default function UserQuestionCardComponent({
   if (normalizedQuestions.length === 0) return null;
 
   return (
-    <div className={`${styles.card} ${!isPending ? styles.resolved : ""}`}>
-      <div className={styles.header}>
-        <MessageCircleQuestion size={16} className={styles.icon} />
-        <span className={styles.label}>
+    <div className={`${styles['card']} ${!isPending ? styles['resolved'] : ""}`}>
+      <div className={styles['header']}>
+        <MessageCircleQuestion size={16} className={styles['icon']} />
+        <span className={styles['label']}>
           Agent Question{normalizedQuestions.length > 1 ? "s" : ""}
         </span>
         {normalizedQuestions.length > 1 && (
@@ -282,29 +321,34 @@ export default function UserQuestionCardComponent({
 
       {/* Context block */}
       {context && (
-        <div className={styles.context}>
+        <div className={styles['context']}>
           <pre className={styles['context-pre']}>{context}</pre>
         </div>
       )}
 
       {/* Questions */}
-      {normalizedQuestions.map((q: any, i: number) => (
-        <QuestionBlock
-          key={i}
-          index={i}
-          question={q.question}
-          header={q.header}
-          options={q.options || []}
-          multiSelect={q.multiSelect || false}
-          isPending={isPending && !(collectedAnswers as Record<string, any>)[i]}
-          onAnswer={(answerData: any) => handleQuestionAnswer(i, answerData)}
-          answeredWith={
-            !isPending
-              ? (answeredWith as any)?.[i]?.answer || (answeredWith as any)?.[i]
-              : (collectedAnswers as Record<string, any>)[i]?.answer || null
-          }
-        />
-      ))}
+      {normalizedQuestions.map((normalizedQuestion: NormalizedQuestion, questionIndex: number) => {
+        const answeredItem = answeredWith?.[questionIndex];
+        const resolvedAnswer = !isPending
+          ? (typeof answeredItem === "object" && answeredItem !== null && "answer" in answeredItem
+            ? (answeredItem as QuestionAnswerData).answer as string | string[]
+            : answeredItem as string | null)
+          : (collectedAnswers[questionIndex]?.answer as string | string[] || null);
+
+        return (
+          <QuestionBlock
+            key={questionIndex}
+            _index={questionIndex}
+            question={normalizedQuestion.question}
+            header={normalizedQuestion.header}
+            options={normalizedQuestion.options || []}
+            multiSelect={normalizedQuestion.multiSelect || false}
+            isPending={isPending && !collectedAnswers[questionIndex]}
+            onAnswer={(answerData: QuestionAnswerData) => handleQuestionAnswer(questionIndex, answerData)}
+            answeredWith={resolvedAnswer}
+          />
+        );
+      })}
 
       {/* Multi-question batch submit */}
       {isPending && isMultiQuestion && (
@@ -317,7 +361,7 @@ export default function UserQuestionCardComponent({
             <Send size={14} />
             Submit All Answers
             {!allAnswered && (
-              <span className={styles.remaining}>
+              <span className={styles['remaining']}>
                 (
                 {normalizedQuestions.length -
                   Object.keys(collectedAnswers).length}{" "}

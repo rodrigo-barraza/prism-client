@@ -212,7 +212,7 @@ function NodePorts({
                   : color
               }
               strokeWidth={2}
-              className={`${styles.port} ${isCompatible ? styles['port-compatible'] : ""}`}
+              className={`${styles['port']} ${isCompatible ? styles['port-compatible'] : ""}`}
               data-node-id={node.id}
               data-port-type="input"
               data-port-modality={portId}
@@ -292,7 +292,7 @@ function NodePorts({
               }
               stroke={isNodeRunning ? nodeStatusGradient : color}
               strokeWidth={2}
-              className={`${styles.port} ${styles['port-output']}`}
+              className={`${styles['port']} ${styles['port-output']}`}
               data-node-id={node.id}
               data-port-type="output"
               data-port-modality={modality}

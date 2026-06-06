@@ -361,7 +361,7 @@ export default function CustomAgentsPanel({
           </button>
         </div>
 
-        <div className={styles.form}>
+        <div className={styles['form']}>
           {/* Name + Project */}
           <div className={styles['form-row']}>
             <div className={styles['form-group']} style={{ flex: 2 }}>
@@ -374,7 +374,7 @@ export default function CustomAgentsPanel({
                 ) => updateField("name", e.target.value)}
                 placeholder="My Agent"
               />
-              <span className={styles.hint}>
+              <span className={styles['hint']}>
                 Display name — will generate ID: CUSTOM_
                 {editingAgent.name
                   ? editingAgent.name
@@ -394,7 +394,7 @@ export default function CustomAgentsPanel({
                 ) => updateField("project", e.target.value)}
                 placeholder="coding"
               />
-              <span className={styles.hint}>Project scope for sessions</span>
+              <span className={styles['hint']}>Project scope for sessions</span>
             </div>
           </div>
 
@@ -471,7 +471,7 @@ export default function CustomAgentsPanel({
                 </button>
               ))}
             </div>
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               {editingAgent.avatar
                 ? editingAgent.avatar.startsWith("data:")
                   ? "Custom avatar uploaded"
@@ -515,7 +515,7 @@ export default function CustomAgentsPanel({
                 />
               ))}
             </div>
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               {editingAgent.color ? (
                 <>
                   Selected:{" "}
@@ -549,7 +549,7 @@ export default function CustomAgentsPanel({
               ) => updateField("backgroundImage", e.target.value)}
               placeholder="https://example.com/background.jpg"
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               URL to a background image displayed behind the chat messages — use
               a subtle, dark image for best results
             </span>
@@ -587,7 +587,7 @@ export default function CustomAgentsPanel({
               placeholder="You are a senior backend engineer specializing in..."
               minRows={5}
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               Core personality and role — injected at the top of the system
               prompt
             </span>
@@ -604,7 +604,7 @@ export default function CustomAgentsPanel({
               placeholder={"## Guidelines\n- Always explain your reasoning...\n- Use bullet points for clarity..."}
               minRows={4}
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               Always injected into the system prompt — behavioral instructions
               for how the agent should respond
             </span>
@@ -621,7 +621,7 @@ export default function CustomAgentsPanel({
               placeholder={"# Tool Usage\n- Use read_file before editing...\n- Always run tests after changes..."}
               minRows={4}
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               Instructions for how the agent should use its tools
             </span>
           </div>
@@ -694,7 +694,7 @@ export default function CustomAgentsPanel({
               <Shield size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
               Tool Policies
             </label>
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               Define allow/deny/ask rules for specific tools. Policies are
               evaluated before the default approval tier system — deny rules
               take highest priority.
@@ -834,7 +834,7 @@ export default function CustomAgentsPanel({
   // -- Agent list view ------------------------------------------
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {agents.length > 0 && (
         <div className={styles['panel-header']}>
           <ButtonComponent

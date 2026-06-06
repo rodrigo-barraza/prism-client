@@ -409,7 +409,7 @@ export default function DashboardPage() {
       : 0;
 
   return (
-    <div className={styles.page}>
+    <div className={styles['page']}>
       <AdminFiltersCardComponent />
       <ErrorMessage message={error} />
       {/* -- Resource Navigation -- */}
@@ -419,7 +419,7 @@ export default function DashboardPage() {
           icon={Box}
           count={loading ? "—" : formatNumber(projectStats.length)}
           label="Projects"
-          onClick={(e: React.MouseEvent) => {
+          onClick={(e: React.SyntheticEvent) => {
             e.preventDefault();
             document
               .getElementById("projects-table")
@@ -443,7 +443,7 @@ export default function DashboardPage() {
           icon={Bot}
           count={loading ? "—" : formatNumber(agentStats.length)}
           label="Agents"
-          onClick={(e: React.MouseEvent) => {
+          onClick={(e: React.SyntheticEvent) => {
             e.preventDefault();
             document
               .getElementById("agents-table")

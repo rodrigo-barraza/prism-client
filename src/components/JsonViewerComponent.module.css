@@ -119,7 +119,7 @@
   padding: 0 4px;
 }
 
-.value_null {
+.value-null {
   color: var(--text-muted);
   font-style: italic;
 }

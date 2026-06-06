@@ -608,7 +608,7 @@ export default function ModelPickerPopoverComponent({
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className={`${styles.popover} ${flipped ? styles['popover-flipped'] : ""}`}
+            className={`${styles['popover']} ${flipped ? styles['popover-flipped'] : ""}`}
             style={popoverStyle}
             data-model-picker-popover
           >

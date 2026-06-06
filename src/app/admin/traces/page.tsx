@@ -230,7 +230,7 @@ export default function TracesPage() {
 
   if (loading) {
     return (
-      <div className={styles.page}>
+      <div className={styles['page']}>
         <div className={styles['is-loading-state']}>
           <PanelLoadingSpinner size="large" />
         </div>
@@ -240,8 +240,8 @@ export default function TracesPage() {
 
   if (traces.length === 0) {
     return (
-      <div className={styles.page}>
-        <div className={styles.empty}>
+      <div className={styles['page']}>
+        <div className={styles['empty']}>
           <FolderOpen size={36} style={{ opacity: 0.3 }} />
           <div>No traces yet</div>
           <div style={{ fontSize: 12 }}>
@@ -253,7 +253,7 @@ export default function TracesPage() {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={styles['page']}>
       <TracesTableComponent
         traces={traces}
         emptyText="No traces"

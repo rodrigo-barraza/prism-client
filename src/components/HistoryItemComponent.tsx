@@ -158,7 +158,7 @@ export default function HistoryItemComponent({
 
   return (
     <div
-      className={`${styles.item} ${isActive ? styles['is-active-state'] : ""} ${className || ""}`}
+      className={`${styles['item']} ${isActive ? styles['is-active-state'] : ""} ${className || ""}`}
       {...SoundService.interactive(() => onClick?.(item))}
       {...(dataPanelClose ? { "data-panel-close-trigger": true } : {})}
       onContextMenu={
@@ -166,7 +166,7 @@ export default function HistoryItemComponent({
           ? (e: React.MouseEvent) => {
               // Only show custom context on right-click of the main item area
               // (not on action buttons which have their own handlers)
-              if ((e.target as HTMLElement).closest?.(`.${styles.actions}`))
+              if ((e.target as HTMLElement).closest?.(`.${styles['actions']}`))
                 return;
               e.preventDefault();
               onOpenInNewTab(item);
@@ -186,7 +186,7 @@ export default function HistoryItemComponent({
           <Star size={12} fill={isFavorite ? "currentColor" : "none"} />
         </button>
       )}
-      <div className={styles.content}>
+      <div className={styles['content']}>
         {/* Row 1: time + tags (left) · agentBadge + cost (right) */}
         <div className={styles['top-row']}>
           <div className={styles['top-left']}>
@@ -198,7 +198,7 @@ export default function HistoryItemComponent({
                 <span className={styles['username-tag']}>{item.username}</span>
               )}
             {item.tags?.map((tag: HistoryItemTag) => (
-              <span key={tag.label} className={styles.tag} style={tag.style}>
+              <span key={tag.label} className={styles['tag']} style={tag.style}>
                 {tag.label}
               </span>
             ))}
@@ -238,7 +238,7 @@ export default function HistoryItemComponent({
         </div>
 
         {/* Row 2: title */}
-        <div className={styles.title}>
+        <div className={styles['title']}>
           {isGenerating && <span className={styles['generating-dot']} />}
           {item.title || "Untitled"}
           {isNew && <span className={styles['new-badge']}>NEW</span>}
@@ -297,7 +297,7 @@ export default function HistoryItemComponent({
         {children}
       </div>
       {/* Actions */}
-      <div className={styles.actions}>
+      <div className={styles['actions']}>
         {onDownload && (
           <IconButtonComponent
             icon={<Download size={12} />}

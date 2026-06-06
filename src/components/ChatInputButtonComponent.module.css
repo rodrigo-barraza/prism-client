@@ -95,7 +95,7 @@
 }
 
 .rotating-icon-track.rotating-icon-slide {
-  animation: iconScrollUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: icon-scroll-up 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .rotating-icon-item {

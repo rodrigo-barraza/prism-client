@@ -56,25 +56,27 @@ const TABS = [
 /**
  * Extracts the raw numeric value for a metric from a stat record.
  */
-function extractValue(record: any, metric: string): number {
+type IrisStatRecord = IrisProjectStat | IrisModelStat | IrisProviderStat;
+
+function extractValue(record: Record<string, unknown>, metric: string): number {
   if (!record) return 0;
   switch (metric) {
     case "requests":
-      return record.totalRequests || 0;
+      return (record.totalRequests as number) || 0;
     case "totalTokens":
-      return (record.totalInputTokens || 0) + (record.totalOutputTokens || 0);
+      return ((record.totalInputTokens as number) || 0) + ((record.totalOutputTokens as number) || 0);
     case "tokensIn":
-      return record.totalInputTokens || 0;
+      return (record.totalInputTokens as number) || 0;
     case "tokensOut":
-      return record.totalOutputTokens || 0;
+      return (record.totalOutputTokens as number) || 0;
     case "avgTps":
-      return record.avgTokensPerSec || 0;
+      return (record.avgTokensPerSec as number) || 0;
     case "cost":
-      return record.totalCost || 0;
+      return (record.totalCost as number) || 0;
     case "avgLatency":
-      return record.avgLatency || 0;
+      return (record.avgLatency as number) || 0;
     case "conversations":
-      return record.conversationCount || 0;
+      return (record.conversationCount as number) || 0;
     default:
       return 0;
   }
@@ -132,8 +134,8 @@ function buildEntries(
   providerStats: IrisProviderStat[],
   modelStats: IrisModelStat[],
 ): { name: string; value: number }[] {
-  let source: any[];
-  let nameKey: string | ((r: any) => string);
+  let source: IrisStatRecord[];
+  let nameKey: string | ((record: IrisStatRecord) => string);
 
   switch (tab) {
     case "project":
@@ -146,18 +148,19 @@ function buildEntries(
       break;
     case "model":
       source = modelStats;
-      nameKey = (r) => (r.model || "").split("/").pop() || "unknown";
+      nameKey = (record) => ((record as IrisModelStat).model || "").split("/").pop() || "unknown";
       break;
     default:
       return [];
   }
 
   const entries = source.map((record) => {
+    const recordAsMap = record as unknown as Record<string, unknown>;
     const name =
       typeof nameKey === "function"
         ? nameKey(record)
-        : record[nameKey] || "unknown";
-    const value = extractValue(record, metric);
+        : (recordAsMap[nameKey as string] as string) || "unknown";
+    const value = extractValue(recordAsMap, metric);
     return { name, value };
   });
 
@@ -188,7 +191,20 @@ function buildStatusEntries(
 
 /* -- Active sector renderer with glow and center text -- */
 
-function ActiveSectorRenderer(props: any) {
+interface ActiveSectorRendererProps {
+  cx: number;
+  cy: number;
+  innerRadius: number;
+  outerRadius: number;
+  startAngle: number;
+  endAngle: number;
+  fill: string;
+  payload: { name: string; value: number };
+  percent: number;
+  metric: string;
+}
+
+function ActiveSectorRenderer(props: ActiveSectorRendererProps) {
   const {
     cx,
     cy,
@@ -254,7 +270,7 @@ interface DistributionChartProps {
   title?: string;
 }
 
-const SafePie = Pie as any;
+const SafePie = Pie as React.ComponentType<Record<string, unknown>>;
 
 export default function DistributionChartComponent({
   projectStats = [],
@@ -321,10 +337,10 @@ export default function DistributionChartComponent({
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {/* -- Metric selector + title -- */}
       <div className={styles['metric-row']}>
-        {title && <h2 className={styles.title}>{title}</h2>}
+        {title && <h2 className={styles['title']}>{title}</h2>}
         <SelectComponent
           value={activeMetric}
           options={METRICS}
@@ -333,7 +349,7 @@ export default function DistributionChartComponent({
       </div>
 
       {/* -- Tab bar -- */}
-      <div className={styles.header}>
+      <div className={styles['header']}>
         {!isStatus && (
           <ChartTabsComponent
             tabs={TABS}
@@ -352,7 +368,7 @@ export default function DistributionChartComponent({
       </div>
 
       {/* -- Chart + Legend -- */}
-      <div className={styles.body}>
+      <div className={styles['body']}>
         {pieData.length > 0 ? (
           <>
             <div className={styles['chart-area']}>
@@ -367,10 +383,10 @@ export default function DistributionChartComponent({
                     paddingAngle={2}
                     dataKey="value"
                     activeIndex={activeIndex !== null ? activeIndex : undefined}
-                    activeShape={(props: any) => (
-                      <ActiveSectorRenderer {...props} metric={activeMetric} />
+                    activeShape={(sectorProps: Record<string, unknown>) => (
+                      <ActiveSectorRenderer {...sectorProps as unknown as ActiveSectorRendererProps} metric={activeMetric} />
                     )}
-                    onMouseEnter={(_: any, index: number) =>
+                    onMouseEnter={(_: unknown, index: number) =>
                       setActiveIndex(index)
                     }
                     onMouseLeave={() => setActiveIndex(null)}
@@ -393,7 +409,7 @@ export default function DistributionChartComponent({
               </ResponsiveContainer>
             </div>
 
-            <div className={styles.legend}>
+            <div className={styles['legend']}>
               {entries.map(({ name, value }, i: number) => {
                 const percentage =
                   total > 0 ? ((value / total) * 100).toFixed(1) : 0;
@@ -425,7 +441,7 @@ export default function DistributionChartComponent({
             </div>
           </>
         ) : (
-          <div className={styles.empty}>
+          <div className={styles['empty']}>
             {loading ? "Loading..." : "No data yet"}
           </div>
         )}

@@ -831,7 +831,7 @@ export default function ToolsPageComponent() {
 
     setControls(
       <button
-        className={`${styles['refresh-button']} ${refreshing ? styles.spinning : ""}`}
+        className={`${styles['refresh-button']} ${refreshing ? styles['spinning'] : ""}`}
         onClick={handleRefresh}
         disabled={refreshing}
         title="Re-fetch schemas from tools-api"
@@ -1135,7 +1135,7 @@ export default function ToolsPageComponent() {
         title="Tools"
         hideHeader={isAdministratorMode}
       >
-        <div className={styles.container}>
+        <div className={styles['container']}>
           <div className={styles['is-loading-state']}>
             <PanelLoadingSpinner size="large" />
             <span className={styles['loading-text']}>Loading tools from Prism…</span>
@@ -1160,7 +1160,7 @@ export default function ToolsPageComponent() {
       headerControls={
         isAdministratorMode ? null : (
           <button
-            className={`${styles['refresh-button']} ${refreshing ? styles.spinning : ""}`}
+            className={`${styles['refresh-button']} ${refreshing ? styles['spinning'] : ""}`}
             onClick={handleRefresh}
             disabled={refreshing}
             title="Re-fetch schemas from tools-api"
@@ -1170,14 +1170,14 @@ export default function ToolsPageComponent() {
         )
       }
     >
-      <div className={styles.container} ref={scrollContainerRef}>
-        <div className={styles.header}>
+      <div className={styles['container']} ref={scrollContainerRef}>
+        <div className={styles['header']}>
           <div className={styles['header-left']}>
-            <h2 className={styles.title}>
+            <h2 className={styles['title']}>
               <Wrench className={styles['title-icon']} size={20} />
               Tools
             </h2>
-            <p className={styles.subtitle}>
+            <p className={styles['subtitle']}>
               All available tool schemas from the Tools API — used for agentic function calling.
             </p>
           </div>
@@ -1199,7 +1199,7 @@ export default function ToolsPageComponent() {
 
         {/* Error */}
         {error && (
-          <div className={styles.error}>
+          <div className={styles['error']}>
             <AlertCircle />
             {error}
           </div>

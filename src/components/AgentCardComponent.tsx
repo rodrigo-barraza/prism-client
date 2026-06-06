@@ -79,13 +79,13 @@ export default function AgentCardComponent({
   };
 
   return (
-    <div className={styles.card}>
-      <div className={styles.header}>
+    <div className={styles['card']}>
+      <div className={styles['header']}>
         <Bot size={14} className={styles['bot-icon']} />
-        <span className={styles.name} title={`Agent: ${agent.name}`}>
+        <span className={styles['name']} title={`Agent: ${agent.name}`}>
           Agent: {agent.name}
         </span>
-        <span className={styles.badge}>Agent</span>
+        <span className={styles['badge']}>Agent</span>
         <button
           className={styles['remove-button']}
           onClick={(e: React.MouseEvent) => {
@@ -105,9 +105,9 @@ export default function AgentCardComponent({
         onSelectModel={handlePickerSelect}
       />
 
-      <div className={styles.footer}>
-        <span className={styles.description}>{agent.description}</span>
-        <div className={styles.toggles}>
+      <div className={styles['footer']}>
+        <span className={styles['description']}>{agent.description}</span>
+        <div className={styles['toggles']}>
           {supportsThinking && (
             <ToggleButtonComponent
               icon={<Brain size={10} />}

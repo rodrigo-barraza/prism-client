@@ -326,7 +326,7 @@ export default function ToolRequestsPage() {
   }, [setTitleBadge, total]);
 
   return (
-    <div className={styles.page}>
+    <div className={styles['page']}>
       {/* Filters */}
       <FilterBarComponent>
         <FilterGroupComponent label="Tool">

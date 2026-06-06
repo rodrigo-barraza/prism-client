@@ -6,24 +6,31 @@ import ToggleButtonComponent from "./ToggleButtonComponent";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ProviderLogo from "./ProviderLogosComponent";
 import styles from "./ModelCardComponent.module.css";
+import type { PrismConfig } from "../types/types";
 
-/**
- * ModelCardComponent — a card for a single model instance in the benchmark sidebar.
- *
- * Uses ModelPickerPopoverComponent for inline model switching.
- *
- * Props:
- *   model            — { instanceId, provider, name, label, display_name, thinking }
- *   dupeCount        — number — how many instances of this same model exist
- *   isThinking       — boolean — whether thinking is enabled for this instance
- *   supportsThinking — boolean — whether the backing model supports thinking
- *   isTools          — boolean — whether tools are enabled for this instance
- *   config           — Prism config object (used by ModelPickerPopoverComponent)
- *   onRemove         — callback(instanceId)
- *   onChangeModel    — callback(instanceId, provider, modelName)
- *   onToggleThinking — callback(instanceId)
- *   onToggleTools    — callback(instanceId)
- */
+interface BenchmarkModelInstance {
+  instanceId: string;
+  provider: string;
+  name: string;
+  key: string;
+  label?: string;
+  display_name?: string;
+  thinking?: boolean;
+}
+
+interface ModelCardProps {
+  model: BenchmarkModelInstance;
+  dupeCount?: number;
+  isThinking?: boolean;
+  supportsThinking?: boolean;
+  isTools?: boolean;
+  config?: PrismConfig | null;
+  onRemove?: (instanceId: string) => void;
+  onChangeModel?: (instanceId: string, provider: string, modelName: string) => void;
+  onToggleThinking?: (instanceId: string) => void;
+  onToggleTools?: (instanceId: string) => void;
+}
+
 export default function ModelCardComponent({
   model,
   dupeCount = 1,
@@ -35,8 +42,7 @@ export default function ModelCardComponent({
   onChangeModel,
   onToggleThinking,
   onToggleTools,
-}: any) {
-  // Build settings-like object for the picker trigger display
+}: ModelCardProps) {
   const pickerSettings = useMemo(
     () => ({
       provider: model.provider || "",
@@ -45,15 +51,15 @@ export default function ModelCardComponent({
     [model.provider, model.name],
   );
 
-  const handlePickerSelect = (provider: any, name: any) => {
+  const handlePickerSelect = (provider: string, name: string) => {
     onChangeModel?.(model.instanceId, provider, name);
   };
 
   return (
-    <div className={styles.card}>
-      <div className={styles.header}>
+    <div className={styles['card']}>
+      <div className={styles['header']}>
         <ProviderLogo provider={model.provider} size={14} />
-        <span className={styles.name} title={`Model: ${model.key}`}>
+        <span className={styles['name']} title={`Model: ${model.key}`}>
           Model: {model.key}
         </span>
         {dupeCount > 1 && (
@@ -79,13 +85,13 @@ export default function ModelCardComponent({
 
       {/* Model switcher — uses ModelPickerPopoverComponent trigger */}
       <ModelPickerPopoverComponent
-        config={config}
+        config={config ?? null}
         settings={pickerSettings}
         onSelectModel={handlePickerSelect}
       />
 
-      <div className={styles.footer}>
-        <div className={styles.toggles}>
+      <div className={styles['footer']}>
+        <div className={styles['toggles']}>
           <ToggleButtonComponent
             icon={<Wrench size={10} />}
             label="Tools"

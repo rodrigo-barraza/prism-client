@@ -183,7 +183,7 @@ export default function SkillsPanel({
     const isOverMax = contentLen > CONTENT_MAX_CHARS;
 
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <div className={styles['form-header']}>
           <h3>{isNew ? "New Skill" : "Edit Skill"}</h3>
           <button className={styles['cancel-button']} onClick={handleCancel}>
@@ -191,7 +191,7 @@ export default function SkillsPanel({
           </button>
         </div>
 
-        <div className={styles.form}>
+        <div className={styles['form']}>
           <div className={styles['form-group']}>
             <label>Skill Name</label>
             <InputComponent
@@ -213,7 +213,7 @@ export default function SkillsPanel({
               }
               placeholder="javascript-conventions"
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               kebab-case identifier for this skill
             </span>
           </div>
@@ -237,7 +237,7 @@ export default function SkillsPanel({
               }
               placeholder="Coding style rules and project conventions"
             />
-            <span className={styles.hint}>
+            <span className={styles['hint']}>
               Short summary shown in the skill list
             </span>
           </div>
@@ -294,7 +294,7 @@ export default function SkillsPanel({
   // -- List View ------------------------------------------------
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {skills.length > 0 && (
         <SearchInputComponent
           value={searchQuery}

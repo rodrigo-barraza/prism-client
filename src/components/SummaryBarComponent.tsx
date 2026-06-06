@@ -1,41 +1,43 @@
 "use client";
 
+import type { ReactNode } from "react";
 import styles from "./SummaryBarComponent.module.css";
 import costBadgeStyles from "./CostBadgeComponent.module.css";
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
 
-/**
- * SummaryBarComponent — A horizontal stats strip with stacked value/label pairs.
- *
- * Each item can be a simple value/label pair, or include an icon, color, or
- * a progress bar visualization.
- *
- *
- * @property {string|number} value    — Display value
- * @property {string}        [label]  — Label text below the value
- * @property {string}        [color]  — CSS color for the value
- * @property {React.ReactNode} [icon] — Optional icon element before the value
- * @property {number}        [bar]       — If set, renders a progress bar (0–100 percentage)
- * @property {number}        [barPassed] — Actual passed count for the tooltip
- * @property {number}        [barTotal]  — Actual total count for the tooltip
- */
+interface SummaryBarItem {
+  value?: ReactNode;
+  label?: string;
+  color?: string;
+  icon?: ReactNode;
+  bar?: number;
+  barPassed?: number;
+  barTotal?: number;
+}
+
+interface SummaryBarProps {
+  items?: SummaryBarItem[];
+  live?: boolean;
+  className?: string;
+}
+
 export default function SummaryBarComponent({
   items,
   live = false,
   className,
-}: any) {
+}: SummaryBarProps) {
   if (!items || items.length === 0) return null;
 
-  const wrapperClass = [styles.bar, live ? styles.live : "", className || ""]
+  const wrapperClass = [styles['bar'], live ? styles['live'] : "", className || ""]
     .filter(Boolean)
     .join(" ");
 
   return (
     <div className={wrapperClass}>
-      {items.map((item: any, i: number) => (
-        <div key={i} className={styles.entry}>
-          {i > 0 && <div className={styles.divider} />}
-          <div className={styles.item}>
+      {items.map((item: SummaryBarItem, index: number) => (
+        <div key={index} className={styles['entry']}>
+          {index > 0 && <div className={styles['divider']} />}
+          <div className={styles['item']}>
             {item.bar != null ? (
               <>
                 <BenchmarkBarComponent
@@ -46,24 +48,24 @@ export default function SummaryBarComponent({
                   total={item.barTotal ?? 100}
                 />
                 {item.label && (
-                  <span className={styles.label}>{item.label}</span>
+                  <span className={styles['label']}>{item.label}</span>
                 )}
               </>
             ) : (
               <>
                 <div className={`${costBadgeStyles['badge']} ${styles['value-row']}`}>
                   {item.icon && (
-                    <span className={styles.icon}>{item.icon}</span>
+                    <span className={styles['icon']}>{item.icon}</span>
                   )}
                   <span
-                    className={styles.value}
+                    className={styles['value']}
                     style={item.color ? { color: item.color } : undefined}
                   >
                     {item.value}
                   </span>
                 </div>
                 {item.label && (
-                  <span className={styles.label}>{item.label}</span>
+                  <span className={styles['label']}>{item.label}</span>
                 )}
               </>
             )}

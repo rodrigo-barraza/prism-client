@@ -215,8 +215,7 @@
   color: var(--color-violet);
 }
 
-/* stylelint-disable-next-line selector-class-pattern */
-.triggerSession_threshold {
+.trigger-session-threshold {
   background: color-mix(in srgb, var(--color-warning) 12%, transparent);
   color: var(--color-warning);
 }

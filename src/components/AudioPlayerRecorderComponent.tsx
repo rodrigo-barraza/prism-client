@@ -471,7 +471,7 @@ export default function AudioPlayerRecorderComponent({
             >
               {isPlaying ? <Pause size={10} /> : <Play size={10} />}
             </button>
-            <span className={styles.timer}>
+            <span className={styles['timer']}>
               {formatTime(currentTime)}/{formatTime(duration)}
             </span>
             <button
@@ -529,7 +529,7 @@ export default function AudioPlayerRecorderComponent({
           />
         </div>
 
-        <span className={styles.timer}>
+        <span className={styles['timer']}>
           {formatTime(currentTime)}/{formatTime(duration)}
         </span>
 

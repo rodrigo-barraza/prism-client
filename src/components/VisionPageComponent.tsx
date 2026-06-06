@@ -19,7 +19,7 @@ import {
   Sparkles,
   Cpu,
 } from "lucide-react";
-import type { PrismConfig, ModelOption } from "../types/types";
+import type { PrismConfig, ModelOption, Message, ToolCallEvent } from "../types/types";
 import PrismService from "../services/PrismService";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ProviderLogo from "./ProviderLogosComponent";
@@ -75,7 +75,26 @@ export default function VisionPageComponent() {
   const [conversationId] = useState(
     () => "vision-agent-" + Math.random().toString(36).substring(2, 15),
   );
-  const [chatMessages, setChatMessages] = useState<any[]>([]);
+interface VisionToolCall {
+  id: string;
+  name: string;
+  args?: Record<string, unknown>;
+  status?: string;
+  result?: unknown;
+}
+
+interface VisionChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  thinking?: string;
+  images?: string[];
+  toolCalls?: VisionToolCall[];
+  timestamp: Date;
+  streaming?: boolean;
+}
+
+  const [chatMessages, setChatMessages] = useState<VisionChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [isAgentStreaming, setIsAgentStreaming] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
@@ -129,15 +148,18 @@ export default function VisionPageComponent() {
     try {
       const conversation = await PrismService.getConversation(conversationId);
       if (conversation?.messages) {
-        const formatted = conversation.messages.map((message: any) => ({
-          id: message.id || `msg-${Math.random()}`,
-          role: message.role,
-          content: message.content || "",
-          thinking: message.thinking || "",
-          images: message.images || [],
-          toolCalls: message.toolCalls || [],
-          timestamp: new Date(message.timestamp || Date.now()),
-        }));
+        const formatted: VisionChatMessage[] = conversation.messages.map((rawMessage: Message) => {
+          const message = rawMessage as unknown as Record<string, unknown>;
+          return {
+            id: (message.id as string) || `msg-${Math.random()}`,
+            role: rawMessage.role as "user" | "assistant",
+            content: rawMessage.content || "",
+            thinking: (message.thinking as string) || "",
+            images: (message.images as string[]) || [],
+            toolCalls: (message.toolCalls as VisionToolCall[]) || [],
+            timestamp: new Date((rawMessage.timestamp as string) || Date.now()),
+          };
+        });
         setChatMessages(formatted);
       }
     } catch (error) {
@@ -524,7 +546,7 @@ export default function VisionPageComponent() {
     setChatInput("");
     setIsAgentStreaming(true);
 
-    const userMessage = {
+    const userMessage: VisionChatMessage = {
       id: `message-${Date.now()}-user`,
       role: "user" as const,
       content: userText,
@@ -537,7 +559,7 @@ export default function VisionPageComponent() {
       role: "assistant" as const,
       content: "",
       thinking: "",
-      toolCalls: [] as any[],
+      toolCalls: [] as VisionToolCall[],
       timestamp: new Date(),
       streaming: true,
     };
@@ -550,7 +572,7 @@ export default function VisionPageComponent() {
       role: message.role,
       content: message.content || "",
       images: message.images || [],
-      toolCalls: (message.toolCalls || []).map((toolCall: any) => ({
+      toolCalls: (message.toolCalls || []).map((toolCall: VisionToolCall) => ({
         id: toolCall.id,
         name: toolCall.name,
         args: toolCall.args || {},
@@ -563,12 +585,12 @@ export default function VisionPageComponent() {
         {
           provider: settings.provider,
           model: settings.model,
-          messages: messagesPayload,
+          messages: messagesPayload as unknown as Message[],
           harness: "vision_language",
           conversationId,
           temperature: 0.5,
           maxTokens: 2048,
-        } as any,
+        } as unknown as Parameters<typeof PrismService.streamAgentText>[0],
         {
           onChunk: (content: string) => {
             setChatMessages((previousMessages) =>
@@ -588,17 +610,17 @@ export default function VisionPageComponent() {
               ),
             );
           },
-          onToolCall: (toolCall: any) => {
+          onToolCall: (toolCall: ToolCallEvent) => {
             setChatMessages((previousMessages) =>
               previousMessages.map((message) => {
                 if (message.id !== assistantMessageId) return message;
                 const existingToolCall = message.toolCalls?.find(
-                  (toolCallItem: any) => toolCallItem.id === toolCall.id,
+                  (toolCallItem: VisionToolCall) => toolCallItem.id === toolCall.id,
                 );
                 if (existingToolCall) {
                   return {
                     ...message,
-                    toolCalls: message.toolCalls.map((toolCallItem: any) =>
+                    toolCalls: message.toolCalls!.map((toolCallItem: VisionToolCall) =>
                       toolCallItem.id === toolCall.id ? { ...toolCallItem, ...toolCall } : toolCallItem,
                     ),
                   };
@@ -640,14 +662,14 @@ export default function VisionPageComponent() {
         },
       );
       abortRef.current = abort;
-    } catch (error: any) {
+    } catch (error: unknown) {
       setChatMessages((previousMessages) =>
         previousMessages.map((message) =>
           message.id === assistantMessageId
             ? {
                 ...message,
                 content:
-                  message.content + `\n\nError: ${error.message || error}`,
+                  message.content + `\n\nError: ${error instanceof Error ? error.message : String(error)}`,
                 streaming: false,
               }
             : message,
@@ -689,7 +711,7 @@ export default function VisionPageComponent() {
         navSidebar={<NavigationSidebarComponent mode="user" />}
         title="Vision"
         leftPanel={
-          <div className={styles.panel}>
+          <div className={styles['panel']}>
             <div className={styles['panel-header']}>
               <Video size={15} className={styles['panel-title-icon']} />
               <span className={styles['panel-title']}>Video Source</span>
@@ -830,7 +852,7 @@ export default function VisionPageComponent() {
         }
         leftTitle="Video Source"
       >
-        <div className={styles.panel}>
+        <div className={styles['panel']}>
           <div className={styles['panel-header']}>
             <Eye size={15} className={styles['panel-title-icon']} />
             <span className={styles['panel-title']}>Vision Center</span>
@@ -1126,7 +1148,7 @@ export default function VisionPageComponent() {
                             message.toolCalls.length > 0 && (
                               <div className={styles['chat-tool-calls']}>
                                 {message.toolCalls.map(
-                                  (toolCallItem: any, index: number) => (
+                                  (toolCallItem: VisionToolCall, index: number) => (
                                     <div
                                       key={index}
                                       className={styles['chat-tool-call-badge']}

@@ -129,7 +129,7 @@ export default function ToolCallBadgeComponent({
 
   const badge = (
     <span
-      className={`${styles.badge}${active ? ` ${styles['badge-active']}` : ""}`}
+      className={`${styles['badge']}${active ? ` ${styles['badge-active']}` : ""}`}
       style={{
         color,
         borderColor: `color-mix(in srgb, ${color} 20%, transparent)`,
@@ -137,9 +137,9 @@ export default function ToolCallBadgeComponent({
       }}
     >
       <Icon size={size} />
-      <span className={styles.label}>{displayName}</span>
+      <span className={styles['label']}>{displayName}</span>
       {count != null && count > 1 && (
-        <span className={styles.count}>×{count}</span>
+        <span className={styles['count']}>×{count}</span>
       )}
     </span>
   );

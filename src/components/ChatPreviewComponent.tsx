@@ -85,7 +85,7 @@ export default function ChatPreviewComponent({
           </div>
         )}
         <div
-          className={`${styles['chat-preview']} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}
+          className={`${styles['chat-preview']} ${mini ? styles['mini'] : ""}${className ? ` ${className}` : ""}`}
           style={maxHeight ? { maxHeight } : undefined}
         >
           <MessageList
@@ -107,7 +107,7 @@ export default function ChatPreviewComponent({
 
   return (
     <div
-      className={`${styles['prompt-preview']} ${mini ? styles.mini : ""}${className ? ` ${className}` : ""}`}
+      className={`${styles['prompt-preview']} ${mini ? styles['mini'] : ""}${className ? ` ${className}` : ""}`}
     >
       {hasSystem && (
         <div className={`${styles['prompt-block']} ${styles['prompt-block-system']}`}>

@@ -56,19 +56,19 @@ export default function WorkerNotificationComponent({
     : null;
 
   return (
-    <div className={styles.root}>
-      <div className={styles.avatar} style={{ color: statusColor }}>
+    <div className={styles['root']}>
+      <div className={styles['avatar']} style={{ color: statusColor }}>
         <Zap size={16} />
       </div>
-      <div className={styles.content}>
-        <div className={styles.header}>
+      <div className={styles['content']}>
+        <div className={styles['header']}>
           <div className={styles['role-label']} style={{ color: statusColor }}>
             <span className={styles['status-icon']}>{statusIcon}</span>
             Worker
             {timestamp && <BadgeComponent type="dateTime" date={timestamp} />}
           </div>
           {!readOnly && onDelete && (
-            <div className={styles.actions}>
+            <div className={styles['actions']}>
               <IconButtonComponent
                 icon={<Trash2 size={14} />}
                 onClick={onDelete}
@@ -81,11 +81,11 @@ export default function WorkerNotificationComponent({
         </div>
 
         {/* Summary line with duration + tool count badges */}
-        <div className={styles.summary}>
+        <div className={styles['summary']}>
           {taskNotif.summary}
-          {durationSec && <span className={styles.meta}>({durationSec})</span>}
+          {durationSec && <span className={styles['meta']}>({durationSec})</span>}
           {taskNotif.toolUses && (
-            <span className={styles.meta}>{taskNotif.toolUses} tools</span>
+            <span className={styles['meta']}>{taskNotif.toolUses} tools</span>
           )}
         </div>
 

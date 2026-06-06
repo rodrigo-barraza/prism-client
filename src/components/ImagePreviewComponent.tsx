@@ -285,14 +285,14 @@ export default function ImagePreviewComponent({
   };
 
   return (
-    <div className={styles.overlay} onClick={handleOverlayClick}>
+    <div className={styles['overlay']} onClick={handleOverlayClick}>
       <button className={styles['close-button']} onClick={onClose}>
         <X size={24} />
       </button>
 
       {/* Toolbar */}
       {!readOnly && (
-        <div className={styles.toolbar}>
+        <div className={styles['toolbar']}>
           {/* Mode toggle */}
           <div className={styles['tool-group']}>
             <button
@@ -317,7 +317,7 @@ export default function ImagePreviewComponent({
             {COLORS.map((c) => (
               <button
                 key={c.value}
-                className={`${styles.swatch} ${color === c.value && !isEraser ? styles['swatch-active'] : ""}`}
+                className={`${styles['swatch']} ${color === c.value && !isEraser ? styles['swatch-active'] : ""}`}
                 style={{ background: c.value }}
                 onClick={() => {
                   setColor(c.value);

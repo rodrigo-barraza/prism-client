@@ -29,14 +29,14 @@ export default function PromptSectionComponent({
   className?: string;
 }) {
   return (
-    <div className={`${styles.section} ${className || ""}`}>
-      <div className={styles.header}>
+    <div className={`${styles['section']} ${className || ""}`}>
+      <div className={styles['header']}>
         {icon}
         <span>{label}</span>
-        {badge && <span className={styles.badge}>{badge}</span>}
+        {badge && <span className={styles['badge']}>{badge}</span>}
       </div>
       <TextAreaComponent
-        className={styles.textarea}
+        className={styles['textarea']}
         value={value ?? ""}
         onChange={(
           e: React.ChangeEvent<

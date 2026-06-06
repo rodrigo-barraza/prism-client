@@ -439,7 +439,7 @@ export default function MemoriesPanel({
   // -- Not configured ------------------------------------------
   if (!memoryConfigured) {
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <div className={styles['empty-state']}>
           <div className={`${styles['empty-icon']} ${styles['empty-icon-disabled']}`}>
             <Brain size={24} />
@@ -462,7 +462,7 @@ export default function MemoriesPanel({
   // -- Loading -------------------------------------------------
   if (loading) {
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <PanelLoadingSpinner />
       </div>
     );
@@ -471,8 +471,8 @@ export default function MemoriesPanel({
   // -- Error ---------------------------------------------------
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.error}>Failed to load memories: {error}</div>
+      <div className={styles['container']}>
+        <div className={styles['error']}>Failed to load memories: {error}</div>
       </div>
     );
   }
@@ -480,7 +480,7 @@ export default function MemoriesPanel({
   // -- Empty ---------------------------------------------------
   if (memories.length === 0) {
     return (
-      <div className={styles.container}>
+      <div className={styles['container']}>
         <div className={styles['empty-state']}>
           <div className={styles['empty-icon']}>
             <Brain size={24} />
@@ -498,10 +498,10 @@ export default function MemoriesPanel({
 
   // -- List ----------------------------------------------------
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {toast && (
         <div
-          className={`${styles.toast} ${styles[`toast${toast.type.charAt(0).toUpperCase() + toast.type.slice(1)}`]}`}
+          className={`${styles['toast']} ${styles[`toast-${toast.type}`]}`}
         >
           {toast.text}
         </div>
@@ -546,7 +546,7 @@ export default function MemoriesPanel({
               Consolidation History
             </span>
             {historyIsLoadingState && (
-              <RefreshCw size={10} className={styles.refreshSpin} />
+              <RefreshCw size={10} />
             )}
           </div>
           {history.length === 0 && !historyIsLoadingState && (
@@ -556,7 +556,7 @@ export default function MemoriesPanel({
             <div key={i} className={styles['history-entry']}>
               <div className={styles['history-entry-header']}>
                 <span
-                  className={`${styles['history-trigger']} ${styles[`trigger${run.trigger?.charAt(0).toUpperCase()}${run.trigger?.slice(1)}`] || ""}`}
+                  className={`${styles['history-trigger']} ${styles[`trigger-${(run.trigger ?? '').replace(/_/g, '-')}`] || ""}`}
                 >
                   {TRIGGER_LABELS[run.trigger ?? ""] ||
                     run.trigger ||
@@ -611,7 +611,7 @@ export default function MemoriesPanel({
 
       {/* Infinite Scroll Sentinel */}
       {hasMore && (
-        <div ref={sentinelRef} className={styles.sentinel}>
+        <div ref={sentinelRef} className={styles['sentinel']}>
           {loadingMore && (
             <PanelLoadingSpinner size="small" inline />
           )}

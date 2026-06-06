@@ -6,6 +6,9 @@ import { FEEDBACK_BRIEF_MS } from "@rodrigo-barraza/utilities-library";
 import { copyToClipboard } from "../utils/utilities";
 import styles from "./JsonViewerComponent.module.css";
 
+type JsonPrimitive = string | number | boolean | null | undefined;
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+
 /**
  * JsonViewerComponent — interactive, collapsible JSON tree viewer.
  *
@@ -17,7 +20,7 @@ import styles from "./JsonViewerComponent.module.css";
  *   className — extra root class
  */
 export interface JsonViewerProps {
-  data: any;
+  data: JsonValue;
   label?: string;
   collapsed?: number;
   maxHeight?: string;
@@ -43,11 +46,11 @@ export default function JsonViewerComponent({
 
   return (
     <div
-      className={`${styles.viewer} ${className || ""}`}
+      className={`${styles['viewer']} ${className || ""}`}
       style={maxHeight ? { maxHeight, overflowY: "auto" } : undefined}
     >
-      <div className={styles.toolbar}>
-        {label && <span className={styles.label}>{label}</span>}
+      <div className={styles['toolbar']}>
+        {label && <span className={styles['label']}>{label}</span>}
         <button
           className={styles['copy-button']}
           onClick={handleCopy}
@@ -57,7 +60,7 @@ export default function JsonViewerComponent({
           <span>{copied ? "Copied" : "Copy"}</span>
         </button>
       </div>
-      <div className={styles.tree}>
+      <div className={styles['tree']}>
         <JsonNode value={data} depth={0} defaultCollapsed={collapsed} />
       </div>
     </div>
@@ -66,7 +69,7 @@ export default function JsonViewerComponent({
 
 interface JsonNodeProps {
   keyName?: string | number;
-  value: any;
+  value: JsonValue;
   depth: number;
   defaultCollapsed: number;
   isLast?: boolean;
@@ -84,16 +87,15 @@ function JsonNode({
   const [expanded, setExpanded] = useState(depth < defaultCollapsed);
 
   if (isExpandable) {
-    const entries = (
+    const entries: [string | number, JsonValue][] =
       type === "array"
-        ? (value as any[]).map((itemValue, i) => [i, itemValue])
-        : Object.entries(value)
-    ) as [any, any][];
+        ? (value as JsonValue[]).map((itemValue, index) => [index, itemValue])
+        : Object.entries(value as Record<string, JsonValue>);
     const bracket = type === "array" ? ["[", "]"] : ["{", "}"];
     const isEmpty = entries.length === 0;
 
     return (
-      <div className={styles.node}>
+      <div className={styles['node']}>
         <div
           className={styles['json-row']}
           onClick={() => !isEmpty && setExpanded((previousExpandedState) => !previousExpandedState)}
@@ -101,51 +103,51 @@ function JsonNode({
         >
           {!isEmpty && (
             <span
-              className={`${styles.chevron} ${expanded ? styles['chevron-open'] : ""}`}
+              className={`${styles['chevron']} ${expanded ? styles['chevron-open'] : ""}`}
             >
               <ChevronRight size={12} />
             </span>
           )}
           {keyName !== undefined && (
-            <span className={styles.key}>
+            <span className={styles['key']}>
               {JSON.stringify(String(keyName))}:{" "}
             </span>
           )}
           {isEmpty ? (
-            <span className={styles.bracket}>
+            <span className={styles['bracket']}>
               {bracket[0]}
               {bracket[1]}
             </span>
           ) : expanded ? (
-            <span className={styles.bracket}>{bracket[0]}</span>
+            <span className={styles['bracket']}>{bracket[0]}</span>
           ) : (
             <span className={styles['is-collapsed-state']}>
               {bracket[0]}
-              <span className={styles.ellipsis}>
+              <span className={styles['ellipsis']}>
                 {entries.length} {type === "array" ? "items" : "keys"}
               </span>
               {bracket[1]}
             </span>
           )}
-          {!expanded && !isLast && <span className={styles.comma}>,</span>}
+          {!expanded && !isLast && <span className={styles['comma']}>,</span>}
         </div>
         {expanded && (
           <>
-            <div className={styles.children}>
-              {entries.map(([nodeKey, nodeValue]: [any, any], i: number) => (
+            <div className={styles['children']}>
+              {entries.map(([nodeKey, nodeValue], entryIndex: number) => (
                 <JsonNode
                   key={nodeKey}
                   keyName={type === "array" ? undefined : nodeKey}
                   value={nodeValue}
                   depth={depth + 1}
                   defaultCollapsed={defaultCollapsed}
-                  isLast={i === entries.length - 1}
+                  isLast={entryIndex === entries.length - 1}
                 />
               ))}
             </div>
             <div className={styles['json-row']}>
-              <span className={styles.bracket}>{bracket[1]}</span>
-              {!isLast && <span className={styles.comma}>,</span>}
+              <span className={styles['bracket']}>{bracket[1]}</span>
+              {!isLast && <span className={styles['comma']}>,</span>}
             </div>
           </>
         )}
@@ -155,29 +157,29 @@ function JsonNode({
 
   // Primitive value
   return (
-    <div className={styles.node}>
+    <div className={styles['node']}>
       <div className={styles['json-row']}>
         {keyName !== undefined && (
-          <span className={styles.key}>
+          <span className={styles['key']}>
             {JSON.stringify(String(keyName))}:{" "}
           </span>
         )}
-        <span className={styles[`value_${type}`] || styles.value_null}>
+        <span className={styles[`value-${type}`] || styles['value-null']}>
           {formatValue(value, type)}
         </span>
-        {!isLast && <span className={styles.comma}>,</span>}
+        {!isLast && <span className={styles['comma']}>,</span>}
       </div>
     </div>
   );
 }
 
-function getType(value: any) {
+function getType(value: JsonValue): string {
   if (value === null || value === undefined) return "null";
   if (Array.isArray(value)) return "array";
-  return typeof value; // "string", "number", "boolean", "object"
+  return typeof value;
 }
 
-function formatValue(value: any, type: string) {
+function formatValue(value: JsonValue, type: string): string {
   if (type === "string") return JSON.stringify(value);
   if (type === "null") return "null";
   if (type === "boolean") return value ? "true" : "false";

@@ -801,7 +801,7 @@ export default function AdminChatViewerComponent({
         />
         {generatingCount > 0 && (
           <span className={`${styles['stat-pill']} ${styles['stat-pill-generating']}`}>
-            <Loader size={10} className={styles.spinning} />
+            <Loader size={10} className={styles['spinning']} />
             {generatingDisplay} generating
           </span>
         )}
@@ -1019,7 +1019,7 @@ export default function AdminChatViewerComponent({
 
   // ── Render ───────────────────────────────────────────────────
   return (
-    <div className={styles.page}>
+    <div className={styles['page']}>
       <div className={styles['chat-container']}>
         <ThreePanelLayout
           leftPanel={
@@ -1241,7 +1241,7 @@ export default function AdminChatViewerComponent({
                 )}
                 {(selectedEntry as Conversation).isGenerating && (
                   <span className={styles['generating-badge']}>
-                    <Loader size={12} className={styles.spinning} />
+                    <Loader size={12} className={styles['spinning']} />
                     Generating
                   </span>
                 )}

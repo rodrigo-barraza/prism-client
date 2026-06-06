@@ -139,14 +139,14 @@ export default function SpinningCatComponent({
           return;
         }
 
-        framesRef.current = frames as any;
+        framesRef.current = frames as unknown as DecodedFrame[];
         bitmapsRef.current = bitmaps;
 
         const canvas = canvasRef.current;
         if (canvas && frames.length > 0) {
           canvas.width = frames[0].dims.width;
           canvas.height = frames[0].dims.height;
-          renderFrame(canvas, frames as any, bitmaps, 0);
+          renderFrame(canvas, frames as unknown as DecodedFrame[], bitmaps, 0);
         }
       } catch (error: unknown) {
         console.error("SpinningCatComponent: failed to decode GIF", error);
@@ -337,7 +337,7 @@ export default function SpinningCatComponent({
   return (
     <div
       ref={wrapperRef}
-      className={`${styles.wrapper} ${clickSpinClassName} ${className}`}
+      className={`${styles['wrapper']} ${clickSpinClassName} ${className}`}
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -350,7 +350,7 @@ export default function SpinningCatComponent({
       />
       <canvas
         ref={canvasRef}
-        className={`${styles.canvas} ${visuallyActive ? "" : styles['is-hidden-state']}`}
+        className={`${styles['canvas']} ${visuallyActive ? "" : styles['is-hidden-state']}`}
       />
     </div>
   );

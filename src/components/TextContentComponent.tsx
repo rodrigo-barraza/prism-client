@@ -1,14 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import type { ChangeEvent } from "react";
 import { Code, BookOpen } from "lucide-react";
 import MarkdownContent from "./MarkdownContentComponent";
 import { TextAreaComponent } from "@rodrigo-barraza/components-library";
 import styles from "./TextContentComponent.module.css";
 
-/**
- * Reusable text content block with Raw / Preview toggle.
- */
+interface TextContentProps {
+  label?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  readOnly?: boolean;
+  placeholder?: string;
+  className?: string;
+}
+
 export default function TextContentComponent({
   label,
   value = "",
@@ -16,25 +23,25 @@ export default function TextContentComponent({
   readOnly = false,
   placeholder = "Enter text...",
   className,
-}: any) {
+}: TextContentProps) {
   const [preview, setPreview] = useState(false);
 
   const isEditable = !!onChange && !readOnly;
 
   return (
-    <div className={`${styles.wrapper} ${className || ""}`}>
+    <div className={`${styles['wrapper']} ${className || ""}`}>
       <div className={styles['header-row']}>
-        <label className={styles.label}>{label}</label>
-        <div className={styles.tabs}>
+        <label className={styles['label']}>{label}</label>
+        <div className={styles['tabs']}>
           <button
-            className={`${styles.tab} ${!preview ? styles['tab-active'] : ""}`}
+            className={`${styles['tab']} ${!preview ? styles['tab-active'] : ""}`}
             onClick={() => setPreview(false)}
           >
             <Code size={10} />
             Raw
           </button>
           <button
-            className={`${styles.tab} ${preview ? styles['tab-active'] : ""}`}
+            className={`${styles['tab']} ${preview ? styles['tab-active'] : ""}`}
             onClick={() => setPreview(true)}
           >
             <BookOpen size={10} />
@@ -53,10 +60,10 @@ export default function TextContentComponent({
         </div>
       ) : (
         <TextAreaComponent
-          className={`${styles.textarea} ${!isEditable ? styles['textarea-read-only'] : ""}`}
+          className={`${styles['textarea']} ${!isEditable ? styles['textarea-read-only'] : ""}`}
           value={value}
           onChange={
-            isEditable ? (e: any) => onChange(e.target.value) : undefined
+            isEditable ? (event: ChangeEvent<HTMLTextAreaElement>) => onChange(event.target.value) : undefined
           }
           readOnly={!isEditable}
           placeholder={isEditable ? placeholder : undefined}

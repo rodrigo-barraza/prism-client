@@ -1407,7 +1407,7 @@ export default function WorkflowsPage({
               Run
             </button>
           )}
-          {isRunning && <Loader2 size={16} className={styles.spinner} />}
+          {isRunning && <Loader2 size={16} className={styles['spinner']} />}
         </div>
       }
     >

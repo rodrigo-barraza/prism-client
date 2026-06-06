@@ -489,15 +489,15 @@ export default function PromptsPageComponent() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {/* Header */}
-      <div className={styles.header}>
+      <div className={styles['header']}>
         <div className={styles["header-left"]}>
-          <h1 className={styles.title}>
+          <h1 className={styles['title']}>
             <BookText className={styles["title-icon"]} size={22} />
             Prompts
           </h1>
-          <p className={styles.subtitle}>
+          <p className={styles['subtitle']}>
             Create and store your own reusable prompts and messages.
           </p>
         </div>
@@ -524,7 +524,7 @@ export default function PromptsPageComponent() {
         </div>
       </div>
 
-      <div className={styles.page}>
+      <div className={styles['page']}>
         <SearchInputComponent
           value={searchInput}
           onChange={(value: string) => {

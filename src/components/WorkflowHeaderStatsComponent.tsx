@@ -1,32 +1,55 @@
+"use client";
+
 import { useMemo } from "react";
+import type { ComponentType } from "react";
 import { MessageSquare } from "lucide-react";
 import ProviderLogo from "./ProviderLogosComponent";
 import { MODALITY_ICONS } from "./WorkflowNodeConstantsComponent";
+import type { WorkflowNode } from "../types/types";
 import styles from "./WorkflowHeaderStatsComponent.module.css";
+
+type ModalityKey = keyof typeof MODALITY_ICONS;
+
+interface ModalityIconEntry {
+  icon: ComponentType<{ size?: number; style?: React.CSSProperties; title?: string }>;
+  label: string;
+  color: string;
+}
+
+interface WorkflowModelEntry {
+  provider: string;
+  name: string;
+}
+
+interface WorkflowHeaderStatsProps {
+  nodes?: WorkflowNode[];
+  edgeCount?: number;
+}
 
 export default function WorkflowHeaderStatsComponent({
   nodes = [],
   edgeCount = 0,
-}: any) {
+}: WorkflowHeaderStatsProps) {
   const workflowStats = useMemo(() => {
-    const modelNodes = nodes.filter((n: any) => !n.nodeType);
-    const models = [
+    const modelNodes = nodes.filter((node) => !node.nodeType);
+    const models: WorkflowModelEntry[] = [
       ...new Map(
-        modelNodes.map((n: any) => [
-          `${n.provider}:${n.modelName}`,
-          { provider: n.provider, name: n.displayName || n.modelName },
+        modelNodes.map((node) => [
+          `${node.provider}:${node.modelName}`,
+          { provider: node.provider || "", name: (node.displayName as string) || node.modelName || "" },
         ]),
       ).values(),
     ];
-    const modalities = new Set();
-    for (const n of nodes as any[]) {
-      // Only boundary nodes: input assets define workflow inputs, viewers define outputs
-      if (n.nodeType === "input") {
-        for (const t of (n.outputTypes || []) as any[])
-          if (t !== "conversation") modalities.add(t);
-      } else if (n.nodeType === "viewer") {
-        for (const t of (n.inputTypes || []) as any[])
-          if (t !== "conversation") modalities.add(t);
+    const modalities = new Set<string>();
+    for (const node of nodes) {
+      if (node.nodeType === "input") {
+        for (const modalityType of (node.outputTypes || [])) {
+          if (modalityType !== "conversation") modalities.add(modalityType);
+        }
+      } else if (node.nodeType === "viewer") {
+        for (const modalityType of (node.inputTypes || [])) {
+          if (modalityType !== "conversation") modalities.add(modalityType);
+        }
       }
     }
     const conversationCount = modelNodes.length;
@@ -40,16 +63,16 @@ export default function WorkflowHeaderStatsComponent({
       </span>
       {workflowStats.modalities.length > 0 && (
         <span className={styles['header-badge']}>
-          {workflowStats.modalities.map((mod: any) => {
-            const info = (MODALITY_ICONS as any)[mod];
-            if (!info) return null;
-            const Icon = info.icon;
+          {workflowStats.modalities.map((modality) => {
+            const iconEntry = MODALITY_ICONS[modality as ModalityKey] as ModalityIconEntry | undefined;
+            if (!iconEntry) return null;
+            const Icon = iconEntry.icon;
             return (
               <Icon
-                key={mod}
+                key={modality}
                 size={11}
-                style={{ color: info.color }}
-                title={info.label}
+                style={{ color: iconEntry.color }}
+                title={iconEntry.label}
               />
             );
           })}
@@ -57,14 +80,14 @@ export default function WorkflowHeaderStatsComponent({
       )}
       {workflowStats.models.length > 0 && (
         <span className={styles['header-badge']}>
-          {workflowStats.models.map((m: any) => (
+          {workflowStats.models.map((modelEntry) => (
             <span
-              key={`${m.provider}:${m.name}`}
+              key={`${modelEntry.provider}:${modelEntry.name}`}
               className={styles['header-model-tag']}
-              title={m.name}
+              title={modelEntry.name}
             >
-              <ProviderLogo provider={m.provider} size={11} />
-              {m.name}
+              <ProviderLogo provider={modelEntry.provider} size={11} />
+              {modelEntry.name}
             </span>
           ))}
         </span>

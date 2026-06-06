@@ -46,6 +46,57 @@ import styles from "./RunHistorySidebarComponent.module.css";
  *   onChangeAgentModel — callback(instanceId, provider, modelName) to change agent's backing model
  *   allModels          — flat array of all model definitions
  */
+import type {
+  BenchmarkRun,
+  BenchmarkRunResult,
+  PrismConfig,
+} from "../types/types";
+import type { ModelInstance } from "./BenchmarkDetailPageComponent";
+
+interface BenchmarkAssertion {
+  expectedValue: string;
+  matchMode: string;
+}
+
+interface AgentInstance {
+  instanceId: string;
+  agentId: string;
+  name: string;
+  description: string;
+  provider?: string;
+  modelName?: string;
+}
+
+interface ModelOptionWithProvider {
+  provider: string;
+  name: string;
+  thinking?: boolean;
+  tools?: string[];
+  instanceId: string;
+}
+
+interface RunHistorySidebarComponentProps {
+  benchmark: Record<string, unknown> | null;
+  runHistory?: BenchmarkRun[];
+  activeRunId?: string | null;
+  onViewRun?: (run: BenchmarkRun) => void;
+  running?: boolean;
+  streamingCompleted?: number;
+  selectedModels?: ModelOptionWithProvider[];
+  onRemoveModel?: (instanceId: string) => void;
+  onChangeModel?: (instanceId: string, provider: string, modelName: string) => void;
+  onClearSelection?: () => void;
+  thinkingMap?: Record<string, boolean>;
+  onToggleThinking?: (instanceId: string) => void;
+  toolsMap?: Record<string, boolean>;
+  onToggleTools?: (instanceId: string) => void;
+  agentInstances?: AgentInstance[];
+  onRemoveAgent?: (instanceId: string) => void;
+  onChangeAgentModel?: (instanceId: string, provider: string, modelName: string) => void;
+  allModels?: ModelOptionWithProvider[];
+  config?: PrismConfig | null;
+}
+
 export default function RunHistorySidebarComponent({
   benchmark,
   runHistory = [],
@@ -53,47 +104,44 @@ export default function RunHistorySidebarComponent({
   onViewRun,
   running = false,
   streamingCompleted = 0,
-  // Model selection props
   selectedModels = [],
   onRemoveModel,
   onChangeModel,
   onClearSelection,
-  // Thinking toggle props
   thinkingMap = {},
   onToggleThinking,
-  // Tools toggle props
   toolsMap = {},
   onToggleTools,
-  // Agent instance props
   agentInstances = [],
   onRemoveAgent,
   onChangeAgentModel,
   allModels = [],
-  // Config for ModelPickerPopoverComponent inside AgentCardComponent
   config,
-}: any) {
+}: RunHistorySidebarComponentProps) {
   const [activeTab, setActiveTab] = useState("general");
 
   // Normalize assertions: fall back to single expectedValue/matchMode for older benchmarks
-  const assertions = useMemo(() => {
-    if (benchmark?.assertions?.length > 0) return benchmark.assertions;
-    if (benchmark?.expectedValue) {
+  const assertions: BenchmarkAssertion[] = useMemo(() => {
+    const benchmarkData = benchmark as Record<string, unknown> | null;
+    const existingAssertions = benchmarkData?.assertions as BenchmarkAssertion[] | undefined;
+    if (existingAssertions && existingAssertions.length > 0) return existingAssertions;
+    if (benchmarkData?.expectedValue) {
       return [
         {
-          expectedValue: benchmark.expectedValue,
-          matchMode: benchmark.matchMode || "contains",
+          expectedValue: benchmarkData.expectedValue as string,
+          matchMode: (benchmarkData.matchMode as string) || "contains",
         },
       ];
     }
     return [];
   }, [benchmark]);
 
-  const operator = benchmark?.assertionOperator || "AND";
+  const operator = (benchmark as Record<string, unknown>)?.assertionOperator as string || "AND";
 
   if (!benchmark) return null;
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {/* -- Tab Bar ---------------------------------------- */}
       <TabBarComponent
         tabs={[
@@ -129,9 +177,9 @@ export default function RunHistorySidebarComponent({
                 Assertions
               </div>
               <div className={styles['assertions-list']}>
-                {assertions.map((a: any, i: number) => (
-                  <div key={i} className={styles['assertion-row']}>
-                    {i > 0 && (
+                {assertions.map((assertion: BenchmarkAssertion, assertionIndex: number) => (
+                  <div key={assertionIndex} className={styles['assertion-row']}>
+                    {assertionIndex > 0 && (
                       <BadgeComponent
                         variant={operator === "OR" ? "warning" : "info"}
                       >
@@ -139,13 +187,13 @@ export default function RunHistorySidebarComponent({
                       </BadgeComponent>
                     )}
                     <BadgeComponent variant="accent">
-                      {a.matchMode || "contains"}
+                      {assertion.matchMode || "contains"}
                     </BadgeComponent>
                     <span
                       className={styles['assertion-value']}
-                      title={a.expectedValue}
+                      title={assertion.expectedValue}
                     >
-                      {a.expectedValue}
+                      {assertion.expectedValue}
                     </span>
                   </div>
                 ))}
@@ -154,11 +202,11 @@ export default function RunHistorySidebarComponent({
           )}
 
           {/* -- Prompt Preview ---------------------------- */}
-          {(benchmark.prompt || benchmark.systemPrompt) && (
+          {((benchmark as Record<string, unknown>)?.prompt || (benchmark as Record<string, unknown>)?.systemPrompt) && (
             <div className={styles['prompt-section']}>
               <ChatPreviewComponent
-                systemPrompt={benchmark.systemPrompt}
-                messages={[{ role: "user", content: benchmark.prompt }]}
+                systemPrompt={(benchmark as Record<string, unknown>)?.systemPrompt as string | undefined}
+                messages={[{ role: "user" as const, content: ((benchmark as Record<string, unknown>)?.prompt as string) || "" }]}
                 mini
               />
             </div>
@@ -177,17 +225,17 @@ export default function RunHistorySidebarComponent({
             {/* Selected model cards */}
             {selectedModels.length > 0 ? (
               <div className={styles['model-cards']}>
-                {selectedModels.map((m: any) => {
-                  const isThinking = !!thinkingMap[m.instanceId];
-                  const isTools = !!toolsMap[m.instanceId];
-                  const supportsThinking = !!m.thinking;
+                {selectedModels.map((modelInstance: ModelOptionWithProvider) => {
+                  const isThinking = !!thinkingMap[modelInstance.instanceId];
+                  const isTools = !!toolsMap[modelInstance.instanceId];
+                  const supportsThinking = !!modelInstance.thinking;
                   const dupeCount = selectedModels.filter(
-                    (s: any) => s.provider === m.provider && s.name === m.name,
+                    (otherModel: ModelOptionWithProvider) => otherModel.provider === modelInstance.provider && otherModel.name === modelInstance.name,
                   ).length;
                   return (
                     <ModelCardComponent
-                      key={m.instanceId}
-                      model={m}
+                      key={modelInstance.instanceId}
+                      model={modelInstance}
                       dupeCount={dupeCount}
                       isThinking={isThinking}
                       supportsThinking={supportsThinking}
@@ -212,19 +260,19 @@ export default function RunHistorySidebarComponent({
               <>
                 {agentInstances.length > 0 && (
                   <div className={styles['model-cards']}>
-                    {agentInstances.map((a: any) => {
-                      const isThinking = !!thinkingMap[a.instanceId];
+                    {agentInstances.map((agentInstance: AgentInstance) => {
+                      const isThinking = !!thinkingMap[agentInstance.instanceId];
                       const currentModelDef = allModels.find(
-                        (m: any) =>
-                          m.provider === a.provider && m.name === a.modelName,
+                        (modelDef: ModelOptionWithProvider) =>
+                          modelDef.provider === agentInstance.provider && modelDef.name === agentInstance.modelName,
                       );
                       const supportsThinking =
                         currentModelDef?.thinking ||
                         (currentModelDef?.tools || []).includes("Thinking");
                       return (
                         <AgentCardComponent
-                          key={a.instanceId}
-                          agent={a}
+                          key={agentInstance.instanceId}
+                          agent={agentInstance}
                           isThinking={isThinking}
                           supportsThinking={supportsThinking}
                           config={config}
@@ -265,19 +313,19 @@ export default function RunHistorySidebarComponent({
           )}
 
           {/* -- Run History List -------------------------- */}
-          <div className={styles.list}>
+          <div className={styles['list']}>
             {runHistory.length === 0 ? (
-              <div className={styles.empty}>
+              <div className={styles['empty']}>
                 <Clock size={14} />
                 No runs yet
               </div>
             ) : (
-              runHistory.map((run: any, index: number) => {
+              runHistory.map((run: BenchmarkRun, index: number) => {
                 const isActive = activeRunId === run.id;
                 const totalCost =
-                  run.summary.totalCost ??
+                  run.summary?.totalCost ??
                   run.models?.reduce(
-                    (s: number, r: any) => s + (r.estimatedCost || 0),
+                    (sum: number, result: BenchmarkRunResult) => sum + (result.estimatedCost || 0),
                     0,
                   ) ??
                   0;
@@ -286,7 +334,7 @@ export default function RunHistorySidebarComponent({
                   <div
                     key={run.id}
                     className={`${styles['run-item']} ${isActive ? styles['run-item-active'] : ""} ${run.aborted ? styles['run-item-aborted'] : ""}`}
-                    {...(SoundService.interactive(() => onViewRun(run)) as any)}
+                    {...(SoundService.interactive(() => onViewRun?.(run)) as Record<string, unknown>)}
                     data-panel-close
                   >
                     <div className={styles['run-item-header']}>
@@ -308,15 +356,15 @@ export default function RunHistorySidebarComponent({
                     <div className={styles['run-stats']}>
                       <span className={styles['stat-passed']}>
                         <CheckCircle2 size={10} />
-                        {run.summary.passed}
+                        {run.summary?.passed ?? 0}
                       </span>
                       <span className={styles['stat-failed']}>
                         <XCircle size={10} />
-                        {run.summary.failed + (run.summary.errored || 0)}
+                        {(run.summary?.failed ?? 0) + (run.summary?.errored ?? 0)}
                       </span>
                       <BenchmarkBarComponent
-                        passed={run.summary.passed}
-                        total={run.summary.total}
+                        passed={run.summary?.passed ?? 0}
+                        total={run.summary?.total ?? 0}
                         mini
                       />
                     </div>

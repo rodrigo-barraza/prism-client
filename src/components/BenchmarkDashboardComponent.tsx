@@ -23,14 +23,58 @@ import { formatCost } from "@rodrigo-barraza/utilities-library";
 import styles from "./BenchmarkDashboardComponent.module.css";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 
+import type { PrismConfig, ModelOption, BenchmarkModelStats, BenchmarkModelStat, BenchmarkBreakdown } from "../types/types";
+import type { RawModel, RowData } from "./ModelsTableComponent";
+
+interface BenchmarkDashboardProps {
+  navSidebar?: React.ReactNode;
+  rightSidebar?: React.ReactNode;
+}
+
+interface BenchmarkTotals {
+  total: number;
+  passed: number;
+  failed: number;
+  errored: number;
+  cost: number;
+}
+
+interface BenchmarkModelRow {
+  name: string;
+  key: string;
+  provider: string;
+  display_name: string;
+  _benchThinkingEnabled: boolean;
+  _benchToolsEnabled: boolean;
+  _benchAgent: string | null;
+  _benchTotal: number;
+  _benchPassed: number;
+  _benchFailed: number;
+  _benchErrored: number;
+  _benchPassRate: number;
+  _benchAvgLatency: number;
+  _benchTotalCost: number;
+  _benchStat: BenchmarkModelStat;
+  benchmarks?: BenchmarkBreakdown[];
+  model?: string;
+  [key: string]: unknown;
+}
+
+interface TabCounts {
+  all: number;
+  models: number;
+  agents: number;
+  [key: string]: number;
+}
+
 /**
  * Build a Map<"provider:model", configModelObject> from the config.
  * Used to enrich benchmark stat rows with proper display_name, modalities,
  * model type, etc. that the stats endpoint doesn't carry.
  */
-function buildConfigLookup(config: any) {
-  if (!config) return new Map();
-  const map = new Map();
+function buildConfigLookup(config: PrismConfig | null) {
+  if (!config) return new Map<string, ModelOption & { provider: string }>();
+  const map = new Map<string, ModelOption & { provider: string }>();
   const MODEL_SECTIONS = [
     "textToText",
     "textToImage",
@@ -38,14 +82,14 @@ function buildConfigLookup(config: any) {
     "imageToText",
     "audioToText",
     "embedding",
-  ];
+  ] as const;
   for (const section of MODEL_SECTIONS) {
-    const providers = config[section]?.models || {};
+    const providers = (config as unknown as Record<string, { models?: Record<string, ModelOption[]> }>)[section]?.models || {};
     for (const [provider, models] of Object.entries(providers)) {
-      for (const m of models as any[]) {
-        const key = `${provider}:${m.name}`;
+      for (const modelOption of models as ModelOption[]) {
+        const key = `${provider}:${modelOption.name}`;
         if (!map.has(key)) {
-          map.set(key, { ...m, provider });
+          map.set(key, { ...modelOption, provider });
         }
       }
     }
@@ -87,12 +131,12 @@ const TABS = [
 export default function BenchmarkDashboardComponent({
   navSidebar,
   rightSidebar,
-}: any) {
+}: BenchmarkDashboardProps) {
   const router = useRouter();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<BenchmarkModelStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedModel, setSelectedModel] = useState<any>(null);
-  const [configLookup, setConfigLookup] = useState(new Map());
+  const [selectedModel, setSelectedModel] = useState<BenchmarkModelRow | null>(null);
+  const [configLookup, setConfigLookup] = useState(new Map<string, ModelOption & { provider: string }>());
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("all");
   const hasLoadedRef = useRef<boolean>(false);
@@ -108,8 +152,8 @@ export default function BenchmarkDashboardComponent({
 
       // Merge local models (LM Studio, Ollama, etc.) into config
       // so we get display_name for local models too
-      let mergedConfig: any = config;
-      if ((config as any)?.localProviders?.length > 0) {
+      let mergedConfig: PrismConfig | null = config;
+      if (config?.localProviders?.length && config.localProviders.length > 0) {
         try {
           const localResult = await PrismService.getLocalConfig();
           mergedConfig = PrismService.mergeLocalModels(
@@ -158,15 +202,15 @@ export default function BenchmarkDashboardComponent({
   );
 
   // -- Aggregate totals --------------------------------------
-  const totals = useMemo(() => {
+  const totals = useMemo((): BenchmarkTotals | null => {
     if (!stats?.models) return null;
     return stats.models.reduce(
-      (acc: any, m: any) => ({
-        total: acc.total + m.total,
-        passed: acc.passed + m.passed,
-        failed: acc.failed + m.failed,
-        errored: acc.errored + m.errored,
-        cost: acc.cost + m.totalCost,
+      (accumulator: BenchmarkTotals, modelStat: BenchmarkModelStat) => ({
+        total: accumulator.total + modelStat.total,
+        passed: accumulator.passed + modelStat.passed,
+        failed: accumulator.failed + modelStat.failed,
+        errored: accumulator.errored + modelStat.errored,
+        cost: accumulator.cost + modelStat.totalCost,
       }),
       { total: 0, passed: 0, failed: 0, errored: 0, cost: 0 },
     );
@@ -175,35 +219,36 @@ export default function BenchmarkDashboardComponent({
   // -- Transform stat rows → ModelsTableComponent-compatible shape --
   // Enriches each stat row with config data (display_name, modalities,
   // model type, etc.) so normalizeModel() produces clean names.
-  const allModelRows = useMemo(() => {
+  const allModelRows = useMemo((): BenchmarkModelRow[] => {
     if (!stats?.models) return [];
-    return stats.models.map((s: any) => {
-      const configKey = `${s.provider}:${s.model}`;
+    return stats.models.map((statEntry: BenchmarkModelStat) => {
+      const configKey = `${statEntry.provider}:${statEntry.model}`;
       const configModel = configLookup.get(configKey);
       return {
         // Config fields first (provides display_name, modalities, tools, etc.)
         ...(configModel || {}),
         // Override with stat-specific identity fields
-        name: s.model,
-        key: s.model,
-        provider: s.provider,
+        name: statEntry.model,
+        key: statEntry.model,
+        provider: statEntry.provider,
         // Use config display_name if available, otherwise humanize the raw path
         display_name:
-          configModel?.display_name || humanizeModelPath(s.label || s.model),
+          configModel?.display_name || humanizeModelPath(statEntry.label || statEntry.model),
         // Benchmark config flags (thinking / tools / agent)
-        _benchThinkingEnabled: s.thinkingEnabled || false,
-        _benchToolsEnabled: s.toolsEnabled || false,
-        _benchAgent: s.agent || null,
+        _benchThinkingEnabled: statEntry.thinkingEnabled || false,
+        _benchToolsEnabled: statEntry.toolsEnabled || false,
+        _benchAgent: statEntry.agent || null,
         // Benchmark-specific data (read by benchmark columns via _raw)
-        _benchTotal: s.total,
-        _benchPassed: s.passed,
-        _benchFailed: s.failed,
-        _benchErrored: s.errored,
-        _benchPassRate: s.passRate,
-        _benchAvgLatency: s.avgLatency,
-        _benchTotalCost: s.totalCost,
+        _benchTotal: statEntry.total,
+        _benchPassed: statEntry.passed,
+        _benchFailed: statEntry.failed,
+        _benchErrored: statEntry.errored,
+        _benchPassRate: statEntry.passRate,
+        _benchAvgLatency: statEntry.avgLatency,
+        _benchTotalCost: statEntry.totalCost,
         // Preserve the original stat object for row click / sidebar
-        _benchStat: s,
+        _benchStat: statEntry,
+        benchmarks: statEntry.benchmarks,
       };
     });
   }, [stats, configLookup]);
@@ -211,37 +256,37 @@ export default function BenchmarkDashboardComponent({
   // -- Tab filtering ----------------------------------
   const modelRows = useMemo(() => {
     if (activeTab === "models")
-      return allModelRows.filter((r: any) => !r._benchAgent);
+      return allModelRows.filter((row: BenchmarkModelRow) => !row._benchAgent);
     if (activeTab === "agents")
-      return allModelRows.filter((r: any) => !!r._benchAgent);
+      return allModelRows.filter((row: BenchmarkModelRow) => !!row._benchAgent);
     return allModelRows;
   }, [allModelRows, activeTab]);
 
   // -- Tab counts -------------------------------------
   const tabCounts = useMemo(
-    () => ({
+    (): TabCounts => ({
       all: allModelRows.length,
-      models: allModelRows.filter((r: any) => !r._benchAgent).length,
-      agents: allModelRows.filter((r: any) => !!r._benchAgent).length,
+      models: allModelRows.filter((row: BenchmarkModelRow) => !row._benchAgent).length,
+      agents: allModelRows.filter((row: BenchmarkModelRow) => !!row._benchAgent).length,
     }),
     [allModelRows],
   );
 
   // -- Composite stat identity (model + config flags) ---------
-  const statId = (s: any) =>
-    `${s?.provider}:${s?.model}:${s?.thinkingEnabled || false}:${s?.toolsEnabled || false}:${s?.agent || ""}`;
+  const statId = (statEntry: BenchmarkModelRow | null) =>
+    `${statEntry?.provider}:${statEntry?.model}:${statEntry?._benchThinkingEnabled || false}:${statEntry?._benchToolsEnabled || false}:${statEntry?._benchAgent || ""}`;
 
   // -- Row click → select model for sidebar detail -----------
-  const handleRowClick = useCallback((stat: any) => {
-    setSelectedModel((prev: any) =>
-      statId(prev) === statId(stat) ? null : stat,
+  const handleRowClick = useCallback((statEntry: BenchmarkModelRow) => {
+    setSelectedModel((previous: BenchmarkModelRow | null) =>
+      statId(previous) === statId(statEntry) ? null : statEntry,
     );
   }, []);
 
   // -- Row class for selected highlight ----------------------
   const getRowClassName = useCallback(
-    (stat: any) => {
-      if (selectedModel && statId(stat) === statId(selectedModel)) {
+    (statEntry: BenchmarkModelRow) => {
+      if (selectedModel && statId(statEntry) === statId(selectedModel)) {
         return styles['selected-row'];
       }
       return "";
@@ -254,58 +299,58 @@ export default function BenchmarkDashboardComponent({
     if (!selectedModel?.benchmarks?.length) return null;
     return (
       <div className={styles['sidebar-detail-grid']}>
-        {selectedModel.benchmarks.map((b: any, i: any) => {
-          const bRate =
-            b.total > 0 ? Math.round((b.passed / b.total) * 100) : 0;
+        {selectedModel.benchmarks.map((benchmark: BenchmarkBreakdown, benchmarkIndex: number) => {
+          const benchmarkRate =
+            benchmark.total > 0 ? Math.round((benchmark.passed / benchmark.total) * 100) : 0;
           return (
             <div
-              key={i}
+              key={benchmarkIndex}
               className={`${styles['detail-card']} ${
-                b.latestPassed
+                benchmark.latestPassed
                   ? styles['detail-card-passed']
-                  : b.latestErrored
+                  : benchmark.latestErrored
                     ? styles['detail-card-errored']
                     : styles['detail-card-failed']
               }`}
             >
               <div className={styles['detail-header']}>
-                <div className={styles['detail-name']}>{b.name}</div>
+                <div className={styles['detail-name']}>{benchmark.name}</div>
                 <span
                   className={`${styles['detail-status']} ${
-                    b.latestPassed
+                    benchmark.latestPassed
                       ? styles['detail-status-passed']
                       : styles['detail-status-failed']
                   }`}
                 >
-                  {b.latestPassed
+                  {benchmark.latestPassed
                     ? "✓ Latest"
-                    : b.latestErrored
+                    : benchmark.latestErrored
                       ? "⚠ Error"
                       : "✗ Latest"}
                 </span>
               </div>
               <div className={styles['detail-stats']}>
                 <span className={styles['detail-runs']}>
-                  {b.total} run{b.total !== 1 ? "s" : ""}
+                  {benchmark.total} run{benchmark.total !== 1 ? "s" : ""}
                 </span>
                 <span className={styles['detail-passed']}>
-                  <CheckCircle2 size={10} /> {b.passed}
+                  <CheckCircle2 size={10} /> {benchmark.passed}
                 </span>
                 <span className={styles['detail-failed']}>
-                  <XCircle size={10} /> {b.failed + b.errored}
+                  <XCircle size={10} /> {benchmark.failed + benchmark.errored}
                 </span>
                 <span
                   className={styles['detail-rate']}
                   style={{
                     color:
-                      bRate >= 80
+                      benchmarkRate >= 80
                         ? "var(--color-success)"
-                        : bRate >= 50
+                        : benchmarkRate >= 50
                           ? "var(--color-warning)"
                           : "var(--color-danger)",
                   }}
                 >
-                  {bRate}%
+                  {benchmarkRate}%
                 </span>
               </div>
             </div>
@@ -332,7 +377,7 @@ export default function BenchmarkDashboardComponent({
         </ButtonComponent>
       }
     >
-      <div className={styles.container}>
+      <div className={styles['container']}>
         {loading ? (
           <div className={styles['loading-state']}>
             <PanelLoadingSpinner size="large" />
@@ -364,33 +409,33 @@ export default function BenchmarkDashboardComponent({
                     value: stats.totalBenchmarks,
                     label: "Benchmarks",
                   },
-                  { value: totals.total, label: "Total Tests" },
+                  { value: totals!.total, label: "Total Tests" },
                   {
-                    value: totals.passed,
+                    value: totals!.passed,
                     label: "Passed",
                     color: "var(--color-success)",
                   },
                   {
-                    value: totals.failed + totals.errored,
+                    value: totals!.failed + totals!.errored,
                     label: "Failed",
                     color: "var(--color-danger)",
                   },
                   {
                     bar:
-                      totals.total > 0
-                        ? (totals.passed / totals.total) * 100
+                      totals!.total > 0
+                        ? (totals!.passed / totals!.total) * 100
                         : 0,
-                    barPassed: totals.passed,
-                    barTotal: totals.total,
+                    barPassed: totals!.passed,
+                    barTotal: totals!.total,
                     label:
-                      totals.total > 0
-                        ? `${Math.round((totals.passed / totals.total) * 100)}%`
+                      totals!.total > 0
+                        ? `${Math.round((totals!.passed / totals!.total) * 100)}%`
                         : "—",
                   },
-                  ...(totals.cost > 0
+                  ...(totals!.cost > 0
                     ? [
                         {
-                          value: formatCost(totals.cost),
+                          value: formatCost(totals!.cost),
                           label: "Total Cost",
                           color: "var(--color-success)",
                           icon: <Coins size={14} />,
@@ -402,11 +447,11 @@ export default function BenchmarkDashboardComponent({
             </div>
 
             {/* -- Segmented Control (Models / Agents) -- */}
-            <div className={styles.segmented}>
+            <div className={styles['segmented']}>
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.key;
-                const count = (tabCounts as any)[tab.key];
+                const count = tabCounts[tab.key];
                 return (
                   <button
                     key={tab.key}
@@ -425,12 +470,12 @@ export default function BenchmarkDashboardComponent({
             <ModelsTableComponent
               models={modelRows}
               mode="benchmark"
-              onSelect={handleRowClick}
+              onSelect={handleRowClick as unknown as (model: RawModel) => void}
               showSearch={true}
               showProviderFilter={true}
               favorites={favoriteKeys}
               onToggleFavorite={handleToggleFavorite}
-              getRowClassName={getRowClassName}
+              getRowClassName={getRowClassName as unknown as (row: RowData) => string}
               emptyText={
                 activeTab === "agents"
                   ? "No agent benchmark data yet"

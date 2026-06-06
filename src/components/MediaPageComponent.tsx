@@ -57,7 +57,7 @@ const TYPE_FILTERS = [
   { key: "pdf", label: "PDF", icon: FileText, color: MODALITY_COLORS.pdf },
 ];
 
-function resolveUrl(url: any) {
+function resolveUrl(url: string | undefined | null) {
   if (!url || typeof url !== "string") return null;
   if (url.startsWith("minio://")) return PrismService.getFileUrl(url);
   if (url.startsWith("data:")) return url;
@@ -107,6 +107,7 @@ export interface MediaItem {
   convTitle?: string;
   project?: string;
   model?: string;
+  provider?: string;
   timestamp?: number | string;
 }
 
@@ -158,12 +159,12 @@ export default function MediaPageComponent({
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const PAGE_SIZE = 60;
-  const searchTimerRef = useRef<any>(null);
+  const searchTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const loadMedia = useCallback(async () => {
     try {
       setLoading(true);
-      const params: Record<string, any> = { page, limit: PAGE_SIZE };
+      const params: Record<string, string | number> = { page, limit: PAGE_SIZE };
       if (origin !== "all") params.origin = origin;
       if (type !== "all") params.type = type;
       if (isAdmin) {
@@ -177,7 +178,7 @@ export default function MediaPageComponent({
       Object.assign(params, buildDateRangeParams(dateRange));
 
       const service = isAdmin ? IrisService : PrismService;
-      const result = (await service.getMedia(params)) as any;
+      const result = await service.getMedia(params) as unknown as { data?: MediaItem[]; total?: number; projects?: string[]; usernames?: string[]; providers?: string[]; models?: string[] };
       setMedia(result.data || []);
       setTotal(result.total || 0);
       if (result.projects) setProjects(result.projects);
@@ -244,11 +245,11 @@ export default function MediaPageComponent({
       key: "preview",
       label: "Preview",
       sortable: false,
-      render: (m: any) => {
-        const resolvedUrl = resolveUrl(m.url);
+      render: (mediaRow: MediaItem) => {
+        const resolvedUrl = resolveUrl(mediaRow.url);
         return (
           <div className={styles['list-thumb']}>
-            {m.mediaType === "image" && resolvedUrl ? (
+            {mediaRow.mediaType === "image" && resolvedUrl ? (
               <img
                 src={resolvedUrl}
                 alt=""
@@ -257,21 +258,21 @@ export default function MediaPageComponent({
                 loading="lazy"
                 onClick={() => setLightboxSrc(resolvedUrl)}
               />
-            ) : m.mediaType === "video" && resolvedUrl ? (
+            ) : mediaRow.mediaType === "video" && resolvedUrl ? (
               <video
                 src={resolvedUrl}
                 className={styles['list-thumb-img']}
                 muted
                 preload="metadata"
               />
-            ) : m.mediaType === "audio" && resolvedUrl ? (
+            ) : mediaRow.mediaType === "audio" && resolvedUrl ? (
               <div
                 className={styles['list-thumb-audio']}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
                 <AudioPlayerRecorderComponent sourceUrl={resolvedUrl} compact />
               </div>
-            ) : m.mediaType === "pdf" && resolvedUrl ? (
+            ) : mediaRow.mediaType === "pdf" && resolvedUrl ? (
               <iframe
                 src={resolvedUrl}
                 className={styles['list-thumb-pdf']}
@@ -279,7 +280,7 @@ export default function MediaPageComponent({
               />
             ) : (
               <div className={styles['list-thumb-placeholder']}>
-                <MediaTypeIcon type={m.mediaType} size={16} />
+                <MediaTypeIcon type={mediaRow.mediaType} size={16} />
               </div>
             )}
           </div>
@@ -289,33 +290,33 @@ export default function MediaPageComponent({
     {
       key: "type",
       label: "Type",
-      render: (m: any) => (
+      render: (mediaRow: MediaItem) => (
         <span
           className={styles['type-badge']}
-          style={{ color: (MODALITY_COLORS as any)[m.mediaType] }}
+          style={{ color: (MODALITY_COLORS as Record<string, string>)[mediaRow.mediaType] }}
         >
-          {m.mediaType}
+          {mediaRow.mediaType}
         </span>
       ),
     },
     {
       key: "source",
       label: "Source",
-      render: (m: any) => (
-        <OriginBadge origin={m.origin} className={styles['origin-pill']} />
+      render: (mediaRow: MediaItem) => (
+        <OriginBadge origin={mediaRow.origin} className={styles['origin-pill']} />
       ),
     },
     {
       key: "conversation",
       label: "Conversation",
-      render: (m: any) => (
+      render: (mediaRow: MediaItem) => (
         <Link
-          href={`${convBasePath}/${m.convId}`}
+          href={`${convBasePath}/${mediaRow.convId}`}
           className={styles['conversation-link']}
-          title={m.convTitle}
+          title={mediaRow.convTitle}
         >
           <ExternalLink size={10} />
-          <span>{m.convTitle}</span>
+          <span>{mediaRow.convTitle}</span>
         </Link>
       ),
     },
@@ -324,11 +325,11 @@ export default function MediaPageComponent({
           {
             key: "project",
             label: "Project",
-            render: (m: any) =>
-              m.project ? (
-                <span className={styles['project-tag']}>{m.project}</span>
+            render: (mediaRow: MediaItem) =>
+              mediaRow.project ? (
+                <span className={styles['project-tag']}>{mediaRow.project}</span>
               ) : (
-                <span className={styles.time}>—</span>
+                <span className={styles['time']}>—</span>
               ),
           },
         ]
@@ -336,19 +337,19 @@ export default function MediaPageComponent({
     {
       key: "model",
       label: "Model",
-      render: (m: any) =>
-        m.model ? (
-          <span className={styles['model-tag']}>{m.model.split("/").pop()}</span>
+      render: (mediaRow: MediaItem) =>
+        mediaRow.model ? (
+          <span className={styles['model-tag']}>{mediaRow.model.split("/").pop()}</span>
         ) : (
-          <span className={styles.time}>—</span>
+          <span className={styles['time']}>—</span>
         ),
     },
     {
       key: "date",
       label: "Date",
-      render: (m: any) => (
-        <span className={styles.time}>
-          {m.timestamp ? new Date(m.timestamp).toLocaleDateString() : "—"}
+      render: (mediaRow: MediaItem) => (
+        <span className={styles['time']}>
+          {mediaRow.timestamp ? new Date(mediaRow.timestamp).toLocaleDateString() : "—"}
         </span>
       ),
     },
@@ -357,15 +358,15 @@ export default function MediaPageComponent({
   return (
     <>
       {!isAdmin ? (
-        <div className={styles.container}>
+        <div className={styles['container']}>
           {/* Header */}
-          <div className={styles.header}>
+          <div className={styles['header']}>
             <div className={styles['header-left']}>
-              <h1 className={styles.title}>
+              <h1 className={styles['title']}>
                 <Film className={styles['title-icon']} size={22} />
                 Media
               </h1>
-              <p className={styles.subtitle}>
+              <p className={styles['subtitle']}>
                 All uploaded and generated files across your conversations.
               </p>
             </div>
@@ -380,14 +381,14 @@ export default function MediaPageComponent({
             </div>
           </div>
 
-          <div className={styles.content}>
+          <div className={styles['content']}>
             <SearchInputComponent
               value={searchInput}
-              onChange={(v: any) => {
-                setSearchInput(v);
+              onChange={(searchValue: string) => {
+                setSearchInput(searchValue);
                 clearTimeout(searchTimerRef.current);
                 searchTimerRef.current = setTimeout(() => {
-                  setSearch(v);
+                  setSearch(searchValue);
                   setPage(1);
                 }, 300);
               }}
@@ -409,8 +410,8 @@ export default function MediaPageComponent({
                     })),
                     activeKeys: origin === "all" ? null : origin,
                     isSingleSelect: true,
-                    onToggle: (v: any) => {
-                      setOrigin(v || "all");
+                    onToggle: (toggledValue: string | null) => {
+                      setOrigin(toggledValue || "all");
                       setPage(1);
                     },
                   },
@@ -424,8 +425,8 @@ export default function MediaPageComponent({
                     })),
                     activeKeys: type === "all" ? null : type,
                     isSingleSelect: true,
-                    onToggle: (v: any) => {
-                      setType(v || "all");
+                    onToggle: (toggledValue: string | null) => {
+                      setType(toggledValue || "all");
                       setPage(1);
                     },
                   },
@@ -440,8 +441,8 @@ export default function MediaPageComponent({
                           })),
                           activeKeys: provider || null,
                           isSingleSelect: true,
-                          onToggle: (v: any) => {
-                            setProvider(v || "");
+                          onToggle: (toggledValue: string | null) => {
+                            setProvider(toggledValue || "");
                             setModel("");
                             setPage(1);
                           },
@@ -459,8 +460,8 @@ export default function MediaPageComponent({
                           })),
                           activeKeys: model || null,
                           isSingleSelect: true,
-                          onToggle: (v: any) => {
-                            setModel(v || "");
+                          onToggle: (toggledValue: string | null) => {
+                            setModel(toggledValue || "");
                             setPage(1);
                           },
                         },
@@ -473,7 +474,7 @@ export default function MediaPageComponent({
                     ],
                     activeKeys: showFavoritesOnly ? "favorites" : null,
                     isSingleSelect: true,
-                    onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
+                    onToggle: (toggledValue: string | null) => setShowFavoritesOnly(toggledValue === "favorites"),
                   },
                 ]}
                 dateRange={!externalDateRange ? dateRange : undefined}
@@ -541,7 +542,7 @@ export default function MediaPageComponent({
                       showFavorite
                       isFavorite={isFav}
                       onFavorite={() => toggleFavorite(mediaKey)}
-                      onImageClick={(url: any) => setLightboxSrc(url)}
+                      onImageClick={(imageUrl: string) => setLightboxSrc(imageUrl)}
                     />
                   );
                 })}
@@ -554,7 +555,7 @@ export default function MediaPageComponent({
                 <TableComponent
                   columns={listColumns}
                   data={displayMedia}
-                  getRowKey={(m: any, i: any) => `${m.convId}-${i}`}
+                  getRowKey={(row: MediaItem, rowIndex: number) => `${row.convId}-${rowIndex}`}
                 />
               </div>
             )}
@@ -576,11 +577,11 @@ export default function MediaPageComponent({
         <div className={styles['admin-content']}>
           <SearchInputComponent
             value={searchInput}
-            onChange={(v: any) => {
-              setSearchInput(v);
+            onChange={(searchValue: string) => {
+              setSearchInput(searchValue);
               clearTimeout(searchTimerRef.current);
               searchTimerRef.current = setTimeout(() => {
-                setSearch(v);
+                setSearch(searchValue);
                 setPage(1);
               }, 300);
             }}
@@ -602,8 +603,8 @@ export default function MediaPageComponent({
                   })),
                   activeKeys: origin === "all" ? null : origin,
                   isSingleSelect: true,
-                  onToggle: (v: any) => {
-                    setOrigin(v || "all");
+                  onToggle: (toggledValue: string | null) => {
+                    setOrigin(toggledValue || "all");
                     setPage(1);
                   },
                 },
@@ -617,8 +618,8 @@ export default function MediaPageComponent({
                   })),
                   activeKeys: type === "all" ? null : type,
                   isSingleSelect: true,
-                  onToggle: (v: any) => {
-                    setType(v || "all");
+                  onToggle: (toggledValue: string | null) => {
+                    setType(toggledValue || "all");
                     setPage(1);
                   },
                 },
@@ -633,8 +634,8 @@ export default function MediaPageComponent({
                         })),
                         activeKeys: provider || null,
                         isSingleSelect: true,
-                        onToggle: (v: any) => {
-                          setProvider(v || "");
+                        onToggle: (toggledValue: string | null) => {
+                          setProvider(toggledValue || "");
                           setModel("");
                           setPage(1);
                         },
@@ -652,8 +653,8 @@ export default function MediaPageComponent({
                         })),
                         activeKeys: model || null,
                         isSingleSelect: true,
-                        onToggle: (v: any) => {
-                          setModel(v || "");
+                        onToggle: (toggledValue: string | null) => {
+                          setModel(toggledValue || "");
                           setPage(1);
                         },
                       },
@@ -666,7 +667,7 @@ export default function MediaPageComponent({
                   ],
                   activeKeys: showFavoritesOnly ? "favorites" : null,
                   isSingleSelect: true,
-                  onToggle: (v: any) => setShowFavoritesOnly(v === "favorites"),
+                  onToggle: (toggledValue: string | null) => setShowFavoritesOnly(toggledValue === "favorites"),
                 },
               ]}
               dateRange={!externalDateRange ? dateRange : undefined}
@@ -734,7 +735,7 @@ export default function MediaPageComponent({
                     showFavorite
                     isFavorite={isFav}
                     onFavorite={() => toggleFavorite(mediaKey)}
-                    onImageClick={(url: any) => setLightboxSrc(url)}
+                    onImageClick={(imageUrl: string) => setLightboxSrc(imageUrl)}
                   />
                 );
               })}
@@ -747,7 +748,7 @@ export default function MediaPageComponent({
               <TableComponent
                 columns={listColumns}
                 data={displayMedia}
-                getRowKey={(m: any, i: any) => `${m.convId}-${i}`}
+                getRowKey={(row: MediaItem, rowIndex: number) => `${row.convId}-${rowIndex}`}
               />
             </div>
           )}

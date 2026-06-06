@@ -53,7 +53,7 @@ import type { TokenUsage } from "../types/types";
  * a wide index type. Individual column renderers narrow via field access.
  */
 export interface TransformedTableRow {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 export type TableRow = TransformedTableRow;
 

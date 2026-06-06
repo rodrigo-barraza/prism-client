@@ -316,7 +316,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   })();
 
   return (
-    <div className={styles.shell}>
+    <div className={styles['shell']}>
       <NavigationSidebarComponent
         mode="admin"
         liveCount={newCount}
@@ -349,7 +349,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           )}
         </LayoutHeaderComponent>
         <div
-          className={`${styles.main} ${
+          className={`${styles['main']} ${
             pathname.startsWith("/admin/chat") ||
             pathname.startsWith("/admin/workflows") ||
             pathname.startsWith("/admin/tools") ||

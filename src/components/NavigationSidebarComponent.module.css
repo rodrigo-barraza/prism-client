@@ -551,7 +551,7 @@
     var(--sidebar-contrast-border, oklch(100% 0.0001 263.3 / 0.15));
   box-shadow: 0 8px 32px oklch(0% 0 0 / 0.35);
   overflow: hidden;
-  animation: popoverInUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: popover-in-up 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: bottom left;
 }
 

@@ -40,8 +40,8 @@ export default function ApprovalCardComponent({
   const argEntries = Object.entries(toolArgs).slice(0, 4);
 
   return (
-    <div className={`${styles.card} ${!isPending ? styles.resolved : ""}`}>
-      <div className={styles.header}>
+    <div className={`${styles['card']} ${!isPending ? styles['resolved'] : ""}`}>
+      <div className={styles['header']}>
         <div className={styles['header-left']}>
           <TierIcon
             size={16}
@@ -62,7 +62,7 @@ export default function ApprovalCardComponent({
       </div>
 
       {argEntries.length > 0 && (
-        <div className={styles.args}>
+        <div className={styles['args']}>
           {argEntries.map(([key, value]) => {
             const stringValue =
               typeof value === "string" ? value : JSON.stringify(value);
@@ -79,7 +79,7 @@ export default function ApprovalCardComponent({
       )}
 
       {isPending && (
-        <div className={styles.actions}>
+        <div className={styles['actions']}>
           <button className={styles['approve-button']} onClick={onApprove}>
             <Check size={14} />
             Approve

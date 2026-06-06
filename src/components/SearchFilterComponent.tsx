@@ -101,11 +101,11 @@ export default function SearchFilterComponent({
   }, [open]);
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles['wrapper']}>
       {/* -- Trigger -- */}
-      <div className={styles.container} ref={containerRef}>
+      <div className={styles['container']} ref={containerRef}>
         <div
-          className={`${styles.trigger} ${open ? styles['trigger-open'] : ""}`}
+          className={`${styles['trigger']} ${open ? styles['trigger-open'] : ""}`}
           onClick={() => inputRef.current?.focus()}
         >
           <span className={styles['trigger-icon']}>
@@ -114,7 +114,7 @@ export default function SearchFilterComponent({
           <input
             ref={inputRef}
             type="text"
-            className={styles.input}
+            className={styles['input']}
             placeholder={value || placeholder}
             value={query}
             onChange={handleInputChange}
@@ -123,13 +123,13 @@ export default function SearchFilterComponent({
           />
           <ChevronDown
             size={14}
-            className={`${styles.chevron} ${open ? styles['chevron-open'] : ""}`}
+            className={`${styles['chevron']} ${open ? styles['chevron-open'] : ""}`}
           />
         </div>
 
         {/* -- Dropdown Menu -- */}
         {open && (
-          <div className={styles.menu}>
+          <div className={styles['menu']}>
             <button
               type="button"
               className={`${styles['menu-item']} ${!value ? styles['menu-item-active'] : ""}`}
@@ -160,7 +160,7 @@ export default function SearchFilterComponent({
       {value && (
         <div className={styles['badge-list']}>
           <span
-            className={styles.badge}
+            className={styles['badge']}
             style={
               badgeColor
                 ? ({

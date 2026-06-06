@@ -64,6 +64,7 @@ export interface ClientAgent {
   color?: string;
   icon?: string;
   avatar?: string;
+  toolCount?: number;
 }
 
 export type BadgeProps =

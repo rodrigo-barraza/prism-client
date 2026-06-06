@@ -22,7 +22,7 @@ export default function SectionHeaderComponent({
     >
       {icon}
       {children}
-      {action && <div className={styles.action}>{action}</div>}
+      {action && <div className={styles['action']}>{action}</div>}
     </div>
   );
 }

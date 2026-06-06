@@ -188,7 +188,7 @@ export default function FilterDropdownComponent({
             </span>
             <ChevronDown
               size={14}
-              className={`${styles.chevron} ${isOpen ? styles['chevron-open'] : ""}`}
+              className={`${styles['chevron']} ${isOpen ? styles['chevron-open'] : ""}`}
             />
           </button>
 
@@ -320,7 +320,7 @@ export default function FilterDropdownComponent({
             return (
               <span
                 key={b.key}
-                className={styles.badge}
+                className={styles['badge']}
                 style={
                   b.color
                     ? ({

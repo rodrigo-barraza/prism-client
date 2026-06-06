@@ -45,7 +45,13 @@ import {
   FileDown,
   Sigma,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import styles from "./FileTypeIconComponent.module.css";
+
+interface FileIconEntry {
+  icon: LucideIcon;
+  cls: string;
+}
 
 // ─── File Extension → Icon + Color Class Mapping ────────────
 const EXTENSION_ICON_MAP = {
@@ -448,19 +454,19 @@ const DEFAULT_FILE_ICON = { icon: File, cls: "iconDefault" };
  * Checks exact filename matches first, then compound extensions (e.g. ".d.ts"),
  * then test/spec pattern detection, and finally simple extension match.
  */
-export function getFileIconData(filename: string): any {
+export function getFileIconData(filename: string): FileIconEntry {
   const lower = filename.toLowerCase();
 
   // 1. Exact filename match
-  if ((FILENAME_ICON_MAP as Record<string, any>)[lower])
-    return (FILENAME_ICON_MAP as Record<string, any>)[lower];
+  const filenameMatch = (FILENAME_ICON_MAP as Record<string, FileIconEntry>)[lower];
+  if (filenameMatch) return filenameMatch;
 
   // 2. Check for compound extensions (e.g., ".d.ts", ".test.js")
   const parts = lower.split(".");
   if (parts.length >= 3) {
     const compoundExt = parts.slice(-2).join(".");
-    if ((EXTENSION_ICON_MAP as Record<string, any>)[compoundExt])
-      return (EXTENSION_ICON_MAP as Record<string, any>)[compoundExt];
+    const compoundMatch = (EXTENSION_ICON_MAP as Record<string, FileIconEntry>)[compoundExt];
+    if (compoundMatch) return compoundMatch;
     // Test/spec/stories detection
     const secondLast = parts[parts.length - 2];
     if (secondLast === "test" || secondLast === "spec") {
@@ -473,8 +479,8 @@ export function getFileIconData(filename: string): any {
 
   // 3. Simple extension match
   const ext = parts.length > 1 ? parts.pop() : "";
-  if (ext && (EXTENSION_ICON_MAP as Record<string, any>)[ext])
-    return (EXTENSION_ICON_MAP as Record<string, any>)[ext];
+  const extMatch = ext ? (EXTENSION_ICON_MAP as Record<string, FileIconEntry>)[ext] : undefined;
+  if (extMatch) return extMatch;
 
   return DEFAULT_FILE_ICON;
 }
@@ -483,11 +489,17 @@ export function getFileIconData(filename: string): any {
  * FileTypeIconComponent — renders a filetype-aware Lucide icon with
  * language-specific coloring.
  */
+interface FileTypeIconProps {
+  filename?: string;
+  size?: number;
+  className?: string;
+}
+
 const FileTypeIconComponent = memo(function FileTypeIconComponent({
   filename,
   size = 11,
   className = "",
-}: any) {
+}: FileTypeIconProps) {
   const { icon: Icon, cls } = getFileIconData(filename || "");
   return (
     <Icon

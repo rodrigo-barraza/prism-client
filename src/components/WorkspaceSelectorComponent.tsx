@@ -5,50 +5,42 @@ import { ChevronDown, Monitor, Lock, FolderOpen, WifiOff } from "lucide-react";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import styles from "./WorkspaceSelectorComponent.module.css";
 
-/**
- * WorkspaceSelectorComponent — reusable workspace picker dropdown.
- *
- * Renders the active workspace as a pill button; when clicked, opens a
- * dropdown listing all workspaces plus an inline "Add new workspace" input
- * with real-time path validation (mirroring the Settings page UX).
- *
- * Props:
- *   locked  — if true, renders a non-interactive locked state (e.g. mid-conversation)
- *   className — optional wrapper className for layout integration
- */
+interface WorkspaceSelectorProps {
+  locked?: boolean;
+  className?: string;
+  unavailableWorkspace?: string | null;
+}
+
 export default function WorkspaceSelectorComponent({
   locked = false,
   className,
   unavailableWorkspace = null,
-}: any) {
+}: WorkspaceSelectorProps) {
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
 
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // -- Close on outside click ---------------------------------
   useEffect(() => {
-    if (!open) return;
-    const handleClickOutside = (e: any) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
+    if (!isOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [open]);
+  }, [isOpen]);
 
-  // -- Locked state (mid-conversation) ------------------------
   if (locked) {
-    // When the session's workspace is not currently connected
     if (unavailableWorkspace) {
       const label =
         unavailableWorkspace.split("/").filter(Boolean).pop() ||
         unavailableWorkspace;
       return (
-        <div className={`${styles.wrapper} ${className || ""}`}>
+        <div className={`${styles['wrapper']} ${className || ""}`}>
           <div
-            className={styles.button}
+            className={styles['button']}
             data-is-locked
             data-is-unavailable
             title={`Workspace not available: ${unavailableWorkspace}`}
@@ -60,48 +52,46 @@ export default function WorkspaceSelectorComponent({
       );
     }
     return (
-      <div className={`${styles.wrapper} ${className || ""}`}>
-        <div className={styles.button} data-is-locked>
+      <div className={`${styles['wrapper']} ${className || ""}`}>
+        <div className={styles['button']} data-is-locked>
           <Monitor className={styles['button-icon']} />
-          <span>{(currentWorkspace as any)?.name ?? "Workspace"}</span>
+          <span>{currentWorkspace?.name ?? "Workspace"}</span>
           <Lock className={styles['lock-icon']} />
         </div>
       </div>
     );
   }
 
-  // -- Interactive state --------------------------------------
   return (
-    <div className={`${styles.wrapper} ${className || ""}`} ref={menuRef}>
+    <div className={`${styles['wrapper']} ${className || ""}`} ref={menuRef}>
       <button
         type="button"
-        className={styles.button}
-        onClick={() => setOpen((v) => !v)}
-        title={(currentWorkspace as any)?.path ?? "Switch workspace"}
+        className={styles['button']}
+        onClick={() => setIsOpen((previous) => !previous)}
+        title={currentWorkspace?.path ?? "Switch workspace"}
       >
         <Monitor className={styles['button-icon']} />
-        <span>{(currentWorkspace as any)?.name ?? "Workspace"}</span>
+        <span>{currentWorkspace?.name ?? "Workspace"}</span>
         {(workspaces.length > 1 || true) && (
-          <ChevronDown size={12} className={open ? styles['chevron-open'] : ""} />
+          <ChevronDown size={12} className={isOpen ? styles['chevron-open'] : ""} />
         )}
       </button>
 
-      {open && (
-        <div className={styles.menu}>
-          {/* Workspace list */}
-          {workspaces.map((w: any) => (
+      {isOpen && (
+        <div className={styles['menu']}>
+          {workspaces.map((workspace) => (
             <button
-              key={w.id}
-              className={`${styles['menu-item']} ${(currentWorkspace as any)?.path === w.path ? styles['menu-item-active'] : ""}`}
+              key={workspace.id}
+              className={`${styles['menu-item']} ${currentWorkspace?.path === workspace.path ? styles['menu-item-active'] : ""}`}
               onClick={() => {
-                setCurrentWorkspace(w);
-                setOpen(false);
+                setCurrentWorkspace(workspace);
+                setIsOpen(false);
               }}
-              title={w.path}
+              title={workspace.path}
             >
               <FolderOpen size={12} className={styles['menu-item-icon']} />
-              <span className={styles['menu-item-name']}>{w.name}</span>
-              {w.isPinned && (
+              <span className={styles['menu-item-name']}>{workspace.name}</span>
+              {workspace.isPinned && (
                 <Lock size={9} className={styles['menu-item-pinned']} />
               )}
             </button>

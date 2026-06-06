@@ -123,7 +123,7 @@ export function filterMentionResults(
 // Parse serialized `@path` tokens out of a plain text string so
 // they can be rendered as styled badges in the message list.
 
-interface MentionSegment {
+export interface MentionSegment {
   type: string;
   value: string;
   lineStart?: number;

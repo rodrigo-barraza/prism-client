@@ -839,7 +839,7 @@ export default function NavigationSidebarComponent({
                                 {item.href === "/scheduled-tasks" &&
                                   cronJobNotificationsCount > 0 && (
                                     <span
-                                      className={`${styles['attention-dot']} ${styles.informational}`}
+                                      className={`${styles['attention-dot']} ${styles['informational']}`}
                                       title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
                                     >
                                       {cronJobNotificationsCount}
@@ -850,7 +850,7 @@ export default function NavigationSidebarComponent({
                                     item.showBadge
                                   ] > 0 && (
                                     <span
-                                      className={`${styles.badge} ${styles.live}`}
+                                      className={`${styles['badge']} ${styles['live']}`}
                                     >
                                       {
                                         (badgeCounts as Record<string, number>)[
@@ -941,10 +941,10 @@ export default function NavigationSidebarComponent({
 
   return (
     <div
-      className={`${styles.wrapper} ${!showNav ? styles['is-collapsed-state'] : ""} ${!navReady ? styles['no-transition'] : ""}`}
+      className={`${styles['wrapper']} ${!showNav ? styles['is-collapsed-state'] : ""} ${!navReady ? styles['no-transition'] : ""}`}
     >
       {/* Expanded sidebar */}
-      <aside ref={sidebarReference} className={styles.sidebar}>
+      <aside ref={sidebarReference} className={styles['sidebar']}>
         {/* Rainbow logo banner */}
         <div className={styles['logo-banner']} ref={bannerRef}>
           <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
@@ -1030,7 +1030,7 @@ export default function NavigationSidebarComponent({
                            )}
                           {item.href === "/scheduled-tasks" && cronJobNotificationsCount > 0 && (
                             <span
-                              className={`${styles['attention-dot']} ${styles.informational}`}
+                              className={`${styles['attention-dot']} ${styles['informational']}`}
                               title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
                             >
                               {cronJobNotificationsCount}
@@ -1041,7 +1041,7 @@ export default function NavigationSidebarComponent({
                               item.showBadge
                             ] > 0 && (
                               <span
-                                className={`${styles.badge} ${styles.live}`}
+                                className={`${styles['badge']} ${styles['live']}`}
                               >
                                 {
                                   (badgeCounts as Record<string, number>)[
@@ -1074,7 +1074,7 @@ export default function NavigationSidebarComponent({
         </nav>
 
         {/* Footer */}
-        <div className={styles.footer}>
+        <div className={styles['footer']}>
           {authStatus === "authenticated" ? (
             <TooltipComponent
               label="Log Out"
@@ -1170,7 +1170,7 @@ export default function NavigationSidebarComponent({
           {isAdmin && (
             <div className={styles['status-row']}>
               <span
-                className={`${styles['status-dot']} ${systemStatus !== "connected" ? styles.offline : ""}`}
+                className={`${styles['status-dot']} ${systemStatus !== "connected" ? styles['offline'] : ""}`}
               />
               <span>
                 Prism {systemStatus === "connected" ? "Connected" : "Offline"}

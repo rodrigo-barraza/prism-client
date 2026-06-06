@@ -86,8 +86,8 @@ export default function ModelInfoPanel({
 
   if (!selectedModelDef) {
     return (
-      <div className={styles.container}>
-        <div className={styles.section}>
+      <div className={styles['container']}>
+        <div className={styles['section']}>
           <div className={styles['section-header']}>Model Info</div>
           <div className={styles['modality-row']}>
             <span className={styles['modality-name']} style={{ opacity: 0.5 }}>
@@ -100,7 +100,7 @@ export default function ModelInfoPanel({
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {/* Model Type Badge */}
       {selectedModelDef.modelType && (
         <BadgeComponent
@@ -111,7 +111,7 @@ export default function ModelInfoPanel({
 
       {/* Model Description */}
       {selectedModelDef.description && (
-        <div className={styles.section} style={{ paddingBottom: 8 }}>
+        <div className={styles['section']} style={{ paddingBottom: 8 }}>
           <div className={styles['section-header']}>Description</div>
           <div className={styles['modality-row']}>
             <span className={styles['modality-name']} style={{ opacity: 0.8, lineHeight: 1.5, fontSize: "0.75rem" }}>
@@ -146,7 +146,7 @@ export default function ModelInfoPanel({
           .filter((m) => m.supported);
         if (mods.length === 0) return null;
         return (
-          <div className={styles.section}>
+          <div className={styles['section']}>
             <div className={styles['section-header']}>Modalities</div>
             {mods.map((m) => (
               <div key={m.type} className={styles['modality-row']}>
@@ -173,7 +173,7 @@ export default function ModelInfoPanel({
 
       {/* Token Limits */}
       {(selectedModelDef.contextLength || selectedModelDef.maxOutputTokens) && (
-        <div className={styles.section}>
+        <div className={styles['section']}>
           <div className={styles['section-header']}>Token Limits</div>
           {selectedModelDef.contextLength && (
             <div className={styles['modality-row']}>
@@ -242,7 +242,7 @@ export default function ModelInfoPanel({
             value,
           }));
         return entries.length > 0 ? (
-          <div className={styles.section}>
+          <div className={styles['section']}>
             <div className={styles['section-header']}>Pricing</div>
             {entries.map((e) => (
               <div key={e.label} className={styles['modality-row']}>
@@ -280,7 +280,7 @@ export default function ModelInfoPanel({
         ][];
         if (entries.length === 0) return null;
         return (
-          <div className={styles.section}>
+          <div className={styles['section']}>
             <div className={styles['section-header']}>Arena Scores</div>
             {entries.map(([key, value]) => (
               <div key={key} className={styles['modality-row']}>

@@ -12,20 +12,20 @@ import {
 } from "lucide-react";
 import { BadgeComponent } from "@rodrigo-barraza/components-library";
 import ChatPreviewComponent from "./ChatPreviewComponent";
-import { AGENT_ASSERTION_TYPES } from "./AgentAssertionsComponent";
+import { AGENT_ASSERTION_TYPES, type AgentAssertion } from "./AgentAssertionsComponent";
 import styles from "./BenchmarkPreviewSidebarComponent.module.css";
 
 const ASSERTION_TYPE_MAP = Object.fromEntries(
-  AGENT_ASSERTION_TYPES.map((t: any) => [t.value, t]),
+  AGENT_ASSERTION_TYPES.map((assertionType) => [assertionType.value, assertionType]),
 );
 
-const MODE_ICONS = {
+const MODE_ICONS: Record<string, React.ElementType> = {
   model: Cpu,
   agent: Bot,
   combined: Layers,
 };
 
-const MODE_LABELS = {
+const MODE_LABELS: Record<string, string> = {
   model: "Model Benchmark",
   agent: "Agent Benchmark",
   combined: "Combined Benchmark",
@@ -39,7 +39,23 @@ const MODE_LABELS = {
  * Props:
  *   form — { name, systemPrompt, prompt, benchmarkMode, assertions, assertionOperator, agentAssertions, agentAssertionOperator }
  */
-export default function BenchmarkPreviewSidebarComponent({ form }: any) {
+interface ModelAssertion {
+  expectedValue?: string;
+  matchMode?: string;
+}
+
+interface BenchmarkFormState {
+  name?: string;
+  systemPrompt?: string;
+  prompt?: string;
+  benchmarkMode?: string;
+  assertions?: ModelAssertion[];
+  assertionOperator?: string;
+  agentAssertions?: AgentAssertion[];
+  agentAssertionOperator?: string;
+}
+
+export default function BenchmarkPreviewSidebarComponent({ form }: { form: BenchmarkFormState }) {
   const assertions = form.assertions || [];
   const agentAssertions = form.agentAssertions || [];
   const operator = form.assertionOperator || "AND";
@@ -47,8 +63,8 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
   const mode = form.benchmarkMode || "model";
   const hasName = !!form.name?.trim();
   const hasPrompt = !!form.prompt?.trim();
-  const hasModelAssertion = assertions.some((a: any) =>
-    a.expectedValue?.trim(),
+  const hasModelAssertion = assertions.some((assertion: ModelAssertion) =>
+    assertion.expectedValue?.trim(),
   );
   const hasAgentAssertion = agentAssertions.length > 0;
 
@@ -62,14 +78,14 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
     return hasModelAssertion || hasAgentAssertion;
   })();
 
-  const ModeIcon = ((MODE_ICONS as any)[mode] || Cpu) as any;
+  const ModeIcon = (MODE_ICONS[mode] || Cpu) as React.ElementType;
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       {/* -- Mode Badge ------------------------------------------ */}
       <div className={styles['mode-section']}>
         <ModeIcon size={12} />
-        <span>{(MODE_LABELS as any)[mode] || "Benchmark"}</span>
+        <span>{MODE_LABELS[mode] || "Benchmark"}</span>
       </div>
 
       {/* -- Name Preview --------------------------------------- */}
@@ -114,21 +130,21 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
       {/* -- Model Assertions Preview --------------------------- */}
       {showModelAssertions &&
         assertions.length > 0 &&
-        assertions.some((a: any) => a.expectedValue?.trim()) && (
+        assertions.some((assertion: ModelAssertion) => assertion.expectedValue?.trim()) && (
           <div className={styles['assertions-section']}>
             <div className={styles['section-label']}>
               <ListChecks size={12} />
               {mode === "combined" ? "Output Assertions" : "Assertions"}
               <span className={styles['count-badge']}>
-                {assertions.filter((a: any) => a.expectedValue?.trim()).length}
+                {assertions.filter((assertion: ModelAssertion) => assertion.expectedValue?.trim()).length}
               </span>
             </div>
             <div className={styles['assertions-list']}>
-              {assertions.map((a: any, i: number) => {
-                if (!a.expectedValue?.trim()) return null;
+              {assertions.map((assertion: ModelAssertion, assertionIndex: number) => {
+                if (!assertion.expectedValue?.trim()) return null;
                 return (
-                  <div key={i} className={styles['assertion-row']}>
-                    {i > 0 && (
+                  <div key={assertionIndex} className={styles['assertion-row']}>
+                    {assertionIndex > 0 && (
                       <BadgeComponent
                         variant={operator === "OR" ? "warning" : "info"}
                         mini
@@ -137,13 +153,13 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
                       </BadgeComponent>
                     )}
                     <BadgeComponent variant="accent" mini>
-                      {a.matchMode || "contains"}
+                      {assertion.matchMode || "contains"}
                     </BadgeComponent>
                     <span
                       className={styles['assertion-value']}
-                      title={a.expectedValue}
+                      title={assertion.expectedValue}
                     >
-                      {a.expectedValue}
+                      {assertion.expectedValue}
                     </span>
                   </div>
                 );
@@ -161,13 +177,13 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
             <span className={styles['count-badge']}>{agentAssertions.length}</span>
           </div>
           <div className={styles['assertions-list']}>
-            {agentAssertions.map((a: any, i: number) => {
-              const typeDef = ASSERTION_TYPE_MAP[a.type];
+            {agentAssertions.map((agentAssertion: AgentAssertion, assertionIndex: number) => {
+              const typeDef = ASSERTION_TYPE_MAP[agentAssertion.type];
               if (!typeDef) return null;
               const Icon = typeDef.icon;
               return (
-                <div key={`${a.type}-${i}`} className={styles['assertion-row']}>
-                  {i > 0 && (
+                <div key={`${agentAssertion.type}-${assertionIndex}`} className={styles['assertion-row']}>
+                  {assertionIndex > 0 && (
                     <BadgeComponent
                       variant={agentOperator === "OR" ? "warning" : "info"}
                       mini
@@ -179,12 +195,12 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
                     <Icon size={10} style={{ marginRight: 3 }} />
                     {typeDef.label}
                   </BadgeComponent>
-                  {typeDef.hasOperand && a.operand && (
+                  {typeDef.hasOperand && agentAssertion.operand && (
                     <span className={styles['assertion-value']}>
                       {typeDef.operators?.find(
-                        (op: any) => op.value === a.operator,
+                        (operatorOption) => operatorOption.value === agentAssertion.operator,
                       )?.label || "≥"}{" "}
-                      {a.operand}
+                      {agentAssertion.operand}
                     </span>
                   )}
                 </div>
@@ -203,7 +219,7 @@ export default function BenchmarkPreviewSidebarComponent({ form }: any) {
           </div>
           <ChatPreviewComponent
             systemPrompt={form.systemPrompt}
-            messages={hasPrompt ? [{ role: "user", content: form.prompt }] : []}
+            messages={hasPrompt ? [{ role: "user" as const, content: form.prompt || "" }] : []}
             mini
           />
         </div>

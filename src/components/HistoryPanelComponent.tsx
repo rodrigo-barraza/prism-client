@@ -75,7 +75,7 @@ export default function HistoryPanel({
   );
 
   return (
-    <div className={styles.container}>
+    <div className={styles['container']}>
       <HistoryList
         items={items}
         activeId={activeId}

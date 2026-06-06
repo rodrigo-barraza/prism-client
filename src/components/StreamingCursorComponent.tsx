@@ -51,7 +51,7 @@ export default function StreamingCursorComponent({
   const cursor = (
     <span className={styles['streaming-cursor-wrapper']} aria-hidden="true">
       <span className={styles['scramble-char']}>{char}</span>
-      <span className={styles.caret}>▎</span>
+      <span className={styles['caret']}>▎</span>
     </span>
   );
 

@@ -81,7 +81,7 @@ export default function ToolCallsBlockComponent({
               toolCall.name === "googleSearch"
                 ? "Google Search"
                 : renderToolName(toolCall.name);
-            const { Icon, color } = resolveToolVisuals(toolCall.name) as any;
+            const { Icon, color } = resolveToolVisuals(toolCall.name);
 
             const isCalling = toolCall.status === "calling";
             const isError = toolCall.status === "error";
