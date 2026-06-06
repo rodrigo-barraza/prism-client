@@ -101,7 +101,7 @@
   background: var(--background-hover);
 }
 
-.session-item-active {
+.session-item-is-active-state {
   background: var(--background-elevated);
   border-inline-start: 3px solid var(--accent-primary);
   padding-inline-start: 13px;
@@ -355,7 +355,7 @@
   margin-block-end: 6px;
 }
 
-.node-detail-popover-row {
+.node-detail-popover-layout-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -364,11 +364,11 @@
   color: var(--text-secondary);
 }
 
-.node-detail-popover-row-label {
+.node-detail-popover-layout-row-label {
   color: var(--text-muted);
 }
 
-.node-detail-popover-row-value {
+.node-detail-popover-layout-row-value {
   font-weight: 500;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;

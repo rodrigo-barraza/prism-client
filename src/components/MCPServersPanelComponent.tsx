@@ -478,7 +478,7 @@ export default function MCPServersPanel({
             )}
 
             {isConfirming && (
-              <div className={styles.confirmRow}>
+              <div className={styles.confirmLayoutRow}>
                 <span className={styles.confirmLabel}>
                   Delete &ldquo;{server.name}&rdquo;?
                 </span>

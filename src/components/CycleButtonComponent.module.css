@@ -13,7 +13,7 @@
   padding: 0 8px;
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--button-border-radius);
-  background: var(--calculated-select-bg);
+  background: var(--calculated-select-background-color);
   color: var(--text-secondary);
   font-size: 0.625rem;
   font-weight: 600;

@@ -542,7 +542,7 @@ export default function PromptsPageComponent() {
           className={styles["search-wrapper"]}
         />
 
-        <div className={styles["view-controls-row"]}>
+        <div className={styles["view-controls-layout-row"]}>
           <SegmentedControlComponent
             value={viewMode}
             onChange={setViewMode}

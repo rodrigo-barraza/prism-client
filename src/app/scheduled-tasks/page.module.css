@@ -511,7 +511,7 @@
 
 /* ── Inline Confirm Delete ─────────────────────────────────── */
 
-.confirmRow {
+.confirmLayoutRow {
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid var(--calculated-border-subtle);
@@ -1171,7 +1171,7 @@
   font-weight: 600;
 }
 
-.history-loading {
+.history-is-loading-state {
   display: flex;
   align-items: center;
   gap: 8px;

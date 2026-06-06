@@ -30,7 +30,7 @@
   padding: 0 12px;
   font-size: var(--font-size-base);
   color: var(--text-primary);
-  background: var(--calculated-select-bg);
+  background: var(--calculated-select-background-color);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   cursor: pointer;

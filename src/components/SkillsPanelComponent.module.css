@@ -150,7 +150,7 @@
 
 /* ── Confirm Delete ─────────────────────────────────────────── */
 
-.confirmRow {
+.confirmLayoutRow {
   display: flex;
   align-items: center;
   gap: 6px;

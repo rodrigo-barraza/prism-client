@@ -93,7 +93,7 @@ export default function MemoryCardComponent({
       )}
 
       {isConfirmingDelete && (
-        <div className={styles["confirm-row"]}>
+        <div className={styles["confirm-layout-row"]}>
           <span className={styles["confirm-label"]}>Delete this memory?</span>
           <button
             className={`${styles["confirm-button"]} ${styles["confirm-button-yes"]}`}

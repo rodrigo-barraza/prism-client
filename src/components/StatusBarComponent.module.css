@@ -200,43 +200,43 @@
 
 /* ── Phase-specific overlay themes ── */
 
-.phase_loading {
+.phase-is-loading-state {
   background: oklch(62.3% 0.1881 259.8 / 0.25);
   --phase-text: rgb(191, 219, 254);
   --phase-pulse: rgb(96, 165, 250);
 }
 
-.phase_processing {
+.phase-is-processing-state {
   background: oklch(76.9% 0.1646 70.1 / 0.2);
   --phase-text: rgb(253, 230, 138);
   --phase-pulse: rgb(251, 191, 36);
 }
 
-.phase_thinking {
+.phase-is-thinking-state {
   background: oklch(62.7% 0.2326 303.9 / 0.2);
   --phase-text: rgb(216, 180, 254);
   --phase-pulse: rgb(192, 132, 252);
 }
 
-.phase_generating {
+.phase-is-generating-state {
   background: oklch(72.3% 0.192 149.6 / 0.2);
   --phase-text: rgb(187, 247, 208);
   --phase-pulse: rgb(74, 222, 128);
 }
 
-.phase_starting {
+.phase-is-starting-state {
   background: oklch(55.4% 0.0408 257.4 / 0.2);
   --phase-text: rgb(203, 213, 225);
   --phase-pulse: rgb(148, 163, 184);
 }
 
-.phase_delegating {
+.phase-is-delegating-state {
   background: oklch(71.5% 0.1258 215.2 / 0.2);
   --phase-text: rgb(165, 243, 252);
   --phase-pulse: rgb(34, 211, 238);
 }
 
-.phase_awaiting {
+.phase-is-awaiting-state {
   background: oklch(55.4% 0.0408 257.4 / 0.15);
   --phase-text: rgb(203, 213, 225);
   --phase-pulse: rgb(148, 163, 184);

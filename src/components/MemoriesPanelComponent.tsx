@@ -137,7 +137,7 @@ export default function MemoriesPanel({
   // History state
   const [history, setHistory] = useState<ConsolidationHistoryEntry[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyIsLoadingState, setHistoryLoading] = useState(false);
 
   // Keep a mutable ref of memories to avoid recreating loadMemories on page loads
   const memoriesRef = useRef<AgentMemory[]>([]);
@@ -545,11 +545,11 @@ export default function MemoriesPanel({
             <span className={styles.historySectionTitle}>
               Consolidation History
             </span>
-            {historyLoading && (
+            {historyIsLoadingState && (
               <RefreshCw size={10} className={styles.refreshSpin} />
             )}
           </div>
-          {history.length === 0 && !historyLoading && (
+          {history.length === 0 && !historyIsLoadingState && (
             <div className={styles.historyEmpty}>No consolidation runs yet</div>
           )}
           {history.map((run, i) => (

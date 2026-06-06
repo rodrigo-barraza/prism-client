@@ -9,7 +9,7 @@
 
 /* ── Two-column body: sidebar + scrollable content ───────────────── */
 
-.settings-body-row {
+.settings-body-layout-row {
   flex: 1;
   display: flex;
   min-block-size: 0;

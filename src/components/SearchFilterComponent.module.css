@@ -18,7 +18,7 @@
   align-items: center;
   height: var(--input-height);
   padding: 0 10px;
-  background: var(--calculated-select-bg);
+  background: var(--calculated-select-background-color);
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   transition:

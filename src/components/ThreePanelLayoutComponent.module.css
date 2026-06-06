@@ -22,7 +22,7 @@
 
 /* ── Body (sidebars + main) ────────────────────────── */
 
-.layout-body-row {
+.layout-body-layout-row {
   flex: 1;
   display: flex;
   overflow: hidden;
@@ -163,7 +163,7 @@
   transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.is-scrim-active::after {
+.is-scrim-active-state::after {
   opacity: 1;
   pointer-events: auto;
 }

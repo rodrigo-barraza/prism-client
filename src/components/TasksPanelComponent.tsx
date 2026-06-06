@@ -492,7 +492,7 @@ export default function TasksPanel({
 
             {/* Delete confirm */}
             {isConfirming && (
-              <div className={styles.confirmRow}>
+              <div className={styles.confirmLayoutRow}>
                 <span className={styles.confirmLabel}>
                   Delete task #{task.taskId}?
                 </span>

@@ -895,7 +895,7 @@ export default function CustomAgentsPanel({
 
                 <div className={styles.agentActions}>
                   {isConfirming ? (
-                    <div className={styles.confirmRow}>
+                    <div className={styles.confirmLayoutRow}>
                       <span className={styles.confirmText}>Delete?</span>
                       <ButtonComponent
                         variant="destructive"

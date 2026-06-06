@@ -201,7 +201,7 @@ export default function ToolsSidebarNavigationComponent({
                     {domain}
                   </span>
                   {isActive && (
-                    <span className={styles["active-indicator"]} />
+                    <span className={styles["is-active-indicator-state"]} />
                   )}
                 </button>
               </li>

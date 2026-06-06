@@ -59,11 +59,11 @@
   background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
 }
 
-.sidebar-tab-button.is-active-tab {
+.sidebar-tab-button.is-active-tab-state {
   color: var(--accent-primary);
 }
 
-.sidebar-tab-button.is-active-tab::after {
+.sidebar-tab-button.is-active-tab-state::after {
   inset-inline: 16%;
   background: var(--accent-primary);
 }
@@ -82,7 +82,7 @@
   line-height: 1.4;
 }
 
-.sidebar-tab-button.is-active-tab .tab-count-badge {
+.sidebar-tab-button.is-active-tab-state .tab-count-badge {
   color: var(--accent-primary);
   background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
 }
@@ -472,7 +472,7 @@
   letter-spacing: 0.02em;
 }
 
-.form-row-layout {
+.form-layout-row {
   display: flex;
   gap: 16px;
 }
@@ -484,7 +484,7 @@
 }
 
 /* Toggles */
-.toggle-row-container {
+.toggle-layout-row-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -492,7 +492,7 @@
   padding-block: 12px;
 }
 
-.toggle-row-container + .toggle-row-container {
+.toggle-layout-row-container + .toggle-layout-row-container {
   border-block-start: 1px solid var(--calculated-border-subtle);
 }
 
@@ -659,7 +659,7 @@
 }
 
 /* Policies */
-.policy-row-container {
+.policy-layout-row-container {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -725,17 +725,17 @@
 
 /* ── Identifier Copy Row ─────────────────────────────────────── */
 
-.identifier-input-row {
+.identifier-input-layout-row {
   position: relative;
 }
 
-.identifier-input-row > *:first-child {
+.identifier-input-layout-row > *:first-child {
   inline-size: 100%;
   pointer-events: none;
   opacity: 0.65;
 }
 
-.identifier-input-row > *:first-child input {
+.identifier-input-layout-row > *:first-child input {
   padding-inline-end: 36px;
 }
 

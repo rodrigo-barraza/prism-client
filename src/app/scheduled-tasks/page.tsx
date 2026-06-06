@@ -320,7 +320,7 @@ function CronJobDetailPanel({
               <History size={12} /> Execution History
             </div>
             {isLoadingHistory ? (
-              <div className={styles["history-loading"]}>
+              <div className={styles["history-is-loading-state"]}>
                 <Loader2 className={styles.spin} size={16} /> Loading execution history...
               </div>
             ) : conversations.length === 0 ? (
@@ -1477,7 +1477,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                         {/* Inline Confirm Delete */}
                         {isConfirming && (
                           <div
-                            className={styles.confirmRow}
+                            className={styles.confirmLayoutRow}
                             onClick={(clickEvent) => clickEvent.stopPropagation()}
                           >
                             <span>Delete task permanently?</span>

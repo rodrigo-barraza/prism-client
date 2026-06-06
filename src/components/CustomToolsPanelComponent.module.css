@@ -468,7 +468,7 @@
   padding: 7px 10px;
   font-size: 0.8125rem;
   color: var(--text-primary);
-  background: var(--calculated-select-bg, var(--background-surface));
+  background: var(--calculated-select-background-color, var(--background-surface));
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   transition: border-color 0.2s ease;
@@ -678,7 +678,7 @@
   padding: 5px 8px;
   font-size: var(--font-size-sm);
   color: var(--text-primary);
-  background: var(--calculated-select-bg, var(--background-surface));
+  background: var(--calculated-select-background-color, var(--background-surface));
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
   transition: border-color 0.2s ease;

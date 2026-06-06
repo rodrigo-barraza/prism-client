@@ -579,7 +579,7 @@
   text-align: right;
 }
 
-.tool-row-metadata-header {
+.tool-layout-row-metadata-header {
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--text-tertiary);

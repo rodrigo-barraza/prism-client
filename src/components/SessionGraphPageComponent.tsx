@@ -767,7 +767,7 @@ export default function SessionGraphPageComponent() {
               return (
                 <div
                   key={sessionId}
-                  className={`${styles["session-item"]} ${isActive ? styles["session-item-active"] : ""}`}
+                  className={`${styles["session-item"]} ${isActive ? styles["session-item-is-active-state"] : ""}`}
                   onClick={() => handleSessionSelect(session)}
                   role="button"
                   tabIndex={0}
@@ -1318,9 +1318,9 @@ function DetailRow({
   value: string;
 }) {
   return (
-    <div className={styles["node-detail-popover-row"]}>
-      <span className={styles["node-detail-popover-row-label"]}>{label}</span>
-      <span className={styles["node-detail-popover-row-value"]}>{value}</span>
+    <div className={styles["node-detail-popover-layout-row"]}>
+      <span className={styles["node-detail-popover-layout-row-label"]}>{label}</span>
+      <span className={styles["node-detail-popover-layout-row-value"]}>{value}</span>
     </div>
   );
 }

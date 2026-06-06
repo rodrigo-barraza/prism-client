@@ -404,7 +404,7 @@ export default function RulesPanel({
             )}
 
             {isConfirming && (
-              <div className={styles["confirm-row"]}>
+              <div className={styles["confirm-layout-row"]}>
                 <span className={styles["confirm-label"]}>
                   Delete &ldquo;{rule.name}&rdquo;?
                 </span>

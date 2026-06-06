@@ -253,7 +253,7 @@ export default function SettingsSidebarNavigationComponent({
                   </span>
                 )}
                 {isActive && (
-                  <span className={styles["active-indicator"]} />
+                  <span className={styles["is-active-indicator-state"]} />
                 )}
               </button>
             </li>

@@ -143,7 +143,7 @@
 .inputField {
   height: var(--input-height);
   padding: 0 10px;
-  background: var(--calculated-select-bg);
+  background: var(--calculated-select-background-color);
   border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
   border-radius: var(--border-radius-sm);
@@ -154,7 +154,7 @@
 .formGroup textarea {
   height: auto;
   padding: 10px;
-  background: var(--calculated-select-bg);
+  background: var(--calculated-select-background-color);
   border: 1px solid var(--calculated-border-color);
   color: var(--text-primary);
   border-radius: var(--border-radius-sm);

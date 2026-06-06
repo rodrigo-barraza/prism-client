@@ -793,7 +793,7 @@ export default function ScheduledTaskCalendarComponent({
 
       {/* ── Weekday Labels ── */}
       {activeView !== "day" && (
-        <div className={styles["calendar-weekday-row"]}>
+        <div className={styles["calendar-weekday-layout-row"]}>
           {WEEKDAY_LABELS.map((dayLabel) => (
             <div key={dayLabel} className={styles["calendar-weekday-cell"]}>
               {dayLabel}
@@ -1026,7 +1026,7 @@ export default function ScheduledTaskCalendarComponent({
                   return (
                     <div
                       key={hourIndex}
-                      className={styles["calendar-timeline-hour-row"]}
+                      className={styles["calendar-timeline-hour-layout-row"]}
                       data-hour-index={hourIndex}
                     >
                       <div className={styles["calendar-timeline-hour-label"]}>

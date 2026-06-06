@@ -386,7 +386,7 @@ export default function SkillsPanel({
             )}
 
             {isConfirming && (
-              <div className={styles.confirmRow}>
+              <div className={styles.confirmLayoutRow}>
                 <span className={styles.confirmLabel}>
                   Delete &ldquo;{skill.name}&rdquo;?
                 </span>

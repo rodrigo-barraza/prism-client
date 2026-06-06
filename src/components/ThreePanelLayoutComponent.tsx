@@ -344,7 +344,7 @@ export default function ThreePanelLayout({
         )}
 
         {/* Body: sidebars + main content */}
-        <div className={styles["layout-body-row"]}>
+        <div className={styles["layout-body-layout-row"]}>
           {/* Left Sidebar */}
           <aside
             className={`${styles["left-sidebar-panel"]} ${!showLeft ? styles["is-sidebar-hidden"] : ""} ${hasSplitPanels ? styles["has-split-panels"] : ""}`}
@@ -390,7 +390,7 @@ export default function ThreePanelLayout({
 
           {/* Main Center */}
           <section
-            className={`${styles["main-content-section"]} ${isMobile && (showLeft || showRight) ? styles["is-scrim-active"] : ""}`}
+            className={`${styles["main-content-section"]} ${isMobile && (showLeft || showRight) ? styles["is-scrim-active-state"] : ""}`}
             data-chat-area-region
             onClick={handleMainClick}
           >

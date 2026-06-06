@@ -168,7 +168,7 @@
 
 /* ── Delete confirmation ──────────────────────────────────────── */
 
-.confirmRow {
+.confirmLayoutRow {
   display: flex;
   align-items: center;
   gap: 8px;

@@ -404,7 +404,7 @@ export default function AgentsDetailPanelComponent({
           {/* Agent Identifier (Read Only) */}
           <div className={styles["form-group-container"]}>
             <label htmlFor="input-agent-identifier">Identifier</label>
-            <div className={styles["identifier-input-row"]}>
+            <div className={styles["identifier-input-layout-row"]}>
               <InputComponent
                 id="input-agent-identifier"
                 type="text"
@@ -442,7 +442,7 @@ export default function AgentsDetailPanelComponent({
             </span>
           </div>
 
-          <div className={styles["form-row-layout"]}>
+          <div className={styles["form-layout-row"]}>
             <div className={styles["form-group-container"]} style={{ flex: 1 }}>
               <label htmlFor="input-agent-project">Scope Project</label>
               <InputComponent
@@ -624,7 +624,7 @@ export default function AgentsDetailPanelComponent({
           {/* Context Toggles */}
           <div className={styles["form-group-container"]}>
             <label>System Context Controls</label>
-            <div className={styles["toggle-row-container"]}>
+            <div className={styles["toggle-layout-row-container"]}>
               <div className={styles["toggle-info-panel"]}>
                 <span className={styles["toggle-title-text"]}>Workspace Directory Tree</span>
                 <span className={styles["toggle-hint-text"]}>
@@ -637,7 +637,7 @@ export default function AgentsDetailPanelComponent({
               />
             </div>
 
-            <div className={styles["toggle-row-container"]}>
+            <div className={styles["toggle-layout-row-container"]}>
               <div className={styles["toggle-info-panel"]}>
                 <span className={styles["toggle-title-text"]}>Coding Default Policies</span>
                 <span className={styles["toggle-hint-text"]}>
@@ -668,7 +668,7 @@ export default function AgentsDetailPanelComponent({
               Specify regex pattern checks and prompt confirmation overrides per tool call.
             </span>
             {(editingAgent.policies || []).map((policy, index) => (
-              <div key={index} className={styles["policy-row-container"]}>
+              <div key={index} className={styles["policy-layout-row-container"]}>
                 <SelectComponent
                   value={policy.decision}
                   options={[
@@ -828,7 +828,7 @@ export default function AgentsDetailPanelComponent({
           {/* Agent Identifier (Read Only) */}
           <div className={styles["form-group-container"]}>
             <label htmlFor="input-agent-identifier-builtin">Identifier</label>
-            <div className={styles["identifier-input-row"]}>
+            <div className={styles["identifier-input-layout-row"]}>
               <InputComponent
                 id="input-agent-identifier-builtin"
                 type="text"
@@ -856,7 +856,7 @@ export default function AgentsDetailPanelComponent({
           {/* Specs detail metadata */}
           <div className={styles["form-group-container"]}>
             <label>System Configuration Settings</label>
-            <div className={styles["toggle-row-container"]}>
+            <div className={styles["toggle-layout-row-container"]}>
               <div className={styles["toggle-info-panel"]}>
                 <span className={styles["toggle-title-text"]}>Workspace Directory Tree</span>
                 <span className={styles["toggle-hint-text"]}>
@@ -866,7 +866,7 @@ export default function AgentsDetailPanelComponent({
               <ToggleComponent checked={selectedBuiltInAgent.usesDirectoryTree} onChange={() => {}} disabled />
             </div>
 
-            <div className={styles["toggle-row-container"]}>
+            <div className={styles["toggle-layout-row-container"]}>
               <div className={styles["toggle-info-panel"]}>
                 <span className={styles["toggle-title-text"]}>Coding Default Policies</span>
                 <span className={styles["toggle-hint-text"]}>
