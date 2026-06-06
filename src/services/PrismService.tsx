@@ -54,6 +54,9 @@ import type {
   WebSearchResult,
   ApprovalResponse,
   AgenticHarness,
+  Prompt,
+  ScheduledTask,
+  ConversationTimer,
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
@@ -334,8 +337,8 @@ export default class PrismService {
   /**
    * Fetch all active scheduled reminders for a specific conversation.
    */
-  static async getConversationTimers(id: string): Promise<any[]> {
-    return PrismService._request<any[]>(`/conversations/${id}/timers`, {
+  static async getConversationTimers(id: string): Promise<ConversationTimer[]> {
+    return PrismService._request<ConversationTimer[]>(`/conversations/${id}/timers`, {
       method: "GET",
     });
   }
@@ -450,11 +453,11 @@ export default class PrismService {
       settings?: Record<string, unknown>;
     },
     project?: string,
-  ): Promise<any> {
+  ): Promise<Conversation> {
     const queryString = project
       ? `?project=${encodeURIComponent(project)}`
       : "";
-    return PrismService._request<any>(`/conversations/${id}${queryString}`, {
+    return PrismService._request<Conversation>(`/conversations/${id}${queryString}`, {
       method: "PATCH",
       body: updates,
     });
@@ -985,12 +988,12 @@ export default class PrismService {
   /**
    * Fetch all cron jobs.
    */
-  static async getCronJobs(): Promise<any[]> {
-    return PrismService._request<any[]>("/scheduled-tasks", { method: "GET" });
+  static async getCronJobs(): Promise<ScheduledTask[]> {
+    return PrismService._request<ScheduledTask[]>("/scheduled-tasks", { method: "GET" });
   }
 
-  static async getAllCronJobs(): Promise<any[]> {
-    return PrismService._request<any[]>("/scheduled-tasks/all", { method: "GET" });
+  static async getAllCronJobs(): Promise<ScheduledTask[]> {
+    return PrismService._request<ScheduledTask[]>("/scheduled-tasks/all", { method: "GET" });
   }
 
   static async getTaskConversations(
@@ -1012,8 +1015,13 @@ export default class PrismService {
   /**
    * Create a cron job.
    */
-  static async createCronJob(task: any): Promise<any> {
-    return PrismService._request<any>("/scheduled-tasks", {
+  static async createCronJob(
+    task: Omit<ScheduledTask, "id" | "createdAt" | "updatedAt" | "project" | "enabled"> & {
+      project?: string;
+      enabled?: boolean;
+    },
+  ): Promise<ScheduledTask> {
+    return PrismService._request<ScheduledTask>("/scheduled-tasks", {
       method: "POST",
       body: task,
     });
@@ -1024,9 +1032,9 @@ export default class PrismService {
    */
   static async updateCronJob(
     id: string,
-    updates: Partial<any>,
-  ): Promise<any> {
-    return PrismService._request<any>(`/scheduled-tasks/${id}`, {
+    updates: Partial<ScheduledTask>,
+  ): Promise<ScheduledTask> {
+    return PrismService._request<ScheduledTask>(`/scheduled-tasks/${id}`, {
       method: "PATCH",
       body: updates,
     });
@@ -2093,26 +2101,26 @@ export default class PrismService {
 
   static async getPrompts(
     params: Record<string, string | number | boolean> = {},
-  ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
+  ): Promise<{ data: Prompt[]; total: number; page: number; limit: number }> {
     const stringParams: Record<string, string> = {};
     for (const [key, value] of Object.entries(params)) stringParams[key] = String(value);
     const query = new URLSearchParams(stringParams).toString();
-    return PrismService._request<{ data: any[]; total: number; page: number; limit: number }>(
+    return PrismService._request<{ data: Prompt[]; total: number; page: number; limit: number }>(
       `/prompts${query ? `?${query}` : ""}`,
       { method: "GET" },
     );
   }
 
-  static async getPrompt(id: string): Promise<any> {
-    return PrismService._request<any>(`/prompts/${id}`, { method: "GET" });
+  static async getPrompt(id: string): Promise<Prompt> {
+    return PrismService._request<Prompt>(`/prompts/${id}`, { method: "GET" });
   }
 
   static async createPrompt(data: {
     title: string;
     content: string;
     tags?: string[];
-  }): Promise<any> {
-    return PrismService._request<any>("/prompts", {
+  }): Promise<Prompt> {
+    return PrismService._request<Prompt>("/prompts", {
       method: "POST",
       body: data,
     });
@@ -2121,8 +2129,8 @@ export default class PrismService {
   static async updatePrompt(
     id: string,
     updates: Partial<{ title: string; content: string; tags: string[] }>,
-  ): Promise<any> {
-    return PrismService._request<any>(`/prompts/${id}`, {
+  ): Promise<Prompt> {
+    return PrismService._request<Prompt>(`/prompts/${id}`, {
       method: "PATCH",
       body: updates,
     });

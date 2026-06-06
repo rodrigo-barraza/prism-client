@@ -29,14 +29,9 @@ import { LoadingMessage } from "./StateMessageComponent";
 import { usePersistedState } from "../hooks/usePersistedState";
 import styles from "./PromptsPageComponent.module.css";
 
-interface PromptDocument {
-  id: string;
-  title: string;
-  content: string;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-}
+import type { Prompt } from "../types/types";
+
+type PromptDocument = Prompt;
 
 const PAGE_SIZE = 30;
 
@@ -532,7 +527,7 @@ export default function PromptsPageComponent() {
       <div className={styles.page}>
         <SearchInputComponent
           value={searchInput}
-          onChange={(value: any) => {
+          onChange={(value: string) => {
             setSearchInput(value);
             setSearch(value);
             setPage(1);
@@ -578,7 +573,7 @@ export default function PromptsPageComponent() {
         {!isLoading && viewMode === "table" && (
           <div className={styles["table-wrapper"]}>
             <TableComponent
-              columns={tableColumns as any}
+              columns={tableColumns}
               data={prompts}
               getRowKey={(row: PromptDocument) => row.id}
               emptyText="No prompts found."

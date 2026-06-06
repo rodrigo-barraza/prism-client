@@ -484,3 +484,30 @@
     padding-inline: 16px;
   }
 }
+
+/* ── Connections / Edges ─────────────────────────────────── */
+
+.connection-group {
+  pointer-events: auto;
+}
+
+.connection-line {
+  pointer-events: none;
+  transition: stroke-opacity var(--transition-fast), stroke-width var(--transition-fast);
+}
+
+@keyframes edge-flow-animation {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.connection-selected .connection-line {
+  stroke-dasharray: 6 4;
+  animation: edge-flow-animation 0.8s linear infinite;
+}
+
+.connection-group:hover .connection-line {
+  stroke-opacity: 1 !important;
+  stroke-width: 3px !important;
+}

@@ -4,5 +4,5 @@
  * Replaces the `(error as Error).message` anti-pattern throughout the codebase.
  * The only place `unknown` should appear is in `catch (error: unknown)`.
  */
-export const getErrorMessage = (err: unknown): string =>
-  err instanceof Error ? err.message : String(err);
+export const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);

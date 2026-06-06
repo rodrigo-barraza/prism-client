@@ -1593,3 +1593,74 @@ export interface IrisUserStat {
   avgLatency?: number;
   lastRequest?: string;
 }
+
+export interface RecurrenceRule {
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
+  interval: number;
+  startDate?: string;
+  weekdays?: number[];
+  monthlyType?: "dayOfMonth" | "nthDayOfWeek";
+  dayOfMonth?: number;
+  nthDayOfWeek?: {
+    occurrence: 1 | 2 | 3 | 4 | -1;
+    dayOfWeek: number;
+  };
+  yearlyType?: "specificDate" | "nthDayOfWeek";
+  months?: number[];
+}
+
+export interface ScheduledTask {
+  id: string;
+  name: string;
+  project: string;
+  username?: string;
+  prompt: string;
+  agent: string | null;
+  provider: string;
+  model: string;
+  scheduleType: "hourly" | "daily" | "weekly" | "cron" | "trigger" | "once" | "custom";
+  scheduleTime?: string;
+  scheduleDay?: number;
+  scheduleDate?: string;
+  cronExpression?: string;
+  recurrenceRule?: RecurrenceRule;
+  toolConfig?: {
+    enabledTools?: string[];
+    disabledTools?: string[];
+  };
+  enabled: boolean;
+  lastRunMinute?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConversationTimer {
+  id: string;
+  conversationId: string;
+  project: string;
+  username: string;
+  prompt: string;
+  mode: "one_shot" | "recurring";
+  durationSeconds?: number;
+  cronExpression?: string;
+  maxIterations?: number;
+  iterationCount: number;
+  firesAt: string;
+  lastFiredMinuteKey?: string;
+  status: "active" | "fired" | "cancelled" | "expired";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Prompt {
+  _id?: ObjectId;
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+  project?: string;
+  username?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+

@@ -29,6 +29,7 @@ import {
   timeAgo as formatTimeAgo,
 } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../utils/utilities";
+import { edgePath } from "./WorkflowNodeConstantsComponent";
 
 import styles from "./SessionGraphPageComponent.module.css";
 
@@ -100,11 +101,10 @@ const NODE_LABELS: Record<NodeCategory, string> = {
 /* ═══════════════════════════════════════════════════════════════════
    Graph Builder — converts session data into nodes + edges
 
-   Topology:
-     Session ─→ Agent ─→ Model ─→ Provider
-                  ├─→ Tool (× N)
-                  ├─→ Request Operation (× N)
-                  └─→ Embedding Model ─→ Embedding Provider
+    Topology:
+      Session ─→ Agent ─→ Request Operation (× N) ─→ Model ─→ Provider
+                   ├─→ Tool (× N)
+                   └─→ Request Operation (× N) ─→ Embedding Model ─→ Embedding Provider
      Session ─→ Project
      Session ─→ User
    ═══════════════════════════════════════════════════════════════════ */
@@ -199,6 +199,7 @@ function buildGraphFromSession(
   const embeddingModelCounts: Record<string, { count: number; cost: number; tokens: number; providers: Set<string> }> = {};
   const toolCounts: Record<string, number> = {};
   const userSet = new Set<string>();
+  const modelToOperationsMap = new Map<string, Set<string>>();
 
   for (const request of sessionRequests) {
     const isEmbeddingRequest = request.operation?.startsWith("embed:");
@@ -215,6 +216,12 @@ function buildGraphFromSession(
       if (request.provider) {
         targetCounts[request.model].providers.add(request.provider);
       }
+
+      const operationName = request.operation || "unknown";
+      if (!modelToOperationsMap.has(request.model)) {
+        modelToOperationsMap.set(request.model, new Set());
+      }
+      modelToOperationsMap.get(request.model)!.add(operationName);
     }
     if (request.username) {
       userSet.add(request.username);
@@ -235,7 +242,7 @@ function buildGraphFromSession(
     }
   }
 
-  // LLM Model nodes — Agent → Model → Provider
+  // LLM Model nodes — Request → Model → Provider
   for (const [modelName, modelData] of Object.entries(llmModelCounts)) {
     const modelNodeId = `model:${modelName}`;
     const normalizedRadius = Math.min(26, 14 + Math.sqrt(modelData.count) * 3);
@@ -245,7 +252,15 @@ function buildGraphFromSession(
       totalCost: modelData.cost,
       totalTokens: modelData.tokens,
     }, modelData.count);
-    addEdge(agentNodeId, modelNodeId, 0.9);
+
+    const associatedOperations = modelToOperationsMap.get(modelName);
+    if (associatedOperations && associatedOperations.size > 0) {
+      for (const operationName of associatedOperations) {
+        addEdge(`request:${operationName}`, modelNodeId, 0.9);
+      }
+    } else {
+      addEdge(agentNodeId, modelNodeId, 0.9);
+    }
 
     // Model → Provider
     for (const providerName of modelData.providers) {
@@ -257,7 +272,7 @@ function buildGraphFromSession(
     }
   }
 
-  // Embedding Model nodes — Agent → Embedding Model → Embedding Provider
+  // Embedding Model nodes — Request → Embedding Model → Embedding Provider
   for (const [modelName, modelData] of Object.entries(embeddingModelCounts)) {
     const embeddingNodeId = `embedding:${modelName}`;
     const normalizedRadius = Math.min(22, 13 + Math.sqrt(modelData.count) * 2);
@@ -267,7 +282,15 @@ function buildGraphFromSession(
       totalCost: modelData.cost,
       totalTokens: modelData.tokens,
     }, modelData.count);
-    addEdge(agentNodeId, embeddingNodeId, 0.7);
+
+    const associatedOperations = modelToOperationsMap.get(modelName);
+    if (associatedOperations && associatedOperations.size > 0) {
+      for (const operationName of associatedOperations) {
+        addEdge(`request:${operationName}`, embeddingNodeId, 0.7);
+      }
+    } else {
+      addEdge(agentNodeId, embeddingNodeId, 0.7);
+    }
 
     // Embedding Model → Provider
     for (const providerName of modelData.providers) {
@@ -457,10 +480,32 @@ export default function SessionGraphPageComponent() {
   // Canvas state
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const isDraggingRef = useRef(false);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+  const [draggedNode, setDraggedNode] = useState<{
+    id: string;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+
+  const screenToSvg = useCallback(
+    (clientX: number, clientY: number) => {
+      const rect = canvasWrapperRef.current?.getBoundingClientRect();
+      if (!rect) return { x: clientX, y: clientY };
+
+      const originX = dimensions.width / 2 - dimensions.width / (2 * zoom) - panOffset.x;
+      const originY = dimensions.height / 2 - dimensions.height / (2 * zoom) - panOffset.y;
+
+      return {
+        x: originX + (clientX - rect.left) / zoom,
+        y: originY + (clientY - rect.top) / zoom,
+      };
+    },
+    [dimensions.width, dimensions.height, zoom, panOffset],
+  );
 
   // ResizeObserver is used to dynamically update width and height
   // when the wrapper elements are rendered or resized.
@@ -610,33 +655,259 @@ export default function SessionGraphPageComponent() {
     };
   }, [setControls, setTitleBadge]);
 
+  // ── Circular Collision Repulsion Loop ─────────────────────────
+  const nodesRef = useRef<GraphNode[]>([]);
+  const draggingRef = useRef<{ id: string } | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const settleCountRef = useRef<number>(0);
+  const collisionTickRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    nodesRef.current = graphData?.nodes || [];
+  }, [graphData?.nodes]);
+
+  useEffect(() => {
+    draggingRef.current = draggedNode;
+  }, [draggedNode]);
+
+  useEffect(() => {
+    const PUSH_FACTOR = 0.35;
+    const MIN_PUSH = 0.5;
+    const COLLISION_PADDING = 15; // minimum padding between nodes
+
+    collisionTickRef.current = () => {
+      const currentNodes = nodesRef.current;
+      const dragId = draggingRef.current?.id || null;
+      const updates: Record<string, { x: number; y: number }> = {};
+
+      for (let indexA = 0; indexA < currentNodes.length; indexA++) {
+        for (let indexB = indexA + 1; indexB < currentNodes.length; indexB++) {
+          const nodeA = currentNodes[indexA];
+          const nodeB = currentNodes[indexB];
+
+          const posA = updates[nodeA.id] || { x: nodeA.x, y: nodeA.y };
+          const posB = updates[nodeB.id] || { x: nodeB.x, y: nodeB.y };
+
+          const deltaX = posB.x - posA.x;
+          const deltaY = posB.y - posA.y;
+          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+          const minDistance = nodeA.radius + nodeB.radius + COLLISION_PADDING;
+          const overlap = minDistance - distance;
+
+          if (overlap > MIN_PUSH) {
+            const aIsDragged = nodeA.id === dragId;
+            const bIsDragged = nodeB.id === dragId;
+
+            const ux = deltaX / distance;
+            const uy = deltaY / distance;
+            const push = overlap * PUSH_FACTOR;
+
+            if (aIsDragged) {
+              if (!updates[nodeB.id]) updates[nodeB.id] = { x: nodeB.x, y: nodeB.y };
+              updates[nodeB.id].x += ux * push;
+              updates[nodeB.id].y += uy * push;
+            } else if (bIsDragged) {
+              if (!updates[nodeA.id]) updates[nodeA.id] = { x: nodeA.x, y: nodeA.y };
+              updates[nodeA.id].x -= ux * push;
+              updates[nodeA.id].y -= uy * push;
+            } else {
+              const halfPush = push / 2;
+              if (!updates[nodeA.id]) updates[nodeA.id] = { x: nodeA.x, y: nodeA.y };
+              if (!updates[nodeB.id]) updates[nodeB.id] = { x: nodeB.x, y: nodeB.y };
+              updates[nodeA.id].x -= ux * halfPush;
+              updates[nodeA.id].y -= uy * halfPush;
+              updates[nodeB.id].x += ux * halfPush;
+              updates[nodeB.id].y += uy * halfPush;
+            }
+          }
+        }
+      }
+
+      const hasUpdates = Object.keys(updates).length > 0;
+      if (hasUpdates) {
+        setGraphData((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            nodes: prev.nodes.map((node) =>
+              updates[node.id] ? { ...node, x: updates[node.id].x, y: updates[node.id].y } : node
+            ),
+          };
+        });
+      }
+
+      if (draggingRef.current) {
+        settleCountRef.current = 10;
+        rafRef.current = requestAnimationFrame(
+          collisionTickRef.current as FrameRequestCallback,
+        );
+      } else if (hasUpdates) {
+        settleCountRef.current = 10;
+        rafRef.current = requestAnimationFrame(
+          collisionTickRef.current as FrameRequestCallback,
+        );
+      } else if (settleCountRef.current > 0) {
+        settleCountRef.current--;
+        rafRef.current = requestAnimationFrame(
+          collisionTickRef.current as FrameRequestCallback,
+        );
+      } else {
+        rafRef.current = null;
+      }
+    };
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  const startCollisionLoop = useCallback((frames = 30) => {
+    if (!rafRef.current && collisionTickRef.current) {
+      settleCountRef.current = frames;
+      rafRef.current = requestAnimationFrame(
+        collisionTickRef.current as FrameRequestCallback,
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    if (draggedNode) startCollisionLoop(30);
+  }, [draggedNode, startCollisionLoop]);
+
   // ── Canvas pan/zoom handlers ──────────────────────────────────
   const handleCanvasMouseDown = useCallback(
     (event: React.MouseEvent<SVGSVGElement>) => {
       if ((event.target as SVGElement).closest("[data-node-id]")) return;
-      isDraggingRef.current = true;
+      setIsPanning(true);
       lastMousePositionRef.current = { x: event.clientX, y: event.clientY };
     },
     [],
   );
 
-  const handleCanvasMouseMove = useCallback(
-    (event: React.MouseEvent<SVGSVGElement>) => {
-      if (!isDraggingRef.current) return;
-      const deltaX = event.clientX - lastMousePositionRef.current.x;
-      const deltaY = event.clientY - lastMousePositionRef.current.y;
-      lastMousePositionRef.current = { x: event.clientX, y: event.clientY };
-      setPanOffset((previous) => ({
-        x: previous.x + deltaX / zoom,
-        y: previous.y + deltaY / zoom,
-      }));
+  const handleNodeMouseDown = useCallback(
+    (event: React.MouseEvent<SVGGElement>, nodeId: string) => {
+      if (event.button !== 0) return;
+      event.stopPropagation();
+      setSelectedNodeId(nodeId);
+
+      const node = graphData?.nodes.find((n) => n.id === nodeId);
+      if (!node) return;
+
+      const svgPos = screenToSvg(event.clientX, event.clientY);
+      setDraggedNode({
+        id: nodeId,
+        offsetX: svgPos.x - node.x,
+        offsetY: svgPos.y - node.y,
+      });
     },
-    [zoom],
+    [graphData, screenToSvg],
   );
 
-  const handleCanvasMouseUp = useCallback(() => {
-    isDraggingRef.current = false;
-  }, []);
+  const handleNodeTouchStart = useCallback(
+    (event: React.TouchEvent<SVGGElement>, nodeId: string) => {
+      if (event.touches.length !== 1) return;
+      event.stopPropagation();
+      setSelectedNodeId(nodeId);
+
+      const node = graphData?.nodes.find((n) => n.id === nodeId);
+      if (!node) return;
+
+      const touch = event.touches[0];
+      const svgPos = screenToSvg(touch.clientX, touch.clientY);
+      setDraggedNode({
+        id: nodeId,
+        offsetX: svgPos.x - node.x,
+        offsetY: svgPos.y - node.y,
+      });
+    },
+    [graphData, screenToSvg],
+  );
+
+  const handleGlobalMouseMove = useCallback(
+    (event: MouseEvent) => {
+      if (draggedNode) {
+        const svgPos = screenToSvg(event.clientX, event.clientY);
+        const newX = svgPos.x - draggedNode.offsetX;
+        const newY = svgPos.y - draggedNode.offsetY;
+
+        setGraphData((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            nodes: prev.nodes.map((node) =>
+              node.id === draggedNode.id ? { ...node, x: newX, y: newY } : node
+            ),
+          };
+        });
+      }
+
+      if (isPanning) {
+        const deltaX = event.clientX - lastMousePositionRef.current.x;
+        const deltaY = event.clientY - lastMousePositionRef.current.y;
+        lastMousePositionRef.current = { x: event.clientX, y: event.clientY };
+        setPanOffset((previous) => ({
+          x: previous.x + deltaX / zoom,
+          y: previous.y + deltaY / zoom,
+        }));
+      }
+    },
+    [draggedNode, isPanning, screenToSvg, zoom],
+  );
+
+  const handleGlobalMouseUp = useCallback(() => {
+    if (draggedNode) {
+      setDraggedNode(null);
+    }
+    if (isPanning) {
+      setIsPanning(false);
+    }
+  }, [draggedNode, isPanning]);
+
+  const handleGlobalTouchMove = useCallback(
+    (event: TouchEvent) => {
+      if (draggedNode && event.touches.length === 1) {
+        event.preventDefault();
+        const touch = event.touches[0];
+        const svgPos = screenToSvg(touch.clientX, touch.clientY);
+        const newX = svgPos.x - draggedNode.offsetX;
+        const newY = svgPos.y - draggedNode.offsetY;
+
+        setGraphData((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            nodes: prev.nodes.map((node) =>
+              node.id === draggedNode.id ? { ...node, x: newX, y: newY } : node
+            ),
+          };
+        });
+      }
+    },
+    [draggedNode, screenToSvg],
+  );
+
+  const handleGlobalTouchEnd = useCallback(() => {
+    if (draggedNode) {
+      setDraggedNode(null);
+    }
+  }, [draggedNode]);
+
+  useEffect(() => {
+    if (draggedNode || isPanning) {
+      window.addEventListener("mousemove", handleGlobalMouseMove);
+      window.addEventListener("mouseup", handleGlobalMouseUp);
+    }
+    if (draggedNode) {
+      window.addEventListener("touchmove", handleGlobalTouchMove, { passive: false });
+      window.addEventListener("touchend", handleGlobalTouchEnd);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleGlobalMouseMove);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+      window.removeEventListener("touchmove", handleGlobalTouchMove);
+      window.removeEventListener("touchend", handleGlobalTouchEnd);
+    };
+  }, [draggedNode, isPanning, handleGlobalMouseMove, handleGlobalMouseUp, handleGlobalTouchMove, handleGlobalTouchEnd]);
 
   const handleCanvasWheel = useCallback(
     (event: React.WheelEvent<SVGSVGElement>) => {
@@ -879,11 +1150,8 @@ export default function SessionGraphPageComponent() {
                   className={styles["graph-canvas"]}
                   viewBox={viewBoxTransform}
                   onMouseDown={handleCanvasMouseDown}
-                  onMouseMove={handleCanvasMouseMove}
-                  onMouseUp={handleCanvasMouseUp}
-                  onMouseLeave={handleCanvasMouseUp}
                   onWheel={handleCanvasWheel}
-                  style={{ cursor: isDraggingRef.current ? "grabbing" : "grab" }}
+                  style={{ cursor: draggedNode ? "grabbing" : isPanning ? "grabbing" : "grab" }}
                 >
                   <defs>
                     {/* Glow filter for the center session node */}
@@ -913,18 +1181,36 @@ export default function SessionGraphPageComponent() {
                       (node) => node.id === edge.target,
                     );
                     if (!sourceNode || !targetNode) return null;
-                    const edgeOpacity = 0.15 + (edge.strength || 0.5) * 0.2;
+
+                    const isEdgeSelected =
+                      selectedNodeId === edge.source || selectedNodeId === edge.target;
+                    const baseOpacity = 0.15 + (edge.strength || 0.5) * 0.2;
+                    const edgeOpacity = isEdgeSelected ? 0.95 : baseOpacity;
+                    const edgeColor = NODE_COLORS[targetNode.category] || "oklch(0.6 0 0)";
+
                     return (
-                      <line
-                        key={`edge-${edgeIndex}`}
-                        x1={sourceNode.x}
-                        y1={sourceNode.y}
-                        x2={targetNode.x}
-                        y2={targetNode.y}
-                        stroke="oklch(0.6 0 0)"
-                        strokeWidth={1}
-                        strokeOpacity={edgeOpacity}
-                      />
+                      <g
+                        key={`edge-group-${edgeIndex}`}
+                        className={`${styles["connection-group"]} ${isEdgeSelected ? styles["connection-selected"] : ""}`}
+                      >
+                        {/* Interactive invisible hit area */}
+                        <path
+                          d={edgePath(sourceNode.x, sourceNode.y, targetNode.x, targetNode.y)}
+                          stroke="transparent"
+                          strokeWidth={8}
+                          fill="none"
+                          style={{ cursor: "pointer" }}
+                        />
+                        {/* Visible connection path */}
+                        <path
+                          d={edgePath(sourceNode.x, sourceNode.y, targetNode.x, targetNode.y)}
+                          stroke={edgeColor}
+                          strokeWidth={isEdgeSelected ? 2.5 : 1.5}
+                          strokeOpacity={edgeOpacity}
+                          fill="none"
+                          className={styles["connection-line"]}
+                        />
+                      </g>
                     );
                   })}
 
@@ -938,6 +1224,8 @@ export default function SessionGraphPageComponent() {
                         key={node.id}
                         data-node-id={node.id}
                         className={styles["node-group"]}
+                        onMouseDown={(event) => handleNodeMouseDown(event, node.id)}
+                        onTouchStart={(event) => handleNodeTouchStart(event, node.id)}
                         onClick={() => handleNodeClick(node.id)}
                         filter={
                           isSessionCenter
