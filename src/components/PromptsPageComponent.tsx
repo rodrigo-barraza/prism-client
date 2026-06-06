@@ -27,6 +27,7 @@ import {
 
 import { LoadingMessage } from "./StateMessageComponent";
 import { usePersistedState } from "../hooks/usePersistedState";
+import MarkdownContent from "./MarkdownContentComponent";
 import styles from "./PromptsPageComponent.module.css";
 
 import type { Prompt } from "../types/types";
@@ -55,7 +56,6 @@ export default function PromptsPageComponent() {
   const [page, setPage] = useState(1);
 
   const [isCreating, setIsCreating] = useState(false);
-  const [editingPromptId, setEditingPromptId] = useState<string | null>(null);
   const [deletingPromptId, setDeletingPromptId] = useState<string | null>(null);
   const [copiedPromptId, setCopiedPromptId] = useState<string | null>(null);
 
@@ -98,7 +98,6 @@ export default function PromptsPageComponent() {
     setFormContent("");
     setFormTags("");
     setIsCreating(false);
-    setEditingPromptId(null);
     setIsSaving(false);
   };
 
@@ -123,34 +122,7 @@ export default function PromptsPageComponent() {
     }
   };
 
-  const handleEdit = (prompt: PromptDocument) => {
-    setEditingPromptId(prompt.id);
-    setFormTitle(prompt.title);
-    setFormContent(prompt.content);
-    setFormTags((prompt.tags || []).join(", "));
-    setIsCreating(false);
-  };
 
-  const handleUpdate = async () => {
-    if (!editingPromptId || !formTitle.trim() || !formContent.trim()) return;
-    setIsSaving(true);
-    try {
-      const tags = formTags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean);
-      await PrismService.updatePrompt(editingPromptId, {
-        title: formTitle.trim(),
-        content: formContent.trim(),
-        tags,
-      });
-      resetForm();
-      loadPrompts();
-    } catch (error: unknown) {
-      console.error("Failed to update prompt:", error);
-      setIsSaving(false);
-    }
-  };
 
   const handleDelete = async (promptId: string) => {
     try {
@@ -172,9 +144,9 @@ export default function PromptsPageComponent() {
     }
   }, []);
 
-  const openPromptModal = (prompt: PromptDocument) => {
+  const openPromptModal = (prompt: PromptDocument, shouldOpenInEditMode = false) => {
     setModalPrompt(prompt);
-    setModalEditMode(false);
+    setModalEditMode(shouldOpenInEditMode);
     setModalTitle(prompt.title);
     setModalContent(prompt.content);
     setModalTags((prompt.tags || []).join(", "));
@@ -281,7 +253,7 @@ export default function PromptsPageComponent() {
     },
   ], [copiedPromptId, handleCopyToClipboard]);
 
-  const renderForm = (mode: "create" | "edit") => (
+  const renderForm = () => (
     <div className={styles["form-card"]}>
       <div className={styles["form-body"]}>
         <div className={styles["form-field"]}>
@@ -321,10 +293,10 @@ export default function PromptsPageComponent() {
           variant="primary"
           size="small"
           icon={Save}
-          onClick={mode === "create" ? handleCreate : handleUpdate}
+          onClick={handleCreate}
           disabled={isSaving || !formTitle.trim() || !formContent.trim()}
         >
-          {mode === "create" ? "Create" : "Save"}
+          Create
         </ButtonComponent>
         <ButtonComponent variant="disabled" size="small" icon={X} onClick={resetForm}>
           Cancel
@@ -334,17 +306,10 @@ export default function PromptsPageComponent() {
   );
 
   const renderPromptCard = (prompt: PromptDocument) => {
-    const isEditing = editingPromptId === prompt.id;
     const isDeleting = deletingPromptId === prompt.id;
     const isCopied = copiedPromptId === prompt.id;
     const wordCount = countWords(prompt.content);
     const tokenEstimate = estimateTokens(prompt.content);
-
-    if (isEditing) {
-      return (
-        <div key={prompt.id}>{renderForm("edit")}</div>
-      );
-    }
 
     return (
       <div
@@ -392,7 +357,7 @@ export default function PromptsPageComponent() {
             />
             <IconButtonComponent
               icon={<Pencil size={13} />}
-              onClick={() => handleEdit(prompt)}
+              onClick={() => openPromptModal(prompt, true)}
               tooltip="Edit prompt"
             />
             <IconButtonComponent
@@ -403,9 +368,10 @@ export default function PromptsPageComponent() {
             />
           </div>
         </div>
-        <div className={styles["prompt-content"]}>
-          {prompt.content}
-        </div>
+        <MarkdownContent
+          content={prompt.content}
+          className={styles["prompt-content"]}
+        />
         {isDeleting && (
           <div
             className={styles["delete-confirmation-overlay"]}
@@ -474,7 +440,7 @@ export default function PromptsPageComponent() {
           />
           <IconButtonComponent
             icon={<Pencil size={13} />}
-            onClick={() => handleEdit(prompt)}
+            onClick={() => openPromptModal(prompt, true)}
             tooltip="Edit prompt"
           />
           <IconButtonComponent
@@ -508,7 +474,7 @@ export default function PromptsPageComponent() {
               <span className={styles["stat-value"]}>{total}</span> prompts
             </div>
           </div>
-          {!isCreating && !editingPromptId && (
+          {!isCreating && (
             <ButtonComponent
               variant="primary"
               size="small"
@@ -551,7 +517,7 @@ export default function PromptsPageComponent() {
         </div>
 
         {/* Create Form */}
-        {isCreating && renderForm("create")}
+        {isCreating && renderForm()}
 
         {isLoading && <LoadingMessage message="Loading prompts..." />}
 
@@ -724,9 +690,10 @@ export default function PromptsPageComponent() {
                 </div>
               </div>
             ) : (
-              <div className={styles["modal-content"]}>
-                {modalPrompt.content}
-              </div>
+              <MarkdownContent
+                content={modalPrompt.content}
+                className={styles["modal-content"]}
+              />
             )}
           </div>
         </div>
