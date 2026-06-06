@@ -8,7 +8,8 @@
   width: 44px;
   height: 44px;
   z-index: 1;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
   filter: drop-shadow(0 1px 4px oklch(0.0% 0.0 0.0 / 0.45));
   will-change: transform, filter;
 }
@@ -28,4 +29,17 @@
 
 .isHiddenState {
   display: none;
+}
+
+@keyframes rapid-click-spin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 1080deg;
+  }
+}
+
+.is-click-spinning-state {
+  animation: rapid-click-spin 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

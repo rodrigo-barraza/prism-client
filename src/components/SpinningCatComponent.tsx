@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { parseGIF, decompressFrames } from "gifuct-js";
 import styles from "./SpinningCatComponent.module.css";
 
@@ -82,6 +82,9 @@ export default function SpinningCatComponent({
   const framesRef = useRef<DecodedFrame[] | null>(null);
   const bitmapsRef = useRef<ImageBitmap[] | null>(null);
   const rafRef = useRef<number | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const isClickSpinningRef = useRef(false);
+  const [isClickSpinning, setIsClickSpinning] = useState(false);
   // visuallyActive stays true during the wind-down deceleration
   const [visuallyActive, setVisuallyActive] = useState(false);
   const stateRef = useRef<AnimationState>({
@@ -267,8 +270,79 @@ export default function SpinningCatComponent({
     };
   }, []);
 
+  /**
+   * Synthesize a short "meow" via Web Audio API —
+   * two overlapping frequency-swept oscillators with
+   * an amplitude envelope to mimic a cat vocalization.
+   */
+  const synthesizeMeow = useCallback(() => {
+    const audioContext = new AudioContext();
+    const currentTime = audioContext.currentTime;
+
+    const primaryOscillator = audioContext.createOscillator();
+    primaryOscillator.type = "sine";
+    primaryOscillator.frequency.setValueAtTime(700, currentTime);
+    primaryOscillator.frequency.exponentialRampToValueAtTime(1200, currentTime + 0.15);
+    primaryOscillator.frequency.exponentialRampToValueAtTime(900, currentTime + 0.35);
+    primaryOscillator.frequency.exponentialRampToValueAtTime(600, currentTime + 0.5);
+
+    const harmonicOscillator = audioContext.createOscillator();
+    harmonicOscillator.type = "triangle";
+    harmonicOscillator.frequency.setValueAtTime(1400, currentTime);
+    harmonicOscillator.frequency.exponentialRampToValueAtTime(2400, currentTime + 0.15);
+    harmonicOscillator.frequency.exponentialRampToValueAtTime(1800, currentTime + 0.35);
+    harmonicOscillator.frequency.exponentialRampToValueAtTime(1200, currentTime + 0.5);
+
+    const primaryGain = audioContext.createGain();
+    primaryGain.gain.setValueAtTime(0, currentTime);
+    primaryGain.gain.linearRampToValueAtTime(0.25, currentTime + 0.05);
+    primaryGain.gain.linearRampToValueAtTime(0.3, currentTime + 0.15);
+    primaryGain.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.5);
+
+    const harmonicGain = audioContext.createGain();
+    harmonicGain.gain.setValueAtTime(0, currentTime);
+    harmonicGain.gain.linearRampToValueAtTime(0.08, currentTime + 0.05);
+    harmonicGain.gain.linearRampToValueAtTime(0.1, currentTime + 0.15);
+    harmonicGain.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.5);
+
+    primaryOscillator.connect(primaryGain);
+    primaryGain.connect(audioContext.destination);
+    harmonicOscillator.connect(harmonicGain);
+    harmonicGain.connect(audioContext.destination);
+
+    primaryOscillator.start(currentTime);
+    harmonicOscillator.start(currentTime);
+    primaryOscillator.stop(currentTime + 0.55);
+    harmonicOscillator.stop(currentTime + 0.55);
+
+    setTimeout(() => audioContext.close(), 600);
+  }, []);
+
+  const handleClick = useCallback(() => {
+    if (isClickSpinningRef.current) return;
+    isClickSpinningRef.current = true;
+    setIsClickSpinning(true);
+    synthesizeMeow();
+
+    setTimeout(() => {
+      isClickSpinningRef.current = false;
+      setIsClickSpinning(false);
+    }, 1000);
+  }, [synthesizeMeow]);
+
+  const clickSpinClassName = isClickSpinning
+    ? styles["is-click-spinning-state"]
+    : "";
+
   return (
-    <div className={`${styles.wrapper} ${className}`}>
+    <div
+      ref={wrapperRef}
+      className={`${styles.wrapper} ${clickSpinClassName} ${className}`}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      aria-label="Click the cat to meow"
+    >
       <img
         src="/cat.gif"
         alt="Cat"
