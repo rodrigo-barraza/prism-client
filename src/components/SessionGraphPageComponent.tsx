@@ -233,12 +233,11 @@ function buildGraphFromSession(
 
   // Collect unique providers across all requests
   const providerNodeIds = new Set<string>();
-  const toolNodeIds = new Set<string>();
   const modelNodeIds = new Set<string>();
   const userSet = new Set<string>();
 
-  // Tool usage tracking across all requests (for tool → agent edges)
-  const toolCounts: Record<string, number> = {};
+  // Track tool names added to request nodes (for fallback handling)
+  const addedToolNames = new Set<string>();
 
   // Sort requests by timestamp for sequencing
   const sortedRequests = [...sessionRequests].sort((requestA, requestB) => {
@@ -310,10 +309,22 @@ function buildGraphFromSession(
       }
     }
 
-    // Track tools per-request
+    // Track tools per-request and add unique tool nodes connected to the request
     if (request.toolApiNames?.length) {
       for (const toolName of request.toolApiNames) {
-        toolCounts[toolName] = (toolCounts[toolName] || 0) + 1;
+        const uniqueToolNodeId = `tool:${request._id || requestIndex}:${toolName}`;
+        
+        // Count tool occurrences within this specific request
+        const invocationsInRequest = request.toolApiNames.filter((name) => name === toolName).length;
+        const normalizedRadius = Math.min(22, 12 + Math.sqrt(invocationsInRequest) * 2);
+        
+        addNode(uniqueToolNodeId, toolName, "tool", normalizedRadius, {
+          toolName,
+          usageCount: invocationsInRequest,
+        });
+        
+        addEdge(requestNodeId, uniqueToolNodeId, 0.7);
+        addedToolNames.add(toolName);
       }
     }
 
@@ -322,40 +333,18 @@ function buildGraphFromSession(
     }
   }
 
-  // Also use stats-level toolCounts if requests are sparse
+  // Also use stats-level toolCounts if requests are sparse / not loaded
   if (sessionStats?.toolCounts) {
     for (const [toolName, usageCount] of Object.entries(sessionStats.toolCounts)) {
-      if (!toolCounts[toolName]) {
-        toolCounts[toolName] = usageCount;
+      if (!addedToolNames.has(toolName)) {
+        const fallbackToolNodeId = `tool:fallback:${toolName}`;
+        const normalizedRadius = Math.min(22, 12 + Math.sqrt(usageCount) * 2);
+        addNode(fallbackToolNodeId, toolName, "tool", normalizedRadius, {
+          toolName,
+          usageCount,
+        });
+        addEdge(agentNodeId, fallbackToolNodeId, 0.7);
       }
-    }
-  }
-
-  // Tool nodes — connect to specific request nodes that invoked them
-  const toolEntries = Object.entries(toolCounts).sort(
-    ([, countA], [, countB]) => countB - countA,
-  );
-  for (const [toolName, usageCount] of toolEntries.slice(0, 20)) {
-    const toolNodeId = `tool:${toolName}`;
-    toolNodeIds.add(toolNodeId);
-    const normalizedRadius = Math.min(22, 12 + Math.sqrt(usageCount) * 2);
-    addNode(toolNodeId, toolName, "tool", normalizedRadius, {
-      toolName,
-      usageCount,
-    });
-
-    // Add edges from requests that used this tool, or fallback to agent if no requests match
-    let hasMatchingRequest = false;
-    for (let requestIndex = 0; requestIndex < sortedRequests.length; requestIndex++) {
-      const request = sortedRequests[requestIndex];
-      if (request.toolApiNames?.includes(toolName)) {
-        const requestNodeId = `request:${request._id || requestIndex}`;
-        addEdge(requestNodeId, toolNodeId, 0.7);
-        hasMatchingRequest = true;
-      }
-    }
-    if (!hasMatchingRequest) {
-      addEdge(agentNodeId, toolNodeId, 0.7);
     }
   }
 
