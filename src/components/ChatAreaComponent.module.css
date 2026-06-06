@@ -83,16 +83,6 @@
   flex-shrink: 0;
 }
 
-/* ── Hidden utilities — active when Nodes tab is shown ────────── */
-
-.messages-list-hidden {
-  display: none;
-}
-
-.input-wrapper-hidden {
-  display: none;
-}
-
 /* Override ButtonComponent sizing to fit the compact chat header */
 .chat-header-new-button {
   height: 28px;
@@ -198,6 +188,12 @@
   }
 }
 
+/* ── Hidden — active when Nodes tab is shown ─────────────────── */
+
+.messages-list-hidden {
+  display: none;
+}
+
 /* ── Agent background image overlay ─────────────────────────── */
 /* Uses a layered background with a semi-transparent color on top
    of the image to achieve the low-opacity watermark effect without
@@ -268,6 +264,10 @@
 
 .input-wrapper:not(.input-wrapper-disabled) {
   transition: opacity 0.3s ease;
+}
+
+.input-wrapper-hidden {
+  display: none;
 }
 
 /* ── Workspace context row (above input box) ─────────────── */
