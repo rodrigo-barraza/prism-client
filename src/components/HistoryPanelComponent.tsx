@@ -3,10 +3,10 @@
 import { useMemo } from "react";
 import { MessageSquare } from "lucide-react";
 import HistoryList from "./HistoryListComponent";
-import { getModalities } from "../utils/utilities";
+import { mapConversationToHistoryItem } from "../utils/historyItemMapper";
 import styles from "./HistoryPanelComponent.module.css";
 
-import type { Conversation, Message } from "../types/types";
+import type { Conversation } from "../types/types";
 import type { LucideIcon } from "lucide-react";
 
 export interface HistoryPanelProps {
@@ -66,119 +66,13 @@ export default function HistoryPanel({
   dateRange,
   onDateChange,
 }: HistoryPanelProps) {
-  // Normalize sessions into HistoryList items
-  const items = useMemo(() => {
-    return sessions.map((conversation: Conversation) => {
-      // Prefer session-level totalCost (authoritative, from request logs
-      // for agent sessions). Fall back to message-sum only for Direct Chat
-      // sessions that carry messages inline with no precomputed total.
-      const totalCost =
-        conversation.totalCost ??
-        (conversation.messages || []).reduce(
-          (sum: number, m: Message) => sum + (m.estimatedCost || 0),
-          0,
-        );
-
-      const tags = [];
-      if (showProject && conversation.project) {
-        tags.push({
-          label: conversation.project,
-          style: {
-            background: "var(--accent-primary-subtle)",
-            color: "var(--accent-primary)",
-          },
-        });
-      }
-      if (conversation.synthetic) {
-        tags.push({
-          label: "SYNTHETIC",
-          style: {
-            background: "rgba(168, 85, 247, 0.12)",
-            color: "rgb(168, 85, 247)",
-          },
-        });
-      }
-
-      // Use live-patched model names if available (from active generation),
-      // then backend-enriched modelNames (from request-log aggregation),
-      // otherwise derive from messages
-      let modelNames;
-      if ((conversation._liveModelNames?.length ?? 0) > 0) {
-        modelNames = conversation._liveModelNames;
-      } else if ((conversation.modelNames?.length ?? 0) > 0) {
-        // Backend enrichment: the list endpoint aggregates unique models
-        // from request logs — available without fetching the full session.
-        modelNames = conversation.modelNames;
-      } else {
-        // Extract unique model names and providers used in this conversation
-        const msgs = conversation.messages || [];
-        const modelNamesSet = new Set();
-
-        // Look at messages from newest to oldest to order recent models first
-        for (let i = msgs.length - 1; i >= 0; i--) {
-          if (msgs[i].role === "assistant") {
-            if (msgs[i].model) modelNamesSet.add(msgs[i].model);
-          }
-        }
-
-        // If no models found in messages, fall back to conv.model or conv.settings.model
-        if (modelNamesSet.size === 0) {
-          const fallbackModel =
-            conversation.model || conversation.settings?.model;
-          if (fallbackModel) modelNamesSet.add(fallbackModel);
-        }
-        modelNames = Array.from(modelNamesSet);
-      }
-
-      // Providers: prefer top-level (from backend or live patch), else derive from messages
-      let derivedProviders;
-      if ((conversation.providers?.length ?? 0) > 0) {
-        derivedProviders = conversation.providers;
-      } else {
-        const msgs = conversation.messages || [];
-        const providersSet = new Set<string>();
-        for (let i = msgs.length - 1; i >= 0; i--) {
-          if (msgs[i].role === "assistant" && msgs[i].provider) {
-            providersSet.add(msgs[i].provider!);
-          }
-        }
-        derivedProviders = Array.from(providersSet);
-      }
-
-      // Merge request-log toolCounts into modalities for accurate badge counts
-      const baseModalities =
-        conversation.modalities || getModalities(conversation.messages);
-      const modalities = conversation.toolCounts
-        ? {
-            ...baseModalities,
-            functionCalling: Object.values(conversation.toolCounts).reduce(
-              (s: number, c: unknown) => s + (c as number),
-              0,
-            ),
-          }
-        : baseModalities;
-
-      return {
-        id: conversation.id || String(conversation._id),
-        title: conversation.title || "Untitled Chat",
-        updatedAt: conversation.updatedAt,
-        createdAt: conversation.createdAt,
-        totalCost,
-        modalities,
-        providers: derivedProviders,
-        tags,
-        username: conversation.username,
-        modelNames,
-        modelName: conversation.model || conversation.settings?.model || null,
-        agent: conversation.agent,
-        searchText: [
-          conversation.project || "",
-          conversation.username || "",
-          ...(conversation.messages || []).map((m: Message) => m.content || ""),
-        ].join(" "),
-      };
-    });
-  }, [sessions, showProject]);
+  const items = useMemo(
+    () =>
+      sessions.map((conversation) =>
+        mapConversationToHistoryItem(conversation, { showProject }),
+      ),
+    [sessions, showProject],
+  );
 
   return (
     <div className={styles.container}>

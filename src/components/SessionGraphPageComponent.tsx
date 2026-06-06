@@ -19,6 +19,7 @@ import type { AgentSession, SessionStats } from "../types/types";
 import { cleanModelName } from "./BadgeComponent";
 import { resolveProviderLabel } from "./ProviderLogosComponent";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
+import StarfieldComponent from "./StarfieldComponent";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 import AdminFiltersCardComponent from "./AdminFiltersCardComponent";
 import {
@@ -33,6 +34,7 @@ import {
   timeAgo as formatTimeAgo,
 } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../utils/utilities";
+import { mapAgentSessionToHistoryItem } from "../utils/historyItemMapper";
 
 import styles from "./SessionGraphPageComponent.module.css";
 
@@ -446,6 +448,8 @@ export default function SessionGraphPageComponent() {
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
+  const hasDraggedRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
   const canvasWrapperRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
@@ -768,7 +772,9 @@ export default function SessionGraphPageComponent() {
     (event: React.MouseEvent<SVGGElement>, nodeId: string) => {
       if (event.button !== 0) return;
       event.stopPropagation();
-      setSelectedNodeId(nodeId);
+
+      hasDraggedRef.current = false;
+      dragStartRef.current = { x: event.clientX, y: event.clientY };
 
       const node = graphData?.nodes.find((n) => n.id === nodeId);
       if (!node) return;
@@ -787,13 +793,15 @@ export default function SessionGraphPageComponent() {
     (event: React.TouchEvent<SVGGElement>, nodeId: string) => {
       if (event.touches.length !== 1) return;
       event.stopPropagation();
-      setSelectedNodeId(nodeId);
+
+      const activeTouch = event.touches[0];
+      hasDraggedRef.current = false;
+      dragStartRef.current = { x: activeTouch.clientX, y: activeTouch.clientY };
 
       const node = graphData?.nodes.find((n) => n.id === nodeId);
       if (!node) return;
 
-      const touch = event.touches[0];
-      const svgPos = screenToSvg(touch.clientX, touch.clientY);
+      const svgPos = screenToSvg(activeTouch.clientX, activeTouch.clientY);
       setDraggedNode({
         id: nodeId,
         offsetX: svgPos.x - node.x,
@@ -806,6 +814,12 @@ export default function SessionGraphPageComponent() {
   const handleGlobalMouseMove = useCallback(
     (event: MouseEvent) => {
       if (draggedNode) {
+        const deltaX = event.clientX - dragStartRef.current.x;
+        const deltaY = event.clientY - dragStartRef.current.y;
+        if (Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3) {
+          hasDraggedRef.current = true;
+        }
+
         const svgPos = screenToSvg(event.clientX, event.clientY);
         const newX = svgPos.x - draggedNode.offsetX;
         const newY = svgPos.y - draggedNode.offsetY;
@@ -847,8 +861,14 @@ export default function SessionGraphPageComponent() {
     (event: TouchEvent) => {
       if (draggedNode && event.touches.length === 1) {
         event.preventDefault();
-        const touch = event.touches[0];
-        const svgPos = screenToSvg(touch.clientX, touch.clientY);
+        const activeTouch = event.touches[0];
+        const deltaX = activeTouch.clientX - dragStartRef.current.x;
+        const deltaY = activeTouch.clientY - dragStartRef.current.y;
+        if (Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3) {
+          hasDraggedRef.current = true;
+        }
+
+        const svgPos = screenToSvg(activeTouch.clientX, activeTouch.clientY);
         const newX = svgPos.x - draggedNode.offsetX;
         const newY = svgPos.y - draggedNode.offsetY;
 
@@ -915,9 +935,13 @@ export default function SessionGraphPageComponent() {
 
   // ── Node click handler ────────────────────────────────────────
   const handleNodeClick = useCallback((nodeId: string) => {
-    setSelectedNodeId((previousId) =>
-      previousId === nodeId ? null : nodeId,
-    );
+    if (hasDraggedRef.current) {
+      setSelectedNodeId(nodeId);
+    } else {
+      setSelectedNodeId((previousId) =>
+        previousId === nodeId ? null : nodeId,
+      );
+    }
   }, []);
 
   // ── Compute selected node for detail popover ──────────────────
@@ -938,50 +962,7 @@ export default function SessionGraphPageComponent() {
   }, [canvasWidth, canvasHeight, zoom, panOffset]);
 
   const sessionListItems = useMemo(() =>
-    sessions.map((session) => {
-      const sessionId = session.id || session._id;
-      const sessionStats = session.stats;
-
-      const totalCost = sessionStats?.totalCost ?? 0;
-
-      const modelNames =
-        (sessionStats?.models?.length ?? 0) > 0
-          ? sessionStats!.models
-          : session.model
-            ? [session.model]
-            : [];
-
-      const derivedProviders =
-        (sessionStats?.providers?.length ?? 0) > 0
-          ? sessionStats!.providers!
-          : session.provider
-            ? [session.provider]
-            : [];
-
-      const modalities = sessionStats?.modalities ?? {};
-
-      return {
-        id: sessionId,
-        title: session.title || "Untitled Session",
-        updatedAt: session.updatedAt,
-        createdAt: session.createdAt,
-        totalCost,
-        providers: derivedProviders,
-        modelNames,
-        modelName: session.model || null,
-        modalities,
-        agent: session.agent,
-        tags: session.project
-          ? [{
-              label: session.project,
-              style: {
-                background: "var(--accent-primary-subtle)",
-                color: "var(--accent-primary)",
-              },
-            }]
-          : [],
-      };
-    }),
+    sessions.map((session) => mapAgentSessionToHistoryItem(session)),
   [sessions]);
 
   // ── Loading state ─────────────────────────────────────────────
@@ -1108,6 +1089,11 @@ export default function SessionGraphPageComponent() {
             className={styles["graph-canvas-wrapper"]}
             ref={canvasWrapperRef}
           >
+            <StarfieldComponent
+              className={styles.starfield}
+              panX={panOffset.x}
+              panY={panOffset.y}
+            />
             {!selectedSession && !isGraphLoading && (
               <div className={styles["graph-empty-prompt"]}>
                 <Network size={48} className={styles["graph-empty-prompt-icon"]} />

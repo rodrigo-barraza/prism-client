@@ -329,10 +329,15 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         onNavClick={handleNavClick}
       />
       <div className={styles.mainArea}>
-        <LayoutHeaderComponent title={pageTitle} controls={controls}>
-          {titleBadge != null && (
-            <span className={styles.titleBadge}>{titleBadge}</span>
-          )}
+        <LayoutHeaderComponent
+          title={pageTitle}
+          titleBadge={
+            titleBadge != null && (
+              <span className={styles.titleBadge}>{titleBadge}</span>
+            )
+          }
+          controls={controls}
+        >
           {hasSessionFilter && (
             <button
               type="button"
