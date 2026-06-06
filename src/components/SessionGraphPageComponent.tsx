@@ -224,10 +224,19 @@ function buildGraphFromSession(
     addEdge(projectNodeId, sessionNodeId, 0.8);
   }
 
+  // Find the parent agent's session ID from requests directly tied to the root conversation
+  let mainAgentSessionId = sessionId;
+  for (const request of sessionRequests) {
+    if (request.conversationId === sessionId && request.agentSessionId) {
+      mainAgentSessionId = request.agentSessionId;
+      break;
+    }
+  }
+
   // Agent node — connects to session (tier 1 → tier 2)
   const parentAgentNodeId = session.agent
-    ? `agent:${sessionId}:${session.agent}`
-    : `agent:${sessionId}:default`;
+    ? `agent:${mainAgentSessionId}:${session.agent}`
+    : `agent:${mainAgentSessionId}:default`;
   if (session.agent) {
     addNode(parentAgentNodeId, session.agent, "agent", 24, {
       agent: session.agent,
@@ -281,8 +290,8 @@ function buildGraphFromSession(
     );
 
     // Determine target agent node (parent or sub-agent)
-    const reqAgentSessionId = request.agentSessionId || sessionId;
-    const isSubAgent = reqAgentSessionId !== sessionId;
+    const reqAgentSessionId = request.agentSessionId || mainAgentSessionId;
+    const isSubAgent = reqAgentSessionId !== mainAgentSessionId;
     const currentAgentNodeId = isSubAgent
       ? `agent:${reqAgentSessionId}:${request.agent || "OMNI"}`
       : parentAgentNodeId;
@@ -292,10 +301,13 @@ function buildGraphFromSession(
       addNode(currentAgentNodeId, subAgentLabel, "agent", 22, {
         agent: subAgentLabel,
         isSubagent: true,
-        parentAgentSessionId: sessionId,
+        parentAgentSessionId: request.parentAgentSessionId || mainAgentSessionId,
         agentSessionId: reqAgentSessionId,
       });
-      addEdge(parentAgentNodeId, currentAgentNodeId, 0.9);
+      
+      const parentSessionId = request.parentAgentSessionId || mainAgentSessionId;
+      const actualParentAgentNodeId = `agent:${parentSessionId}:${session.agent || "OMNI"}`;
+      addEdge(actualParentAgentNodeId, currentAgentNodeId, 0.9);
     }
 
     // Agent → Request (tier 2 → tier 3)
