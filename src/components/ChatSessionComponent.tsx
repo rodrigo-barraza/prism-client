@@ -538,9 +538,9 @@ export default function ChatSessionComponent({
   const markTabNew = useCallback((tabKey: string) => {
     if (leftTabRef.current === tabKey || leftTabBottomRef.current === tabKey)
       return;
-    setNewDataTabs((previousPixelSize) => {
-      if (previousPixelSize.has(tabKey)) return previousPixelSize;
-      const next = new Set(previousPixelSize);
+    setNewDataTabs((previousNewDataTabs) => {
+      if (previousNewDataTabs.has(tabKey)) return previousNewDataTabs;
+      const next = new Set(previousNewDataTabs);
       next.add(tabKey);
       return next;
     });
@@ -723,8 +723,8 @@ export default function ChatSessionComponent({
   const recordPixelLoadTime = useCallback((elapsed: number) => {
     const stored = localStorage.getItem(PIXEL_LS_KEY);
     const alpha = 0.3; // EMA smoothing — higher = more reactive to recent loads
-    const previousPixelSize = stored ? Number(stored) : PIXEL_DEFAULT_OUT;
-    const next = alpha * elapsed + (1 - alpha) * previousPixelSize;
+    const previousLoadDuration = stored ? Number(stored) : PIXEL_DEFAULT_OUT;
+    const next = alpha * elapsed + (1 - alpha) * previousLoadDuration;
     localStorage.setItem(PIXEL_LS_KEY, String(Math.round(next)));
   }, []);
 
@@ -775,10 +775,10 @@ export default function ChatSessionComponent({
     // calculating.  Without this, statusPhase / _processingStartTime /
     // _streamingLastChunkTime remain on the message and the SettingsPanel
     // ticker keeps running after the user hits stop.
-    setMessages((previousPixelSize) => {
-      const last = previousPixelSize[previousPixelSize.length - 1];
+    setMessages((previousMessages) => {
+      const last = previousMessages[previousMessages.length - 1];
       if (last?.role === "assistant" && !last.completedAt) {
-        const updated = [...previousPixelSize];
+        const updated = [...previousMessages];
         updated[updated.length - 1] = {
           ...last,
           statusPhase: undefined,
@@ -789,20 +789,20 @@ export default function ChatSessionComponent({
         };
         return updated;
       }
-      return previousPixelSize;
+      return previousMessages;
     });
 
     // Force all active workers to terminal state so their StatusBarComponent
     // bars stop animating — the SSE stream was aborted before "complete" events
     // could arrive, leaving activity entries stuck in active phases.
-    setWorkerToolActivity((previousPixelSize) => {
-      const hasActive = Object.values(previousPixelSize).some(
+    setWorkerToolActivity((previousWorkerToolActivity) => {
+      const hasActive = Object.values(previousWorkerToolActivity).some(
         (worker: WorkerActivityEntry) =>
           worker.phase && worker.phase !== "complete" && worker.phase !== "failed",
       );
-      if (!hasActive) return previousPixelSize;
+      if (!hasActive) return previousWorkerToolActivity;
       const next: Record<string, WorkerActivityEntry> = {};
-      for (const [id, worker] of Object.entries(previousPixelSize)) {
+      for (const [id, worker] of Object.entries(previousWorkerToolActivity)) {
         next[id] =
           worker.phase && worker.phase !== "complete" && worker.phase !== "failed"
             ? { ...worker, phase: "complete", currentTool: null }
@@ -1082,8 +1082,8 @@ export default function ChatSessionComponent({
       const result = isNoAgent
         ? await PrismService.getConversations(fetchOptions)
         : await PrismService.getAgentSessions(agentProject!, fetchOptions);
-      setSessions((previousPixelSize) => [
-        ...previousPixelSize,
+      setSessions((previousSessions) => [
+        ...previousSessions,
         ...result.items,
       ]);
       sessionsCursorRef.current = result.nextCursor;
@@ -1135,8 +1135,8 @@ export default function ChatSessionComponent({
             string,
             string | number | boolean | undefined
           >;
-          setSettings((previousPixelSize) => ({
-            ...previousPixelSize,
+          setSettings((previousSettings) => ({
+            ...previousSettings,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
             ...(lastAssistant.model && { model: lastAssistant.model }),
             ...(gs.temperature !== undefined && {
@@ -1352,10 +1352,10 @@ export default function ChatSessionComponent({
   // generation — no full loadSessions() round-trip needed.
   useEffect(() => {
     if (!activeId || messages.length === 0) return;
-    setSessions((previousPixelSize) => {
-      const index = previousPixelSize.findIndex((s) => s.id === activeId);
-      if (index === -1) return previousPixelSize;
-      const existing = previousPixelSize[index] as unknown as Record<
+    setSessions((previousSessions) => {
+      const index = previousSessions.findIndex((s) => s.id === activeId);
+      if (index === -1) return previousSessions;
+      const existing = previousSessions[index] as unknown as Record<
         string,
         unknown
       >;
@@ -1389,9 +1389,9 @@ export default function ChatSessionComponent({
           JSON.stringify(resolvedModels) &&
         JSON.stringify(existing.providers) === JSON.stringify(resolvedProviders)
       ) {
-        return previousPixelSize;
+        return previousSessions;
       }
-      const updated = [...previousPixelSize] as unknown as Record<
+      const updated = [...previousSessions] as unknown as Record<
         string,
         unknown
       >[];
@@ -1441,17 +1441,17 @@ export default function ChatSessionComponent({
               setRequestsRefreshKey((k) => k + 1);
               // Clear incremental background usage from the message —
               // the backend aggregate now includes those requests.
-              setMessages((previousPixelSize) => {
-                const last = previousPixelSize[previousPixelSize.length - 1];
+              setMessages((previousMessages) => {
+                const last = previousMessages[previousMessages.length - 1];
                 if (last?.role === "assistant" && last._backgroundUsage) {
-                  const updated = [...previousPixelSize];
+                  const updated = [...previousMessages];
                   updated[updated.length - 1] = {
                     ...last,
                     _backgroundUsage: undefined,
                   };
                   return updated;
                 }
-                return previousPixelSize;
+                return previousMessages;
               });
             }
           })
@@ -1561,8 +1561,8 @@ export default function ChatSessionComponent({
       window.dispatchEvent(new CustomEvent("user:typing"));
       const hasSlashBadges = element.querySelectorAll("[data-slash-command]").length > 0;
       const nowHasInput = value.trim().length > 0 || hasSlashBadges;
-      setHasInput((previousPixelSize) =>
-        previousPixelSize !== nowHasInput ? nowHasInput : previousPixelSize,
+      setHasInput((previousHasInput) =>
+        previousHasInput !== nowHasInput ? nowHasInput : previousHasInput,
       );
       // -- Mention autocomplete detection --
       detectMentionQueryRef.current?.(element);
@@ -2155,8 +2155,8 @@ export default function ChatSessionComponent({
             prevCleanLen = streamedText.length;
 
             const cleanText = streamedText.trim();
-            setMessages((previousPixelSize) => {
-              const updated = [...previousPixelSize];
+            setMessages((previousMessages) => {
+              const updated = [...previousMessages];
               const lastMessage = updated[updated.length - 1];
               if (lastMessage?.role === "assistant") {
                 lastMessage.content = cleanText;
@@ -2225,8 +2225,8 @@ export default function ChatSessionComponent({
             }
             prevThinkingLen = streamedThinking.length;
 
-            setMessages((previousPixelSize) => {
-              const updated = [...previousPixelSize];
+            setMessages((previousMessages) => {
+              const updated = [...previousMessages];
               const lastMessage = updated[updated.length - 1];
               if (lastMessage?.role === "assistant") {
                 lastMessage.thinking = streamedThinking;
@@ -2258,8 +2258,8 @@ export default function ChatSessionComponent({
             if (isStale()) return;
             const imgRef = minioRef || dataStr;
             if (!imgRef) return;
-            setMessages((previousPixelSize) => {
-              const updated = [...previousPixelSize];
+            setMessages((previousMessages) => {
+              const updated = [...previousMessages];
               const last = updated[updated.length - 1];
               if (last?.role === "assistant") {
                 const existingImages = last.images || [];
@@ -2282,8 +2282,8 @@ export default function ChatSessionComponent({
           onAudio: (dataString: string, _mimeType: string) => {
             if (isStale()) return;
             if (!dataString) return;
-            setMessages((previousPixelSize) => {
-              const updated = [...previousPixelSize];
+            setMessages((previousMessages) => {
+              const updated = [...previousMessages];
               const last = updated[updated.length - 1];
               if (last?.role === "assistant") {
                 const existingAudio = Array.isArray(last.audio)
@@ -2317,9 +2317,9 @@ export default function ChatSessionComponent({
               `[ToolExec] ${data.status} ${toolData.name} id=${resolvedId}`,
             );
 
-            setToolActivity((previousPixelSize: ToolCallEvent[]) => {
+            setToolActivity((previousToolActivity: ToolCallEvent[]) => {
               const next = applyToolExecutionToActivity(
-                previousPixelSize,
+                previousToolActivity,
                 resolvedId,
                 {
                   id: toolData.id,
@@ -2330,7 +2330,7 @@ export default function ChatSessionComponent({
                   durationMs: toolData.durationMs,
                 },
               );
-              return next ?? previousPixelSize;
+              return next ?? previousToolActivity;
             });
 
             // Track segment ordering: group consecutive tool events
@@ -2445,13 +2445,13 @@ export default function ChatSessionComponent({
                     (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
                   if (deleted) {
-                    setViewerOpenFiles((previousPixelSize) => {
-                      const next = previousPixelSize.filter(
+                    setViewerOpenFiles((previousViewerOpenFiles) => {
+                      const next = previousViewerOpenFiles.filter(
                         (f: ViewerOpenFile) => f.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
-                        const closedTabIndex = previousPixelSize.findIndex(
+                        const closedTabIndex = previousViewerOpenFiles.findIndex(
                           (f: ViewerOpenFile) => f.id === deleted.id,
                         );
                         const newActive =
@@ -2478,9 +2478,9 @@ export default function ChatSessionComponent({
               `[ToolCall MCP] ${toolData.status} ${toolData.name} id=${resolvedId}`,
             );
 
-            setToolActivity((previousPixelSize) => {
+            setToolActivity((previousToolActivity) => {
               const next = applyToolExecutionToActivity(
-                previousPixelSize,
+                previousToolActivity,
                 resolvedId,
                 {
                   id: toolData.id,
@@ -2490,7 +2490,7 @@ export default function ChatSessionComponent({
                   result: toolData.result,
                 },
               );
-              return next ?? previousPixelSize;
+              return next ?? previousToolActivity;
             });
 
             // Track segment ordering: group consecutive tool events
@@ -2594,13 +2594,13 @@ export default function ChatSessionComponent({
                     (f: ViewerOpenFile) => f.path === mutatedPath,
                   );
                   if (deleted) {
-                    setViewerOpenFiles((previousPixelSize) => {
-                      const next = previousPixelSize.filter(
+                    setViewerOpenFiles((previousViewerOpenFiles) => {
+                      const next = previousViewerOpenFiles.filter(
                         (f: ViewerOpenFile) => f.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
-                        const closedTabIndex = previousPixelSize.findIndex(
+                        const closedTabIndex = previousViewerOpenFiles.findIndex(
                           (f: ViewerOpenFile) => f.id === deleted.id,
                         );
                         const newActive =
@@ -2632,8 +2632,8 @@ export default function ChatSessionComponent({
             if (isStale()) return;
             const toolCall = data.toolCall;
             if (!toolCall) return;
-            setPendingApprovals((previousPixelSize) => [
-              ...previousPixelSize,
+            setPendingApprovals((previousPendingApprovals) => [
+              ...previousPendingApprovals,
               {
                 id: toolCall.id || `ap-${Date.now()}`,
                 toolName: toolCall.name || "",
@@ -2645,8 +2645,8 @@ export default function ChatSessionComponent({
             // Clear processing metadata so the live TTFT badge stops
             // counting — user deliberation time on approval gates
             // should not inflate time-to-first-token.
-            setMessages((previousPixelSize) => {
-              const updated = [...previousPixelSize];
+            setMessages((previousMessages) => {
+              const updated = [...previousMessages];
               const last = updated[updated.length - 1];
               if (
                 last?.role === "assistant" &&
@@ -2673,8 +2673,8 @@ export default function ChatSessionComponent({
             });
             // Clear processing metadata — user deliberation time should
             // not inflate TTFT (same pattern as approval gates).
-            setMessages((previousPixelSize) => {
-              const updated = [...previousPixelSize];
+            setMessages((previousMessages) => {
+              const updated = [...previousMessages];
               const last = updated[updated.length - 1];
               if (
                 last?.role === "assistant" &&
@@ -2702,8 +2702,8 @@ export default function ChatSessionComponent({
             // clear processing metadata so the live TTFT badge stops
             // counting — user deliberation time is not part of TTFT.
             const isPending = !data.autoApproved;
-            setMessages((previousPixelSize) => {
-              const updated = [...previousPixelSize];
+            setMessages((previousMessages) => {
+              const updated = [...previousMessages];
               const last = updated[updated.length - 1];
               if (last?.role === "assistant") {
                 updated[updated.length - 1] = {
@@ -2807,8 +2807,8 @@ export default function ChatSessionComponent({
               loadCustomTools();
             } else if (statusData?.message === "generation_started") {
               // Server-computed TTFT — accumulate per-iteration samples for averaging
-              setMessages((previousPixelSize) => {
-                const updated = [...previousPixelSize];
+              setMessages((previousMessages) => {
+                const updated = [...previousMessages];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
@@ -2825,8 +2825,8 @@ export default function ChatSessionComponent({
               // Backend-computed metrics from SessionGenerationTracker —
               // authoritative aggregate across orchestrator, workers,
               // and tool sub-requests.
-              setMessages((previousPixelSize) => {
-                const updated = [...previousPixelSize];
+              setMessages((previousMessages) => {
+                const updated = [...previousMessages];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
@@ -2846,8 +2846,8 @@ export default function ChatSessionComponent({
               });
             } else if (statusData?.phase) {
               // LM Studio lifecycle status (loading, processing, generating)
-              setMessages((previousPixelSize) => {
-                const updated = [...previousPixelSize];
+              setMessages((previousMessages) => {
+                const updated = [...previousMessages];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
@@ -2894,8 +2894,8 @@ export default function ChatSessionComponent({
             if (isStale()) return;
             const workerId = data.workerId;
             if (!workerId) return;
-            setWorkerToolActivity((previousPixelSize) => {
-              const raw = previousPixelSize[workerId];
+            setWorkerToolActivity((previousWorkerToolActivity) => {
+              const raw = previousWorkerToolActivity[workerId];
               const entry = {
                 toolCount: 0,
                 currentTool: null as string | null,
@@ -2905,7 +2905,7 @@ export default function ChatSessionComponent({
                 ...raw,
               };
               const toolData = data.tool;
-              if (!toolData) return previousPixelSize;
+              if (!toolData) return previousWorkerToolActivity;
 
               let updatedCalls = [...entry.toolCalls];
               if (data.status === "calling") {
@@ -2923,7 +2923,7 @@ export default function ChatSessionComponent({
                   [toolName]: (entry.toolNames[toolName] || 0) + 1,
                 };
                 return {
-                  ...previousPixelSize,
+                  ...previousWorkerToolActivity,
                   [workerId]: {
                     ...entry,
                     currentTool: toolName,
@@ -2950,7 +2950,7 @@ export default function ChatSessionComponent({
                   return toolCall;
                 });
                 return {
-                  ...previousPixelSize,
+                  ...previousWorkerToolActivity,
                   [workerId]: {
                     ...entry,
                     currentTool: null,
@@ -2959,7 +2959,7 @@ export default function ChatSessionComponent({
                   },
                 };
               }
-              return previousPixelSize;
+              return previousWorkerToolActivity;
             });
           },
           onWorkerToolOutput: (data: SSEData) => {
@@ -2967,8 +2967,8 @@ export default function ChatSessionComponent({
             const workerId = data.workerId;
             const key = data.toolCallId || data.name || "";
             if (!workerId || !key) return;
-            setStreamingOutputs((previousPixelSize) => {
-              const updated = new Map<string, string>(previousPixelSize);
+            setStreamingOutputs((previousStreamingOutputs) => {
+              const updated = new Map<string, string>(previousStreamingOutputs);
               const existing = updated.get(key) || "";
               updated.set(key, existing + (data.data || ""));
               return updated;
@@ -2981,10 +2981,10 @@ export default function ChatSessionComponent({
             if (data.message === "spawned") {
               // Early mapping: store workerId indexed by description
               // so SpawnAgentRenderer can look up activity before tool result arrives
-              setWorkerToolActivity((previousPixelSize) => ({
-                ...previousPixelSize,
+              setWorkerToolActivity((previousWorkerToolActivity) => ({
+                ...previousWorkerToolActivity,
                 [workerId]: {
-                  ...(previousPixelSize[workerId] || {
+                  ...(previousWorkerToolActivity[workerId] || {
                     toolCount: 0,
                     currentTool: null,
                     iteration: 0,
@@ -2995,10 +2995,10 @@ export default function ChatSessionComponent({
                 },
               }));
             } else if (data.message === "iteration_progress") {
-              setWorkerToolActivity((previousPixelSize) => ({
-                ...previousPixelSize,
+              setWorkerToolActivity((previousWorkerToolActivity) => ({
+                ...previousWorkerToolActivity,
                 [workerId]: {
-                  ...(previousPixelSize[workerId] || {
+                  ...(previousWorkerToolActivity[workerId] || {
                     toolCount: 0,
                     currentTool: null,
                   }),
@@ -3008,10 +3008,10 @@ export default function ChatSessionComponent({
               }));
             } else if (data.message === "phase") {
               // Worker LLM phase updates (generating, thinking, processing, loading)
-              setWorkerToolActivity((previousPixelSize) => ({
-                ...previousPixelSize,
+              setWorkerToolActivity((previousWorkerToolActivity) => ({
+                ...previousWorkerToolActivity,
                 [workerId]: {
-                  ...(previousPixelSize[workerId] || {
+                  ...(previousWorkerToolActivity[workerId] || {
                     toolCount: 0,
                     currentTool: null,
                     iteration: 0,
@@ -3021,14 +3021,14 @@ export default function ChatSessionComponent({
                   phaseProgress:
                     data.progress != null
                       ? data.progress
-                      : (previousPixelSize[workerId]?.phaseProgress ??
+                      : (previousWorkerToolActivity[workerId]?.phaseProgress ??
                         undefined),
                 },
               }));
             } else if (data.message === "generation_started") {
               // Worker server-computed TTFT — push into the shared samples array
-              setMessages((previousPixelSize) => {
-                const updated = [...previousPixelSize];
+              setMessages((previousMessages) => {
+                const updated = [...previousMessages];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   updated[updated.length - 1] = {
@@ -3042,8 +3042,8 @@ export default function ChatSessionComponent({
                 return updated;
               });
             } else if (data.message === "generation_progress") {
-              setMessages((previousPixelSize) => {
-                const updated = [...previousPixelSize];
+              setMessages((previousMessages) => {
+                const updated = [...previousMessages];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   const wp = last._workerGenerationProgress || {};
@@ -3086,15 +3086,15 @@ export default function ChatSessionComponent({
               });
               // Also store on workerToolActivity so TeamCreateRenderer can
               // display live per-worker metrics on each worker's header
-              setWorkerToolActivity((previousPixelSize) => {
-                const existing = previousPixelSize[workerId] || {
+              setWorkerToolActivity((previousWorkerToolActivity) => {
+                const existing = previousWorkerToolActivity[workerId] || {
                   toolCount: 0,
                   currentTool: null,
                   iteration: 0,
                   toolNames: {},
                 };
                 return {
-                  ...previousPixelSize,
+                  ...previousWorkerToolActivity,
                   [workerId]: {
                     ...existing,
                     // Burst-scoped values — only update when present to prevent undefined overwrites
@@ -3125,22 +3125,22 @@ export default function ChatSessionComponent({
               });
             } else if (data.message === "complete") {
               // Worker finished — clear phase so StatusBar stops showing "Generating..."
-              setWorkerToolActivity((previousPixelSize) => ({
-                ...previousPixelSize,
+              setWorkerToolActivity((previousWorkerToolActivity) => ({
+                ...previousWorkerToolActivity,
                 [workerId]: {
-                  ...(previousPixelSize[workerId] || {}),
+                  ...(previousWorkerToolActivity[workerId] || {}),
                   phase: "complete",
                   currentTool: null,
                   durationMs: data.durationMs,
                   toolCount:
-                    data.toolCount ?? previousPixelSize[workerId]?.toolCount,
+                    data.toolCount ?? previousWorkerToolActivity[workerId]?.toolCount,
                 },
               }));
               // Accumulate worker usage into the streaming assistant message
               // so stats badges update in real-time per worker completion
               if (data.usage) {
-                setMessages((previousPixelSize) => {
-                  const updated = [...previousPixelSize];
+                setMessages((previousMessages) => {
+                  const updated = [...previousMessages];
                   const last = updated[updated.length - 1];
                   if (last?.role === "assistant") {
                     const wt = last._workerTokens || {
@@ -3169,10 +3169,10 @@ export default function ChatSessionComponent({
               }
             } else if (data.message === "failed") {
               // Worker errored — mark as failed
-              setWorkerToolActivity((previousPixelSize) => ({
-                ...previousPixelSize,
+              setWorkerToolActivity((previousWorkerToolActivity) => ({
+                ...previousWorkerToolActivity,
                 [workerId]: {
-                  ...(previousPixelSize[workerId] || {}),
+                  ...(previousWorkerToolActivity[workerId] || {}),
                   phase: "failed",
                   currentTool: null,
                   error: data.error,
@@ -3182,10 +3182,10 @@ export default function ChatSessionComponent({
           },
           onUsageUpdate: (data: SSEData) => {
             if (isStale()) return;
-            setMessages((previousPixelSize) => {
-              const updated = [...previousPixelSize];
+            setMessages((previousMessages) => {
+              const updated = [...previousMessages];
               const last = updated[updated.length - 1];
-              if (last?.role !== "assistant") return previousPixelSize;
+              if (last?.role !== "assistant") return previousMessages;
 
               // Background operations (memory extraction, consolidation, embeddings,
               // compaction) emit incremental usage_update events. Accumulate them
@@ -3233,11 +3233,11 @@ export default function ChatSessionComponent({
           onDone: (data: SSEData) => {
             console.debug(`[onDone] stream finished, isStale=${isStale()}`);
             if (!isStale()) {
-              setMessages((previousPixelSize) => {
-                const updated = [...previousPixelSize];
+              setMessages((previousMessages) => {
+                const updated = [...previousMessages];
                 const last = updated[updated.length - 1];
                 console.debug(
-                  `[onDone setMessages] previousPixelSize=${previousPixelSize.length}, last.role=${last?.role}`,
+                  `[onDone setMessages] previousMessages=${previousMessages.length}, last.role=${last?.role}`,
                 );
                 if (last?.role === "assistant") {
                   const audioFromDone = data.audioRef
@@ -3408,8 +3408,8 @@ export default function ChatSessionComponent({
       console.debug(
         `[handleSend] starting generation, sessionId=${genId}, currentMessages=${messagesRef.current.length}`,
       );
-      setGeneratingSessionIds((previousPixelSize) =>
-        new Set(previousPixelSize).add(genId),
+      setGeneratingSessionIds((previousGeneratingSessionIds) =>
+        new Set(previousGeneratingSessionIds).add(genId),
       );
       setToolActivity([]);
       setWorkerToolActivity({});
@@ -3437,14 +3437,14 @@ export default function ChatSessionComponent({
             detail: { conversationId: conversationId },
           }),
         );
-        setSessions((previousPixelSize) => [
+        setSessions((previousSessions) => [
           {
             id: conversationId,
             title: resolvedTitle,
             updatedAt: now,
             createdAt: now,
           } as AgentSession,
-          ...previousPixelSize,
+          ...previousSessions,
         ]);
       }
 
@@ -3610,8 +3610,8 @@ export default function ChatSessionComponent({
         await attemptPostStreamRefresh();
       } catch (error: unknown) {
         console.error(`[handleSend] orchestration error:`, error);
-        setMessages((previousPixelSize) => [
-          ...previousPixelSize,
+        setMessages((previousMessages) => [
+          ...previousMessages,
           {
             role: "assistant",
             content: `⚠️ Error: ${error instanceof Error ? error.message : String(error)}`,
@@ -3623,8 +3623,8 @@ export default function ChatSessionComponent({
           `[handleSend finally] genId=${genId}, currentSessionId=${conversationIdRef.current}, match=${conversationIdRef.current === genId}`,
         );
         // Remove this session from the generating set
-        setGeneratingSessionIds((previousPixelSize) => {
-          const next = new Set(previousPixelSize);
+        setGeneratingSessionIds((previousGeneratingSessionIds) => {
+          const next = new Set(previousGeneratingSessionIds);
           next.delete(genId);
           return next;
         });
@@ -3637,20 +3637,20 @@ export default function ChatSessionComponent({
           isClientDrivenGenerationRef.current = false;
           abortRef.current = null;
           setCurrentTurnStart(null);
-          setMessages((previousPixelSize) => {
-            const last = previousPixelSize[previousPixelSize.length - 1];
+          setMessages((previousMessages) => {
+            const last = previousMessages[previousMessages.length - 1];
             console.debug(
-              `[handleSend finally setMessages] previousPixelSize=${previousPixelSize.length}, last.role=${last?.role}, last.completedAt=${last?.completedAt}`,
+              `[handleSend finally setMessages] previousMessages=${previousMessages.length}, last.role=${last?.role}, last.completedAt=${last?.completedAt}`,
             );
             if (last?.role === "assistant" && !last.completedAt) {
-              const updated = [...previousPixelSize];
+              const updated = [...previousMessages];
               updated[updated.length - 1] = {
                 ...last,
                 completedAt: new Date().toISOString(),
               };
               return updated;
             }
-            return previousPixelSize;
+            return previousMessages;
           });
         } else {
           console.debug(
@@ -3981,9 +3981,9 @@ export default function ChatSessionComponent({
         setPendingUserQuestion(snap.pendingUserQuestion || null);
         setPlanProposal(snap.planProposal || null);
         setAgenticProgress(snap.agenticProgress || null);
-        setSettings((previousPixelSize) => ({
-          ...previousPixelSize,
-          ...(snap.settings as Partial<typeof previousPixelSize>),
+        setSettings((previousSettings) => ({
+          ...previousSettings,
+          ...(snap.settings as Partial<typeof previousSettings>),
         }));
         setBackendSessionStats(snap.backendSessionStats || null);
         // Re-attach: mark as generating so the UI shows the active state
@@ -4085,8 +4085,8 @@ export default function ChatSessionComponent({
           const sessionSettings = full.settings as
             | Partial<PrismSettings>
             | undefined;
-          setSettings((previousPixelSize) => ({
-            ...previousPixelSize,
+          setSettings((previousSettings) => ({
+            ...previousSettings,
             ...(lastAssistant.provider && { provider: lastAssistant.provider }),
             ...(lastAssistant.model && { model: lastAssistant.model }),
             ...(gs.temperature !== undefined && {
@@ -4310,10 +4310,10 @@ export default function ChatSessionComponent({
         pendingDeletionsRef.current.delete(conversationId);
 
         // Restore the session to sessions state
-        setSessions((previousPixelSize) => {
-          if (previousPixelSize.some((sessionItem) => sessionItem.id === conversationId))
-            return previousPixelSize;
-          const updated = [...previousPixelSize, pending.session];
+        setSessions((previousSessions) => {
+          if (previousSessions.some((sessionItem) => sessionItem.id === conversationId))
+            return previousSessions;
+          const updated = [...previousSessions, pending.session];
           // Sort by updatedAt or createdAt descending
           return updated.sort((sessionA, sessionB) => {
             const dateA = new Date(sessionA.updatedAt || sessionA.createdAt || 0).getTime();
@@ -4342,8 +4342,8 @@ export default function ChatSessionComponent({
         const wasActive = activeId === conversationId;
 
         // Optimistically remove from state
-        setSessions((previousPixelSize) =>
-          previousPixelSize.filter((sessionItem) => sessionItem.id !== conversationId),
+        setSessions((previousSessions) =>
+          previousSessions.filter((sessionItem) => sessionItem.id !== conversationId),
         );
         if (wasActive) {
           handleNewChat();
@@ -4439,8 +4439,8 @@ export default function ChatSessionComponent({
         setViewerActiveFileId(existingTab.id);
       } else {
         const id = `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        setViewerOpenFiles((previousPixelSize) => [
-          ...previousPixelSize,
+        setViewerOpenFiles((previousViewerOpenFiles) => [
+          ...previousViewerOpenFiles,
           { id, path: absPath },
         ]);
         setViewerActiveFileId(id);
@@ -4528,9 +4528,9 @@ export default function ChatSessionComponent({
             tabRevertTimerRef.current = null;
           }
           // Clear "new data" flag — user is now viewing this tab
-          setNewDataTabs((previousPixelSize) => {
-            if (!previousPixelSize.has(tab)) return previousPixelSize;
-            const next = new Set(previousPixelSize);
+          setNewDataTabs((previousNewDataTabs) => {
+            if (!previousNewDataTabs.has(tab)) return previousNewDataTabs;
+            const next = new Set(previousNewDataTabs);
             next.delete(tab);
             return next;
           });
@@ -5040,9 +5040,9 @@ export default function ChatSessionComponent({
         onChange={(tab: string) => {
           setLeftTabBottom(tab);
           // Clear "new data" flag — user is now viewing this tab
-          setNewDataTabs((previousPixelSize) => {
-            if (!previousPixelSize.has(tab)) return previousPixelSize;
-            const next = new Set(previousPixelSize);
+          setNewDataTabs((previousNewDataTabs) => {
+            if (!previousNewDataTabs.has(tab)) return previousNewDataTabs;
+            const next = new Set(previousNewDataTabs);
             next.delete(tab);
             return next;
           });
@@ -5256,8 +5256,8 @@ export default function ChatSessionComponent({
               toolArgs={approval.toolArgs}
               tier={approval.tier}
               onApprove={() => {
-                setPendingApprovals((previousPixelSize) =>
-                  previousPixelSize.map((approvalItem) =>
+                setPendingApprovals((previousPendingApprovals) =>
+                  previousPendingApprovals.map((approvalItem) =>
                     approvalItem.id === approval.id ? { ...approvalItem, status: "approved" } : approvalItem,
                   ),
                 );
@@ -5266,8 +5266,8 @@ export default function ChatSessionComponent({
                 );
               }}
               onReject={() => {
-                setPendingApprovals((previousPixelSize) =>
-                  previousPixelSize.map((approvalItem) =>
+                setPendingApprovals((previousPendingApprovals) =>
+                  previousPendingApprovals.map((approvalItem) =>
                     approvalItem.id === approval.id ? { ...approvalItem, status: "rejected" } : approvalItem,
                   ),
                 );
@@ -5276,8 +5276,8 @@ export default function ChatSessionComponent({
                 );
               }}
               onApproveAll={() => {
-                setPendingApprovals((previousPixelSize) =>
-                  previousPixelSize.map((approvalItem) =>
+                setPendingApprovals((previousPendingApprovals) =>
+                  previousPendingApprovals.map((approvalItem) =>
                     approvalItem.status === "pending" ? { ...approvalItem, status: "approved" } : approvalItem,
                   ),
                 );
@@ -5733,8 +5733,8 @@ export default function ChatSessionComponent({
           src={lightboxSourceUrl}
           onClose={() => setLightboxSourceUrl(null)}
           onUseAnnotated={(dataUrl: string) => {
-            setPendingImages((previousPixelSize) => [
-              ...previousPixelSize,
+            setPendingImages((previousPendingImages) => [
+              ...previousPendingImages,
               dataUrl,
             ]);
             setLightboxSourceUrl(null);
@@ -5767,11 +5767,11 @@ export default function ChatSessionComponent({
               activeFileId={viewerActiveFileId}
               onSelectFile={setViewerActiveFileId}
               onCloseFile={(id: string) => {
-                setViewerOpenFiles((previousPixelSize) => {
-                  const next = previousPixelSize.filter((f) => f.id !== id);
+                setViewerOpenFiles((previousViewerOpenFiles) => {
+                  const next = previousViewerOpenFiles.filter((f) => f.id !== id);
                   // If the closed tab was active, switch to the nearest tab
                   if (id === viewerActiveFileId) {
-                    const closedTabIndex = previousPixelSize.findIndex(
+                    const closedTabIndex = previousViewerOpenFiles.findIndex(
                       (f: ViewerOpenFile) => f.id === id,
                     );
                     const newActive =
@@ -5783,11 +5783,11 @@ export default function ChatSessionComponent({
               }}
               onFileNotFound={(id: string) => {
                 // Auto-close tabs for files that no longer exist
-                setViewerOpenFiles((previousPixelSize) => {
-                  const next = previousPixelSize.filter((f) => f.id !== id);
+                setViewerOpenFiles((previousViewerOpenFiles) => {
+                  const next = previousViewerOpenFiles.filter((f) => f.id !== id);
                   setViewerActiveFileId((activeId: string | null) => {
                     if (activeId !== id) return activeId;
-                    const closedTabIndex = previousPixelSize.findIndex(
+                    const closedTabIndex = previousViewerOpenFiles.findIndex(
                       (f: ViewerOpenFile) => f.id === id,
                     );
                     const newActive =
@@ -5890,13 +5890,13 @@ export default function ChatSessionComponent({
               favorites={favoriteKeys}
               onToggleFavorite={async (key: string) => {
                 if (favoriteKeys.includes(key)) {
-                  setFavoriteKeys((previousPixelSize) =>
-                    previousPixelSize.filter((k) => k !== key),
+                  setFavoriteKeys((previousFavoriteKeys) =>
+                    previousFavoriteKeys.filter((k) => k !== key),
                   );
                   PrismService.removeFavorite("model", key).catch(() => {});
                 } else {
-                  setFavoriteKeys((previousPixelSize) => [
-                    ...previousPixelSize,
+                  setFavoriteKeys((previousFavoriteKeys) => [
+                    ...previousFavoriteKeys,
                     key,
                   ]);
                   const [provider, ...rest] = key.split(":");
