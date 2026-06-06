@@ -332,12 +332,13 @@ export function prepareDisplayMessages(
     })
     .map((message) => {
       // Merge tool results into toolCalls
+      let enrichedCalls = message.toolCalls;
       if (
         message.toolCalls &&
         message.toolCalls.length > 0 &&
         Object.keys(toolResults).length > 0
       ) {
-        const enrichedCalls = message.toolCalls.map(
+        enrichedCalls = message.toolCalls.map(
           (toolCall: ToolCallEvent) => ({
             ...toolCall,
             result:
@@ -347,7 +348,60 @@ export function prepareDisplayMessages(
               null,
           }),
         );
-        return { ...message, toolCalls: enrichedCalls };
+      }
+
+      // Extract generated audio from tool call results and merge into message.audio
+      let updatedAudio = message.audio;
+      if (enrichedCalls && enrichedCalls.length > 0) {
+        const audioSources: string[] = [];
+        for (const toolCall of enrichedCalls) {
+          if (toolCall.result) {
+            let parsedResult: any = null;
+            if (typeof toolCall.result === "object" && toolCall.result !== null) {
+              parsedResult = toolCall.result;
+            } else if (typeof toolCall.result === "string") {
+              try {
+                parsedResult = JSON.parse(toolCall.result);
+              } catch {
+                // Ignore parsing errors for non-JSON results
+              }
+            }
+
+            if (parsedResult) {
+              if (parsedResult.audioRef) {
+                audioSources.push(parsedResult.audioRef);
+              } else if (parsedResult.audio?.data) {
+                const mimeType = parsedResult.audio.mimeType || "audio/wav";
+                audioSources.push(`data:${mimeType};base64,${parsedResult.audio.data}`);
+              }
+            }
+          }
+        }
+
+        if (audioSources.length > 0) {
+          const existingAudio = Array.isArray(message.audio)
+            ? message.audio
+            : message.audio
+              ? [message.audio]
+              : [];
+          const mergedAudio = [...existingAudio];
+          for (const audioSource of audioSources) {
+            if (!mergedAudio.includes(audioSource)) {
+              mergedAudio.push(audioSource);
+            }
+          }
+          if (mergedAudio.length > 0) {
+            updatedAudio = mergedAudio;
+          }
+        }
+      }
+
+      if (enrichedCalls !== message.toolCalls || updatedAudio !== message.audio) {
+        return {
+          ...message,
+          toolCalls: enrichedCalls,
+          audio: updatedAudio,
+        };
       }
       return message;
     });
