@@ -54,6 +54,8 @@ export interface IrisRequestEntry {
   responsePayload?: Record<string, unknown>;
   agent?: string;
   username?: string;
+  agentSessionId?: string;
+  parentAgentSessionId?: string | null;
 }
 
 export interface IrisRequestListResponse {

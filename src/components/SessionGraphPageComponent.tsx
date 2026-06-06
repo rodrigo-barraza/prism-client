@@ -225,19 +225,19 @@ function buildGraphFromSession(
   }
 
   // Agent node — connects to session (tier 1 → tier 2)
-  const agentNodeId = session.agent
-    ? `agent:${session.agent}`
-    : `agent:default`;
+  const parentAgentNodeId = session.agent
+    ? `agent:${sessionId}:${session.agent}`
+    : `agent:${sessionId}:default`;
   if (session.agent) {
-    addNode(agentNodeId, session.agent, "agent", 24, {
+    addNode(parentAgentNodeId, session.agent, "agent", 24, {
       agent: session.agent,
     });
   } else {
-    addNode(agentNodeId, "Default Agent", "agent", 24, {
+    addNode(parentAgentNodeId, "Default Agent", "agent", 24, {
       agent: "default",
     });
   }
-  addEdge(sessionNodeId, agentNodeId, 0.9);
+  addEdge(sessionNodeId, parentAgentNodeId, 0.9);
 
   // Collect unique providers across all requests
   const providerNodeIds = new Set<string>();
@@ -280,8 +280,26 @@ function buildGraphFromSession(
       sequenceNumber,
     );
 
+    // Determine target agent node (parent or sub-agent)
+    const reqAgentSessionId = request.agentSessionId || sessionId;
+    const isSubAgent = reqAgentSessionId !== sessionId;
+    const currentAgentNodeId = isSubAgent
+      ? `agent:${reqAgentSessionId}:${request.agent || "OMNI"}`
+      : parentAgentNodeId;
+
+    if (isSubAgent) {
+      const subAgentLabel = request.agent || "OMNI";
+      addNode(currentAgentNodeId, subAgentLabel, "agent", 22, {
+        agent: subAgentLabel,
+        isSubagent: true,
+        parentAgentSessionId: sessionId,
+        agentSessionId: reqAgentSessionId,
+      });
+      addEdge(parentAgentNodeId, currentAgentNodeId, 0.9);
+    }
+
     // Agent → Request (tier 2 → tier 3)
-    addEdge(agentNodeId, requestNodeId, 0.5);
+    addEdge(currentAgentNodeId, requestNodeId, 0.5);
 
     // Chain requests sequentially (chronological flow)
     if (requestIndex > 0) {
@@ -352,7 +370,7 @@ function buildGraphFromSession(
           toolName,
           usageCount,
         });
-        addEdge(agentNodeId, fallbackToolNodeId, 0.7);
+        addEdge(parentAgentNodeId, fallbackToolNodeId, 0.7);
       }
     }
   }
