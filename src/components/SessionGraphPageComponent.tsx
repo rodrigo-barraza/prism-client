@@ -424,6 +424,7 @@ export default function SessionGraphPageComponent() {
   const [totalSessions, setTotalSessions] = useState(0);
   const [sessionPage, setSessionPage] = useState(1);
   const [isSessionsLoading, setIsSessionsLoading] = useState(true);
+  const [isLoadingMoreSessions, setIsLoadingMoreSessions] = useState(false);
 
   // Selected session + graph state
   const [selectedSession, setSelectedSession] = useState<AgentSession | null>(null);
@@ -505,11 +506,15 @@ export default function SessionGraphPageComponent() {
   }, [sessions, totalSessions]);
 
   // ── Load sessions list ────────────────────────────────────────
-  const loadSessions = useCallback(async () => {
-    setIsSessionsLoading(true);
+  const loadSessions = useCallback(async (page: number, isAppending: boolean) => {
+    if (isAppending) {
+      setIsLoadingMoreSessions(true);
+    } else {
+      setIsSessionsLoading(true);
+    }
     try {
       const params: Record<string, string | number | boolean> = {
-        page: sessionPage,
+        page,
         limit: PAGE_SIZE,
         sort: "updatedAt",
         order: "desc",
@@ -522,18 +527,43 @@ export default function SessionGraphPageComponent() {
       if (workspaceFilter) params.workspace = workspaceFilter;
 
       const response = await IrisService.getAgentSessions(params);
-      setSessions(response.data || []);
-      setTotalSessions(response.total || 0);
+      const incomingSessions = response.data || [];
+      const totalCount = response.total || 0;
+
+      if (isAppending) {
+        setSessions((previousSessions) => [...previousSessions, ...incomingSessions]);
+      } else {
+        setSessions(incomingSessions);
+      }
+      setTotalSessions(totalCount);
     } catch (error: unknown) {
       console.error("Failed to load agent sessions:", error);
     } finally {
       setIsSessionsLoading(false);
+      setIsLoadingMoreSessions(false);
     }
-  }, [sessionPage, dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter]);
+  }, [dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter]);
 
+  // Reset to page 1 whenever filters change
   useEffect(() => {
-    loadSessions();
+    setSessionPage(1);
+    loadSessions(1, false);
   }, [loadSessions]);
+
+  // Append next page when sessionPage advances beyond 1
+  useEffect(() => {
+    if (sessionPage > 1) {
+      loadSessions(sessionPage, true);
+    }
+  }, [sessionPage, loadSessions]);
+
+  const hasMoreSessions = sessions.length < totalSessions;
+
+  const handleLoadMoreSessions = useCallback(() => {
+    if (!isLoadingMoreSessions && hasMoreSessions) {
+      setSessionPage((previousPage) => previousPage + 1);
+    }
+  }, [isLoadingMoreSessions, hasMoreSessions]);
 
   // ── Load session graph data when a session is selected ────────
   const loadSessionGraph = useCallback(async (session: AgentSession) => {
@@ -1007,6 +1037,9 @@ export default function SessionGraphPageComponent() {
             showModalityFilters={false}
             showCostFilters={false}
             countLabel="sessions"
+            hasMore={hasMoreSessions}
+            loadingMore={isLoadingMoreSessions}
+            onLoadMore={handleLoadMoreSessions}
           />
         </div>
 
