@@ -12,9 +12,8 @@
 .chat-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  padding: 12px;
+  padding: 4px 12px;
   height: 42px;
   min-height: 42px;
   flex-shrink: 0;
@@ -23,6 +22,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 5;
+  position: relative;
 }
 
 .chat-header-title {
@@ -81,6 +81,81 @@
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+}
+
+/* ── Chat area tab switcher (Chat / Nodes) ───────────────────── */
+
+.chat-header-tab-switcher {
+  position: absolute;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.chat-header-tab-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  height: 22px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--border-radius-sm) - 2px);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+  white-space: nowrap;
+
+  & svg {
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+  }
+
+  &:hover {
+    color: var(--text-secondary);
+    background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+
+    & svg {
+      opacity: 0.8;
+    }
+  }
+}
+
+.chat-header-tab-button-active {
+  color: var(--text-primary);
+  background: var(--background-surface);
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.15);
+
+  & svg {
+    opacity: 1;
+    color: var(--accent-primary);
+  }
+
+  &:hover {
+    background: var(--background-surface);
+    color: var(--text-primary);
+  }
+}
+
+/* ── Messages list — hidden when Nodes tab is active ─────────── */
+
+.messages-list-hidden {
+  display: none;
 }
 
 /* Override ButtonComponent sizing to fit the compact chat header */
@@ -169,6 +244,7 @@
   flex-direction: column;
   gap: 24px;
   position: relative;
+  animation: fade-in 0.2s ease-out;
 }
 
 /* Responsive spacing for mobile devices */

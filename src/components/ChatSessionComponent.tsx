@@ -33,6 +33,8 @@ import {
   FileSpreadsheet,
   Volume2,
   Video,
+  Network,
+  MessageSquare,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import IrisService, {
@@ -87,6 +89,7 @@ import UserQuestionCardComponent from "./UserQuestionCardComponent";
 
 import StatusBarComponent from "./StatusBarComponent";
 import PixelTransitionComponent from "./PixelTransitionComponent";
+import ChatSessionGraphComponent from "./ChatSessionGraphComponent";
 
 import { buildToolSchemas } from "../utils/FunctionCallingUtilities";
 import {
@@ -428,6 +431,7 @@ export default function ChatSessionComponent({
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState(isNoAgent ? "Agentless Chat" : "Agent");
   const [leftTab, setLeftTab] = useState(initialTabKey || "settings"); // "settings" | "tools"
+  const [chatAreaTab, setChatAreaTab] = useState<"chat" | "nodes">("chat");
   const [customTools, setCustomTools] = useState<CustomTool[]>([]);
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -5136,8 +5140,31 @@ export default function ChatSessionComponent({
         <div className={chatStyles['chat-header-title']}>
           <span className={chatStyles['chat-header-title-text']}>{title || ""}</span>
         </div>
+        {/* -- Tab switcher: Chat / Nodes -- */}
+        <div className={chatStyles['chat-header-tab-switcher']}>
+          <button
+            id="chat-area-tab-chat"
+            className={`${chatStyles['chat-header-tab-button']} ${chatAreaTab === "chat" ? chatStyles['chat-header-tab-button-active'] : ""}`}
+            onClick={() => setChatAreaTab("chat")}
+            aria-pressed={chatAreaTab === "chat"}
+            title="View conversation messages"
+          >
+            <MessageSquare size={12} />
+            Chat
+          </button>
+          <button
+            id="chat-area-tab-nodes"
+            className={`${chatStyles['chat-header-tab-button']} ${chatAreaTab === "nodes" ? chatStyles['chat-header-tab-button-active'] : ""}`}
+            onClick={() => setChatAreaTab("nodes")}
+            aria-pressed={chatAreaTab === "nodes"}
+            title="View session as node graph"
+          >
+            <Network size={12} />
+            Nodes
+          </button>
+        </div>
         <div className={chatStyles['chat-header-actions']}>
-          {hasSystemContextMessage && (
+          {hasSystemContextMessage && chatAreaTab === "chat" && (
             <div className={chatStyles['debug-toggle-container']}>
               <ButtonComponent
                 variant={!showRaw ? "tonal" : "text"}
@@ -5171,6 +5198,10 @@ export default function ChatSessionComponent({
           </ButtonComponent>
         </div>
       </div>
+      {/* Nodes tab — inline session graph */}
+      {chatAreaTab === "nodes" && (
+        <ChatSessionGraphComponent sessionId={activeId} />
+      )}
       <PixelTransitionComponent
         phase={pixelTransition}
         duration={
@@ -5184,9 +5215,9 @@ export default function ChatSessionComponent({
         }}
         targetRef={messagesListRef}
       />
-      {/* Messages */}
+      {/* Messages (hidden when Nodes tab is active) */}
       <div
-        className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""}`}
+        className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""} ${chatAreaTab === "nodes" ? chatStyles['messages-list-hidden'] : ""}`}
         ref={messagesListRef}
         style={
           agentBackgroundImage

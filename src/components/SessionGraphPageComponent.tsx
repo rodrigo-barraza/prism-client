@@ -224,10 +224,13 @@ function buildGraphFromSession(
     addEdge(projectNodeId, sessionNodeId, 0.8);
   }
 
-  // Find the parent agent's session ID from requests directly tied to the root conversation
+  // Determine the parent agent's session ID — it's the agentSessionId of requests that have
+  // no parentAgentSessionId (i.e. they belong directly to the root agent, not a worker).
+  // Note: conversationId is not projected by the backend session-requests endpoint, so we
+  // cannot rely on it here.
   let mainAgentSessionId = sessionId;
   for (const request of sessionRequests) {
-    if (request.conversationId === sessionId && request.agentSessionId) {
+    if (!request.parentAgentSessionId && request.agentSessionId) {
       mainAgentSessionId = request.agentSessionId;
       break;
     }
@@ -313,11 +316,14 @@ function buildGraphFromSession(
     // Agent → Request (tier 2 → tier 3)
     addEdge(currentAgentNodeId, requestNodeId, 0.5);
 
-    // Chain requests sequentially (chronological flow)
+    // Chain requests sequentially only within the same agent session
     if (requestIndex > 0) {
       const previousRequest = sortedRequests[requestIndex - 1];
-      const previousRequestNodeId = `request:${previousRequest._id || (requestIndex - 1)}`;
-      addEdge(previousRequestNodeId, requestNodeId, 0.6);
+      const previousAgentSessionId = previousRequest.agentSessionId || mainAgentSessionId;
+      if (previousAgentSessionId === reqAgentSessionId) {
+        const previousRequestNodeId = `request:${previousRequest._id || (requestIndex - 1)}`;
+        addEdge(previousRequestNodeId, requestNodeId, 0.6);
+      }
     }
 
     // Request → Model (tier 3 → tier 4)
