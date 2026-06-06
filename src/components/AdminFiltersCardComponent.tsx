@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Box,
@@ -12,8 +12,6 @@ import {
 import {
   SelectComponent,
   DatePickerComponent,
-  SearchInputComponent,
-  useDebounce,
 } from "@rodrigo-barraza/components-library";
 import IrisService from "../services/IrisService";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
@@ -70,18 +68,6 @@ export default function AdminFiltersCardComponent() {
   }, [searchParams]);
   const selectedWorkspace = searchParams.get("workspace") || "";
 
-  const urlSearchQuery = searchParams.get("search") || "";
-  const [localSearchQuery, setLocalSearchQuery] = useState(urlSearchQuery);
-  const isInitializedRef = useRef(false);
-
-  useEffect(() => {
-    if (!isInitializedRef.current) {
-      isInitializedRef.current = true;
-      return;
-    }
-    setLocalSearchQuery(urlSearchQuery);
-  }, [urlSearchQuery]);
-
   const updateSearchParam = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -126,21 +112,6 @@ export default function AdminFiltersCardComponent() {
   const handleWorkspaceChange = useCallback(
     (value: string) => updateSearchParam("workspace", value),
     [updateSearchParam],
-  );
-
-  const syncSearchToUrl = useCallback(
-    (value: string) => updateSearchParam("search", value),
-    [updateSearchParam],
-  );
-
-  const debouncedSyncSearchToUrl = useDebounce(syncSearchToUrl as (...args: unknown[]) => void, 300);
-
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setLocalSearchQuery(value);
-      debouncedSyncSearchToUrl(value);
-    },
-    [debouncedSyncSearchToUrl],
   );
 
   const projectOptions: FilterOption[] = useMemo(
@@ -197,13 +168,6 @@ export default function AdminFiltersCardComponent() {
 
   return (
     <div className={styles["filters-card"]}>
-      <SearchInputComponent
-        value={localSearchQuery}
-        onChange={handleSearchChange}
-        placeholder="Search sessions, requests, conversations…"
-        compact
-        className={styles["search-input"]}
-      />
       <div className={styles["filters-grid"]}>
         <SelectComponent
           value={selectedProject}
@@ -212,6 +176,7 @@ export default function AdminFiltersCardComponent() {
           placeholder="All Projects"
           icon={<Box size={14} />}
           compact
+          searchable
         />
         <SelectComponent
           value={selectedProvider}
@@ -220,6 +185,7 @@ export default function AdminFiltersCardComponent() {
           placeholder="All Providers"
           icon={<Layers size={14} />}
           compact
+          searchable
         />
         <SelectComponent
           value={selectedModel}
@@ -228,6 +194,7 @@ export default function AdminFiltersCardComponent() {
           placeholder="All Models"
           icon={<Server size={14} />}
           compact
+          searchable
         />
         <SelectComponent
           multiple
@@ -238,6 +205,7 @@ export default function AdminFiltersCardComponent() {
           allLabel="All Agents"
           icon={<Users size={14} />}
           compact
+          searchable
         />
         <SelectComponent
           value={selectedWorkspace}
@@ -246,6 +214,7 @@ export default function AdminFiltersCardComponent() {
           placeholder="All Workspaces"
           icon={<FolderKanban size={14} />}
           compact
+          searchable
         />
         <DatePickerComponent
           from={dateRange.from}

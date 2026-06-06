@@ -88,7 +88,6 @@ export default function DashboardPage() {
   const providerFilter = searchParams.get("provider") || null;
   const modelFilter = searchParams.get("model") || null;
   const workspaceFilter = searchParams.get("workspace") || null;
-  const searchQuery = searchParams.get("search") || null;
   const { dateRange, agentFilter } = useAdminHeader();
   const [stats, setStats] = useState<IrisDashboardStats | null>(null);
   const [projectStats, setProjectStats] = useState<IrisProjectStat[]>([]);
@@ -129,7 +128,6 @@ export default function DashboardPage() {
       if (providerFilter) filterParams.provider = providerFilter;
       if (modelFilter) filterParams.model = modelFilter;
       if (workspaceFilter) filterParams.workspace = workspaceFilter;
-      if (searchQuery) filterParams.search = searchQuery;
 
       const [
         statsData,
@@ -217,7 +215,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateParams, timelineHours, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter, searchQuery, timelineGranularity]);
+  }, [dateParams, timelineHours, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter, timelineGranularity]);
 
   // Live dashboard updates via Change Streams (debounced to 2s).
   // Falls back to 60s polling if Change Streams aren't available.

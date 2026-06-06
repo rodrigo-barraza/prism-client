@@ -103,7 +103,7 @@ const TIER_ORDER: Record<NodeCategory, number> = {
   user: 0,
   session: 1,
   agent: 2,
-  tool: 2,
+  tool: 4,
   request: 3,
   model: 4,
   embedding: 4,
@@ -270,6 +270,13 @@ function buildGraphFromSession(
     // Agent → Request (tier 2 → tier 3)
     addEdge(agentNodeId, requestNodeId, 0.5);
 
+    // Chain requests sequentially (chronological flow)
+    if (requestIndex > 0) {
+      const previousRequest = sortedRequests[requestIndex - 1];
+      const previousRequestNodeId = `request:${previousRequest._id || (requestIndex - 1)}`;
+      addEdge(previousRequestNodeId, requestNodeId, 0.6);
+    }
+
     // Request → Model (tier 3 → tier 4)
     if (request.model) {
       const modelNodeId = isEmbeddingRequest
@@ -319,7 +326,7 @@ function buildGraphFromSession(
     }
   }
 
-  // Tool nodes — connect to Agent (tier 2, same as agent)
+  // Tool nodes — connect to specific request nodes that invoked them
   const toolEntries = Object.entries(toolCounts).sort(
     ([, countA], [, countB]) => countB - countA,
   );
@@ -331,7 +338,20 @@ function buildGraphFromSession(
       toolName,
       usageCount,
     });
-    addEdge(agentNodeId, toolNodeId, 0.7);
+
+    // Add edges from requests that used this tool, or fallback to agent if no requests match
+    let hasMatchingRequest = false;
+    for (let requestIndex = 0; requestIndex < sortedRequests.length; requestIndex++) {
+      const request = sortedRequests[requestIndex];
+      if (request.toolApiNames?.includes(toolName)) {
+        const requestNodeId = `request:${request._id || requestIndex}`;
+        addEdge(requestNodeId, toolNodeId, 0.7);
+        hasMatchingRequest = true;
+      }
+    }
+    if (!hasMatchingRequest) {
+      addEdge(agentNodeId, toolNodeId, 0.7);
+    }
   }
 
   // User nodes — connect to Session (tier 0, same as project)
@@ -393,7 +413,6 @@ export default function SessionGraphPageComponent() {
   const providerFilter = searchParams.get("provider") || null;
   const modelFilter = searchParams.get("model") || null;
   const workspaceFilter = searchParams.get("workspace") || null;
-  const searchQuery = searchParams.get("search") || null;
   const { setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const dateParams = useMemo(
     () => buildDateRangeParams(dateRange),
@@ -501,7 +520,6 @@ export default function SessionGraphPageComponent() {
       if (providerFilter) params.provider = providerFilter;
       if (modelFilter) params.model = modelFilter;
       if (workspaceFilter) params.workspace = workspaceFilter;
-      if (searchQuery) params.search = searchQuery;
 
       const response = await IrisService.getAgentSessions(params);
       setSessions(response.data || []);
@@ -511,7 +529,7 @@ export default function SessionGraphPageComponent() {
     } finally {
       setIsSessionsLoading(false);
     }
-  }, [sessionPage, dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter, searchQuery]);
+  }, [sessionPage, dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter]);
 
   useEffect(() => {
     loadSessions();
@@ -1096,6 +1114,21 @@ export default function SessionGraphPageComponent() {
                         <feMergeNode in="SourceGraphic" />
                       </feMerge>
                     </filter>
+                    {/* Arrowhead markers for each node category */}
+                    {(Object.entries(NODE_COLORS) as [NodeCategory, string][]).map(([category, color]) => (
+                      <marker
+                        key={`arrow-${category}`}
+                        id={`arrow-${category}`}
+                        viewBox="0 0 10 10"
+                        refX={7}
+                        refY={5}
+                        markerWidth={6}
+                        markerHeight={6}
+                        orient="auto"
+                      >
+                        <path d="M 0 2.5 L 7 5 L 0 7.5 z" fill={color} />
+                      </marker>
+                    ))}
                   </defs>
 
                   {/* Edges */}
@@ -1139,6 +1172,7 @@ export default function SessionGraphPageComponent() {
                           strokeOpacity={edgeOpacity}
                           fill="none"
                           className={styles["connection-line"]}
+                          markerEnd={`url(#arrow-${targetNode.category})`}
                         />
                       </g>
                     );
