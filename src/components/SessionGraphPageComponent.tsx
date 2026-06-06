@@ -302,14 +302,13 @@ function buildGraphFromSession(
       addEdge(agentNodeId, embeddingNodeId, 0.7);
     }
 
-    // Embedding Model → Provider
+    // Embedding Model → Provider (unified with LLM provider nodes)
     for (const providerName of modelData.providers) {
-      const embeddingProviderNodeId = `provider:embed:${providerName}`;
-      addNode(embeddingProviderNodeId, resolveProviderLabel(providerName) || providerName, "provider", 16, {
+      const providerNodeId = `provider:${providerName}`;
+      addNode(providerNodeId, resolveProviderLabel(providerName) || providerName, "provider", 18, {
         provider: providerName,
-        isEmbeddingProvider: true,
       });
-      addEdge(embeddingNodeId, embeddingProviderNodeId, 0.6);
+      addEdge(embeddingNodeId, providerNodeId, 0.6);
     }
   }
 
