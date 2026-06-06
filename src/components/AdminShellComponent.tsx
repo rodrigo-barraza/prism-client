@@ -331,11 +331,6 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       <div className={styles.mainArea}>
         <LayoutHeaderComponent
           title={pageTitle}
-          titleBadge={
-            titleBadge != null && (
-              <span className={styles.titleBadge}>{titleBadge}</span>
-            )
-          }
           controls={controls}
         >
           {hasSessionFilter && (

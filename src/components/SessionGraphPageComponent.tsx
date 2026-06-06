@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Network,
   Server,
@@ -11,9 +11,17 @@ import {
   ZoomOut,
   Maximize,
   DollarSign,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+  Image as ImageIcon,
+  FileText,
+  Wrench,
+  MessageSquare,
 } from "lucide-react";
 import IrisService, {
   type IrisRequestEntry,
+  type IrisCollectionChangeEvent,
 } from "../services/IrisService";
 import type { AgentSession, SessionStats } from "../types/types";
 import { cleanModelName } from "./BadgeComponent";
@@ -267,6 +275,7 @@ function buildGraphFromSession(
         duration: request.duration,
         timestamp: request.timestamp,
         status: request.status,
+        requestId: request.requestId || request._id,
       },
       sequenceNumber,
     );
@@ -403,6 +412,8 @@ function applyHierarchicalLayout(
 
 export default function SessionGraphPageComponent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const projectFilter = searchParams.get("project") || null;
   const providerFilter = searchParams.get("provider") || null;
   const modelFilter = searchParams.get("model") || null;
@@ -432,6 +443,19 @@ export default function SessionGraphPageComponent() {
   const [isGraphLoading, setIsGraphLoading] = useState(false);
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const loadingSessionIdRef = useRef<string | null>(null);
+
+  // Lazy-loaded request detail for popover input/output display
+  const [selectedRequestDetail, setSelectedRequestDetail] = useState<IrisRequestEntry | null>(null);
+  const [isRequestDetailLoading, setIsRequestDetailLoading] = useState(false);
+  const [expandedPopoverSections, setExpandedPopoverSections] = useState<Set<string>>(new Set());
+
+  // Live streaming state
+  const [enteringNodeIds, setEnteringNodeIds] = useState<Set<string>>(new Set());
+  const [isLiveConnected, setIsLiveConnected] = useState(false);
+  const sessionRequestsRef = useRef<IrisRequestEntry[]>([]);
+  const selectedSessionRef = useRef<AgentSession | null>(null);
+  const sessionStatsRef = useRef<SessionStats | null>(null);
 
   // Canvas state
   const [zoom, setZoom] = useState(1);
@@ -567,6 +591,19 @@ export default function SessionGraphPageComponent() {
     }
   }, [isLoadingMoreSessions, hasMoreSessions]);
 
+  // Keep refs in sync with state for SSE callback access
+  useEffect(() => {
+    sessionRequestsRef.current = sessionRequests;
+  }, [sessionRequests]);
+
+  useEffect(() => {
+    selectedSessionRef.current = selectedSession;
+  }, [selectedSession]);
+
+  useEffect(() => {
+    sessionStatsRef.current = sessionStats;
+  }, [sessionStats]);
+
   // ── Load session graph data when a session is selected ────────
   const loadSessionGraph = useCallback(async (session: AgentSession) => {
     const sessionId = session.id || session._id;
@@ -575,6 +612,7 @@ export default function SessionGraphPageComponent() {
     setSessionStats(null);
     setSessionRequests([]);
     setGraphData(null);
+    setEnteringNodeIds(new Set());
 
     try {
       const [statsResponse, requestsResponse] = await Promise.all([
@@ -611,11 +649,69 @@ export default function SessionGraphPageComponent() {
 
   const handleSessionSelect = useCallback(
     (session: AgentSession) => {
+      const sessionId = session.id || session._id;
+      loadingSessionIdRef.current = sessionId;
       setSelectedSession(session);
       loadSessionGraph(session);
+
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("session", sessionId);
+      router.replace(`${pathname}?${params.toString()}`);
     },
-    [loadSessionGraph],
+    [loadSessionGraph, searchParams, router, pathname],
   );
+
+  const urlSessionId = searchParams.get("session") || null;
+
+  useEffect(() => {
+    if (!urlSessionId) {
+      setSelectedSession(null);
+      setSessionStats(null);
+      setSessionRequests([]);
+      setGraphData(null);
+      setSelectedNodeId(null);
+      loadingSessionIdRef.current = null;
+      return;
+    }
+
+    const currentSelectedId = selectedSession
+      ? selectedSession.id || selectedSession._id
+      : null;
+    if (urlSessionId === currentSelectedId || urlSessionId === loadingSessionIdRef.current) {
+      return;
+    }
+
+    loadingSessionIdRef.current = urlSessionId;
+
+    const existingSession = sessions.find(
+      (sessionEntry) => (sessionEntry.id || sessionEntry._id) === urlSessionId
+    );
+
+    if (existingSession) {
+      setSelectedSession(existingSession);
+      loadSessionGraph(existingSession);
+    } else {
+      let isEffectCancelled = false;
+      setIsGraphLoading(true);
+
+      IrisService.getAgentSession(urlSessionId)
+        .then((fetchedSession) => {
+          if (isEffectCancelled) return;
+          setSelectedSession(fetchedSession);
+          loadSessionGraph(fetchedSession);
+        })
+        .catch((error) => {
+          if (isEffectCancelled) return;
+          console.error("Failed to fetch agent session from URL param:", error);
+          setIsGraphLoading(false);
+          loadingSessionIdRef.current = null;
+        });
+
+      return () => {
+        isEffectCancelled = true;
+      };
+    }
+  }, [urlSessionId, sessions, loadSessionGraph, selectedSession]);
 
   // ── Admin header badge ─────────────────────────────────────────
   useEffect(() => {
@@ -746,6 +842,133 @@ export default function SessionGraphPageComponent() {
   useEffect(() => {
     if (draggedNode) startCollisionLoop(30);
   }, [draggedNode, startCollisionLoop]);
+
+  // ── Incremental graph rebuild with position preservation ───────
+  const incrementalGraphRebuild = useCallback((
+    session: AgentSession,
+    updatedStats: SessionStats | null,
+    updatedRequests: IrisRequestEntry[],
+  ) => {
+    // Snapshot existing node positions before rebuild
+    const existingPositions = new Map<string, { x: number; y: number }>();
+    const existingNodeIds = new Set<string>();
+
+    setGraphData((previousGraphData) => {
+      if (previousGraphData) {
+        for (const node of previousGraphData.nodes) {
+          existingPositions.set(node.id, { x: node.x, y: node.y });
+          existingNodeIds.add(node.id);
+        }
+      }
+
+      const graph = buildGraphFromSession(session, updatedStats, updatedRequests);
+
+      // Identify newly arriving nodes
+      const newNodeIds = new Set<string>();
+      for (const node of graph.nodes) {
+        if (!existingNodeIds.has(node.id)) {
+          newNodeIds.add(node.id);
+        }
+      }
+
+      // Apply layout to get default positions for new nodes
+      applyHierarchicalLayout(graph, dimensions.width, dimensions.height);
+
+      // Restore positions for previously existing nodes
+      for (const node of graph.nodes) {
+        const previousPosition = existingPositions.get(node.id);
+        if (previousPosition) {
+          node.x = previousPosition.x;
+          node.y = previousPosition.y;
+        }
+      }
+
+      // Trigger entrance animation for new nodes
+      if (newNodeIds.size > 0) {
+        setEnteringNodeIds(newNodeIds);
+        setTimeout(() => {
+          setEnteringNodeIds(new Set());
+        }, 600);
+      }
+
+      return graph;
+    });
+  }, [dimensions]);
+
+  // ── SSE live graph updates (Change Streams) ───────────────────
+  useEffect(() => {
+    const currentSession = selectedSession;
+    if (!currentSession) {
+      setIsLiveConnected(false);
+      return;
+    }
+
+    const selectedSessionId = currentSession.id || currentSession._id;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let previousRequestCount = sessionRequestsRef.current.length;
+
+    const performIncrementalRefresh = async () => {
+      const activeSession = selectedSessionRef.current;
+      if (!activeSession) return;
+      const activeSessionId = activeSession.id || activeSession._id;
+
+      try {
+        const [updatedStats, updatedRequestsResponse] = await Promise.all([
+          IrisService.getSessionStats(activeSessionId).catch(() => sessionStatsRef.current),
+          IrisService.getSessionRequests(activeSessionId).catch(() => ({
+            requests: sessionRequestsRef.current,
+          })),
+        ]);
+
+        const updatedRequests = updatedRequestsResponse.requests || [];
+
+        // Only rebuild if request count actually changed
+        if (updatedRequests.length !== previousRequestCount) {
+          previousRequestCount = updatedRequests.length;
+          setSessionStats(updatedStats);
+          setSessionRequests(updatedRequests);
+          incrementalGraphRebuild(activeSession, updatedStats, updatedRequests);
+          startCollisionLoop(40);
+        } else if (updatedStats) {
+          setSessionStats(updatedStats);
+        }
+      } catch {
+        // Silently ignore — next event or poll will retry
+      }
+    };
+
+    const debouncedRefresh = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(performIncrementalRefresh, 400);
+    };
+
+    const subscription = IrisService.subscribeCollectionChanges({
+      onStatus: (statusEvent: IrisCollectionChangeEvent) => {
+        setIsLiveConnected(!!statusEvent.changeStreams);
+        if (!statusEvent.changeStreams) {
+          // Fall back to polling when Change Streams are unavailable
+          if (!pollInterval) {
+            pollInterval = setInterval(performIncrementalRefresh, 10_000);
+          }
+        }
+      },
+      onChange: (changeEvent: IrisCollectionChangeEvent) => {
+        if (
+          changeEvent.collection === "requests" &&
+          changeEvent.conversationId === selectedSessionId
+        ) {
+          debouncedRefresh();
+        }
+      },
+    });
+
+    return () => {
+      subscription.close();
+      if (pollInterval) clearInterval(pollInterval);
+      if (debounceTimer) clearTimeout(debounceTimer);
+    };
+  }, [selectedSession, incrementalGraphRebuild, startCollisionLoop]);
 
   // ── Canvas pan/zoom handlers ──────────────────────────────────
   const handleCanvasMouseDown = useCallback(
@@ -933,6 +1156,54 @@ export default function SessionGraphPageComponent() {
     }
   }, []);
 
+  // Lazy-fetch full request detail when a request node is selected
+  useEffect(() => {
+    if (!selectedNodeId || !graphData) {
+      setSelectedRequestDetail(null);
+      setExpandedPopoverSections(new Set());
+      return;
+    }
+    const node = graphData.nodes.find((graphNode) => graphNode.id === selectedNodeId);
+    if (!node || node.category !== "request" || !node.metadata?.requestId) {
+      setSelectedRequestDetail(null);
+      setExpandedPopoverSections(new Set());
+      return;
+    }
+
+    let isCancelled = false;
+    setIsRequestDetailLoading(true);
+    setSelectedRequestDetail(null);
+    setExpandedPopoverSections(new Set());
+
+    IrisService.getRequest(String(node.metadata.requestId))
+      .then((detail) => {
+        if (!isCancelled) {
+          setSelectedRequestDetail(detail);
+          setIsRequestDetailLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setSelectedRequestDetail(null);
+          setIsRequestDetailLoading(false);
+        }
+      });
+
+    return () => { isCancelled = true; };
+  }, [selectedNodeId, graphData]);
+
+  const togglePopoverSection = useCallback((sectionKey: string) => {
+    setExpandedPopoverSections((previous) => {
+      const next = new Set(previous);
+      if (next.has(sectionKey)) {
+        next.delete(sectionKey);
+      } else {
+        next.add(sectionKey);
+      }
+      return next;
+    });
+  }, []);
+
   // ── Compute selected node for detail popover ──────────────────
   const selectedNode = useMemo(() => {
     if (!selectedNodeId || !graphData) return null;
@@ -1054,6 +1325,12 @@ export default function SessionGraphPageComponent() {
               {graphData && (
                 <span className={styles["graph-header-badge"]}>
                   {graphData.nodes.length} nodes · {graphData.edges.length} edges
+                </span>
+              )}
+              {selectedSession && isLiveConnected && (
+                <span className={styles["live-indicator"]}>
+                  <span className={styles["live-indicator-dot"]} />
+                  LIVE
                 </span>
               )}
             </span>
@@ -1201,7 +1478,7 @@ export default function SessionGraphPageComponent() {
                       <g
                         key={node.id}
                         data-node-id={node.id}
-                        className={styles["node-group"]}
+                        className={`${styles["node-group"]}${enteringNodeIds.has(node.id) ? ` ${styles["node-entering"]}` : ""}`}
                         onMouseDown={(event) => handleNodeMouseDown(event, node.id)}
                         onTouchStart={(event) => handleNodeTouchStart(event, node.id)}
                         onClick={() => handleNodeClick(node.id)}
@@ -1473,49 +1750,68 @@ export default function SessionGraphPageComponent() {
                     )}
 
                     {selectedNode.category === "request" && (
-                      <div className={styles["node-detail-popover-section"]}>
-                        <div className={styles["node-detail-popover-section-title"]}>
-                          Request Details
+                      <>
+                        <div className={styles["node-detail-popover-section"]}>
+                          <div className={styles["node-detail-popover-section-title"]}>
+                            Request Details
+                          </div>
+                          {selectedNode.sequenceNumber != null && (
+                            <DetailRow
+                              label="Sequence"
+                              value={`#${selectedNode.sequenceNumber}`}
+                            />
+                          )}
+                          <DetailRow
+                            label="Operation"
+                            value={String(selectedNode.metadata?.operation || "—")}
+                          />
+                          <DetailRow
+                            label="Cost"
+                            value={formatCost(Number(selectedNode.metadata?.estimatedCost || 0))}
+                          />
+                          {Number(selectedNode.metadata?.inputTokens || 0) > 0 && (
+                            <DetailRow
+                              label="Input Tokens"
+                              value={formatNumber(Number(selectedNode.metadata?.inputTokens))}
+                            />
+                          )}
+                          {Number(selectedNode.metadata?.outputTokens || 0) > 0 && (
+                            <DetailRow
+                              label="Output Tokens"
+                              value={formatNumber(Number(selectedNode.metadata?.outputTokens))}
+                            />
+                          )}
+                          {Number(selectedNode.metadata?.duration || 0) > 0 && (
+                            <DetailRow
+                              label="Duration"
+                              value={formatElapsedTime(Number(selectedNode.metadata?.duration))}
+                            />
+                          )}
+                          {selectedNode.metadata?.timestamp != null && (
+                            <DetailRow
+                              label="Timestamp"
+                              value={formatTimeAgo(String(selectedNode.metadata.timestamp))}
+                            />
+                          )}
                         </div>
-                        {selectedNode.sequenceNumber != null && (
-                          <DetailRow
-                            label="Sequence"
-                            value={`#${selectedNode.sequenceNumber}`}
+
+                        {/* Lazy-loaded Input / Output / Assets */}
+                        {isRequestDetailLoading && (
+                          <div className={styles["request-payload-loading"]}
+                          >
+                            <Loader2 size={14} className={styles["spinning-icon"]} />
+                            Loading payloads…
+                          </div>
+                        )}
+
+                        {selectedRequestDetail && (
+                          <RequestPayloadSection
+                            requestDetail={selectedRequestDetail}
+                            expandedSections={expandedPopoverSections}
+                            onToggleSection={togglePopoverSection}
                           />
                         )}
-                        <DetailRow
-                          label="Operation"
-                          value={String(selectedNode.metadata?.operation || "—")}
-                        />
-                        <DetailRow
-                          label="Cost"
-                          value={formatCost(Number(selectedNode.metadata?.estimatedCost || 0))}
-                        />
-                        {Number(selectedNode.metadata?.inputTokens || 0) > 0 && (
-                          <DetailRow
-                            label="Input Tokens"
-                            value={formatNumber(Number(selectedNode.metadata?.inputTokens))}
-                          />
-                        )}
-                        {Number(selectedNode.metadata?.outputTokens || 0) > 0 && (
-                          <DetailRow
-                            label="Output Tokens"
-                            value={formatNumber(Number(selectedNode.metadata?.outputTokens))}
-                          />
-                        )}
-                        {Number(selectedNode.metadata?.duration || 0) > 0 && (
-                          <DetailRow
-                            label="Duration"
-                            value={formatElapsedTime(Number(selectedNode.metadata?.duration))}
-                          />
-                        )}
-                        {selectedNode.metadata?.timestamp != null && (
-                          <DetailRow
-                            label="Timestamp"
-                            value={formatTimeAgo(String(selectedNode.metadata.timestamp))}
-                          />
-                        )}
-                      </div>
+                      </>
                     )}
 
                     {selectedNode.category === "user" && (
@@ -1613,6 +1909,286 @@ function DetailRow({
     <div className={styles["node-detail-popover-layout-row"]}>
       <span className={styles["node-detail-popover-layout-row-label"]}>{label}</span>
       <span className={styles["node-detail-popover-layout-row-value"]}>{value}</span>
+    </div>
+  );
+}
+
+/* ── Collapsible Payload Section Header ─────────────────────── */
+
+function CollapsibleSectionHeader({
+  label,
+  icon: IconComponent,
+  badgeCount,
+  isExpanded,
+  onToggle,
+}: {
+  label: string;
+  icon: React.ComponentType<{ size?: number }>;
+  badgeCount?: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      className={styles["collapsible-section-header"]}
+      onClick={onToggle}
+      aria-expanded={isExpanded}
+    >
+      <span className={styles["collapsible-section-header-left"]}>
+        {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        <IconComponent size={12} />
+        {label}
+      </span>
+      {badgeCount != null && badgeCount > 0 && (
+        <span className={styles["collapsible-section-badge"]}>{badgeCount}</span>
+      )}
+    </button>
+  );
+}
+
+/* ── Request Payload Section — Input / Output / Assets ──────── */
+
+interface RequestPayloadMessage {
+  role?: string;
+  content?: string | unknown[] | null;
+  images?: string[] | unknown[];
+  audio?: string | unknown[];
+  video?: string | unknown[];
+  pdf?: string | unknown[];
+  toolCalls?: { name: string; id?: string | null; args?: unknown }[];
+  tool_calls?: { name: string; id?: string | null; args?: unknown }[];
+  name?: string;
+  toolCallId?: string;
+  tool_call_id?: string;
+}
+
+interface RequestPayloadToolCall {
+  name: string;
+  id?: string | null;
+  args?: unknown;
+}
+
+function RequestPayloadSection({
+  requestDetail,
+  expandedSections,
+  onToggleSection,
+}: {
+  requestDetail: IrisRequestEntry;
+  expandedSections: Set<string>;
+  onToggleSection: (key: string) => void;
+}) {
+  const requestPayload = requestDetail.requestPayload as {
+    messages?: RequestPayloadMessage[];
+    tools?: string[];
+    agenticIteration?: number;
+  } | null;
+
+  const responsePayload = requestDetail.responsePayload as {
+    text?: string | null;
+    thinking?: string | null;
+    images?: string[];
+    toolCalls?: RequestPayloadToolCall[] | null;
+    audioRef?: string | null;
+    usage?: Record<string, unknown>;
+  } | null;
+
+  const inputMessages = requestPayload?.messages || [];
+  const userMessages = inputMessages.filter(
+    (message) => message.role === "user" && message.content,
+  );
+
+  const allInputImages: string[] = [];
+  for (const message of inputMessages) {
+    if (message.images && Array.isArray(message.images)) {
+      for (const imageReference of message.images) {
+        if (typeof imageReference === "string" && !imageReference.startsWith("[base64")) {
+          allInputImages.push(imageReference);
+        }
+      }
+    }
+  }
+
+  const outputText = responsePayload?.text || null;
+  const thinkingText = responsePayload?.thinking || null;
+  const outputImages = responsePayload?.images || [];
+  const outputToolCalls = responsePayload?.toolCalls || [];
+
+  const hasInput = userMessages.length > 0 || allInputImages.length > 0;
+  const hasOutput = !!outputText || !!thinkingText;
+  const hasAssets = outputImages.length > 0 || allInputImages.length > 0;
+  const hasToolCalls = outputToolCalls && outputToolCalls.length > 0;
+
+  if (!hasInput && !hasOutput && !hasAssets && !hasToolCalls) {
+    return null;
+  }
+
+  return (
+    <div className={styles["request-payload-container"]}>
+      {/* Input Messages */}
+      {hasInput && (
+        <div className={styles["request-payload-section"]}>
+          <CollapsibleSectionHeader
+            label="Input"
+            icon={MessageSquare}
+            badgeCount={userMessages.length}
+            isExpanded={expandedSections.has("input")}
+            onToggle={() => onToggleSection("input")}
+          />
+          {expandedSections.has("input") && (
+            <div className={styles["request-payload-content"]}>
+              {userMessages.map((message, messageIndex) => {
+                const messageContent = typeof message.content === "string"
+                  ? message.content
+                  : JSON.stringify(message.content);
+                return (
+                  <div key={messageIndex} className={styles["request-message-block"]}>
+                    <span className={styles["request-message-role-badge"]}>
+                      {message.role || "user"}
+                    </span>
+                    <div className={styles["request-message-content"]}>
+                      {messageContent && messageContent.length > 500
+                        ? `${messageContent.slice(0, 500)}\u2026`
+                        : messageContent}
+                    </div>
+                  </div>
+                );
+              })}
+              {allInputImages.length > 0 && (
+                <div className={styles["request-assets-grid"]}>
+                  {allInputImages.map((imageUrl, imageIndex) => (
+                    <a
+                      key={imageIndex}
+                      href={imageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles["request-asset-thumbnail-link"]}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`Input image ${imageIndex + 1}`}
+                        className={styles["request-asset-thumbnail"]}
+                        loading="lazy"
+                      />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Output Content */}
+      {hasOutput && (
+        <div className={styles["request-payload-section"]}>
+          <CollapsibleSectionHeader
+            label="Output"
+            icon={FileText}
+            isExpanded={expandedSections.has("output")}
+            onToggle={() => onToggleSection("output")}
+          />
+          {expandedSections.has("output") && (
+            <div className={styles["request-payload-content"]}>
+              {thinkingText && (
+                <div className={styles["request-message-block"]}>
+                  <span className={`${styles["request-message-role-badge"]} ${styles["request-message-role-badge-thinking"]}`}>
+                    thinking
+                  </span>
+                  <div className={styles["request-message-content"]}>
+                    {thinkingText.length > 500
+                      ? `${thinkingText.slice(0, 500)}\u2026`
+                      : thinkingText}
+                  </div>
+                </div>
+              )}
+              {outputText && (
+                <div className={styles["request-message-block"]}>
+                  <span className={`${styles["request-message-role-badge"]} ${styles["request-message-role-badge-assistant"]}`}>
+                    assistant
+                  </span>
+                  <div className={styles["request-message-content"]}>
+                    {outputText.length > 500
+                      ? `${outputText.slice(0, 500)}\u2026`
+                      : outputText}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Generated Assets / Images */}
+      {outputImages.length > 0 && (
+        <div className={styles["request-payload-section"]}>
+          <CollapsibleSectionHeader
+            label="Generated Assets"
+            icon={ImageIcon}
+            badgeCount={outputImages.length}
+            isExpanded={expandedSections.has("assets")}
+            onToggle={() => onToggleSection("assets")}
+          />
+          {expandedSections.has("assets") && (
+            <div className={styles["request-payload-content"]}>
+              <div className={styles["request-assets-grid"]}>
+                {outputImages.map((imageUrl, imageIndex) => (
+                  <a
+                    key={imageIndex}
+                    href={imageUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles["request-asset-thumbnail-link"]}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`Generated asset ${imageIndex + 1}`}
+                      className={styles["request-asset-thumbnail"]}
+                      loading="lazy"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tool Calls */}
+      {hasToolCalls && (
+        <div className={styles["request-payload-section"]}>
+          <CollapsibleSectionHeader
+            label="Tool Calls"
+            icon={Wrench}
+            badgeCount={outputToolCalls!.length}
+            isExpanded={expandedSections.has("tools")}
+            onToggle={() => onToggleSection("tools")}
+          />
+          {expandedSections.has("tools") && (
+            <div className={styles["request-payload-content"]}>
+              {outputToolCalls!.map((toolCall, toolIndex) => (
+                <div key={toolIndex} className={styles["request-tool-call-block"]}>
+                  <div className={styles["request-tool-call-name"]}>
+                    <Wrench size={10} />
+                    {toolCall.name}
+                  </div>
+                  {toolCall.args != null ? (() => {
+                    const argsText = typeof toolCall.args === "string"
+                      ? toolCall.args
+                      : JSON.stringify(toolCall.args, null, 2);
+                    return (
+                      <pre className={styles["request-tool-call-arguments"]}>
+                        {argsText.length > 300
+                          ? `${argsText.slice(0, 300)}\u2026`
+                          : argsText}
+                      </pre>
+                    );
+                  })() : null}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

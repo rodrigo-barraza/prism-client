@@ -97,9 +97,11 @@ export interface IrisCollectionChangeEvent {
   type: "change" | "status";
   collection?: string;
   operationType?: string;
+  documentId?: string;
   id?: string;
   timestamp?: string;
   changeStreams?: boolean;
+  conversationId?: string | null;
 }
 
 export interface IrisHealthResponse {
