@@ -714,7 +714,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
       event.stopPropagation();
       hasDraggedRef.current = false;
       dragStartRef.current = { x: event.clientX, y: event.clientY };
-      const node = graphData?.nodes.find((n) => n.id === nodeId);
+      const node = graphData?.nodes.find((graphNode) => graphNode.id === nodeId);
       if (!node) return;
       const svgPos = screenToSvg(event.clientX, event.clientY);
       setDraggedNode({ id: nodeId, offsetX: svgPos.x - node.x, offsetY: svgPos.y - node.y });
@@ -773,8 +773,8 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     setZoom((previousZoom) => Math.max(0.3, Math.min(3, previousZoom * zoomFactor)));
   }, []);
 
-  const handleZoomIn = useCallback(() => setZoom((z) => Math.min(3, z * 1.2)), []);
-  const handleZoomOut = useCallback(() => setZoom((z) => Math.max(0.3, z * 0.8)), []);
+  const handleZoomIn = useCallback(() => setZoom((currentZoom) => Math.min(3, currentZoom * 1.2)), []);
+  const handleZoomOut = useCallback(() => setZoom((currentZoom) => Math.max(0.3, currentZoom * 0.8)), []);
   const handleZoomFit = useCallback(() => { setZoom(1); setPanOffset({ x: 0, y: 0 }); }, []);
 
   const handleNodeClick = useCallback((nodeId: string) => {

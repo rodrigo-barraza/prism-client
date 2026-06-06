@@ -188,13 +188,13 @@ export default function HistoryList({
   const allProviders = useMemo(() => {
     const set = new Set<string>();
     for (const item of items || []) {
-      for (const p of item.providers || []) set.add(p);
+      for (const provider of item.providers || []) set.add(provider);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
     return [...set].sort((a: string, b: string) => {
-      const ai = labelOrder.indexOf(a);
-      const bi = labelOrder.indexOf(b);
-      return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
+      const indexA = labelOrder.indexOf(a);
+      const indexB = labelOrder.indexOf(b);
+      return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
     });
   }, [items]);
 
@@ -250,15 +250,15 @@ export default function HistoryList({
       }
       if (activeProviders.size > 0) {
         const itemProviders = item.providers || [];
-        const matches = [...activeProviders].some((p) =>
-          itemProviders.includes(p),
+        const matches = [...activeProviders].some((provider) =>
+          itemProviders.includes(provider),
         );
         if (!matches) return false;
       }
       if (activeCostTiers.size > 0) {
         const cost = item.totalCost ?? 0;
         const matchesCostTier = [...activeCostTiers].some((tierKey) => {
-          const tier = COST_TIERS.find((t) => t.key === tierKey);
+          const tier = COST_TIERS.find((costTier) => costTier.key === tierKey);
           if (!tier) return false;
           if (tier.key === "free") return cost === 0;
           if (tier.key === "over-1.00") return cost > tier.min;
@@ -336,7 +336,7 @@ export default function HistoryList({
                     ],
                     activeKeys: showFavoritesOnly ? "favorites" : null,
                     isSingleSelect: true,
-                    onToggle: () => setShowFavoritesOnly((v) => !v),
+                    onToggle: () => setShowFavoritesOnly((isCurrentlyActive) => !isCurrentlyActive),
                   },
                 ]
               : []),
@@ -362,16 +362,16 @@ export default function HistoryList({
               ? [
                   {
                     label: "Modality",
-                    items: allModalities.map((m: FilterItem) => ({
-                      key: m.key,
-                      icon: m.icon,
-                      title: m.title,
-                      color: m.color,
+                    items: allModalities.map((modality: FilterItem) => ({
+                      key: modality.key,
+                      icon: modality.icon,
+                      title: modality.title,
+                      color: modality.color,
                     })),
                     activeKeys: activeModalities,
                     onToggle: (key: string) => {
-                      setActiveModalities((prev) => {
-                        const next = new Set(prev);
+                      setActiveModalities((previous) => {
+                        const next = new Set(previous);
                         next.has(key) ? next.delete(key) : next.add(key);
                         return next;
                       });
@@ -383,16 +383,16 @@ export default function HistoryList({
               ? [
                   {
                     label: "Tools",
-                    items: allTools.map((t: FilterItem) => ({
-                      key: t.key,
-                      icon: t.icon,
-                      title: t.title,
-                      color: t.color,
+                    items: allTools.map((tool: FilterItem) => ({
+                      key: tool.key,
+                      icon: tool.icon,
+                      title: tool.title,
+                      color: tool.color,
                     })),
                     activeKeys: activeTools,
                     onToggle: (key: string) => {
-                      setActiveTools((prev) => {
-                        const next = new Set(prev);
+                      setActiveTools((previous) => {
+                        const next = new Set(previous);
                         next.has(key) ? next.delete(key) : next.add(key);
                         return next;
                       });
@@ -404,15 +404,15 @@ export default function HistoryList({
               ? [
                   {
                     label: "Providers",
-                    items: allProviders.map((p: string) => ({
-                      key: p,
-                      icon: () => <ProviderLogo provider={p} size={13} />,
-                      title: resolveProviderLabel(p),
+                    items: allProviders.map((provider: string) => ({
+                      key: provider,
+                      icon: () => <ProviderLogo provider={provider} size={13} />,
+                      title: resolveProviderLabel(provider),
                     })),
                     activeKeys: activeProviders,
                     onToggle: (key: string) => {
-                      setActiveProviders((prev) => {
-                        const next = new Set(prev);
+                      setActiveProviders((previous) => {
+                        const next = new Set(previous);
                         next.has(key) ? next.delete(key) : next.add(key);
                         return next;
                       });
@@ -432,8 +432,8 @@ export default function HistoryList({
                     })),
                     activeKeys: activeCostTiers,
                     onToggle: (key: string) => {
-                      setActiveCostTiers((prev) => {
-                        const next = new Set(prev);
+                      setActiveCostTiers((previous) => {
+                        const next = new Set(previous);
                         next.has(key) ? next.delete(key) : next.add(key);
                         return next;
                       });

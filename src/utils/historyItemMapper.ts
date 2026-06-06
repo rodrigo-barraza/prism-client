@@ -59,8 +59,8 @@ export function mapConversationToHistoryItem(
     tags.push({
       label: "SYNTHETIC",
       style: {
-        background: "rgba(168, 85, 247, 0.12)",
-        color: "rgb(168, 85, 247)",
+        background: "oklch(0.55 0.24 303 / 0.12)",
+        color: "oklch(0.55 0.24 303)",
       },
     });
   }
@@ -74,7 +74,7 @@ export function mapConversationToHistoryItem(
     ? {
         ...baseModalities,
         functionCalling: Object.values(conversation.toolCounts).reduce(
-          (sum: number, count: unknown) => sum + (count as number),
+          (sum: number, count: number) => sum + count,
           0,
         ),
       }
@@ -131,7 +131,7 @@ export function mapAgentSessionToHistoryItem(
     ? {
         ...baseModalities,
         functionCalling: Object.values(sessionStats.toolCounts).reduce(
-          (sum: number, count: unknown) => sum + (count as number),
+          (sum: number, count: number) => sum + count,
           0,
         ),
       }
