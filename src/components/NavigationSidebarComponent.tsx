@@ -45,6 +45,7 @@ import {
   LayoutDashboard,
   BookText,
   Bot,
+  Network,
 } from "lucide-react";
 import {
   useTheme,
@@ -158,6 +159,7 @@ const ADMIN_NAV_SECTIONS: NavigationSection[] = [
         icon: FolderOpen,
         showBadge: "traces",
       },
+      { href: "/admin/sessions", label: "Sessions", icon: Network },
     ],
   },
   {
