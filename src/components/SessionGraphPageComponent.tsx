@@ -103,7 +103,7 @@ const NODE_LABELS: Record<NodeCategory, string> = {
 
     Topology:
       Session ─→ Agent ─→ Request Operation (× N) ─→ Model ─→ Provider
-                   ├─→ Tool (× N)
+                                                       └─→ Tool (× N)
                    └─→ Request Operation (× N) ─→ Embedding Model ─→ Embedding Provider
      Session ─→ Project
      Session ─→ User
@@ -200,6 +200,7 @@ function buildGraphFromSession(
   const toolCounts: Record<string, number> = {};
   const userSet = new Set<string>();
   const modelToOperationsMap = new Map<string, Set<string>>();
+  const toolNameToModelNodeIdsMap = new Map<string, Set<string>>();
 
   for (const request of sessionRequests) {
     const isEmbeddingRequest = request.operation?.startsWith("embed:");
@@ -229,6 +230,15 @@ function buildGraphFromSession(
     if (request.toolApiNames?.length) {
       for (const toolName of request.toolApiNames) {
         toolCounts[toolName] = (toolCounts[toolName] || 0) + 1;
+        if (request.model) {
+          const modelNodeId = isEmbeddingRequest
+            ? `embedding:${request.model}`
+            : `model:${request.model}`;
+          if (!toolNameToModelNodeIdsMap.has(toolName)) {
+            toolNameToModelNodeIdsMap.set(toolName, new Set());
+          }
+          toolNameToModelNodeIdsMap.get(toolName)!.add(modelNodeId);
+        }
       }
     }
   }
@@ -303,7 +313,7 @@ function buildGraphFromSession(
     }
   }
 
-  // Tool nodes — connect to Agent
+  // Tool nodes — connect to Model or Agent fallback
   const toolEntries = Object.entries(toolCounts).sort(
     ([, countA], [, countB]) => countB - countA,
   );
@@ -314,7 +324,15 @@ function buildGraphFromSession(
       toolName,
       usageCount,
     }, usageCount);
-    addEdge(agentNodeId, toolNodeId, 0.7);
+
+    const associatedModelNodeIds = toolNameToModelNodeIdsMap.get(toolName);
+    if (associatedModelNodeIds && associatedModelNodeIds.size > 0) {
+      for (const modelNodeId of associatedModelNodeIds) {
+        addEdge(modelNodeId, toolNodeId, 0.7);
+      }
+    } else {
+      addEdge(agentNodeId, toolNodeId, 0.7);
+    }
   }
 
   // User nodes — connect to Session
