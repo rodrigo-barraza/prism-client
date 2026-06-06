@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Network,
   Server,
@@ -20,8 +21,8 @@ import { cleanModelName } from "./BadgeComponent";
 import { resolveProviderLabel } from "./ProviderLogosComponent";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
-import useProjectFilter from "../hooks/useProjectFilter";
-import { SelectComponent, PaginationComponent, StatsCardComponent as StatsCard } from "@rodrigo-barraza/components-library";
+import AdminFiltersCardComponent from "./AdminFiltersCardComponent";
+import { PaginationComponent, StatsCardComponent as StatsCard } from "@rodrigo-barraza/components-library";
 import {
   formatNumber,
   formatCost,
@@ -472,9 +473,12 @@ function simulateForceLayout(
    ═══════════════════════════════════════════════════════════════════ */
 
 export default function SessionGraphPageComponent() {
-  const { projectFilter, projectOptions, handleProjectChange } =
-    useProjectFilter();
-  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
+  const searchParams = useSearchParams();
+  const projectFilter = searchParams.get("project") || null;
+  const providerFilter = searchParams.get("provider") || null;
+  const modelFilter = searchParams.get("model") || null;
+  const workspaceFilter = searchParams.get("workspace") || null;
+  const { setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const dateParams = useMemo(
     () => buildDateRangeParams(dateRange),
     [dateRange],
@@ -578,6 +582,9 @@ export default function SessionGraphPageComponent() {
       };
       if (projectFilter) params.project = projectFilter;
       if (agentFilter) params.agent = agentFilter;
+      if (providerFilter) params.provider = providerFilter;
+      if (modelFilter) params.model = modelFilter;
+      if (workspaceFilter) params.workspace = workspaceFilter;
 
       const response = await IrisService.getAgentSessions(params);
       setSessions(response.data || []);
@@ -587,7 +594,7 @@ export default function SessionGraphPageComponent() {
     } finally {
       setIsSessionsLoading(false);
     }
-  }, [sessionPage, dateParams, projectFilter, agentFilter]);
+  }, [sessionPage, dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter]);
 
   useEffect(() => {
     loadSessions();
@@ -649,28 +656,16 @@ export default function SessionGraphPageComponent() {
     [loadSessionGraph],
   );
 
-  // ── Admin header controls ─────────────────────────────────────
-  useEffect(() => {
-    setControls(
-      <SelectComponent
-        value={projectFilter || ""}
-        options={projectOptions}
-        onChange={handleProjectChange}
-        placeholder="All Projects"
-      />,
-    );
-  }, [setControls, projectFilter, projectOptions, handleProjectChange]);
-
+  // ── Admin header badge ─────────────────────────────────────────
   useEffect(() => {
     setTitleBadge(totalSessions);
   }, [setTitleBadge, totalSessions]);
 
   useEffect(() => {
     return () => {
-      setControls(null);
       setTitleBadge(null);
     };
-  }, [setControls, setTitleBadge]);
+  }, [setTitleBadge]);
 
   // ── Circular Collision Repulsion Loop ─────────────────────────
   const nodesRef = useRef<GraphNode[]>([]);
@@ -1004,6 +999,9 @@ export default function SessionGraphPageComponent() {
 
   return (
     <div className={styles["page-container"]}>
+      {/* ── Filters ── */}
+      <AdminFiltersCardComponent />
+
       {/* ── Stats Strip ── */}
       <div className={styles["stats-strip"]}>
         <StatsCard
