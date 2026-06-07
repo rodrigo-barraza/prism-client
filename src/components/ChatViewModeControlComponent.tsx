@@ -16,7 +16,7 @@ export default function ChatViewModeControlComponent({
   onViewModeChange,
 }: ChatViewModeControlComponentProps) {
   return (
-    <div className={chatStyles['debug-toggle-container']}>
+    <div className={`chat-view-mode-control-component ${chatStyles['debug-toggle-container']}`}>
       <SegmentedControlComponent
         value={viewMode}
         onChange={(segment: string) => onViewModeChange(segment as ChatViewMode)}

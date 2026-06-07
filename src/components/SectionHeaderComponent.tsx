@@ -18,7 +18,7 @@ export default function SectionHeaderComponent({
 }) {
   return (
     <div
-      className={`${styles['section-header']}${className ? ` ${className}` : ""}`}
+      className={`section-header-component ${styles['section-header']}${className ? ` ${className}` : ""}`}
     >
       {icon}
       {children}

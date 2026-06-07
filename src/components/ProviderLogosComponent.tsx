@@ -315,7 +315,7 @@ export default function ProviderLogo({
   if (!render) return null;
   return (
     <span
-      className={className}
+      className={`provider-logos-component ${className || ""}`}
       style={{ display: "inline-flex", alignItems: "center" }}
     >
       {render(size)}

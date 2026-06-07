@@ -319,7 +319,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   const resolvedTitleIcon = resolvePageIcon(pageTitle);
 
   return (
-    <div className={styles['shell']}>
+    <div className={`admin-shell-component ${styles['shell']}`}>
       <NavigationSidebarComponent
         mode="admin"
         liveCount={newCount}

@@ -86,6 +86,7 @@ export default function MediaCardComponent({
 
 
   const cardClasses = [
+    "media-card-component",
     styles['card'],
     compact && styles['compact'],
     !showInfo && styles['standalone'],

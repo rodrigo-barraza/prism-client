@@ -834,7 +834,7 @@ export default function CustomAgentsPanel({
   // -- Agent list view ------------------------------------------
 
   return (
-    <div className={styles['container']}>
+    <div className={`custom-agents-panel-component ${styles['container']}`}>
       {agents.length > 0 && (
         <div className={styles['panel-header']}>
           <ButtonComponent

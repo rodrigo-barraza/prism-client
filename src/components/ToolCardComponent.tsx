@@ -39,7 +39,7 @@ export default function ToolCardComponent({
 }: ToolCardProps) {
   return (
     <div
-      className={`${styles['card']}${!enabled ? ` ${styles['card-disabled']}` : ""}${glowing ? ` ${styles['card-glow']}` : ""}${locked ? ` ${styles['card-locked']}` : ""}`}
+      className={`tool-card-component ${styles['card']}${!enabled ? ` ${styles['card-disabled']}` : ""}${glowing ? ` ${styles['card-glow']}` : ""}${locked ? ` ${styles['card-locked']}` : ""}`}
       style={{ "--tool-color": color } as React.CSSProperties}
       onClick={
         locked

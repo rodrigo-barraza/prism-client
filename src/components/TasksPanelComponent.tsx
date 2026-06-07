@@ -275,7 +275,7 @@ export default function TasksPanel({
   // -- Render -------------------------------------------------
 
   return (
-    <div className={styles['container']}>
+    <div className={`tasks-panel-component ${styles['container']}`}>
       {/* -- Search & Filters ------------------------------------- */}
       {((summary && summary.total > 0) || tasks.length > 0) && (
         <div className={styles["filter-controls-section"]}>

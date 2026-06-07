@@ -159,7 +159,7 @@ export default function HistoryItemComponent({
 
   return (
     <div
-      className={`${styles['item']} ${isActive ? styles['is-active-state'] : ""} ${className || ""}`}
+      className={`history-item-component ${styles['item']} ${isActive ? styles['is-active-state'] : ""} ${className || ""}`}
       {...SoundService.interactive(() => onClick?.(item))}
       {...(dataPanelClose ? { "data-panel-close-trigger": true } : {})}
       onContextMenu={

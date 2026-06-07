@@ -542,7 +542,7 @@ export default function SettingsPageComponent() {
   const hasAnyWorkspaces = wsWorkspaces.length > 0;
 
   return (
-    <div className={styles['container']}>
+    <div className={`settings-page-component ${styles['container']}`}>
       <div className={styles['header']}>
         <div className={styles['header-left']}>
           <h1 className={styles['title']}>

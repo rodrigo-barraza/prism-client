@@ -38,7 +38,7 @@ interface ErrorMessageProps {
 export function ErrorMessage({ message }: ErrorMessageProps) {
   if (!message) return null;
   return (
-    <div className={styles['error-banner']}>
+    <div className={`state-message-component ${styles['error-banner']}`}>
       <AlertCircle size={18} />
       <span>{message}</span>
     </div>

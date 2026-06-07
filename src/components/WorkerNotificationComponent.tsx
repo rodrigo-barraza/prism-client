@@ -56,7 +56,7 @@ export default function WorkerNotificationComponent({
     : null;
 
   return (
-    <div className={styles['root']}>
+    <div className={`worker-notification-component ${styles['root']}`}>
       <div className={styles['avatar']} style={{ color: statusColor }}>
         <Zap size={16} />
       </div>

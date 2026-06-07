@@ -831,7 +831,7 @@ export default function StarfieldComponent({
   return (
     <canvas
       ref={canvasRef}
-      className={className}
+      className={`starfield-component ${className || ""}`}
       style={{
         position: "absolute",
         inset: 0,

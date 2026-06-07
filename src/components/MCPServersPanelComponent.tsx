@@ -376,7 +376,7 @@ export default function MCPServersPanel({
   // -- List View ------------------------------------------------
 
   return (
-    <div className={styles['container']}>
+    <div className={`m-c-p-servers-panel-component ${styles['container']}`}>
       {error && <div className={styles['error-msg']}>{error}</div>}
 
       {servers.length === 0 && (

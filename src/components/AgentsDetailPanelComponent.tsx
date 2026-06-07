@@ -277,7 +277,7 @@ export default function AgentsDetailPanelComponent({
   }, [onUpdateField]);
 
   return (
-    <div className={styles["page-content-area"]}>
+    <div className={`agents-detail-panel-component ${styles["page-content-area"]}`}>
       {/* -- Hero Profile Banner -- */}
       <section
         className={styles["content-hero-banner"]}

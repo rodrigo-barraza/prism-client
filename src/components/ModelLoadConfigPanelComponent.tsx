@@ -211,7 +211,7 @@ export default function ModelLoadConfigPanel({
           <ProviderLogo provider="lm-studio" size={20} />
           {model.display_name || modelKey}
           {architecture && (
-            <span className={styles['arch-badge']}>{architecture}</span>
+            <span className={`model-load-config-panel-component ${styles['arch-badge']}`}>{architecture}</span>
           )}
         </>
       }

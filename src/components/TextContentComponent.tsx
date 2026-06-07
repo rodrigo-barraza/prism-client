@@ -29,7 +29,7 @@ export default function TextContentComponent({
   const isEditable = !!onChange && !readOnly;
 
   return (
-    <div className={`${styles['wrapper']} ${className || ""}`}>
+    <div className={`text-content-component ${styles['wrapper']} ${className || ""}`}>
       <div className={styles['header-row']}>
         <label className={styles['label']}>{label}</label>
         <div className={styles['tabs']}>

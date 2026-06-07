@@ -337,7 +337,7 @@ export default function SpinningCatComponent({
   return (
     <div
       ref={wrapperRef}
-      className={`${styles['wrapper']} ${clickSpinClassName} ${className}`}
+      className={`spinning-cat-component ${styles['wrapper']} ${clickSpinClassName} ${className}`}
       onClick={handleClick}
       role="button"
       tabIndex={0}

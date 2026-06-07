@@ -19,6 +19,7 @@ export default function SynthesisHistoryPanel({
 }: SynthesisHistoryPanelProps) {
   return (
     <HistoryPanel
+      className="synthesis-history-panel-component"
       sessions={conversations as unknown as Conversation[]}
       activeId={activeId}
       onSelect={onSelect as ((session: Conversation) => void | Promise<void>) | undefined}

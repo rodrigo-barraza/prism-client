@@ -300,7 +300,7 @@ export default function SidebarFilterComponent({
   }
 
   return (
-    <div className={styles['filter-section']}>
+    <div className={`sidebar-filter-component ${styles['filter-section']}`}>
       <div className={styles['filter-row']}>
         {/* -- Dropdown trigger -- */}
         <div className={styles['dropdown-wrapper']} ref={dropdownRef}>

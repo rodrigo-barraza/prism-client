@@ -804,7 +804,7 @@ export default function NavigationSidebarComponent({
 
   return (
     <div
-      className={`${styles['wrapper']} ${!showNav ? styles['is-collapsed-state'] : ""} ${!navReady ? styles['no-transition'] : ""}`}
+      className={`navigation-sidebar-component ${styles['wrapper']} ${!showNav ? styles['is-collapsed-state'] : ""} ${!navReady ? styles['no-transition'] : ""}`}
     >
       {/* Expanded sidebar */}
       <aside ref={sidebarReference} className={styles['sidebar']}>

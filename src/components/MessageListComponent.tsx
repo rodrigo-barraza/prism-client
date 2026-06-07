@@ -1145,7 +1145,7 @@ export default function MessageList({
   }, [displayMessages, swapBefore]);
 
   return (
-    <div ref={containerReference} className={styles['messages-list']}>
+    <div ref={containerReference} className={`message-list-component ${styles['messages-list']}`}>
       {/* -- Sticky pinned user message -- */}
       <div
         className={styles['sticky-user-message']}

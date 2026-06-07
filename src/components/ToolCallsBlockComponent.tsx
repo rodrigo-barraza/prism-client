@@ -57,7 +57,7 @@ export default function ToolCallsBlockComponent({
 
   return (
     <div
-      className={`${styles['tool-calls-block']}${hasActiveCalls ? ` ${styles['tool-calls-streaming']}` : ""}`}
+      className={`tool-calls-block-component ${styles['tool-calls-block']}${hasActiveCalls ? ` ${styles['tool-calls-streaming']}` : ""}`}
     >
       {/* -- Header toggle -- */}
       <button

@@ -1388,7 +1388,7 @@ function InlineRequestPayloadSection({
   if (!hasInput && !hasOutput && !hasAssets && !hasToolCalls) return null;
 
   return (
-    <div className={graphStyles['request-payload-container']}>
+    <div className={`chat-session-graph-component ${graphStyles['request-payload-container']}`}>
       {hasInput && (
         <div className={graphStyles['request-payload-section']}>
           <InlineCollapsibleSectionHeader

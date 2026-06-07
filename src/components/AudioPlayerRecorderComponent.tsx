@@ -623,7 +623,7 @@ export default function AudioPlayerRecorderComponent({
     <TooltipComponent label="Record audio" position="top" trigger="hover">
       <button
         type="button"
-        className={styles['mic-button']}
+        className={`audio-player-recorder-component ${styles['mic-button']}`}
         onClick={startRecording}
         aria-label="Record Audio"
       >

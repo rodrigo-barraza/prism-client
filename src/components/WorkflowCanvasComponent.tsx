@@ -931,7 +931,7 @@ export default function WorkflowCanvas({
   return (
     <div
       ref={containerRef}
-      className={`${styles['canvas']}${isPanning ? ` ${styles['panning']}` : ""}`}
+      className={`workflow-canvas-component ${styles['canvas']}${isPanning ? ` ${styles['panning']}` : ""}`}
       onMouseDown={handleCanvasMouseDown}
     >
       <StarfieldComponent

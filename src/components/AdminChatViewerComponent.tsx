@@ -1023,7 +1023,7 @@ export default function AdminChatViewerComponent({
 
   // ── Render ───────────────────────────────────────────────────
   return (
-    <div className={styles['page']}>
+    <div className={`admin-chat-viewer-component ${styles['page']}`}>
       <div className={styles['chat-container']}>
         <ThreePanelLayout
           leftPanel={

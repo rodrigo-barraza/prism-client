@@ -397,6 +397,7 @@ export interface NodeShellProps {
     | "nodeStatusGradient"
   >;
   children?: React.ReactNode;
+  className?: string;
 }
 
 /**
@@ -429,6 +430,7 @@ function NodeShell({
   statusGradient,
   portProps,
   children,
+  className,
 }: NodeShellProps) {
   const isRunning = status === "running";
   const isDone = status === "done";
@@ -453,7 +455,7 @@ function NodeShell({
     <g
       key={node.id}
       transform={`translate(${node.position?.x ?? 0}, ${node.position?.y ?? 0})`}
-      className={styles['node-group']}
+      className={`${styles['node-group']} ${className || ""}`}
       data-workflow-node
       data-node-id={node.id}
       onMouseDown={(e: React.MouseEvent) => onMouseDown(e, node.id)}
@@ -721,6 +723,7 @@ function ModelNode(props: ModelNodeProps) {
 
   return (
     <NodeShell
+      className="workflow-node-component"
       node={node}
       width={width}
       height={nodeHeight}
@@ -1081,6 +1084,7 @@ function AssetNode(props: AssetNodeProps) {
 
   return (
     <NodeShell
+      className="workflow-node-component"
       node={node}
       width={width}
       height={nodeHeight}
@@ -1491,6 +1495,7 @@ function ToolNode(props: ToolNodeProps) {
 
   return (
     <NodeShell
+      className="workflow-node-component"
       node={node}
       width={width}
       height={nodeHeight}

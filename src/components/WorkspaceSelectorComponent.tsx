@@ -63,7 +63,7 @@ export default function WorkspaceSelectorComponent({
   }
 
   return (
-    <div className={`${styles['wrapper']} ${className || ""}`} ref={menuRef}>
+    <div className={`workspace-selector-component ${styles['wrapper']} ${className || ""}`} ref={menuRef}>
       <button
         type="button"
         className={styles['button']}

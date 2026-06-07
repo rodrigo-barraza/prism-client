@@ -337,7 +337,7 @@ export default function DistributionChartComponent({
   };
 
   return (
-    <div className={styles['container']}>
+    <div className={`distribution-chart-component ${styles['container']}`}>
       {/* -- Metric selector + title -- */}
       <div className={styles['metric-row']}>
         {title && <h2 className={styles['title']}>{title}</h2>}

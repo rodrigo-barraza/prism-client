@@ -142,6 +142,7 @@ export default function RequestsTableComponent({
 
   return (
     <TableComponent
+      className="requests-table-component"
       title={title}
       maxHeight={maxHeight ?? undefined}
       columns={columns}

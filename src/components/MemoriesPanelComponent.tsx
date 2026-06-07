@@ -498,7 +498,7 @@ export default function MemoriesPanel({
 
   // -- List ----------------------------------------------------
   return (
-    <div className={styles['container']}>
+    <div className={`memories-panel-component ${styles['container']}`}>
       {toast && (
         <div
           className={`${styles['toast']} ${styles[`toast-${toast.type}`]}`}

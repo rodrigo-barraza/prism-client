@@ -90,6 +90,7 @@ export default function ConversationsTableComponent({
 
   return (
     <TableComponent
+      className="conversations-table-component"
       columns={columns}
       data={conversations}
       sortKey={sortKey}

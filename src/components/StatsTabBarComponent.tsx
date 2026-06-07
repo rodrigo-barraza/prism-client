@@ -27,7 +27,7 @@ export default function StatsTabBarComponent({
   onChange,
 }: StatsTabBarProps) {
   return (
-    <div className={styles['stats-tab-bar']}>
+    <div className={`stats-tab-bar-component ${styles['stats-tab-bar']}`}>
       {TABS.map((tab) => (
         <TooltipComponent
           key={tab.key}

@@ -290,7 +290,7 @@ export default function TimelineChartComponent({
   const isAutoGranularity = !granularity;
 
   return (
-    <div className={styles['container']}>
+    <div className={`timeline-chart-component ${styles['container']}`}>
       {title && <h2 className={styles['title']}>{title}</h2>}
       <div className={styles['header']}>
         <ChartTabsComponent

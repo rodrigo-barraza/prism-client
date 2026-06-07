@@ -3840,7 +3840,7 @@ export default function VramBenchmarkComponent() {
     <>
       <PageHeaderComponent title="VRAM Benchmark" subtitle={subtitle}>
         <button
-          className={styles['refresh-button']}
+          className={`vram-benchmark-component ${styles['refresh-button']}`}
           onClick={() => {
             setLoading(true);
             fetchData();

@@ -369,7 +369,7 @@ export default function ParametersPanelComponent({
   }
 
   return (
-    <div className={styles['container']}>
+    <div className={`parameters-panel-component ${styles['container']}`}>
       <div className={styles['section-title']}>
         <Settings2 size={16} /> Parameters
         {isAgentMode && (

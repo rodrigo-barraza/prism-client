@@ -305,7 +305,7 @@ export default function RulesPanel({
   // -- List View ------------------------------------------------
 
   return (
-    <div className={styles['container']}>
+    <div className={`rules-panel-component ${styles['container']}`}>
       {rules.length > 0 && (
         <SearchInputComponent
           value={searchQuery}

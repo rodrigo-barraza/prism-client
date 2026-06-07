@@ -181,7 +181,7 @@ export default function SystemPromptModal({
       title="System Instructions"
       onClose={onClose}
       size="md"
-      className={styles['modal']}
+      className={`system-prompt-modal-component ${styles['modal']}`}
     >
       <div className={styles['body']}>
         <div className={styles['field']}>

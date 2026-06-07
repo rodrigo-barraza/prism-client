@@ -370,7 +370,7 @@ export default function WorkspaceTreePanelComponent({
   const expandedPaths = autoExpandedPaths || expandedPathsRef.current;
 
   return (
-    <div className={styles['container']}>
+    <div className={`workspace-tree-panel-component ${styles['container']}`}>
       {/* ── Header — static label or workspace switcher ── */}
       {!hideHeader && (
         <div className={styles['header-wrapper']} ref={switcherRef}>

@@ -267,7 +267,7 @@ export function FilterClearButton({
   children = "Clear",
 }: FilterClearButtonProps) {
   return (
-    <button type="button" className={styles['clear-button']} onClick={onClick}>
+    <button type="button" className={`filter-bar-component ${styles['clear-button']}`} onClick={onClick}>
       {children}
     </button>
   );

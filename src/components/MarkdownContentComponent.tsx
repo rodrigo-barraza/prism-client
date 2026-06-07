@@ -217,7 +217,7 @@ export default function MarkdownContent({
 }: MarkdownContentProps) {
   if (!content) return null;
   return (
-    <div className={`${styles['text']} ${className || ""}`}>
+    <div className={`markdown-content-component ${styles['text']} ${className || ""}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{ code: CodeBlock, img: ImageOrEmbed }}

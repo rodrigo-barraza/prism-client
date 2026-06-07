@@ -37,6 +37,7 @@ export interface HistoryPanelProps {
   dateRange?: { from: string; to: string };
   onDateChange?: (range: { from: string; to: string }) => void;
   filterStorageKey?: string;
+  className?: string;
 }
 
 export default function HistoryPanel({
@@ -67,6 +68,7 @@ export default function HistoryPanel({
   dateRange,
   onDateChange,
   filterStorageKey,
+  className,
 }: HistoryPanelProps) {
   const items = useMemo(
     () =>
@@ -77,7 +79,7 @@ export default function HistoryPanel({
   );
 
   return (
-    <div className={styles['container']}>
+    <div className={`history-panel-component ${styles['container']} ${className || ""}`}>
       <HistoryList
         items={items}
         activeId={activeId}

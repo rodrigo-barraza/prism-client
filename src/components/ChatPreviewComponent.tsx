@@ -107,7 +107,7 @@ export default function ChatPreviewComponent({
 
   return (
     <div
-      className={`${styles['prompt-preview']} ${mini ? styles['mini'] : ""}${className ? ` ${className}` : ""}`}
+      className={`chat-preview-component ${styles['prompt-preview']} ${mini ? styles['mini'] : ""}${className ? ` ${className}` : ""}`}
     >
       {hasSystem && (
         <div className={`${styles['prompt-block']} ${styles['prompt-block-system']}`}>

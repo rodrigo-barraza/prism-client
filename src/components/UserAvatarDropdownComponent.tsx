@@ -56,7 +56,7 @@ export default function UserAvatarDropdownComponent() {
   };
 
   return (
-    <div className={styles["avatar-container-wrapper"]} ref={containerReference}>
+    <div className={`user-avatar-dropdown-component ${styles["avatar-container-wrapper"]}`} ref={containerReference}>
       {/* Trigger Button */}
       <button
         className={`${styles["avatar-trigger-button"]} ${isDropdownOpen ? styles["is-active-state"] : ""}`}

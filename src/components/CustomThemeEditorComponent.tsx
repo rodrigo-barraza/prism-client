@@ -259,7 +259,7 @@ export default function CustomThemeEditorComponent({
   // ── Render ──────────────────────────────────────────────────────────
 
   return (
-    <div className={styles['wrapper']}>
+    <div className={`custom-theme-editor-component ${styles['wrapper']}`}>
       {/* Theme list */}
       {!editing && (
         <>

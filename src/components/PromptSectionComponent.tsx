@@ -29,7 +29,7 @@ export default function PromptSectionComponent({
   className?: string;
 }) {
   return (
-    <div className={`${styles['section']} ${className || ""}`}>
+    <div className={`prompt-section-component ${styles['section']} ${className || ""}`}>
       <div className={styles['header']}>
         {icon}
         <span>{label}</span>

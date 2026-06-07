@@ -170,5 +170,5 @@ export default function RainbowCanvasComponent({
     willChange: "filter",
   };
 
-  return <canvas ref={canvasRef} className={className} style={canvasStyle} />;
+  return <canvas ref={canvasRef} className={`rainbow-canvas-component ${className || ""}`} style={canvasStyle} />;
 }

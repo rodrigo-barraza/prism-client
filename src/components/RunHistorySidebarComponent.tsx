@@ -141,7 +141,7 @@ export default function RunHistorySidebarComponent({
   if (!benchmark) return null;
 
   return (
-    <div className={styles['container']}>
+    <div className={`run-history-sidebar-component ${styles['container']}`}>
       {/* -- Tab Bar ---------------------------------------- */}
       <TabBarComponent
         tabs={[

@@ -168,7 +168,7 @@ export default function ToolsSidebarNavigationComponent({
 
   return (
     <nav
-      className={styles["tools-sidebar-navigation"]}
+      className={`tools-sidebar-navigation-component ${styles["tools-sidebar-navigation"]}`}
       aria-label="Tools domains"
     >
       <div className={styles["sidebar-search-wrapper"]}>

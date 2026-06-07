@@ -1542,7 +1542,7 @@ function ModelsTableInner({
   ]);
 
   return (
-    <div className={styles['container']}>
+    <div className={`models-table-component ${styles['container']}`}>
       {showSearch && (
         <SearchInputComponent
           value={searchQuery}

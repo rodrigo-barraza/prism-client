@@ -776,7 +776,7 @@ export default function FileViewerPanelComponent({
 
   return (
     <div
-      className={`${styles['container']} ${isCollapsed ? styles['container-collapsed'] : ""}`}
+      className={`file-viewer-panel-component ${styles['container']} ${isCollapsed ? styles['container-collapsed'] : ""}`}
       style={
         isCollapsed
           ? undefined

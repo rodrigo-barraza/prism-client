@@ -20,7 +20,7 @@ export default function SidebarTabHeaderComponent({
   hasOnlyCoreToolsActive,
 }: SidebarTabHeaderProps) {
   return (
-    <div className={styles["sidebar-tab-header"]}>
+    <div className={`sidebar-tab-header-component ${styles["sidebar-tab-header"]}`}>
       <IconComponent size={11} className={styles["sidebar-tab-header-icon"]} />
       <span className={styles["sidebar-tab-header-label"]}>{title}</span>
       {actions && (

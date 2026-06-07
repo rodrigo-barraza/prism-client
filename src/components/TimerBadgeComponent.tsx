@@ -91,7 +91,7 @@ export default function TimerBadgeComponent({
 
   return (
     <div
-      className={`${styles['timer-badge-root']} ${badgeClass}`}
+      className={`timer-badge-component ${styles['timer-badge-root']} ${badgeClass}`}
       aria-live="polite"
     >
       <div className={styles['timer-badge-avatar-section']}>{statusIcon}</div>

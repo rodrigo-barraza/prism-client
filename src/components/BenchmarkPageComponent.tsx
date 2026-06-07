@@ -95,6 +95,7 @@ export default function BenchmarkPageComponent({
   // -- Render -------------------------------------------------
   return (
     <ThreePanelLayout
+      className="benchmark-page-component"
       navSidebar={navSidebar}
       leftPanel={<BenchmarkPreviewSidebarComponent form={form} />}
       leftTitle="Preview"

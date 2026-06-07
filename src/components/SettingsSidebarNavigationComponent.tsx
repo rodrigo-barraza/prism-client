@@ -221,7 +221,7 @@ export default function SettingsSidebarNavigationComponent({
 
   return (
     <nav
-      className={styles["settings-sidebar-navigation"]}
+      className={`settings-sidebar-navigation-component ${styles["settings-sidebar-navigation"]}`}
       aria-label="Settings sections"
     >
       <div className={styles["navigation-header"]}>

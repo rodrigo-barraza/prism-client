@@ -358,7 +358,7 @@ export default function MediaPageComponent({
   return (
     <>
       {!isAdmin ? (
-        <div className={styles['container']}>
+        <div className={`media-page-component ${styles['container']}`}>
           {/* Header */}
           <div className={styles['header']}>
             <div className={styles['header-left']}>

@@ -30,7 +30,7 @@ export default function ChartTabsComponent({
   onChange,
 }: ChartTabsProps) {
   return (
-    <div className={styles['tabs']}>
+    <div className={`chart-tabs-component ${styles['tabs']}`}>
       {tabs.map((tab) => (
         <button
           key={tab.key}

@@ -77,6 +77,7 @@ export default function ProvidersTableComponent({
 
   return (
     <TableComponent
+      className="providers-table-component"
       title={title}
       maxHeight={maxHeight}
       columns={columns}

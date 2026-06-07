@@ -576,7 +576,7 @@ export default function ToolSelectionComponent({
 
   // -- Render ---------------------------------------------------
   return (
-    <div className={styles['tools-section']} data-read-only={readOnly}>
+    <div className={`tool-selection-component ${styles['tools-section']}`} data-read-only={readOnly}>
       {/* Search — pinned above scroll */}
       <SearchInputComponent
         value={toolSearch}

@@ -332,6 +332,7 @@ export default function AgentsPageComponent() {
 
   return (
     <ThreePanelLayout
+      className="agents-page-component"
       navSidebar={<NavigationSidebarComponent mode="user" />}
       leftPanel={
         <AgentsSidebarPanelComponent

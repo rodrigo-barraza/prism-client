@@ -293,7 +293,7 @@ export default function WorkflowInspector({
 
   return (
     <div
-      className={styles['inspector']}
+      className={`workflow-inspector-component ${styles['inspector']}`}
       style={{ width: inspectorWidth, minWidth: MIN_WIDTH }}
     >
       <div className={styles['resize-handle']} onMouseDown={handleResizeStart} />

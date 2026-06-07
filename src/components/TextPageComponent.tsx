@@ -160,7 +160,7 @@ export default function TextPageComponent({
   return (
     <>
       {!isAdmin ? (
-        <div className={styles['container']}>
+        <div className={`text-page-component ${styles['container']}`}>
           {/* Header */}
           <div className={styles['header']}>
             <div className={styles['header-left']}>

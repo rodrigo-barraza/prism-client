@@ -294,7 +294,7 @@ export default function SkillsPanel({
   // -- List View ------------------------------------------------
 
   return (
-    <div className={styles['container']}>
+    <div className={`skills-panel-component ${styles['container']}`}>
       {skills.length > 0 && (
         <SearchInputComponent
           value={searchQuery}

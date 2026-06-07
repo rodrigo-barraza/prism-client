@@ -104,6 +104,7 @@ export default function UsersTableComponent({
 
   return (
     <TableComponent
+      className="users-table-component"
       title={title}
       maxHeight={maxHeight}
       columns={columns as any}

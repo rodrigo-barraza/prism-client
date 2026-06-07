@@ -27,7 +27,7 @@ export default function ProportionBarComponent({
   const percentage = total > 0 ? (value / total) * 100 : 0;
 
   return (
-    <div className={`${styles['container']} ${mini ? styles['mini'] : ""}`}>
+    <div className={`proportion-bar-component ${styles['container']} ${mini ? styles['mini'] : ""}`}>
       <div className={styles['track']}>
         <div
           className={styles['fill']}

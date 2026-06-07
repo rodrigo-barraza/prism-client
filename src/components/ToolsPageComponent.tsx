@@ -1153,6 +1153,7 @@ export default function ToolsPageComponent() {
 
   return (
     <ThreePanelLayout
+      className="tools-page-component"
       navSidebar={isAdministratorMode ? null : <NavigationSidebarComponent mode="user" />}
       leftPanel={
         <ToolsSidebarNavigationComponent

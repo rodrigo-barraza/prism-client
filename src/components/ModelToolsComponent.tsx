@@ -99,7 +99,7 @@ export default function ModelToolsComponent({
   if (activeTools.length === 0) return null;
 
   return (
-    <div className={`${styles['tools-row']} ${className || ""}`}>
+    <div className={`model-tools-component ${styles['tools-row']} ${className || ""}`}>
       {activeTools.map((toolDefinition) => {
         const rawValue = tools[toolDefinition.key];
         const count = typeof rawValue === "number" ? rawValue : 0;

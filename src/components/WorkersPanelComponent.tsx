@@ -158,7 +158,7 @@ export default function WorkersPanel({
   // ═══ Render ═══════════════════════════════════════════════
 
   return (
-    <div className={styles['container']}>
+    <div className={`workers-panel-component ${styles['container']}`}>
       {/* -- Empty ------------------------------------------- */}
       {workers.length === 0 && (
         <div className={styles['empty-state']}>

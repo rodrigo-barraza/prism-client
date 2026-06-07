@@ -94,7 +94,7 @@ export default function WorkflowSidebar({
   }, [workflows]);
 
   return (
-    <div className={styles['sidebar']}>
+    <div className={`workflow-sidebar-component ${styles['sidebar']}`}>
       <div className={styles['sidebar-header']}>
         <span className={styles['sidebar-count']}>
           {workflows.length} workflows

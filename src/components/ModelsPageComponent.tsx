@@ -415,7 +415,7 @@ export default function ModelsPageComponent({
   return (
     <>
       {!isAdmin ? (
-        <div className={styles['container']}>
+        <div className={`models-page-component ${styles['container']}`}>
           {/* Header */}
           <div className={styles['header']}>
             <div className={styles['header-left']}>

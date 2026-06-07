@@ -56,7 +56,7 @@ export default function ModelCardComponent({
   };
 
   return (
-    <div className={styles['card']}>
+    <div className={`model-card-component ${styles['card']}`}>
       <div className={styles['header']}>
         <ProviderLogo provider={model.provider} size={14} />
         <span className={styles['name']} title={`Model: ${model.key}`}>

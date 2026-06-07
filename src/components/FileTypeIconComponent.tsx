@@ -504,7 +504,7 @@ const FileTypeIconComponent = memo(function FileTypeIconComponent({
   return (
     <Icon
       size={size}
-      className={`${styles['file-icon']} ${styles[cls] || ""} ${className}`}
+      className={`file-type-icon-component ${styles['file-icon']} ${styles[cls] || ""} ${className}`}
     />
   );
 });

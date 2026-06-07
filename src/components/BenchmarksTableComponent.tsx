@@ -178,6 +178,7 @@ export default function BenchmarksTableComponent({
 
   return (
     <TableComponent
+      className="benchmarks-table-component"
       title={title}
       maxHeight={maxHeight}
       columns={columns}

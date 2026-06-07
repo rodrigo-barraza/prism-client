@@ -69,7 +69,7 @@ export default function BenchmarkModeSelector({
   const activeMode = BENCHMARK_MODES.find((m) => m.value === value);
 
   return (
-    <div className={styles['wrapper']}>
+    <div className={`benchmark-mode-selector-component ${styles['wrapper']}`}>
       <div className={styles['container']} ref={containerRef}>
         <div className={styles['pill']} style={pillStyle} />
         {BENCHMARK_MODES.map((mode) => {

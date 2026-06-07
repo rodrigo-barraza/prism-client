@@ -37,7 +37,7 @@ export default function DocumentViewer({
       onClose={onClose}
       variant="dark"
       size="lg"
-      className={styles['viewer']}
+      className={`document-viewer-component ${styles['viewer']}`}
     >
       {isPdf ? (
         <iframe src={dataUrl} className={styles['pdf-frame']} title="PDF Viewer" />

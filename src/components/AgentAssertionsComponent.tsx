@@ -166,7 +166,7 @@ export default function AgentAssertionsComponent({
   );
 
   return (
-    <div className={styles['section']}>
+    <div className={`agent-assertions-component ${styles['section']}`}>
       <div className={styles['header']}>
         <span className={styles['label']}>Agent Assertions</span>
         {assertions.length > 1 && (

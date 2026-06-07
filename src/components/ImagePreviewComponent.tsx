@@ -285,7 +285,7 @@ export default function ImagePreviewComponent({
   };
 
   return (
-    <div className={styles['overlay']} onClick={handleOverlayClick}>
+    <div className={`image-preview-component ${styles['overlay']}`} onClick={handleOverlayClick}>
       <button className={styles['close-button']} onClick={onClose}>
         <X size={24} />
       </button>

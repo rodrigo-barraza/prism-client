@@ -40,7 +40,7 @@ export default function BenchmarkBarComponent({
   return (
     <TooltipComponent label={tooltipLabel} position="top">
       <div
-        className={`${styles['wrapper']} ${mini ? styles['mini'] : ""} ${className}`}
+        className={`benchmark-bar-component ${styles['wrapper']} ${mini ? styles['mini'] : ""} ${className}`}
       >
         <div className={`${styles['bar']} ${hasRuns ? styles['bar-has-runs'] : ""}`}>
           <div className={styles['fill']} style={{ width: `${passRate}%` }} />

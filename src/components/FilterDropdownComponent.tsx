@@ -151,7 +151,7 @@ export default function FilterDropdownComponent({
 
   return (
     <div
-      className={styles["filter-section-card"]}
+      className={`filter-dropdown-component ${styles["filter-section-card"]}`}
       style={
         fullWidth
           ? { width: "100%", boxSizing: "border-box", padding: "0 12px" }

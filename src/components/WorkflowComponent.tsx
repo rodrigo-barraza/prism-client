@@ -169,7 +169,7 @@ export default function WorkflowComponent({
   );
 
   return (
-    <div className={styles['body']}>
+    <div className={`workflow-component ${styles['body']}`}>
       <div
         className={`${styles['sidebar-wrapper']} ${sidebarVisible ? "" : styles['sidebar-hidden']}`}
       >

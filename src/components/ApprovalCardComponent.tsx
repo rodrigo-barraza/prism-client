@@ -40,7 +40,7 @@ export default function ApprovalCardComponent({
   const argEntries = Object.entries(toolArgs).slice(0, 4);
 
   return (
-    <div className={`${styles['card']} ${!isPending ? styles['resolved'] : ""}`}>
+    <div className={`approval-card-component ${styles['card']} ${!isPending ? styles['resolved'] : ""}`}>
       <div className={styles['header']}>
         <div className={styles['header-left']}>
           <TierIcon

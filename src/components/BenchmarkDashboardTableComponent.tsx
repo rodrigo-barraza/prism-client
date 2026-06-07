@@ -57,6 +57,7 @@ export default function BenchmarkDashboardTableComponent({
 
   return (
     <TableComponent
+      className="benchmark-dashboard-table-component"
       title={title}
       maxHeight={maxHeight}
       columns={columns}

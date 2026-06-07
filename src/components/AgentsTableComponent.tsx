@@ -136,6 +136,7 @@ export default function AgentsTableComponent({
 
   return (
     <TableComponent
+      className="agents-table-component"
       title={title}
       maxHeight={maxHeight}
       columns={columns as any}

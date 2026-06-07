@@ -306,7 +306,7 @@ export default function UserQuestionCardComponent({
   if (normalizedQuestions.length === 0) return null;
 
   return (
-    <div className={`${styles['card']} ${!isPending ? styles['resolved'] : ""}`}>
+    <div className={`user-question-card-component ${styles['card']} ${!isPending ? styles['resolved'] : ""}`}>
       <div className={styles['header']}>
         <MessageCircleQuestion size={16} className={styles['icon']} />
         <span className={styles['label']}>

@@ -706,7 +706,7 @@ interface VisionChatMessage {
 
   // ── Render ─────────────────────────────────────────────────────
   return (
-    <div className={styles['vision-layout-wrapper']}>
+    <div className={`vision-page-component ${styles['vision-layout-wrapper']}`}>
       <ThreePanelLayout
         navSidebar={<NavigationSidebarComponent mode="user" />}
         title="Vision"

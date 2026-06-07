@@ -100,7 +100,7 @@ export default function ModelInfoPanel({
   }
 
   return (
-    <div className={styles['container']}>
+    <div className={`model-info-panel-component ${styles['container']}`}>
       {/* Model Type Badge */}
       {selectedModelDef.modelType && (
         <BadgeComponent

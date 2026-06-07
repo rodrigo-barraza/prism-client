@@ -363,6 +363,7 @@ export default function BenchmarkDashboardComponent({
   // -- Render ------------------------------------------------
   return (
     <ThreePanelLayout
+      className="benchmark-dashboard-component"
       navSidebar={navSidebar}
       leftPanel={sidebarDetail}
       leftTitle={selectedModel?.model || ""}

@@ -79,7 +79,7 @@ export default function AgentCardComponent({
   };
 
   return (
-    <div className={styles['card']}>
+    <div className={`agent-card-component ${styles['card']}`}>
       <div className={styles['header']}>
         <Bot size={14} className={styles['bot-icon']} />
         <span className={styles['name']} title={`Agent: ${agent.name}`}>

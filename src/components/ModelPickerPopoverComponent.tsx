@@ -592,7 +592,7 @@ export default function ModelPickerPopoverComponent({
     ) : null;
 
   const triggerContent = (
-    <div className={styles["model-picker-container"]}>
+    <div className={`model-picker-popover-component ${styles["model-picker-container"]}`}>
       {/* -- Trigger pill (SelectComponent in controlled mode) ---- */}
       <SelectComponent
         isOpen={open}
@@ -678,7 +678,7 @@ export default function ModelPickerPopoverComponent({
 
   if (disabled) {
     return (
-      <div className={styles["model-picker-container"]}>
+      <div className={`model-picker-popover-component ${styles["model-picker-container"]}`}>
         <SelectComponent
           isOpen={false}
           onToggle={() => {}}

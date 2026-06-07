@@ -88,7 +88,7 @@ export default function TracesTableComponent({
       sortDir={sortDir}
       onSort={onSort}
       renderExpandedContent={(trace: any) => (
-        <div className={styles['expanded-panels']}>
+        <div className={`traces-table-component ${styles['expanded-panels']}`}>
           <RequestsTableComponent
             requests={trace.requests || []}
             emptyText="No requests"

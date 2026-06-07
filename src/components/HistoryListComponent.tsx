@@ -372,7 +372,7 @@ export default function HistoryList({
   }, [hasMore, onLoadMore, loadingMore]);
 
   return (
-    <div className={styles['container']}>
+    <div className={`history-list-component ${styles['container']}`}>
       <SearchInputComponent
         value={searchQuery}
         onChange={handleSearchChange}

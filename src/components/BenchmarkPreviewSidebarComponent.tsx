@@ -81,7 +81,7 @@ export default function BenchmarkPreviewSidebarComponent({ form }: { form: Bench
   const ModeIcon = (MODE_ICONS[mode] || Cpu) as React.ElementType;
 
   return (
-    <div className={styles['container']}>
+    <div className={`benchmark-preview-sidebar-component ${styles['container']}`}>
       {/* -- Mode Badge ------------------------------------------ */}
       <div className={styles['mode-section']}>
         <ModeIcon size={12} />

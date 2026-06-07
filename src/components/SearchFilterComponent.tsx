@@ -101,7 +101,7 @@ export default function SearchFilterComponent({
   }, [open]);
 
   return (
-    <div className={styles['wrapper']}>
+    <div className={`search-filter-component ${styles['wrapper']}`}>
       {/* -- Trigger -- */}
       <div className={styles['container']} ref={containerRef}>
         <div

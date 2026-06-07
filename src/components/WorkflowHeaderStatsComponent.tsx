@@ -58,7 +58,7 @@ export default function WorkflowHeaderStatsComponent({
 
   return (
     <>
-      <span className={styles['header-badge']}>
+      <span className={`workflow-header-stats-component ${styles['header-badge']}`}>
         {nodes.length} nodes · {edgeCount} edges
       </span>
       {workflowStats.modalities.length > 0 && (

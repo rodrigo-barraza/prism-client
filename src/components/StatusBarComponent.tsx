@@ -198,7 +198,7 @@ export default function StatusBarComponent({
 
   return (
     <div
-      className={`${styles['status-bar']}${isWorker ? ` ${styles['status-bar-worker']}` : ""}${active ? ` ${styles['status-bar-active']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
+      className={`status-bar-component ${styles['status-bar']}${isWorker ? ` ${styles['status-bar-worker']}` : ""}${active ? ` ${styles['status-bar-active']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
     >
       <RainbowCanvasComponent
         turbo={active && !isAwaitingPhase}

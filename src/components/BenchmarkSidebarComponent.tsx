@@ -126,7 +126,7 @@ export default function BenchmarkSidebarComponent({
   const isOnNewPage = pathname === "/benchmarks/new";
 
   return (
-    <div className={styles['container']}>
+    <div className={`benchmark-sidebar-component ${styles['container']}`}>
       {/* New Benchmark */}
       <ButtonComponent
         variant="primary"

@@ -167,7 +167,7 @@ export default function AdminFiltersCardComponent() {
   const hasSessionFilter = !!sessionFilter;
 
   return (
-    <div className={styles["filters-card"]}>
+    <div className={`admin-filters-card-component ${styles["filters-card"]}`}>
       <div className={styles["filters-grid"]}>
         <SelectComponent
           value={selectedProject}

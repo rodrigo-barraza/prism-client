@@ -455,7 +455,7 @@ export default function PromptsPageComponent() {
   };
 
   return (
-    <div className={styles['container']}>
+    <div className={`prompts-page-component ${styles['container']}`}>
       {/* Header */}
       <div className={styles['header']}>
         <div className={styles["header-left"]}>

@@ -5837,6 +5837,7 @@ export default function ChatSessionComponent({
   return (
     <>
       <ThreePanelLayout
+        className="chat-session-component"
         navSidebar={
           <NavigationSidebarComponent
             mode="user"

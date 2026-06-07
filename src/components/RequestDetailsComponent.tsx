@@ -31,6 +31,7 @@ export default function RequestDetailsComponent({
 }: RequestDetailsProps) {
   return (
     <DrawerComponent
+      className="request-details-component"
       open={open}
       onClose={onClose}
       title={title}

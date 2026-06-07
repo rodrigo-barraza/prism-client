@@ -28,7 +28,7 @@ export default function SummaryBarComponent({
 }: SummaryBarProps) {
   if (!items || items.length === 0) return null;
 
-  const wrapperClass = [styles['bar'], live ? styles['live'] : "", className || ""]
+  const wrapperClass = ["summary-bar-component", styles['bar'], live ? styles['live'] : "", className || ""]
     .filter(Boolean)
     .join(" ");
 

@@ -23,7 +23,7 @@ export default function ResourceCardComponent({
   return (
     <Link
       href={href}
-      className={styles['card']}
+      className={`resource-card-component ${styles['card']}`}
       {...SoundService.interactive((e: React.SyntheticEvent) => {
         onClick?.(e);
       })}

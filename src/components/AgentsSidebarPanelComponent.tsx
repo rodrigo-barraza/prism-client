@@ -116,7 +116,7 @@ export default function AgentsSidebarPanelComponent({
   return (
     <>
       {/* Tab Navigation */}
-      <div className={styles["sidebar-tab-navigation"]}>
+      <div className={`agents-sidebar-panel-component ${styles["sidebar-tab-navigation"]}`}>
         <button
           className={`${styles["sidebar-tab-button"]} ${activeTab === "custom" ? styles["is-active-tab-state"] : ""}`}
           onClick={() => setActiveTab("custom")}

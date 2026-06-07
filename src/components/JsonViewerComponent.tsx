@@ -157,7 +157,7 @@ function JsonNode({
 
   // Primitive value
   return (
-    <div className={styles['node']}>
+    <div className={`json-viewer-component ${styles['node']}`}>
       <div className={styles['json-row']}>
         {keyName !== undefined && (
           <span className={styles['key']}>

@@ -57,7 +57,7 @@ export default function MemoryCardComponent({
 
   return (
     <div
-      className={`${styles["memory-card"]} ${isNew ? styles["is-new-memory"] : ""}`}
+      className={`memory-card-component ${styles["memory-card"]} ${isNew ? styles["is-new-memory"] : ""}`}
     >
       <div className={styles["memory-card-header"]}>
         <div className={`${styles["memory-icon"]} ${styles[iconClass]}`}>

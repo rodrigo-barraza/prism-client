@@ -867,7 +867,7 @@ export default function SynthesisComponent() {
   );
 
   return (
-    <main className={styles['app-container']}>
+    <main className={`synthesis-component ${styles['app-container']}`}>
       <ThreePanelLayout
         leftTitle={undefined}
         leftPanel={leftPanel}

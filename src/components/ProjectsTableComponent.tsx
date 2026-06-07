@@ -68,6 +68,7 @@ export default function ProjectsTableComponent({
 
   return (
     <TableComponent
+      className="projects-table-component"
       title={title}
       maxHeight={maxHeight}
       columns={columns}

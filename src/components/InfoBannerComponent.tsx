@@ -30,6 +30,7 @@ export default function InfoBannerComponent({
   const IconElement = VARIANT_ICON_MAP[variant];
 
   const containerClassName = [
+    "info-banner-component",
     styles["info-banner-container"],
     styles[`is-variant-${variant}`],
     className,

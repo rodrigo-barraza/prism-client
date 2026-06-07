@@ -1316,6 +1316,7 @@ export default function BenchmarkDetailPageComponent({
   // -- Render -------------------------------------------------
   return (
     <ThreePanelLayout
+      className="benchmark-detail-page-component"
       navSidebar={navSidebar}
       leftTitle={undefined}
       leftPanel={

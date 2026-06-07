@@ -260,7 +260,7 @@ export default function ImageCropperComponent({
   }
 
   return (
-    <div className={styles["crop-modal-overlay"]}>
+    <div className={`image-cropper-component ${styles["crop-modal-overlay"]}`}>
       <div className={styles["crop-modal-content"]}>
         <div className={styles["crop-modal-header"]}>
           <h3>Crop Icon Image</h3>

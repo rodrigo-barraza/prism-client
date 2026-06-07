@@ -769,7 +769,7 @@ export default function CustomToolsPanel({
   };
 
   return (
-    <div className={styles['container']}>
+    <div className={`custom-tools-panel-component ${styles['container']}`}>
       <SegmentedControlComponent
         value={activeSubtab}
         onChange={(value: string) => setActiveSubtab(value as "tools" | "custom")}

@@ -198,7 +198,7 @@ export function ModelToolsRow({
   if (activeTools.length === 0) return null;
 
   return (
-    <div className={`${styles['badge-row']} ${className || ""}`}>
+    <div className={`tool-badge-component ${styles['badge-row']} ${className || ""}`}>
       {activeTools.map((def) => {
         const raw = tools[def.key];
         const count = typeof raw === "number" ? raw : 0;

@@ -90,7 +90,7 @@ export default function ComboboxFilter({
   }, [open]);
 
   return (
-    <div className={styles['combobox']} ref={containerRef}>
+    <div className={`combobox-filter-component ${styles['combobox']}`} ref={containerRef}>
       <div
         className={`${styles['input-wrapper']} ${open ? styles['input-wrapper-open'] : ""}`}
       >

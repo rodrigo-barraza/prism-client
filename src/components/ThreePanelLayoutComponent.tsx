@@ -47,6 +47,7 @@ export interface ThreePanelLayoutProps {
   headerCenter?: React.ReactNode;
   fileViewerPanel?: React.ReactNode;
   children: React.ReactNode;
+  className?: string;
 }
 
 const DEFAULT_SPLIT_RATIO = 0.5;
@@ -69,6 +70,7 @@ export default function ThreePanelLayout({
   fileViewerPanel = null,
   hideHeader = false,
   children,
+  className,
 }: ThreePanelLayoutProps) {
   const resolvedRightTitle =
     rightTitle ?? (sessionType === "agent" ? "Sessions" : "Conversations");
@@ -314,7 +316,7 @@ export default function ThreePanelLayout({
   const resolvedTitleIcon = typeof title === "string" ? resolvePageIcon(title) : null;
 
   return (
-    <div className={styles["three-panel-layout-container"]}>
+    <div className={`three-panel-layout-component ${styles["three-panel-layout-container"]} ${className || ""}`}>
       {navSidebar}
       <div className={styles["layout-page-column"]}>
         {/* Full-width header */}

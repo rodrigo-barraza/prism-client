@@ -688,7 +688,7 @@ export default function ScheduledTaskCalendarComponent({
   }, [activeView, focusedDate, dayEvents]);
 
   return (
-    <div className={styles["calendar-container"]}>
+    <div className={`scheduled-task-calendar-component ${styles["calendar-container"]}`}>
       {/* ── Header Navigation ── */}
       <header className={styles["calendar-header"]}>
         <nav className={styles["calendar-navigation-group"]}>

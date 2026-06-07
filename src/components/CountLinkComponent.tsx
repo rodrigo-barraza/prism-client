@@ -24,7 +24,7 @@ export default function CountLinkComponent({
   }
 
   return (
-    <Link href={href} className={className || styles['count-link']}>
+    <Link href={href} className={`count-link-component ${className || styles['count-link']}`}>
       <Icon size={12} />
       {count}
     </Link>

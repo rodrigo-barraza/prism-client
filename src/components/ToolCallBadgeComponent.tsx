@@ -169,7 +169,7 @@ export function ToolCallBadgeRow({ tools, activeTool }: ToolCallBadgeRowProps) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
-    <div className={styles['badge-row']}>
+    <div className={`tool-call-badge-component ${styles['badge-row']}`}>
       {Object.entries(tools)
         .sort(([, countA]: [string, number], [, countB]: [string, number]) => countB - countA)
         .map(([name, count]: [string, number]) => (

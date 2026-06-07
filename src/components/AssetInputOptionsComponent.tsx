@@ -168,7 +168,7 @@ export default function AssetInputOptions({
   return (
     <>
       <div
-        className={`${styles['container']} ${compact ? styles['compact'] : ""}`}
+        className={`asset-input-options-component ${styles['container']} ${compact ? styles['compact'] : ""}`}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >

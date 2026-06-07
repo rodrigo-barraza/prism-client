@@ -250,7 +250,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: ModelDetai
     capabilities.push("No Assistant Images");
 
   return (
-    <div className={styles['overlay']}>
+    <div className={`model-detail-panel-component ${styles['overlay']}`}>
       <div className={styles['backdrop']} onClick={onClose} />
       <div className={styles['panel']}>
         {/* -- Header ---------------------------------------- */}

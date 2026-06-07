@@ -399,7 +399,7 @@ export default function AgentPickerComponent({
 
   if (disabled) {
     return (
-      <div className={styles["agent-picker-container"]}>
+      <div className={`agent-picker-component ${styles["agent-picker-container"]}`}>
         <SelectComponent
           isOpen={false}
           onToggle={() => {}}

@@ -485,7 +485,7 @@ export default function SettingsPanel({
 
   return (
     <>
-      <div className={styles['container']}>
+      <div className={`settings-panel-component ${styles['container']}`}>
         {sessionStats && (
           <div className={styles['session-stats']}>
             <div className={styles['stats-header']}>

@@ -356,7 +356,7 @@ export default function DrawingCanvas({
   const toolCursor = tool === "eraser" ? "cell" : "crosshair";
 
   return createPortal(
-    <div className={styles['overlay']}>
+    <div className={`drawing-canvas-component ${styles['overlay']}`}>
       <button className={styles['close-button']} onClick={onClose} title="Close">
         <X size={22} />
       </button>
