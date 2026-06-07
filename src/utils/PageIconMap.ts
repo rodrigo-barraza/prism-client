@@ -137,7 +137,6 @@ export const USER_NAV_SECTIONS: NavigationSection[] = [
     label: "Data",
     items: [
       { href: "/media", label: "Media", icon: ImageIcon },
-      { href: "/text", label: "Text", icon: Type },
       { href: "/prompts", label: "Prompts", icon: BookText },
     ],
   },

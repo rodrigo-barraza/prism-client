@@ -453,6 +453,7 @@
 
 .form-layout-container {
   padding: 40px;
+  padding-block-end: 72px;
   display: flex;
   flex-direction: column;
   gap: 28px;
