@@ -79,6 +79,8 @@ export interface ModelsMap {
 export interface ModalityConfig {
   models: ModelsMap;
   defaults: ModelDefaults;
+  recommendedDefault?: { provider: string; model: string; temperature: number } | null;
+  recommendedAgenticDefault?: { provider: string; model: string; temperature: number } | null;
 }
 
 export interface VoiceOption {
@@ -273,6 +275,8 @@ export interface Message {
   // ─── Live streaming metadata (client-side, prefixed with _) ─
   /** Intermediate usage from per-iteration backend events */
   _intermediateUsage?: TokenUsage;
+  /** Backend-computed estimatedCost from per-iteration usage_update events */
+  _intermediateEstimatedCost?: number | null;
   /** Backend-computed tok/s from SessionGenerationTracker */
   _liveGenProgress?: {
     outputTokens?: number;

@@ -3243,6 +3243,7 @@ export default function ChatSessionComponent({
                 updated[updated.length - 1] = {
                   ...last,
                   _intermediateUsage: data.usage,
+                  _intermediateEstimatedCost: data.estimatedCost ?? null,
                 };
               }
               return updated;

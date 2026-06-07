@@ -134,7 +134,13 @@ export function getUniqueProviders(messages: Message[]): string[] {
  */
 export function getSessionCost(messages: Message[]): number {
   return messages.reduce(
-    (sum, message) => sum + (message.estimatedCost || 0),
+    (sum, message) => {
+      // Finalized cost from the done event (authoritative)
+      if (message.estimatedCost) return sum + message.estimatedCost;
+      // Backend-computed intermediate cost from usage_update events (live streaming)
+      if (message._intermediateEstimatedCost) return sum + message._intermediateEstimatedCost;
+      return sum;
+    },
     0,
   );
 }
@@ -581,7 +587,14 @@ export function getSessionElapsedTime(messages: Message[]): number {
 }
 
 /**
- * Resolve the default model and provider based on prioritized availability:
+ * Resolve the best default model for new sessions.
+ *
+ * Prefers the server-provided `recommendedDefault` / `recommendedAgenticDefault`
+ * from the /config response (authoritative, centralized priority ladder).
+ * Falls back to a local priority ladder only when the server field is absent
+ * (backward compatibility with older backend versions).
+ *
+ * Local fallback priority:
  * 1. Gemini 3.5 Flash (google) if available.
  * 2. Latest Haiku (anthropic) if available.
  * 3. Latest Mini/Small GPT (openai) if available.
@@ -592,26 +605,45 @@ export function resolveDefaultModel(
     | {
         textToText?: {
           models?: Record<string, ModelOption[]>;
+          recommendedDefault?: { provider: string; model: string; temperature: number } | null;
+          recommendedAgenticDefault?: { provider: string; model: string; temperature: number } | null;
         };
       }
     | null
     | undefined,
   fcOnly = false,
 ): { provider: string; model: string; temperature: number } {
+  // Server-authoritative default — no hardcoded model names needed
+  const serverDefault = fcOnly
+    ? config?.textToText?.recommendedAgenticDefault
+    : config?.textToText?.recommendedDefault;
+
+  if (serverDefault?.provider && serverDefault?.model) {
+    // Verify the model still exists in the models map (config may have
+    // been enriched with local models after the server responded)
+    const providerModels = config?.textToText?.models?.[serverDefault.provider] || [];
+    if (providerModels.some((model) => model.name === serverDefault.model)) {
+      return {
+        provider: serverDefault.provider,
+        model: serverDefault.model,
+        temperature: serverDefault.temperature ?? 1.0,
+      };
+    }
+  }
+
+  // ── Local fallback (backward compatibility) ──────────────────
   const textModels = config?.textToText?.models || {};
 
-  // Helper to check if model meets tool-calling requirement
-  const isEligible = (m: ModelOption) => {
+  const isEligible = (model: ModelOption) => {
     if (!fcOnly) return true;
-    return (m.tools || []).includes("Tool Calling");
+    return (model.tools || []).includes("Tool Calling");
   };
 
   // 1. Gemini 3.5 Flash, if Google provider is available
   if (textModels["google"]?.length > 0) {
     const googleModels = textModels["google"];
-    // Look specifically for gemini-3.5-flash
     const target = googleModels.find(
-      (m: ModelOption) => m.name === "gemini-3.5-flash" && isEligible(m),
+      (model: ModelOption) => model.name === "gemini-3.5-flash" && isEligible(model),
     );
     if (target) {
       return {
@@ -620,7 +652,6 @@ export function resolveDefaultModel(
         temperature: target.defaultTemperature ?? 1.0,
       };
     }
-    // Fallback: any other available google model that matches eligibility
     const firstEligible = googleModels.find(isEligible);
     if (firstEligible) {
       return {
@@ -634,10 +665,9 @@ export function resolveDefaultModel(
   // 2. Next in line: latest Haiku, if Anthropic provider is available
   if (textModels["anthropic"]?.length > 0) {
     const anthropicModels = textModels["anthropic"];
-    // Look for a model containing "haiku"
     const target = anthropicModels.find(
-      (m: ModelOption) =>
-        m.name.toLowerCase().includes("haiku") && isEligible(m),
+      (model: ModelOption) =>
+        model.name.toLowerCase().includes("haiku") && isEligible(model),
     );
     if (target) {
       return {
@@ -646,7 +676,6 @@ export function resolveDefaultModel(
         temperature: target.defaultTemperature ?? 1.0,
       };
     }
-    // Fallback: any other available anthropic model that matches eligibility
     const firstEligible = anthropicModels.find(isEligible);
     if (firstEligible) {
       return {
@@ -660,7 +689,6 @@ export function resolveDefaultModel(
   // 3. then one of the small but performant models latest of GPT, if OpenAI is available
   if (textModels["openai"]?.length > 0) {
     const openaiModels = textModels["openai"];
-    // Try gpt-5.4-mini, gpt-5-mini, or any model containing "mini" or "nano"
     const miniTarget = [
       "gpt-5.4-mini",
       "gpt-5-mini",
@@ -669,7 +697,7 @@ export function resolveDefaultModel(
     ];
     for (const name of miniTarget) {
       const target = openaiModels.find(
-        (m: ModelOption) => m.name === name && isEligible(m),
+        (model: ModelOption) => model.name === name && isEligible(model),
       );
       if (target) {
         return {
@@ -679,12 +707,11 @@ export function resolveDefaultModel(
         };
       }
     }
-    // Fallback search for any model containing "mini" or "nano"
     const anyMini = openaiModels.find(
-      (m: ModelOption) =>
-        (m.name.toLowerCase().includes("mini") ||
-          m.name.toLowerCase().includes("nano")) &&
-        isEligible(m),
+      (model: ModelOption) =>
+        (model.name.toLowerCase().includes("mini") ||
+          model.name.toLowerCase().includes("nano")) &&
+        isEligible(model),
     );
     if (anyMini) {
       return {
@@ -693,7 +720,6 @@ export function resolveDefaultModel(
         temperature: anyMini.defaultTemperature ?? 1.0,
       };
     }
-    // Fallback: any other available openai model that matches eligibility
     const firstEligible = openaiModels.find(isEligible);
     if (firstEligible) {
       return {
