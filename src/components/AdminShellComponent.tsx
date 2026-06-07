@@ -12,6 +12,7 @@ import IrisService from "../services/IrisService";
 
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import { LayoutHeaderComponent } from "@rodrigo-barraza/components-library";
+import { resolvePageIcon } from "../utils/PageIconMap";
 import {
   AdminHeaderProvider,
   useAdminHeader,
@@ -315,6 +316,8 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       .join(" ");
   })();
 
+  const resolvedTitleIcon = resolvePageIcon(pageTitle);
+
   return (
     <div className={styles['shell']}>
       <NavigationSidebarComponent
@@ -331,6 +334,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       <div className={styles['main-area']}>
         <LayoutHeaderComponent
           title={pageTitle}
+          titleIcon={resolvedTitleIcon ?? undefined}
           controls={controls}
         >
           {hasSessionFilter && (

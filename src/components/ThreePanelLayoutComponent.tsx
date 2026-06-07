@@ -9,6 +9,7 @@ import {
   PanelRight,
 } from "lucide-react";
 import { LayoutHeaderComponent } from "@rodrigo-barraza/components-library";
+import { resolvePageIcon } from "../utils/PageIconMap";
 import styles from "./ThreePanelLayoutComponent.module.css";
 import {
   LS_PANEL_LEFT,
@@ -310,6 +311,8 @@ export default function ThreePanelLayout({
 
   const hasSplitPanels = leftPanelBottom != null;
 
+  const resolvedTitleIcon = typeof title === "string" ? resolvePageIcon(title) : null;
+
   return (
     <div className={styles["three-panel-layout-container"]}>
       {navSidebar}
@@ -318,6 +321,7 @@ export default function ThreePanelLayout({
         {!hideHeader && (
           <LayoutHeaderComponent
             title={title}
+            titleIcon={resolvedTitleIcon ?? undefined}
             isMobile={isMobile}
             metaContent={headerMeta}
             centerContent={headerCenter}
