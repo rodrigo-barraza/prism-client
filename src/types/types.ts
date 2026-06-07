@@ -884,6 +884,7 @@ export type AgentDefaultsConfig = Record<string, unknown> & {
   criticProvider?: string;
   criticModel?: string;
   harness?: string;
+  topology?: string;
 }
 
 export interface SecurityConfig {

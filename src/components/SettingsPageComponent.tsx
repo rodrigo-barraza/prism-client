@@ -43,6 +43,7 @@ import {
   CardComponent,
   InputComponent,
   ToggleComponent,
+  SelectComponent,
 } from "@rodrigo-barraza/components-library";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./SettingsPageComponent.module.css";
@@ -268,6 +269,21 @@ export default function SettingsPageComponent() {
         },
       };
       setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
+  // -- Topology change handler -----------------------------------------
+  const handleTopologySelect = useCallback(
+    (topologyId: string) => {
+      const updated = {
+        agents: {
+          ...settings?.agents,
+          topology: topologyId,
+        },
+      };
+      setSettings((previousSettings: PrismSettings | null) => ({ ...previousSettings, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -726,6 +742,28 @@ export default function SettingsPageComponent() {
                 modelTypeFilter="conversation"
                 allowDeselect
                 placeholderLabel="Uses agent model"
+              />
+            </div>
+          </div>
+
+          {/* Subagent Topology */}
+          <div className={styles['settings-row']}>
+            <div className={styles['row-label']}>
+              <span className={styles['row-title']}>Subagent Topology</span>
+              <span className={styles['row-description']}>
+                Defines how subagents coordinate. Hierarchical executes in parallel;
+                Sequential executes in a pipeline; Peer-to-Peer operates in a collaborative mesh.
+              </span>
+            </div>
+            <div className={styles['row-control']}>
+              <SelectComponent
+                value={agentDefaults.topology || "hierarchical"}
+                options={[
+                  { value: "hierarchical", label: "Hierarchical (Parallel)" },
+                  { value: "sequential", label: "Sequential (Pipeline)" },
+                  { value: "peer_to_peer", label: "Peer-to-Peer (Mesh)" },
+                ]}
+                onChange={handleTopologySelect}
               />
             </div>
           </div>
