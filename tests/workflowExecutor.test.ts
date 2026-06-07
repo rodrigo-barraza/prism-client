@@ -1,357 +1,113 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { executeWorkflow } from "../src/services/WorkflowExecutor";
-import PrismService from "../src/services/PrismService";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { executeWorkflow, abortWorkflow } from "../src/services/WorkflowExecutor";
 
-vi.mock("../src/services/PrismService", () => ({
-  default: {
-    getFileUrl: vi.fn((ref: string) => {
-      if (ref.startsWith("minio://")) {
-        return "http://localhost:5555/files/" + ref.replace("minio://", "");
-      }
-      return ref;
-    }),
-    generateText: vi.fn(),
-    generateAgentText: vi.fn(),
-    generateImage: vi.fn(),
-    transcribeAudio: vi.fn(),
-    generateSpeech: vi.fn(),
-    generateEmbedding: vi.fn(),
-  },
-}));
+describe("WorkflowExecutor Client", () => {
+  let originalFetch: typeof global.fetch;
 
-describe("WorkflowExecutor", () => {
   beforeEach(() => {
+    originalFetch = global.fetch;
     vi.clearAllMocks();
   });
 
-  it("should execute workflow nodes in topological order", async () => {
-    const nodes = [
-      { id: "node-c", nodeType: "viewer" },
-      {
-        id: "node-b",
-        nodeType: "model",
-        provider: "openai",
-        modelName: "gpt-4",
-        outputTypes: ["text"],
-      },
-      { id: "node-a", nodeType: "input", modality: "text", content: "hello" },
-    ];
-    const edges = [
-      {
-        sourceNodeId: "node-a",
-        targetNodeId: "node-b",
-        sourceModality: "text",
-        targetModality: "text",
-      },
-      {
-        sourceNodeId: "node-b",
-        targetNodeId: "node-c",
-        sourceModality: "text",
-        targetModality: "text",
-      },
-    ];
-
-    const executionOrder: string[] = [];
-    const onNodeStart = vi.fn((nodeId) => {
-      executionOrder.push(nodeId);
-    });
-    const onNodeComplete = vi.fn();
-
-    vi.mocked(PrismService.generateText).mockResolvedValue({
-      text: "response-b",
-    });
-
-    const result = await executeWorkflow(nodes as any, edges as any, {
-      onNodeStart,
-      onNodeComplete,
-    });
-
-    expect(executionOrder).toEqual(["node-a", "node-b", "node-c"]);
-    expect(onNodeComplete).toHaveBeenCalledTimes(3);
-    expect(result.nodeOutputs["node-a"]).toEqual({ text: "hello" });
-    expect(result.nodeOutputs["node-b"]).toEqual({ text: "response-b" });
-    expect(result.nodeOutputs["node-c"]).toEqual({ text: "response-b" });
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
-  it("should route to textToImage when output type is image", async () => {
-    const nodes = [
-      {
-        id: "input-prompt",
-        nodeType: "input",
-        modality: "text",
-        content: "a cute cat",
+  function createMockSseResponse(events: string[]) {
+    const encoder = new TextEncoder();
+    const readableStream = new ReadableStream({
+      start(controller) {
+        for (const event of events) {
+          controller.enqueue(encoder.encode(event));
+        }
+        controller.close();
       },
-      {
-        id: "image-gen",
-        nodeType: "model",
-        provider: "openai",
-        modelName: "dall-e-3",
-        outputTypes: ["image"],
-      },
-    ];
-    const edges = [
-      {
-        sourceNodeId: "input-prompt",
-        targetNodeId: "image-gen",
-        sourceModality: "text",
-        targetModality: "text",
-      },
-    ];
-
-    vi.mocked(PrismService.generateImage).mockResolvedValue({
-      imageData: "base64-image-bytes",
-      mimeType: "image/png",
     });
 
-    const result = await executeWorkflow(nodes as any, edges as any, {});
+    return {
+      ok: true,
+      status: 200,
+      body: readableStream,
+      json: async () => ({}),
+    } as unknown as Response;
+  }
 
-    expect(PrismService.generateImage).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: "openai",
-        model: "dall-e-3",
-        prompt: "a cute cat",
-      }),
-    );
-    expect(result.nodeOutputs["image-gen"]).toEqual({
-      image: "data:image/png;base64,base64-image-bytes",
-    });
-  });
-
-  it("should route to audioToText when input has audio and output is not audio", async () => {
-    const nodes = [
-      {
-        id: "input-audio",
-        nodeType: "input",
-        modality: "audio",
-        content: "minio://uploads/audio.wav",
-      },
-      {
-        id: "transcriber",
-        nodeType: "model",
-        provider: "openai",
-        modelName: "whisper-1",
-        outputTypes: ["text"],
-      },
-    ];
-    const edges = [
-      {
-        sourceNodeId: "input-audio",
-        targetNodeId: "transcriber",
-        sourceModality: "audio",
-        targetModality: "audio",
-      },
+  it("should parse SSE stream and return final results on run_complete", async () => {
+    const mockEvents = [
+      'data: {"type":"node_start","nodeId":"node-1"}\n\n',
+      'data: {"type":"node_complete","nodeId":"node-1","outputs":{"text":"hello"}}\n\n',
+      'data: {"type":"run_complete","nodeResults":{"node-1":{"text":"hello"}},"conversationIds":["conv-1"]}\n\n',
     ];
 
-    vi.mocked(PrismService.transcribeAudio).mockResolvedValue({
-      text: "transcribed speech text",
-    });
-
-    const result = await executeWorkflow(nodes as any, edges as any, {});
-
-    expect(PrismService.transcribeAudio).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: "openai",
-        model: "whisper-1",
-        audio: "minio://uploads/audio.wav",
-      }),
-    );
-    expect(result.nodeOutputs["transcriber"]).toEqual({
-      text: "transcribed speech text",
-    });
-  });
-
-  it("should route to textToSpeech when output is audio", async () => {
-    const nodes = [
-      {
-        id: "input-text",
-        nodeType: "input",
-        modality: "text",
-        content: "speak this",
-      },
-      {
-        id: "tts",
-        nodeType: "model",
-        provider: "openai",
-        modelName: "tts-1",
-        outputTypes: ["audio"],
-      },
-    ];
-    const edges = [
-      {
-        sourceNodeId: "input-text",
-        targetNodeId: "tts",
-        sourceModality: "text",
-        targetModality: "text",
-      },
-    ];
-
-    vi.mocked(PrismService.generateSpeech).mockResolvedValue({
-      audioDataUrl: "data:audio/mp3;base64,...",
-      contentType: "audio/mp3",
-    });
-
-    const result = await executeWorkflow(nodes as any, edges as any, {});
-
-    expect(PrismService.generateSpeech).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: "openai",
-        model: "tts-1",
-        text: "speak this",
-      }),
-    );
-    expect(result.nodeOutputs["tts"]).toEqual({
-      audio: "data:audio/mp3;base64,...",
-    });
-  });
-
-  it("should route to modalityToEmbedding when output is embedding", async () => {
-    const nodes = [
-      {
-        id: "input-text",
-        nodeType: "input",
-        modality: "text",
-        content: "embed this",
-      },
-      {
-        id: "embedder",
-        nodeType: "model",
-        provider: "openai",
-        modelName: "text-embedding-3",
-        outputTypes: ["embedding"],
-      },
-    ];
-    const edges = [
-      {
-        sourceNodeId: "input-text",
-        targetNodeId: "embedder",
-        sourceModality: "text",
-        targetModality: "text",
-      },
-    ];
-
-    vi.mocked(PrismService.generateEmbedding).mockResolvedValue({
-      embedding: [0.1, 0.2, 0.3],
-      dimensions: 3,
-      provider: "openai",
-      model: "text-embedding-3",
-    });
-
-    const result = await executeWorkflow(nodes as any, edges as any, {});
-
-    expect(PrismService.generateEmbedding).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: "openai",
-        model: "text-embedding-3",
-        text: "embed this",
-      }),
-    );
-    expect(result.nodeOutputs["embedder"]).toEqual({
-      embedding: [0.1, 0.2, 0.3],
-    });
-  });
-
-  it("should compile and pass tool definitions to agent endpoint", async () => {
-    const nodes = [
-      {
-        id: "tool-node",
-        nodeType: "tools",
-        builtInTools: [{ name: "search_web", description: "Search web" }],
-        customTools: [
-          {
-            name: "my_custom",
-            description: "custom desc",
-            parameters: [
-              {
-                name: "p1",
-                type: "string",
-                required: true,
-                description: "param desc",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: "agent-model",
-        nodeType: "model",
-        provider: "openai",
-        modelName: "gpt-4",
-        outputTypes: ["text"],
-      },
-    ];
-    const edges = [
-      {
-        sourceNodeId: "tool-node",
-        targetNodeId: "agent-model",
-        sourceModality: "tools",
-        targetModality: "tools",
-      },
-    ];
-
-    vi.mocked(PrismService.generateAgentText).mockResolvedValue({
-      text: "agent output",
-    });
-
-    await executeWorkflow(nodes as any, edges as any, {});
-
-    expect(PrismService.generateAgentText).toHaveBeenCalledWith(
-      expect.objectContaining({
-        provider: "openai",
-        model: "gpt-4",
-        enabledTools: ["search_web", "my_custom"],
-      }),
-    );
-  });
-
-  it("should handle error, trigger callbacks, and skip downstream nodes", async () => {
-    const nodes = [
-      {
-        id: "node-a",
-        nodeType: "model",
-        provider: "openai",
-        modelName: "gpt-4",
-        outputTypes: ["text"],
-      },
-      {
-        id: "node-b",
-        nodeType: "model",
-        provider: "openai",
-        modelName: "gpt-4",
-        outputTypes: ["text"],
-      },
-    ];
-    const edges = [
-      {
-        sourceNodeId: "node-a",
-        targetNodeId: "node-b",
-        sourceModality: "text",
-        targetModality: "text",
-      },
-    ];
-
-    vi.mocked(PrismService.generateText).mockRejectedValue(
-      new Error("API Limit Reached"),
-    );
+    global.fetch = vi.fn().mockResolvedValue(createMockSseResponse(mockEvents));
 
     const onNodeStart = vi.fn();
     const onNodeComplete = vi.fn();
-    const onNodeError = vi.fn();
 
-    const result = await executeWorkflow(nodes as any, edges as any, {
+    const result = await executeWorkflow("workflow-123", [], [], {
       onNodeStart,
       onNodeComplete,
-      onNodeError,
     });
 
-    expect(onNodeStart).toHaveBeenCalledWith("node-a");
-    expect(onNodeError).toHaveBeenCalledWith("node-a", expect.any(Error));
-    expect(onNodeComplete).not.toHaveBeenCalledWith(
-      "node-a",
-      expect.any(Object),
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/workflows/workflow-123/run"),
+      expect.objectContaining({
+        method: "POST",
+      }),
     );
 
-    expect(onNodeStart).not.toHaveBeenCalledWith("node-b");
-    expect(result.nodeOutputs["node-a"]).toEqual({});
-    expect(result.nodeOutputs["node-b"]).toEqual({});
+    expect(onNodeStart).toHaveBeenCalledWith("node-1");
+    expect(onNodeComplete).toHaveBeenCalledWith("node-1", { text: "hello" });
+    expect(result.nodeOutputs).toEqual({ "node-1": { text: "hello" } });
+    expect(result.conversationIds).toEqual(["conv-1"]);
+  });
+
+  it("should trigger callbacks for node errors and viewer partials", async () => {
+    const mockEvents = [
+      'data: {"type":"node_error","nodeId":"node-1","error":"Something went wrong"}\n\n',
+      'data: {"type":"viewer_partial","nodeId":"viewer-1","outputs":{"text":"partial"}}\n\n',
+    ];
+
+    global.fetch = vi.fn().mockResolvedValue(createMockSseResponse(mockEvents));
+
+    const onNodeError = vi.fn();
+    const onViewerPartial = vi.fn();
+
+    await executeWorkflow("workflow-123", [], [], {
+      onNodeError,
+      onViewerPartial,
+    });
+
+    expect(onNodeError).toHaveBeenCalledWith("node-1", "Something went wrong");
+    expect(onViewerPartial).toHaveBeenCalledWith("viewer-1", { text: "partial" });
+  });
+
+  it("should throw error if fetch response is not ok", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: "Internal Server Error" }),
+    } as unknown as Response);
+
+    await expect(executeWorkflow("workflow-123", [], [], {})).rejects.toThrow(
+      "Internal Server Error",
+    );
+  });
+
+  it("should send abort request to backend on abortWorkflow", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ aborted: true }),
+    } as unknown as Response);
+
+    await abortWorkflow("workflow-123");
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/workflows/workflow-123/abort"),
+      expect.objectContaining({
+        method: "POST",
+      }),
+    );
   });
 });

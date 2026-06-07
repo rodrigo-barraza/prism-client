@@ -23,7 +23,7 @@ import {
 import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 import PrismService from "../../services/PrismService";
 import WorkflowService from "../../services/WorkflowService";
-import { executeWorkflow } from "../../services/WorkflowExecutor";
+import { executeWorkflow, abortWorkflow } from "../../services/WorkflowExecutor";
 import WorkflowCanvas from "../../components/WorkflowCanvasComponent";
 import WorkflowInspector from "../../components/WorkflowInspectorComponent";
 import WorkflowHeaderStatsComponent from "../../components/WorkflowHeaderStatsComponent";
@@ -605,9 +605,29 @@ export default function WorkflowsPage({
     );
 
     try {
-      const { conversationIds } = await executeWorkflow(
-        nodes as Parameters<typeof executeWorkflow>[0],
-        edges as Parameters<typeof executeWorkflow>[1],
+      // Ensure the workflow is saved so the backend has an ID to load
+      let executionWorkflowId = workflowId;
+      if (!executionWorkflowId) {
+        const saved = await PrismService.saveWorkflow({
+          name: workflowName || "Untitled Workflow",
+          nodes,
+          edges,
+          source: "prism-client",
+        } as Parameters<typeof PrismService.saveWorkflow>[0]);
+        executionWorkflowId = saved.id;
+        if (executionWorkflowId) {
+          window.history.replaceState(null, "", `/workflows?id=${executionWorkflowId}`);
+        }
+      }
+
+      if (!executionWorkflowId) {
+        throw new Error("Failed to save workflow before execution");
+      }
+
+      await executeWorkflow(
+        executionWorkflowId,
+        nodes as Parameters<typeof executeWorkflow>[1],
+        edges as Parameters<typeof executeWorkflow>[2],
         {
           onNodeStart: (nodeId: string) => {
             if (abortRef.current) return;
@@ -707,27 +727,20 @@ export default function WorkflowsPage({
           },
         },
       );
-
-      // Link generated conversations to this workflow
-      if (workflowId && conversationIds?.length > 0) {
-        PrismService.patchWorkflowConversations(
-          workflowId,
-          conversationIds,
-        ).catch((error) =>
-          console.error("Failed to link conversations to workflow:", error),
-        );
-      }
     } catch (error: unknown) {
       addToast(`Execution failed: ${getErrorMessage(error)}`, "error");
     } finally {
       setIsRunning(false);
     }
-  }, [nodes, edges, workflowId]);
+  }, [nodes, edges, workflowId, workflowName]);
 
   const handleStopWorkflow = useCallback(() => {
     abortRef.current = true;
     setIsRunning(false);
-  }, []);
+    if (workflowId) {
+      abortWorkflow(workflowId);
+    }
+  }, [workflowId]);
 
   // Reset workflow execution state (statuses, results, viewer outputs)
   const handleResetWorkflow = useCallback(() => {
