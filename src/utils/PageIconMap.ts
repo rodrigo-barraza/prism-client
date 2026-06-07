@@ -118,6 +118,7 @@ export const USER_NAV_SECTIONS: NavigationSection[] = [
         label: "Scheduled Tasks",
         icon: Clock,
       },
+      { href: "/prompts", label: "Prompts", icon: BookText },
       { href: "/settings", label: "Settings", icon: Settings },
     ],
   },
@@ -137,7 +138,6 @@ export const USER_NAV_SECTIONS: NavigationSection[] = [
     label: "Data",
     items: [
       { href: "/media", label: "Media", icon: ImageIcon },
-      { href: "/prompts", label: "Prompts", icon: BookText },
     ],
   },
   {
