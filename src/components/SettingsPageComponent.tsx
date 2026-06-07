@@ -18,6 +18,7 @@ import {
   Wifi,
   WifiOff,
   FolderTree,
+  Settings,
   Settings2,
   Cpu,
   Container,
@@ -520,7 +521,7 @@ export default function SettingsPageComponent() {
         <div className={styles['header']}>
           <div className={styles['header-left']}>
             <h1 className={styles['title']}>
-              <Settings2 className={styles['title-icon']} size={22} />
+              <Settings className={styles['title-icon']} size={22} />
               Settings
             </h1>
             <p className={styles['subtitle']}>
@@ -546,7 +547,7 @@ export default function SettingsPageComponent() {
       <div className={styles['header']}>
         <div className={styles['header-left']}>
           <h1 className={styles['title']}>
-            <Settings2 className={styles['title-icon']} size={22} />
+            <Settings className={styles['title-icon']} size={22} />
             Settings
           </h1>
           <p className={styles['subtitle']}>
