@@ -110,6 +110,7 @@ import {
   SK_TOOL_MEMORY_AGENT_PREFIX,
   MAX_TOOL_ITERATIONS,
   LS_FILE_VIEWER_WIDTH,
+  LS_CHAT_FILTERS,
 } from "../constants";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent";
@@ -5877,6 +5878,7 @@ export default function ChatSessionComponent({
             hasMore={sessionsHasMore}
             loadingMore={sessionsLoading}
             onLoadMore={loadMoreSessions}
+            filterStorageKey={LS_CHAT_FILTERS}
           />
         }
         rightTitle={`${sessions.length}${sessionsHasMore ? "+" : ""} Sessions`}

@@ -83,6 +83,7 @@ interface HistoryListProps {
   onSearchChange?: (query: string) => void;
   dateRange?: { from: string; to: string };
   onDateChange?: (range: { from: string; to: string }) => void;
+  filterStorageKey?: string;
 }
 
 /**
@@ -134,6 +135,7 @@ export default function HistoryList({
   onSearchChange,
   dateRange: controlledDateRange,
   onDateChange: controlledOnDateChange,
+  filterStorageKey,
 }: HistoryListProps) {
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
 
@@ -141,17 +143,78 @@ export default function HistoryList({
     setSearchQuery(query);
     if (onSearchChange) onSearchChange(query);
   };
+
+  // -- Restore persisted filter state from localStorage on mount --
+  const initializedFilterRef = useRef<boolean>(false);
+
+  const restoredFilters = useMemo(() => {
+    if (!filterStorageKey) return null;
+    try {
+      const stored = localStorage.getItem(filterStorageKey);
+      if (stored) return JSON.parse(stored);
+    } catch { /* ignore corrupt data */ }
+    return null;
+  }, [filterStorageKey]);
+
   const [activeModalities, setActiveModalities] = useState<Set<string>>(
-    new Set(),
+    () => new Set(restoredFilters?.modalities || []),
   );
-  const [activeTools, setActiveTools] = useState<Set<string>>(new Set());
+  const [activeTools, setActiveTools] = useState<Set<string>>(
+    () => new Set(restoredFilters?.tools || []),
+  );
   const [activeProviders, setActiveProviders] = useState<Set<string>>(
-    () => new Set(initialProviders || []),
+    () => new Set(restoredFilters?.providers || initialProviders || []),
   );
-  const [activeCostTiers, setActiveCostTiers] = useState<Set<string>>(new Set());
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [shouldHideSubAgents, setShouldHideSubAgents] = useState(false);
+  const [activeCostTiers, setActiveCostTiers] = useState<Set<string>>(
+    () => new Set(restoredFilters?.costTiers || []),
+  );
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(
+    () => restoredFilters?.showFavoritesOnly ?? false,
+  );
+  const [shouldHideSubAgents, setShouldHideSubAgents] = useState(
+    () => restoredFilters?.shouldHideSubAgents ?? false,
+  );
   const [localDateRange, setLocalDateRange] = useState({ from: "", to: "" });
+
+  // -- Persist filter state to localStorage on change --
+  useEffect(() => {
+    if (!filterStorageKey) return;
+    // Skip the very first render to avoid writing restored defaults back immediately
+    if (!initializedFilterRef.current) {
+      initializedFilterRef.current = true;
+      return;
+    }
+    const filterSnapshot = {
+      modalities: [...activeModalities],
+      tools: [...activeTools],
+      providers: [...activeProviders],
+      costTiers: [...activeCostTiers],
+      showFavoritesOnly,
+      shouldHideSubAgents,
+    };
+    const hasActiveFilters =
+      activeModalities.size > 0 ||
+      activeTools.size > 0 ||
+      activeProviders.size > 0 ||
+      activeCostTiers.size > 0 ||
+      showFavoritesOnly ||
+      shouldHideSubAgents;
+    try {
+      if (hasActiveFilters) {
+        localStorage.setItem(filterStorageKey, JSON.stringify(filterSnapshot));
+      } else {
+        localStorage.removeItem(filterStorageKey);
+      }
+    } catch { /* ignore quota errors */ }
+  }, [
+    filterStorageKey,
+    activeModalities,
+    activeTools,
+    activeProviders,
+    activeCostTiers,
+    showFavoritesOnly,
+    shouldHideSubAgents,
+  ]);
 
   const dateRange =
     controlledDateRange !== undefined ? controlledDateRange : localDateRange;

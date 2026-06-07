@@ -36,6 +36,7 @@ export interface HistoryPanelProps {
   onLoadMore?: () => Promise<void> | void;
   dateRange?: { from: string; to: string };
   onDateChange?: (range: { from: string; to: string }) => void;
+  filterStorageKey?: string;
 }
 
 export default function HistoryPanel({
@@ -65,6 +66,7 @@ export default function HistoryPanel({
   onLoadMore,
   dateRange,
   onDateChange,
+  filterStorageKey,
 }: HistoryPanelProps) {
   const items = useMemo(
     () =>
@@ -106,6 +108,7 @@ export default function HistoryPanel({
         onLoadMore={onLoadMore}
         dateRange={dateRange}
         onDateChange={onDateChange}
+        filterStorageKey={filterStorageKey}
       />
     </div>
   );

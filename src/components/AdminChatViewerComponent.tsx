@@ -59,7 +59,7 @@ import { useAdminHeader } from "./AdminHeaderContextComponent";
 import useProjectFilter from "../hooks/useProjectFilter";
 import BadgeComponent from "./BadgeComponent";
 
-import { SETTINGS_DEFAULTS, PROJECT_AGENT } from "../constants";
+import { SETTINGS_DEFAULTS, PROJECT_AGENT, LS_ADMIN_CHAT_FILTERS } from "../constants";
 import type {
   Conversation,
   AgentSession,
@@ -1219,6 +1219,7 @@ export default function AdminChatViewerComponent({
               onLoadMore={loadMoreEntries}
               dateRange={dateRange}
               onDateChange={setDateRange}
+              filterStorageKey={LS_ADMIN_CHAT_FILTERS}
             />
           }
           rightTitle={`${entries.length}${entriesHasMore ? "+" : ""} ${isNoAgent ? "Conversations" : isAgentMode ? "Sessions" : "Entries"}`}
