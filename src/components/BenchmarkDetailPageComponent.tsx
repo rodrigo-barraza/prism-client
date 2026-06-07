@@ -237,15 +237,6 @@ export default function BenchmarkDetailPageComponent({
       const saved = StorageService.get<BenchmarkStorage>(
         SK_MODEL_MEMORY_BENCHMARKS,
       );
-      // Migration: if saved data uses the old Set-based selectedKeys format,
-      // convert each key into an instance object.
-      if (saved?.selectedKeys && Array.isArray(saved.selectedKeys)) {
-        return saved.selectedKeys.map((key: string) => {
-          const [provider, ...rest] = key.split(":");
-          return { instanceId: generateUUID(), provider, name: rest.join(":") };
-        });
-      }
-      // New format: array of instance objects
       if (saved?.instances && Array.isArray(saved.instances)) {
         return saved.instances;
       }

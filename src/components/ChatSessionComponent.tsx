@@ -309,9 +309,7 @@ interface SessionSnapshot {
   streamingOutputs: Map<string, string>;
   pendingApprovals: PendingApproval[];
   pendingUserQuestion: {
-    question?: string;
     questions?: unknown[];
-    choices?: string[];
     context?: string;
   } | null;
   planProposal: { plan: string; steps?: string[]; status?: "pending" | "approved" | "rejected" | "executing" } | null;
@@ -672,9 +670,7 @@ export default function ChatSessionComponent({
     [],
   );
   const [pendingUserQuestion, setPendingUserQuestion] = useState<{
-    question?: string;
     questions?: unknown[];
-    choices?: string[];
     context?: string;
   } | null>(null);
   const [planProposal, setPlanProposal] = useState<{
@@ -2420,8 +2416,8 @@ export default function ChatSessionComponent({
             // Auto-refresh tasks panel when any task tool completes
             if (
               data.status !== "calling" &&
-              // TODO(cleanup): Remove "task_" startsWith once historical sessions have aged out
-              ((toolData.name || "").includes("_task") || (toolData.name || "").startsWith("task_"))
+              toolData.name &&
+              toolData.name.includes("_task")
             ) {
               setTasksRefreshKey((k) => k + 1);
             }
@@ -2571,8 +2567,8 @@ export default function ChatSessionComponent({
             // Auto-refresh tasks panel when any task tool completes (MCP path)
             if (
               toolData.status !== "calling" &&
-              // TODO(cleanup): Remove "task_" startsWith once historical sessions have aged out
-              (toolData.name?.includes("_task") || toolData.name?.startsWith("task_"))
+              toolData.name &&
+              toolData.name.includes("_task")
             ) {
               setTasksRefreshKey((k) => k + 1);
             }
@@ -2700,11 +2696,7 @@ export default function ChatSessionComponent({
           onUserQuestion: (data: SSEData) => {
             if (isStale()) return;
             setPendingUserQuestion({
-              // Multi-question payload (new)
               questions: data.questions || [],
-              // Backward-compat single-question fields
-              question: data.question || "",
-              choices: data.choices || [],
               context: data.context || undefined,
             });
             // Clear processing metadata — user deliberation time should
@@ -4104,8 +4096,6 @@ export default function ChatSessionComponent({
         if (pendingQuestionData && pendingQuestionData.pending) {
           setPendingUserQuestion({
             questions: pendingQuestionData.questions || [],
-            question: pendingQuestionData.question || "",
-            choices: pendingQuestionData.choices || [],
           });
         } else {
           setPendingUserQuestion(null);
@@ -5381,8 +5371,6 @@ export default function ChatSessionComponent({
         {pendingUserQuestion && (
           <UserQuestionCardComponent
             questions={pendingUserQuestion.questions as any}
-            question={pendingUserQuestion.question}
-            choices={pendingUserQuestion.choices}
             context={pendingUserQuestion.context}
             onAnswer={(
               answers: Array<{

@@ -461,8 +461,7 @@ export function getModalities(messages: Message[]) {
     thinking: false,
   };
 
-  // TODO(cleanup): Remove "web_search" and "web_search_preview" once historical sessions have aged out
-  const WEB_SEARCH_NAMES = new Set(["web_search", "search_web", "web_search_preview", "search_web_preview"]);
+  const WEB_SEARCH_NAMES = new Set(["search_web", "search_web_preview"]);
   const CODE_EXEC_NAMES = new Set(["code_execution"]);
 
   for (const message of messages || []) {
@@ -639,98 +638,7 @@ export function resolveDefaultModel(
     return (model.tools || []).includes("Tool Calling");
   };
 
-  // 1. Gemini 3.5 Flash, if Google provider is available
-  if (textModels["google"]?.length > 0) {
-    const googleModels = textModels["google"];
-    const target = googleModels.find(
-      (model: ModelOption) => model.name === "gemini-3.5-flash" && isEligible(model),
-    );
-    if (target) {
-      return {
-        provider: "google",
-        model: target.name,
-        temperature: target.defaultTemperature ?? 1.0,
-      };
-    }
-    const firstEligible = googleModels.find(isEligible);
-    if (firstEligible) {
-      return {
-        provider: "google",
-        model: firstEligible.name,
-        temperature: firstEligible.defaultTemperature ?? 1.0,
-      };
-    }
-  }
-
-  // 2. Next in line: latest Haiku, if Anthropic provider is available
-  if (textModels["anthropic"]?.length > 0) {
-    const anthropicModels = textModels["anthropic"];
-    const target = anthropicModels.find(
-      (model: ModelOption) =>
-        model.name.toLowerCase().includes("haiku") && isEligible(model),
-    );
-    if (target) {
-      return {
-        provider: "anthropic",
-        model: target.name,
-        temperature: target.defaultTemperature ?? 1.0,
-      };
-    }
-    const firstEligible = anthropicModels.find(isEligible);
-    if (firstEligible) {
-      return {
-        provider: "anthropic",
-        model: firstEligible.name,
-        temperature: firstEligible.defaultTemperature ?? 1.0,
-      };
-    }
-  }
-
-  // 3. then one of the small but performant models latest of GPT, if OpenAI is available
-  if (textModels["openai"]?.length > 0) {
-    const openaiModels = textModels["openai"];
-    const miniTarget = [
-      "gpt-5.4-mini",
-      "gpt-5-mini",
-      "gpt-5.4-nano",
-      "gpt-5-nano",
-    ];
-    for (const name of miniTarget) {
-      const target = openaiModels.find(
-        (model: ModelOption) => model.name === name && isEligible(model),
-      );
-      if (target) {
-        return {
-          provider: "openai",
-          model: target.name,
-          temperature: target.defaultTemperature ?? 1.0,
-        };
-      }
-    }
-    const anyMini = openaiModels.find(
-      (model: ModelOption) =>
-        (model.name.toLowerCase().includes("mini") ||
-          model.name.toLowerCase().includes("nano")) &&
-        isEligible(model),
-    );
-    if (anyMini) {
-      return {
-        provider: "openai",
-        model: anyMini.name,
-        temperature: anyMini.defaultTemperature ?? 1.0,
-      };
-    }
-    const firstEligible = openaiModels.find(isEligible);
-    if (firstEligible) {
-      return {
-        provider: "openai",
-        model: firstEligible.name,
-        temperature: firstEligible.defaultTemperature ?? 1.0,
-      };
-    }
-  }
-
-  // 4. Absolute fallback: loop through available providers and find any matching model
+  // Absolute fallback: loop through available providers and find any matching model
   for (const provider of Object.keys(textModels)) {
     const models = textModels[provider] || [];
     const firstEligible = models.find(isEligible);

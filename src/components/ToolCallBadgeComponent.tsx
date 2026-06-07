@@ -19,8 +19,6 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   [TOOL_NAMES.FIND_FILES]: "Glob",
   [TOOL_NAMES.LIST_DIRECTORY]: "List Dir",
   [TOOL_NAMES.SEARCH_WEB]: "Search Web",
-  // TODO(cleanup): Remove legacy name once historical sessions have aged out
-  web_search: "Search Web",
   [TOOL_NAMES.READ_WEB_PAGE]: "Fetch",
   [TOOL_NAMES.EXECUTE_SHELL]: "Shell",
   [TOOL_NAMES.EXECUTE_PYTHON]: "Python",
@@ -36,17 +34,12 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   // Coordinator tools
   [TOOL_NAMES.CREATE_TEAM]: "Create Team",
   [TOOL_NAMES.DELETE_TEAM]: "Delete Team",
-  // TODO(cleanup): Remove legacy names once historical sessions have aged out
-  team_create: "Create Team",
-  team_delete: "Delete Team",
   [TOOL_NAMES.SLEEP]: "Sleep",
   [TOOL_NAMES.ENTER_PLAN_MODE]: "Plan",
   [TOOL_NAMES.EXIT_PLAN_MODE]: "Execute",
   [TOOL_NAMES.SEARCH_TOOLS]: "Tool Search",
   [TOOL_NAMES.CREATE_CRON]: "Schedule",
   [TOOL_NAMES.CREATE_CRON_JOB]: "Schedule",
-  // TODO(cleanup): Remove legacy name once historical sessions have aged out
-  cron_create: "Schedule",
   [TOOL_NAMES.TRIGGER_CRON_JOB]: "Trigger",
   [TOOL_NAMES.REMOTE_TRIGGER]: "Trigger",
   [TOOL_NAMES.EDIT_NOTEBOOK]: "Notebook",
@@ -55,11 +48,6 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   [TOOL_NAMES.EXECUTE_SKILL]: "Run Skill",
   [TOOL_NAMES.LIST_SKILLS]: "Skills",
   [TOOL_NAMES.DELETE_SKILL]: "Delete Skill",
-  // TODO(cleanup): Remove legacy names once historical sessions have aged out
-  skill_create: "Create Skill",
-  skill_execute: "Run Skill",
-  skill_list: "Skills",
-  skill_delete: "Delete Skill",
   // Todo & Task tools
   [TOOL_NAMES.WRITE_TODO]: "Write Todo",
   [TOOL_NAMES.CREATE_TASK]: "Create Task",
@@ -67,13 +55,6 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   [TOOL_NAMES.GET_TASK]: "Get Task",
   [TOOL_NAMES.UPDATE_TASK]: "Update Task",
   [TOOL_NAMES.GET_TASK_OUTPUT]: "Get Task Output",
-  // TODO(cleanup): Remove legacy names once historical sessions have aged out
-  todo_write: "Write Todo",
-  task_create: "Create Task",
-  task_list: "List Tasks",
-  task_get: "Get Task",
-  task_update: "Update Task",
-  task_output: "Get Task Output",
   // Structured output
   [TOOL_NAMES.EMIT_STRUCTURED_OUTPUT]: "Output",
   // Worktree isolation

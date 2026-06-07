@@ -894,8 +894,8 @@ export interface MemoryConfig {
 }
 
 export type AgentDefaultsConfig = Record<string, unknown> & {
-  subagentProvider?: string;
-  subagentModel?: string;
+  subAgentProvider?: string;
+  subAgentModel?: string;
   criticProvider?: string;
   criticModel?: string;
   harness?: string;

@@ -240,8 +240,6 @@ interface UserQuestionCardComponentProps {
   onAnswer?: (answers: QuestionAnswerData[]) => void;
   isPending?: boolean;
   answeredWith?: Array<QuestionAnswerData | string> | null;
-  question?: string;
-  choices?: string[];
 }
 
 /**
@@ -255,25 +253,8 @@ export default function UserQuestionCardComponent({
   onAnswer,
   isPending = true,
   answeredWith = null,
-  // ── Backward compat (single question) ─────
-  question,
-  choices = [],
 }: UserQuestionCardComponentProps) {
-  // Normalize: single question props → questions array
-  const normalizedQuestions = useMemo((): NormalizedQuestion[] => {
-    if (questions.length > 0) return questions;
-    if (question) {
-      return [
-        {
-          question,
-          header: null,
-          options: choices.map((choice: string) => ({ label: choice, preview: null })),
-          multiSelect: false,
-        },
-      ];
-    }
-    return [];
-  }, [questions, question, choices]);
+  const normalizedQuestions = questions;
 
   // Track answers per question index
   const [collectedAnswers, setCollectedAnswers] = useState<Record<number, QuestionAnswerData>>({});

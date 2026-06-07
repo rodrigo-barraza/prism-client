@@ -235,8 +235,8 @@ export default function SettingsPageComponent() {
       const updated = {
         agents: {
           ...settings?.agents,
-          subagentProvider: provider || "",
-          subagentModel: model || "",
+          subAgentProvider: provider || "",
+          subAgentModel: model || "",
         },
       };
       setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
@@ -711,8 +711,8 @@ export default function SettingsPageComponent() {
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
-                  provider: agentDefaults.subagentProvider || "",
-                  model: agentDefaults.subagentModel || "",
+                  provider: agentDefaults.subAgentProvider || "",
+                  model: agentDefaults.subAgentModel || "",
                 }}
                 onSelectModel={handleSubagentModelSelect}
                 modelTypeFilter="conversation"
