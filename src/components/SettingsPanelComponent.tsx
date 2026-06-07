@@ -9,6 +9,7 @@ import {
   ExternalLink,
   AudioLines,
   Layers,
+  Network,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import {
@@ -110,6 +111,20 @@ interface ExtendedModelOption extends ModelOption {
 export function formatHarnessLabel(harness: string): string {
   if (harness === "standard") return "Standard (ReAct)";
   return harness
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+const TOPOLOGY_LABELS: Record<string, string> = {
+  hierarchical: "Hierarchical",
+  sequential: "Sequential",
+  peer_to_peer: "Peer-to-Peer",
+  p2p: "Peer-to-Peer",
+};
+
+export function formatTopologyLabel(topology: string): string {
+  return TOPOLOGY_LABELS[topology] || topology
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
@@ -256,6 +271,12 @@ export default function SettingsPanel({
           <span className={styles['stat-badge']}>
             <Brain size={10} />
             {formatHarnessLabel(settings.agents.harness)}
+          </span>
+        )}
+        {sessionType === "agent" && settings.agents?.topology && (
+          <span className={styles['stat-badge']}>
+            <Network size={10} />
+            {formatTopologyLabel(settings.agents.topology)}
           </span>
         )}
         {stats.uniqueModels && stats.uniqueModels.length > 0 && (
