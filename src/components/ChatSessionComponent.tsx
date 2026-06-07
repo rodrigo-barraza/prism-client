@@ -236,12 +236,12 @@ const AGENT_LOCKED_TOOLS = new Set(["Tool Calling"]);
 // Filesystem-mutating tools that should trigger a workspace tree refresh
 const WORKSPACE_FS_TOOLS = new Set([
   "write_file",
-  "str_replace_file",
+  "replace_in_file",
   "patch_file",
   "move_file",
   "delete_file",
-  "run_command",
-  "notebook_edit",
+  "execute_command",
+  "edit_notebook",
 ]);
 
 interface EmptyStateConfig {
@@ -1314,8 +1314,8 @@ export default function ChatSessionComponent({
     if (!embeddingModelConfigured) lockedToolsMap.set("search_memories", "Configure the Embedding Model in Settings → Memory Models to unlock");
     if (!imageModelConfigured) lockedToolsMap.set("generate_image", "Configure the Image Generation Model in Settings → Creative Tools to unlock");
     if (!visionModelConfigured) lockedToolsMap.set("describe_image", "Configure the Vision Model in Settings → Creative Tools to unlock");
-    if (!textToSpeechModelConfigured) lockedToolsMap.set("text_to_speech", "Configure the Text-to-Speech Model in Settings → Audio to unlock");
-    if (!speechToTextModelConfigured) lockedToolsMap.set("speech_to_text", "Configure the Speech-to-Text Model in Settings → Audio to unlock");
+    if (!textToSpeechModelConfigured) lockedToolsMap.set("synthesize_speech", "Configure the Text-to-Speech Model in Settings → Audio to unlock");
+    if (!speechToTextModelConfigured) lockedToolsMap.set("transcribe_audio", "Configure the Speech-to-Text Model in Settings → Audio to unlock");
     return lockedToolsMap;
   }, [memoryConfigured, extractionModelConfigured, consolidationModelConfigured, embeddingModelConfigured, imageModelConfigured, visionModelConfigured, textToSpeechModelConfigured, speechToTextModelConfigured]);
 

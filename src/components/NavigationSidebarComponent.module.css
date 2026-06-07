@@ -51,8 +51,7 @@
   }
 
   & .navigation-label,
-  & .badge,
-  & .attention-dot {
+  & :global(.navigation-indicator-component) {
     display: none;
   }
 
@@ -344,50 +343,7 @@
   }
 }
 
-/* ── Attention Indicator ── */
 
-.attention-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: auto;
-  flex-shrink: 0;
-  inline-size: 16px;
-  block-size: 16px;
-  border-radius: 50%;
-  background: var(--color-warning, oklch(0.82 0.17 85));
-  color: white;
-  font-size: 0.625rem;
-  font-weight: 700;
-  line-height: 1;
-  cursor: help;
-}
-
-.attention-dot.informational {
-  background: var(--color-info, oklch(0.62 0.18 255));
-}
-
-/* ── Badge ── */
-
-.badge {
-  margin-left: auto;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 2px;
-  background: var(--accent-primary);
-  color: white;
-  font-size: 0.625rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.badge.live {
-  background: var(--color-success);
-  animation: pulse 2s ease-in-out infinite;
-}
 
 /* ── Footer ── */
 

@@ -34,6 +34,7 @@ import {
 import SpinningCatComponent from "./SpinningCatComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./NavigationSidebarComponent.module.css";
+import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
 import { LS_PANEL_NAV, LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
@@ -690,38 +691,26 @@ export default function NavigationSidebarComponent({
                                 <span className={styles['navigation-label']}>
                                   {item.label}
                                 </span>
-                                 {item.href === "/settings" &&
-                                   settingsWarningCount > 0 && (
-                                     <span
-                                       className={styles['attention-dot']}
-                                       title={`${settingsWarningCount} setting${settingsWarningCount > 1 ? "s" : ""} need${settingsWarningCount === 1 ? "s" : ""} to be configured`}
-                                     >
-                                       {settingsWarningCount}
-                                     </span>
-                                   )}
-                                {item.href === "/scheduled-tasks" &&
-                                  cronJobNotificationsCount > 0 && (
-                                    <span
-                                      className={`${styles['attention-dot']} ${styles['informational']}`}
-                                      title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
-                                    >
-                                      {cronJobNotificationsCount}
-                                    </span>
-                                  )}
-                                {item.showBadge &&
-                                  (badgeCounts as Record<string, number>)[
-                                    item.showBadge
-                                  ] > 0 && (
-                                    <span
-                                      className={`${styles['badge']} ${styles['live']}`}
-                                    >
-                                      {
-                                        (badgeCounts as Record<string, number>)[
-                                          item.showBadge
-                                        ]
-                                      }
-                                    </span>
-                                  )}
+                                {item.href === "/settings" && (
+                                  <NavigationIndicatorComponent
+                                    count={settingsWarningCount}
+                                    variant="warning"
+                                    title={`${settingsWarningCount} setting${settingsWarningCount > 1 ? "s" : ""} need${settingsWarningCount === 1 ? "s" : ""} to be configured`}
+                                  />
+                                )}
+                                {item.href === "/scheduled-tasks" && (
+                                  <NavigationIndicatorComponent
+                                    count={cronJobNotificationsCount}
+                                    variant="notification"
+                                    title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
+                                  />
+                                )}
+                                {item.showBadge && (
+                                  <NavigationIndicatorComponent
+                                    count={(badgeCounts as Record<string, number>)[item.showBadge] || 0}
+                                    variant="live"
+                                  />
+                                )}
                               </span>
                             </Link>
                           );
@@ -883,36 +872,26 @@ export default function NavigationSidebarComponent({
                           <span className={styles['navigation-label']}>
                             {item.label}
                           </span>
-                           {item.href === "/settings" && settingsWarningCount > 0 && (
-                             <span
-                               className={styles['attention-dot']}
-                               title={`${settingsWarningCount} setting${settingsWarningCount > 1 ? "s" : ""} need${settingsWarningCount === 1 ? "s" : ""} to be configured`}
-                             >
-                               {settingsWarningCount}
-                             </span>
-                           )}
-                          {item.href === "/scheduled-tasks" && cronJobNotificationsCount > 0 && (
-                            <span
-                              className={`${styles['attention-dot']} ${styles['informational']}`}
-                              title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
-                            >
-                              {cronJobNotificationsCount}
-                            </span>
+                          {item.href === "/settings" && (
+                            <NavigationIndicatorComponent
+                              count={settingsWarningCount}
+                              variant="warning"
+                              title={`${settingsWarningCount} setting${settingsWarningCount > 1 ? "s" : ""} need${settingsWarningCount === 1 ? "s" : ""} to be configured`}
+                            />
                           )}
-                          {item.showBadge &&
-                            (badgeCounts as Record<string, number>)[
-                              item.showBadge
-                            ] > 0 && (
-                              <span
-                                className={`${styles['badge']} ${styles['live']}`}
-                              >
-                                {
-                                  (badgeCounts as Record<string, number>)[
-                                    item.showBadge
-                                  ]
-                                }
-                              </span>
-                            )}
+                          {item.href === "/scheduled-tasks" && (
+                            <NavigationIndicatorComponent
+                              count={cronJobNotificationsCount}
+                              variant="notification"
+                              title={`${cronJobNotificationsCount} new scheduled task${cronJobNotificationsCount > 1 ? "s" : ""}`}
+                            />
+                          )}
+                          {item.showBadge && (
+                            <NavigationIndicatorComponent
+                              count={(badgeCounts as Record<string, number>)[item.showBadge] || 0}
+                              variant="live"
+                            />
+                          )}
                         </span>
                       </Link>
                     );

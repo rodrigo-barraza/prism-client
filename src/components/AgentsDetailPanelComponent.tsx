@@ -688,7 +688,7 @@ export default function AgentsDetailPanelComponent({
                 <InputComponent
                   type="text"
                   value={policy.tool}
-                  placeholder="Tool identifier (e.g. run_command or *)"
+                  placeholder="Tool identifier (e.g. execute_command or *)"
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     const updatedPolicies = [...(editingAgent.policies || [])];
                     updatedPolicies[index] = {

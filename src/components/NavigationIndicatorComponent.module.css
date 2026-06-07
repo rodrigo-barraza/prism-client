@@ -1,0 +1,56 @@
+/* ── NavigationIndicatorComponent ── */
+/* Compact square indicator badge for sidebar navigation items. */
+/* Supports semantic color variants: error, warning, notification. */
+
+.indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: auto;
+  flex-shrink: 0;
+  min-inline-size: 18px;
+  block-size: 18px;
+  padding-inline: 5px;
+  border-radius: 2px;
+  color: oklch(1 0 0);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: help;
+}
+
+/* ── Color Variants ── */
+
+.variant-error {
+  background: var(--color-danger, oklch(0.63 0.24 27));
+}
+
+.variant-warning {
+  background: var(--color-warning, oklch(0.82 0.17 85));
+}
+
+.variant-notification {
+  background: var(--color-info, oklch(0.62 0.18 255));
+}
+
+.variant-live {
+  background: var(--color-success, oklch(0.72 0.17 162));
+  animation: indicator-pulse 2s ease-in-out infinite;
+}
+
+.variant-default {
+  background: var(--accent-primary);
+}
+
+/* ── Pulse animation (GPU-composited opacity) ── */
+
+@keyframes indicator-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}

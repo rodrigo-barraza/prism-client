@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Cpu, Loader2, Power, PowerOff, RefreshCw } from "lucide-react";
+import { Cpu, Loader2, Power, PowerOff, RefreshCw, Server } from "lucide-react";
 import { POLL_MODERATE } from "@rodrigo-barraza/utilities-library";
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
@@ -420,7 +420,7 @@ export default function ModelsPageComponent({
           <div className={styles['header']}>
             <div className={styles['header-left']}>
               <h1 className={styles['title']}>
-                <Cpu className={styles['title-icon']} size={22} />
+                <Server className={styles['title-icon']} size={22} />
                 Models
               </h1>
               <p className={styles['subtitle']}>

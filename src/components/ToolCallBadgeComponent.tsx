@@ -14,8 +14,8 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   read_file: "Read",
   write_file: "Write",
   str_replace: "Replace",
-  grep_search: "Grep",
-  glob_files: "Glob",
+  search_file_contents: "Grep",
+  find_files: "Glob",
   list_directory: "List Dir",
   search_web: "Search Web",
   // TODO(cleanup): Remove legacy name once historical sessions have aged out
@@ -29,8 +29,8 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   git_log: "Git Log",
   delete_file: "Delete",
   move_file: "Move",
-  browser_action: "Browser",
-  project_summary: "Summary",
+  control_browser: "Browser",
+  summarize_project: "Summary",
   generate_image: "Image Gen",
   // Coordinator tools
   create_team: "Create Team",
@@ -48,7 +48,7 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   cron_create: "Schedule",
   trigger_cron_job: "Trigger",
   remote_trigger: "Trigger",
-  notebook_edit: "Notebook",
+  edit_notebook: "Notebook",
   // Skill tools
   create_skill: "Create Skill",
   execute_skill: "Run Skill",
@@ -74,7 +74,7 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   task_update: "Update Task",
   task_output: "Get Task Output",
   // Structured output
-  synthetic_output: "Output",
+  emit_structured_output: "Output",
   // Worktree isolation
   enter_worktree: "Isolate",
   exit_worktree: "Restore",
@@ -110,7 +110,7 @@ export interface ToolCallBadgeProps {
  * ToolCallBadgeComponent — renders a badge for an individual tool call invocation.
  *
  * Props:
- *   name    — raw tool function name (e.g. "read_file", "grep_search")
+ *   name    — raw tool function name (e.g. "read_file", "search_file_contents")
  *   count   — invocation count (shown as ×N when > 1)
  *   active  — whether the tool is currently executing (pulses)
  *   size    — icon size in px (default 11)

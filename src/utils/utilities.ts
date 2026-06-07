@@ -352,7 +352,7 @@ export function getUsedTools(
  * Tool names that represent provider capabilities rather than
  * function-level tool calls. Used to separate capability badges
  * (Thinking, Tool Calling, Web Search, etc.) from individual
- * tool-call badges (read_file, grep_search, etc.) in the stats UI.
+ * tool-call badges (read_file, search_file_contents, etc.) in the stats UI.
  */
 export const CAPABILITY_TOOL_NAMES = new Set([
   "Thinking",

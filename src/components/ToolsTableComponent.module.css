@@ -1,0 +1,333 @@
+/* ── ToolsTableComponent ────────────────────────────────────── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Search ────────────────────────────────────────────────── */
+
+.tools-search {
+  width: 100%;
+}
+
+/* ── Filter Bar ────────────────────────────────────────────── */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.filter-bar > * {
+  flex: 1 1 calc(25% - 12px);
+  min-width: 160px;
+}
+
+/* ── View Toggle ───────────────────────────────────────────── */
+
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  margin-inline-start: auto;
+}
+
+.view-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--text-tertiary);
+  background: var(--background-elevated);
+  border: none;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+
+  & svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: var(--text-secondary);
+    background: var(--background-surface);
+  }
+
+  &.view-active {
+    color: var(--accent-primary);
+    background: var(--calculated-accent-primary-subtle);
+  }
+}
+
+/* ── Domain Sections (Grid / List) ─────────────────────────── */
+
+.domain-section {
+  animation: fade-in 0.3s ease-out both;
+}
+
+.domain-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 8px;
+  margin-block-end: 12px;
+  border-bottom: 1px solid var(--calculated-border-color);
+
+  & h2 {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+}
+
+.domain-count {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: var(--background-elevated);
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--calculated-border-color);
+}
+
+.domain-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--accent-primary);
+  opacity: 0.7;
+}
+
+/* ── Tool Grid ─────────────────────────────────────────────── */
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 10px;
+  margin-block-end: 24px;
+}
+
+/* ── Agent Badges ──────────────────────────────────────────── */
+
+.agent-badges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* ── Tool Domain / Label Badges ────────────────────────────── */
+
+.tool-domain {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--accent-primary);
+  background: var(--calculated-accent-primary-subtle);
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tool-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: var(--background-base);
+  padding: 2px 7px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--calculated-border-subtle);
+}
+
+.param-count {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  & svg {
+    width: 12px;
+    height: 12px;
+    opacity: 0.6;
+  }
+}
+
+/* ── Tools Table View ──────────────────────────────────────── */
+
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  animation: fade-in 0.3s ease-out both;
+  flex-shrink: 0;
+}
+
+.table-name-cell-mono {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.table-param-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--background-base);
+  border: 1px solid var(--calculated-border-subtle);
+  padding: 2px 7px;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-mono);
+
+  & svg {
+    opacity: 0.6;
+    color: var(--accent-primary);
+  }
+}
+
+.table-stat-value {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Tool List View (Row) ──────────────────────────────────── */
+
+.tool-row {
+  display: grid;
+  grid-template-columns: 24px minmax(140px, 220px) 60px 90px 70px 70px 75px 80px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding-block: 10px;
+  padding-inline: 14px;
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+
+  &:hover:not(.list-header) {
+    border-color: var(--accent-primary);
+    background: var(--background-elevated);
+    box-shadow: var(--calculated-shadow-glow);
+    transform: translateY(-0.5px);
+  }
+}
+
+.tool-row-emoji {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px oklch(0 0 0 / 0.15));
+}
+
+.tool-row-emoji-image {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.tool-row-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statistic-cell {
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tool-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  justify-content: flex-start;
+}
+
+/* ── Empty State ───────────────────────────────────────────── */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 24px;
+  text-align: center;
+
+  & svg {
+    width: 40px;
+    height: 40px;
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+
+  & p {
+    font-size: var(--font-size-base);
+    color: var(--text-tertiary);
+  }
+}
+
+/* ── Animations ────────────────────────────────────────────── */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tool-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

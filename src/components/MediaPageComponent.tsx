@@ -363,7 +363,7 @@ export default function MediaPageComponent({
           <div className={styles['header']}>
             <div className={styles['header-left']}>
               <h1 className={styles['title']}>
-                <Film className={styles['title-icon']} size={22} />
+                <ImageIcon className={styles['title-icon']} size={22} />
                 Media
               </h1>
               <p className={styles['subtitle']}>

@@ -866,7 +866,7 @@ export default function SettingsPageComponent() {
             <div className={styles['row-label']}>
               <span className={styles['row-title']}>Speech Synthesis Model</span>
               <span className={styles['row-description']}>
-                Model used by the text_to_speech tool to generate audio files
+                Model used by the synthesize_speech tool to generate audio files
                 from written text
               </span>
             </div>
@@ -889,7 +889,7 @@ export default function SettingsPageComponent() {
             <div className={styles['row-label']}>
               <span className={styles['row-title']}>Transcription Model</span>
               <span className={styles['row-description']}>
-                Model used by the speech_to_text tool to transcribe spoken audio
+                Model used by the transcribe_audio tool to transcribe spoken audio
                 recordings into text
               </span>
             </div>

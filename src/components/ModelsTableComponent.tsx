@@ -40,7 +40,7 @@ import FilterDropdownComponent from "./FilterDropdownComponent";
 
 import ProportionBarComponent from "./ProportionBarComponent";
 import BadgeComponent from "./BadgeComponent";
-import { formatFileSize, formatContextTokens, formatNumber, formatTokenCount, formatLatency, formatTokensPerSec, timeAgo } from "@rodrigo-barraza/utilities-library";
+import { formatFileSize, formatContextTokens, formatNumber, formatTokenCount, formatLatency, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
 import {
   requestsColumn,
   usageColumn,
@@ -1253,7 +1253,14 @@ function ModelsTableInner({
         render: (row: RowData) => {
           const timestamp = row._raw.lastUsed;
           if (!timestamp) return "—";
-          return timeAgo(timestamp);
+          return (
+            <BadgeComponent
+              type="dateTime"
+              date={timestamp}
+              relative
+              highlightNew
+            />
+          );
         },
       });
     }

@@ -2285,17 +2285,17 @@ const TOOL_RESULT_REGISTRY = {
   // File operations
   read_file: { Renderer: FileReadRenderer },
   write_file: { Renderer: FileWriteRenderer },
-  str_replace_file: { Renderer: StrReplaceRenderer },
+  replace_in_file: { Renderer: StrReplaceRenderer },
   patch_file: { Renderer: FileWriteRenderer },
   read_multi_file: { Renderer: GenericRenderer },
-  file_info: { Renderer: GenericRenderer },
-  file_diff: { Renderer: GitDiffRenderer }, // reuses diff renderer
+  get_file_info: { Renderer: GenericRenderer },
+  diff_files: { Renderer: GitDiffRenderer }, // reuses diff renderer
   move_file: { Renderer: FileMoveRenderer },
   delete_file: { Renderer: FileDeleteRenderer },
 
   // Search
-  grep_search: { Renderer: GrepSearchRenderer },
-  glob_files: { Renderer: GlobFilesRenderer },
+  search_file_contents: { Renderer: GrepSearchRenderer },
+  find_files: { Renderer: GlobFilesRenderer },
   list_directory: { Renderer: DirectoryListRenderer },
 
   // Web
@@ -2308,7 +2308,7 @@ const TOOL_RESULT_REGISTRY = {
   execute_shell: { Renderer: TerminalRenderer, language: "bash" },
   execute_python: { Renderer: TerminalRenderer, language: "python" },
   execute_javascript: { Renderer: TerminalRenderer, language: "javascript" },
-  run_command: { Renderer: TerminalRenderer, language: "bash" },
+  execute_command: { Renderer: TerminalRenderer, language: "bash" },
   schedule: { Renderer: ScheduleRenderer },
 
   // Git
@@ -2317,10 +2317,10 @@ const TOOL_RESULT_REGISTRY = {
   git_log: { Renderer: GitLogRenderer },
 
   // Project
-  project_summary: { Renderer: GenericRenderer },
+  summarize_project: { Renderer: GenericRenderer },
 
   // Browser
-  browser_action: { Renderer: BrowserActionRenderer },
+  control_browser: { Renderer: BrowserActionRenderer },
 
   // Turtle Graphics
   draw_turtle: { Renderer: TurtleDrawRenderer },
@@ -2340,8 +2340,8 @@ const TOOL_RESULT_REGISTRY = {
   generate_audio: { Renderer: AudioGeneratorRenderer },
 
   // Text-to-Speech
-  text_to_speech: { Renderer: TextToSpeechRenderer },
-  local_text_to_speech: { Renderer: TextToSpeechRenderer },
+  synthesize_speech: { Renderer: TextToSpeechRenderer },
+  synthesize_speech_local: { Renderer: TextToSpeechRenderer },
 
   // Coordinator
   create_team: { Renderer: TeamCreateRenderer },

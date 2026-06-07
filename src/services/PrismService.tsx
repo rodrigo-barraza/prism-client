@@ -1114,7 +1114,7 @@ export default class PrismService {
   }
 
   /**
-   * Submit answer(s) to a pending ask_user_question tool call.
+   * Submit answer(s) to a pending ask_user tool call.
 
    */
   static async sendUserQuestionAnswer(
