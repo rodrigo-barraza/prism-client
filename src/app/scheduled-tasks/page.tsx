@@ -1078,17 +1078,18 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   ]}
                 />
 
-                <button
+                <ButtonComponent
+                  variant="primary"
+                  size="small"
+                  icon={Plus}
                   onClick={() => {
                     resetFormFields();
                     setShowNewModal(true);
                   }}
-                  className={styles['new-button']}
                   title="Create Scheduled Task"
                 >
-                  <Plus size={16} />
-                  <span>New</span>
-                </button>
+                  New
+                </ButtonComponent>
               </div>
             </header>
 
@@ -1105,12 +1106,13 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   <p>
                     Create a background agent automation task to get started.
                   </p>
-                  <button
+                  <ButtonComponent
+                    variant="primary"
+                    size="small"
                     onClick={() => setShowNewModal(true)}
-                    className={styles['empty-button']}
                   >
                     Create your first task
-                  </button>
+                  </ButtonComponent>
                 </div>
               ) : viewMode === "calendar" ? (
                 /* ── Calendar View ── */

@@ -1426,6 +1426,9 @@ export interface ModelUsageStat {
   model: string;
   provider: string;
   totalRequests: number;
+  totalInputTokens?: number;
+  totalOutputTokens?: number;
+  lastUsed?: string | Date;
 }
 
 export interface ToolUsageStat {

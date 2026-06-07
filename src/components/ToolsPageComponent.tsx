@@ -5,6 +5,7 @@ import {
   SelectComponent,
   ToolCardComponent as ToolSchemaCard,
   TableComponent,
+  ButtonComponent,
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "./BadgeComponent";
 
@@ -380,9 +381,14 @@ function ToolDetailModal({
 
         {/* Body */}
         <div className={styles['detail-body']}>
-          <button className={styles['try-tool-button']} onClick={handleTryTool}>
-            <Play size={14} /> Try Tool in Direct Chat
-          </button>
+          <ButtonComponent
+            variant="primary"
+            icon={Play}
+            onClick={handleTryTool}
+            className={styles['try-tool-button']}
+          >
+            Try Tool in Direct Chat
+          </ButtonComponent>
 
           {/* Description */}
           <div className={styles['detail-description']}>{tool.description}</div>

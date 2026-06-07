@@ -788,31 +788,10 @@
 }
 
 .try-tool-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
   width: 100%;
+  justify-content: center;
   padding: 12px;
-  background: var(--accent-primary);
-  color: var(--color-white);
-  border: none;
-  border-radius: var(--border-radius);
   font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    opacity var(--transition-fast),
-    transform 0.15s ease;
-
-  &:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
 }
 
 .detail-description {

@@ -74,7 +74,7 @@ import TasksPanel from "./TasksPanelComponent";
 
 import WorkersPanel from "./WorkersPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
-import SessionRequestsListComponent from "./SessionRequestsListComponent";
+import RequestsTableComponent from "./RequestsTableComponent";
 import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent";
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
@@ -5033,9 +5033,13 @@ export default function ChatSessionComponent({
       {leftTab === "requests" && (
         <>
           <SidebarTabHeaderComponent icon={BarChart3} title="Requests" count={backendSessionStats?.requestCount || 0} />
-          <SessionRequestsListComponent
+          <RequestsTableComponent
             conversationId={conversationId}
             refreshKey={requestsRefreshKey}
+            compact
+            mini
+            maxHeight={null}
+            storageKey="session-requests"
           />
         </>
       )}

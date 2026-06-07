@@ -40,7 +40,7 @@ import FilterDropdownComponent from "./FilterDropdownComponent";
 
 import ProportionBarComponent from "./ProportionBarComponent";
 import BadgeComponent from "./BadgeComponent";
-import { formatFileSize, formatContextTokens, formatNumber, formatTokenCount, formatLatency, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
+import { formatFileSize, formatContextTokens, formatNumber, formatTokenCount, formatLatency, formatTokensPerSec, timeAgo } from "@rodrigo-barraza/utilities-library";
 import {
   requestsColumn,
   usageColumn,
@@ -101,6 +101,7 @@ export interface RawModel {
   avgLatency?: number;
   avgTokensPerSec?: number;
   model?: string;
+  lastUsed?: string | Date;
 }
 
 export interface NormalizedModel {
@@ -144,6 +145,7 @@ export interface RowData {
   requests: number;
   totalInputTokens: number;
   totalOutputTokens: number;
+  lastUsed?: string | Date;
   _benchThinking: boolean;
   _benchTools: boolean;
   _benchAgent: unknown;
@@ -368,6 +370,7 @@ function buildRow(rawModel: RawModel, favorites: string[] = []): RowData {
     requests: rawModel.usageCount || 0,
     totalInputTokens: rawModel.totalInputTokens || 0,
     totalOutputTokens: rawModel.totalOutputTokens || 0,
+    lastUsed: rawModel.lastUsed,
     // Benchmark config flags
     _benchThinking: rawModel._benchThinkingEnabled || false,
     _benchTools: rawModel._benchToolsEnabled || false,
@@ -774,6 +777,7 @@ function ModelsTableInner({
   const hasTokens = filtered.some(
     (model: RawModel) => (model.totalInputTokens || 0) + (model.totalOutputTokens || 0) > 0,
   );
+  const hasLastUsed = filtered.some((model: RawModel) => model.lastUsed != null);
   const hasActions = !!renderActions;
   const hasSelection = !!selectedKeys && !!onToggleSelect;
   const isFull = mode === "full";
@@ -1234,6 +1238,26 @@ function ModelsTableInner({
       });
     }
 
+    if (hasLastUsed) {
+      cols.push({
+        key: "lastUsed",
+        label: "Last Used",
+        description: "The last time this model was used by the current user",
+        align: "left",
+        sortable: true,
+        sortValue: (row: RowData) => {
+          const timestamp = row._raw.lastUsed;
+          if (!timestamp) return 0;
+          return new Date(timestamp).getTime();
+        },
+        render: (row: RowData) => {
+          const timestamp = row._raw.lastUsed;
+          if (!timestamp) return "—";
+          return timeAgo(timestamp);
+        },
+      });
+    }
+
     if (hasTokens) {
       cols.push({
         key: "totalInputTokens",
@@ -1493,6 +1517,7 @@ function ModelsTableInner({
     hasModelType,
     hasUsage,
     hasTokens,
+    hasLastUsed,
     hasModalities,
     hasTools,
     hasContext,

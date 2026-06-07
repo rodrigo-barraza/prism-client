@@ -101,6 +101,7 @@ export interface ExtendedModelOption extends ModelOption {
   usageCount?: number;
   totalInputTokens?: number;
   totalOutputTokens?: number;
+  lastUsed?: string | Date;
   key?: string;
   modelType?: string;
   inputTypes?: string[];
@@ -176,6 +177,7 @@ export default function ModelPickerPopoverComponent({
       totalRequests: number;
       totalInputTokens: number;
       totalOutputTokens: number;
+      lastUsed?: string | Date;
     }
   > | null>(null);
   const usageFetchedRef = useRef<boolean>(false);
@@ -185,48 +187,58 @@ export default function ModelPickerPopoverComponent({
     usageFetchedRef.current = true;
     PrismService.getModelStats()
       .then((stats) => {
-        const map = new Map<
+        const usageStatisticsMap = new Map<
           string,
           {
             totalRequests: number;
             totalInputTokens: number;
             totalOutputTokens: number;
+            lastUsed?: string | Date;
           }
         >();
-        for (const s of stats) {
-          const key = `${s.provider}:${s.model}`;
-          const existing = map.get(key);
-          if (existing) {
-            existing.totalRequests += s.totalRequests;
-            existing.totalInputTokens +=
-              (s as { totalInputTokens?: number }).totalInputTokens || 0;
-            existing.totalOutputTokens +=
-              (s as { totalOutputTokens?: number }).totalOutputTokens || 0;
+        for (const stat of stats) {
+          const modelKey = `${stat.provider}:${stat.model}`;
+          const existingStat = usageStatisticsMap.get(modelKey);
+          if (existingStat) {
+            existingStat.totalRequests += stat.totalRequests;
+            existingStat.totalInputTokens +=
+              (stat as { totalInputTokens?: number }).totalInputTokens || 0;
+            existingStat.totalOutputTokens +=
+              (stat as { totalOutputTokens?: number }).totalOutputTokens || 0;
+            if (stat.lastUsed) {
+              const currentLastUsedTime = new Date(stat.lastUsed).getTime();
+              const existingLastUsedTime = existingStat.lastUsed ? new Date(existingStat.lastUsed).getTime() : 0;
+              if (currentLastUsedTime > existingLastUsedTime) {
+                existingStat.lastUsed = stat.lastUsed;
+              }
+            }
           } else {
-            map.set(key, {
-              totalRequests: s.totalRequests,
+            usageStatisticsMap.set(modelKey, {
+              totalRequests: stat.totalRequests,
               totalInputTokens:
-                (s as { totalInputTokens?: number }).totalInputTokens || 0,
+                (stat as { totalInputTokens?: number }).totalInputTokens || 0,
               totalOutputTokens:
-                (s as { totalOutputTokens?: number }).totalOutputTokens || 0,
+                (stat as { totalOutputTokens?: number }).totalOutputTokens || 0,
+              lastUsed: stat.lastUsed,
             });
           }
         }
-        setUsageMap(map);
+        setUsageMap(usageStatisticsMap);
       })
       .catch(() => {});
   }, []);
 
   const allModels = useMemo(() => {
     if (!usageMap) return baseModels;
-    return baseModels.map((m: ExtendedModelOption) => {
-      const stats = usageMap.get(`${m.provider}:${m.name}`);
-      if (!stats) return m;
+    return baseModels.map((modelOption: ExtendedModelOption) => {
+      const stats = usageMap.get(`${modelOption.provider}:${modelOption.name}`);
+      if (!stats) return modelOption;
       return {
-        ...m,
+        ...modelOption,
         usageCount: stats.totalRequests,
         totalInputTokens: stats.totalInputTokens,
         totalOutputTokens: stats.totalOutputTokens,
+        lastUsed: stats.lastUsed,
       };
     });
   }, [baseModels, usageMap]);

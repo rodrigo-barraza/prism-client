@@ -125,7 +125,6 @@ const USER_NAV_SECTIONS: NavigationSection[] = [
       { href: "/media", label: "Media", icon: ImageIcon },
       { href: "/text", label: "Text", icon: Type },
       { href: "/prompts", label: "Prompts", icon: BookText },
-      { href: "/vision", label: "Vision", icon: Eye },
     ],
   },
   {
@@ -135,6 +134,7 @@ const USER_NAV_SECTIONS: NavigationSection[] = [
       { href: "/vram-benchmark", label: "VRAM Bench", icon: MemoryStick },
       { href: "/synthesis", label: "Synthesis", icon: FlaskConical },
       { href: "/workflows", label: "Workflows", icon: Workflow },
+      { href: "/vision", label: "Vision", icon: Eye },
     ],
   },
 ];
@@ -181,7 +181,6 @@ const ADMIN_NAV_SECTIONS: NavigationSection[] = [
       { href: "/admin/media", label: "Media", icon: ImageIcon, showBadge: "media" },
       { href: "/admin/text", label: "Text", icon: Type, showBadge: "text" },
       { href: "/admin/prompts", label: "Prompts", icon: BookText },
-      { href: "/admin/vision", label: "Vision", icon: Eye },
     ],
   },
   {
@@ -189,6 +188,7 @@ const ADMIN_NAV_SECTIONS: NavigationSection[] = [
     items: [
       { href: "/admin/synthesis", label: "Synthesis", icon: FlaskConical },
       { href: "/admin/workflows", label: "Workflows", icon: GitBranch },
+      { href: "/admin/vision", label: "Vision", icon: Eye },
     ],
   },
 ];

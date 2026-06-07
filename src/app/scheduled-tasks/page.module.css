@@ -144,33 +144,6 @@
   width: 100%;
 }
 
-/* ── New Button ────────────────────────────────────────────── */
-
-.new-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  background: var(--accent-primary);
-  border: none;
-  border-radius: var(--border-radius-sm);
-  color: var(--calculated-text-inverse);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  transition:
-    opacity var(--transition-fast),
-    transform 0.15s ease;
-}
-
-.new-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.new-button:active {
-  transform: translateY(0);
-}
-
 /* ── Loading & Empty States ────────────────────────────────── */
 
 .loading-state {
@@ -222,24 +195,6 @@
   margin: 0;
 }
 
-.empty-button {
-  margin-top: 8px;
-  padding: 7px 16px;
-  background: var(--accent-primary);
-  border: none;
-  border-radius: var(--border-radius-sm);
-  color: var(--calculated-text-inverse);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  transition:
-    opacity var(--transition-fast),
-    transform 0.15s ease;
-}
-
-.empty-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
 
 /* ── Grid & Cards ──────────────────────────────────────────── */
 

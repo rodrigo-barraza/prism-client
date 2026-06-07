@@ -35,7 +35,7 @@ import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
 
 import WorkersPanel from "./WorkersPanelComponent";
-import SessionRequestsListComponent from "./SessionRequestsListComponent";
+import RequestsTableComponent from "./RequestsTableComponent";
 import RulesPanel from "./RulesPanelComponent";
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import ChatSessionGraphComponent from "./ChatSessionGraphComponent";
@@ -1091,9 +1091,12 @@ export default function AdminChatViewerComponent({
                 {leftTab === "requests" && isSelectedAgent && selectedId && (
                   <>
                     <SidebarTabHeaderComponent icon={Activity} title="Requests" count={backendSessionStats?.requestCount || 0} />
-                    <SessionRequestsListComponent
+                    <RequestsTableComponent
                       conversationId={selectedId}
-                      refreshKey={0}
+                      compact
+                      mini
+                      maxHeight={null}
+                      storageKey="admin-session-requests"
                     />
                   </>
                 )}
