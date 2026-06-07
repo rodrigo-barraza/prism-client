@@ -117,11 +117,11 @@ function AdminWorkflowsPageInner() {
 
   // Use persisted nodeResults and nodeStatuses from the workflow document
   const nodeResults = useMemo(() => {
-    return selectedWorkflow?.nodeResults || {};
+    return (selectedWorkflow?.nodeResults || {}) as Record<string, any>;
   }, [selectedWorkflow]);
 
   // nodeStatuses are ephemeral runtime state — always empty for read-only view
-  const nodeStatuses = useMemo(() => ({}), []);
+  const nodeStatuses = useMemo(() => ({} as Record<string, string>), []);
 
   const edgeCount = useMemo(() => {
     const edges =
@@ -232,15 +232,15 @@ function AdminWorkflowsPageInner() {
             admin
             nodes={localNodes}
             connections={
-              selectedWorkflow?.edges || selectedWorkflow?.connections || []
+              (selectedWorkflow?.edges || selectedWorkflow?.connections || []) as any
             }
             selectedNodeId={selectedNodeId}
             onSelectNode={setSelectedNodeId}
             onUpdateNodePosition={handleUpdateNodePosition}
             nodeResults={nodeResults}
             nodeStatuses={nodeStatuses}
-            workflows={workflows}
-            activeWorkflowId={selectedId}
+            workflows={workflows as any}
+            activeWorkflowId={selectedId ?? undefined}
             onLoadWorkflow={selectWorkflow}
             loading={loading}
             onDownloadWorkflow={handleDownloadWorkflow}

@@ -4,6 +4,7 @@ import React from "react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
+import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import styles from "./ToolCallBadgeComponent.module.css";
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -11,61 +12,61 @@ import styles from "./ToolCallBadgeComponent.module.css";
 // ═══════════════════════════════════════════════════════════════════════
 
 const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
-  read_file: "Read",
-  write_file: "Write",
+  [TOOL_NAMES.READ_FILE]: "Read",
+  [TOOL_NAMES.WRITE_FILE]: "Write",
   str_replace: "Replace",
-  search_file_contents: "Grep",
-  find_files: "Glob",
-  list_directory: "List Dir",
-  search_web: "Search Web",
+  [TOOL_NAMES.SEARCH_FILE_CONTENTS]: "Grep",
+  [TOOL_NAMES.FIND_FILES]: "Glob",
+  [TOOL_NAMES.LIST_DIRECTORY]: "List Dir",
+  [TOOL_NAMES.SEARCH_WEB]: "Search Web",
   // TODO(cleanup): Remove legacy name once historical sessions have aged out
   web_search: "Search Web",
-  read_web_page: "Fetch",
-  execute_shell: "Shell",
-  execute_python: "Python",
-  execute_javascript: "JS",
-  git_status: "Git Status",
-  git_diff: "Git Diff",
-  git_log: "Git Log",
-  delete_file: "Delete",
-  move_file: "Move",
-  control_browser: "Browser",
-  summarize_project: "Summary",
-  generate_image: "Image Gen",
+  [TOOL_NAMES.READ_WEB_PAGE]: "Fetch",
+  [TOOL_NAMES.EXECUTE_SHELL]: "Shell",
+  [TOOL_NAMES.EXECUTE_PYTHON]: "Python",
+  [TOOL_NAMES.EXECUTE_JAVASCRIPT]: "JS",
+  [TOOL_NAMES.GIT_STATUS]: "Git Status",
+  [TOOL_NAMES.GIT_DIFF]: "Git Diff",
+  [TOOL_NAMES.GIT_LOG]: "Git Log",
+  [TOOL_NAMES.DELETE_FILE]: "Delete",
+  [TOOL_NAMES.MOVE_FILE]: "Move",
+  [TOOL_NAMES.CONTROL_BROWSER]: "Browser",
+  [TOOL_NAMES.SUMMARIZE_PROJECT]: "Summary",
+  [TOOL_NAMES.GENERATE_IMAGE]: "Image Gen",
   // Coordinator tools
-  create_team: "Create Team",
-  delete_team: "Delete Team",
+  [TOOL_NAMES.CREATE_TEAM]: "Create Team",
+  [TOOL_NAMES.DELETE_TEAM]: "Delete Team",
   // TODO(cleanup): Remove legacy names once historical sessions have aged out
   team_create: "Create Team",
   team_delete: "Delete Team",
-  sleep: "Sleep",
-  enter_plan_mode: "Plan",
-  exit_plan_mode: "Execute",
-  search_tools: "Tool Search",
-  create_cron: "Schedule",
-  create_cron_job: "Schedule",
+  [TOOL_NAMES.SLEEP]: "Sleep",
+  [TOOL_NAMES.ENTER_PLAN_MODE]: "Plan",
+  [TOOL_NAMES.EXIT_PLAN_MODE]: "Execute",
+  [TOOL_NAMES.SEARCH_TOOLS]: "Tool Search",
+  [TOOL_NAMES.CREATE_CRON]: "Schedule",
+  [TOOL_NAMES.CREATE_CRON_JOB]: "Schedule",
   // TODO(cleanup): Remove legacy name once historical sessions have aged out
   cron_create: "Schedule",
-  trigger_cron_job: "Trigger",
-  remote_trigger: "Trigger",
-  edit_notebook: "Notebook",
+  [TOOL_NAMES.TRIGGER_CRON_JOB]: "Trigger",
+  [TOOL_NAMES.REMOTE_TRIGGER]: "Trigger",
+  [TOOL_NAMES.EDIT_NOTEBOOK]: "Notebook",
   // Skill tools
-  create_skill: "Create Skill",
-  execute_skill: "Run Skill",
-  list_skills: "Skills",
-  delete_skill: "Delete Skill",
+  [TOOL_NAMES.CREATE_SKILL]: "Create Skill",
+  [TOOL_NAMES.EXECUTE_SKILL]: "Run Skill",
+  [TOOL_NAMES.LIST_SKILLS]: "Skills",
+  [TOOL_NAMES.DELETE_SKILL]: "Delete Skill",
   // TODO(cleanup): Remove legacy names once historical sessions have aged out
   skill_create: "Create Skill",
   skill_execute: "Run Skill",
   skill_list: "Skills",
   skill_delete: "Delete Skill",
   // Todo & Task tools
-  write_todo: "Write Todo",
-  create_task: "Create Task",
-  list_tasks: "List Tasks",
-  get_task: "Get Task",
-  update_task: "Update Task",
-  get_task_output: "Get Task Output",
+  [TOOL_NAMES.WRITE_TODO]: "Write Todo",
+  [TOOL_NAMES.CREATE_TASK]: "Create Task",
+  [TOOL_NAMES.LIST_TASKS]: "List Tasks",
+  [TOOL_NAMES.GET_TASK]: "Get Task",
+  [TOOL_NAMES.UPDATE_TASK]: "Update Task",
+  [TOOL_NAMES.GET_TASK_OUTPUT]: "Get Task Output",
   // TODO(cleanup): Remove legacy names once historical sessions have aged out
   todo_write: "Write Todo",
   task_create: "Create Task",
@@ -74,10 +75,10 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   task_update: "Update Task",
   task_output: "Get Task Output",
   // Structured output
-  emit_structured_output: "Output",
+  [TOOL_NAMES.EMIT_STRUCTURED_OUTPUT]: "Output",
   // Worktree isolation
-  enter_worktree: "Isolate",
-  exit_worktree: "Restore",
+  [TOOL_NAMES.ENTER_WORKTREE]: "Isolate",
+  [TOOL_NAMES.EXIT_WORKTREE]: "Restore",
 };
 
 /**

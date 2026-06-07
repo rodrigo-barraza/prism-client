@@ -399,7 +399,7 @@ export default function HistoryList({
                     ],
                     activeKeys: showFavoritesOnly ? "favorites" : null,
                     isSingleSelect: true,
-                    onToggle: () => setShowFavoritesOnly((isCurrentlyActive) => !isCurrentlyActive),
+                    onToggle: () => setShowFavoritesOnly(!showFavoritesOnly),
                   },
                 ]
               : []),
@@ -417,7 +417,7 @@ export default function HistoryList({
                     ],
                     activeKeys: shouldHideSubAgents ? "hide-subagents" : null,
                     isSingleSelect: true,
-                    onToggle: () => setShouldHideSubAgents((value) => !value),
+                    onToggle: () => setShouldHideSubAgents(!shouldHideSubAgents),
                   },
                 ]
               : []),

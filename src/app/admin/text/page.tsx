@@ -32,9 +32,8 @@ export default function AdminTextPage() {
   return (
     <TextPageComponent
       mode="admin"
-      project={projectFilter}
       dateRange={dateRange}
-      agent={agentFilter}
+      agent={agentFilter ?? undefined}
       onCountChange={setTitleBadge}
     />
   );

@@ -100,7 +100,7 @@ export default function ModelsPageComponent({
 
   // Helper: merge config + LM data + stats into the allModels array
   const buildMergedModels = useCallback(
-    (config: PrismConfig | null, lmData: { models: LmStudioApiModel[] }, modelStats: Array<Record<string, number | string | null>>) => {
+    (config: PrismConfig | null, lmData: { models: any[] }, modelStats: any[]) => {
       const flat = flattenConfigModels(config);
       const lmApiModels = (lmData?.models || []).filter(
         (modelEntry: LmStudioApiModel) => modelEntry.type === "llm",
@@ -113,53 +113,67 @@ export default function ModelsPageComponent({
       for (const s of modelStats) {
         const key = `${s.provider}:${s.model}`;
         const existing = usageMap.get(key);
+        const totalRequests = typeof s.totalRequests === "number" ? s.totalRequests : 0;
+        const totalInputTokens = typeof s.totalInputTokens === "number" ? s.totalInputTokens : 0;
+        const totalOutputTokens = typeof s.totalOutputTokens === "number" ? s.totalOutputTokens : 0;
+        const totalTokens = typeof s.totalTokens === "number" ? s.totalTokens : 0;
+        const totalCost = typeof s.totalCost === "number" ? s.totalCost : 0;
+        const successCount = typeof s.successCount === "number" ? s.successCount : 0;
+        const errorCount = typeof s.errorCount === "number" ? s.errorCount : 0;
+        const avgLatency = typeof s.avgLatency === "number" ? s.avgLatency : 0;
+        const avgTokensPerSec = typeof s.avgTokensPerSec === "number" ? s.avgTokensPerSec : 0;
+        const firstUsed = s.firstUsed;
+        const lastUsed = s.lastUsed;
+
         if (existing) {
-          existing.totalRequests += s.totalRequests;
-          existing.totalInputTokens += s.totalInputTokens || 0;
-          existing.totalOutputTokens += s.totalOutputTokens || 0;
-          existing.totalTokens += s.totalTokens || 0;
-          existing.totalCost += s.totalCost || 0;
-          existing.successCount += s.successCount || 0;
-          existing.errorCount += s.errorCount || 0;
+          existing.totalRequests += totalRequests;
+          existing.totalInputTokens += totalInputTokens;
+          existing.totalOutputTokens += totalOutputTokens;
+          existing.totalTokens += totalTokens;
+          existing.totalCost += totalCost;
+          existing.successCount += successCount;
+          existing.errorCount += errorCount;
           // Keep the extremes for first/last used
           if (
-            s.firstUsed &&
-            (!existing.firstUsed || s.firstUsed < existing.firstUsed)
+            firstUsed &&
+            (!existing.firstUsed || firstUsed < existing.firstUsed)
           ) {
-            existing.firstUsed = s.firstUsed;
+            existing.firstUsed = firstUsed;
           }
           if (
-            s.lastUsed &&
-            (!existing.lastUsed || s.lastUsed > existing.lastUsed)
+            lastUsed &&
+            (!existing.lastUsed || lastUsed > existing.lastUsed)
           ) {
-            existing.lastUsed = s.lastUsed;
+            existing.lastUsed = lastUsed;
           }
           // Re-average latency and tokens/sec
           const totalReq = existing.totalRequests;
-          existing.avgLatency =
-            (existing.avgLatency * (totalReq - s.totalRequests) +
-              (s.avgLatency || 0) * s.totalRequests) /
-            totalReq;
-          existing.avgTokensPerSec =
-            (existing.avgTokensPerSec * (totalReq - s.totalRequests) +
-              (s.avgTokensPerSec || 0) * s.totalRequests) /
-            totalReq;
+          if (totalReq > 0) {
+            existing.avgLatency =
+              (existing.avgLatency * (totalReq - totalRequests) +
+                avgLatency * totalRequests) /
+              totalReq;
+            existing.avgTokensPerSec =
+              (existing.avgTokensPerSec * (totalReq - totalRequests) +
+                avgTokensPerSec * totalRequests) /
+              totalReq;
+          }
         } else {
           usageMap.set(key, {
-            totalRequests: s.totalRequests,
-            totalInputTokens: s.totalInputTokens || 0,
-            totalOutputTokens: s.totalOutputTokens || 0,
-            totalTokens: s.totalTokens || 0,
-            totalCost: s.totalCost || 0,
-            avgLatency: s.avgLatency || 0,
-            avgTokensPerSec: s.avgTokensPerSec || 0,
-            firstUsed: s.firstUsed || null,
-            lastUsed: s.lastUsed || null,
-            successCount: s.successCount || 0,
-            errorCount: s.errorCount || 0,
+            totalRequests,
+            totalInputTokens,
+            totalOutputTokens,
+            totalTokens,
+            totalCost,
+            avgLatency,
+            avgTokensPerSec,
+            firstUsed: firstUsed || null,
+            lastUsed: lastUsed || null,
+            successCount,
+            errorCount,
           });
         }
-        grandTotal += s.totalRequests;
+        grandTotal += totalRequests;
       }
 
       return flat.map((m) => {
@@ -200,7 +214,7 @@ export default function ModelsPageComponent({
             result = {
               ...result,
               loaded_instances: apiModel.loaded_instances,
-              loaded: apiModel.loaded_instances?.length > 0,
+              loaded: (apiModel.loaded_instances?.length ?? 0) > 0,
               key: apiModel.key,
               // Preserve raw API fields for ModelLoadConfigPanel
               max_context_length: apiModel.max_context_length,
@@ -258,7 +272,7 @@ export default function ModelsPageComponent({
       // Merge local models into config using shared utility
       const mergedConfig = PrismService.mergeLocalModels(
         config!,
-        (localResult as unknown as Record<string, unknown>)?.models,
+        (localResult as any)?.models,
       );
 
       // Rebuild with local models + LM Studio API data
@@ -357,9 +371,9 @@ export default function ModelsPageComponent({
     ? (model: RawModel) => {
         if (model.provider !== "lm-studio") return null;
 
-        const isLoaded = model.loaded_instances?.length > 0;
+        const isLoaded = (model.loaded_instances?.length ?? 0) > 0;
         const instance = model.loaded_instances?.[0];
-        const modelKey = model.key || model.name;
+        const modelKey = model.key || model.name || "";
         const isActioning =
           actionInProgress &&
           (actionInProgress.id === modelKey ||
@@ -378,13 +392,13 @@ export default function ModelsPageComponent({
           );
         }
 
-        if (isLoaded) {
+        if (isLoaded && instance) {
           return (
             <button
               className={`${styles['action-button']} ${styles['unload-button']}`}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
-                handleUnload(instance.id);
+                handleUnload(String(instance.id));
               }}
               title="Unload model"
               disabled={!!actionInProgress}
@@ -400,7 +414,9 @@ export default function ModelsPageComponent({
             className={`${styles['action-button']} ${styles['load-button']}`}
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
-              handleLoad(modelKey);
+              if (modelKey) {
+                handleLoad(modelKey);
+              }
             }}
             title="Load model"
             disabled={!!actionInProgress}
@@ -515,7 +531,7 @@ export default function ModelsPageComponent({
 
       {selectedModel && (
         <ModelDetailPanelComponent
-          model={selectedModel}
+          model={selectedModel as any}
           onClose={() => setSelectedModel(null)}
         />
       )}

@@ -52,10 +52,8 @@ import type { TokenUsage } from "../types/types";
  * (conversations, sessions, requests, benchmarks, etc.) so we use
  * a wide index type. Individual column renderers narrow via field access.
  */
-export interface TransformedTableRow {
-  [key: string]: unknown;
-}
-export type TableRow = TransformedTableRow;
+export type TransformedTableRow = any;
+export type TableRow = any;
 
 /* -- Helpers ---------------------------------------------- */
 

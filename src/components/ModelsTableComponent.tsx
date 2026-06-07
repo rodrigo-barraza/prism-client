@@ -482,7 +482,7 @@ export interface ModelsTableComponentProps {
   models?: RawModel[];
   mode?: "model" | "stats" | "full" | "benchmark";
   onSelect?: (model: RawModel) => void;
-  renderActions?: (row: RowData) => React.ReactNode;
+  renderActions?: (model: RawModel) => React.ReactNode;
   showSearch?: boolean;
   showProviderFilter?: boolean;
   favorites?: string[];
@@ -599,7 +599,7 @@ interface ModelsTableInnerProps {
   models: RawModel[];
   mode: "model" | "full" | "benchmark";
   onSelect?: (model: RawModel) => void;
-  renderActions?: (row: RowData) => React.ReactNode;
+  renderActions?: (model: RawModel) => React.ReactNode;
   showSearch?: boolean;
   showProviderFilter?: boolean;
   favorites: string[];
@@ -1028,7 +1028,7 @@ function ModelsTableInner({
                 className={styles['inline-actions']}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
-                {renderActions(row)}
+                {renderActions(rawModel)}
               </span>
             )}
           </span>

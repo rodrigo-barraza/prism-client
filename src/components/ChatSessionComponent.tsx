@@ -314,7 +314,7 @@ interface SessionSnapshot {
     choices?: string[];
     context?: string;
   } | null;
-  planProposal: { plan: string; steps?: string[]; status?: string } | null;
+  planProposal: { plan: string; steps?: string[]; status?: "pending" | "approved" | "rejected" | "executing" } | null;
   agenticProgress: { iteration: number; maxIterations: number } | null;
   settings: Record<string, unknown>;
   backendSessionStats: SessionStats | null;
@@ -680,8 +680,8 @@ export default function ChatSessionComponent({
   const [planProposal, setPlanProposal] = useState<{
     plan: string;
     steps?: string[];
-    status?: string;
-  } | null>(null); // { plan, steps, status }
+    status?: "pending" | "approved" | "rejected" | "executing";
+  } | null>(null);
   const [agenticProgress, setAgenticProgress] = useState<{
     iteration: number;
     maxIterations: number;
@@ -4024,7 +4024,7 @@ export default function ChatSessionComponent({
         setStreamingOutputs(snap.streamingOutputs || new Map());
         setPendingApprovals(snap.pendingApprovals || []);
         setPendingUserQuestion(snap.pendingUserQuestion || null);
-        setPlanProposal(snap.planProposal || null);
+        setPlanProposal((snap.planProposal as any) || null);
         setAgenticProgress(snap.agenticProgress || null);
         setSettings((previousSettings) => ({
           ...previousSettings,
@@ -5380,7 +5380,7 @@ export default function ChatSessionComponent({
         {/* Pending user question card */}
         {pendingUserQuestion && (
           <UserQuestionCardComponent
-            questions={pendingUserQuestion.questions}
+            questions={pendingUserQuestion.questions as any}
             question={pendingUserQuestion.question}
             choices={pendingUserQuestion.choices}
             context={pendingUserQuestion.context}
@@ -5534,9 +5534,9 @@ export default function ChatSessionComponent({
         return (
           <StatusBarComponent
             active={isGenerating}
-            phase={phase}
-            label={label}
-            progress={progress}
+            phase={phase as any}
+            label={label || undefined}
+            progress={typeof progress === "number" ? progress : null}
             tokPerSec={orchestratorTokPerSec}
             iteration={agenticProgress?.iteration || 0}
             maxIterations={

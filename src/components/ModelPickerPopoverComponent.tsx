@@ -652,7 +652,7 @@ export default function ModelPickerPopoverComponent({
                 onToggleFavorite={onToggleFavorite}
                 renderActions={
                   renderActions as unknown as
-                    | ((row: RowData) => React.ReactNode)
+                    | ((model: RawModel) => React.ReactNode)
                     | undefined
                 }
                 activeRowKey={activeRowKey}

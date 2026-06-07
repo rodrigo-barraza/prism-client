@@ -626,6 +626,17 @@ export interface TransformedRequestItem {
   reasoningOutputTokens?: number;
   timeToGeneration?: number;
   generationTime?: number;
+  agent?: string;
+  agentSessionId?: string;
+  inputCharacters?: number;
+  outputCharacters?: number;
+  messageCount?: number;
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number;
+  topK?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
   [key: string]: unknown;
 }
 

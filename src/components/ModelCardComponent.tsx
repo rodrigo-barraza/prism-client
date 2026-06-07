@@ -12,7 +12,7 @@ interface BenchmarkModelInstance {
   instanceId: string;
   provider: string;
   name: string;
-  key: string;
+  key?: string;
   label?: string;
   display_name?: string;
   thinking?: boolean;
@@ -59,8 +59,8 @@ export default function ModelCardComponent({
     <div className={`model-card-component ${styles['card']}`}>
       <div className={styles['header']}>
         <ProviderLogo provider={model.provider} size={14} />
-        <span className={styles['name']} title={`Model: ${model.key}`}>
-          Model: {model.key}
+        <span className={styles['name']} title={`Model: ${model.key || model.name}`}>
+          Model: {model.key || model.name}
         </span>
         {dupeCount > 1 && (
           <span

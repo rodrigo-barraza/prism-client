@@ -6,8 +6,7 @@ import { FEEDBACK_BRIEF_MS } from "@rodrigo-barraza/utilities-library";
 import { copyToClipboard } from "../utils/utilities";
 import styles from "./JsonViewerComponent.module.css";
 
-type JsonPrimitive = string | number | boolean | null | undefined;
-type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+type JsonValue = any;
 
 /**
  * JsonViewerComponent — interactive, collapsible JSON tree viewer.

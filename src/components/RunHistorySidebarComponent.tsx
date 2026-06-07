@@ -21,6 +21,7 @@ import {
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
 import BadgeComponent from "./BadgeComponent";
+const Badge: any = BadgeComponent;
 
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
 import SoundService from "@/services/SoundService";
@@ -76,13 +77,13 @@ interface ModelOptionWithProvider {
 }
 
 interface RunHistorySidebarComponentProps {
-  benchmark: Record<string, unknown> | null;
+  benchmark: any;
   runHistory?: BenchmarkRun[];
   activeRunId?: string | null;
   onViewRun?: (run: BenchmarkRun) => void;
   running?: boolean;
   streamingCompleted?: number;
-  selectedModels?: ModelOptionWithProvider[];
+  selectedModels?: any[];
   onRemoveModel?: (instanceId: string) => void;
   onChangeModel?: (instanceId: string, provider: string, modelName: string) => void;
   onClearSelection?: () => void;
@@ -90,10 +91,10 @@ interface RunHistorySidebarComponentProps {
   onToggleThinking?: (instanceId: string) => void;
   toolsMap?: Record<string, boolean>;
   onToggleTools?: (instanceId: string) => void;
-  agentInstances?: AgentInstance[];
+  agentInstances?: any[];
   onRemoveAgent?: (instanceId: string) => void;
   onChangeAgentModel?: (instanceId: string, provider: string, modelName: string) => void;
-  allModels?: ModelOptionWithProvider[];
+  allModels?: any[];
   config?: PrismConfig | null;
 }
 
@@ -147,17 +148,17 @@ export default function RunHistorySidebarComponent({
         tabs={[
           {
             key: "general",
-            icon: <span className={tabBarStyles['tab-emoji-icon']}>🛠︎</span>,
+            icon: <span className={(tabBarStyles as any)['tab-emoji-icon']}>🛠︎</span>,
             tooltip: "General",
-            badge: selectedModels.length + agentInstances.length,
-            badgeDisabled: selectedModels.length + agentInstances.length === 0,
+            badge: (selectedModels?.length || 0) + (agentInstances?.length || 0),
+            badgeDisabled: (selectedModels?.length || 0) + (agentInstances?.length || 0) === 0,
           },
           {
             key: "history",
-            icon: <span className={tabBarStyles['tab-emoji-icon']}>📜</span>,
+            icon: <span className={(tabBarStyles as any)['tab-emoji-icon']}>📜</span>,
             tooltip: "Run History",
-            badge: runHistory.length,
-            badgeDisabled: runHistory.length === 0,
+            badge: runHistory?.length || 0,
+            badgeDisabled: (runHistory?.length || 0) === 0,
           },
         ]}
         activeTab={activeTab}
@@ -167,28 +168,28 @@ export default function RunHistorySidebarComponent({
       {/* ════════════════════════════════════════════════════
           TAB: General — Models, Agents, Assertions, Prompt
           ════════════════════════════════════════════════════ */}
-      {activeTab === "general" && (
+      {activeTab === "general" ? (
         <div className={styles['tab-content']}>
           {/* -- Assertions -------------------------------- */}
-          {assertions.length > 0 && (
+          {assertions.length > 0 ? (
             <div className={styles['assertions-section']}>
               <div className={styles['section-label']}>
                 <ListChecks size={12} />
                 Assertions
               </div>
               <div className={styles['assertions-list']}>
-                {assertions.map((assertion: BenchmarkAssertion, assertionIndex: number) => (
+                {assertions.map((assertion: any, assertionIndex: number) => (
                   <div key={assertionIndex} className={styles['assertion-row']}>
-                    {assertionIndex > 0 && (
-                      <BadgeComponent
+                    {assertionIndex > 0 ? (
+                      <Badge
                         variant={operator === "OR" ? "warning" : "info"}
                       >
                         {operator}
-                      </BadgeComponent>
-                    )}
-                    <BadgeComponent variant="accent">
+                      </Badge>
+                    ) : null}
+                    <Badge variant="accent">
                       {assertion.matchMode || "contains"}
-                    </BadgeComponent>
+                    </Badge>
                     <span
                       className={styles['assertion-value']}
                       title={assertion.expectedValue}
@@ -199,10 +200,10 @@ export default function RunHistorySidebarComponent({
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* -- Prompt Preview ---------------------------- */}
-          {((benchmark as Record<string, unknown>)?.prompt || (benchmark as Record<string, unknown>)?.systemPrompt) && (
+          {((benchmark as Record<string, unknown>)?.prompt || (benchmark as Record<string, unknown>)?.systemPrompt) ? (
             <div className={styles['prompt-section']}>
               <ChatPreviewComponent
                 systemPrompt={(benchmark as Record<string, unknown>)?.systemPrompt as string | undefined}
@@ -210,7 +211,7 @@ export default function RunHistorySidebarComponent({
                 mini
               />
             </div>
-          )}
+          ) : null}
 
           {/* -- Model Selection --------------------------- */}
           <div className={styles['models-section']}>
@@ -256,9 +257,9 @@ export default function RunHistorySidebarComponent({
             )}
 
             {/* Agent instance cards + Clear all */}
-            {(selectedModels.length > 0 || agentInstances.length > 0) && (
+            {(selectedModels.length > 0 || agentInstances.length > 0) ? (
               <>
-                {agentInstances.length > 0 && (
+                {agentInstances.length > 0 ? (
                   <div className={styles['model-cards']}>
                     {agentInstances.map((agentInstance: AgentInstance) => {
                       const isThinking = !!thinkingMap[agentInstance.instanceId];
@@ -283,7 +284,7 @@ export default function RunHistorySidebarComponent({
                       );
                     })}
                   </div>
-                )}
+                ) : null}
                 <div className={styles['model-actions']}>
                   <button
                     className={styles['clear-models-button']}
@@ -293,24 +294,24 @@ export default function RunHistorySidebarComponent({
                   </button>
                 </div>
               </>
-            )}
+            ) : null}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ════════════════════════════════════════════════════
           TAB: Run History
           ════════════════════════════════════════════════════ */}
-      {activeTab === "history" && (
+      {activeTab === "history" ? (
         <div className={styles['tab-content']}>
           {/* -- Running Banner ---------------------------- */}
-          {running && (
+          {running ? (
             <div className={styles['running-banner']}>
               <Loader2 size={14} className={styles['spin-icon']} />
               Running…{" "}
               {streamingCompleted > 0 ? `${streamingCompleted} done` : ""}
             </div>
-          )}
+          ) : null}
 
           {/* -- Run History List -------------------------- */}
           <div className={styles['list']}>
@@ -338,12 +339,12 @@ export default function RunHistorySidebarComponent({
                     data-panel-close
                   >
                     <div className={styles['run-item-header']}>
-                      <BadgeComponent type="dateTime" date={run.completedAt} />
-                      <BadgeComponent type="cost" cost={totalCost} mini />
+                      <Badge type="dateTime" date={run.completedAt} />
+                      <Badge type="cost" cost={totalCost} mini />
                       <span className={styles['run-index']}>
                         #{runHistory.length - index}
                       </span>
-                      {run.aborted && (
+                      {run.aborted ? (
                         <AlertTriangle
                           size={11}
                           style={{
@@ -351,7 +352,7 @@ export default function RunHistorySidebarComponent({
                             flexShrink: 0,
                           }}
                         />
-                      )}
+                      ) : null}
                     </div>
                     <div className={styles['run-stats']}>
                       <span className={styles['stat-passed']}>
@@ -374,7 +375,7 @@ export default function RunHistorySidebarComponent({
             )}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

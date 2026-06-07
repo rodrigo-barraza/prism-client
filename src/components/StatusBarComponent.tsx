@@ -185,11 +185,11 @@ export default function StatusBarComponent({
   // Delegating phase: orchestrator waiting on workers — animated color but subdued glow
   const isDelegatingPhase = phase === "delegating";
 
-  // Resolve per-phase canvas palette (null = default rainbow)
+  // Resolve per-phase canvas palette (undefined = default rainbow)
   const activePalette =
     active && isColorPhase
-      ? (PHASE_PALETTES as Record<string, number[][]>)[phase ?? ""] || null
-      : null;
+      ? ((PHASE_PALETTES as Record<string, number[][]>)[phase ?? ""] as any)
+      : undefined;
 
   // Progress percentage
   const progressPercentage = hasEffectiveProgress
