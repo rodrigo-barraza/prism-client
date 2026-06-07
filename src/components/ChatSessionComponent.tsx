@@ -1279,6 +1279,13 @@ export default function ChatSessionComponent({
         setVisionModelConfigured(Boolean(creativeSection?.visionProvider && creativeSection?.visionModel));
         setTextToSpeechModelConfigured(Boolean(creativeSection?.textToSpeechProvider && creativeSection?.textToSpeechModel));
         setSpeechToTextModelConfigured(Boolean(creativeSection?.speechToTextProvider && creativeSection?.speechToTextModel));
+
+        if (s?.agents) {
+          setSettings((previousSettings) => ({
+            ...previousSettings,
+            agents: { ...previousSettings.agents, ...s.agents },
+          }));
+        }
       })
       .catch(() => {
         setMemoryConfigured(false);
@@ -2069,6 +2076,7 @@ export default function ChatSessionComponent({
               traceId,
               agent: agentId,
               harness: settings?.agents?.harness || "standard",
+              topology: settings?.agents?.topology || "hierarchical",
               // Phase 1: Agentic controls
               autoApprove,
               planFirst,
@@ -4132,6 +4140,15 @@ export default function ChatSessionComponent({
           }
           if (sessionSettings?.temperature !== undefined) {
             nextSettings.temperature = sessionSettings.temperature;
+          }
+          const sessionHarness = (sessionSettings as Record<string, unknown>)?.harness as string | undefined;
+          const sessionTopology = (sessionSettings as Record<string, unknown>)?.topology as string | undefined;
+          if (sessionHarness || sessionTopology) {
+            nextSettings.agents = {
+              ...nextSettings.agents,
+              ...(sessionHarness && { harness: sessionHarness }),
+              ...(sessionTopology && { topology: sessionTopology }),
+            };
           }
           return nextSettings;
         });
