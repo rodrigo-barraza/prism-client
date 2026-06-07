@@ -24,7 +24,7 @@ import styles from "./SettingsPanelComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
 import StatsTabBarComponent from "./StatsTabBarComponent";
 import { formatCost } from "@rodrigo-barraza/utilities-library";
-import { CAPABILITY_TOOL_NAMES, calculateEstimatedLiveCost } from "../utils/utilities";
+import { CAPABILITY_TOOL_NAMES } from "../utils/utilities";
 import { TOGGLEABLE_TOOLS } from "./WorkflowNodeConstantsComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
@@ -252,12 +252,7 @@ export default function SettingsPanel({
     const timeToFirstTokenValue =
       stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration;
 
-    const estimatedLiveCost = calculateEstimatedLiveCost(
-      stats.totalCost,
-      stats.totalTokens,
-      stats.requestCount,
-      selectedModelDef
-    );
+    const estimatedLiveCost = stats.totalCost;
 
     return (
       <div className={styles['stats-badges']}>

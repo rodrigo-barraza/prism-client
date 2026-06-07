@@ -318,6 +318,7 @@ interface SessionSnapshot {
   agenticProgress: { iteration: number; maxIterations: number } | null;
   settings: Record<string, unknown>;
   backendSessionStats: SessionStats | null;
+  isBackendStatsStale?: boolean;
   workspaceRoot: string | null;
 }
 
@@ -692,6 +693,7 @@ export default function ChatSessionComponent({
   const [currentTurnStart, setCurrentTurnStart] = useState<number | null>(null); // Date.now() when user sends
   const [backendSessionStats, setBackendSessionStats] =
     useState<SessionStats | null>(null);
+  const [isBackendStatsStale, setIsBackendStatsStale] = useState(false);
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
   const [showRaw, setShowRaw] = useState(false);
 
@@ -1170,6 +1172,7 @@ export default function ChatSessionComponent({
           return nextSettings;
         });
         setBackendSessionStats(full.stats || null);
+        setIsBackendStatsStale(false);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
       } catch (error: unknown) {
         console.error("Failed to preload session from URL:", error);
@@ -1376,9 +1379,22 @@ export default function ChatSessionComponent({
         string,
         unknown
       >;
-      // Only patch if something actually changed to avoid churn
-      const resolvedCost = (backendSessionStats?.totalCost ??
-        totalCost) as number;
+      const lastMessage = messages[messages.length - 1];
+      const bgUsage =
+        lastMessage?.role === "assistant"
+          ? lastMessage._backgroundUsage
+          : null;
+      const activeMessageCost =
+        lastMessage?.role === "assistant" && isBackendStatsStale
+          ? lastMessage.estimatedCost ||
+            lastMessage._intermediateEstimatedCost ||
+            0
+          : 0;
+      const resolvedCost = backendSessionStats
+        ? (backendSessionStats.totalCost || 0) +
+          (bgUsage?.cost || 0) +
+          activeMessageCost
+        : totalCost;
       const resolvedModalities: Record<string, number> =
         (backendSessionStats?.modalities ?? modalities) as Record<
           string,
@@ -1435,6 +1451,7 @@ export default function ChatSessionComponent({
     totalCost,
     backendSessionStats,
     messages.length,
+    isBackendStatsStale,
   ]);
 
   // -- Fetch backend-aggregate session stats ----------------
@@ -1455,6 +1472,7 @@ export default function ChatSessionComponent({
           .then((session) => {
             if (session?.stats) {
               setBackendSessionStats(session.stats);
+              setIsBackendStatsStale(false);
               setRequestsRefreshKey((k) => k + 1);
               // Clear incremental background usage from the message —
               // the backend aggregate now includes those requests.
@@ -3468,6 +3486,7 @@ export default function ChatSessionComponent({
       }
 
       setCurrentTurnStart(Date.now());
+      setIsBackendStatsStale(true);
       // Prepend active rules to user message (Claude Code pattern)
       // Rules are extracted from inline badges in the contentEditable DOM.
       let finalMessageContent = text;
@@ -3806,6 +3825,7 @@ export default function ChatSessionComponent({
     setActiveId(null);
     setTitle(isNoAgent ? "Agentless Chat" : "Agent");
     setBackendSessionStats(null);
+    setIsBackendStatsStale(false);
     setUnavailableWorkspace(null);
     tokenHwmRef.current = { input: 0, output: 0, total: 0 };
     isUserNearBottomRef.current = true;
@@ -4011,6 +4031,7 @@ export default function ChatSessionComponent({
           ...(snap.settings as Partial<typeof previousSettings>),
         }));
         setBackendSessionStats(snap.backendSessionStats || null);
+        setIsBackendStatsStale(snap.isBackendStatsStale || false);
         // Re-attach: mark as generating so the UI shows the active state
         setIsGenerating(true);
         // Remove the snapshot — the SSE callbacks will resume updating React state
@@ -4155,6 +4176,7 @@ export default function ChatSessionComponent({
           return nextSettings;
         });
         setBackendSessionStats(full.stats || null);
+        setIsBackendStatsStale(false);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
       }
     },
@@ -4178,6 +4200,7 @@ export default function ChatSessionComponent({
           agenticProgress,
           settings: { ...settings },
           backendSessionStats,
+          isBackendStatsStale,
           workspaceRoot: currentWorkspace?.path || null,
         } as SessionSnapshot);
         setIsGenerating(false);
@@ -4709,6 +4732,12 @@ export default function ChatSessionComponent({
                       // (memory extraction, consolidation) as they complete.
                       // When done, use backendSessionStats which includes everything.
                       const lastMessage = messages[messages.length - 1];
+                      const activeMessageCost =
+                        lastMessage?.role === "assistant" && isBackendStatsStale
+                          ? lastMessage.estimatedCost ||
+                            lastMessage._intermediateEstimatedCost ||
+                            0
+                          : 0;
                       const liveGP =
                         lastMessage?.role === "assistant"
                           ? lastMessage._liveGenProgress
@@ -4787,7 +4816,8 @@ export default function ChatSessionComponent({
                         })(),
                         totalCost:
                           (backendSessionStats.totalCost || 0) +
-                          (bgUsage?.cost || 0),
+                          (bgUsage?.cost || 0) +
+                          activeMessageCost,
                         originalTotalCost: 0,
                         // Merge backend toolCounts, client capabilities, and live
                         // worker tool counts into a single usedTools array
