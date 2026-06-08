@@ -350,17 +350,17 @@ function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canv
 
   const sortedTiers = [...tierBuckets.keys()].sort((tierA, tierB) => tierA - tierB);
   const tierCount = sortedTiers.length;
-  const verticalSpacing = Math.max(120, (canvasHeight - 100) / Math.max(tierCount, 1));
-  const startY = 80;
+  const horizontalSpacing = Math.max(160, (canvasWidth - 100) / Math.max(tierCount, 1));
+  const startX = 80;
 
   for (let tierIndex = 0; tierIndex < sortedTiers.length; tierIndex++) {
     const tierKey = sortedTiers[tierIndex];
     const tierNodes = tierBuckets.get(tierKey)!;
-    const tierY = startY + tierIndex * verticalSpacing;
-    const horizontalSpacing = Math.max(80, canvasWidth / (tierNodes.length + 1));
+    const tierX = startX + tierIndex * horizontalSpacing;
+    const verticalSpacing = Math.max(80, canvasHeight / (tierNodes.length + 1));
     for (let nodeIndex = 0; nodeIndex < tierNodes.length; nodeIndex++) {
-      tierNodes[nodeIndex].x = (nodeIndex + 1) * horizontalSpacing;
-      tierNodes[nodeIndex].y = tierY;
+      tierNodes[nodeIndex].x = tierX;
+      tierNodes[nodeIndex].y = (nodeIndex + 1) * verticalSpacing;
     }
   }
 }
@@ -1148,7 +1148,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
                         </text>
                       </>
                     )}
-                    <text x={node.x} y={node.y + node.radius + 14} textAnchor="middle" fill="oklch(0.75 0 0)" fontSize={10} fontWeight={500} style={{ pointerEvents: "none", userSelect: "none" }}>
+                    <text x={node.x + node.radius + 8} y={node.y} textAnchor="start" dominantBaseline="central" fill="oklch(0.75 0 0)" fontSize={10} fontWeight={500} style={{ pointerEvents: "none", userSelect: "none" }}>
                       {node.label.length > 24 ? `${node.label.slice(0, 22)}…` : node.label}
                     </text>
                     <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fill="oklch(0.98 0 0)" fontSize={node.radius * 0.7} fontWeight={600} style={{ pointerEvents: "none", userSelect: "none" }}>

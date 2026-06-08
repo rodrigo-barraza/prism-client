@@ -369,6 +369,7 @@ export interface ChatSessionComponentProps {
   initialModel?: string | null;
   initialSessionId?: string | null;
   initialTabKey?: string | null;
+  initialViewMode?: string | null;
 }
 
 export default function ChatSessionComponent({
@@ -379,6 +380,7 @@ export default function ChatSessionComponent({
   initialModel = null,
   initialSessionId = null,
   initialTabKey = null,
+  initialViewMode = null,
 }: ChatSessionComponentProps) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef<boolean>(false);
@@ -432,7 +434,13 @@ export default function ChatSessionComponent({
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState(isNoAgent ? "Agentless Chat" : "Agent");
   const [leftTab, setLeftTab] = useState(initialTabKey || "settings"); // "settings" | "tools"
-  const [chatAreaTab, setChatAreaTab] = useState<"chat" | "nodes">("chat");
+  const [chatAreaTab, setChatAreaTab] = useState<"chat" | "nodes">(() => {
+    if (initialViewMode === "nodes") return "nodes";
+    return "chat";
+  });
+  const [showRaw, setShowRaw] = useState(() => {
+    return initialViewMode === "raw";
+  });
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [_injectedSkills, setInjectedSkills] = useState<Skill[]>([]);
@@ -525,6 +533,15 @@ export default function ChatSessionComponent({
       );
     }
   }, [leftTab]);
+
+  useEffect(() => {
+    const currentViewMode = chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean";
+    window.dispatchEvent(
+      new CustomEvent("viewMode:change", {
+        detail: { viewMode: currentViewMode },
+      }),
+    );
+  }, [chatAreaTab, showRaw]);
 
   const BOTTOM_PANEL_TABS = new Set(["tools", "skills", "rules", "memories", "tasks"]);
 
@@ -691,7 +708,6 @@ export default function ChatSessionComponent({
     useState<SessionStats | null>(null);
   const [isBackendStatsStale, setIsBackendStatsStale] = useState(false);
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
-  const [showRaw, setShowRaw] = useState(false);
 
   // Frontend-side high-water marks for token display.
   // Ensures the token badges never show a lower number than previously

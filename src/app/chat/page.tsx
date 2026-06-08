@@ -97,6 +97,7 @@ function AgentsPageInner() {
   const initialModel = searchParams.get("model") || null;
   const initialSessionId = searchParams.get("session") || null;
   const initialTabKey = searchParams.get("tab") || null;
+  const initialViewMode = searchParams.get("view") || null;
 
   // Fetch agent personas on mount — prepend "Agentless" synthetic entry
   useEffect(() => {
@@ -200,6 +201,20 @@ function AgentsPageInner() {
     [router, searchParams],
   );
 
+  const handleViewModeChangeNotification = useCallback(
+    (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { viewMode: activeViewMode } = customEvent.detail || {};
+      if (!activeViewMode) return;
+      const currentViewMode = searchParams.get("view");
+      if (currentViewMode === activeViewMode) return;
+      router.replace(buildUrl(searchParams, { view: activeViewMode }), {
+        scroll: false,
+      });
+    },
+    [router, searchParams],
+  );
+
   useEffect(() => {
     window.addEventListener("agent:switch", handleAgentSwitch);
     window.addEventListener("model:change", handleModelChange);
@@ -207,6 +222,10 @@ function AgentsPageInner() {
     window.addEventListener(
       "sidebarTab:change",
       handleSidebarTabChangeNotification,
+    );
+    window.addEventListener(
+      "viewMode:change",
+      handleViewModeChangeNotification,
     );
     return () => {
       window.removeEventListener("agent:switch", handleAgentSwitch);
@@ -219,12 +238,17 @@ function AgentsPageInner() {
         "sidebarTab:change",
         handleSidebarTabChangeNotification,
       );
+      window.removeEventListener(
+        "viewMode:change",
+        handleViewModeChangeNotification,
+      );
     };
   }, [
     handleAgentSwitch,
     handleModelChange,
     handleConversationChange,
     handleSidebarTabChangeNotification,
+    handleViewModeChangeNotification,
   ]);
 
   // Persist to localStorage on change
@@ -243,6 +267,7 @@ function AgentsPageInner() {
         initialModel={initialModel}
         initialSessionId={initialSessionId}
         initialTabKey={initialTabKey}
+        initialViewMode={initialViewMode}
       />
     </main>
   );

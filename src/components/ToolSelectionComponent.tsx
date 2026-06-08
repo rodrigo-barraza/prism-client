@@ -425,21 +425,28 @@ export default function ToolSelectionComponent({
   };
 
   const groupedByTier = useMemo(() => {
-    const groups = new Map<string, ToolSchema[]>();
-    for (const tool of filteredTools) {
-      const tier = tool.intelligenceTier || "low";
-      if (!groups.has(tier)) groups.set(tier, []);
-      groups.get(tier)!.push(tool);
+    const toolsByTierMap = new Map<string, ToolSchema[]>();
+    const allTools = [...filteredCoreTools, ...filteredTools];
+    for (const tool of allTools) {
+      const tierName = tool.intelligenceTier || "low";
+      if (!toolsByTierMap.has(tierName)) {
+        toolsByTierMap.set(tierName, []);
+      }
+      toolsByTierMap.get(tierName)!.push(tool);
     }
-    const sorted: [string, ToolSchema[]][] = [];
-    for (const tier of TIER_ORDER) {
-      if (groups.has(tier)) sorted.push([tier, groups.get(tier)!]);
+    const sortedTierGroups: [string, ToolSchema[]][] = [];
+    for (const tierName of TIER_ORDER) {
+      if (toolsByTierMap.has(tierName)) {
+        sortedTierGroups.push([tierName, toolsByTierMap.get(tierName)!]);
+      }
     }
-    for (const [tier, tools] of groups) {
-      if (!TIER_ORDER.includes(tier)) sorted.push([tier, tools]);
+    for (const [tierName, toolsInGroup] of toolsByTierMap) {
+      if (!TIER_ORDER.includes(tierName)) {
+        sortedTierGroups.push([tierName, toolsInGroup]);
+      }
     }
-    return sorted;
-  }, [filteredTools]);
+    return sortedTierGroups;
+  }, [filteredCoreTools, filteredTools]);
 
   // -- Collapse toggling ----------------------------------------
   const toggleDomain = useCallback((domain: string) => {
@@ -458,43 +465,55 @@ export default function ToolSelectionComponent({
       const currentTools = enabledTools || [];
       const isDomain = groupMode === "domain";
       const prefix = isDomain
-          ? `domain:${groupKey}`
-          : `tier:${groupKey}`;
+        ? `domain:${groupKey}`
+        : `tier:${groupKey}`;
 
       const resolved = resolveEnabledTools(currentTools);
       const selectableGroupTools = groupTools.filter((tool) => !lockedOffTools.has(tool.name));
-      const selectableGroupNames = selectableGroupTools.map((tool) => tool.name);
-      const allSelectableEnabled = selectableGroupNames.every((name) => resolved.has(name));
+      const toggleableGroupTools = selectableGroupTools.filter((tool) => !(tool.system && coreToolsLocked));
+      if (toggleableGroupTools.length === 0) return;
+
+      const toggleableGroupNames = toggleableGroupTools.map((tool) => tool.name);
+      const allToggleableEnabled = toggleableGroupNames.every((name) => resolved.has(name));
 
       const hasActiveSearch = query.length > 0;
 
       if (groupKey === "core") {
-        if (allSelectableEnabled) {
+        if (allToggleableEnabled) {
           onEnabledToolsChange?.(
-              currentTools.filter((enabledToolEntry) => !selectableGroupNames.includes(enabledToolEntry)),
+            currentTools.filter((enabledToolEntry) => !toggleableGroupNames.includes(enabledToolEntry)),
           );
         } else {
-          const cleaned = currentTools.filter((enabledToolEntry) => !selectableGroupNames.includes(enabledToolEntry));
-          onEnabledToolsChange?.([...cleaned, ...selectableGroupNames]);
+          const cleaned = currentTools.filter((enabledToolEntry) => !toggleableGroupNames.includes(enabledToolEntry));
+          onEnabledToolsChange?.([...cleaned, ...toggleableGroupNames]);
         }
         return;
       }
 
       const hasGroupRef = currentTools.includes(prefix);
-      if (hasGroupRef || allSelectableEnabled) {
+      if (hasGroupRef || allToggleableEnabled) {
         onEnabledToolsChange?.(
-            currentTools.filter((enabledToolEntry) => enabledToolEntry !== prefix && !selectableGroupNames.includes(enabledToolEntry)),
+          currentTools.filter((enabledToolEntry) => enabledToolEntry !== prefix && !toggleableGroupNames.includes(enabledToolEntry)),
         );
       } else {
-        const cleaned = currentTools.filter((enabledToolEntry) => !selectableGroupNames.includes(enabledToolEntry));
+        const cleaned = currentTools.filter((enabledToolEntry) => !toggleableGroupNames.includes(enabledToolEntry));
         if (hasActiveSearch) {
-          onEnabledToolsChange?.([...cleaned, ...selectableGroupNames]);
+          onEnabledToolsChange?.([...cleaned, ...toggleableGroupNames]);
         } else {
           onEnabledToolsChange?.([...cleaned, prefix]);
         }
       }
     },
-    [readOnly, enabledTools, groupMode, query, resolveEnabledTools, onEnabledToolsChange, lockedOffTools],
+    [
+      readOnly,
+      enabledTools,
+      groupMode,
+      query,
+      resolveEnabledTools,
+      onEnabledToolsChange,
+      lockedOffTools,
+      coreToolsLocked,
+    ],
   );
 
   // -- Render ---------------------------------------------------
@@ -570,7 +589,7 @@ export default function ToolSelectionComponent({
         )}
 
         {/* System Tools — grouped by actual domain */}
-        {groupMode !== "selected" && groupedCoreTools.map(([coreDomainKey, coreDomainTools]) => {
+        {groupMode === "domain" && groupedCoreTools.map(([coreDomainKey, coreDomainTools]) => {
           const CoreDomainIcon: LucideIcon = DOMAIN_ICONS[coreDomainKey] || Bot;
           const coreDomainLabel = DOMAIN_LABELS[coreDomainKey] || coreDomainKey;
           const isCoreCollapsed = collapsedDomains.has(`core:${coreDomainKey}`);
@@ -858,7 +877,7 @@ export default function ToolSelectionComponent({
             const collapsed = collapsedDomains.has(groupKey);
             const selectableGroupTools = tools.filter((tool) => !lockedOffTools.has(tool.name));
             const groupEnabled = selectableGroupTools.filter((tool) =>
-              resolvedEnabledSet.has(tool.name),
+              resolvedEnabledSet.has(tool.name) || (tool.system && coreToolsLocked),
             ).length;
 
             return (
@@ -898,14 +917,31 @@ export default function ToolSelectionComponent({
                     {tools.map((tool) => {
                       const isLocked = lockedOffTools.has(tool.name);
                       const lockReason = lockedOffTools.get(tool.name);
+                      const isCoreLockedTool = tool.system && coreToolsLocked && !isLocked;
                       return (
                         <TooltipComponent
                           key={tool.name}
-                          label={isLocked ? lockReason! : (tool.description || "")}
+                          label={isLocked ? lockReason! : (tool.description || (tool.system ? "Core capability" : ""))}
                           position="right"
                           delay={isLocked ? 0 : 400}
                         >
-                          {isLocked ? (
+                          {isCoreLockedTool ? (
+                            <div className={`${styles['tool-row']} ${styles['core-tool-row']}`}>
+                              <CheckboxComponent
+                                size="compact"
+                                className={styles['tool-checkbox']}
+                                checked={true}
+                                disabled={true}
+                                onChange={() => {}}
+                                label={
+                                  <span className={`${styles['tool-name']} ${styles['core-tool-name']}`}>
+                                    {renderToolName(tool.name)}
+                                  </span>
+                                }
+                              />
+                              <Lock size={10} className={styles['lock-icon']} />
+                            </div>
+                          ) : isLocked ? (
                             <div className={`${styles['tool-row']} ${styles['locked-tool-row']}`}>
                               <CheckboxComponent
                                 size="compact"

@@ -165,8 +165,15 @@ export default function AdminChatViewerComponent({
     "conversation" | "agent_session" | null
   >(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [showRaw, setShowRaw] = useState(false);
-  const [chatAreaTab, setChatAreaTab] = useState<"chat" | "nodes">("chat");
+  const [showRaw, setShowRaw] = useState(() => {
+    const initialViewMode = searchParams.get("view") || null;
+    return initialViewMode === "raw";
+  });
+  const [chatAreaTab, setChatAreaTab] = useState<"chat" | "nodes">(() => {
+    const initialViewMode = searchParams.get("view") || null;
+    if (initialViewMode === "nodes") return "nodes";
+    return "chat";
+  });
   const [config, setConfig] = useState<PrismConfig | null>(null);
 
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
@@ -649,6 +656,21 @@ export default function AdminChatViewerComponent({
 
   const generatingDisplay = useMemo(() => generatingCount, [generatingCount]);
 
+  const updateUrlWithViewMode = useCallback((activeViewMode: ChatViewMode) => {
+    const searchParameters = new URLSearchParams(window.location.search);
+    if (activeViewMode === "clean") {
+      searchParameters.delete("view");
+    } else {
+      searchParameters.set("view", activeViewMode);
+    }
+    const queryString = searchParameters.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${queryString ? `?${queryString}` : ""}`,
+    );
+  }, []);
+
   // ── Select an entry ──────────────────────────────────────────
   async function selectEntry(
     id: string,
@@ -665,6 +687,13 @@ export default function AdminChatViewerComponent({
     if (projectFilter) params.set("project", projectFilter);
     if (providerFilter) params.set("provider", providerFilter);
     if (modelFilter) params.set("model", modelFilter);
+    
+    // Preserve view mode parameter if it's not the default "clean"
+    const currentViewMode = chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean";
+    if (currentViewMode !== "clean") {
+      params.set("view", currentViewMode);
+    }
+
     const queryString = params.toString();
     window.history.replaceState(
       null,
@@ -1285,6 +1314,7 @@ export default function AdminChatViewerComponent({
                         setChatAreaTab("chat");
                         setShowRaw(mode === "raw");
                       }
+                      updateUrlWithViewMode(mode);
                     }}
                   />
                 )}
