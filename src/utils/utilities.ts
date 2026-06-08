@@ -631,27 +631,6 @@ export function resolveDefaultModel(
     }
   }
 
-  // ── Local fallback (backward compatibility) ──────────────────
-  const textModels = config?.textToText?.models || {};
-
-  const isEligible = (model: ModelOption) => {
-    if (!fcOnly) return true;
-    return (model.tools || []).includes("Tool Calling");
-  };
-
-  // Absolute fallback: loop through available providers and find any matching model
-  for (const provider of Object.keys(textModels)) {
-    const models = textModels[provider] || [];
-    const firstEligible = models.find(isEligible);
-    if (firstEligible) {
-      return {
-        provider,
-        model: firstEligible.name,
-        temperature: firstEligible.defaultTemperature ?? 1.0,
-      };
-    }
-  }
-
   return { provider: "", model: "", temperature: 1.0 };
 }
 
