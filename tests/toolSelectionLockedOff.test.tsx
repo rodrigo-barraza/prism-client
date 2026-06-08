@@ -1,0 +1,593 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import React from "react";
+
+// ── Mocks ──────────────────────────────────────────────────────────
+
+// Mock CSS modules — returns the class name itself
+vi.mock(
+  "../src/components/ToolSelectionComponent.module.css",
+  () => ({
+    default: new Proxy(
+      {},
+      {
+        get: (_target, property: string) => property,
+      },
+    ),
+  }),
+);
+
+// Mock utilities-library taxonomy
+vi.mock("@rodrigo-barraza/utilities-library/taxonomy", () => ({
+  DOMAINS: {
+    CORE_HARNESS: { key: "core_harness", displayName: "Core Harness Tools" },
+    CORE_WORKSPACE: { key: "core_workspace", displayName: "Core Workspace Tools" },
+    ORCHESTRATOR: { key: "orchestrator", displayName: "Orchestrator" },
+    WEB: { key: "web", displayName: "Web" },
+    BROWSER: { key: "browser", displayName: "Browser" },
+    TASKS: { key: "tasks", displayName: "Tasks" },
+    MEMORY: { key: "memory", displayName: "Memory" },
+    AGENTS: { key: "agents", displayName: "Agents" },
+    TOOLS: { key: "tools", displayName: "Tools" },
+    MCP: { key: "mcp", displayName: "Model Context Protocol" },
+    META: { key: "meta", displayName: "Tool Discovery" },
+    CRON_JOBS: { key: "cron_jobs", displayName: "Cron Jobs" },
+    CONVERSATION_TIMERS: { key: "conversation_timers", displayName: "Conversation Timers" },
+    SKILLS: { key: "skills", displayName: "Skills" },
+    CONTROL: { key: "control", displayName: "Control" },
+    STRUCTURED: { key: "structured", displayName: "Structured" },
+    REASONING: { key: "reasoning", displayName: "Reasoning" },
+    WEATHER: { key: "weather", displayName: "Weather" },
+    EVENTS: { key: "events", displayName: "Events" },
+    MARKETS: { key: "markets", displayName: "Markets" },
+    TRENDS: { key: "trends", displayName: "Trends" },
+    PRODUCTS: { key: "products", displayName: "Products" },
+    FINANCE: { key: "finance", displayName: "Finance" },
+    KNOWLEDGE: { key: "knowledge", displayName: "Knowledge" },
+    MOVIES: { key: "movies", displayName: "Movies" },
+    HEALTH: { key: "health", displayName: "Health" },
+    COMPUTE: { key: "compute", displayName: "Compute" },
+    COMMUNICATION: { key: "communication", displayName: "Communication" },
+    TRANSIT: { key: "transit", displayName: "Transit" },
+    MARITIME: { key: "maritime", displayName: "Maritime" },
+    ENERGY: { key: "energy", displayName: "Energy" },
+    CREATIVE: { key: "creative", displayName: "Creative" },
+    GAMING: { key: "gaming", displayName: "Gaming" },
+    DISCORD: { key: "discord", displayName: "Discord" },
+    SMART_HOME: { key: "smart_home", displayName: "Smart Home" },
+    SPORTS: { key: "sports", displayName: "Sports" },
+    UTILITIES: { key: "utilities", displayName: "Utilities" },
+    TORRENT: { key: "torrent", displayName: "Torrent" },
+    REDDIT: { key: "reddit", displayName: "Reddit" },
+  },
+}));
+
+// Mock renderToolName — just title-case the snake_case name
+vi.mock("@rodrigo-barraza/utilities-library", () => ({
+  renderToolName: (name: string) =>
+    name
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (character: string) => character.toUpperCase()),
+}));
+
+// Mock components-library — lightweight stubs that expose the relevant props
+vi.mock("@rodrigo-barraza/components-library", () => ({
+  TooltipComponent: ({ children, label }: { children: React.ReactNode; label: string }) => (
+    <div data-testid="tooltip" data-tooltip-label={label}>
+      {children}
+    </div>
+  ),
+  SearchInputComponent: ({ value, onChange, placeholder }: { value: string; onChange: (value: string) => void; placeholder: string }) => (
+    <input
+      data-testid="search-input"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      placeholder={placeholder}
+    />
+  ),
+  SegmentedControlComponent: ({ value, onChange, segments }: { value: string; onChange: (value: string) => void; segments: Array<{ value: string; label: string }> }) => (
+    <div data-testid="segmented-control">
+      {segments.map((segment: { value: string; label: string }) => (
+        <button
+          key={segment.value}
+          data-testid={`segment-${segment.value}`}
+          data-active={value === segment.value}
+          onClick={() => onChange(segment.value)}
+        >
+          {segment.label}
+        </button>
+      ))}
+    </div>
+  ),
+  CheckboxComponent: ({
+    checked,
+    disabled,
+    onChange,
+    label,
+    indeterminate,
+  }: {
+    checked: boolean;
+    disabled?: boolean;
+    onChange: () => void;
+    label?: React.ReactNode;
+    size?: string;
+    className?: string;
+    indeterminate?: boolean;
+  }) => (
+    <label data-testid="checkbox" data-checked={checked} data-disabled={disabled} data-indeterminate={indeterminate}>
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={onChange}
+        data-testid="checkbox-input"
+      />
+      {label}
+    </label>
+  ),
+}));
+
+// Import the component under test AFTER mocks are registered
+import ToolSelectionComponent from "../src/components/ToolSelectionComponent";
+
+// ── Fixtures ───────────────────────────────────────────────────────
+
+interface ToolSchema {
+  name: string;
+  description?: string;
+  domain?: string;
+  labels?: string[];
+  system?: boolean;
+  intelligenceTier?: "low" | "medium" | "high" | "frontier";
+}
+
+function createCoreHarnessTools(): ToolSchema[] {
+  return [
+    { name: "think", description: "Think step-by-step", domain: "Core Harness Tools", system: true },
+    { name: "ask_user_question", description: "Ask the user a question", domain: "Core Harness Tools", system: true },
+  ];
+}
+
+function createCoreWorkspaceTools(): ToolSchema[] {
+  return [
+    { name: "read_file", description: "Read a file", domain: "Core Workspace Tools", system: true },
+    { name: "write_file", description: "Write a file", domain: "Core Workspace Tools", system: true },
+    { name: "replace_in_file", description: "Replace in file", domain: "Core Workspace Tools", system: true },
+    { name: "replace_file_block", description: "Replace file block", domain: "Core Workspace Tools", system: true },
+    { name: "replace_file_regions", description: "Replace file regions", domain: "Core Workspace Tools", system: true },
+    { name: "patch_file", description: "Patch file", domain: "Core Workspace Tools", system: true },
+    { name: "list_directory", description: "List directory", domain: "Core Workspace Tools", system: true },
+    { name: "search_file_contents", description: "Search file contents", domain: "Core Workspace Tools", system: true },
+  ];
+}
+
+function createConfigurableTools(): ToolSchema[] {
+  return [
+    { name: "search_web", description: "Search the web", domain: "Web", system: false },
+    { name: "get_weather", description: "Get weather", domain: "Weather", system: false },
+  ];
+}
+
+function buildWorkspaceLockedOffMap(workspaceTools: ToolSchema[]): Map<string, string> {
+  const lockedToolsMap = new Map<string, string>();
+  const reason = "No workspace set up — configure one in Settings to unlock";
+  for (const tool of workspaceTools) {
+    lockedToolsMap.set(tool.name, reason);
+  }
+  return lockedToolsMap;
+}
+
+// ── Tests ──────────────────────────────────────────────────────────
+
+describe("ToolSelectionComponent — workspace locked-off flow", () => {
+  const coreHarnessTools = createCoreHarnessTools();
+  const coreWorkspaceTools = createCoreWorkspaceTools();
+  const configurableTools = createConfigurableTools();
+  const allTools = [...coreHarnessTools, ...coreWorkspaceTools, ...configurableTools];
+
+  describe("when all workspace tools are locked off (no workspace connected)", () => {
+    const lockedOffTools = buildWorkspaceLockedOffMap(coreWorkspaceTools);
+
+    it("renders 'Locked Off' badge for the Core Workspace Tools group", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const lockedOffBadges = container.querySelectorAll(".core-badge-locked-off");
+      expect(lockedOffBadges.length).toBeGreaterThanOrEqual(1);
+
+      const badgeTexts = Array.from(lockedOffBadges).map((badge) => badge.textContent);
+      expect(badgeTexts).toContain("Locked Off");
+    });
+
+    it("still renders 'Locked On' badge for Core Harness Tools group", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const lockedOnBadges = container.querySelectorAll(".core-badge");
+      const lockedOnBadgeTexts = Array.from(lockedOnBadges).map((badge) => badge.textContent);
+      expect(lockedOnBadgeTexts).toContain("Locked On");
+    });
+
+    it("renders workspace tool checkboxes as unchecked and disabled", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const lockedToolRows = container.querySelectorAll(".locked-tool-row");
+      expect(lockedToolRows.length).toBe(coreWorkspaceTools.length);
+
+      for (const row of lockedToolRows) {
+        const checkboxInput = row.querySelector("input[type='checkbox']");
+        expect(checkboxInput).toBeTruthy();
+        expect((checkboxInput as HTMLInputElement).checked).toBe(false);
+        expect((checkboxInput as HTMLInputElement).disabled).toBe(true);
+      }
+    });
+
+    it("renders core harness tool checkboxes as checked and disabled (locked on)", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const coreToolRows = container.querySelectorAll(".core-tool-row");
+      expect(coreToolRows.length).toBe(coreHarnessTools.length);
+
+      for (const row of coreToolRows) {
+        const checkboxInput = row.querySelector("input[type='checkbox']");
+        expect(checkboxInput).toBeTruthy();
+        expect((checkboxInput as HTMLInputElement).checked).toBe(true);
+        expect((checkboxInput as HTMLInputElement).disabled).toBe(true);
+      }
+    });
+
+    it("shows tooltip with lock reason for each locked-off workspace tool", () => {
+      render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const tooltips = screen.getAllByTestId("tooltip");
+      const lockReasonTooltips = tooltips.filter(
+        (tooltip) =>
+          tooltip.getAttribute("data-tooltip-label")?.includes("No workspace set up"),
+      );
+      expect(lockReasonTooltips.length).toBe(coreWorkspaceTools.length);
+    });
+
+    it("applies the locked-off group styling class to the workspace group", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const lockedOffGroups = container.querySelectorAll(".core-group-locked-off");
+      expect(lockedOffGroups.length).toBe(1);
+    });
+
+    it("does NOT apply locked-off group class to Core Harness Tools group", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const allCoreGroups = container.querySelectorAll(".core-group");
+      const lockedOffGroups = container.querySelectorAll(".core-group-locked-off");
+
+      // Two core groups total (harness + workspace), only one has locked-off
+      expect(allCoreGroups.length).toBe(2);
+      expect(lockedOffGroups.length).toBe(1);
+    });
+  });
+
+  describe("tool count accuracy with locked-off tools", () => {
+    const lockedOffTools = buildWorkspaceLockedOffMap(coreWorkspaceTools);
+
+    it("excludes locked-off workspace tools from the total enabled count", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      // The enabled count should be: core harness (2, locked on) + configurable (2, enabled)
+      // NOT including the 8 workspace tools since they're locked off
+      const domainCounts = container.querySelectorAll(".domain-count");
+      const bulkCountElement = domainCounts[0]; // First domain-count is in the bulk checkbox row
+      const countText = bulkCountElement?.textContent || "";
+
+      // Expected: 4/12 — 2 harness locked on + 2 configurable enabled = 4, total = 12
+      expect(countText).toBe("4/12");
+    });
+
+    it("shows 0 enabled when no configurable tools are selected and workspace is locked off", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={[]}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const domainCounts = container.querySelectorAll(".domain-count");
+      const bulkCountElement = domainCounts[0];
+      const countText = bulkCountElement?.textContent || "";
+
+      // 2 harness tools locked on + 0 configurable = 2/12
+      expect(countText).toBe("2/12");
+    });
+  });
+
+  describe("when workspace IS connected (no locked-off tools)", () => {
+    const emptyLockedOffMap = new Map<string, string>();
+
+    it("renders 'Locked On' badge for both Core Harness and Core Workspace groups", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={emptyLockedOffMap}
+        />,
+      );
+
+      const lockedOnBadges = container.querySelectorAll(".core-badge");
+      expect(lockedOnBadges.length).toBe(2);
+
+      const badgeTexts = Array.from(lockedOnBadges).map((badge) => badge.textContent);
+      expect(badgeTexts).toEqual(["Locked On", "Locked On"]);
+    });
+
+    it("renders all workspace tools as checked and disabled (locked on, not locked off)", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={emptyLockedOffMap}
+        />,
+      );
+
+      const coreToolRows = container.querySelectorAll(".core-tool-row");
+      // All core tools (harness + workspace) should be core-tool-row
+      expect(coreToolRows.length).toBe(coreHarnessTools.length + coreWorkspaceTools.length);
+
+      for (const row of coreToolRows) {
+        const checkboxInput = row.querySelector("input[type='checkbox']");
+        expect((checkboxInput as HTMLInputElement).checked).toBe(true);
+        expect((checkboxInput as HTMLInputElement).disabled).toBe(true);
+      }
+    });
+
+    it("does NOT render any locked-off badges", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={emptyLockedOffMap}
+        />,
+      );
+
+      const lockedOffBadges = container.querySelectorAll(".core-badge-locked-off");
+      expect(lockedOffBadges.length).toBe(0);
+    });
+
+    it("includes all core tools in the total enabled count", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={emptyLockedOffMap}
+        />,
+      );
+
+      const domainCounts = container.querySelectorAll(".domain-count");
+      const bulkCountElement = domainCounts[0];
+      const countText = bulkCountElement?.textContent || "";
+
+      // 2 harness + 8 workspace (all locked on) + 2 configurable = 12/12
+      expect(countText).toBe("12/12");
+    });
+  });
+
+  describe("selected tab — locked-off tools are excluded", () => {
+    const lockedOffTools = buildWorkspaceLockedOffMap(coreWorkspaceTools);
+
+    it("does not render locked-off workspace tools in the 'Selected' tab", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      // Switch to the "Selected" tab
+      const selectedSegment = screen.getByTestId("segment-selected");
+      fireEvent.click(selectedSegment);
+
+      // Workspace tool names should NOT appear in the selected view
+      for (const workspaceTool of coreWorkspaceTools) {
+        const renderedName = workspaceTool.name
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (character: string) => character.toUpperCase());
+
+        const matchingElements = container.querySelectorAll(".tool-name");
+        const foundWorkspaceTool = Array.from(matchingElements).some(
+          (element) => element.textContent === renderedName,
+        );
+
+        // Locked-off tools in the "locked-tool-row" pattern should not be in the selected tab
+        const lockedRows = container.querySelectorAll(".locked-tool-row");
+        // In the selected tab, workspace tools should be completely absent
+        // (they are filtered out at the memo level)
+        const lockedRowNames = Array.from(lockedRows).map(
+          (row) => row.querySelector(".tool-name")?.textContent,
+        );
+        expect(lockedRowNames).not.toContain(renderedName);
+      }
+    });
+
+    it("still shows Core Harness tools in the 'Selected' tab", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      // Switch to "Selected" tab
+      const selectedSegment = screen.getByTestId("segment-selected");
+      fireEvent.click(selectedSegment);
+
+      // Harness tools SHOULD appear as they're locked on (not locked off)
+      const allToolNames = container.querySelectorAll(".tool-name, .core-tool-name");
+      const renderedNames = Array.from(allToolNames).map((element) => element.textContent);
+
+      for (const harnessTool of coreHarnessTools) {
+        const expectedName = harnessTool.name
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (character: string) => character.toUpperCase());
+        expect(renderedNames).toContain(expectedName);
+      }
+    });
+  });
+
+  describe("partial workspace lock-off (mixed state)", () => {
+    it("renders 'Locked On' badge when only SOME workspace tools are locked off", () => {
+      // Only lock off 2 of 8 workspace tools — the group is NOT entirely locked off
+      const partialLockedOff = new Map<string, string>();
+      partialLockedOff.set("read_file", "Workspace agent is down");
+      partialLockedOff.set("write_file", "Workspace agent is down");
+
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={partialLockedOff}
+        />,
+      );
+
+      // Should still show "Locked On" since not ALL tools are locked off
+      const lockedOnBadges = container.querySelectorAll(".core-badge");
+      const badgeTexts = Array.from(lockedOnBadges).map((badge) => badge.textContent);
+      expect(badgeTexts).toContain("Locked On");
+
+      // No "Locked Off" badge should appear
+      const lockedOffBadges = container.querySelectorAll(".core-badge-locked-off");
+      expect(lockedOffBadges.length).toBe(0);
+    });
+
+    it("renders locked-off tools as unchecked and remaining tools as checked within the same group", () => {
+      const partialLockedOff = new Map<string, string>();
+      partialLockedOff.set("read_file", "Workspace agent is down");
+      partialLockedOff.set("write_file", "Workspace agent is down");
+
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={partialLockedOff}
+        />,
+      );
+
+      // 2 locked-off rows
+      const lockedRows = container.querySelectorAll(".locked-tool-row");
+      expect(lockedRows.length).toBe(2);
+      for (const row of lockedRows) {
+        const checkboxInput = row.querySelector("input[type='checkbox']") as HTMLInputElement;
+        expect(checkboxInput.checked).toBe(false);
+        expect(checkboxInput.disabled).toBe(true);
+      }
+
+      // Remaining workspace tools + all harness tools should be core-tool-row (checked, locked on)
+      const coreRows = container.querySelectorAll(".core-tool-row");
+      expect(coreRows.length).toBe(coreHarnessTools.length + coreWorkspaceTools.length - 2);
+      for (const row of coreRows) {
+        const checkboxInput = row.querySelector("input[type='checkbox']") as HTMLInputElement;
+        expect(checkboxInput.checked).toBe(true);
+        expect(checkboxInput.disabled).toBe(true);
+      }
+    });
+  });
+
+  describe("coreToolsLocked = false (unlocked mode)", () => {
+    it("does not render any Locked On or Locked Off badges", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={[...configurableTools.map((tool) => tool.name), "think"]}
+          coreToolsLocked={false}
+          lockedOffTools={new Map()}
+        />,
+      );
+
+      const lockedOnBadges = container.querySelectorAll(".core-badge");
+      const lockedOffBadges = container.querySelectorAll(".core-badge-locked-off");
+      expect(lockedOnBadges.length).toBe(0);
+      expect(lockedOffBadges.length).toBe(0);
+    });
+
+    it("renders core tools as toggleable checkboxes when unlocked", () => {
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={["think", "search_web"]}
+          coreToolsLocked={false}
+          lockedOffTools={new Map()}
+        />,
+      );
+
+      // No locked rows — all tools should be normal toggleable rows
+      const coreToolRows = container.querySelectorAll(".core-tool-row");
+      expect(coreToolRows.length).toBe(0);
+
+      const lockedRows = container.querySelectorAll(".locked-tool-row");
+      expect(lockedRows.length).toBe(0);
+    });
+  });
+});
