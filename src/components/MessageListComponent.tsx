@@ -46,6 +46,7 @@ import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
 import { getTotalInputTokens } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
+import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 import type { Message, ToolCallEvent, ContentSegment } from "../types/types";
 
@@ -2283,7 +2284,7 @@ export default function MessageList({
                         message.role === "assistant" &&
                         (planProposal.status === "pending"
                           ? i === messages.length - 1
-                          : message.toolCalls?.some((toolCall) => toolCall.name === "exit_plan_mode")) &&
+                          : message.toolCalls?.some((toolCall) => toolCall.name === TOOL_NAMES.EXIT_PLAN_MODE)) &&
                         !message.contentSegments?.some(
                           (s) => s.type === "plan",
                         ) && (

@@ -11,6 +11,7 @@ import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderersComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 import { renderToolName, formatLatencyMs } from "@rodrigo-barraza/utilities-library";
+import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { ToolCallEvent } from "../types/types";
 import type { WorkerToolActivityItem } from "./MessageListComponent";
 import styles from "./ToolCallsBlockComponent.module.css";
@@ -41,7 +42,7 @@ export default function ToolCallsBlockComponent({
   const headerText = (() => {
     if (toolCalls.length === 1) {
       const name =
-        toolCalls[0].name === "googleSearch"
+        toolCalls[0].name === TOOL_NAMES.GOOGLE_SEARCH
           ? "Google Search"
           : renderToolName(toolCalls[0].name);
       if (hasActiveCalls) return `Calling ${name}…`;
@@ -78,7 +79,7 @@ export default function ToolCallsBlockComponent({
         <div className={styles['tool-calls-content']}>
           {toolCalls.map((toolCall, j) => {
             const name =
-              toolCall.name === "googleSearch"
+              toolCall.name === TOOL_NAMES.GOOGLE_SEARCH
                 ? "Google Search"
                 : renderToolName(toolCall.name);
             const { Icon, color } = resolveToolVisuals(toolCall.name);
@@ -112,7 +113,7 @@ export default function ToolCallsBlockComponent({
                 )}
 
                 {/* Worker tool badges — show which tools a spawned agent used */}
-                {(toolCall.name === "create_team") &&
+                {(toolCall.name === TOOL_NAMES.CREATE_TEAM) &&
                   (() => {
                     const parsed = toolCall.result
                       ? typeof toolCall.result === "string"

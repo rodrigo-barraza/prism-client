@@ -100,6 +100,7 @@ import {
 
 import useSessionStats from "../hooks/useSessionStats";
 import { generateUUID, renderToolName } from "@rodrigo-barraza/utilities-library";
+import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, resolveDefaultModel } from "../utils/utilities";
 import {
   PROJECT_AGENT,
@@ -234,14 +235,14 @@ function glitchText(length = 6) {
 const AGENT_LOCKED_TOOLS = new Set(["Tool Calling"]);
 
 // Filesystem-mutating tools that should trigger a workspace tree refresh
-const WORKSPACE_FS_TOOLS = new Set([
-  "write_file",
-  "replace_in_file",
-  "patch_file",
-  "move_file",
-  "delete_file",
-  "execute_command",
-  "edit_notebook",
+const WORKSPACE_FS_TOOLS: Set<string> = new Set([
+  TOOL_NAMES.WRITE_FILE,
+  TOOL_NAMES.REPLACE_IN_FILE,
+  TOOL_NAMES.PATCH_FILE,
+  TOOL_NAMES.MOVE_FILE,
+  TOOL_NAMES.DELETE_FILE,
+  TOOL_NAMES.EXECUTE_COMMAND,
+  TOOL_NAMES.EDIT_NOTEBOOK,
 ]);
 
 interface EmptyStateConfig {
@@ -1304,14 +1305,14 @@ export default function ChatSessionComponent({
   // Maps tool name → human-readable reason (shown in tooltip).
   const lockedOffTools = useMemo(() => {
     const lockedToolsMap = new Map<string, string>();
-    if (!memoryConfigured) lockedToolsMap.set("upsert_memory", "Configure all Memory Models in Settings to unlock");
-    if (!extractionModelConfigured) lockedToolsMap.set("extract_memories", "Configure the Extraction Model in Settings → Memory Models to unlock");
-    if (!consolidationModelConfigured) lockedToolsMap.set("consolidate_memories", "Configure the Consolidation Model in Settings → Memory Models to unlock");
-    if (!embeddingModelConfigured) lockedToolsMap.set("search_memories", "Configure the Embedding Model in Settings → Memory Models to unlock");
-    if (!imageModelConfigured) lockedToolsMap.set("generate_image", "Configure the Image Generation Model in Settings → Creative Tools to unlock");
-    if (!visionModelConfigured) lockedToolsMap.set("describe_image", "Configure the Vision Model in Settings → Creative Tools to unlock");
-    if (!textToSpeechModelConfigured) lockedToolsMap.set("synthesize_speech", "Configure the Text-to-Speech Model in Settings → Audio to unlock");
-    if (!speechToTextModelConfigured) lockedToolsMap.set("transcribe_audio", "Configure the Speech-to-Text Model in Settings → Audio to unlock");
+    if (!memoryConfigured) lockedToolsMap.set(TOOL_NAMES.UPSERT_MEMORY, "Configure all Memory Models in Settings to unlock");
+    if (!extractionModelConfigured) lockedToolsMap.set(TOOL_NAMES.EXTRACT_MEMORIES, "Configure the Extraction Model in Settings → Memory Models to unlock");
+    if (!consolidationModelConfigured) lockedToolsMap.set(TOOL_NAMES.CONSOLIDATE_MEMORIES, "Configure the Consolidation Model in Settings → Memory Models to unlock");
+    if (!embeddingModelConfigured) lockedToolsMap.set(TOOL_NAMES.SEARCH_MEMORIES, "Configure the Embedding Model in Settings → Memory Models to unlock");
+    if (!imageModelConfigured) lockedToolsMap.set(TOOL_NAMES.GENERATE_IMAGE, "Configure the Image Generation Model in Settings → Creative Tools to unlock");
+    if (!visionModelConfigured) lockedToolsMap.set(TOOL_NAMES.DESCRIBE_IMAGE, "Configure the Vision Model in Settings → Creative Tools to unlock");
+    if (!textToSpeechModelConfigured) lockedToolsMap.set(TOOL_NAMES.SYNTHESIZE_SPEECH, "Configure the Text-to-Speech Model in Settings → Audio to unlock");
+    if (!speechToTextModelConfigured) lockedToolsMap.set(TOOL_NAMES.TRANSCRIBE_AUDIO, "Configure the Speech-to-Text Model in Settings → Audio to unlock");
     return lockedToolsMap;
   }, [memoryConfigured, extractionModelConfigured, consolidationModelConfigured, embeddingModelConfigured, imageModelConfigured, visionModelConfigured, textToSpeechModelConfigured, speechToTextModelConfigured]);
 
@@ -2441,7 +2442,7 @@ export default function ChatSessionComponent({
             // Auto-refresh memories panel when upsert_memory completes
             if (
               data.status !== "calling" &&
-              toolData.name === "upsert_memory"
+              toolData.name === TOOL_NAMES.UPSERT_MEMORY
             ) {
               if (hasAnyMemoryModelSet) {
                 setLeftTabBottom("memories");
@@ -2576,7 +2577,7 @@ export default function ChatSessionComponent({
             // Auto-refresh memories panel when upsert_memory completes (MCP path)
             if (
               toolData.status !== "calling" &&
-              toolData.name === "upsert_memory"
+              toolData.name === TOOL_NAMES.UPSERT_MEMORY
             ) {
               if (hasAnyMemoryModelSet) {
                 setLeftTabBottom("memories");

@@ -12,6 +12,7 @@ import type {
   PrismConfig,
   ModelOption,
 } from "../types/types";
+import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 // -- Prism-specific utilities ---------------------------------
 
@@ -461,8 +462,8 @@ export function getModalities(messages: Message[]) {
     thinking: false,
   };
 
-  const WEB_SEARCH_NAMES = new Set(["search_web", "search_web_preview"]);
-  const CODE_EXEC_NAMES = new Set(["code_execution"]);
+  const WEB_SEARCH_NAMES: Set<string> = new Set([TOOL_NAMES.SEARCH_WEB, TOOL_NAMES.SEARCH_WEB_PREVIEW]);
+  const CODE_EXEC_NAMES: Set<string> = new Set([TOOL_NAMES.CODE_EXECUTION]);
 
   for (const message of messages || []) {
     const isUser = message.role === "user";

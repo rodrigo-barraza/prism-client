@@ -45,6 +45,7 @@ import { getErrorMessage } from "../../utils/errorMessage";
 import ModelPickerPopoverComponent from "../../components/ModelPickerPopoverComponent";
 import { ViewModeToggleComponent } from "../../components/FilterBarComponent";
 import ScheduledTaskCalendarComponent from "../../components/ScheduledTaskCalendarComponent";
+import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import styles from "./page.module.css";
 
 interface Workspace {
@@ -636,7 +637,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
           "File Search",
           "URL Context",
           "Image Generation",
-          "googleSearch",
+          TOOL_NAMES.GOOGLE_SEARCH,
         ];
         
         const combinedNames = new Set<string>([
