@@ -1241,8 +1241,8 @@ export default function ChatSessionComponent({
       // Agentless mode: strip workspace/file domains — the model has no
       // SystemPromptAssembler context and cannot actually read/write files.
       if (isNoAgent) {
-        const agentOnlyDomains = new Set([
-          "Workspace",
+        const agentOnlyDomains = new Set<string>([
+          DOMAINS.CORE_WORKSPACE.displayName,
         ]);
         tools = tools.filter(
           (tool) => !agentOnlyDomains.has(tool.domain || ""),
@@ -1323,10 +1323,8 @@ export default function ChatSessionComponent({
         : "Workspace agent is down — make sure the workspace agent is running and connected";
       for (const tool of builtInTools || []) {
         const isWorkspaceTool =
-          tool.domainKey === "workspace" ||
-          tool.domainKey === "core_workspace" ||
+          tool.domainKey === DOMAINS.CORE_WORKSPACE.key ||
           tool.domain === DOMAINS.CORE_WORKSPACE.displayName ||
-          tool.domain === DOMAINS.WORKSPACE.displayName ||
           tool.name === TOOL_NAMES.ENTER_WORKTREE ||
           tool.name === TOOL_NAMES.EXIT_WORKTREE;
         if (isWorkspaceTool) {
@@ -1558,7 +1556,7 @@ export default function ChatSessionComponent({
 
   // Derive whether the active agent has Workspace capability (files, git, search, etc.)
   const hasFileOperations = useMemo(
-    () => builtInTools.some((t) => t.domain === "Workspace"),
+    () => builtInTools.some((tool) => tool.domain === DOMAINS.CORE_WORKSPACE.displayName),
     [builtInTools],
   );
 

@@ -851,7 +851,7 @@ export default function ToolSelectionComponent({
                         {tools.map((tool) => {
                           const isLocked = lockedOffTools.has(tool.name);
                           const lockReason = lockedOffTools.get(tool.name);
-                          const isCoreLockedTool = isCoreDomain && coreToolsLocked;
+                          const isCoreLockedTool = isCoreDomain && coreToolsLocked && !isLocked;
                           return (
                             <TooltipComponent
                               key={tool.name}
