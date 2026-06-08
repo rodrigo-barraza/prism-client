@@ -215,6 +215,30 @@
   letter-spacing: 0.02em;
 }
 
+.core-badge-locked-off {
+  font-size: 9px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--text-tertiary) 12%, transparent);
+  color: var(--text-tertiary);
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.core-group-locked-off {
+  background: transparent;
+}
+
+.core-group-locked-off .core-header {
+  color: var(--text-tertiary);
+}
+
+.core-group-locked-off .core-icon {
+  color: var(--text-tertiary);
+  opacity: 0.6;
+}
+
 .core-tools-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

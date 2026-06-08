@@ -362,9 +362,9 @@ export default function ToolSelectionComponent({
 
   // -- Total enabled and total tools count taking Core Tools into account --
   const totalEnabledCount = useMemo(() => {
-    const coreCount = coreToolsLocked ? coreTools.length : enabledCoreCount;
+    const coreCount = coreToolsLocked ? selectableCoreTools.length : enabledCoreCount;
     return coreCount + enabledConfigurableCount;
-  }, [coreToolsLocked, coreTools.length, enabledCoreCount, enabledConfigurableCount]);
+  }, [coreToolsLocked, selectableCoreTools.length, enabledCoreCount, enabledConfigurableCount]);
 
   const totalToolsCount = useMemo(() => {
     return coreTools.length + configurableTools.length;
@@ -444,8 +444,8 @@ export default function ToolSelectionComponent({
   }, [configurableTools, query]);
 
   const selectedCoreTools = useMemo(() => {
-    return filteredCoreTools.filter((tool) => coreToolsLocked || resolvedEnabledSet.has(tool.name));
-  }, [filteredCoreTools, coreToolsLocked, resolvedEnabledSet]);
+    return filteredCoreTools.filter((tool) => !lockedOffTools.has(tool.name) && (coreToolsLocked || resolvedEnabledSet.has(tool.name)));
+  }, [filteredCoreTools, coreToolsLocked, resolvedEnabledSet, lockedOffTools]);
 
   const selectedConfigurableTools = useMemo(() => {
     return filteredTools.filter((tool) => resolvedEnabledSet.has(tool.name));
@@ -453,7 +453,7 @@ export default function ToolSelectionComponent({
 
   const selectedGroupedByDomain = useMemo(() => {
     const allSelectedTools = [
-      ...filteredCoreTools.filter((tool) => coreToolsLocked || resolvedEnabledSet.has(tool.name)),
+      ...filteredCoreTools.filter((tool) => !lockedOffTools.has(tool.name) && (coreToolsLocked || resolvedEnabledSet.has(tool.name))),
       ...filteredTools.filter((tool) => resolvedEnabledSet.has(tool.name)),
     ];
     const groups = new Map<string, ToolSchema[]>();
@@ -470,7 +470,7 @@ export default function ToolSelectionComponent({
       if (!DOMAIN_ORDER.includes(domain)) sorted.push([domain, tools]);
     }
     return sorted;
-  }, [filteredCoreTools, filteredTools, coreToolsLocked, resolvedEnabledSet]);
+  }, [filteredCoreTools, filteredTools, coreToolsLocked, resolvedEnabledSet, lockedOffTools]);
 
   // -- Group by domain ------------------------------------------
   const groupedTools = useMemo(() => {
@@ -684,9 +684,10 @@ export default function ToolSelectionComponent({
           const isCoreCollapsed = collapsedDomains.has(`core:${coreDomainKey}`);
           const selectableCoreDomainTools = coreDomainTools.filter((tool) => !lockedOffTools.has(tool.name));
           const enabledCoreDomainCount = selectableCoreDomainTools.filter((tool) => resolvedEnabledSet.has(tool.name)).length;
+          const isEntireGroupLockedOff = coreDomainTools.length > 0 && selectableCoreDomainTools.length === 0;
 
           return (
-            <div key={`core:${coreDomainKey}`} className={styles['core-group']}>
+            <div key={`core:${coreDomainKey}`} className={`${styles['core-group']}${isEntireGroupLockedOff ? ` ${styles['core-group-locked-off']}` : ''}`}>
               <div
                 className={styles['core-header']}
                 onClick={() => toggleDomain(`core:${coreDomainKey}`)}
@@ -700,7 +701,9 @@ export default function ToolSelectionComponent({
                   <CoreDomainIcon size={12} />
                 </span>
                 <span className={styles['core-label']}>{coreDomainLabel}</span>
-                {coreToolsLocked ? (
+                {isEntireGroupLockedOff ? (
+                  <span className={styles['core-badge-locked-off']}>Locked Off</span>
+                ) : coreToolsLocked ? (
                   <span className={styles['core-badge']}>Locked On</span>
                 ) : (
                   <>
@@ -725,52 +728,72 @@ export default function ToolSelectionComponent({
 
               {!isCoreCollapsed && (
                 <div className={styles['core-tools-list']}>
-                  {coreDomainTools.map((tool) => (
-                    <TooltipComponent
-                      key={tool.name}
-                      label={tool.description || "Core capability"}
-                      position="right"
-                      delay={400}
-                    >
-                      {coreToolsLocked ? (
-                        <div
-                          className={`${styles['tool-row']} ${styles['core-tool-row']}`}
-                        >
-                          <CheckboxComponent
-                            size="compact"
-                            className={styles['tool-checkbox']}
-                            checked={true}
-                            disabled={true}
-                            onChange={() => {}}
-                            label={
-                              <span className={`${styles['tool-name']} ${styles['core-tool-name']}`}>
-                                {renderToolName(tool.name)}
-                              </span>
-                            }
-                          />
-                          <Lock size={10} className={styles['lock-icon']} />
-                        </div>
-                      ) : (
-                        <div className={styles['tool-row']}>
-                          <CheckboxComponent
-                            size="compact"
-                            className={styles['tool-checkbox']}
-                            checked={resolvedEnabledSet.has(tool.name)}
-                            disabled={readOnly}
-                            onChange={() => {
-                              if (readOnly) return;
-                              toggleTool(tool.name);
-                            }}
-                            label={
-                              <span className={styles['tool-name']}>
-                                {renderToolName(tool.name)}
-                              </span>
-                            }
-                          />
-                        </div>
-                      )}
-                    </TooltipComponent>
-                  ))}
+                  {coreDomainTools.map((tool) => {
+                    const isToolLockedOff = lockedOffTools.has(tool.name);
+                    const toolLockReason = lockedOffTools.get(tool.name);
+                    return (
+                      <TooltipComponent
+                        key={tool.name}
+                        label={isToolLockedOff ? toolLockReason! : (tool.description || "Core capability")}
+                        position="right"
+                        delay={isToolLockedOff ? 0 : 400}
+                      >
+                        {isToolLockedOff ? (
+                          <div className={`${styles['tool-row']} ${styles['locked-tool-row']}`}>
+                            <CheckboxComponent
+                              size="compact"
+                              className={styles['tool-checkbox']}
+                              checked={false}
+                              disabled={true}
+                              onChange={() => {}}
+                              label={
+                                <span className={`${styles['tool-name']} ${styles['locked-tool-name']}`}>
+                                  {renderToolName(tool.name)}
+                                </span>
+                              }
+                            />
+                            <Lock size={10} className={styles['lock-icon']} />
+                          </div>
+                        ) : coreToolsLocked ? (
+                          <div
+                            className={`${styles['tool-row']} ${styles['core-tool-row']}`}
+                          >
+                            <CheckboxComponent
+                              size="compact"
+                              className={styles['tool-checkbox']}
+                              checked={true}
+                              disabled={true}
+                              onChange={() => {}}
+                              label={
+                                <span className={`${styles['tool-name']} ${styles['core-tool-name']}`}>
+                                  {renderToolName(tool.name)}
+                                </span>
+                              }
+                            />
+                            <Lock size={10} className={styles['lock-icon']} />
+                          </div>
+                        ) : (
+                          <div className={styles['tool-row']}>
+                            <CheckboxComponent
+                              size="compact"
+                              className={styles['tool-checkbox']}
+                              checked={resolvedEnabledSet.has(tool.name)}
+                              disabled={readOnly}
+                              onChange={() => {
+                                if (readOnly) return;
+                                toggleTool(tool.name);
+                              }}
+                              label={
+                                <span className={styles['tool-name']}>
+                                  {renderToolName(tool.name)}
+                                </span>
+                              }
+                            />
+                          </div>
+                        )}
+                      </TooltipComponent>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -823,7 +846,9 @@ export default function ToolSelectionComponent({
                       ) : (
                         label
                       )}
-                      {isCoreDomain && coreToolsLocked ? (
+                      {isCoreDomain && coreToolsLocked && selectableGroupTools.length === 0 && tools.length > 0 ? (
+                        <span className={styles['core-badge-locked-off']}>Locked Off</span>
+                      ) : isCoreDomain && coreToolsLocked ? (
                         <span className={styles['core-badge']}>Locked On</span>
                       ) : (
                         <>
