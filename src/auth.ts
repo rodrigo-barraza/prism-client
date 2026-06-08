@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
+import { ACCOUNTS_SERVICE_URL } from "./config";
 
 export const AUTH_ENABLED = true;
 
@@ -31,8 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         try {
-          const accountsServiceUrl = process.env.ACCOUNTS_SERVICE_URL || "http://localhost:5615";
-          const response = await fetch(`${accountsServiceUrl}/auth/login`, {
+          const response = await fetch(`${ACCOUNTS_SERVICE_URL}/auth/login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

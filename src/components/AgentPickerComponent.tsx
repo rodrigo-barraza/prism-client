@@ -1,4 +1,5 @@
 "use client";
+import { AGENT_IDS } from "@/constants";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
@@ -119,8 +120,8 @@ export default function AgentPickerComponent({
   // Move "NONE" / "Agentless" to the bottom of the list
   const sortedAgents = useMemo(() => {
     return [...agents].sort((firstAgent, secondAgent) => {
-      if (firstAgent.id === "NONE") return 1;
-      if (secondAgent.id === "NONE") return -1;
+      if (firstAgent.id === AGENT_IDS.NONE) return 1;
+      if (secondAgent.id === AGENT_IDS.NONE) return -1;
       return 0;
     });
   }, [agents]);
@@ -267,7 +268,7 @@ export default function AgentPickerComponent({
 
   // Build tooltip content for default mode (not add-mode, not disabled, not agentless)
   const triggerTooltipContent =
-    !addMode && !disabled && activeAgent?.id !== "NONE" ? (
+    !addMode && !disabled && activeAgent?.id !== AGENT_IDS.NONE ? (
       <div className={styles['tooltip-capabilities']}>
         <ToolBadgeComponent
           name="Tool Calling"
@@ -363,7 +364,7 @@ export default function AgentPickerComponent({
                         <div className={styles['agent-info']}>
                           <div className={styles['agent-name']}>{agent.name}</div>
                           <div className={styles['agent-meta']}>
-                            {agent.id !== "NONE" && (
+                            {agent.id !== AGENT_IDS.NONE && (
                               <span className={styles['tool-badge']}>
                                 <Wrench size={9} />
                                 {agent.toolCount === -1

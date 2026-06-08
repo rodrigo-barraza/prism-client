@@ -112,6 +112,7 @@ import {
   MAX_TOOL_ITERATIONS,
   LS_FILE_VIEWER_WIDTH,
   LS_CHAT_FILTERS,
+  AGENT_IDS,
 } from "../constants";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent";
@@ -372,7 +373,7 @@ export interface ChatSessionComponentProps {
 }
 
 export default function ChatSessionComponent({
-  agentId: propAgentId = "CODING",
+  agentId: propAgentId = AGENT_IDS.CODING,
   agents = [],
   initialFcEnabled = false,
   initialThinkingEnabled = false,
@@ -385,7 +386,7 @@ export default function ChatSessionComponent({
   // Track whether the URL session param has been consumed
   const urlSessionAppliedRef = useRef<boolean>(false);
   const agentId = propAgentId;
-  const isNoAgent = agentId === "NONE";
+  const isNoAgent = agentId === AGENT_IDS.NONE;
   const activeAgentData = agents.find((agent) => agent.id === agentId);
   // Direct Chat omits project so it uses the default x-project header — this
   // routes persistence to the conversations collection.
@@ -393,7 +394,7 @@ export default function ChatSessionComponent({
   const agentProject = isNoAgent
     ? undefined
     : activeAgentData?.project ||
-      (agentId.toUpperCase() === "CODING" ? "coding" : "prism-chat");
+      (agentId.toUpperCase() === AGENT_IDS.CODING ? "coding" : "prism-chat");
   const agentBackgroundImage = activeAgentData?.backgroundImage || "";
   const emptyState: EmptyStateConfig = isNoAgent
     ? NONE_EMPTY_STATE
@@ -595,11 +596,11 @@ export default function ChatSessionComponent({
   const [embeddingModelConfigured, setEmbeddingModelConfigured] = useState(false);
   // -- Agent-scoped storage keys ---------------------------------
   const toolMemoryKey =
-    agentId === "CODING"
+    agentId === AGENT_IDS.CODING
       ? SK_TOOL_MEMORY_AGENT
       : SK_TOOL_MEMORY_AGENT_PREFIX + agentId;
   const modelMemoryKey =
-    agentId === "CODING"
+    agentId === AGENT_IDS.CODING
       ? SK_MODEL_MEMORY_AGENT
       : SK_MODEL_MEMORY_AGENT_PREFIX + agentId;
 

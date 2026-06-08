@@ -1,4 +1,5 @@
 "use client";
+import { AGENT_IDS, AGENTLESS_AGENT } from "@/constants";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { usePersistedState } from "../../hooks/usePersistedState";
@@ -108,8 +109,8 @@ interface Toast {
 }
 
 const NONE_AGENT: AgentPersona = {
-  id: "NONE",
-  name: "Agentless",
+  id: AGENT_IDS.NONE,
+  name: AGENTLESS_AGENT.name,
   description:
     "A straightforward conversation with the AI — no automated workflows, just you and the model.",
   project: "direct",
@@ -335,7 +336,7 @@ function CronJobDetailPanel({
                     key={conv.id}
                     className={styles["history-item"]}
                     onClick={() => {
-                      router.push(`/chat?session=${conv.id}&agent=${conv.agent || "NONE"}`);
+                      router.push(`/chat?session=${conv.id}&agent=${conv.agent || AGENT_IDS.NONE}`);
                       onClose();
                     }}
                   >
@@ -440,7 +441,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const [formName, setFormName] = useState("");
   const [formProject, setFormProject] = useState("");
   const [formPrompt, setFormPrompt] = useState("");
-  const [formAgent, setFormAgent] = useState("CODING");
+  const [formAgent, setFormAgent] = useState<string>(AGENT_IDS.CODING);
   const [formProvider, setFormProvider] = useState("");
   const [formModel, setFormModel] = useState("");
   const [formScheduleType, setFormScheduleType] = useState<
@@ -474,7 +475,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const populateFormFromTask = useCallback((task: Task) => {
     setFormName(task.name);
     setFormPrompt(task.prompt);
-    setFormAgent(task.agent || "NONE");
+    setFormAgent(task.agent || AGENT_IDS.NONE);
     setFormProvider(task.provider);
     setFormModel(task.model);
     setFormProject(task.project || "");
@@ -524,7 +525,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const resetFormFields = useCallback(() => {
     setFormName("");
     setFormPrompt("");
-    setFormAgent("CODING");
+    setFormAgent(AGENT_IDS.CODING);
     setFormScheduleType("daily");
     setFormTimeHour("09");
     setFormTimeMinute("00");
@@ -791,7 +792,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
     const taskPayload = {
       name: formName.trim(),
       prompt: formPrompt.trim(),
-      agent: formAgent === "NONE" ? null : formAgent,
+      agent: formAgent === AGENT_IDS.NONE ? null : formAgent,
       provider: formProvider,
       model: formModel,
       scheduleType: formScheduleType,

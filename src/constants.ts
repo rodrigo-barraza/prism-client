@@ -36,6 +36,15 @@ export const SK_TOOL_MEMORY_BENCHMARKS = "toolMemory:benchmarks";
 export const MAX_TOOL_ITERATIONS = 25;
 export const PROJECT_AGENT = "coding";
 
+// -- Re-exports from utilities-library (single source of truth) ---
+export {
+  AGENT_IDS,
+  AGENTLESS_AGENT,
+  DEFAULT_CONVERSATION_TITLE,
+  DEFAULT_WORKFLOW_TITLE,
+  DEFAULT_USERNAME,
+} from "@rodrigo-barraza/utilities-library/taxonomy";
+
 /**
  * Known local (self-hosted) provider identifiers.
  * Models from these providers are considered "local" for memory,

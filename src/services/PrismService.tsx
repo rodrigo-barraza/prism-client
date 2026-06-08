@@ -1,3 +1,4 @@
+import { AGENT_IDS } from "@/constants";
 import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
@@ -1094,7 +1095,7 @@ export default class PrismService {
     payload: ChatPayload,
   ): Promise<ChatGenerationResult> {
     return PrismService._request<ChatGenerationResult>("/agent?stream=false", {
-      body: { ...payload, agent: payload.agent || "CODING" },
+      body: { ...payload, agent: payload.agent || AGENT_IDS.CODING },
     });
   }
 
@@ -1413,7 +1414,7 @@ export default class PrismService {
   ): () => void {
     return PrismService._streamSSE(
       "/agent",
-      { body: { ...payload, agent: payload.agent || "CODING" } },
+      { body: { ...payload, agent: payload.agent || AGENT_IDS.CODING } },
       callbacks,
     );
   }

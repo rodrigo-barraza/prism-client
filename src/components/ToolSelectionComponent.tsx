@@ -1,5 +1,6 @@
 "use client";
 
+import { DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { useState, useCallback, useMemo } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -70,9 +71,9 @@ interface ToolSelectionProps {
 
 // -- Domain icon mapping (mirrors CustomToolsPanel) --------------
 const DOMAIN_ICONS: Record<string, LucideIcon> = {
-  "Core Tools": Bot,
-  "Core Harness Tools": Bot,
-  "Core Orchestrator Tools": Bot,
+  [DOMAINS.CORE.displayName]: Bot,
+  [DOMAINS.CORE_HARNESS.displayName]: Bot,
+  [DOMAINS.ORCHESTRATOR.displayName]: Bot,
   "Weather & Environment": CloudSun,
   Events: CalendarDays,
   "Markets & Commodities": BarChart3,
@@ -111,9 +112,9 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
 };
 
 const DOMAIN_LABELS: Record<string, string> = {
-  "Core Tools": "Core Tools",
-  "Core Harness Tools": "Core Harness Tools",
-  "Core Orchestrator Tools": "Core Orchestrator Tools",
+  [DOMAINS.CORE.displayName]: DOMAINS.CORE.displayName,
+  [DOMAINS.CORE_HARNESS.displayName]: DOMAINS.CORE_HARNESS.displayName,
+  [DOMAINS.ORCHESTRATOR.displayName]: DOMAINS.ORCHESTRATOR.displayName,
   Workspace: "Workspace Tools",
   Web: "Web",
   Browser: "Browser",
@@ -130,9 +131,9 @@ const DOMAIN_LABELS: Record<string, string> = {
 };
 
 const DOMAIN_ORDER = [
-  "Core Tools",
-  "Core Harness Tools",
-  "Core Orchestrator Tools",
+  DOMAINS.CORE.displayName,
+  DOMAINS.CORE_HARNESS.displayName,
+  DOMAINS.ORCHESTRATOR.displayName,
   "Workspace",
   "Web",
   "Browser",
@@ -758,7 +759,7 @@ export default function ToolSelectionComponent({
               </div>
             ) : (
               selectedGroupedByDomain.map(([groupKey, tools]) => {
-                const isCoreDomain = groupKey === "Core Tools" || groupKey === "Core Harness Tools" || groupKey === "Core Orchestrator Tools";
+                const isCoreDomain = groupKey === DOMAINS.CORE.displayName || groupKey === DOMAINS.CORE_HARNESS.displayName || groupKey === DOMAINS.ORCHESTRATOR.displayName;
                 const isMcp = groupKey.startsWith("Model Context Protocol:") || groupKey === "Model Context Protocol";
                 const GroupIcon: LucideIcon = isMcp
                   ? Network

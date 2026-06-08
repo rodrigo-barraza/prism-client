@@ -1,4 +1,5 @@
 "use client";
+import { AGENT_IDS, AGENTLESS_AGENT } from "@/constants";
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -9,18 +10,25 @@ import styles from "./page.module.css";
 
 const LS_ACTIVE_AGENT = "prism:activeAgent";
 
-/** Synthetic "Agentless" entry — direct model chat, no agentic loop. */
-const NONE_AGENT = {
-  id: "NONE",
-  name: "Agentless",
+const NONE_AGENT: AgentPersona = {
+  id: AGENTLESS_AGENT.id,
+  name: AGENTLESS_AGENT.name,
   description:
     "A straightforward conversation with the AI — no automated workflows, just you and the model.",
   project: "direct",
-  toolCount: -1, // sentinel — rendered as "All tools" in picker
+  toolCount: -1,
   custom: false,
   icon: "",
+  avatar: "",
   color: "",
+  backgroundImage: "",
+  enabledToolNames: [],
+  coreToolsLocked: false,
+  canSpawnWorkers: false,
+  usesDirectoryTree: false,
+  usesCodingGuidelines: false,
 };
+
 
 export default function AgentsPage() {
   return (
@@ -57,13 +65,13 @@ function AgentsPageInner() {
   const [agents, setAgents] = useState<Array<AgentPersona | typeof NONE_AGENT>>(
     [],
   );
-  // Always initialize to "CODING" for SSR/client parity — hydrate from
+  // Always initialize to AGENT_IDS.CODING for SSR/client parity — hydrate from
   // localStorage after mount to avoid hydration mismatch.
-  const [localAgentId, setLocalAgentId] = useState("CODING");
+  const [localAgentId, setLocalAgentId] = useState<string>(AGENT_IDS.CODING);
 
   useEffect(() => {
     const stored = localStorage.getItem(LS_ACTIVE_AGENT);
-    if (stored && stored !== "CODING") {
+    if (stored && stored !== AGENT_IDS.CODING) {
       setLocalAgentId(stored);
     }
   }, []);

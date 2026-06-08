@@ -1,4 +1,5 @@
 "use client";
+import { DEFAULT_WORKFLOW_TITLE } from "@/constants";
 
 import { useMemo } from "react";
 import {
@@ -77,7 +78,7 @@ export default function WorkflowSidebar({
         (workflow.userContent
           ? workflow.userContent.substring(0, 80) +
             (workflow.userContent.length > 80 ? "…" : "")
-          : "Untitled Workflow");
+          : DEFAULT_WORKFLOW_TITLE);
 
       return {
         id,
@@ -124,7 +125,7 @@ export default function WorkflowSidebar({
         <div className={styles['name-input-wrapper']}>
           <InputComponent
             type="text"
-            placeholder="Untitled Workflow"
+            placeholder={DEFAULT_WORKFLOW_TITLE}
             value={workflowName || ""}
             onChange={(
               e: React.ChangeEvent<HTMLInputElement>,

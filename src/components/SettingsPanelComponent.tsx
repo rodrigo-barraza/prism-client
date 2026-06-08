@@ -1,3 +1,4 @@
+import { DEFAULT_WORKFLOW_TITLE } from "@/constants";
 "use client";
 import { useState } from "react";
 import {
@@ -522,7 +523,7 @@ export default function SettingsPanel({
                   <GitBranch size={12} />
                 </span>
                 <span className={styles['modality-name']}>
-                  {wf.workflowName || "Untitled Workflow"}
+                  {wf.workflowName || DEFAULT_WORKFLOW_TITLE}
                 </span>
                 <span className={styles['modality-status']}>
                   <ExternalLink size={10} />

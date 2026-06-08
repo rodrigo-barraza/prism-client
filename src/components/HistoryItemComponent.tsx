@@ -1,3 +1,4 @@
+import { AGENT_IDS, DEFAULT_USERNAME } from "@/constants";
 "use client";
 
 import { Download, Copy, Star, Trash2, ExternalLink } from "lucide-react";
@@ -195,7 +196,7 @@ export default function HistoryItemComponent({
             {admin &&
               item.username &&
               item.username !== "unknown" &&
-              item.username !== "anonymous" && (
+              item.username !== DEFAULT_USERNAME && (
                 <span className={styles['username-tag']}>{item.username}</span>
               )}
             {item.tags?.map((tag: HistoryItemTag) => (
@@ -211,7 +212,7 @@ export default function HistoryItemComponent({
                   typeof item.agent === "string"
                     ? item.agent
                     : item.agent.id || "";
-                if (!agentId || agentId === "NONE") return null;
+                if (!agentId || agentId === AGENT_IDS.NONE) return null;
 
                 const resolvedAgent =
                   typeof item.agent === "string"

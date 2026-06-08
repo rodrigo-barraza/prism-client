@@ -1,4 +1,5 @@
 "use client";
+import { AGENT_IDS, DEFAULT_WORKFLOW_TITLE } from "@/constants";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
@@ -180,7 +181,7 @@ export default function WorkflowsPage({
 
   // Current workflow state
   const [workflowId, setWorkflowId] = useState<string | null>(null);
-  const [workflowName, setWorkflowName] = useState("Untitled Workflow");
+  const [workflowName, setWorkflowName] = useState(DEFAULT_WORKFLOW_TITLE);
   const [nodes, setNodes] = useState<WorkflowNode[]>([]);
   const [edges, setEdges] = useState<WorkflowEdge[]>([]);
   const [isLoadingWorkflow, setIsLoadingWorkflow] =
@@ -252,7 +253,7 @@ export default function WorkflowsPage({
           wf.name ||
           wf.title ||
           (wf.userContent ? wf.userContent.substring(0, 80) : "") ||
-          "Untitled Workflow";
+          DEFAULT_WORKFLOW_TITLE;
         const loadedNodes = wf.nodes || [];
         const loadedEdges = wf.edges || wf.connections || [];
         setWorkflowId(wf._id || wf.id || null);
@@ -314,7 +315,7 @@ export default function WorkflowsPage({
   // Keep a ref with the latest state so pushUndo never goes stale
   const currentStateRef = useRef<UndoSnapshot>({
     workflowId: null,
-    workflowName: "Untitled Workflow",
+    workflowName: DEFAULT_WORKFLOW_TITLE,
     nodes: [],
     edges: [],
   });
@@ -435,8 +436,8 @@ export default function WorkflowsPage({
         };
         // Load both custom tools and built-in schemas, then attach them
         Promise.all([
-          PrismService.getCustomTools("CODING").catch(() => []),
-          PrismService.getBuiltInToolSchemas("CODING").catch(() => []),
+          PrismService.getCustomTools(AGENT_IDS.CODING).catch(() => []),
+          PrismService.getBuiltInToolSchemas(AGENT_IDS.CODING).catch(() => []),
         ]).then(([custom, builtIn]: [unknown[], unknown[]]) => {
           setNodes((prev) =>
             prev.map((n) =>
@@ -609,7 +610,7 @@ export default function WorkflowsPage({
       let executionWorkflowId = workflowId;
       if (!executionWorkflowId) {
         const saved = await PrismService.saveWorkflow({
-          name: workflowName || "Untitled Workflow",
+          name: workflowName || DEFAULT_WORKFLOW_TITLE,
           nodes,
           edges,
           source: "prism-client",
@@ -927,7 +928,7 @@ export default function WorkflowsPage({
     try {
       const workflow = {
         id: workflowId ?? undefined,
-        name: workflowName || "Untitled Workflow",
+        name: workflowName || DEFAULT_WORKFLOW_TITLE,
         nodes,
         edges,
         nodeResults,
@@ -941,7 +942,7 @@ export default function WorkflowsPage({
       updateUrl(`/workflows/${newId}`);
       // Update saved snapshot after successful save
       savedSnapshotRef.current = JSON.stringify({
-        workflowName: workflowName || "Untitled Workflow",
+        workflowName: workflowName || DEFAULT_WORKFLOW_TITLE,
         nodes,
         edges,
       });
@@ -968,7 +969,7 @@ export default function WorkflowsPage({
         wf.name ||
         wf.title ||
         (wf.userContent ? wf.userContent.substring(0, 80) : "") ||
-        "Untitled Workflow";
+        DEFAULT_WORKFLOW_TITLE;
       const loadedNodes = wf.nodes || [];
       const loadedEdges = wf.edges || wf.connections || [];
       setWorkflowName(loadedName);
@@ -1001,7 +1002,7 @@ export default function WorkflowsPage({
         setSavedWorkflows(wfs.map((w) => ({ ...w, id: w._id || w.id })));
         if (workflowId === id) {
           setWorkflowId(null);
-          setWorkflowName("Untitled Workflow");
+          setWorkflowName(DEFAULT_WORKFLOW_TITLE);
           setNodes([]);
           setEdges([]);
           setNodeResults({});
@@ -1070,7 +1071,7 @@ export default function WorkflowsPage({
   const handleNewWorkflow = useCallback(() => {
     pushUndo();
     setWorkflowId(null);
-    setWorkflowName("Untitled Workflow");
+    setWorkflowName(DEFAULT_WORKFLOW_TITLE);
     setNodes([]);
     setEdges([]);
     setNodeResults({});
@@ -1125,7 +1126,7 @@ export default function WorkflowsPage({
         (wf.userContent
           ? wf.userContent.substring(0, 80) +
             (wf.userContent.length > 80 ? "…" : "")
-          : "Untitled Workflow");
+          : DEFAULT_WORKFLOW_TITLE);
       return {
         id,
         title: name,
@@ -1178,7 +1179,7 @@ export default function WorkflowsPage({
         setWfFavoriteKeys((prev) => [...prev, wfId]);
         const wf = savedWorkflows.find((w) => (w._id || w.id) === wfId);
         PrismService.addFavorite("workflow", wfId, {
-          title: wf?.name || "Untitled Workflow",
+          title: wf?.name || DEFAULT_WORKFLOW_TITLE,
         }).catch(() => {});
       }
     },
@@ -1457,7 +1458,7 @@ export default function WorkflowsPage({
           <InputComponent
             type="text"
             className={styles['name-input']}
-            placeholder="Untitled Workflow"
+            placeholder={DEFAULT_WORKFLOW_TITLE}
             value={workflowName || ""}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setWorkflowName(e.target.value)

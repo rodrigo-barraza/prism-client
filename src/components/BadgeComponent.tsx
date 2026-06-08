@@ -1,3 +1,4 @@
+import { AGENTLESS_AGENT } from "@/constants";
 "use client";
 
 import React, {
@@ -1103,7 +1104,7 @@ export default function BadgeComponent(props: BadgeProps) {
       const normalizedAgent: ClientAgent =
         typeof agent === "string"
           ? { id: agent, name: agent }
-          : agent || { id: "NONE", name: "Agentless" };
+          : agent || AGENTLESS_AGENT;
       const agentId = normalizedAgent.id || "";
 
       if (animation) {

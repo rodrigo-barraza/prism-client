@@ -30,7 +30,7 @@ import BenchmarksTableComponent from "./BenchmarksTableComponent";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
 import StorageService from "../services/StorageService";
-import { SK_MODEL_MEMORY_BENCHMARKS } from "../constants";
+import { SK_MODEL_MEMORY_BENCHMARKS, AGENT_IDS } from "../constants";
 import { formatCost, generateUUID } from "@rodrigo-barraza/utilities-library";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./BenchmarkPageComponent.module.css";
@@ -749,7 +749,7 @@ export default function BenchmarkDetailPageComponent({
 
     // Load agent personas (all built-in + custom, excluding "Agentless")
     PrismService.getAgentPersonas()
-      .then((list) => setAvailableAgents(list.filter((a) => a.id !== "NONE")))
+      .then((list) => setAvailableAgents(list.filter((a) => a.id !== AGENT_IDS.NONE)))
       .catch(() => {});
   }, []);
 

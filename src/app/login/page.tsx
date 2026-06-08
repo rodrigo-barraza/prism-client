@@ -12,6 +12,7 @@ import {
   CheckCircle2, 
   Loader2 
 } from "lucide-react";
+import { ACCOUNTS_SERVICE_URL } from "../../config";
 import styles from "./login.module.css";
 import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 
@@ -65,7 +66,7 @@ function LogInContentComponent() {
     if (isSignUpMode) {
       // ─── Sign Up Flow ───────────────────────────────────────────────
       try {
-        const signUpResponse = await fetch("http://localhost:5615/auth/signup", {
+        const signUpResponse = await fetch(`${ACCOUNTS_SERVICE_URL}/auth/signup`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

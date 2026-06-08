@@ -59,7 +59,7 @@ import { useAdminHeader } from "./AdminHeaderContextComponent";
 import useProjectFilter from "../hooks/useProjectFilter";
 import BadgeComponent from "./BadgeComponent";
 
-import { SETTINGS_DEFAULTS, PROJECT_AGENT, LS_ADMIN_CHAT_FILTERS } from "../constants";
+import { SETTINGS_DEFAULTS, PROJECT_AGENT, LS_ADMIN_CHAT_FILTERS, AGENT_IDS, AGENTLESS_AGENT } from "../constants";
 import type {
   Conversation,
   AgentSession,
@@ -92,10 +92,9 @@ const ALL_AGENT = {
   color: "",
 };
 
-/** Synthetic "Agentless" entry — direct model chat. */
 const NONE_AGENT = {
-  id: "NONE",
-  name: "Agentless",
+  id: AGENTLESS_AGENT.id,
+  name: AGENTLESS_AGENT.name,
   description:
     "A straightforward conversation with the AI — no automated workflows, just you and the model.",
   project: "direct",
@@ -150,7 +149,7 @@ export default function AdminChatViewerComponent({
   >([]);
   const activeAgentId = agentParam || "ALL";
   const isAllMode = activeAgentId === "ALL";
-  const isNoAgent = activeAgentId === "NONE";
+  const isNoAgent = activeAgentId === AGENT_IDS.NONE;
   const isAgentMode = !isAllMode && !isNoAgent;
 
   // -- Session/conversation list state --

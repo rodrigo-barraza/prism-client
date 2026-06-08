@@ -96,3 +96,10 @@ export const CUSTOM_MODEL_NAME =
   process.env.CUSTOM_MODEL_NAME ||
   "";
 
+// ── Accounts Service URL ───────────────────────────────────────
+// Used for authentication (login, signup). Server-side only when
+// possible; the login page signup form also needs it client-side.
+export const ACCOUNTS_SERVICE_URL =
+  process.env.NEXT_PUBLIC_ACCOUNTS_SERVICE_URL ||
+  process.env.ACCOUNTS_SERVICE_URL;
+

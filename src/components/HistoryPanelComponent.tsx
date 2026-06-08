@@ -1,3 +1,4 @@
+import { DEFAULT_CONVERSATION_TITLE } from "@/constants";
 "use client";
 
 import { useMemo } from "react";
@@ -55,7 +56,7 @@ export default function HistoryPanel({
   initialProviders,
   initialSearch = "",
   disableNew,
-  newLabel = "New Conversation",
+  newLabel = DEFAULT_CONVERSATION_TITLE,
   emptyText = "No recent chats",
   searchText = "Search conversations...",
   itemIcon,
