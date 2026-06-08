@@ -30,6 +30,7 @@ import {
   formatElapsedTime,
   timeAgo as formatTimeAgo,
 } from "@rodrigo-barraza/utilities-library";
+import { AGENT_IDS, TOPOLOGIES, DEFAULT_TOPOLOGY } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 import graphStyles from "./SessionGraphPageComponent.module.css";
 import styles from "./ChatSessionGraphComponent.module.css";
@@ -233,11 +234,11 @@ function buildGraphFromSession(
     const reqAgentSessionId = request.agentSessionId || mainAgentSessionId;
     const isSubAgent = reqAgentSessionId !== mainAgentSessionId;
     const currentAgentNodeId = isSubAgent
-      ? `agent:${reqAgentSessionId}:${request.agent || "OMNI"}`
+      ? `agent:${reqAgentSessionId}:${request.agent || AGENT_IDS.OMNI}`
       : parentAgentNodeId;
 
     if (isSubAgent) {
-      const subAgentLabel = request.agent || "OMNI";
+      const subAgentLabel = request.agent || AGENT_IDS.OMNI;
       addNode(currentAgentNodeId, subAgentLabel, "agent", 22, {
         agent: subAgentLabel,
         isSubagent: true,
@@ -312,13 +313,13 @@ function buildGraphFromSession(
     addEdge(userNodeId, sessionNodeId, 0.5);
   }
 
-  const topology = session.settings?.agents?.topology || "hierarchical";
-  if (topology === "sequential" && subAgentNodeIds.length > 0) {
+  const topology = session.settings?.agents?.topology || DEFAULT_TOPOLOGY;
+  if (topology === TOPOLOGIES.SEQUENTIAL && subAgentNodeIds.length > 0) {
     addEdge(parentAgentNodeId, subAgentNodeIds[0], 0.9);
     for (let index = 1; index < subAgentNodeIds.length; index++) {
       addEdge(subAgentNodeIds[index - 1], subAgentNodeIds[index], 0.9);
     }
-  } else if ((topology === "peer_to_peer" || topology === "p2p") && subAgentNodeIds.length > 0) {
+  } else if ((topology === TOPOLOGIES.PEER_TO_PEER || topology === "p2p") && subAgentNodeIds.length > 0) {
     for (const subAgentId of subAgentNodeIds) {
       addEdge(parentAgentNodeId, subAgentId, 0.7);
     }
@@ -494,10 +495,10 @@ function applyTopologyLayout(
   canvasHeight: number,
   topology: string
 ): void {
-  const resolvedTopology = topology || "hierarchical";
-  if (resolvedTopology === "sequential") {
+  const resolvedTopology = topology || DEFAULT_TOPOLOGY;
+  if (resolvedTopology === TOPOLOGIES.SEQUENTIAL) {
     applySequentialLayout(graphData, canvasWidth, canvasHeight);
-  } else if (resolvedTopology === "peer_to_peer" || resolvedTopology === "p2p") {
+  } else if (resolvedTopology === TOPOLOGIES.PEER_TO_PEER || resolvedTopology === "p2p") {
     applyPeerToPeerLayout(graphData, canvasWidth, canvasHeight);
   } else {
     applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);

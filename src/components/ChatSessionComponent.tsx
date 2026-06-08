@@ -100,7 +100,7 @@ import {
 
 import useSessionStats from "../hooks/useSessionStats";
 import { generateUUID, renderToolName } from "@rodrigo-barraza/utilities-library";
-import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { TOOL_NAMES, SSE_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, resolveDefaultModel } from "../utils/utilities";
 import {
   PROJECT_AGENT,
@@ -2093,7 +2093,7 @@ export default function ChatSessionComponent({
               traceId,
               agent: agentId,
               harness: settings?.agents?.harness || "standard",
-              topology: settings?.agents?.topology || "hierarchical",
+              topology: settings?.agents?.topology || DEFAULT_TOPOLOGY,
               // Phase 1: Agentic controls
               autoApprove,
               planFirst,
@@ -2427,7 +2427,7 @@ export default function ChatSessionComponent({
             // Increment scheduled task notification badge when agent creates a cron job
             if (
               data.status === "done" &&
-              toolData.name === "create_cron_job"
+              toolData.name === TOOL_NAMES.CREATE_CRON_JOB
             ) {
               const currentNotificationCount = parseInt(
                 localStorage.getItem("cron-job-notifications-count") || "0",
@@ -2472,8 +2472,8 @@ export default function ChatSessionComponent({
               if (mutatedPath && openFiles.length > 0) {
                 // delete_file and move_file both remove the source path
                 if (
-                  toolData.name === "delete_file" ||
-                  toolData.name === "move_file"
+                  toolData.name === TOOL_NAMES.DELETE_FILE ||
+                  toolData.name === TOOL_NAMES.MOVE_FILE
                 ) {
                   const deleted = openFiles.find(
                     (f: ViewerOpenFile) => f.path === mutatedPath,
@@ -2594,7 +2594,7 @@ export default function ChatSessionComponent({
             // Increment scheduled task notification badge when agent creates a cron job
             if (
               toolData.status === "done" &&
-              toolData.name === "create_cron_job"
+              toolData.name === TOOL_NAMES.CREATE_CRON_JOB
             ) {
               const currentNotificationCount = parseInt(
                 localStorage.getItem("cron-job-notifications-count") || "0",
@@ -2621,8 +2621,8 @@ export default function ChatSessionComponent({
               if (mutatedPath && openFiles.length > 0) {
                 // delete_file and move_file both remove the source path
                 if (
-                  toolData.name === "delete_file" ||
-                  toolData.name === "move_file"
+                  toolData.name === TOOL_NAMES.DELETE_FILE ||
+                  toolData.name === TOOL_NAMES.MOVE_FILE
                 ) {
                   const deleted = openFiles.find(
                     (f: ViewerOpenFile) => f.path === mutatedPath,
@@ -2761,14 +2761,14 @@ export default function ChatSessionComponent({
           onStatus: (statusData: SSEData) => {
             if (isStale()) return;
             // statusData is now the full SSE data object { type, message, iteration?, maxIterations? }
-            if (statusData?.message === "iteration_progress") {
+            if (statusData?.message === STATUS_MESSAGES.ITERATION_PROGRESS) {
               setAgenticProgress({
                 iteration: statusData.iteration ?? 0,
                 maxIterations: statusData.maxIterations ?? 0,
               });
-            } else if (statusData?.message === "skills_injected") {
+            } else if (statusData?.message === STATUS_MESSAGES.SKILLS_INJECTED) {
               setInjectedSkills(statusData.skills || []);
-            } else if (statusData?.message === "compaction_started") {
+            } else if (statusData?.message === STATUS_MESSAGES.COMPACTION_STARTED) {
               setMessages((previousMessages) => {
                 const updatedMessages = [...previousMessages];
                 const lastMessage = updatedMessages[updatedMessages.length - 1];
@@ -2789,8 +2789,8 @@ export default function ChatSessionComponent({
                 return updatedMessages;
               });
             } else if (
-              statusData?.message === "compaction_complete" ||
-              statusData?.message === "compaction_failed"
+              statusData?.message === STATUS_MESSAGES.COMPACTION_COMPLETE ||
+              statusData?.message === STATUS_MESSAGES.COMPACTION_FAILED
             ) {
               setMessages((previousMessages) => {
                 const updatedMessages = [...previousMessages];
@@ -2807,21 +2807,21 @@ export default function ChatSessionComponent({
                 }
                 return updatedMessages;
               });
-            } else if (statusData?.message === "context_truncated") {
+            } else if (statusData?.message === STATUS_MESSAGES.CONTEXT_TRUNCATED) {
               setContextTruncated({
                 strategy: statusData.strategy || "",
                 estimatedTokens: statusData.estimatedTokens,
               });
-            } else if (statusData?.message === "tasks_updated") {
+            } else if (statusData?.message === STATUS_MESSAGES.TASKS_UPDATED) {
               // Ephemeral tab switch — show tasks panel then revert after 5s
               switchTabTemporarily("tasks");
               setTasksRefreshKey((k) => k + 1);
               markTabNew("tasks");
-            } else if (statusData?.message === "workers_updated") {
+            } else if (statusData?.message === STATUS_MESSAGES.WORKERS_UPDATED) {
               // Refresh workers data without switching the active tab
               setTasksRefreshKey((k) => k + 1);
               markTabNew("workers");
-            } else if (statusData?.message === "memories_updated") {
+            } else if (statusData?.message === STATUS_MESSAGES.MEMORIES_UPDATED) {
               if (hasAnyMemoryModelSet) {
                 // Ephemeral tab switch — show memories panel then revert after 5s
                 switchTabTemporarily("memories");
@@ -2832,10 +2832,10 @@ export default function ChatSessionComponent({
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
                 .catch(() => {});
-            } else if (statusData?.message === "custom_tools_updated") {
+            } else if (statusData?.message === STATUS_MESSAGES.CUSTOM_TOOLS_UPDATED) {
               // Agent created/updated/deleted a custom tool — refresh the panel
               loadCustomTools();
-            } else if (statusData?.message === "generation_started") {
+            } else if (statusData?.message === STATUS_MESSAGES.GENERATION_STARTED) {
               // Server-computed TTFT — accumulate per-iteration samples for averaging
               setMessages((previousMessages) => {
                 const updated = [...previousMessages];
@@ -2851,7 +2851,7 @@ export default function ChatSessionComponent({
                 }
                 return updated;
               });
-            } else if (statusData?.message === "generation_progress") {
+            } else if (statusData?.message === STATUS_MESSAGES.GENERATION_PROGRESS) {
               // Backend-computed metrics from SessionGenerationTracker —
               // authoritative aggregate across orchestrator, workers,
               // and tool sub-requests.
@@ -3008,7 +3008,7 @@ export default function ChatSessionComponent({
             if (isStale()) return;
             const workerId = data.workerId;
             if (!workerId) return;
-            if (data.message === "spawned") {
+            if (data.message === STATUS_MESSAGES.SPAWNED) {
               // Early mapping: store workerId indexed by description
               // so SpawnAgentRenderer can look up activity before tool result arrives
               setWorkerToolActivity((previousWorkerToolActivity) => ({
@@ -3024,7 +3024,7 @@ export default function ChatSessionComponent({
                   phase: "spawned",
                 },
               }));
-            } else if (data.message === "iteration_progress") {
+            } else if (data.message === STATUS_MESSAGES.ITERATION_PROGRESS) {
               setWorkerToolActivity((previousWorkerToolActivity) => ({
                 ...previousWorkerToolActivity,
                 [workerId]: {
@@ -3036,7 +3036,7 @@ export default function ChatSessionComponent({
                   maxIterations: data.maxIterations,
                 },
               }));
-            } else if (data.message === "phase") {
+            } else if (data.message === STATUS_MESSAGES.PHASE) {
               // Worker LLM phase updates (generating, thinking, processing, loading)
               setWorkerToolActivity((previousWorkerToolActivity) => ({
                 ...previousWorkerToolActivity,
@@ -3055,7 +3055,7 @@ export default function ChatSessionComponent({
                         undefined),
                 },
               }));
-            } else if (data.message === "generation_started") {
+            } else if (data.message === STATUS_MESSAGES.GENERATION_STARTED) {
               // Worker server-computed TTFT — push into the shared samples array
               setMessages((previousMessages) => {
                 const updated = [...previousMessages];
@@ -3071,7 +3071,7 @@ export default function ChatSessionComponent({
                 }
                 return updated;
               });
-            } else if (data.message === "generation_progress") {
+            } else if (data.message === STATUS_MESSAGES.GENERATION_PROGRESS) {
               setMessages((previousMessages) => {
                 const updated = [...previousMessages];
                 const last = updated[updated.length - 1];
@@ -3153,7 +3153,7 @@ export default function ChatSessionComponent({
                   },
                 };
               });
-            } else if (data.message === "complete") {
+            } else if (data.message === STATUS_MESSAGES.COMPLETE) {
               // Worker finished — clear phase so StatusBar stops showing "Generating..."
               setWorkerToolActivity((previousWorkerToolActivity) => ({
                 ...previousWorkerToolActivity,
@@ -3197,7 +3197,7 @@ export default function ChatSessionComponent({
                   return updated;
                 });
               }
-            } else if (data.message === "failed") {
+            } else if (data.message === STATUS_MESSAGES.FAILED) {
               // Worker errored — mark as failed
               setWorkerToolActivity((previousWorkerToolActivity) => ({
                 ...previousWorkerToolActivity,

@@ -1,4 +1,5 @@
 import { AGENT_IDS } from "@/constants";
+import { SSE_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
@@ -1215,10 +1216,10 @@ export default class PrismService {
             try {
               const data = JSON.parse(json);
               if (
-                data.type === "tool_execution" ||
-                data.type === "toolCall" ||
-                data.type === "done" ||
-                data.type === "error"
+                data.type === SSE_EVENT_TYPES.TOOL_EXECUTION ||
+                data.type === SSE_EVENT_TYPES.TOOL_CALL ||
+                data.type === SSE_EVENT_TYPES.DONE ||
+                data.type === SSE_EVENT_TYPES.ERROR
               ) {
                 console.debug(
                   `[SSE dispatch] type=${data.type} status=${data.status || ""} tool=${data.tool?.name || data.name || ""} (${json.length}ch)`,
@@ -1285,40 +1286,40 @@ export default class PrismService {
     } = callbacks;
 
     switch (data.type) {
-      case "chunk":
+      case SSE_EVENT_TYPES.CHUNK:
         onChunk?.(
           data.content as string,
           data._sourceModel as string | undefined,
           data.outputCharacters as number | undefined,
         );
         break;
-      case "thinking":
+      case SSE_EVENT_TYPES.THINKING:
         onThinking?.(
           data.content as string,
           data._sourceModel as string | undefined,
           data.outputCharacters as number | undefined,
         );
         break;
-      case "image":
+      case SSE_EVENT_TYPES.IMAGE:
         onImage?.(
           data.data as string,
           data.mimeType as string,
           data.minioRef as string | undefined,
         );
         break;
-      case "audio":
+      case SSE_EVENT_TYPES.AUDIO:
         onAudio?.(data.data as string, data.mimeType as string);
         break;
-      case "executableCode":
+      case SSE_EVENT_TYPES.EXECUTABLE_CODE:
         onExecutableCode?.(data.code as string, data.language as string);
         break;
-      case "codeExecutionResult":
+      case SSE_EVENT_TYPES.CODE_EXECUTION_RESULT:
         onCodeExecutionResult?.(data.output as string, data.outcome as string);
         break;
-      case "webSearchResult":
+      case SSE_EVENT_TYPES.WEB_SEARCH_RESULT:
         onWebSearchResult?.(data.results as WebSearchResult[]);
         break;
-      case "toolCall":
+      case SSE_EVENT_TYPES.TOOL_CALL:
         onToolCall?.({
           id: data.id as string,
           name: data.name as string,
@@ -1329,64 +1330,64 @@ export default class PrismService {
           _sourceModel: data._sourceModel as string | undefined,
         });
         break;
-      case "tool_execution":
+      case SSE_EVENT_TYPES.TOOL_EXECUTION:
         onToolExecution?.(data);
         break;
-      case "tool_output":
+      case SSE_EVENT_TYPES.TOOL_OUTPUT:
         onToolOutput?.(data);
         break;
-      case "approval_required":
+      case SSE_EVENT_TYPES.APPROVAL_REQUIRED:
         onApprovalRequired?.(data);
         break;
-      case "plan_proposal":
+      case SSE_EVENT_TYPES.PLAN_PROPOSAL:
         onPlanProposal?.(data);
         break;
       // Sub-agent events — forwarded from spawned sub-agents
-      case "sub_agent_tool_execution":
-      case "worker_tool_execution":
+      case SSE_EVENT_TYPES.SUB_AGENT_TOOL_EXECUTION:
+      case SSE_EVENT_TYPES.WORKER_TOOL_EXECUTION:
         onWorkerToolExecution?.(data);
         break;
-      case "sub_agent_tool_output":
-      case "worker_tool_output":
+      case SSE_EVENT_TYPES.SUB_AGENT_TOOL_OUTPUT:
+      case SSE_EVENT_TYPES.WORKER_TOOL_OUTPUT:
         onWorkerToolOutput?.(data);
         break;
-      case "sub_agent_status":
-      case "worker_status":
+      case SSE_EVENT_TYPES.SUB_AGENT_STATUS:
+      case SSE_EVENT_TYPES.WORKER_STATUS:
         onWorkerStatus?.(data);
         break;
       // Prism-local agentic events
-      case "user_question":
+      case SSE_EVENT_TYPES.USER_QUESTION:
         onUserQuestion?.(data);
         break;
-      case "todo_update":
+      case SSE_EVENT_TYPES.TODO_UPDATE:
         onTodoUpdate?.(data);
         break;
-      case "brief_update":
+      case SSE_EVENT_TYPES.BRIEF_UPDATE:
         onBriefUpdate?.(data);
         break;
       // Benchmark-specific events
-      case "run_info":
+      case SSE_EVENT_TYPES.RUN_INFO:
         onRunInfo?.(data);
         break;
-      case "model_start":
+      case SSE_EVENT_TYPES.MODEL_START:
         onModelStart?.(data);
         break;
-      case "model_complete":
+      case SSE_EVENT_TYPES.MODEL_COMPLETE:
         onModelComplete?.(data);
         break;
-      case "run_complete":
+      case SSE_EVENT_TYPES.RUN_COMPLETE:
         onRunComplete?.(data);
         break;
-      case "usage_update":
+      case SSE_EVENT_TYPES.USAGE_UPDATE:
         onUsageUpdate?.(data);
         break;
-      case "status":
+      case SSE_EVENT_TYPES.STATUS:
         onStatus?.(data);
         break;
-      case "done":
+      case SSE_EVENT_TYPES.DONE:
         onDone?.(data);
         break;
-      case "error":
+      case SSE_EVENT_TYPES.ERROR:
         onError?.(new Error(data.message as string));
         break;
       default:
