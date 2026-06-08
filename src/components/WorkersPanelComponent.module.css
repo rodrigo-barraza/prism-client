@@ -210,7 +210,7 @@
 /* ── Loading / Error ──────────────────────────────────────── */
 
 .is-loading-state {
-  composes: loading from "./PanelShared.module.css";
+  composes: is-loading-state from "./PanelShared.module.css";
 }
 
 .spin {
