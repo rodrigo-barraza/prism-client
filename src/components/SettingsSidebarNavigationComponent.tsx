@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import type { PrismSettings } from "../types/types";
+import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
 import styles from "./SettingsSidebarNavigationComponent.module.css";
 
 interface SettingsSection {
@@ -232,7 +233,6 @@ export default function SettingsSidebarNavigationComponent({
           const IconComponent = section.icon;
           const isActive = activeSectionId === section.id;
           const warningCount = sectionWarnings[section.id] || 0;
-          const hasWarning = warningCount > 0;
           return (
             <li key={section.id}>
               <button
@@ -244,14 +244,11 @@ export default function SettingsSidebarNavigationComponent({
                 <span className={styles["navigation-item-label"]}>
                   {section.label}
                 </span>
-                {hasWarning && (
-                  <span
-                    className={styles["incomplete-warning-badge"]}
-                    title={`${warningCount} model${warningCount > 1 ? "s" : ""} still need to be set`}
-                  >
-                    {warningCount}
-                  </span>
-                )}
+                <NavigationIndicatorComponent
+                  count={warningCount}
+                  variant="warning"
+                  title={`${warningCount} model${warningCount > 1 ? "s" : ""} still need to be set`}
+                />
                 {isActive && (
                   <span className={styles["is-active-indicator-state"]} />
                 )}
