@@ -100,7 +100,7 @@ import {
 
 import useSessionStats from "../hooks/useSessionStats";
 import { generateUUID, renderToolName } from "@rodrigo-barraza/utilities-library";
-import { TOOL_NAMES, SSE_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { TOOL_NAMES, SSE_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, resolveDefaultModel } from "../utils/utilities";
 import {
   PROJECT_AGENT,
@@ -1314,8 +1314,40 @@ export default function ChatSessionComponent({
     if (!visionModelConfigured) lockedToolsMap.set(TOOL_NAMES.DESCRIBE_IMAGE, "Configure the Vision Model in Settings → Creative Tools to unlock");
     if (!textToSpeechModelConfigured) lockedToolsMap.set(TOOL_NAMES.SYNTHESIZE_SPEECH, "Configure the Text-to-Speech Model in Settings → Audio to unlock");
     if (!speechToTextModelConfigured) lockedToolsMap.set(TOOL_NAMES.TRANSCRIBE_AUDIO, "Configure the Speech-to-Text Model in Settings → Audio to unlock");
+
+    // Force-disable workspace tools if no workspace is set up or active workspace is down
+    const workspaceIsDown = !currentWorkspace || !currentWorkspace.isAgentServed;
+    if (workspaceIsDown) {
+      const reason = !currentWorkspace
+        ? "No workspace set up — configure one in Settings to unlock"
+        : "Workspace agent is down — make sure the workspace agent is running and connected";
+      for (const tool of builtInTools || []) {
+        const isWorkspaceTool =
+          tool.domainKey === "workspace" ||
+          tool.domainKey === "core_workspace" ||
+          tool.domain === DOMAINS.CORE_WORKSPACE.displayName ||
+          tool.domain === DOMAINS.WORKSPACE.displayName ||
+          tool.name === TOOL_NAMES.ENTER_WORKTREE ||
+          tool.name === TOOL_NAMES.EXIT_WORKTREE;
+        if (isWorkspaceTool) {
+          lockedToolsMap.set(tool.name, reason);
+        }
+      }
+    }
+
     return lockedToolsMap;
-  }, [memoryConfigured, extractionModelConfigured, consolidationModelConfigured, embeddingModelConfigured, imageModelConfigured, visionModelConfigured, textToSpeechModelConfigured, speechToTextModelConfigured]);
+  }, [
+    memoryConfigured,
+    extractionModelConfigured,
+    consolidationModelConfigured,
+    embeddingModelConfigured,
+    imageModelConfigured,
+    visionModelConfigured,
+    textToSpeechModelConfigured,
+    speechToTextModelConfigured,
+    currentWorkspace,
+    builtInTools,
+  ]);
 
   // -- Eager-fetch tab badge counts (fires on mount / session change) --
 

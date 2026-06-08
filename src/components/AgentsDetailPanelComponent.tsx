@@ -26,6 +26,7 @@ import type { EditableAgent } from "./AgentsPageComponent";
 import styles from "./AgentsPageComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
+import { useWorkspace } from "./WorkspaceContextComponent";
 import InfoBannerComponent from "./InfoBannerComponent";
 
 
@@ -216,6 +217,31 @@ export default function AgentsDetailPanelComponent({
   onDuplicateAgent,
 }: AgentsDetailPanelComponentProps) {
   const router = useRouter();
+  const { currentWorkspace } = useWorkspace();
+
+  const lockedOffTools = useMemo(() => {
+    const lockedToolsMap = new Map<string, string>();
+    const workspaceIsDown = !currentWorkspace || !currentWorkspace.isAgentServed;
+    if (workspaceIsDown) {
+      const reason = !currentWorkspace
+        ? "No workspace set up — configure one in Settings to unlock"
+        : "Workspace agent is down — make sure the workspace agent is running and connected";
+      for (const tool of availableTools || []) {
+        const isWorkspaceTool =
+          tool.domainKey === "workspace" ||
+          tool.domainKey === "core_workspace" ||
+          tool.domain === "Workspace" ||
+          tool.domain === "Core Workspace Tools" ||
+          tool.name === "enter_worktree" ||
+          tool.name === "exit_worktree";
+        if (isWorkspaceTool) {
+          lockedToolsMap.set(tool.name, reason);
+        }
+      }
+    }
+    return lockedToolsMap;
+  }, [currentWorkspace, availableTools]);
+
   const currentAccentColor = editingAgent?.color || selectedBuiltInAgent?.color || "#6366f1";
 
   const fileInputReference = useRef<HTMLInputElement | null>(null);
@@ -659,6 +685,7 @@ export default function AgentsDetailPanelComponent({
               onUpdateField("enabledTools", selectedTools)
             }
             coreToolsLocked={true}
+            lockedOffTools={lockedOffTools}
           />
 
           {/* Policies block */}
@@ -887,6 +914,7 @@ export default function AgentsDetailPanelComponent({
             }
             coreToolsLocked={true}
             readOnly={true}
+            lockedOffTools={lockedOffTools}
           />
 
           {/* Duplicate button element */}

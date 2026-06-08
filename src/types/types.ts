@@ -1023,6 +1023,7 @@ export interface ToolSchema {
   name: string;
   description: string;
   domain?: string;
+  domainKey?: string;
   labels?: string[];
   system?: boolean;
   intelligenceTier?: "low" | "medium" | "high" | "frontier";

@@ -69,9 +69,9 @@ interface ToolSelectionProps {
   readOnly?: boolean;
 }
 
-// -- Domain icon mapping (mirrors CustomToolsPanel) --------------
 const DOMAIN_ICONS: Record<string, LucideIcon> = {
   [DOMAINS.CORE_HARNESS.displayName]: Bot,
+  [DOMAINS.CORE_WORKSPACE.displayName]: FolderOpen,
   [DOMAINS.ORCHESTRATOR.displayName]: Bot,
   [DOMAINS.WEATHER.displayName]: CloudSun,
   [DOMAINS.EVENTS.displayName]: CalendarDays,
@@ -115,6 +115,7 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
 
 const DOMAIN_LABELS: Record<string, string> = {
   [DOMAINS.CORE_HARNESS.displayName]: DOMAINS.CORE_HARNESS.displayName,
+  [DOMAINS.CORE_WORKSPACE.displayName]: DOMAINS.CORE_WORKSPACE.displayName,
   [DOMAINS.ORCHESTRATOR.displayName]: DOMAINS.ORCHESTRATOR.displayName,
   [DOMAINS.WORKSPACE.displayName]: "Workspace Tools",
   [DOMAINS.WEB.displayName]: DOMAINS.WEB.displayName,
@@ -138,6 +139,7 @@ const DOMAIN_LABELS: Record<string, string> = {
 
 const DOMAIN_ORDER = [
   DOMAINS.CORE_HARNESS.displayName,
+  DOMAINS.CORE_WORKSPACE.displayName,
   DOMAINS.ORCHESTRATOR.displayName,
   DOMAINS.WORKSPACE.displayName,
   DOMAINS.WEB.displayName,
@@ -791,7 +793,7 @@ export default function ToolSelectionComponent({
               </div>
             ) : (
               selectedGroupedByDomain.map(([groupKey, tools]) => {
-                const isCoreDomain = groupKey === DOMAINS.CORE_HARNESS.displayName || groupKey === DOMAINS.ORCHESTRATOR.displayName;
+                const isCoreDomain = groupKey === DOMAINS.CORE_HARNESS.displayName || groupKey === DOMAINS.CORE_WORKSPACE.displayName || groupKey === DOMAINS.ORCHESTRATOR.displayName;
                 const isMcp = groupKey.startsWith("Model Context Protocol:") || groupKey === "Model Context Protocol";
                 const GroupIcon: LucideIcon = isMcp
                   ? Network

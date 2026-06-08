@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import {
   Plus,
   Trash2,
@@ -82,6 +82,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "./BadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
+import { useWorkspace } from "./WorkspaceContextComponent";
 import { getErrorMessage } from "../utils/errorMessage";
 import styles from "./CustomAgentsPanelComponent.module.css";
 import type { LucideIcon } from "lucide-react";
@@ -113,6 +114,7 @@ export interface AvailableTool {
   name: string;
   description?: string;
   domain?: string;
+  domainKey?: string;
 }
 
 interface CustomAgentsPanelProps {
@@ -239,6 +241,31 @@ export default function CustomAgentsPanel({
   onAgentsChange,
   availableTools = [],
 }: CustomAgentsPanelProps) {
+  const { currentWorkspace } = useWorkspace();
+
+  const lockedOffTools = useMemo(() => {
+    const lockedToolsMap = new Map<string, string>();
+    const workspaceIsDown = !currentWorkspace || !currentWorkspace.isAgentServed;
+    if (workspaceIsDown) {
+      const reason = !currentWorkspace
+        ? "No workspace set up — configure one in Settings to unlock"
+        : "Workspace agent is down — make sure the workspace agent is running and connected";
+      for (const tool of availableTools || []) {
+        const isWorkspaceTool =
+          tool.domainKey === "workspace" ||
+          tool.domainKey === "core_workspace" ||
+          tool.domain === "Workspace" ||
+          tool.domain === "Core Workspace Tools" ||
+          tool.name === "enter_worktree" ||
+          tool.name === "exit_worktree";
+        if (isWorkspaceTool) {
+          lockedToolsMap.set(tool.name, reason);
+        }
+      }
+    }
+    return lockedToolsMap;
+  }, [currentWorkspace, availableTools]);
+
   const [editingAgent, setEditingAgent] = useState<EditableAgent | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -686,6 +713,7 @@ export default function CustomAgentsPanel({
               updateField("enabledTools", tools)
             }
             coreToolsLocked={true}
+            lockedOffTools={lockedOffTools}
           />
 
           {/* Policy Editor */}
