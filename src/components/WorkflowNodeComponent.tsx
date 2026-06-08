@@ -1388,21 +1388,12 @@ function ToolNode(props: ToolNodeProps) {
     name: string;
     [key: string]: unknown;
   }>;
-  const customToolsList = (node.customTools || []) as Array<{
-    name?: string;
-    _id?: string;
-    [key: string]: unknown;
-  }>;
   const disabledTools = new Set(node.disabledTools || []);
   const enabledBuiltIn = builtInTools.filter(
     (toolItem: { name: string }) => !disabledTools.has(toolItem.name),
   ).length;
-  const enabledCustom = customToolsList.filter(
-    (toolItem: { name?: string; _id?: string }) =>
-      !disabledTools.has(toolItem.name || toolItem._id || ""),
-  ).length;
-  const totalEnabled = enabledBuiltIn + enabledCustom;
-  const totalTools = builtInTools.length + customToolsList.length;
+  const totalEnabled = enabledBuiltIn;
+  const totalTools = builtInTools.length;
 
   const isRunning = status === "running";
   const isDone = status === "done";
@@ -1417,17 +1408,9 @@ function ToolNode(props: ToolNodeProps) {
   const TOOL_PILL_HEIGHT = 20;
   const TOOL_PILL_GAP = 3;
   const MAX_PILLS = 6;
-  const allToolNames = [
-    ...builtInTools
-      .filter((toolItem: { name: string }) => !disabledTools.has(toolItem.name))
-      .map((toolItem: { name: string }) => toolItem.name),
-    ...customToolsList
-      .filter(
-        (toolItem: { name?: string; _id?: string }) =>
-          !disabledTools.has(toolItem.name || toolItem._id || ""),
-      )
-      .map((toolItem: { name?: string; _id?: string }) => toolItem.name || ""),
-  ];
+  const allToolNames = builtInTools
+    .filter((toolItem: { name: string }) => !disabledTools.has(toolItem.name))
+    .map((toolItem: { name: string }) => toolItem.name);
   const displayedTools = allToolNames.slice(0, MAX_PILLS);
   const remainingCount = allToolNames.length - displayedTools.length;
   const pillRows = displayedTools.length + (remainingCount > 0 ? 1 : 0);

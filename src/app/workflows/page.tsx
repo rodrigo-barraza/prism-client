@@ -427,30 +427,27 @@ export default function WorkflowsPage({
           inputTypes: [],
           outputTypes: ["tools"],
           builtInTools: [],
-          customTools: [],
           disabledTools: [],
           position: {
             x: 80 + nodes.length * 60 + Math.random() * 40,
             y: 80 + nodes.length * 40 + Math.random() * 40,
           },
         };
-        // Load both custom tools and built-in schemas, then attach them
-        Promise.all([
-          PrismService.getCustomTools(AGENT_IDS.CODING).catch(() => []),
-          PrismService.getBuiltInToolSchemas(AGENT_IDS.CODING).catch(() => []),
-        ]).then(([custom, builtIn]: [unknown[], unknown[]]) => {
-          setNodes((prev) =>
-            prev.map((n) =>
-              n.id === newNode.id
-                ? {
-                    ...n,
-                    customTools: custom as string[],
-                    builtInTools: builtIn as string[],
-                  }
-                : n,
-            ),
-          );
-        });
+        // Load built-in schemas, then attach them
+        PrismService.getBuiltInToolSchemas(AGENT_IDS.CODING)
+          .catch(() => [])
+          .then((builtIn: unknown[]) => {
+            setNodes((prev) =>
+              prev.map((n) =>
+                n.id === newNode.id
+                  ? {
+                      ...n,
+                      builtInTools: builtIn as string[],
+                    }
+                  : n,
+              ),
+            );
+          });
         setNodes((prev) => [...prev, newNode as unknown as WorkflowNode]);
         setSelectedNodeId(newNode.id);
         return;

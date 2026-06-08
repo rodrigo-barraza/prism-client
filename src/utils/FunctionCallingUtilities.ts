@@ -7,7 +7,7 @@
  * logic to avoid duplication.
  */
 
-import type { ToolSchema, CustomTool } from "../types/types";
+import type { ToolSchema } from "../types/types";
 
 /**
  * Sanitize a tool name for LLM function calling APIs.
@@ -22,36 +22,12 @@ export function sanitizeToolName(name: string): string {
 }
 
 /**
- * Build a merged array of tool schemas from built-in and custom tools.
+ * Build a filtered array of enabled tool schemas from built-in tools.
  * Used by ChatSessionComponent.
  */
 export function buildToolSchemas(
   builtInTools: ToolSchema[],
   disabledTools: Set<string>,
-  customTools: CustomTool[],
 ): ToolSchema[] {
-  const builtIn = builtInTools.filter((t) => !disabledTools.has(t.name));
-  const custom: ToolSchema[] = customTools
-    .filter((t) => t.enabled)
-    .map((t) => ({
-      name: sanitizeToolName(t.name),
-      description: t.description,
-      parameters: {
-        type: "object" as const,
-        properties: Object.fromEntries(
-          (t.parameters || []).map((p) => [
-            p.name,
-            {
-              type: p.type || "string",
-              description: p.description || "",
-              ...(p.enum?.length ? { enum: p.enum } : {}),
-            },
-          ]),
-        ),
-        required: (t.parameters || [])
-          .filter((p) => p.required)
-          .map((p) => p.name),
-      },
-    }));
-  return [...builtIn, ...custom];
+  return builtInTools.filter((tool) => !disabledTools.has(tool.name));
 }

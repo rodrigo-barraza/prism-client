@@ -39,7 +39,7 @@ import {
   TableComponent,
   BadgeComponent,
 } from "@rodrigo-barraza/components-library";
-import { AgentPersona, PrismConfig, ModelOption, CustomTool, ToolSchema, Conversation } from "../../types/types";
+import { AgentPersona, PrismConfig, ModelOption, ToolSchema, Conversation } from "../../types/types";
 import ToolBadgeComponent from "../../components/ToolBadgeComponent";
 import AgentPickerComponent from "../../components/AgentPickerComponent";
 import { getErrorMessage } from "../../utils/errorMessage";
@@ -624,7 +624,6 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
       // Fetch built-in and custom tool names for inline badge parsing
       try {
         const builtInSchemas = await PrismService.getBuiltInToolSchemas().catch(() => [] as ToolSchema[]);
-        const customToolSchemas = await PrismService.getCustomTools().catch(() => [] as CustomTool[]);
         const agentToolNames = fetchedAgents.flatMap((agent) => agent.enabledToolNames || []);
         
         const canonicalCapabilities = [
@@ -644,7 +643,6 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
         const combinedNames = new Set<string>([
           ...canonicalCapabilities,
           ...builtInSchemas.map((schema) => schema.name),
-          ...customToolSchemas.map((schema) => schema.name),
           ...agentToolNames,
         ]);
         

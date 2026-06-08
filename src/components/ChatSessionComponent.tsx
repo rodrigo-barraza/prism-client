@@ -43,7 +43,6 @@ import {
   Message,
   PrismConfig,
   AgentSession,
-  CustomTool,
   Skill,
   Rule,
   ToolCallEvent,
@@ -66,8 +65,8 @@ import SettingsPanel, {
   SessionStats as DisplaySessionStats,
 } from "./SettingsPanelComponent";
 import ModelInfoPanel from "./ModelInfoPanelComponent";
-import CustomToolsPanel from "./CustomToolsPanelComponent";
 import SkillsPanel from "./SkillsPanelComponent";
+import ToolSelectionComponent from "./ToolSelectionComponent";
 import RulesPanel from "./RulesPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
@@ -434,7 +433,6 @@ export default function ChatSessionComponent({
   const [title, setTitle] = useState(isNoAgent ? "Agentless Chat" : "Agent");
   const [leftTab, setLeftTab] = useState(initialTabKey || "settings"); // "settings" | "tools"
   const [chatAreaTab, setChatAreaTab] = useState<"chat" | "nodes">("chat");
-  const [customTools, setCustomTools] = useState<CustomTool[]>([]);
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [_injectedSkills, setInjectedSkills] = useState<Skill[]>([]);
@@ -1178,20 +1176,6 @@ export default function ChatSessionComponent({
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load custom tools
-  const loadCustomTools = useCallback(async () => {
-    try {
-      const tools = await PrismService.getCustomTools(agentProject);
-      setCustomTools(tools);
-    } catch (error: unknown) {
-      console.error("Failed to load custom tools:", error);
-    }
-  }, [agentProject]);
-
-  useEffect(() => {
-    loadCustomTools();
-  }, [loadCustomTools]);
-
   // Load skills
   const loadSkills = useCallback(async () => {
     try {
@@ -1531,8 +1515,8 @@ export default function ChatSessionComponent({
 
   // Build final tool schemas
   const allToolSchemas = useMemo(
-    () => buildToolSchemas(builtInTools, disabledTools, customTools),
-    [customTools, builtInTools, disabledTools],
+    () => buildToolSchemas(builtInTools, disabledTools),
+    [builtInTools, disabledTools],
   );
 
   const configurableTools = useMemo(() => {
@@ -2862,9 +2846,6 @@ export default function ChatSessionComponent({
               PrismService.getAgentMemories(agentProject, 1, agentId)
                 .then((r) => setTotalMemoriesCount(r.total || 0))
                 .catch(() => {});
-            } else if (statusData?.message === STATUS_MESSAGES.CUSTOM_TOOLS_UPDATED) {
-              // Agent created/updated/deleted a custom tool — refresh the panel
-              loadCustomTools();
             } else if (statusData?.message === STATUS_MESSAGES.GENERATION_STARTED) {
               // Server-computed TTFT — accumulate per-iteration samples for averaging
               setMessages((previousMessages) => {
@@ -5150,17 +5131,22 @@ export default function ChatSessionComponent({
             count={`${enabledConfigurableCount + (isCoreToolsLocked ? coreToolsCount : enabledCoreToolsCount)} / ${configurableTools.length + coreToolsCount}`}
             hasOnlyCoreToolsActive={enabledConfigurableCount === 0 && (isCoreToolsLocked || enabledCoreToolsCount === 0)}
           />
-          <CustomToolsPanel
-            tools={customTools}
-            onToolsChange={loadCustomTools}
-            project={agentProject}
-            builtInTools={builtInTools}
-            disabledTools={disabledTools}
-            onToggleBuiltIn={handleToggleBuiltIn}
-            onToggleAllBuiltIn={handleToggleAllBuiltIn}
-            lockedOffTools={lockedOffTools}
-            agent={!isNoAgent}
+          <ToolSelectionComponent
+            availableTools={builtInTools}
+            enabledTools={builtInTools
+              .filter((tool) => !disabledTools.has(tool.name))
+              .map((tool) => tool.name)}
+            onEnabledToolsChange={(newEnabled) => {
+              const enabledSet = new Set(newEnabled);
+              for (const tool of builtInTools) {
+                const isDisabled = disabledTools.has(tool.name);
+                const shouldBeEnabled = enabledSet.has(tool.name);
+                if (isDisabled && shouldBeEnabled) handleToggleBuiltIn(tool.name);
+                else if (!isDisabled && !shouldBeEnabled) handleToggleBuiltIn(tool.name);
+              }
+            }}
             coreToolsLocked={!isNoAgent && (activeAgentData?.coreToolsLocked ?? true)}
+            lockedOffTools={lockedOffTools}
           />
         </>
       )}

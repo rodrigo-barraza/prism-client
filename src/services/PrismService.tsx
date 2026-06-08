@@ -15,7 +15,6 @@ import type {
   Message,
   AgentSession,
   AgentSessionListResponse,
-  CustomTool,
   CustomAgent,
   AgentPersona,
   Skill,
@@ -511,63 +510,6 @@ export default class PrismService {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Custom Tools
-  // ---------------------------------------------------------------------------
-
-  /**
-   * List all custom tools for a project.
-
-
-   */
-  static async getCustomTools(project?: string): Promise<CustomTool[]> {
-    const queryString = project
-      ? `?project=${encodeURIComponent(project)}`
-      : "";
-    return PrismService._request<CustomTool[]>(`/custom-tools${queryString}`, {
-      method: "GET",
-    });
-  }
-
-  /**
-   * Create a new custom tool.
-
-
-   */
-  static async createCustomTool(
-    tool: Omit<CustomTool, "_id">,
-  ): Promise<CustomTool> {
-    return PrismService._request<CustomTool>("/custom-tools", {
-      method: "POST",
-      body: tool,
-    });
-  }
-
-  /**
-   * Update an existing custom tool.
-
-
-   */
-  static async updateCustomTool(
-    id: string,
-    updates: Partial<CustomTool>,
-  ): Promise<CustomTool> {
-    return PrismService._request<CustomTool>(`/custom-tools/${id}`, {
-      method: "PUT",
-      body: updates,
-    });
-  }
-
-  /**
-   * Delete a custom tool.
-
-
-   */
-  static async deleteCustomTool(id: string): Promise<{ success: boolean }> {
-    return PrismService._request<{ success: boolean }>(`/custom-tools/${id}`, {
-      method: "DELETE",
-    });
-  }
 
   // ---------------------------------------------------------------------------
   // Custom Agents

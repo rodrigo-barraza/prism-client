@@ -29,8 +29,8 @@ import SettingsPanel, { SessionStats as PanelSessionStats } from "./SettingsPane
 import ModelInfoPanel from "./ModelInfoPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
 import HistoryPanel from "./HistoryPanelComponent";
-import CustomToolsPanel from "./CustomToolsPanelComponent";
 import SkillsPanel from "./SkillsPanelComponent";
+import ToolSelectionComponent from "./ToolSelectionComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
 
@@ -67,7 +67,6 @@ import type {
   Favorite,
   Workflow,
   AgentPersona,
-  CustomTool,
   Skill,
   ToolSchema,
   SessionStats,
@@ -180,7 +179,6 @@ export default function AdminChatViewerComponent({
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
   // Agent-specific sub-panel state
-  const [customTools, setCustomTools] = useState<CustomTool[]>([]);
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [rules, setRules] = useState<Rule[]>([]);
@@ -230,7 +228,6 @@ export default function AdminChatViewerComponent({
   // ── Agent-specific data (tools, skills, memories, MCP, rules) ───────
   useEffect(() => {
     if (!targetAgentId) {
-      setCustomTools([]);
       setSkills([]);
       setBuiltInTools([]);
       setTotalMemoriesCount(0);
@@ -240,9 +237,6 @@ export default function AdminChatViewerComponent({
 
     const project = targetProject || PROJECT_AGENT;
 
-    PrismService.getCustomTools(project)
-      .then((tools: CustomTool[]) => setCustomTools(tools))
-      .catch(() => {});
     PrismService.getSkills(project)
       .then((loadedSkills: Skill[]) => setSkills(loadedSkills))
       .catch(() => {});
@@ -839,7 +833,7 @@ export default function AdminChatViewerComponent({
     badgeDisabled: count === 0,
   });
 
-  const allToolCount = builtInTools.length + customTools.length;
+  const allToolCount = builtInTools.length;
 
   // ── Top panel tab definitions (adaptive) ────────────────────
   const topTabs = useMemo(() => {
@@ -1127,16 +1121,11 @@ export default function AdminChatViewerComponent({
                     <SidebarTabHeaderComponent
                       icon={Wrench}
                       title="Tools"
-                      count={`${builtInTools.length + customTools.length}`}
+                      count={`${builtInTools.length}`}
                     />
-                    <CustomToolsPanel
-                      tools={customTools}
-                      onToolsChange={() => {}}
-                      project={targetProject || PROJECT_AGENT}
-                      builtInTools={builtInTools}
-                      disabledTools={new Set()}
-                      onToggleBuiltIn={() => {}}
-                      onToggleAllBuiltIn={() => {}}
+                    <ToolSelectionComponent
+                      availableTools={builtInTools}
+                      enabledTools={builtInTools.map((tool) => tool.name)}
                       readOnly
                     />
                   </>

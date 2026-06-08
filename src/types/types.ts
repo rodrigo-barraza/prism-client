@@ -717,30 +717,6 @@ export interface FileAttachment {
   size?: number;
 }
 
-// ─── Custom Tools ───────────────────────────────────────────
-
-export interface CustomToolParameter {
-  name: string;
-  type?: string;
-  description?: string;
-  required?: boolean;
-  enum?: string[];
-}
-
-export interface CustomTool {
-  _id?: ObjectId;
-  id?: string;
-  name: string;
-  description: string;
-  project?: string;
-  enabled?: boolean;
-  parameters?: CustomToolParameter[];
-  implementation?: string;
-  code?: string;
-  endpoint?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 // ─── Custom Agents ──────────────────────────────────────────
 
@@ -1263,9 +1239,6 @@ export interface WorkflowNode {
   outputTypes?: string[];
   supportedModalities?: string[];
   builtInTools?: Array<string | { name: string; [key: string]: unknown }>;
-  customTools?: Array<
-    string | { name?: string; _id?: string; [key: string]: unknown }
-  >;
   disabledTools?: string[];
   receivedOutputs?: Record<string, unknown>;
   nodeType?: string;

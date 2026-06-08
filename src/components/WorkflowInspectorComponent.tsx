@@ -127,7 +127,7 @@ export default function WorkflowInspector({
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [conversationView, setConversationView] = useState("json");
   const [toolBuiltInOpen, setToolBuiltInOpen] = useState(true);
-  const [toolCustomOpen, setToolCustomOpen] = useState(true);
+
 
   // -- Resize logic --
   const [inspectorWidth, setInspectorWidth] = useState(getStoredWidth);
@@ -801,7 +801,7 @@ export default function WorkflowInspector({
             );
           })()}
 
-        {/* Tool node — built-in + custom tool toggles */}
+        {/* Tool node — built-in tool toggles */}
         {isTools &&
           (() => {
             const builtIn = (node.builtInTools || []) as Array<{
@@ -811,19 +811,10 @@ export default function WorkflowInspector({
                 length?: number;
               };
             }>;
-            const custom = (node.customTools || []) as Array<{
-              name?: string;
-              _id?: string;
-              parameters?: {
-                properties?: Record<string, any>;
-                length?: number;
-              };
-            }>;
             const disabled = new Set(node.disabledTools || []);
             const enabledCount =
-              builtIn.filter((t) => !disabled.has(t.name)).length +
-              custom.filter((t) => !disabled.has(t.name || t._id || "")).length;
-            const totalCount = builtIn.length + custom.length;
+              builtIn.filter((t) => !disabled.has(t.name)).length;
+            const totalCount = builtIn.length;
 
             const toggleTool = (toolName: string) => {
               const next = new Set(disabled);
@@ -835,7 +826,6 @@ export default function WorkflowInspector({
             const renderTool = (
               t: {
                 name?: string;
-                _id?: string;
                 parameters?: {
                   properties?: Record<string, any>;
                   length?: number;
@@ -905,37 +895,6 @@ export default function WorkflowInspector({
                     {toolBuiltInOpen && (
                       <div className={styles['tool-list']}>
                         {builtIn.map((t) => renderTool(t, t.name))}
-                      </div>
-                    )}
-                  </section>
-                )}
-
-                {custom.length > 0 && (
-                  <section className={styles['section']}>
-                    <button
-                      className={styles['tool-section-toggle']}
-                      onClick={() => setToolCustomOpen((v) => !v)}
-                    >
-                      {toolCustomOpen ? (
-                        <ChevronDown size={12} />
-                      ) : (
-                        <ChevronRight size={12} />
-                      )}
-                      <span>
-                        Custom (
-                        {
-                          custom.filter(
-                            (t) => !disabled.has(t.name || t._id || ""),
-                          ).length
-                        }
-                        /{custom.length})
-                      </span>
-                    </button>
-                    {toolCustomOpen && (
-                      <div className={styles['tool-list']}>
-                        {custom.map((t) =>
-                          renderTool(t, t.name || t._id || ""),
-                        )}
                       </div>
                     )}
                   </section>
