@@ -23,10 +23,7 @@ import type { MediaItem } from "./MediaPageComponent";
 
 function resolveUrl(url: string | undefined | null) {
   if (!url || typeof url !== "string") return null;
-  if (url.startsWith("minio://")) return PrismService.getFileUrl(url);
-  if (url.startsWith("data:")) return url;
-  if (url.startsWith("http")) return url;
-  return url;
+  return PrismService.getFileUrl(url);
 }
 
 function MediaTypeIcon({ type, size = 32 }: { type: string; size?: number }) {

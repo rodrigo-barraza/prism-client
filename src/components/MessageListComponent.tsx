@@ -150,20 +150,14 @@ function renderContentWithMentions(
 
 function getMimeCategory(ref: string | undefined | null) {
   if (!ref) return "file";
+  let targetUrl = ref;
   if (ref.startsWith("minio://")) {
-    const ext = ref.split(".").pop()?.toLowerCase();
-    if (ext && ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext))
-      return "image";
-    if (ext && ["wav", "mp3", "webm", "ogg"].includes(ext)) return "audio";
-    if (ext && ["mp4", "mov", "avi"].includes(ext)) return "video";
-    if (ext === "pdf") return "pdf";
-    if (ext === "txt") return "text";
-    return "file";
+    targetUrl = PrismService.getFileUrl(ref);
   }
-  // Handle HTTP/HTTPS URLs (e.g. Discord CDN images)
-  if (ref.startsWith("http://") || ref.startsWith("https://")) {
+  // Handle HTTP/HTTPS URLs (e.g. MinIO files or Discord CDN images)
+  if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
     try {
-      const pathname = new URL(ref).pathname;
+      const pathname = new URL(targetUrl).pathname;
       const ext = pathname.split(".").pop()?.toLowerCase();
       if (ext && ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext))
         return "image";
@@ -176,7 +170,7 @@ function getMimeCategory(ref: string | undefined | null) {
     }
     return "image"; // Default assumption for HTTP URLs in images array
   }
-  const match = ref.match(/^data:([\w-]+)\//);
+  const match = targetUrl.match(/^data:([\w-]+)\//);
   if (!match) return "file";
   const type = match[1];
   if (type === "application") return "pdf";

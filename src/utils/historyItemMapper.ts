@@ -80,6 +80,19 @@ export function mapConversationToHistoryItem(
       }
     : baseModalities;
 
+  const searchTextParts = [
+    conversation.project || "",
+    conversation.username || "",
+  ];
+
+  if (conversation.messages && conversation.messages.length > 0) {
+    for (const message of conversation.messages) {
+      if (typeof message.content === "string" && message.content) {
+        searchTextParts.push(message.content);
+      }
+    }
+  }
+
   return {
     id: conversation.id || String(conversation._id),
     title: conversation.title || "Untitled Chat",
@@ -94,13 +107,7 @@ export function mapConversationToHistoryItem(
     modelName: conversation.model || conversation.settings?.model || null,
     agent: conversation.agent,
     parentAgentSessionId: conversation.parentAgentSessionId || null,
-    searchText: [
-      conversation.project || "",
-      conversation.username || "",
-      ...(conversation.messages || []).map(
-        (message: Message) => message.content || "",
-      ),
-    ].join(" "),
+    searchText: searchTextParts.join(" "),
   };
 }
 
