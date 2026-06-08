@@ -71,12 +71,14 @@
   padding: 8px 12px;
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   cursor: pointer;
   user-select: none;
-  transition: background var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .domain-header:hover {
@@ -86,7 +88,13 @@
 .domain-icon {
   display: flex;
   align-items: center;
-  color: var(--text-tertiary);
+  color: var(--accent-primary);
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.domain-header:hover .domain-icon {
+  opacity: 1;
 }
 
 .domain-count {
@@ -136,6 +144,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--transition-fast);
 }
 
 .tool-domain {
@@ -164,8 +173,9 @@
 .bulk-checkbox-label {
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   letter-spacing: 0.02em;
+  transition: color var(--transition-fast);
 }
 
 /* ── Core System Tools Section ─────────────────────────────────── */
@@ -314,7 +324,7 @@
   padding-inline: 12px;
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -322,11 +332,12 @@
 .selected-category-icon {
   display: flex;
   align-items: center;
-  color: var(--text-tertiary);
+  color: var(--accent-primary);
+  opacity: 0.7;
 }
 
 .selected-category-title {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .selected-category-count {
