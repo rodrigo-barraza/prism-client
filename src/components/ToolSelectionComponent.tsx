@@ -4,7 +4,6 @@ import { DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { useState, useCallback, useMemo } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
-  Tag,
   FolderOpen,
   BookOpen,
   Search,
@@ -34,8 +33,6 @@ import {
   Wrench,
   Bot,
   Trophy,
-  Compass,
-  FlaskConical,
   Lock,
   Brain,
 } from "lucide-react";
@@ -55,7 +52,6 @@ interface ToolSchema {
   name: string;
   description?: string;
   domain?: string;
-  labels?: string[];
   system?: boolean;
   intelligenceTier?: "low" | "medium" | "high" | "frontier";
 }
@@ -178,88 +174,14 @@ const DOMAIN_ORDER = [
   "Other",
 ];
 
-// -- Label taxonomy — icon mapping & ordering ----------------
-const LABEL_ICONS: Record<string, LucideIcon> = {
-  coding: Code2,
-  web: Globe2,
-  health: Heart,
-  finance: BarChart3,
-  location: Compass,
-  reference: BookOpen,
-  media: Film,
-  data: Cpu,
-  shopping: ShoppingCart,
-  sports: Trophy,
-  maritime: Ship,
-  energy: Fuel,
-  communication: Radio,
-  creative: Sparkles,
-  smart_home: Lightbulb,
-  lifx: Lightbulb,
-  discord: Radio,
-  git: GitBranch,
-  meta: Search,
-  automation: CalendarDays,
-  data_science: FlaskConical,
-  mcp: Network,
-};
 
-const LABEL_DISPLAY: Record<string, string> = {
-  coding: "Coding",
-  web: "Web",
-  health: "Health",
-  finance: "Finance",
-  location: "Location",
-  reference: "Reference",
-  media: "Media",
-  data: "Data & Compute",
-  shopping: "Shopping",
-  sports: "Sports",
-  maritime: "Maritime",
-  energy: "Energy",
-  mcp: "Model Context Protocol",
-  communication: "Communication",
-  creative: "Creative",
-  smart_home: "Smart Home",
-  lifx: "LIFX",
-  discord: "Discord",
-  git: "Git",
-  meta: "Meta",
-  automation: "Automation",
-  data_science: "Data Science",
-};
-
-const LABEL_ORDER = [
-  "coding",
-  "web",
-  "data",
-  "reference",
-  "health",
-  "finance",
-  "location",
-  "media",
-  "shopping",
-  "sports",
-  "creative",
-  "communication",
-  "automation",
-  "data_science",
-  "smart_home",
-  "lifx",
-  "discord",
-  "git",
-  "maritime",
-  "energy",
-  "meta",
-];
 
 /**
- * ToolSelectionComponent — reusable grouped tool picker with domain/label
+ * ToolSelectionComponent — reusable grouped tool picker with domain
  * segmented views, search, tri-state checkboxes, and collapsible groups.
  *
- * enabledTools supports three entry formats:
+ * enabledTools supports two entry formats:
  *   - "tool_name"   → exact tool match
- *   - "label:X"     → all tools carrying label X
  *   - "domain:X"    → all tools in domain X
  */
 export default function ToolSelectionComponent({
@@ -293,14 +215,7 @@ export default function ToolSelectionComponent({
     (entries: string[]) => {
       const resolved = new Set<string>();
       for (const entry of entries || []) {
-        if (entry.startsWith("label:")) {
-          const label = entry.slice(6);
-          for (const tool of availableTools) {
-            if (tool.labels?.includes(label) && !lockedOffTools.has(tool.name)) {
-              resolved.add(tool.name);
-            }
-          }
-        } else if (entry.startsWith("domain:")) {
+        if (entry.startsWith("domain:")) {
           const domain = entry.slice(7);
           for (const tool of availableTools) {
             if (tool.domain === domain && !lockedOffTools.has(tool.name)) {
@@ -379,7 +294,7 @@ export default function ToolSelectionComponent({
       const tools = enabledTools || [];
       const resolved = new Set<string>();
       for (const entry of tools) {
-        if (!entry.startsWith("label:") && !entry.startsWith("domain:")) {
+        if (!entry.startsWith("domain:")) {
           resolved.add(entry);
         }
       }
@@ -490,26 +405,7 @@ export default function ToolSelectionComponent({
     return sorted;
   }, [filteredTools]);
 
-  // -- Group by label (tools appear under every label they carry)
-  const groupedByLabel = useMemo(() => {
-    const groups = new Map<string, ToolSchema[]>();
-    for (const tool of filteredTools) {
-      const labels =
-        tool.labels && tool.labels.length > 0 ? tool.labels : ["other"];
-      for (const label of labels) {
-        if (!groups.has(label)) groups.set(label, []);
-        groups.get(label)!.push(tool);
-      }
-    }
-    const sorted: [string, ToolSchema[]][] = [];
-    for (const label of LABEL_ORDER) {
-      if (groups.has(label)) sorted.push([label, groups.get(label)!]);
-    }
-    for (const [label, tools] of groups) {
-      if (!LABEL_ORDER.includes(label)) sorted.push([label, tools]);
-    }
-    return sorted;
-  }, [filteredTools]);
+
 
   // -- Group by intelligence tier --------------------------------
   const TIER_ORDER = ["frontier", "high", "medium", "low"];
@@ -561,12 +457,9 @@ export default function ToolSelectionComponent({
       if (readOnly) return;
       const currentTools = enabledTools || [];
       const isDomain = groupMode === "domain";
-      const isLabel = groupMode === "label";
       const prefix = isDomain
           ? `domain:${groupKey}`
-          : isLabel
-              ? `label:${groupKey}`
-              : `tier:${groupKey}`;
+          : `tier:${groupKey}`;
 
       const resolved = resolveEnabledTools(currentTools);
       const selectableGroupTools = groupTools.filter((tool) => !lockedOffTools.has(tool.name));
@@ -624,7 +517,6 @@ export default function ToolSelectionComponent({
           fullWidth
           segments={[
             { value: "domain", label: "Domain" },
-            { value: "label", label: "Label" },
             { value: "tier", label: "Tier" },
             { value: "selected", label: "Selected" },
           ] satisfies SegmentDefinition[]}
@@ -948,28 +840,21 @@ export default function ToolSelectionComponent({
         ) : (
           (groupMode === "domain"
             ? groupedTools
-            : groupMode === "label"
-              ? groupedByLabel
-              : groupedByTier
+            : groupedByTier
           ).map(([groupKey, tools]) => {
             const isDomain = groupMode === "domain";
-            const isLabel = groupMode === "label";
             const isMcp =
               isDomain && (groupKey.startsWith("Model Context Protocol:") || groupKey === "Model Context Protocol");
             const GroupIcon: LucideIcon = isMcp
               ? Network
               : isDomain
                 ? DOMAIN_ICONS[groupKey] || Layers
-                : isLabel
-                  ? LABEL_ICONS[groupKey] || Tag
-                  : TIER_ICONS[groupKey] || Brain;
+                : TIER_ICONS[groupKey] || Brain;
             const label = isMcp
               ? groupKey.replace("Model Context Protocol: ", "MCP: ")
               : isDomain
                 ? DOMAIN_LABELS[groupKey] || groupKey
-                : isLabel
-                  ? LABEL_DISPLAY[groupKey] || groupKey
-                  : TIER_LABELS[groupKey] || groupKey;
+                : TIER_LABELS[groupKey] || groupKey;
             const collapsed = collapsedDomains.has(groupKey);
             const selectableGroupTools = tools.filter((tool) => !lockedOffTools.has(tool.name));
             const groupEnabled = selectableGroupTools.filter((tool) =>

@@ -29,7 +29,6 @@ export interface ToolSchema {
   description?: string;
   emoji?: string;
   domain?: string;
-  labels?: string[];
   parameters?: {
     properties?: Record<string, unknown>;
     required?: string[];
@@ -84,15 +83,7 @@ function extractDomains(tools: ToolSchema[]): string[] {
   return [...domainSet].sort();
 }
 
-function extractLabels(tools: ToolSchema[]): string[] {
-  const labelSet = new Set<string>();
-  for (const tool of tools) {
-    if (tool.labels) {
-      for (const label of tool.labels) labelSet.add(label);
-    }
-  }
-  return [...labelSet].sort();
-}
+
 
 function groupByDomain(
   tools: ToolSchema[],
@@ -213,11 +204,7 @@ function ToolCard({
           <BadgeComponent type="agent" agents={agents} size={20} iconSize={11} />
         </div>
       )}
-      {tool.labels?.slice(0, 4).map((label: string) => (
-        <span key={label} className={styles['tool-label']}>
-          {label}
-        </span>
-      ))}
+
       {parameterCount > 0 && (
         <span className={styles['param-count']}>
           <Braces /> {parameterCount} param{parameterCount !== 1 ? "s" : ""}
@@ -250,18 +237,15 @@ export default function ToolsTableComponent({
 }: ToolsTableComponentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [domainFilter, setDomainFilter] = useState<string[]>([]);
-  const [labelFilter, setLabelFilter] = useState<string[]>([]);
   const [agentFilter, setAgentFilter] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list" | "table">("grid");
 
   const toolAgentMap = useMemo(() => buildToolAgentMap(agents), [agents]);
   const allDomains = useMemo(() => extractDomains(tools), [tools]);
-  const allLabels = useMemo(() => extractLabels(tools), [tools]);
 
   const filteredTools = useMemo(() => {
     const normalizedSearch = searchQuery.toLowerCase().trim();
     const hasDomainFilter = domainFilter.length > 0;
-    const hasLabelFilter = labelFilter.length > 0;
     const hasAgentFilter = agentFilter.length > 0;
 
     let agentToolUnion: Set<string> | null = null;
@@ -288,23 +272,18 @@ export default function ToolsTableComponent({
     return tools.filter((tool: ToolSchema) => {
       if (hasDomainFilter && (!tool.domain || !domainFilter.includes(tool.domain)))
         return false;
-      if (
-        hasLabelFilter &&
-        (!tool.labels || !tool.labels.some((label: string) => labelFilter.includes(label)))
-      )
-        return false;
       if (agentToolUnion && !agentToolUnion.has(tool.name)) return false;
       if (normalizedSearch) {
         const agentNames = (toolAgentMap[tool.name] || [])
           .map((agent) => agent.name)
           .join(" ");
         const haystack =
-          `${tool.name} ${tool.description} ${tool.domain || ""} ${(tool.labels || []).join(" ")} ${agentNames}`.toLowerCase();
+          `${tool.name} ${tool.description} ${tool.domain || ""} ${agentNames}`.toLowerCase();
         return haystack.includes(normalizedSearch);
       }
       return true;
     });
-  }, [tools, searchQuery, domainFilter, labelFilter, agentFilter, agents, toolAgentMap]);
+  }, [tools, searchQuery, domainFilter, agentFilter, agents, toolAgentMap]);
 
   const grouped = useMemo(() => groupByDomain(filteredTools), [filteredTools]);
 
@@ -566,15 +545,6 @@ export default function ToolsTableComponent({
           onChange={(value: string[]) => setDomainFilter(value)}
         />
 
-        <SelectComponent
-          value={labelFilter}
-          multiple
-          compact
-          allLabel="All Labels"
-          placeholder="Filter Labels"
-          options={allLabels.map((label: string) => ({ value: label, label }))}
-          onChange={(value: string[]) => setLabelFilter(value)}
-        />
 
         <SelectComponent
           value={agentFilter}

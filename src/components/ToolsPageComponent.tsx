@@ -242,11 +242,6 @@ function ToolDetailModal({
                   )}
                 </span>
               )}
-              {tool.labels?.map((l: string) => (
-                <span key={l} className={styles['tool-label']}>
-                  {l}
-                </span>
-              ))}
               {agents?.length > 0 &&
                 agents.map((a: { id: string; name: string }) => (
                   <span

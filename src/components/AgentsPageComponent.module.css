@@ -755,3 +755,50 @@
 .identifier-copy-button[data-is-copied="true"] {
   color: var(--color-success, #22c55e);
 }
+
+/* ── Mobile Responsive ───────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .content-hero-banner {
+    padding-block: 24px;
+    padding-inline: 20px;
+  }
+
+  .content-hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .profile-title-text {
+    font-size: 1.25rem;
+  }
+
+  .profile-badge-and-actions-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .profile-badge-and-actions-container > button {
+    inline-size: 100%;
+  }
+
+  .form-layout-container {
+    padding-inline: 20px;
+  }
+
+  .form-layout-row {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .form-actions-sticky-footer {
+    padding-inline: 20px;
+    margin-inline: -20px;
+  }
+
+  .policy-layout-row-container {
+    flex-wrap: wrap;
+  }
+}

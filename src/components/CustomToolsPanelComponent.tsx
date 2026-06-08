@@ -58,22 +58,17 @@ const EMPTY_TOOL = {
 };
 
 /**
- * Resolve domain:/label: shorthand entries into a flat Set of tool names.
+ * Resolve domain: shorthand entries into a flat Set of tool names.
  * Mirrors ToolSelectionComponent's internal resolveEnabledTools logic so the
  * consumer can correctly diff the enabled set after a group checkbox toggle.
  */
 function resolveShorthands(entries: Iterable<string>, allTools: ToolSchema[]) {
   const resolved = new Set();
   for (const entry of entries) {
-    if (entry.startsWith("label:")) {
-      const label = entry.slice(6);
-      for (const t of allTools) {
-        if (t.labels?.includes(label)) resolved.add(t.name);
-      }
-    } else if (entry.startsWith("domain:")) {
+    if (entry.startsWith("domain:")) {
       const domain = entry.slice(7);
-      for (const t of allTools) {
-        if (t.domain === domain) resolved.add(t.name);
+      for (const tool of allTools) {
+        if (tool.domain === domain) resolved.add(tool.name);
       }
     } else {
       resolved.add(entry);

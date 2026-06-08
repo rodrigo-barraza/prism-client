@@ -138,15 +138,7 @@
   flex-shrink: 0;
 }
 
-.tool-label {
-  font-size: 0.625rem;
-  font-weight: 500;
-  color: var(--text-tertiary);
-  background: var(--background-base);
-  padding: 2px 7px;
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--calculated-border-subtle);
-}
+
 
 .param-count {
   font-size: 0.625rem;

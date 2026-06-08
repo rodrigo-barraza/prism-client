@@ -63,14 +63,7 @@ export default function AgentsSidebarPanelComponent({
 
       const resolvedToolsSet = new Set<string>();
       for (const entry of enabledToolsList) {
-        if (entry.startsWith("label:")) {
-          const labelName = entry.slice(6);
-          for (const tool of availableTools) {
-            if (tool.labels?.includes(labelName)) {
-              resolvedToolsSet.add(tool.name);
-            }
-          }
-        } else if (entry.startsWith("domain:")) {
+        if (entry.startsWith("domain:")) {
           const domainName = entry.slice(7);
           for (const tool of availableTools) {
             if (tool.domain === domainName) {
