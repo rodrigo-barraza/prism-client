@@ -1,5 +1,6 @@
-import { AGENTLESS_AGENT } from "@/constants";
 "use client";
+
+import { AGENTLESS_AGENT } from "@/constants";
 
 import React, {
   useRef,

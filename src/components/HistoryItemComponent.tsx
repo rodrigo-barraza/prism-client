@@ -1,5 +1,6 @@
-import { AGENT_IDS, DEFAULT_USERNAME } from "@/constants";
 "use client";
+
+import { AGENT_IDS, DEFAULT_USERNAME } from "@/constants";
 
 import { Download, Copy, Star, Trash2, ExternalLink } from "lucide-react";
 

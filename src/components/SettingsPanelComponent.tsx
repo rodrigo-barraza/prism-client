@@ -1,5 +1,6 @@
-import { DEFAULT_WORKFLOW_TITLE } from "@/constants";
 "use client";
+
+import { DEFAULT_WORKFLOW_TITLE } from "@/constants";
 import { useState } from "react";
 import {
   Cpu,
