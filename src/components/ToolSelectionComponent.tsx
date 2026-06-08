@@ -73,98 +73,109 @@ interface ToolSelectionProps {
 const DOMAIN_ICONS: Record<string, LucideIcon> = {
   [DOMAINS.CORE_HARNESS.displayName]: Bot,
   [DOMAINS.ORCHESTRATOR.displayName]: Bot,
-  "Weather & Environment": CloudSun,
-  Events: CalendarDays,
-  "Markets & Commodities": BarChart3,
-  Trends: TrendingUp,
-  Products: ShoppingCart,
-  Finance: BarChart3,
-  Knowledge: BookOpen,
-  "Movies & TV": Film,
-  Health: Heart,
-  Transit: Bus,
-  Maritime: Ship,
-  Energy: Fuel,
-  Compute: Cpu,
-  Communication: Radio,
-  Workspace: FolderOpen,
-  Web: Globe2,
-  Browser: MonitorSmartphone,
-  "Task Management": Wrench,
-  Memory: BookOpen,
-  "Agent Management": Bot,
-  "Model Context Protocol": Network,
-  Meta: Search,
-  "Scheduled Tasks": CalendarDays,
-  Timers: CalendarDays,
-  Skills: Layers,
-  "Control Flow": Cpu,
-  "Structured Output": Code2,
-  Creative: Sparkles,
-  Discord: Radio,
-  "Smart Home": Lightbulb,
-  Sports: Trophy,
-  Utilities: Wrench,
-  Coordinator: Bot,
-  Reasoning: Brain,
+  [DOMAINS.WEATHER.displayName]: CloudSun,
+  [DOMAINS.EVENTS.displayName]: CalendarDays,
+  [DOMAINS.MARKETS.displayName]: BarChart3,
+  [DOMAINS.TRENDS.displayName]: TrendingUp,
+  [DOMAINS.PRODUCTS.displayName]: ShoppingCart,
+  [DOMAINS.FINANCE.displayName]: BarChart3,
+  [DOMAINS.KNOWLEDGE.displayName]: BookOpen,
+  [DOMAINS.MOVIES.displayName]: Film,
+  [DOMAINS.HEALTH.displayName]: Heart,
+  [DOMAINS.TRANSIT.displayName]: Bus,
+  [DOMAINS.MARITIME.displayName]: Ship,
+  [DOMAINS.ENERGY.displayName]: Fuel,
+  [DOMAINS.COMPUTE.displayName]: Cpu,
+  [DOMAINS.COMMUNICATION.displayName]: Radio,
+  [DOMAINS.WORKSPACE.displayName]: FolderOpen,
+  [DOMAINS.WEB.displayName]: Globe2,
+  [DOMAINS.BROWSER.displayName]: MonitorSmartphone,
+  [DOMAINS.TASKS.displayName]: Wrench,
+  [DOMAINS.MEMORY.displayName]: BookOpen,
+  [DOMAINS.AGENTS.displayName]: Bot,
+  [DOMAINS.TOOLS.displayName]: Wrench,
+  [DOMAINS.MCP.displayName]: Network,
+  [DOMAINS.META.displayName]: Search,
+  [DOMAINS.CRON_JOBS.displayName]: CalendarDays,
+  [DOMAINS.CONVERSATION_TIMERS.displayName]: CalendarDays,
+  [DOMAINS.SKILLS.displayName]: Layers,
+  [DOMAINS.CONTROL.displayName]: Cpu,
+  [DOMAINS.STRUCTURED.displayName]: Code2,
+  [DOMAINS.REASONING.displayName]: Brain,
+  [DOMAINS.CREATIVE.displayName]: Sparkles,
+  [DOMAINS.GAMING.displayName]: TerminalSquare,
+  [DOMAINS.DISCORD.displayName]: Radio,
+  [DOMAINS.SMART_HOME.displayName]: Lightbulb,
+  [DOMAINS.SPORTS.displayName]: Trophy,
+  [DOMAINS.UTILITIES.displayName]: Wrench,
+  [DOMAINS.TORRENT.displayName]: CloudSun,
+  [DOMAINS.REDDIT.displayName]: Radio,
   Other: Layers,
 };
 
 const DOMAIN_LABELS: Record<string, string> = {
   [DOMAINS.CORE_HARNESS.displayName]: DOMAINS.CORE_HARNESS.displayName,
   [DOMAINS.ORCHESTRATOR.displayName]: DOMAINS.ORCHESTRATOR.displayName,
-  Workspace: "Workspace Tools",
-  Web: "Web",
-  Browser: "Browser",
-  "Task Management": "Task Management",
-  Memory: "Memory",
-  "Agent Management": "Agent Management",
-  "Model Context Protocol": "Model Context Protocol",
-  Meta: "Tool Discovery",
-  "Scheduled Tasks": "Scheduled Tasks",
-  Timers: "Timers",
-  Skills: "Skills",
-  "Control Flow": "Control Flow",
-  "Structured Output": "Structured Output",
+  [DOMAINS.WORKSPACE.displayName]: "Workspace Tools",
+  [DOMAINS.WEB.displayName]: DOMAINS.WEB.displayName,
+  [DOMAINS.BROWSER.displayName]: DOMAINS.BROWSER.displayName,
+  [DOMAINS.TASKS.displayName]: DOMAINS.TASKS.displayName,
+  [DOMAINS.MEMORY.displayName]: DOMAINS.MEMORY.displayName,
+  [DOMAINS.AGENTS.displayName]: DOMAINS.AGENTS.displayName,
+  [DOMAINS.TOOLS.displayName]: DOMAINS.TOOLS.displayName,
+  [DOMAINS.MCP.displayName]: DOMAINS.MCP.displayName,
+  [DOMAINS.META.displayName]: "Tool Discovery",
+  [DOMAINS.CRON_JOBS.displayName]: DOMAINS.CRON_JOBS.displayName,
+  [DOMAINS.CONVERSATION_TIMERS.displayName]: DOMAINS.CONVERSATION_TIMERS.displayName,
+  [DOMAINS.SKILLS.displayName]: DOMAINS.SKILLS.displayName,
+  [DOMAINS.CONTROL.displayName]: DOMAINS.CONTROL.displayName,
+  [DOMAINS.STRUCTURED.displayName]: DOMAINS.STRUCTURED.displayName,
+  [DOMAINS.REASONING.displayName]: DOMAINS.REASONING.displayName,
+  [DOMAINS.TORRENT.displayName]: DOMAINS.TORRENT.displayName,
+  [DOMAINS.REDDIT.displayName]: DOMAINS.REDDIT.displayName,
+  [DOMAINS.GAMING.displayName]: DOMAINS.GAMING.displayName,
 };
 
 const DOMAIN_ORDER = [
   DOMAINS.CORE_HARNESS.displayName,
   DOMAINS.ORCHESTRATOR.displayName,
-  "Workspace",
-  "Web",
-  "Browser",
-  "Task Management",
-  "Memory",
-  "Agent Management",
-  "Model Context Protocol",
-  "Meta",
-  "Scheduled Tasks",
-  "Timers",
-  "Skills",
-  "Control Flow",
-  "Structured Output",
-  "Reasoning",
-  "Coordinator",
-  "Weather & Environment",
-  "Events",
-  "Markets & Commodities",
-  "Trends",
-  "Products",
-  "Finance",
-  "Knowledge",
-  "Movies & TV",
-  "Health",
-  "Compute",
-  "Communication",
-  "Transit",
-  "Maritime",
-  "Energy",
-  "Creative",
-  "Discord",
-  "Smart Home",
-  "Sports",
-  "Utilities",
+  DOMAINS.WORKSPACE.displayName,
+  DOMAINS.WEB.displayName,
+  DOMAINS.BROWSER.displayName,
+  DOMAINS.TASKS.displayName,
+  DOMAINS.MEMORY.displayName,
+  DOMAINS.AGENTS.displayName,
+  DOMAINS.TOOLS.displayName,
+  DOMAINS.MCP.displayName,
+  DOMAINS.META.displayName,
+  DOMAINS.CRON_JOBS.displayName,
+  DOMAINS.CONVERSATION_TIMERS.displayName,
+  DOMAINS.SKILLS.displayName,
+  DOMAINS.CONTROL.displayName,
+  DOMAINS.STRUCTURED.displayName,
+  DOMAINS.REASONING.displayName,
+  DOMAINS.WEATHER.displayName,
+  DOMAINS.EVENTS.displayName,
+  DOMAINS.MARKETS.displayName,
+  DOMAINS.TRENDS.displayName,
+  DOMAINS.PRODUCTS.displayName,
+  DOMAINS.FINANCE.displayName,
+  DOMAINS.KNOWLEDGE.displayName,
+  DOMAINS.MOVIES.displayName,
+  DOMAINS.HEALTH.displayName,
+  DOMAINS.COMPUTE.displayName,
+  DOMAINS.COMMUNICATION.displayName,
+  DOMAINS.TRANSIT.displayName,
+  DOMAINS.MARITIME.displayName,
+  DOMAINS.ENERGY.displayName,
+  DOMAINS.CREATIVE.displayName,
+  DOMAINS.GAMING.displayName,
+  DOMAINS.DISCORD.displayName,
+  DOMAINS.SMART_HOME.displayName,
+  DOMAINS.SPORTS.displayName,
+  DOMAINS.UTILITIES.displayName,
+  DOMAINS.TORRENT.displayName,
+  DOMAINS.REDDIT.displayName,
   "Other",
 ];
 
@@ -263,7 +274,6 @@ export default function ToolSelectionComponent({
   const [toolSearch, setToolSearch] = useState("");
   const [collapsedDomains, setCollapsedDomains] = useState(new Set<string>());
   const [groupMode, setGroupMode] = useState("domain");
-  const [coreCollapsed, setCoreCollapsed] = useState(true);
 
   // -- Split availableTools into Core Agentic and Configurable ----
   const { coreTools, configurableTools } = useMemo(() => {
@@ -406,6 +416,23 @@ export default function ToolSelectionComponent({
         tool.description?.toLowerCase().includes(query),
     );
   }, [coreTools, query]);
+
+  const groupedCoreTools = useMemo(() => {
+    const groups = new Map<string, ToolSchema[]>();
+    for (const tool of filteredCoreTools) {
+      const domain = tool.domain || "Other";
+      if (!groups.has(domain)) groups.set(domain, []);
+      groups.get(domain)!.push(tool);
+    }
+    const sorted: [string, ToolSchema[]][] = [];
+    for (const domain of DOMAIN_ORDER) {
+      if (groups.has(domain)) sorted.push([domain, groups.get(domain)!]);
+    }
+    for (const [domain, tools] of groups) {
+      if (!DOMAIN_ORDER.includes(domain)) sorted.push([domain, tools]);
+    }
+    return sorted;
+  }, [filteredCoreTools]);
 
   const filteredTools = useMemo(() => {
     if (!query) return configurableTools;
@@ -651,97 +678,105 @@ export default function ToolSelectionComponent({
           </div>
         )}
 
-        {/* System Tools Section */}
-        {groupMode !== "selected" && filteredCoreTools.length > 0 && (
-          <div className={styles['core-group']}>
-            <div
-              className={styles['core-header']}
-              onClick={() => setCoreCollapsed(!coreCollapsed)}
-            >
-              {coreCollapsed ? (
-                <ChevronRight size={12} />
-              ) : (
-                <ChevronDown size={12} />
-              )}
-              <span className={styles['core-icon']}>
-                <Bot size={12} />
-              </span>
-              <span className={styles['core-label']}>System Tools</span>
-              {coreToolsLocked ? (
-                <span className={styles['core-badge']}>Locked On</span>
-              ) : (
-                <>
-                  <span className={styles['domain-count']}>
-                    {enabledCoreCount}/{coreTools.length}
-                  </span>
-                  <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
-                    <CheckboxComponent
-                      size="compact"
-                      checked={selectableCoreTools.length > 0 && enabledCoreCount === selectableCoreTools.length}
-                      indeterminate={enabledCoreCount > 0 && enabledCoreCount < selectableCoreTools.length}
-                      disabled={readOnly}
-                      onChange={() => {
-                        if (readOnly) return;
-                        toggleGroupTools("core", coreTools);
-                      }}
-                    />
-                  </span>
-                </>
+        {/* System Tools — grouped by actual domain */}
+        {groupMode !== "selected" && groupedCoreTools.map(([coreDomainKey, coreDomainTools]) => {
+          const CoreDomainIcon: LucideIcon = DOMAIN_ICONS[coreDomainKey] || Bot;
+          const coreDomainLabel = DOMAIN_LABELS[coreDomainKey] || coreDomainKey;
+          const isCoreCollapsed = collapsedDomains.has(`core:${coreDomainKey}`);
+          const selectableCoreDomainTools = coreDomainTools.filter((tool) => !lockedOffTools.has(tool.name));
+          const enabledCoreDomainCount = selectableCoreDomainTools.filter((tool) => resolvedEnabledSet.has(tool.name)).length;
+
+          return (
+            <div key={`core:${coreDomainKey}`} className={styles['core-group']}>
+              <div
+                className={styles['core-header']}
+                onClick={() => toggleDomain(`core:${coreDomainKey}`)}
+              >
+                {isCoreCollapsed ? (
+                  <ChevronRight size={12} />
+                ) : (
+                  <ChevronDown size={12} />
+                )}
+                <span className={styles['core-icon']}>
+                  <CoreDomainIcon size={12} />
+                </span>
+                <span className={styles['core-label']}>{coreDomainLabel}</span>
+                {coreToolsLocked ? (
+                  <span className={styles['core-badge']}>Locked On</span>
+                ) : (
+                  <>
+                    <span className={styles['domain-count']}>
+                      {enabledCoreDomainCount}/{coreDomainTools.length}
+                    </span>
+                    <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
+                      <CheckboxComponent
+                        size="compact"
+                        checked={selectableCoreDomainTools.length > 0 && enabledCoreDomainCount === selectableCoreDomainTools.length}
+                        indeterminate={enabledCoreDomainCount > 0 && enabledCoreDomainCount < selectableCoreDomainTools.length}
+                        disabled={readOnly}
+                        onChange={() => {
+                          if (readOnly) return;
+                          toggleGroupTools("core", coreDomainTools);
+                        }}
+                      />
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {!isCoreCollapsed && (
+                <div className={styles['core-tools-list']}>
+                  {coreDomainTools.map((tool) => (
+                    <TooltipComponent
+                      key={tool.name}
+                      label={tool.description || "Core capability"}
+                      position="right"
+                      delay={400}
+                    >
+                      {coreToolsLocked ? (
+                        <div
+                          className={`${styles['tool-row']} ${styles['core-tool-row']}`}
+                        >
+                          <CheckboxComponent
+                            size="compact"
+                            className={styles['tool-checkbox']}
+                            checked={true}
+                            disabled={true}
+                            onChange={() => {}}
+                            label={
+                              <span className={`${styles['tool-name']} ${styles['core-tool-name']}`}>
+                                {renderToolName(tool.name)}
+                              </span>
+                            }
+                          />
+                          <Lock size={10} className={styles['lock-icon']} />
+                        </div>
+                      ) : (
+                        <div className={styles['tool-row']}>
+                          <CheckboxComponent
+                            size="compact"
+                            className={styles['tool-checkbox']}
+                            checked={resolvedEnabledSet.has(tool.name)}
+                            disabled={readOnly}
+                            onChange={() => {
+                              if (readOnly) return;
+                              toggleTool(tool.name);
+                            }}
+                            label={
+                              <span className={styles['tool-name']}>
+                                {renderToolName(tool.name)}
+                              </span>
+                            }
+                          />
+                        </div>
+                      )}
+                    </TooltipComponent>
+                  ))}
+                </div>
               )}
             </div>
-
-            {!coreCollapsed && (
-              <div className={styles['core-tools-list']}>
-                {filteredCoreTools.map((tool) => (
-                  <TooltipComponent
-                    key={tool.name}
-                    label={tool.description || "Core capability"}
-                    position="right"
-                    delay={400}
-                  >
-                    {coreToolsLocked ? (
-                      <div
-                        className={`${styles['tool-row']} ${styles['core-tool-row']}`}
-                      >
-                        <CheckboxComponent
-                          size="compact"
-                          className={styles['tool-checkbox']}
-                          checked={true}
-                          disabled={true}
-                          onChange={() => {}}
-                          label={
-                            <span className={`${styles['tool-name']} ${styles['core-tool-name']}`}>
-                              {renderToolName(tool.name)}
-                            </span>
-                          }
-                        />
-                        <Lock size={10} className={styles['lock-icon']} />
-                      </div>
-                    ) : (
-                      <div className={styles['tool-row']}>
-                        <CheckboxComponent
-                          size="compact"
-                          className={styles['tool-checkbox']}
-                          checked={resolvedEnabledSet.has(tool.name)}
-                          disabled={readOnly}
-                          onChange={() => {
-                            if (readOnly) return;
-                            toggleTool(tool.name);
-                          }}
-                          label={
-                            <span className={styles['tool-name']}>
-                              {renderToolName(tool.name)}
-                            </span>
-                          }
-                        />
-                      </div>
-                    )}
-                  </TooltipComponent>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })}
 
         {/* Group rendering — domain, label, tier, or selected mode */}
         {groupMode === "selected" ? (
