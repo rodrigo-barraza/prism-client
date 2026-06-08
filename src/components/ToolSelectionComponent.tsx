@@ -71,6 +71,8 @@ interface ToolSelectionProps {
 // -- Domain icon mapping (mirrors CustomToolsPanel) --------------
 const DOMAIN_ICONS: Record<string, LucideIcon> = {
   "Core Tools": Bot,
+  "Core Harness Tools": Bot,
+  "Core Orchestrator Tools": Bot,
   "Weather & Environment": CloudSun,
   Events: CalendarDays,
   "Markets & Commodities": BarChart3,
@@ -110,6 +112,8 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
 
 const DOMAIN_LABELS: Record<string, string> = {
   "Core Tools": "Core Tools",
+  "Core Harness Tools": "Core Harness Tools",
+  "Core Orchestrator Tools": "Core Orchestrator Tools",
   Workspace: "Workspace Tools",
   Web: "Web",
   Browser: "Browser",
@@ -127,6 +131,8 @@ const DOMAIN_LABELS: Record<string, string> = {
 
 const DOMAIN_ORDER = [
   "Core Tools",
+  "Core Harness Tools",
+  "Core Orchestrator Tools",
   "Workspace",
   "Web",
   "Browser",
@@ -428,7 +434,7 @@ export default function ToolSelectionComponent({
     ];
     const groups = new Map<string, ToolSchema[]>();
     for (const tool of allSelectedTools) {
-      const domain = tool.system ? "Core Tools" : (tool.domain || "Other");
+      const domain = tool.domain || "Other";
       if (!groups.has(domain)) groups.set(domain, []);
       groups.get(domain)!.push(tool);
     }
@@ -647,7 +653,7 @@ export default function ToolSelectionComponent({
           </div>
         )}
 
-        {/* Core Tools Section */}
+        {/* System Tools Section */}
         {groupMode !== "selected" && filteredCoreTools.length > 0 && (
           <div className={styles['core-group']}>
             <div
@@ -662,7 +668,7 @@ export default function ToolSelectionComponent({
               <span className={styles['core-icon']}>
                 <Bot size={12} />
               </span>
-              <span className={styles['core-label']}>Core Tools</span>
+              <span className={styles['core-label']}>System Tools</span>
               {coreToolsLocked ? (
                 <span className={styles['core-badge']}>Locked On</span>
               ) : (
@@ -752,7 +758,7 @@ export default function ToolSelectionComponent({
               </div>
             ) : (
               selectedGroupedByDomain.map(([groupKey, tools]) => {
-                const isCoreDomain = groupKey === "Core Tools";
+                const isCoreDomain = groupKey === "Core Tools" || groupKey === "Core Harness Tools" || groupKey === "Core Orchestrator Tools";
                 const isMcp = groupKey.startsWith("Model Context Protocol:") || groupKey === "Model Context Protocol";
                 const GroupIcon: LucideIcon = isMcp
                   ? Network
