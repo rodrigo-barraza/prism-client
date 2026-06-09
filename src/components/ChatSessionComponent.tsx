@@ -1554,6 +1554,22 @@ export default function ChatSessionComponent({
     return builtInTools.filter((tool) => tool.system === true && !disabledTools.has(tool.name)).length;
   }, [builtInTools, disabledTools]);
 
+  const selectableConfigurableTools = useMemo(() => {
+    return configurableTools.filter((tool) => !lockedOffTools.has(tool.name));
+  }, [configurableTools, lockedOffTools]);
+
+  const enabledSelectableConfigurableToolsCount = useMemo(() => {
+    return selectableConfigurableTools.filter((tool) => !disabledTools.has(tool.name)).length;
+  }, [selectableConfigurableTools, disabledTools]);
+
+  const selectableCoreToolsCount = useMemo(() => {
+    return builtInTools.filter((tool) => tool.system === true && !lockedOffTools.has(tool.name)).length;
+  }, [builtInTools, lockedOffTools]);
+
+  const enabledSelectableCoreToolsCount = useMemo(() => {
+    return builtInTools.filter((tool) => tool.system === true && !lockedOffTools.has(tool.name) && !disabledTools.has(tool.name)).length;
+  }, [builtInTools, lockedOffTools, disabledTools]);
+
   // Derive whether the active agent has Workspace capability (files, git, search, etc.)
   const hasFileOperations = useMemo(
     () => builtInTools.some((tool) => tool.domain === DOMAINS.CORE_WORKSPACE.displayName),
@@ -5144,8 +5160,8 @@ export default function ChatSessionComponent({
           <SidebarTabHeaderComponent
             icon={Wrench}
             title="Tools"
-            count={`${enabledConfigurableCount + (isCoreToolsLocked ? coreToolsCount : enabledCoreToolsCount)} / ${configurableTools.length + coreToolsCount}`}
-            hasOnlyCoreToolsActive={enabledConfigurableCount === 0 && (isCoreToolsLocked || enabledCoreToolsCount === 0)}
+            count={`${enabledSelectableConfigurableToolsCount + (isCoreToolsLocked ? selectableCoreToolsCount : enabledSelectableCoreToolsCount)} / ${selectableConfigurableTools.length + selectableCoreToolsCount}`}
+            hasOnlyCoreToolsActive={enabledSelectableConfigurableToolsCount === 0 && (isCoreToolsLocked || enabledSelectableCoreToolsCount === 0)}
           />
           <ToolSelectionComponent
             availableTools={builtInTools}

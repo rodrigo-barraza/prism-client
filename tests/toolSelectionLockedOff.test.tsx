@@ -331,8 +331,8 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       const bulkCountElement = domainCounts[0]; // First domain-count is in the bulk checkbox row
       const countText = bulkCountElement?.textContent || "";
 
-      // Expected: 4/12 — 2 harness locked on + 2 configurable enabled = 4, total = 12
-      expect(countText).toBe("4/12");
+      // Expected: 4/4 — 2 harness locked on + 2 configurable enabled = 4, total = 4
+      expect(countText).toBe("4/4");
     });
 
     it("shows 0 enabled when no configurable tools are selected and workspace is locked off", () => {
@@ -349,8 +349,8 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       const bulkCountElement = domainCounts[0];
       const countText = bulkCountElement?.textContent || "";
 
-      // 2 harness tools locked on + 0 configurable = 2/12
-      expect(countText).toBe("2/12");
+      // 2 harness tools locked on + 0 configurable = 2/4
+      expect(countText).toBe("2/4");
     });
   });
 

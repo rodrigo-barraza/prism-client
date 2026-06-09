@@ -282,8 +282,8 @@ export default function ToolSelectionComponent({
   }, [coreToolsLocked, selectableCoreTools.length, enabledCoreCount, enabledConfigurableCount]);
 
   const totalToolsCount = useMemo(() => {
-    return coreTools.length + configurableTools.length;
-  }, [coreTools.length, configurableTools.length]);
+    return selectableCoreTools.length + selectableConfigurableTools.length;
+  }, [selectableCoreTools.length, selectableConfigurableTools.length]);
 
   // -- Tool toggling --------------------------------------------
   const toggleTool = useCallback(
@@ -619,7 +619,7 @@ export default function ToolSelectionComponent({
                 ) : (
                   <>
                     <span className={styles['domain-count']}>
-                      {enabledCoreDomainCount}/{coreDomainTools.length}
+                      {enabledCoreDomainCount}/{selectableCoreDomainTools.length}
                     </span>
                     <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
                       <CheckboxComponent
@@ -764,7 +764,7 @@ export default function ToolSelectionComponent({
                       ) : (
                         <>
                           <span className={styles['domain-count']}>
-                            {groupEnabled}/{tools.length}
+                            {groupEnabled}/{selectableGroupTools.length}
                           </span>
                           <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
                             <CheckboxComponent
@@ -896,7 +896,7 @@ export default function ToolSelectionComponent({
                   </span>
                   {label}
                   <span className={styles['domain-count']}>
-                    {groupEnabled}/{tools.length}
+                    {groupEnabled}/{selectableGroupTools.length}
                   </span>
                   <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
                     <CheckboxComponent
