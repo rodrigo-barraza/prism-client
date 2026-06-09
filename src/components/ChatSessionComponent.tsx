@@ -2089,7 +2089,7 @@ export default function ChatSessionComponent({
               // Native provider FC (Google code exec, LM Studio MCP, etc.)
               functionCallingEnabled: settings.functionCallingEnabled ?? false,
               ...(settings.functionCallingEnabled && {
-                disabledTools: [...disabledTools],
+                disabledTools: [...disabledTools, ...lockedOffTools.keys()],
               }),
               // Provider-native capabilities
               ...(settings.webSearchEnabled ? { webSearch: true } : {}),
@@ -2116,7 +2116,7 @@ export default function ChatSessionComponent({
                 ...currentMessages,
               ],
               functionCallingEnabled: true,
-              disabledTools: [...disabledTools],
+              disabledTools: [...disabledTools, ...lockedOffTools.keys()],
               maxTokens: settings.maxTokens,
               temperature: settings.temperature,
               ...(settings.thinkingEnabled !== undefined && {
