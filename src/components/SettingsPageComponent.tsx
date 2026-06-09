@@ -768,6 +768,37 @@ export default function SettingsPageComponent() {
               />
             </div>
           </div>
+
+          <div className={styles['harness-divider']} />
+
+          {/* Dynamic Tool Activation */}
+          <div className={styles['settings-row']}>
+            <div className={styles['row-label']}>
+              <span className={styles['row-title']}>Dynamic Tool Activation</span>
+              <span className={styles['row-description']}>
+                Allow the agent to dynamically enable or disable tools mid-session
+                using <code>enable_tools</code> / <code>disable_tools</code>.
+                This reduces token usage and tool interference by loading only
+                the tools the agent needs for the current task.
+              </span>
+            </div>
+            <div className={styles['row-control']}>
+              <ToggleComponent
+                checked={agentDefaults.dynamicToolActivation ?? true}
+                onChange={(checked: boolean) => {
+                  const updated = {
+                    agents: {
+                      ...settings?.agents,
+                      dynamicToolActivation: checked,
+                    },
+                  };
+                  setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+                  persistSettings(updated);
+                }}
+                size="mini"
+              />
+            </div>
+          </div>
         </CardComponent.Body>
 
         {/* Reset */}
