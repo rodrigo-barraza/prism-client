@@ -1195,16 +1195,23 @@ export default function MessageList({
           <div className={styles['content']}>
             <div className={styles['message-header']}>
               <div className={styles['role-label']}>System Prompt</div>
-              {!readOnly && onSystemPromptEdit && (
-                <div className={styles['message-actions']}>
+              <div className={styles['message-actions']}>
+                {!readOnly && onSystemPromptEdit && (
                   <IconButtonComponent
                     icon={<Pencil size={14} />}
                     onClick={() => onSystemPromptEdit(systemPrompt || "")}
                     tooltip="Edit system prompt"
                     className={styles['action-button']}
                   />
-                </div>
-              )}
+                )}
+                {systemPrompt && (
+                  <CopyButtonComponent
+                    text={systemPrompt}
+                    tooltip="Copy raw text"
+                    className={styles['action-button']}
+                  />
+                )}
+              </div>
             </div>
             <MarkdownContent content={systemPrompt} />
           </div>
