@@ -245,6 +245,8 @@ const KNOWN_MODELS: Record<string, string> = {
   "claude-opus-4-6": "Opus 4.6",
   "claude-opus-4-7": "Opus 4.7",
   "claude-opus-4-8": "Opus 4.8",
+  "claude-fable-5": "Fable 5",
+  "claude-mythos-5": "Mythos 5",
   "gemini-3-flash-preview": "Gemini 3 Flash",
   "gemini-3-pro-preview": "Gemini 3 Pro",
   "gemini-3.1-pro-preview": "Gemini 3.1 Pro",

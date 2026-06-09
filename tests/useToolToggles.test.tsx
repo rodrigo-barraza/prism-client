@@ -5,6 +5,7 @@ import useToolToggles from "../src/hooks/useToolToggles";
 
 interface ToolSchema {
   name: string;
+  description: string;
   system?: boolean;
 }
 
@@ -17,7 +18,7 @@ function TestToolTogglesComponent({
   coreToolsLocked?: boolean;
 }) {
   const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn } =
-    useToolToggles(builtInTools, coreToolsLocked);
+    useToolToggles(builtInTools as any, coreToolsLocked);
 
   return (
     <div>
@@ -54,10 +55,10 @@ function TestToolTogglesComponent({
 
 describe("useToolToggles Hook", () => {
   const mockTools: ToolSchema[] = [
-    { name: "read_file", system: true },
-    { name: "write_file", system: true },
-    { name: "search_web", system: false },
-    { name: "get_weather", system: false },
+    { name: "read_file", description: "Read file", system: true },
+    { name: "write_file", description: "Write file", system: true },
+    { name: "search_web", description: "Search web", system: false },
+    { name: "get_weather", description: "Get weather", system: false },
   ];
 
   it("should initialize with an empty set of disabled tools", () => {
