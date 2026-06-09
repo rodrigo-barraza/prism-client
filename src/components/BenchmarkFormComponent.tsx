@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import {
@@ -14,8 +15,9 @@ import {
 
 import BenchmarkModeSelector from "./BenchmarkModeSelectorComponent";
 import AgentAssertionsComponent from "./AgentAssertionsComponent";
-import { benchmarkPresets } from "../utils/benchmarkPresets";
+import PrismService from "../services/PrismService";
 import { type AgentAssertion } from "./AgentAssertionsComponent";
+import type { BenchmarkPreset } from "../types/types";
 import styles from "./BenchmarkFormComponent.module.css";
 
 /**
@@ -61,6 +63,14 @@ export default function BenchmarkFormComponent({
   onChange,
   matchModes,
 }: BenchmarkFormComponentProps) {
+  const [presets, setPresets] = useState<BenchmarkPreset[]>([]);
+
+  useEffect(() => {
+    PrismService.getBenchmarkPresets()
+      .then(setPresets)
+      .catch(console.error);
+  }, []);
+
   const update =
     (field: keyof BenchmarkFormState) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -71,24 +81,6 @@ export default function BenchmarkFormComponent({
     (e: React.ChangeEvent<HTMLTextAreaElement>) =>
       onChange((f) => ({ ...f, [field]: e.target.value }));
 
-  const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const index = parseInt(e.target.value, 10);
-    if (!isNaN(index) && benchmarkPresets[index]) {
-      const preset = benchmarkPresets[index];
-      onChange((f) => ({
-        ...f,
-        name: preset.name,
-        systemPrompt: preset.systemPrompt,
-        prompt: preset.prompt,
-        assertions: preset.assertions.map((a) => ({ ...a })), // deep copy
-        assertionOperator: preset.assertionOperator || "AND",
-        // Presets are model benchmarks by default
-        benchmarkMode: "model",
-      }));
-      // Reset the select back to default so it can be used again if needed
-      e.target.value = "";
-    }
-  };
 
   const handleModeChange = (mode: string) => {
     onChange((f) => ({
@@ -188,22 +180,22 @@ export default function BenchmarkFormComponent({
           <SelectComponent
             value=""
             options={[
-              { value: "", label: "-- Select an industry standard benchmark --" },
-              ...benchmarkPresets.map((p, index: number) => ({
+              { value: "", label: presets.length === 0 ? "Loading presets…" : "-- Select an industry standard benchmark --" },
+              ...presets.map((preset, index: number) => ({
                 value: String(index),
-                label: p.name,
+                label: preset.name,
               })),
             ]}
             onChange={(val: string) => {
               const index = parseInt(val, 10);
-              if (!isNaN(index) && benchmarkPresets[index]) {
-                const preset = benchmarkPresets[index];
+              if (!isNaN(index) && presets[index]) {
+                const preset = presets[index];
                 onChange((f) => ({
                   ...f,
                   name: preset.name,
                   systemPrompt: preset.systemPrompt,
                   prompt: preset.prompt,
-                  assertions: preset.assertions.map((a) => ({ ...a })),
+                  assertions: preset.assertions.map((assertion) => ({ ...assertion })),
                   assertionOperator: preset.assertionOperator || "AND",
                   benchmarkMode: "model",
                 }));

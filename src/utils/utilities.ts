@@ -613,77 +613,17 @@ export function resolveDefaultModel(
     | undefined,
   fcOnly = false,
 ): { provider: string; model: string; temperature: number } {
-  // Server-authoritative default — no hardcoded model names needed
   const serverDefault = fcOnly
     ? config?.textToText?.recommendedAgenticDefault
     : config?.textToText?.recommendedDefault;
 
   if (serverDefault?.provider && serverDefault?.model) {
-    // Verify the model still exists in the models map (config may have
-    // been enriched with local models after the server responded)
-    const providerModels = config?.textToText?.models?.[serverDefault.provider] || [];
-    if (providerModels.some((model) => model.name === serverDefault.model)) {
-      return {
-        provider: serverDefault.provider,
-        model: serverDefault.model,
-        temperature: serverDefault.temperature ?? 1.0,
-      };
-    }
+    return {
+      provider: serverDefault.provider,
+      model: serverDefault.model,
+      temperature: serverDefault.temperature ?? 1.0,
+    };
   }
 
   return { provider: "", model: "", temperature: 1.0 };
 }
-
-/**
- * Calculate estimated live cost for active streaming session dynamically
- * using the model's pricing rates and running tokens count.
- */
-export function calculateEstimatedLiveCost(
-  totalCost: number,
-  totalTokens: {
-    input?: number;
-    output?: number;
-    cacheRead?: number;
-    cacheWrite?: number;
-  } | undefined,
-  requestCount: number,
-  selectedModelDef: {
-    pricing?: Record<string, number>;
-  } | null | undefined,
-): number {
-  const pricing = selectedModelDef?.pricing;
-  if (!pricing) {
-    return totalCost;
-  }
-
-  const isPaidModel = !!(pricing.inputPerMillion || pricing.outputPerMillion);
-  if (!isPaidModel) {
-    return totalCost;
-  }
-
-  if (!totalTokens) {
-    return totalCost;
-  }
-
-  const cacheRead = totalTokens.cacheRead || 0;
-  const cacheWrite = totalTokens.cacheWrite || 0;
-  const uncachedInput = Math.max(0, (totalTokens.input || 0) - cacheRead - cacheWrite);
-
-  let calculated =
-    (uncachedInput / 1_000_000) * (pricing.inputPerMillion || 0) +
-    ((totalTokens.output || 0) / 1_000_000) * (pricing.outputPerMillion || 0);
-
-  if (cacheRead && pricing.cachedInputPerMillion) {
-    calculated += (cacheRead / 1_000_000) * pricing.cachedInputPerMillion;
-  }
-  if (cacheWrite && pricing.cacheWriteInputPerMillion) {
-    calculated += (cacheWrite / 1_000_000) * pricing.cacheWriteInputPerMillion;
-  }
-
-  if (calculated === 0 && requestCount > 0) {
-    calculated = 0.00000001; // tiny placeholder to force metric badge display
-  }
-
-  return Math.max(totalCost || 0, calculated);
-}
-

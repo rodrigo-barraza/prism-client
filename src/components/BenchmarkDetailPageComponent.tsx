@@ -723,18 +723,8 @@ export default function BenchmarkDetailPageComponent({
   useEffect(() => {
     (async () => {
       try {
-        const config = await PrismService.getConfig();
+        const config = await PrismService.getConfigWithLocalModels();
         setPrismConfig(config);
-
-        if (config?.localProviders?.length > 0) {
-          PrismService.getLocalConfig()
-            .then(({ models: localModels }) => {
-              setPrismConfig((prev) =>
-                prev ? PrismService.mergeLocalModels(prev, localModels) : prev,
-              );
-            })
-            .catch(() => {});
-        }
       } catch (error: unknown) {
         console.error("Failed to load config:", error);
       }

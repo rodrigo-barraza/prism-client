@@ -7,7 +7,6 @@ import { getErrorMessage } from "../utils/errorMessage";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
 import type {
   PrismConfig,
-  ModelsMap,
   ModelOption,
   Conversation,
   ConversationListResponse,
@@ -27,6 +26,7 @@ import type {
   Favorite,
   ToolSchema,
   Benchmark,
+  BenchmarkPreset,
   BenchmarkListResponse,
   BenchmarkModelStats,
   BenchmarkRun,
@@ -153,50 +153,14 @@ export default class PrismService {
     return config;
   }
 
-  /**
-   * Fetch local/self-hosted provider models (LM Studio, vLLM, Ollama).
-   * Returns { models: { [provider]: [...] } } to merge into the main config.
-   */
-  static async getLocalConfig(): Promise<{ models: ModelsMap }> {
-    return PrismService._request<{ models: ModelsMap }>("/config-local", {
-      method: "GET",
-    });
-  }
 
   /**
-   * Merge local provider models into an existing config object (immutable).
-   * Returns a new config with local models merged into textToText.models.
-
-
-   */
-  static mergeLocalModels(
-    config: PrismConfig,
-    localModels: ModelsMap,
-  ): PrismConfig {
-    if (!config || !localModels || Object.keys(localModels).length === 0) {
-      return config;
-    }
-    const updated = { ...config };
-    const textToText = { ...updated.textToText };
-    const existingModels = { ...textToText.models };
-    for (const [provider, providerModels] of Object.entries(localModels)) {
-      const existing = existingModels[provider] || [];
-      const existingKeys = new Set(existing.map((modelOption: ModelOption) => modelOption.name));
-      const merged = [...existing];
-      for (const modelOption of providerModels) {
-        if (!existingKeys.has(modelOption.name)) merged.push(modelOption);
-      }
-      existingModels[provider] = merged;
-    }
-    textToText.models = existingModels;
-    updated.textToText = textToText;
-    return updated;
-  }
-
-  /**
-   * Progressive config loading: fetches cloud config immediately, then
-   * lazily fetches local provider models and calls onLocalMerge with the
-   * updated config when they arrive.
+   * Unified config loading: fetches the full config with local models
+   * merged server-side via GET /config?includeLocal=true.
+   *
+   * Fires onConfig immediately, then onLocalMerge with the same config
+   * (which already includes local models) to maintain the existing
+   * callback contract for all consumers.
    */
   static async getConfigWithLocalModels({
     onConfig,
@@ -208,20 +172,14 @@ export default class PrismService {
     service?: typeof PrismService;
   } = {}): Promise<PrismConfig> {
     const svc = service || PrismService;
-    const config = await svc.getConfig();
+    const config = await svc._request<PrismConfig>("/config?includeLocal=true", { method: "GET" });
+
+    if (config?.localProviders) {
+      setLocalProviderMeta(config.localProviders);
+    }
 
     if (onConfig) onConfig(config);
-
-    // Fire-and-forget local model fetch
-    if (config?.localProviders?.length > 0) {
-      svc
-        .getLocalConfig()
-        .then(({ models }: { models: ModelsMap }) => {
-          const merged = PrismService.mergeLocalModels(config, models);
-          if (merged !== config && onLocalMerge) onLocalMerge(merged);
-        })
-        .catch(() => {}); // Local providers are optional
-    }
+    if (onLocalMerge) onLocalMerge(config);
 
     return config;
   }
@@ -1754,6 +1712,16 @@ export default class PrismService {
   // ---------------------------------------------------------------------------
   // Benchmarks
   // ---------------------------------------------------------------------------
+
+  /**
+   * Fetch industry-standard benchmark presets from the server.
+   */
+  static async getBenchmarkPresets(): Promise<BenchmarkPreset[]> {
+    const response = await PrismService._request<{ presets: BenchmarkPreset[]; count: number }>("/benchmark/presets", {
+      method: "GET",
+    });
+    return response.presets;
+  }
 
   /**
    * List all benchmark tests.

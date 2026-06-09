@@ -237,9 +237,10 @@ export default function ModelsPageComponent({
       setError(null);
       const configService = isAdmin ? IrisService : PrismService;
       const statsService = isAdmin ? IrisService : PrismService;
+      const lmService = isAdmin ? IrisService : PrismService;
 
       // Phase 1: cloud config + stats — resolves instantly
-      const [config, modelStats] = await Promise.all([
+      const [baseConfig, modelStats] = await Promise.all([
         configService.getConfig().catch(() => null),
         statsService.getModelStats().catch(() => []),
       ]);
@@ -248,7 +249,7 @@ export default function ModelsPageComponent({
       // on subsequent interval refreshes
       if (!hasLoadedRef.current) {
         const cloudModels = buildMergedModels(
-          config,
+          baseConfig,
           { models: [] },
           modelStats,
         );
@@ -257,23 +258,10 @@ export default function ModelsPageComponent({
       }
 
       // Phase 2: progressive — merge local provider models + LM Studio API data
-      const localService = isAdmin ? IrisService : PrismService;
-      const lmService = isAdmin ? IrisService : PrismService;
-
-      // Fire both in parallel, each with their own error handling
-      const [localResult, lmData] = await Promise.all([
-        (config as unknown as Record<string, unknown>)?.localProviders &&
-          ((config as unknown as Record<string, unknown>).localProviders as unknown[])?.length > 0
-          ? localService.getLocalConfig().catch(() => ({ models: {} }))
-          : { models: {} },
+      const [mergedConfig, lmData] = await Promise.all([
+        PrismService.getConfigWithLocalModels({ service: configService as typeof PrismService }).catch(() => baseConfig),
         lmService.getLmStudioModels().catch(() => ({ models: [] })),
       ]);
-
-      // Merge local models into config using shared utility
-      const mergedConfig = PrismService.mergeLocalModels(
-        config!,
-        (localResult as any)?.models,
-      );
 
       // Rebuild with local models + LM Studio API data
       const fullModels = buildMergedModels(mergedConfig, lmData, modelStats);

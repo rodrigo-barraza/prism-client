@@ -1011,6 +1011,16 @@ export interface ToolSchema {
   };
 }
 
+// ─── Benchmark Presets ──────────────────────────────────────
+
+export interface BenchmarkPreset {
+  name: string;
+  systemPrompt: string;
+  prompt: string;
+  assertions: Array<{ expectedValue: string; matchMode: string }>;
+  assertionOperator: string;
+}
+
 // ─── Benchmarks ─────────────────────────────────────────────
 
 export interface BenchmarkPrompt {

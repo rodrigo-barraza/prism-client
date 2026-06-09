@@ -144,27 +144,11 @@ export default function BenchmarkDashboardComponent({
   // -- Load stats + config + favorites -----------------------
   const loadData = useCallback(async () => {
     try {
-      const [data, config] = await Promise.all([
+      const [data, mergedConfig] = await Promise.all([
         PrismService.getBenchmarkStats(),
-        PrismService.getConfig().catch(() => null),
+        PrismService.getConfigWithLocalModels().catch(() => null),
       ]);
       setStats(data);
-
-      // Merge local models (LM Studio, Ollama, etc.) into config
-      // so we get display_name for local models too
-      let mergedConfig: PrismConfig | null = config;
-      if (config?.localProviders?.length && config.localProviders.length > 0) {
-        try {
-          const localResult = await PrismService.getLocalConfig();
-          mergedConfig = PrismService.mergeLocalModels(
-            config!,
-            localResult?.models,
-          );
-        } catch {
-          /* local config unavailable, use base config */
-        }
-      }
-
       setConfigLookup(buildConfigLookup(mergedConfig));
       hasLoadedRef.current = true;
     } catch (error: unknown) {

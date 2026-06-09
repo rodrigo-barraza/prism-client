@@ -47,7 +47,7 @@ describe("resolveDefaultModel utility", () => {
     expect(resolvedDefaultModel.temperature).toBe(0.7);
   });
 
-  it("returns empty default if the recommended model does not exist in local models list", () => {
+  it("trusts server recommendation even if model is not in the local models list (server handles merging)", () => {
     const mockConfig = {
       textToText: {
         recommendedDefault: {
@@ -64,8 +64,8 @@ describe("resolveDefaultModel utility", () => {
     };
 
     const resolvedDefaultModel = resolveDefaultModel(mockConfig, false);
-    expect(resolvedDefaultModel.provider).toBe("");
-    expect(resolvedDefaultModel.model).toBe("");
+    expect(resolvedDefaultModel.provider).toBe("google");
+    expect(resolvedDefaultModel.model).toBe("gemini-3.5-flash");
     expect(resolvedDefaultModel.temperature).toBe(1.0);
   });
 

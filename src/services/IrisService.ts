@@ -11,7 +11,6 @@ import type {
   Workflow,
   AgentSession,
   SessionStats,
-  ModelsMap,
   IrisDashboardStats,
   IrisProjectStat,
   IrisModelStat,
@@ -500,9 +499,6 @@ export default class IrisService {
     return config;
   }
 
-  static async getLocalConfig(): Promise<{ models: ModelsMap }> {
-    return fetchJSON<{ models: ModelsMap }>("/config-local", {}, false);
-  }
 
   // -- Rate Limits -------------------------------------------
   static async getRateLimits(): Promise<Record<string, RateLimitData>> {

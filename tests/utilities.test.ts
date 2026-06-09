@@ -13,7 +13,6 @@ import {
   CAPABILITY_TOOL_NAMES,
   getModalities,
   getSessionElapsedTime,
-  calculateEstimatedLiveCost,
 } from "../src/utils/utilities.js";
 import type { Message, TokenUsage } from "../src/types/types.js";
 
@@ -427,39 +426,5 @@ describe("getSessionElapsedTime", () => {
       { role: "assistant", content: "hi", timestamp: "2024-01-15T10:00:02.000Z", completedAt: "2024-01-15T10:00:10.000Z" },
     ] as Message[];
     expect(getSessionElapsedTime(messages)).toBeCloseTo(10);
-  });
-});
-
-// ═════════════════════════════════════════════════════════════════
-// calculateEstimatedLiveCost
-// ═════════════════════════════════════════════════════════════════
-
-describe("calculateEstimatedLiveCost", () => {
-  it("returns totalCost when no pricing available", () => {
-    expect(calculateEstimatedLiveCost(0.05, undefined, 1, null)).toBe(0.05);
-    expect(calculateEstimatedLiveCost(0.05, undefined, 1, { pricing: undefined })).toBe(0.05);
-  });
-
-  it("returns totalCost for free models", () => {
-    const modelDef = { pricing: { inputPerMillion: 0, outputPerMillion: 0 } };
-    expect(calculateEstimatedLiveCost(0, { input: 1000, output: 500 }, 1, modelDef)).toBe(0);
-  });
-
-  it("calculates cost based on token counts and pricing", () => {
-    const modelDef = { pricing: { inputPerMillion: 3.0, outputPerMillion: 15.0 } };
-    const result = calculateEstimatedLiveCost(0, { input: 1_000_000, output: 1_000_000 }, 1, modelDef);
-    expect(result).toBeCloseTo(18.0);
-  });
-
-  it("returns max of totalCost and calculated cost", () => {
-    const modelDef = { pricing: { inputPerMillion: 3.0, outputPerMillion: 15.0 } };
-    const result = calculateEstimatedLiveCost(100, { input: 1000, output: 500 }, 1, modelDef);
-    expect(result).toBe(100);
-  });
-
-  it("returns tiny placeholder when request count > 0 but calculated is 0", () => {
-    const modelDef = { pricing: { inputPerMillion: 0.0001, outputPerMillion: 0.0001 } };
-    const result = calculateEstimatedLiveCost(0, { input: 0, output: 0 }, 1, modelDef);
-    expect(result).toBeGreaterThan(0);
   });
 });

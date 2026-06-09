@@ -3,7 +3,6 @@
 import type {
   PrismConfig,
   ModelOption,
-  ModelsMap,
   IrisDashboardStats,
   IrisProjectStat,
   IrisModelStat,
@@ -165,7 +164,7 @@ export default function DashboardPage() {
           order: "desc",
           ...filterParams,
         }),
-        PrismService.getConfig().catch(() => null),
+        PrismService.getConfigWithLocalModels().catch(() => null),
       ]);
 
       setStats(statsData);
@@ -188,19 +187,6 @@ export default function DashboardPage() {
           return lookup;
         };
         setConfigModels(buildLookup(prismConfig));
-
-        // Progressive loading: merge local provider model tools when they arrive
-        if (prismConfig.localProviders?.length > 0) {
-          PrismService.getLocalConfig()
-            .then(({ models: localModels }: { models: ModelsMap }) => {
-              const merged = PrismService.mergeLocalModels(
-                prismConfig,
-                localModels,
-              );
-              if (merged !== prismConfig) setConfigModels(buildLookup(merged));
-            })
-            .catch(() => {});
-        }
       }
 
       setTimeline(timelineData.data || timelineData);
