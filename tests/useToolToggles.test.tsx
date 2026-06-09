@@ -17,7 +17,7 @@ function TestToolTogglesComponent({
   builtInTools: ToolSchema[];
   coreToolsLocked?: boolean;
 }) {
-  const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn } =
+  const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn, resetToAllDisabled, restoreDisabledTools } =
     useToolToggles(builtInTools as any, coreToolsLocked);
 
   return (
@@ -48,6 +48,24 @@ function TestToolTogglesComponent({
         onClick={() => handleToggleAllBuiltIn(true)}
       >
         Enable All
+      </button>
+      <button
+        data-testid="reset-to-all-disabled-btn"
+        onClick={() => resetToAllDisabled()}
+      >
+        Reset To All Disabled
+      </button>
+      <button
+        data-testid="restore-disabled-btn"
+        onClick={() => restoreDisabledTools(["search_web", "get_weather"])}
+      >
+        Restore Disabled
+      </button>
+      <button
+        data-testid="restore-empty-btn"
+        onClick={() => restoreDisabledTools([])}
+      >
+        Restore Empty
       </button>
     </div>
   );
@@ -145,4 +163,62 @@ describe("useToolToggles Hook", () => {
     fireEvent.click(enableAllBtn);
     expect(disabledToolsDiv.textContent).toBe("");
   });
+
+  it("should disable all configurable tools on resetToAllDisabled when coreToolsLocked is true", () => {
+    render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
+    const disabledToolsDiv = screen.getByTestId("disabled-tools");
+    const resetButton = screen.getByTestId("reset-to-all-disabled-btn");
+
+    fireEvent.click(resetButton);
+    const disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+    expect(disabledList).not.toContain("read_file");
+    expect(disabledList).not.toContain("write_file");
+  });
+
+  it("should disable all tools including system on resetToAllDisabled when coreToolsLocked is false", () => {
+    render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={false} />);
+    const disabledToolsDiv = screen.getByTestId("disabled-tools");
+    const resetButton = screen.getByTestId("reset-to-all-disabled-btn");
+
+    fireEvent.click(resetButton);
+    const disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+    expect(disabledList).toContain("read_file");
+    expect(disabledList).toContain("write_file");
+  });
+
+  it("should replace the disabled set with restoreDisabledTools", () => {
+    render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
+    const disabledToolsDiv = screen.getByTestId("disabled-tools");
+    const restoreButton = screen.getByTestId("restore-disabled-btn");
+
+    // Initially empty
+    expect(disabledToolsDiv.textContent).toBe("");
+
+    // Restore specific disabled tools
+    fireEvent.click(restoreButton);
+    const disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+    expect(disabledList).toHaveLength(2);
+  });
+
+  it("should clear all disabled tools when restoreDisabledTools receives empty array", () => {
+    render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
+    const disabledToolsDiv = screen.getByTestId("disabled-tools");
+    const resetButton = screen.getByTestId("reset-to-all-disabled-btn");
+    const restoreEmptyButton = screen.getByTestId("restore-empty-btn");
+
+    // First disable some tools
+    fireEvent.click(resetButton);
+    expect(disabledToolsDiv.textContent).not.toBe("");
+
+    // Restore empty — all tools become enabled
+    fireEvent.click(restoreEmptyButton);
+    expect(disabledToolsDiv.textContent).toBe("");
+  });
 });
+

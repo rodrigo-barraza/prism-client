@@ -317,6 +317,7 @@ interface SessionSnapshot {
   backendSessionStats: SessionStats | null;
   isBackendStatsStale?: boolean;
   workspaceRoot: string | null;
+  disabledTools: string[];
 }
 
 interface ClientMessage extends Message {
@@ -613,7 +614,7 @@ export default function ChatSessionComponent({
       ? SK_MODEL_MEMORY_AGENT
       : SK_MODEL_MEMORY_AGENT_PREFIX + agentId;
 
-  const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn } =
+  const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn, resetToAllDisabled, restoreDisabledTools } =
     useToolToggles(builtInTools, isCoreToolsLocked);
 
   // -- Model memory (persist last-used model per agent) ----------
@@ -3860,6 +3861,10 @@ export default function ChatSessionComponent({
     isUserNearBottomRef.current = true;
     textareaRef.current?.focus();
 
+    // New sessions start with all configurable tools disabled;
+    // core tools respect coreToolsLocked (locked on = stay enabled).
+    resetToAllDisabled();
+
     setSettings((currentSettings) => {
       let defaultTemperature = 1.0;
       if (config && currentSettings.provider && currentSettings.model) {
@@ -3906,7 +3911,7 @@ export default function ChatSessionComponent({
         detail: { conversationId: null },
       }),
     );
-  }, [isNoAgent, config]);
+  }, [isNoAgent, config, resetToAllDisabled]);
 
   const handleNewChat = useCallback(() => {
     // If generating, snapshot the current session so user can switch back to it
@@ -3925,6 +3930,7 @@ export default function ChatSessionComponent({
         settings: { ...settings },
         backendSessionStats,
         workspaceRoot: currentWorkspace?.path || null,
+        disabledTools: [...disabledTools],
       });
       setIsGenerating(false);
     }
@@ -3951,6 +3957,7 @@ export default function ChatSessionComponent({
     activeId,
     resetSessionState,
     currentWorkspace?.path,
+    disabledTools,
   ]);
 
   /* ── Chat header "New Session" glitch effect ────────────────── */
@@ -4061,6 +4068,8 @@ export default function ChatSessionComponent({
         }));
         setBackendSessionStats(snap.backendSessionStats || null);
         setIsBackendStatsStale(snap.isBackendStatsStale || false);
+        // Restore tool toggle state from snapshot
+        restoreDisabledTools(snap.disabledTools || []);
         // Re-attach: mark as generating so the UI shows the active state
         setIsGenerating(true);
         // Remove the snapshot — the SSE callbacks will resume updating React state
@@ -4205,9 +4214,16 @@ export default function ChatSessionComponent({
         setBackendSessionStats(full.stats || null);
         setIsBackendStatsStale(false);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
+
+        // Restore tool toggle state from the session's persisted toolConfig.
+        // Legacy sessions without toolConfig default to all tools enabled (empty disabled set).
+        const sessionToolConfig = (sessionSettings as Record<string, unknown>)?.toolConfig as
+          | { disabledTools?: string[] }
+          | undefined;
+        restoreDisabledTools(sessionToolConfig?.disabledTools || []);
       }
     },
-    [workspaces, currentWorkspace?.path, setCurrentWorkspace],
+    [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools],
   );
 
   const handleSelectSession = useCallback(
@@ -4229,6 +4245,7 @@ export default function ChatSessionComponent({
           backendSessionStats,
           isBackendStatsStale,
           workspaceRoot: currentWorkspace?.path || null,
+          disabledTools: [...disabledTools],
         } as SessionSnapshot);
         setIsGenerating(false);
       }

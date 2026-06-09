@@ -45,5 +45,25 @@ export default function useToolToggles(
     [builtInTools, coreToolsLocked],
   );
 
-  return { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn };
+  const resetToAllDisabled = useCallback(() => {
+    const allConfigurableDisabled = new Set<string>();
+    for (const tool of builtInTools) {
+      if (!(coreToolsLocked && tool.system)) {
+        allConfigurableDisabled.add(tool.name);
+      }
+    }
+    setDisabledTools(allConfigurableDisabled);
+  }, [builtInTools, coreToolsLocked]);
+
+  const restoreDisabledTools = useCallback((toolNames: string[]) => {
+    setDisabledTools(new Set(toolNames));
+  }, []);
+
+  return {
+    disabledTools,
+    handleToggleBuiltIn,
+    handleToggleAllBuiltIn,
+    resetToAllDisabled,
+    restoreDisabledTools,
+  };
 }
