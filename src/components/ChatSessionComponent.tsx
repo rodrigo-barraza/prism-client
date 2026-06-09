@@ -106,8 +106,6 @@ import {
   SETTINGS_DEFAULTS,
   SK_MODEL_MEMORY_AGENT,
   SK_MODEL_MEMORY_AGENT_PREFIX,
-  SK_TOOL_MEMORY_AGENT,
-  SK_TOOL_MEMORY_AGENT_PREFIX,
   MAX_TOOL_ITERATIONS,
   LS_FILE_VIEWER_WIDTH,
   LS_CHAT_FILTERS,
@@ -609,18 +607,13 @@ export default function ChatSessionComponent({
   const [extractionModelConfigured, setExtractionModelConfigured] = useState(false);
   const [consolidationModelConfigured, setConsolidationModelConfigured] = useState(false);
   const [embeddingModelConfigured, setEmbeddingModelConfigured] = useState(false);
-  // -- Agent-scoped storage keys ---------------------------------
-  const toolMemoryKey =
-    agentId === AGENT_IDS.CODING
-      ? SK_TOOL_MEMORY_AGENT
-      : SK_TOOL_MEMORY_AGENT_PREFIX + agentId;
   const modelMemoryKey =
     agentId === AGENT_IDS.CODING
       ? SK_MODEL_MEMORY_AGENT
       : SK_MODEL_MEMORY_AGENT_PREFIX + agentId;
 
   const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn } =
-    useToolToggles(builtInTools, toolMemoryKey);
+    useToolToggles(builtInTools);
 
   // -- Model memory (persist last-used model per agent) ----------
   const { saveModel, restoreModel } = useModelMemory(modelMemoryKey);

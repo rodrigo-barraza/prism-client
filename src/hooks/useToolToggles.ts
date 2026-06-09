@@ -1,70 +1,37 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import StorageService from "../services/StorageService";
+import { useState, useCallback } from "react";
 import type { ToolSchema } from "../types/types";
 
 /**
  * useToolToggles — manages the disabled built-in tools state and toggle handlers.
- * Optionally persists the toggle state to localStorage under a page-scoped key.
+ * State is ephemeral (per-session) — resets on page reload so stale corruption
+ * from previous sessions cannot persist.
  */
 export default function useToolToggles(
   builtInTools: ToolSchema[],
-  storageKey?: string,
 ) {
-  // Load initial state from localStorage if a storage key is provided
-  const [disabledTools, setDisabledTools] = useState<Set<string>>(() => {
-    if (storageKey) {
-      const saved = StorageService.get<{ disabledTools?: string[]; disabledBuiltIns?: string[] }>(
-        storageKey,
-      );
-      const list = saved?.disabledTools || saved?.disabledBuiltIns;
-      if (list && Array.isArray(list)) {
-        const coreToolNames = new Set(
-          builtInTools.filter((tool) => tool.system === true).map((tool) => tool.name),
-        );
-        return new Set(list.filter((toolName) => !coreToolNames.has(toolName)));
-      }
-    }
-    return new Set();
-  });
-
-  // Persist to localStorage when the set changes
-  const isInitialMount = useRef<boolean>(true);
-  useEffect(() => {
-    // Skip initial mount to avoid writing back the just-loaded value
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    if (!storageKey) return;
-    const current =
-      StorageService.get<Record<string, unknown>>(storageKey) || {};
-    StorageService.set(storageKey, {
-      ...current,
-      disabledTools: [...disabledTools],
-    });
-  }, [disabledTools, storageKey]);
+  const [disabledTools, setDisabledTools] = useState<Set<string>>(() => new Set());
 
   const handleToggleBuiltIn = useCallback((toolName: string) => {
-    setDisabledTools((prev) => {
-      const next = new Set(prev);
-      if (next.has(toolName)) next.delete(toolName);
-      else next.add(toolName);
-      return next;
+    setDisabledTools((previousDisabledTools) => {
+      const nextDisabledTools = new Set(previousDisabledTools);
+      if (nextDisabledTools.has(toolName)) nextDisabledTools.delete(toolName);
+      else nextDisabledTools.add(toolName);
+      return nextDisabledTools;
     });
   }, []);
 
   const handleToggleAllBuiltIn = useCallback(
     (enableAll: boolean) => {
-      setDisabledTools((prev) => {
-        const next = new Set(prev);
+      setDisabledTools((previousDisabledTools) => {
+        const nextDisabledTools = new Set(previousDisabledTools);
         for (const tool of builtInTools) {
           if (enableAll) {
-            next.delete(tool.name);
+            nextDisabledTools.delete(tool.name);
           } else if (!tool.system) {
-            next.add(tool.name);
+            nextDisabledTools.add(tool.name);
           }
         }
-        return next;
+        return nextDisabledTools;
       });
     },
     [builtInTools],
