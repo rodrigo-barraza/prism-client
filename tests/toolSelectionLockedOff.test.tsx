@@ -22,7 +22,7 @@ vi.mock("@rodrigo-barraza/utilities-library/taxonomy", () => ({
   DOMAINS: {
     CORE_HARNESS: { key: "core_harness", displayName: "Core Harness Tools" },
     CORE_WORKSPACE: { key: "core_workspace", displayName: "Core Workspace Tools" },
-    ORCHESTRATOR: { key: "orchestrator", displayName: "Orchestrator" },
+    CORE_ORCHESTRATOR: { key: "core_orchestrator", displayName: "Core Orchestrator Tools" },
     WEB: { key: "web", displayName: "Web" },
     BROWSER: { key: "browser", displayName: "Browser" },
     TASKS: { key: "tasks", displayName: "Tasks" },
