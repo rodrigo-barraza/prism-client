@@ -1040,9 +1040,6 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     <h1 className={styles['header-title']}>Scheduled Tasks</h1>
                   </div>
                   <p className={styles['header-subtitle']}>Automate background agent workflows on a schedule</p>
-                  <span className={styles['badge']}>
-                    {filteredTasks.length} total
-                  </span>
                 </div>
               </div>
 

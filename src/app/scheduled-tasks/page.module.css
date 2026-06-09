@@ -121,15 +121,6 @@
   letter-spacing: -0.01em;
 }
 
-.badge {
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  color: var(--text-tertiary);
-  background: var(--background-elevated);
-  padding: 2px 8px;
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--calculated-border-color);
-}
 
 .header-actions {
   display: flex;
