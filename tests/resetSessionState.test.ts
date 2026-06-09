@@ -36,17 +36,36 @@ describe("resetSessionState model parameter resetting", () => {
       isNoAgent: boolean,
     ) => {
       let defaultTemperature = 1.0;
+      let isThinkingSupported = false;
       if (mockConfig && settings.provider && settings.model) {
         const providerModels =
           (mockConfig.textToText?.models as Record<string, any>)?.[settings.provider] || [];
         const modelDefinition = providerModels.find(
-          (model: { name: string; defaultTemperature?: number }) => model.name === settings.model,
+          (model: { name: string; defaultTemperature?: number; thinking?: boolean; supportsThinking?: boolean; thinkingLevels?: string[]; tools?: string[] }) => model.name === settings.model,
         );
         if (
           modelDefinition &&
           modelDefinition.defaultTemperature !== undefined
         ) {
           defaultTemperature = modelDefinition.defaultTemperature;
+        }
+        if (modelDefinition) {
+          const modelName = (settings.model || "").toLowerCase();
+          const nameBasedThinking = [
+            "qwen3",
+            "deepseek-r1",
+            "deepseek-v3",
+            "gpt-oss",
+            "gemma-4",
+          ].some((pattern) => modelName.includes(pattern));
+
+          isThinkingSupported = !!(
+            modelDefinition.thinking ||
+            modelDefinition.supportsThinking ||
+            (modelDefinition.thinkingLevels && modelDefinition.thinkingLevels.length > 0) ||
+            (modelDefinition.tools && modelDefinition.tools.includes("Thinking")) ||
+            (settings.provider === "lm-studio" && nameBasedThinking)
+          );
         }
       }
 
@@ -57,7 +76,7 @@ describe("resetSessionState model parameter resetting", () => {
         temperature: defaultTemperature,
         maxTokens: 64000,
         functionCallingEnabled: !isNoAgent,
-        thinkingEnabled: false,
+        thinkingEnabled: isThinkingSupported,
         minP: 0,
         repeatPenalty: 1.0,
         seed: null,
@@ -99,5 +118,73 @@ describe("resetSessionState model parameter resetting", () => {
     expect(updatedChatSettings.repeatPenalty).toBe(1.0);
     expect(updatedChatSettings.seed).toBeNull();
     expect(updatedChatSettings.serviceTier).toBe("");
+  });
+
+  it("should default thinkingEnabled to true for models that support thinking", () => {
+    const mockConfig = {
+      textToText: {
+        models: {
+          google: [
+            {
+              name: "gemini-3.5-flash",
+              thinking: true,
+            },
+          ],
+          deepseek: [
+            {
+              name: "deepseek-reasoner",
+              thinkingLevels: ["high", "minimal"],
+            },
+          ],
+        },
+      },
+    };
+
+    const updateSettings = (
+      settings: { provider: string; model: string },
+    ) => {
+      let isThinkingSupported = false;
+      if (mockConfig && settings.provider && settings.model) {
+        const providerModels =
+          (mockConfig.textToText?.models as Record<string, any>)?.[settings.provider] || [];
+        const modelDefinition = providerModels.find(
+          (model: any) => model.name === settings.model,
+        );
+        if (modelDefinition) {
+          const modelName = (settings.model || "").toLowerCase();
+          const nameBasedThinking = [
+            "qwen3",
+            "deepseek-r1",
+            "deepseek-v3",
+            "gpt-oss",
+            "gemma-4",
+          ].some((pattern) => modelName.includes(pattern));
+
+          isThinkingSupported = !!(
+            modelDefinition.thinking ||
+            modelDefinition.supportsThinking ||
+            (modelDefinition.thinkingLevels && modelDefinition.thinkingLevels.length > 0) ||
+            (modelDefinition.tools && modelDefinition.tools.includes("Thinking")) ||
+            (settings.provider === "lm-studio" && nameBasedThinking)
+          );
+        }
+      }
+
+      return {
+        ...SETTINGS_DEFAULTS,
+        provider: settings.provider,
+        model: settings.model,
+        thinkingEnabled: isThinkingSupported,
+      };
+    };
+
+    const googleSettings = updateSettings({ provider: "google", model: "gemini-3.5-flash" });
+    expect(googleSettings.thinkingEnabled).toBe(true);
+
+    const deepseekSettings = updateSettings({ provider: "deepseek", model: "deepseek-reasoner" });
+    expect(deepseekSettings.thinkingEnabled).toBe(true);
+
+    const standardSettings = updateSettings({ provider: "google", model: "gemini-2.0-flash" });
+    expect(standardSettings.thinkingEnabled).toBe(false);
   });
 });

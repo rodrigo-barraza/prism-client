@@ -3872,6 +3872,7 @@ export default function ChatSessionComponent({
 
     setSettings((currentSettings) => {
       let defaultTemperature = 1.0;
+      let isThinkingSupported = false;
       if (config && currentSettings.provider && currentSettings.model) {
         const providerModels =
           config.textToText?.models?.[currentSettings.provider] || [];
@@ -3884,6 +3885,24 @@ export default function ChatSessionComponent({
         ) {
           defaultTemperature = modelDefinition.defaultTemperature;
         }
+        if (modelDefinition) {
+          const modelName = (currentSettings.model || "").toLowerCase();
+          const nameBasedThinking = [
+            "qwen3",
+            "deepseek-r1",
+            "deepseek-v3",
+            "gpt-oss",
+            "gemma-4",
+          ].some((pattern) => modelName.includes(pattern));
+
+          isThinkingSupported = !!(
+            modelDefinition.thinking ||
+            modelDefinition.supportsThinking ||
+            (modelDefinition.thinkingLevels && modelDefinition.thinkingLevels.length > 0) ||
+            (modelDefinition.tools && modelDefinition.tools.includes("Thinking")) ||
+            (currentSettings.provider === "lm-studio" && nameBasedThinking)
+          );
+        }
       }
 
       return {
@@ -3893,7 +3912,7 @@ export default function ChatSessionComponent({
         temperature: defaultTemperature,
         maxTokens: 64000,
         functionCallingEnabled: !isNoAgent,
-        thinkingEnabled: false,
+        thinkingEnabled: isThinkingSupported,
         minP: 0,
         repeatPenalty: 1.0,
         seed: null,
