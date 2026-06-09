@@ -8,17 +8,25 @@ import type { ToolSchema } from "../types/types";
  */
 export default function useToolToggles(
   builtInTools: ToolSchema[],
+  coreToolsLocked: boolean = true,
 ) {
   const [disabledTools, setDisabledTools] = useState<Set<string>>(() => new Set());
 
-  const handleToggleBuiltIn = useCallback((toolName: string) => {
-    setDisabledTools((previousDisabledTools) => {
-      const nextDisabledTools = new Set(previousDisabledTools);
-      if (nextDisabledTools.has(toolName)) nextDisabledTools.delete(toolName);
-      else nextDisabledTools.add(toolName);
-      return nextDisabledTools;
-    });
-  }, []);
+  const handleToggleBuiltIn = useCallback(
+    (toolName: string) => {
+      if (coreToolsLocked) {
+        const tool = builtInTools.find((t) => t.name === toolName);
+        if (tool?.system) return;
+      }
+      setDisabledTools((previousDisabledTools) => {
+        const nextDisabledTools = new Set(previousDisabledTools);
+        if (nextDisabledTools.has(toolName)) nextDisabledTools.delete(toolName);
+        else nextDisabledTools.add(toolName);
+        return nextDisabledTools;
+      });
+    },
+    [builtInTools, coreToolsLocked],
+  );
 
   const handleToggleAllBuiltIn = useCallback(
     (enableAll: boolean) => {
@@ -27,14 +35,14 @@ export default function useToolToggles(
         for (const tool of builtInTools) {
           if (enableAll) {
             nextDisabledTools.delete(tool.name);
-          } else if (!tool.system) {
+          } else if (!(coreToolsLocked && tool.system)) {
             nextDisabledTools.add(tool.name);
           }
         }
         return nextDisabledTools;
       });
     },
-    [builtInTools],
+    [builtInTools, coreToolsLocked],
   );
 
   return { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn };

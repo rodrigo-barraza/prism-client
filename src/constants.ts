@@ -24,13 +24,7 @@ export const SK_MODEL_MEMORY_AGENT_PREFIX = "modelMemory:agent:";
 export const SK_MODEL_MEMORY_SYNTHESIS = "modelMemory:synthesis";
 export const SK_MODEL_MEMORY_BENCHMARKS = "modelMemory:benchmarks";
 
-// -- Page-scoped tool toggle memory keys (auto-prefixed "prism:<key>") --
-// Each page remembers which tools are toggled on/off.
-// Value shape: { disabledTools: string[], toolToggles: { key: boolean } }
-export const SK_TOOL_MEMORY_AGENT = "toolMemory:agent";
-export const SK_TOOL_MEMORY_AGENT_PREFIX = "toolMemory:agent:";
-export const SK_TOOL_MEMORY_SYNTHESIS = "toolMemory:synthesis";
-export const SK_TOOL_MEMORY_BENCHMARKS = "toolMemory:benchmarks";
+
 
 // -- Application constants ----------------------------------------
 export const MAX_TOOL_ITERATIONS = 25;

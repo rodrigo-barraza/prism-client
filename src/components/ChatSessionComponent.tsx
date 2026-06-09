@@ -387,6 +387,7 @@ export default function ChatSessionComponent({
   const agentId = propAgentId;
   const isNoAgent = agentId === AGENT_IDS.NONE;
   const activeAgentData = agents.find((agent) => agent.id === agentId);
+  const isCoreToolsLocked = !isNoAgent && (activeAgentData?.coreToolsLocked ?? true);
   // Direct Chat omits project so it uses the default x-project header — this
   // routes persistence to the conversations collection.
   // Agent modes use the persona's project so persistence goes to agent_conversations.
@@ -613,7 +614,7 @@ export default function ChatSessionComponent({
       : SK_MODEL_MEMORY_AGENT_PREFIX + agentId;
 
   const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn } =
-    useToolToggles(builtInTools);
+    useToolToggles(builtInTools, isCoreToolsLocked);
 
   // -- Model memory (persist last-used model per agent) ----------
   const { saveModel, restoreModel } = useModelMemory(modelMemoryKey);
@@ -1540,8 +1541,6 @@ export default function ChatSessionComponent({
   const coreToolsCount = useMemo(() => {
     return builtInTools.filter((tool) => tool.system === true).length;
   }, [builtInTools]);
-
-  const isCoreToolsLocked = !isNoAgent && (activeAgentData?.coreToolsLocked ?? true);
 
   const enabledCoreToolsCount = useMemo(() => {
     return builtInTools.filter((tool) => tool.system === true && !disabledTools.has(tool.name)).length;
@@ -5163,16 +5162,15 @@ export default function ChatSessionComponent({
               .map((tool) => tool.name)}
             onEnabledToolsChange={(newEnabled) => {
               const enabledSet = new Set(newEnabled);
-              const isCoreToolsLockedForCallback = !isNoAgent && (activeAgentData?.coreToolsLocked ?? true);
               for (const tool of builtInTools) {
-                if (isCoreToolsLockedForCallback && tool.system) continue;
+                if (isCoreToolsLocked && tool.system) continue;
                 const isDisabled = disabledTools.has(tool.name);
                 const shouldBeEnabled = enabledSet.has(tool.name);
                 if (isDisabled && shouldBeEnabled) handleToggleBuiltIn(tool.name);
                 else if (!isDisabled && !shouldBeEnabled) handleToggleBuiltIn(tool.name);
               }
             }}
-            coreToolsLocked={!isNoAgent && (activeAgentData?.coreToolsLocked ?? true)}
+            coreToolsLocked={isCoreToolsLocked}
             lockedOffTools={lockedOffTools}
           />
         </>
