@@ -79,24 +79,37 @@ describe("useToolToggles Hook", () => {
     { name: "get_weather", description: "Get weather", system: false },
   ];
 
-  it("should initialize with an empty set of disabled tools", () => {
-    render(<TestToolTogglesComponent builtInTools={mockTools} />);
+  it("should initialize with configurable tools disabled when builtInTools is provided", () => {
+    render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    expect(disabledToolsDiv.textContent).toBe("");
+    const disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+    expect(disabledList).not.toContain("read_file");
+    expect(disabledList).not.toContain("write_file");
   });
 
   it("should toggle configurable tools correctly", () => {
-    render(<TestToolTogglesComponent builtInTools={mockTools} />);
+    render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
     const toggleBtn = screen.getByTestId("toggle-btn");
 
-    // Toggle off (disable)
-    fireEvent.click(toggleBtn);
-    expect(disabledToolsDiv.textContent).toBe("search_web");
+    // Initially search_web and get_weather are disabled
+    let disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
 
-    // Toggle back on (enable)
+    // Toggle search_web (enables it -> removes from disabled list)
     fireEvent.click(toggleBtn);
-    expect(disabledToolsDiv.textContent).toBe("");
+    disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).not.toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+
+    // Toggle search_web back (disables it -> adds to disabled list)
+    fireEvent.click(toggleBtn);
+    disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
   });
 
   it("should NOT toggle system tools when coreToolsLocked is true", () => {
@@ -106,8 +119,12 @@ describe("useToolToggles Hook", () => {
 
     // Attempt to toggle system tool
     fireEvent.click(toggleSystemBtn);
-    // Should remain empty because system tool toggle is guarded/ignored
-    expect(disabledToolsDiv.textContent).toBe("");
+    // Should remain only configurable tools disabled
+    const disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+    expect(disabledList).not.toContain("read_file");
+    expect(disabledList).not.toContain("write_file");
   });
 
   it("should toggle system tools when coreToolsLocked is false", () => {
@@ -115,10 +132,18 @@ describe("useToolToggles Hook", () => {
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
     const toggleSystemBtn = screen.getByTestId("toggle-system-btn");
 
-    // Attempt to toggle system tool when unlocked
+    // Initially all tools disabled
+    let disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("read_file");
+    expect(disabledList).toContain("write_file");
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+
+    // Attempt to toggle system tool when unlocked (enables it -> removes from disabled list)
     fireEvent.click(toggleSystemBtn);
-    // Should disable it
-    expect(disabledToolsDiv.textContent).toBe("read_file");
+    disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).not.toContain("read_file");
+    expect(disabledList).toContain("write_file");
   });
 
   it("should disable only configurable tools on bulk disable (Disable All) when coreToolsLocked is true", () => {
@@ -155,9 +180,11 @@ describe("useToolToggles Hook", () => {
     const toggleBtn = screen.getByTestId("toggle-btn");
     const enableAllBtn = screen.getByTestId("enable-all-btn");
 
-    // Disable search_web first
+    // Enable search_web first (removes from disabled set)
     fireEvent.click(toggleBtn);
-    expect(disabledToolsDiv.textContent).toBe("search_web");
+    let disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).not.toContain("search_web");
+    expect(disabledList).toContain("get_weather");
 
     // Enable all
     fireEvent.click(enableAllBtn);
@@ -195,12 +222,15 @@ describe("useToolToggles Hook", () => {
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
     const restoreButton = screen.getByTestId("restore-disabled-btn");
 
-    // Initially empty
-    expect(disabledToolsDiv.textContent).toBe("");
+    // Initially configurable tools disabled
+    let disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+    expect(disabledList).toHaveLength(2);
 
-    // Restore specific disabled tools
+    // Restore specific disabled tools (same ones in this case, but verifies no crash and correct state)
     fireEvent.click(restoreButton);
-    const disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    disabledList = disabledToolsDiv.textContent?.split(",") || [];
     expect(disabledList).toContain("search_web");
     expect(disabledList).toContain("get_weather");
     expect(disabledList).toHaveLength(2);
@@ -219,6 +249,37 @@ describe("useToolToggles Hook", () => {
     // Restore empty — all tools become enabled
     fireEvent.click(restoreEmptyButton);
     expect(disabledToolsDiv.textContent).toBe("");
+  });
+
+  it("should automatically disable configurable tools when builtInTools loads", () => {
+    const { rerender } = render(<TestToolTogglesComponent builtInTools={[]} coreToolsLocked={true} />);
+    const disabledToolsDiv = screen.getByTestId("disabled-tools");
+    expect(disabledToolsDiv.textContent).toBe("");
+
+    rerender(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
+    const disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+    expect(disabledList).not.toContain("read_file");
+    expect(disabledList).not.toContain("write_file");
+  });
+
+  it("should NOT automatically disable tools if restoreDisabledTools was already called (e.g. session load)", () => {
+    const { rerender } = render(<TestToolTogglesComponent builtInTools={[]} coreToolsLocked={true} />);
+    const disabledToolsDiv = screen.getByTestId("disabled-tools");
+    const restoreButton = screen.getByTestId("restore-disabled-btn");
+
+    // Simulate session load before tools list arrives
+    fireEvent.click(restoreButton);
+
+    // Now tools list loads
+    rerender(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
+
+    // It should preserve the restored tools, not trigger resetToAllDisabled
+    const disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    expect(disabledList).toContain("search_web");
+    expect(disabledList).toContain("get_weather");
+    expect(disabledList).toHaveLength(2);
   });
 });
 

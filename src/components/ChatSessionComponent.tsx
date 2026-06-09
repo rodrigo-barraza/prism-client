@@ -4069,7 +4069,11 @@ export default function ChatSessionComponent({
         setBackendSessionStats(snap.backendSessionStats || null);
         setIsBackendStatsStale(snap.isBackendStatsStale || false);
         // Restore tool toggle state from snapshot
-        restoreDisabledTools(snap.disabledTools || []);
+        if (snap.disabledTools !== undefined) {
+          restoreDisabledTools(snap.disabledTools);
+        } else {
+          resetToAllDisabled();
+        }
         // Re-attach: mark as generating so the UI shows the active state
         setIsGenerating(true);
         // Remove the snapshot — the SSE callbacks will resume updating React state
@@ -4216,14 +4220,18 @@ export default function ChatSessionComponent({
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
 
         // Restore tool toggle state from the session's persisted toolConfig.
-        // Legacy sessions without toolConfig default to all tools enabled (empty disabled set).
+        // Legacy sessions without toolConfig default to all tools disabled.
         const sessionToolConfig = (sessionSettings as Record<string, unknown>)?.toolConfig as
           | { disabledTools?: string[] }
           | undefined;
-        restoreDisabledTools(sessionToolConfig?.disabledTools || []);
+        if (sessionToolConfig && sessionToolConfig.disabledTools !== undefined) {
+          restoreDisabledTools(sessionToolConfig.disabledTools);
+        } else {
+          resetToAllDisabled();
+        }
       }
     },
-    [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools],
+    [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools, resetToAllDisabled],
   );
 
   const handleSelectSession = useCallback(

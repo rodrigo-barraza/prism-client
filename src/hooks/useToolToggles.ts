@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { ToolSchema } from "../types/types";
 
 /**
@@ -11,6 +11,7 @@ export default function useToolToggles(
   coreToolsLocked: boolean = true,
 ) {
   const [disabledTools, setDisabledTools] = useState<Set<string>>(() => new Set());
+  const hasInitializedRef = useRef(false);
 
   const handleToggleBuiltIn = useCallback(
     (toolName: string) => {
@@ -53,11 +54,19 @@ export default function useToolToggles(
       }
     }
     setDisabledTools(allConfigurableDisabled);
+    hasInitializedRef.current = true;
   }, [builtInTools, coreToolsLocked]);
 
   const restoreDisabledTools = useCallback((toolNames: string[]) => {
     setDisabledTools(new Set(toolNames));
+    hasInitializedRef.current = true;
   }, []);
+
+  useEffect(() => {
+    if (builtInTools.length > 0 && !hasInitializedRef.current) {
+      resetToAllDisabled();
+    }
+  }, [builtInTools, resetToAllDisabled]);
 
   return {
     disabledTools,
