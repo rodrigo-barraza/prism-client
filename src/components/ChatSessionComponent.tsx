@@ -5170,7 +5170,9 @@ export default function ChatSessionComponent({
               .map((tool) => tool.name)}
             onEnabledToolsChange={(newEnabled) => {
               const enabledSet = new Set(newEnabled);
+              const isCoreToolsLockedForCallback = !isNoAgent && (activeAgentData?.coreToolsLocked ?? true);
               for (const tool of builtInTools) {
+                if (isCoreToolsLockedForCallback && tool.system) continue;
                 const isDisabled = disabledTools.has(tool.name);
                 const shouldBeEnabled = enabledSet.has(tool.name);
                 if (isDisabled && shouldBeEnabled) handleToggleBuiltIn(tool.name);

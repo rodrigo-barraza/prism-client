@@ -18,7 +18,10 @@ export default function useToolToggles(
       );
       const list = saved?.disabledTools || saved?.disabledBuiltIns;
       if (list && Array.isArray(list)) {
-        return new Set(list);
+        const coreToolNames = new Set(
+          builtInTools.filter((tool) => tool.system === true).map((tool) => tool.name),
+        );
+        return new Set(list.filter((toolName) => !coreToolNames.has(toolName)));
       }
     }
     return new Set();
@@ -57,7 +60,7 @@ export default function useToolToggles(
         for (const tool of builtInTools) {
           if (enableAll) {
             next.delete(tool.name);
-          } else {
+          } else if (!tool.system) {
             next.add(tool.name);
           }
         }
