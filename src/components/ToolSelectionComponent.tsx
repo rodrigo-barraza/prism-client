@@ -68,7 +68,7 @@ interface ToolSelectionProps {
 const DOMAIN_ICONS: Record<string, LucideIcon> = {
   [DOMAINS.CORE_HARNESS.displayName]: Bot,
   [DOMAINS.CORE_WORKSPACE.displayName]: FolderOpen,
-  [DOMAINS.ORCHESTRATOR.displayName]: Bot,
+  [DOMAINS.CORE_ORCHESTRATOR.displayName]: Bot,
   [DOMAINS.WEATHER.displayName]: CloudSun,
   [DOMAINS.EVENTS.displayName]: CalendarDays,
   [DOMAINS.MARKETS.displayName]: BarChart3,
@@ -111,7 +111,7 @@ const DOMAIN_ICONS: Record<string, LucideIcon> = {
 const DOMAIN_LABELS: Record<string, string> = {
   [DOMAINS.CORE_HARNESS.displayName]: DOMAINS.CORE_HARNESS.displayName,
   [DOMAINS.CORE_WORKSPACE.displayName]: DOMAINS.CORE_WORKSPACE.displayName,
-  [DOMAINS.ORCHESTRATOR.displayName]: DOMAINS.ORCHESTRATOR.displayName,
+  [DOMAINS.CORE_ORCHESTRATOR.displayName]: DOMAINS.CORE_ORCHESTRATOR.displayName,
   [DOMAINS.WEB.displayName]: DOMAINS.WEB.displayName,
   [DOMAINS.BROWSER.displayName]: DOMAINS.BROWSER.displayName,
   [DOMAINS.TASKS.displayName]: DOMAINS.TASKS.displayName,
@@ -134,7 +134,7 @@ const DOMAIN_LABELS: Record<string, string> = {
 const DOMAIN_ORDER = [
   DOMAINS.CORE_HARNESS.displayName,
   DOMAINS.CORE_WORKSPACE.displayName,
-  DOMAINS.ORCHESTRATOR.displayName,
+  DOMAINS.CORE_ORCHESTRATOR.displayName,
   DOMAINS.WEB.displayName,
   DOMAINS.BROWSER.displayName,
   DOMAINS.TASKS.displayName,
@@ -724,7 +724,7 @@ export default function ToolSelectionComponent({
               </div>
             ) : (
               selectedGroupedByDomain.map(([groupKey, tools]) => {
-                const isCoreDomain = groupKey === DOMAINS.CORE_HARNESS.displayName || groupKey === DOMAINS.CORE_WORKSPACE.displayName || groupKey === DOMAINS.ORCHESTRATOR.displayName;
+                const isCoreDomain = groupKey === DOMAINS.CORE_HARNESS.displayName || groupKey === DOMAINS.CORE_WORKSPACE.displayName || groupKey === DOMAINS.CORE_ORCHESTRATOR.displayName;
                 const isMcp = groupKey.startsWith("Model Context Protocol:") || groupKey === "Model Context Protocol";
                 const GroupIcon: LucideIcon = isMcp
                   ? Network
