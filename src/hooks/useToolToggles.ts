@@ -68,11 +68,23 @@ export default function useToolToggles(
     }
   }, [builtInTools, resetToAllDisabled]);
 
+  const enableSpecificTools = useCallback((toolNames: string[]) => {
+    if (toolNames.length === 0) return;
+    setDisabledTools((previousDisabledTools) => {
+      const nextDisabledTools = new Set(previousDisabledTools);
+      for (const toolName of toolNames) {
+        nextDisabledTools.delete(toolName);
+      }
+      return nextDisabledTools;
+    });
+  }, []);
+
   return {
     disabledTools,
     handleToggleBuiltIn,
     handleToggleAllBuiltIn,
     resetToAllDisabled,
     restoreDisabledTools,
+    enableSpecificTools,
   };
 }

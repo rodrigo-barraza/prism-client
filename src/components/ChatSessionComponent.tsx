@@ -614,7 +614,7 @@ export default function ChatSessionComponent({
       ? SK_MODEL_MEMORY_AGENT
       : SK_MODEL_MEMORY_AGENT_PREFIX + agentId;
 
-  const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn, resetToAllDisabled, restoreDisabledTools } =
+  const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn, resetToAllDisabled, restoreDisabledTools, enableSpecificTools } =
     useToolToggles(builtInTools, isCoreToolsLocked);
 
   // -- Model memory (persist last-used model per agent) ----------
@@ -2851,6 +2851,11 @@ export default function ChatSessionComponent({
                 strategy: statusData.strategy || "",
                 estimatedTokens: statusData.estimatedTokens,
               });
+            } else if (statusData?.message === STATUS_MESSAGES.TOOL_SET_CHANGED) {
+              const dynamicTools = statusData.dynamicTools as string[] | undefined;
+              if (Array.isArray(dynamicTools) && dynamicTools.length > 0) {
+                enableSpecificTools(dynamicTools);
+              }
             } else if (statusData?.message === STATUS_MESSAGES.TASKS_UPDATED) {
               // Ephemeral tab switch — show tasks panel then revert after 5s
               switchTabTemporarily("tasks");
