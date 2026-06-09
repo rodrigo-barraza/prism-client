@@ -136,6 +136,26 @@ describe("resetSessionState model parameter resetting", () => {
               thinkingLevels: ["high", "minimal"],
             },
           ],
+          anthropic: [
+            {
+              name: "claude-3-5-sonnet",
+              supportsThinking: true,
+            },
+          ],
+          ollama: [
+            {
+              name: "custom-thinking-model",
+              tools: ["Thinking", "Web Search"],
+            },
+          ],
+          "lm-studio": [
+            {
+              name: "qwen3-7b-instruct",
+            },
+            {
+              name: "generic-llama-3",
+            },
+          ],
         },
       },
     };
@@ -183,6 +203,18 @@ describe("resetSessionState model parameter resetting", () => {
 
     const deepseekSettings = updateSettings({ provider: "deepseek", model: "deepseek-reasoner" });
     expect(deepseekSettings.thinkingEnabled).toBe(true);
+
+    const anthropicSettings = updateSettings({ provider: "anthropic", model: "claude-3-5-sonnet" });
+    expect(anthropicSettings.thinkingEnabled).toBe(true);
+
+    const ollamaSettings = updateSettings({ provider: "ollama", model: "custom-thinking-model" });
+    expect(ollamaSettings.thinkingEnabled).toBe(true);
+
+    const lmStudioQwenSettings = updateSettings({ provider: "lm-studio", model: "qwen3-7b-instruct" });
+    expect(lmStudioQwenSettings.thinkingEnabled).toBe(true);
+
+    const lmStudioLlamaSettings = updateSettings({ provider: "lm-studio", model: "generic-llama-3" });
+    expect(lmStudioLlamaSettings.thinkingEnabled).toBe(false);
 
     const standardSettings = updateSettings({ provider: "google", model: "gemini-2.0-flash" });
     expect(standardSettings.thinkingEnabled).toBe(false);
