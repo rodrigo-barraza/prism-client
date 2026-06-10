@@ -72,6 +72,19 @@ export const LS_AGENT_MAX_ITERATIONS = "agent:maxIterations";
 export const LS_AGENT_MAX_WORKER_ITERATIONS = "agent:maxWorkerIterations";
 export const LS_CRON_JOB_NOTIFICATIONS_COUNT = "cron-job-notifications-count";
 export const SK_TOOL_MEMORY_AGENT_PREFIX = "toolMemory:agent:";
+export const LS_ACTIVE_AGENT = "prism:activeAgent";
+export const LS_LM_STUDIO_LOAD_CONFIG_PREFIX = "lm-studio-load-config:";
+
+// -- Custom Event Names --------------------------------------------
+export const EV_CRON_JOB_SCHEDULED = "cron-job-scheduled";
+export const EV_PRISM_SETTINGS_UPDATED = "prism-settings-updated";
+export const EV_PANEL_DISMISS_SIDEBARS = "panel:dismiss-sidebars";
+export const EV_SIDEBAR_TAB_CHANGE = "sidebarTab:change";
+export const EV_VIEW_MODE_CHANGE = "viewMode:change";
+export const EV_USER_TYPING = "user:typing";
+export const EV_CONVERSATION_CHANGE = "conversation:change";
+export const EV_AGENT_SWITCH = "agent:switch";
+export const EV_MODEL_CHANGE = "model:change";
 
 // -- Settings defaults (shared by Agent, admin) ------
 export const SETTINGS_DEFAULTS = {

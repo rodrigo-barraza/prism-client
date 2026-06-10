@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import type { PrismSettings } from "../types/types";
+import { EV_PRISM_SETTINGS_UPDATED } from "../constants";
 import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
 import styles from "./SettingsSidebarNavigationComponent.module.css";
 
@@ -117,9 +118,9 @@ export default function SettingsSidebarNavigationComponent({
       }
     };
 
-    window.addEventListener("prism-settings-updated", handleSettingsUpdated);
+    window.addEventListener(EV_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     return () => {
-      window.removeEventListener("prism-settings-updated", handleSettingsUpdated);
+      window.removeEventListener(EV_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     };
   }, []);
 

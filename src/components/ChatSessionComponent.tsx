@@ -114,6 +114,13 @@ import {
   LS_CRITIC_GATE_ENABLED,
   LS_AGENT_MAX_ITERATIONS,
   LS_AGENT_MAX_WORKER_ITERATIONS,
+  EV_SIDEBAR_TAB_CHANGE,
+  EV_VIEW_MODE_CHANGE,
+  EV_USER_TYPING,
+  EV_CONVERSATION_CHANGE,
+  EV_AGENT_SWITCH,
+  EV_MODEL_CHANGE,
+  EV_CRON_JOB_SCHEDULED,
 } from "../constants";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent";
@@ -531,7 +538,7 @@ export default function ChatSessionComponent({
   useEffect(() => {
     if (leftTab) {
       window.dispatchEvent(
-        new CustomEvent("sidebarTab:change", {
+        new CustomEvent(EV_SIDEBAR_TAB_CHANGE, {
           detail: { tab: leftTab },
         }),
       );
@@ -541,7 +548,7 @@ export default function ChatSessionComponent({
   useEffect(() => {
     const currentViewMode = chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean";
     window.dispatchEvent(
-      new CustomEvent("viewMode:change", {
+      new CustomEvent(EV_VIEW_MODE_CHANGE, {
         detail: { viewMode: currentViewMode },
       }),
     );
@@ -1634,7 +1641,7 @@ export default function ChatSessionComponent({
       if (!element) return;
       const value = serializeEditable(element);
       inputValueRef.current = value;
-      window.dispatchEvent(new CustomEvent("user:typing"));
+      window.dispatchEvent(new CustomEvent(EV_USER_TYPING));
       const hasSlashBadges = element.querySelectorAll("[data-slash-command]").length > 0;
       const nowHasInput = value.trim().length > 0 || hasSlashBadges;
       setHasInput((previousHasInput) =>
@@ -2480,7 +2487,7 @@ export default function ChatSessionComponent({
                 LS_CRON_JOB_NOTIFICATIONS_COUNT,
                 String(currentNotificationCount + 1),
               );
-              window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
+              window.dispatchEvent(new CustomEvent(EV_CRON_JOB_SCHEDULED));
             }
 
             // Auto-refresh memories panel when upsert_memory completes
@@ -2647,7 +2654,7 @@ export default function ChatSessionComponent({
                 LS_CRON_JOB_NOTIFICATIONS_COUNT,
                 String(currentNotificationCount + 1),
               );
-              window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
+              window.dispatchEvent(new CustomEvent(EV_CRON_JOB_SCHEDULED));
             }
 
             // Auto-refresh workspace tree when FS-mutating tools complete (MCP path)
@@ -3509,7 +3516,7 @@ export default function ChatSessionComponent({
         const now = new Date().toISOString();
         setActiveId(conversationId);
         window.dispatchEvent(
-          new CustomEvent("conversation:change", {
+          new CustomEvent(EV_CONVERSATION_CHANGE, {
             detail: { conversationId: conversationId },
           }),
         );
@@ -3935,7 +3942,7 @@ export default function ChatSessionComponent({
 
     // Clear session from URL
     window.dispatchEvent(
-      new CustomEvent("conversation:change", {
+      new CustomEvent(EV_CONVERSATION_CHANGE, {
         detail: { conversationId: null },
       }),
     );
@@ -4078,7 +4085,7 @@ export default function ChatSessionComponent({
         setConversationId(full.id || generateUUID());
         setActiveId(full.id || null);
         window.dispatchEvent(
-          new CustomEvent("conversation:change", {
+          new CustomEvent(EV_CONVERSATION_CHANGE, {
             detail: { conversationId: full.id },
           }),
         );
@@ -4180,7 +4187,7 @@ export default function ChatSessionComponent({
         }
 
         window.dispatchEvent(
-          new CustomEvent("conversation:change", {
+          new CustomEvent(EV_CONVERSATION_CHANGE, {
             detail: { conversationId: full.id },
           }),
         );
@@ -6013,7 +6020,7 @@ export default function ChatSessionComponent({
                   // Agent switching is handled by the parent page via URL/state
                   // Emit a custom event or call a callback
                   window.dispatchEvent(
-                    new CustomEvent("agent:switch", {
+                    new CustomEvent(EV_AGENT_SWITCH, {
                       detail: { agentId: id },
                     }),
                   );
@@ -6057,7 +6064,7 @@ export default function ChatSessionComponent({
                 }
                 saveModel(provider, modelName);
                 window.dispatchEvent(
-                  new CustomEvent("model:change", {
+                  new CustomEvent(EV_MODEL_CHANGE, {
                     detail: { provider, model: modelName },
                   }),
                 );

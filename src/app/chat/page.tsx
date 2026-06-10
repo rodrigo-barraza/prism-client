@@ -1,5 +1,14 @@
 "use client";
-import { AGENT_IDS, AGENTLESS_AGENT } from "@/constants";
+import {
+  AGENT_IDS,
+  AGENTLESS_AGENT,
+  LS_ACTIVE_AGENT,
+  EV_AGENT_SWITCH,
+  EV_MODEL_CHANGE,
+  EV_CONVERSATION_CHANGE,
+  EV_SIDEBAR_TAB_CHANGE,
+  EV_VIEW_MODE_CHANGE,
+} from "@/constants";
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -7,8 +16,6 @@ import ChatSessionComponent from "../../components/ChatSessionComponent";
 import PrismService from "../../services/PrismService";
 import { AgentPersona } from "../../types/types";
 import styles from "./page.module.css";
-
-const LS_ACTIVE_AGENT = "prism:activeAgent";
 
 const NONE_AGENT: AgentPersona = {
   id: AGENTLESS_AGENT.id,
@@ -216,30 +223,30 @@ function AgentsPageInner() {
   );
 
   useEffect(() => {
-    window.addEventListener("agent:switch", handleAgentSwitch);
-    window.addEventListener("model:change", handleModelChange);
-    window.addEventListener("conversation:change", handleConversationChange);
+    window.addEventListener(EV_AGENT_SWITCH, handleAgentSwitch);
+    window.addEventListener(EV_MODEL_CHANGE, handleModelChange);
+    window.addEventListener(EV_CONVERSATION_CHANGE, handleConversationChange);
     window.addEventListener(
-      "sidebarTab:change",
+      EV_SIDEBAR_TAB_CHANGE,
       handleSidebarTabChangeNotification,
     );
     window.addEventListener(
-      "viewMode:change",
+      EV_VIEW_MODE_CHANGE,
       handleViewModeChangeNotification,
     );
     return () => {
-      window.removeEventListener("agent:switch", handleAgentSwitch);
-      window.removeEventListener("model:change", handleModelChange);
+      window.removeEventListener(EV_AGENT_SWITCH, handleAgentSwitch);
+      window.removeEventListener(EV_MODEL_CHANGE, handleModelChange);
       window.removeEventListener(
-        "conversation:change",
+        EV_CONVERSATION_CHANGE,
         handleConversationChange,
       );
       window.removeEventListener(
-        "sidebarTab:change",
+        EV_SIDEBAR_TAB_CHANGE,
         handleSidebarTabChangeNotification,
       );
       window.removeEventListener(
-        "viewMode:change",
+        EV_VIEW_MODE_CHANGE,
         handleViewModeChangeNotification,
       );
     };

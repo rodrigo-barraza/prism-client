@@ -35,7 +35,7 @@ import SpinningCatComponent from "./SpinningCatComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./NavigationSidebarComponent.module.css";
 import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
-import { LS_PANEL_NAV, LS_PANEL_LEFT, LS_PANEL_RIGHT, LS_CRON_JOB_NOTIFICATIONS_COUNT } from "../constants";
+import { LS_PANEL_NAV, LS_PANEL_LEFT, LS_PANEL_RIGHT, LS_CRON_JOB_NOTIFICATIONS_COUNT, EV_CRON_JOB_SCHEDULED, EV_PRISM_SETTINGS_UPDATED } from "../constants";
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
@@ -116,7 +116,7 @@ export default function NavigationSidebarComponent({
   const clearCronJobNotifications = useCallback(() => {
     localStorage.setItem(LS_CRON_JOB_NOTIFICATIONS_COUNT, "0");
     setCronJobNotificationsCount(0);
-    window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
+    window.dispatchEvent(new CustomEvent(EV_CRON_JOB_SCHEDULED));
   }, []);
 
   useEffect(() => {
@@ -136,9 +136,9 @@ export default function NavigationSidebarComponent({
       setCronJobNotificationsCount(storedCount);
     };
 
-    window.addEventListener("cron-job-scheduled", handleCronJobScheduledEvent);
+    window.addEventListener(EV_CRON_JOB_SCHEDULED, handleCronJobScheduledEvent);
     return () => {
-      window.removeEventListener("cron-job-scheduled", handleCronJobScheduledEvent);
+      window.removeEventListener(EV_CRON_JOB_SCHEDULED, handleCronJobScheduledEvent);
     };
   }, []);
 
@@ -191,9 +191,9 @@ export default function NavigationSidebarComponent({
       }
     };
 
-    window.addEventListener("prism-settings-updated", handleSettingsUpdated);
+    window.addEventListener(EV_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     return () => {
-      window.removeEventListener("prism-settings-updated", handleSettingsUpdated);
+      window.removeEventListener(EV_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     };
   }, [mode]);
 

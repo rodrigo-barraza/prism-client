@@ -12,8 +12,7 @@ import {
 import ProviderLogo from "./ProviderLogosComponent";
 import { formatFileSize, formatContextTokens } from "@rodrigo-barraza/utilities-library";
 import styles from "./ModelLoadConfigPanelComponent.module.css";
-
-const LS_KEY_PREFIX = "lm-studio-load-config:";
+import { LS_LM_STUDIO_LOAD_CONFIG_PREFIX as LS_KEY_PREFIX } from "../constants";
 
 // Architecture modelParameters are resolved server-side by Prism (gguf-arch.js).
 // This fallback is used only if the API response doesn't include archParams.

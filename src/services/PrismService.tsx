@@ -1,4 +1,4 @@
-import { AGENT_IDS } from "@/constants";
+import { AGENT_IDS, EV_PRISM_SETTINGS_UPDATED } from "@/constants";
 import { SSE_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
@@ -724,7 +724,7 @@ export default class PrismService {
     });
     if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent("prism-settings-updated", { detail: updatedSettings })
+        new CustomEvent(EV_PRISM_SETTINGS_UPDATED, { detail: updatedSettings })
       );
     }
     return updatedSettings;

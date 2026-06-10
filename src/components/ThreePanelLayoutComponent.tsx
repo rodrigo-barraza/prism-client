@@ -15,6 +15,7 @@ import {
   LS_PANEL_LEFT,
   LS_PANEL_RIGHT,
   LS_LEFT_SIDEBAR_SPLIT_RATIO,
+  EV_PANEL_DISMISS_SIDEBARS,
 } from "../constants";
 
 /**
@@ -229,9 +230,9 @@ export default function ThreePanelLayout({
   /* Listen for programmatic dismiss from child components (pickers, etc.) */
   useEffect(() => {
     const handler = () => dismissSidebars();
-    document.addEventListener("panel:dismiss-sidebars", handler);
+    document.addEventListener(EV_PANEL_DISMISS_SIDEBARS, handler);
     return () =>
-      document.removeEventListener("panel:dismiss-sidebars", handler);
+      document.removeEventListener(EV_PANEL_DISMISS_SIDEBARS, handler);
   }, [dismissSidebars]);
 
   // -- Left sidebar split panel drag handler --
