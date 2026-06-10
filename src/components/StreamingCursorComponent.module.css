@@ -80,3 +80,17 @@
     opacity: 0;
   }
 }
+
+/* Streaming token display - rotating rainbow gradient text */
+.streaming-token-text-display {
+  display: inline-block;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background: linear-gradient(var(--prism-angle, 0deg), var(--prism-colors));
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: prism-rotate var(--prism-speed) linear infinite;
+  font-weight: 700;
+  margin-inline-end: 4px;
+}
+

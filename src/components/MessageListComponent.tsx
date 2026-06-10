@@ -1766,6 +1766,7 @@ export default function MessageList({
                                     {isLastTextSeg && showCursor && (
                                       <StreamingCursorComponent
                                         active={isStreaming}
+                                        text={fragmentText}
                                       />
                                     )}
                                   </MarkdownContent>
@@ -1777,6 +1778,7 @@ export default function MessageList({
                                     key={`seg-x-${si}`}
                                     active
                                     standalone
+                                    text={fragmentText}
                                   />
                                 );
                               }
@@ -1998,6 +2000,7 @@ export default function MessageList({
                                     >
                                       <StreamingCursorComponent
                                         active={isStreaming}
+                                        text={rest}
                                       />
                                     </MarkdownContent>
                                   </div>
@@ -2012,6 +2015,7 @@ export default function MessageList({
                                 >
                                   <StreamingCursorComponent
                                     active={isStreaming}
+                                    text={message.content}
                                   />
                                 </MarkdownContent>
                               );
@@ -2023,7 +2027,10 @@ export default function MessageList({
                                 isStreaming ? styles['streaming-text'] : ""
                               }
                             >
-                              <StreamingCursorComponent active={isStreaming} />
+                              <StreamingCursorComponent
+                                active={isStreaming}
+                                text={message.content}
+                              />
                             </MarkdownContent>
                           ) : isStreaming ? (
                             <StreamingCursorComponent active standalone />
