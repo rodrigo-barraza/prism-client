@@ -32,6 +32,7 @@ import {
   Download,
   Music,
   Volume2,
+  RotateCcw,
 } from "lucide-react";
 
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
@@ -1587,15 +1588,31 @@ function BrowserActionRenderer({ result, args }: RendererProps) {
 // -- 13. Turtle Graphics -----------------------------------------------------
 
 function TurtleDrawEmbed({ sourceUrl, title }: { sourceUrl: string; title: string }) {
+  const iframeReference = useRef<HTMLIFrameElement>(null);
+
+  const handleReplay = useCallback(() => {
+    iframeReference.current?.contentWindow?.postMessage({ type: "turtle-replay" }, "*");
+  }, []);
+
   return (
     <div className={styles['turtle-embed-wrapper']}>
       <iframe
+        ref={iframeReference}
         src={sourceUrl}
         className={styles['turtle-embed-frame']}
         title={title}
         loading="lazy"
         referrerPolicy="no-referrer"
       />
+      <button
+        type="button"
+        className={styles['turtle-replay-button']}
+        onClick={handleReplay}
+        title="Replay animation"
+        aria-label="Replay turtle drawing animation"
+      >
+        <RotateCcw size={14} />
+      </button>
     </div>
   );
 }
@@ -2321,7 +2338,7 @@ const TOOL_RESULT_REGISTRY = {
   control_browser: { Renderer: BrowserActionRenderer },
 
   // Turtle Graphics
-  draw_turtle: { Renderer: TurtleDrawRenderer },
+  draw_turtle_graphics: { Renderer: TurtleDrawRenderer },
   create_vector_animation: { Renderer: VectorAnimationRenderer },
 
   // 3D Mesh

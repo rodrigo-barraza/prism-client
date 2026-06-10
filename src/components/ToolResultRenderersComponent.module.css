@@ -588,11 +588,12 @@
 /* ── Turtle Graphics Embed ─────────────────────────────────── */
 
 .turtle-embed-wrapper {
+  position: relative;
   margin-block-start: 6px;
-  border-radius: 8px;
+  border-radius: 2px;
   overflow: hidden;
   border: 1px solid var(--calculated-border-color);
-  background: oklch(100.0% 0.0001 263.3);
+  background: oklch(0 0 0);
   width: 100%;
   max-width: 480px;
   aspect-ratio: 1 / 1;
@@ -606,7 +607,7 @@
 
 .turtle-embed-wrapper:hover {
   border-color: var(--accent-primary);
-  box-shadow: 0 6px 24px oklch(65.5% 0.1932 285.8 / 0.15);
+  box-shadow: 0 6px 24px oklch(0.0% 0.0 0.0 / 0.25);
 }
 
 .turtle-embed-frame {
@@ -615,6 +616,43 @@
   border: none;
   display: block;
   background: transparent;
+}
+
+.turtle-replay-button {
+  position: absolute;
+  inset-block-end: 8px;
+  inset-inline-end: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 2px;
+  border: 1px solid oklch(1 0 0 / 0.12);
+  background: oklch(0 0 0 / 0.6);
+  backdrop-filter: blur(8px);
+  color: oklch(1 0 0 / 0.7);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+  z-index: 2;
+}
+
+.turtle-embed-wrapper:hover .turtle-replay-button {
+  opacity: 1;
+}
+
+.turtle-replay-button:hover {
+  background: oklch(0 0 0 / 0.8);
+  color: oklch(1 0 0 / 1);
+  border-color: oklch(1 0 0 / 0.25);
+}
+
+.turtle-replay-button:active {
+  scale: 0.92;
 }
 
 @keyframes turtle-fade-in {
