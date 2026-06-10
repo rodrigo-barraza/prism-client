@@ -2,8 +2,12 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import styles from "./SidebarTabHeaderComponent.module.css";
 
+function isLucideIcon(icon: LucideIcon | ReactNode): icon is LucideIcon {
+  return typeof icon === "function";
+}
+
 interface SidebarTabHeaderProps {
-  icon: LucideIcon;
+  icon: LucideIcon | ReactNode;
   title: string;
   count?: number | string | null;
   countSuffix?: string;
@@ -12,7 +16,7 @@ interface SidebarTabHeaderProps {
 }
 
 export default function SidebarTabHeaderComponent({
-  icon: IconComponent,
+  icon,
   title,
   count,
   countSuffix,
@@ -21,7 +25,11 @@ export default function SidebarTabHeaderComponent({
 }: SidebarTabHeaderProps) {
   return (
     <div className={`sidebar-tab-header-component ${styles["sidebar-tab-header"]}`}>
-      <IconComponent size={11} className={styles["sidebar-tab-header-icon"]} />
+      {isLucideIcon(icon) ? (
+        (() => { const IconComponent = icon; return <IconComponent size={11} className={styles["sidebar-tab-header-icon"]} />; })()
+      ) : (
+        <span className={styles["sidebar-tab-header-emoji-icon"]}>{icon}</span>
+      )}
       <span className={styles["sidebar-tab-header-label"]}>{title}</span>
       {actions && (
         <div className={styles["sidebar-tab-header-actions"]}>{actions}</div>

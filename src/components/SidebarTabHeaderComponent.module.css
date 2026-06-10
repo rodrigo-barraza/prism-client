@@ -21,6 +21,12 @@
   flex-shrink: 0;
 }
 
+.sidebar-tab-header-emoji-icon {
+  font-size: 11px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .sidebar-tab-header-label {
   flex: 1;
   overflow: hidden;

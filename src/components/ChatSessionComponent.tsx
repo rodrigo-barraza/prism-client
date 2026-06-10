@@ -8,26 +8,16 @@ import {
   X,
   ClipboardList,
   Zap,
-  Settings,
-  Wrench,
-  Brain,
   GitBranch,
   Repeat,
-  ListChecks,
-  BookOpen,
-  Info,
   Activity,
   CornerDownLeft,
   Send,
   Square,
-  SlidersHorizontal,
   File,
   FolderOpen,
   FolderTree,
   Plus,
-  Bot,
-  BarChart3,
-  ScrollText,
   ShieldCheck,
   FileText,
   FileSpreadsheet,
@@ -4686,7 +4676,7 @@ export default function ChatSessionComponent({
 
       {leftTab === "settings" && (
         <>
-          <SidebarTabHeaderComponent icon={Settings} title="Settings" />
+          <SidebarTabHeaderComponent icon="🛠︎" title="Settings" />
           <SettingsPanel
             config={filteredConfig}
             settings={settings}
@@ -5059,7 +5049,7 @@ export default function ChatSessionComponent({
 
       {leftTab === "params" && (
         <>
-          <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
+          <SidebarTabHeaderComponent icon="🎚︎" title="Parameters" />
           <ParametersPanelComponent
             settings={settings}
             onChange={(updates: Partial<PrismSettings>) =>
@@ -5074,7 +5064,7 @@ export default function ChatSessionComponent({
       {leftTab === "workspace" && (
         <>
           <SidebarTabHeaderComponent
-            icon={FolderOpen}
+            icon="📂"
             title="Workspace"
             count={workspaceTreeStats?.totalEntries}
             countSuffix={workspaceTreeStats?.truncated ? "+" : ""}
@@ -5099,14 +5089,14 @@ export default function ChatSessionComponent({
 
       {leftTab === "info" && (
         <>
-          <SidebarTabHeaderComponent icon={Info} title="Model Info" />
+          <SidebarTabHeaderComponent icon="📄" title="Model Info" />
           <ModelInfoPanel config={filteredConfig} settings={settings} />
         </>
       )}
 
       {leftTab === "workers" && (
         <>
-          <SidebarTabHeaderComponent icon={Bot} title="Workers" count={workersCount} actions={workersHeaderActions} />
+          <SidebarTabHeaderComponent icon="🤖" title="Workers" count={workersCount} actions={workersHeaderActions} />
           <WorkersPanel
             conversationId={conversationId}
             refreshKey={tasksRefreshKey}
@@ -5119,7 +5109,7 @@ export default function ChatSessionComponent({
 
       {leftTab === "requests" && (
         <>
-          <SidebarTabHeaderComponent icon={BarChart3} title="Requests" count={backendSessionStats?.requestCount || 0} />
+          <SidebarTabHeaderComponent icon="📊" title="Requests" count={backendSessionStats?.requestCount || 0} />
           <RequestsTableComponent
             conversationId={conversationId}
             refreshKey={requestsRefreshKey}
@@ -5210,7 +5200,7 @@ export default function ChatSessionComponent({
       {leftTabBottom === "tools" && (
         <>
           <SidebarTabHeaderComponent
-            icon={Wrench}
+            icon="🔧"
             title="Tools"
             count={`${enabledSelectableConfigurableToolsCount + (isCoreToolsLocked ? selectableCoreToolsCount : enabledSelectableCoreToolsCount)} / ${selectableConfigurableTools.length + selectableCoreToolsCount}`}
             hasOnlyCoreToolsActive={enabledSelectableConfigurableToolsCount === 0 && (isCoreToolsLocked || enabledSelectableCoreToolsCount === 0)}
@@ -5238,7 +5228,7 @@ export default function ChatSessionComponent({
 
       {leftTabBottom === "skills" && (
         <>
-          <SidebarTabHeaderComponent icon={BookOpen} title="Skills" count={skills.length} actions={skillsHeaderActions} />
+          <SidebarTabHeaderComponent icon="📖" title="Skills" count={skills.length} actions={skillsHeaderActions} />
           <SkillsPanel
             skills={skills}
             onSkillsChange={loadSkills}
@@ -5250,7 +5240,7 @@ export default function ChatSessionComponent({
 
       {leftTabBottom === "rules" && (
         <>
-          <SidebarTabHeaderComponent icon={ScrollText} title="Rules" count={rules.length} actions={rulesHeaderActions} />
+          <SidebarTabHeaderComponent icon="📏" title="Rules" count={rules.length} actions={rulesHeaderActions} />
           <RulesPanel
             rules={rules}
             onRulesChange={loadRules}
@@ -5262,7 +5252,7 @@ export default function ChatSessionComponent({
 
       {leftTabBottom === "memories" && hasAnyMemoryModelSet && (
         <>
-          <SidebarTabHeaderComponent icon={Brain} title="Memories" count={totalMemoriesCount} actions={memoriesHeaderActions} />
+          <SidebarTabHeaderComponent icon="🧠" title="Memories" count={totalMemoriesCount} actions={memoriesHeaderActions} />
           <MemoriesPanel
             project={agentProject}
             agent={agentId}
@@ -5276,7 +5266,7 @@ export default function ChatSessionComponent({
 
       {leftTabBottom === "tasks" && (
         <>
-          <SidebarTabHeaderComponent icon={ListChecks} title="Tasks" count={tasksCount} actions={tasksHeaderActions} />
+          <SidebarTabHeaderComponent icon="✅" title="Tasks" count={tasksCount} actions={tasksHeaderActions} />
           <TasksPanel
             project={agentProject}
             refreshKey={tasksRefreshKey}

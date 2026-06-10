@@ -8,17 +8,7 @@ import useSessionStats from "../hooks/useSessionStats";
 import {
   Loader,
   MessageSquare,
-  Settings,
-  SlidersHorizontal,
-  Info,
-  Wrench,
-  BookOpen,
-  Brain,
-  ListChecks,
-  BotMessageSquare,
   GitBranch,
-  Activity,
-  ScrollText,
 } from "lucide-react";
 
 import IrisService from "../services/IrisService";
@@ -1066,7 +1056,7 @@ export default function AdminChatViewerComponent({
                 />
                 {leftTab === "settings" && (
                   <>
-                    <SidebarTabHeaderComponent icon={Settings} title="Settings" />
+                    <SidebarTabHeaderComponent icon="🛠︎" title="Settings" />
                     <SettingsPanel
                       config={config}
                       settings={settingsWithDefaults}
@@ -1081,7 +1071,7 @@ export default function AdminChatViewerComponent({
                 )}
                 {leftTab === "params" && !isSelectedAgent && (
                   <>
-                    <SidebarTabHeaderComponent icon={SlidersHorizontal} title="Parameters" />
+                    <SidebarTabHeaderComponent icon="🎚︎" title="Parameters" />
                     <ParametersPanelComponent
                       settings={settingsWithDefaults}
                       config={config}
@@ -1091,7 +1081,7 @@ export default function AdminChatViewerComponent({
                 )}
                 {leftTab === "info" && (
                   <>
-                    <SidebarTabHeaderComponent icon={Info} title="Model Info" />
+                    <SidebarTabHeaderComponent icon="📄" title="Model Info" />
                     <ModelInfoPanel
                       config={config}
                       settings={settingsWithDefaults}
@@ -1101,7 +1091,7 @@ export default function AdminChatViewerComponent({
                 )}
                 {leftTab === "workers" && isSelectedAgent && (
                   <>
-                    <SidebarTabHeaderComponent icon={BotMessageSquare} title="Workers" count={workersCount} />
+                    <SidebarTabHeaderComponent icon="🤖" title="Workers" count={workersCount} />
                     <WorkersPanel
                       conversationId={selectedId || ""}
                       refreshKey={0}
@@ -1112,7 +1102,7 @@ export default function AdminChatViewerComponent({
                 )}
                 {leftTab === "requests" && isSelectedAgent && selectedId && (
                   <>
-                    <SidebarTabHeaderComponent icon={Activity} title="Requests" count={backendSessionStats?.requestCount || 0} />
+                    <SidebarTabHeaderComponent icon="📊" title="Requests" count={backendSessionStats?.requestCount || 0} />
                     <RequestsTableComponent
                       conversationId={selectedId}
                       compact
@@ -1148,7 +1138,7 @@ export default function AdminChatViewerComponent({
                 {leftTabBottom === "tools" && isSelectedAgent && (
                   <>
                     <SidebarTabHeaderComponent
-                      icon={Wrench}
+                      icon="🔧"
                       title="Tools"
                       count={`${builtInTools.length}`}
                     />
@@ -1161,7 +1151,7 @@ export default function AdminChatViewerComponent({
                 )}
                 {leftTabBottom === "skills" && isSelectedAgent && (
                   <>
-                    <SidebarTabHeaderComponent icon={BookOpen} title="Skills" count={skills.length} />
+                    <SidebarTabHeaderComponent icon="📖" title="Skills" count={skills.length} />
                     <SkillsPanel
                       skills={skills}
                       onSkillsChange={() => {}}
@@ -1172,7 +1162,7 @@ export default function AdminChatViewerComponent({
                 )}
                 {leftTabBottom === "rules" && isSelectedAgent && (
                   <>
-                    <SidebarTabHeaderComponent icon={ScrollText} title="Rules" count={rules.length} />
+                    <SidebarTabHeaderComponent icon="📏" title="Rules" count={rules.length} />
                     <RulesPanel
                       rules={rules}
                       onRulesChange={() => {}}
@@ -1183,7 +1173,7 @@ export default function AdminChatViewerComponent({
                 )}
                 {leftTabBottom === "memories" && isSelectedAgent && (
                   <>
-                    <SidebarTabHeaderComponent icon={Brain} title="Memories" count={totalMemoriesCount} />
+                    <SidebarTabHeaderComponent icon="🧠" title="Memories" count={totalMemoriesCount} />
                     <MemoriesPanel
                       project={targetProject || PROJECT_AGENT}
                       refreshKey={0}
@@ -1194,7 +1184,7 @@ export default function AdminChatViewerComponent({
                 )}
                 {leftTabBottom === "tasks" && isSelectedAgent && selectedId && (
                   <>
-                    <SidebarTabHeaderComponent icon={ListChecks} title="Tasks" count={tasksCount} />
+                    <SidebarTabHeaderComponent icon="✅" title="Tasks" count={tasksCount} />
                     <TasksPanel
                       project={targetProject || PROJECT_AGENT}
                       refreshKey={0}
