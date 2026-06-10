@@ -35,7 +35,7 @@ import SpinningCatComponent from "./SpinningCatComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./NavigationSidebarComponent.module.css";
 import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
-import { LS_PANEL_NAV, LS_PANEL_LEFT, LS_PANEL_RIGHT } from "../constants";
+import { LS_PANEL_NAV, LS_PANEL_LEFT, LS_PANEL_RIGHT, LS_CRON_JOB_NOTIFICATIONS_COUNT } from "../constants";
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
@@ -114,13 +114,13 @@ export default function NavigationSidebarComponent({
   const [cronJobNotificationsCount, setCronJobNotificationsCount] = useState(0);
 
   const clearCronJobNotifications = useCallback(() => {
-    localStorage.setItem("cron-job-notifications-count", "0");
+    localStorage.setItem(LS_CRON_JOB_NOTIFICATIONS_COUNT, "0");
     setCronJobNotificationsCount(0);
     window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
   }, []);
 
   useEffect(() => {
-    const storedCount = parseInt(localStorage.getItem("cron-job-notifications-count") || "0", 10);
+    const storedCount = parseInt(localStorage.getItem(LS_CRON_JOB_NOTIFICATIONS_COUNT) || "0", 10);
     if (pathname.startsWith("/scheduled-tasks")) {
       if (storedCount > 0) {
         clearCronJobNotifications();
@@ -132,7 +132,7 @@ export default function NavigationSidebarComponent({
 
   useEffect(() => {
     const handleCronJobScheduledEvent = () => {
-      const storedCount = parseInt(localStorage.getItem("cron-job-notifications-count") || "0", 10);
+      const storedCount = parseInt(localStorage.getItem(LS_CRON_JOB_NOTIFICATIONS_COUNT) || "0", 10);
       setCronJobNotificationsCount(storedCount);
     };
 

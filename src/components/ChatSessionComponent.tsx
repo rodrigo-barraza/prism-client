@@ -110,6 +110,10 @@ import {
   LS_FILE_VIEWER_WIDTH,
   LS_CHAT_FILTERS,
   AGENT_IDS,
+  LS_CRON_JOB_NOTIFICATIONS_COUNT,
+  LS_CRITIC_GATE_ENABLED,
+  LS_AGENT_MAX_ITERATIONS,
+  LS_AGENT_MAX_WORKER_ITERATIONS,
 } from "../constants";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent";
@@ -666,15 +670,15 @@ export default function ChatSessionComponent({
       const parsed = Number(stored);
       return [10, 25, 50, 100].includes(parsed) ? parsed : null;
     };
-    const iter = parseStored("agent:maxIterations");
+    const iter = parseStored(LS_AGENT_MAX_ITERATIONS);
     if (iter != null) setMaxIterations(iter);
-    const workerIter = parseStored("agent:maxWorkerIterations");
+    const workerIter = parseStored(LS_AGENT_MAX_WORKER_ITERATIONS);
     if (workerIter != null) setMaxWorkerIterations(workerIter);
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
   const [criticGateEnabled, setCriticGateEnabled] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("agent:criticGateEnabled") === "true";
+      return localStorage.getItem(LS_CRITIC_GATE_ENABLED) === "true";
     }
     return false;
   });
@@ -2469,11 +2473,11 @@ export default function ChatSessionComponent({
               toolData.name === TOOL_NAMES.CREATE_CRON_JOB
             ) {
               const currentNotificationCount = parseInt(
-                localStorage.getItem("cron-job-notifications-count") || "0",
+                localStorage.getItem(LS_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
                 10,
               );
               localStorage.setItem(
-                "cron-job-notifications-count",
+                LS_CRON_JOB_NOTIFICATIONS_COUNT,
                 String(currentNotificationCount + 1),
               );
               window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
@@ -2636,11 +2640,11 @@ export default function ChatSessionComponent({
               toolData.name === TOOL_NAMES.CREATE_CRON_JOB
             ) {
               const currentNotificationCount = parseInt(
-                localStorage.getItem("cron-job-notifications-count") || "0",
+                localStorage.getItem(LS_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
                 10,
               );
               localStorage.setItem(
-                "cron-job-notifications-count",
+                LS_CRON_JOB_NOTIFICATIONS_COUNT,
                 String(currentNotificationCount + 1),
               );
               window.dispatchEvent(new CustomEvent("cron-job-scheduled"));
@@ -4724,7 +4728,7 @@ export default function ChatSessionComponent({
                         setCriticGateEnabled((v) => {
                           const next = !v;
                           localStorage.setItem(
-                            "agent:criticGateEnabled",
+                            LS_CRITIC_GATE_ENABLED,
                             String(next),
                           );
                           return next;
@@ -4745,7 +4749,7 @@ export default function ChatSessionComponent({
                         const next = steps[(index + 1) % steps.length];
                         setMaxIterations(next);
                         localStorage.setItem(
-                          "agent:maxIterations",
+                          LS_AGENT_MAX_ITERATIONS,
                           String(next),
                         );
                       },
@@ -4764,7 +4768,7 @@ export default function ChatSessionComponent({
                         const next = steps[(index + 1) % steps.length];
                         setMaxWorkerIterations(next);
                         localStorage.setItem(
-                          "agent:maxWorkerIterations",
+                          LS_AGENT_MAX_WORKER_ITERATIONS,
                           String(next),
                         );
                       },

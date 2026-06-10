@@ -58,6 +58,7 @@ interface ExtendedToolStats extends ToolUsageStat {
 }
 
 import StorageService from "../services/StorageService";
+import { SK_TOOL_MEMORY_AGENT_PREFIX, AGENT_IDS } from "../constants";
 import {
   Wrench,
   RefreshCw,
@@ -182,7 +183,7 @@ function ToolDetailModal({
     const disabledTools = allToolNames.filter(
       (name: string) => name !== tool.name,
     );
-    StorageService.set("toolMemory:agent:NONE", { disabledTools });
+    StorageService.set(`${SK_TOOL_MEMORY_AGENT_PREFIX}${AGENT_IDS.NONE}`, { disabledTools });
     router.push("/chat?agent=NONE&fc=true&thinking=true");
   };
 

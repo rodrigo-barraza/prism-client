@@ -5,6 +5,7 @@
  */
 
 import { PROJECT_NAME } from "@/config";
+import { LS_WORKSPACE_ROOT, LS_USERNAME } from "@/constants";
 
 export function getBaseHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
@@ -14,12 +15,12 @@ export function getBaseHeaders(): Record<string, string> {
 
   // Include the active workspace root path if one is selected (client-side only)
   if (typeof window !== "undefined") {
-    const workspaceRoot = localStorage.getItem("prism:workspace");
+    const workspaceRoot = localStorage.getItem(LS_WORKSPACE_ROOT);
     if (workspaceRoot) {
       headers["x-workspace-root"] = workspaceRoot;
     }
 
-    const username = localStorage.getItem("prism:username");
+    const username = localStorage.getItem(LS_USERNAME);
     if (username) {
       headers["x-username"] = username;
     }
