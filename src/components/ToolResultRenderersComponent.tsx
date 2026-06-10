@@ -191,9 +191,11 @@ export interface ParsedToolResult {
   agent_id?: string;
   result?: unknown;
   turtleEmbedUrl?: string;
+
   embedUrl?: string;
   sessionId?: string;
   turtleId?: string;
+  executionTimeMs?: number;
   width?: number;
   height?: number;
   asciiEmbedUrl?: string;
@@ -1625,6 +1627,7 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
   const commandCount = parsed.commandCount || args?.commands?.length || 0;
   const canvasSize = parsed.canvasSize || "800x600";
   const embedUrl = parsed.turtleEmbedUrl || parsed.embedUrl || "";
+  const executionTimeMs = parsed.executionTimeMs;
 
   return (
     <div className={styles['renderer-block']}>
@@ -1632,6 +1635,7 @@ function TurtleDrawRenderer({ result, args }: RendererProps) {
         <span style={{ fontSize: 13 }}>🐢</span>
         <span className={styles['renderer-title']}>
           Turtle Drawing — {commandCount} command{commandCount !== 1 ? "s" : ""}
+          {executionTimeMs ? ` · ${executionTimeMs}ms` : ""}
         </span>
         <StatusBadge
           success={!hasError}
