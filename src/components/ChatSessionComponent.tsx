@@ -5140,7 +5140,7 @@ export default function ChatSessionComponent({
           {
             key: "tools",
             icon: <span className={tabBarStyles['tab-emoji-icon']}>🔧</span>,
-            ...badgeProps(allToolSchemas.length, "tools"),
+            ...badgeProps(selectableConfigurableTools.length + selectableCoreToolsCount, "tools"),
             tooltip: "Tools",
             tooltipDisabled: !settings.functionCallingEnabled,
           },
@@ -5363,7 +5363,7 @@ export default function ChatSessionComponent({
           >
             <BadgeComponent
               type="tools"
-              count={allToolSchemas.length}
+              count={selectableConfigurableTools.length + selectableCoreToolsCount}
             />
           </EmptyStateComponent>
         )}
