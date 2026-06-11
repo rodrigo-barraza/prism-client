@@ -99,7 +99,7 @@ export const SETTINGS_DEFAULTS = {
   frequencyPenalty: 0,
   presencePenalty: 0,
   stopSequences: "",
-  thinkingEnabled: false,
+  thinkingEnabled: true,
   reasoningEffort: "high",
   thinkingLevel: "high",
   thinkingBudget: "",
