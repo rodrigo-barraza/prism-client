@@ -7,6 +7,7 @@ import {
   EV_MODEL_CHANGE,
   EV_CONVERSATION_CHANGE,
   EV_SIDEBAR_TAB_CHANGE,
+  EV_SIDEBAR_TAB_BOTTOM_CHANGE,
   EV_VIEW_MODE_CHANGE,
 } from "@/constants";
 
@@ -104,6 +105,7 @@ function AgentsPageInner() {
   const initialModel = searchParams.get("model") || null;
   const initialSessionId = searchParams.get("session") || null;
   const initialTabKey = searchParams.get("tab") || null;
+  const initialTabBottomKey = searchParams.get("tabBottom") || null;
   const initialViewMode = searchParams.get("view") || null;
 
   // Fetch agent personas on mount — prepend "Agentless" synthetic entry
@@ -208,6 +210,20 @@ function AgentsPageInner() {
     [router, searchParams],
   );
 
+  const handleSidebarTabBottomChangeNotification = useCallback(
+    (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { tabBottom: activeTabBottomKey } = customEvent.detail || {};
+      if (!activeTabBottomKey) return;
+      const currentSidebarTabBottomKey = searchParams.get("tabBottom");
+      if (currentSidebarTabBottomKey === activeTabBottomKey) return;
+      router.replace(buildUrl(searchParams, { tabBottom: activeTabBottomKey }), {
+        scroll: false,
+      });
+    },
+    [router, searchParams],
+  );
+
   const handleViewModeChangeNotification = useCallback(
     (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -231,6 +247,10 @@ function AgentsPageInner() {
       handleSidebarTabChangeNotification,
     );
     window.addEventListener(
+      EV_SIDEBAR_TAB_BOTTOM_CHANGE,
+      handleSidebarTabBottomChangeNotification,
+    );
+    window.addEventListener(
       EV_VIEW_MODE_CHANGE,
       handleViewModeChangeNotification,
     );
@@ -246,6 +266,10 @@ function AgentsPageInner() {
         handleSidebarTabChangeNotification,
       );
       window.removeEventListener(
+        EV_SIDEBAR_TAB_BOTTOM_CHANGE,
+        handleSidebarTabBottomChangeNotification,
+      );
+      window.removeEventListener(
         EV_VIEW_MODE_CHANGE,
         handleViewModeChangeNotification,
       );
@@ -255,6 +279,7 @@ function AgentsPageInner() {
     handleModelChange,
     handleConversationChange,
     handleSidebarTabChangeNotification,
+    handleSidebarTabBottomChangeNotification,
     handleViewModeChangeNotification,
   ]);
 
@@ -274,6 +299,7 @@ function AgentsPageInner() {
         initialModel={initialModel}
         initialSessionId={initialSessionId}
         initialTabKey={initialTabKey}
+        initialTabBottomKey={initialTabBottomKey}
         initialViewMode={initialViewMode}
       />
     </main>

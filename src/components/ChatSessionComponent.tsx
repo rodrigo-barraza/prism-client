@@ -105,6 +105,7 @@ import {
   LS_AGENT_MAX_ITERATIONS,
   LS_AGENT_MAX_WORKER_ITERATIONS,
   EV_SIDEBAR_TAB_CHANGE,
+  EV_SIDEBAR_TAB_BOTTOM_CHANGE,
   EV_VIEW_MODE_CHANGE,
   EV_USER_TYPING,
   EV_CONVERSATION_CHANGE,
@@ -244,6 +245,8 @@ const WORKSPACE_FS_TOOLS: Set<string> = new Set([
   TOOL_NAMES.EDIT_NOTEBOOK,
 ]);
 
+const BOTTOM_PANEL_TABS = new Set(["tools", "skills", "rules", "memories", "tasks"]);
+
 interface EmptyStateConfig {
   title: string;
   subtitle: string;
@@ -369,6 +372,7 @@ export interface ChatSessionComponentProps {
   initialModel?: string | null;
   initialSessionId?: string | null;
   initialTabKey?: string | null;
+  initialTabBottomKey?: string | null;
   initialViewMode?: string | null;
 }
 
@@ -380,6 +384,7 @@ export default function ChatSessionComponent({
   initialModel = null,
   initialSessionId = null,
   initialTabKey = null,
+  initialTabBottomKey = null,
   initialViewMode = null,
 }: ChatSessionComponentProps) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
@@ -434,7 +439,12 @@ export default function ChatSessionComponent({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState(isNoAgent ? "Agentless Chat" : "Agent");
-  const [leftTab, setLeftTab] = useState(initialTabKey || "settings"); // "settings" | "tools"
+  const [leftTab, setLeftTab] = useState(() => {
+    if (initialTabKey && !BOTTOM_PANEL_TABS.has(initialTabKey)) {
+      return initialTabKey;
+    }
+    return "settings";
+  });
   const [chatAreaTab, setChatAreaTab] = useState<"chat" | "nodes">(() => {
     if (initialViewMode === "nodes") return "nodes";
     return "chat";
@@ -521,7 +531,15 @@ export default function ChatSessionComponent({
   const [newDataTabs, setNewDataTabs] = useState(new Set());
   const leftTabRef = useRef<string>(leftTab);
   leftTabRef.current = leftTab;
-  const [leftTabBottom, setLeftTabBottom] = useState("tools");
+  const [leftTabBottom, setLeftTabBottom] = useState(() => {
+    if (initialTabBottomKey) {
+      return initialTabBottomKey;
+    }
+    if (initialTabKey && BOTTOM_PANEL_TABS.has(initialTabKey)) {
+      return initialTabKey;
+    }
+    return "tools";
+  });
   const leftTabBottomRef = useRef<string>(leftTabBottom);
   leftTabBottomRef.current = leftTabBottom;
 
@@ -536,6 +554,16 @@ export default function ChatSessionComponent({
   }, [leftTab]);
 
   useEffect(() => {
+    if (leftTabBottom) {
+      window.dispatchEvent(
+        new CustomEvent(EV_SIDEBAR_TAB_BOTTOM_CHANGE, {
+          detail: { tabBottom: leftTabBottom },
+        }),
+      );
+    }
+  }, [leftTabBottom]);
+
+  useEffect(() => {
     const currentViewMode = chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean";
     window.dispatchEvent(
       new CustomEvent(EV_VIEW_MODE_CHANGE, {
@@ -543,8 +571,6 @@ export default function ChatSessionComponent({
       }),
     );
   }, [chatAreaTab, showRaw]);
-
-  const BOTTOM_PANEL_TABS = new Set(["tools", "skills", "rules", "memories", "tasks"]);
 
   useEffect(() => {
     if (initialTabKey) {
@@ -555,6 +581,12 @@ export default function ChatSessionComponent({
       }
     }
   }, [initialTabKey]);
+
+  useEffect(() => {
+    if (initialTabBottomKey) {
+      if (initialTabBottomKey !== leftTabBottom) setLeftTabBottom(initialTabBottomKey);
+    }
+  }, [initialTabBottomKey]);
 
   /** Mark a tab as having new unseen data (only if user isn't already viewing it). */
   const markTabNew = useCallback((tabKey: string) => {

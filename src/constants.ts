@@ -80,6 +80,7 @@ export const EV_CRON_JOB_SCHEDULED = "cron-job-scheduled";
 export const EV_PRISM_SETTINGS_UPDATED = "prism-settings-updated";
 export const EV_PANEL_DISMISS_SIDEBARS = "panel:dismiss-sidebars";
 export const EV_SIDEBAR_TAB_CHANGE = "sidebarTab:change";
+export const EV_SIDEBAR_TAB_BOTTOM_CHANGE = "sidebarTabBottom:change";
 export const EV_VIEW_MODE_CHANGE = "viewMode:change";
 export const EV_USER_TYPING = "user:typing";
 export const EV_CONVERSATION_CHANGE = "conversation:change";
