@@ -1213,9 +1213,7 @@ export default function MessageList({
         const roleClass =
           message.role === "user"
             ? styles['user-node']
-            : message.role === "system"
-              ? styles['system-node']
-              : styles['assistant-node'];
+            : styles['assistant-node'];
         const isStreaming =
           (isGenerating &&
             message.role === "assistant" &&
@@ -1566,58 +1564,7 @@ export default function MessageList({
                     </div>
                   );
                 }
-                // -- System injection messages (visible in raw view) --
-                if (message.role === "system") {
-                  const systemContent = message.content || "";
-                  const isExpanded = expandedDeletedSet.has(i + 10000);
-                  const toggleExpanded = () => {
-                    setExpandedDeletedSet((previousSet) => {
-                      const next = new Set(previousSet);
-                      const key = i + 10000;
-                      if (next.has(key)) next.delete(key);
-                      else next.add(key);
-                      return next;
-                    });
-                  };
 
-                  const isToolUpdate = systemContent.includes("<tool-update>");
-                  const summaryLabel = isToolUpdate
-                    ? "Tool Set Updated"
-                    : "System Injection";
-
-                  return (
-                    <div className={styles['system-injection-node']}>
-                      <button
-                        className={styles['system-injection-toggle']}
-                        onClick={toggleExpanded}
-                      >
-                        <ChevronRight
-                          size={13}
-                          style={{
-                            transform: isExpanded ? "rotate(90deg)" : "none",
-                          }}
-                        />
-                        <span className={styles['system-injection-icon']}>
-                          <Terminal size={11} />
-                        </span>
-                        <span className={styles['system-injection-label']}>
-                          {summaryLabel}
-                        </span>
-                        {message.timestamp && (
-                          <BadgeComponent
-                            type="dateTime"
-                            date={message.timestamp}
-                          />
-                        )}
-                      </button>
-                      {isExpanded && (
-                        <div className={styles['system-injection-content']}>
-                          {systemContent}
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
 
                 // -- Normal message rendering --
                 return (
@@ -1636,6 +1583,8 @@ export default function MessageList({
                       >
                         {message.role === "user" ? (
                           <User size={16} />
+                        ) : message.role === "system" ? (
+                          <Terminal size={16} />
                         ) : activeAgent ? (
                           renderAgentIcon(activeAgent, 16)
                         ) : (
@@ -1650,7 +1599,9 @@ export default function MessageList({
                           <div className={styles['role-label']}>
                             {message.role === "user"
                               ? "User"
-                              : activeAgent?.name || "Model"}
+                              : message.role === "system"
+                                ? "System"
+                                : activeAgent?.name || "Model"}
                             {message.timestamp && (
                               <BadgeComponent
                                 type="dateTime"
