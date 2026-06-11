@@ -764,6 +764,7 @@ export default function ChatSessionComponent({
   // from server-initiated generation (timer/scheduled task, passive DB load).
   // Change-stream refresh is safe to skip only for client-driven generation.
   const isClientDrivenGenerationRef = useRef<boolean>(false);
+  const previousModelRef = useRef<string | null>(null);
   // Track which sessions have active background generation (for history indicator)
   const [generatingSessionIds, setGeneratingSessionIds] = useState(
     () => new Set(),
@@ -1053,6 +1054,9 @@ export default function ChatSessionComponent({
     const modelDef = providerModels.find((model) => model.name === settings.model);
     if (!modelDef) return;
 
+    const modelChanged = previousModelRef.current !== settings.model;
+    previousModelRef.current = settings.model;
+
     // Check if the model is an always-on thinking model (e.g. Gemini 3.5 Flash)
     const canDisable =
       !modelDef.thinkingLevels || modelDef.thinkingLevels.includes("minimal");
@@ -1064,9 +1068,14 @@ export default function ChatSessionComponent({
     const isAdaptiveThinking =
       modelDef.adaptiveThinking === true && modelDef.thinking;
 
-    if ((isGoogleAlwaysOn || isAdaptiveThinking) && !settings.thinkingEnabled) {
-      setSettings((s) => ({
-        ...s,
+    if (isGoogleAlwaysOn && !settings.thinkingEnabled) {
+      setSettings((previousSettings) => ({
+        ...previousSettings,
+        thinkingEnabled: true,
+      }));
+    } else if (isAdaptiveThinking && modelChanged && !settings.thinkingEnabled) {
+      setSettings((previousSettings) => ({
+        ...previousSettings,
         thinkingEnabled: true,
       }));
     }
