@@ -1644,16 +1644,6 @@ export default function ChatSessionComponent({
     [messages, showRaw],
   );
 
-  const hasSystemContextMessage = useMemo(() => {
-    return messages.some(
-      (message) =>
-        message.role === "user" &&
-        (message.content?.startsWith("[System Context]") ||
-          message.rawContent?.startsWith("[System Context]") ||
-          message.content?.startsWith("[System Context - Local Time:") ||
-          message.rawContent?.startsWith("[System Context - Local Time:")),
-    );
-  }, [messages]);
 
   // ── Editable serialization ─────────────────────────────────────
   // The input is a contentEditable div. Mention badges are non-editable

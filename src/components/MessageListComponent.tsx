@@ -311,12 +311,9 @@ export function prepareDisplayMessages(
     .filter((message, index) => {
       // Filter out tool role messages (they're merged into toolCalls)
       if (message.role === "tool") return false;
-      // Filter out system messages (keep non-initial ones in raw view for tool-update visibility)
+      // Filter out system messages (keep in raw view for tool-update visibility)
       if (message.role === "system") {
-        if (!includeSystemMessages) return false;
-        // The first system message is the system prompt, rendered separately — skip it
-        if (index === 0) return false;
-        return true;
+        return includeSystemMessages;
       }
       // Filter out empty assistant messages with no useful content
       const isEmptyAssistant =
@@ -919,17 +916,6 @@ export default function MessageList({
     return { clean: cleanedContentValue, raw: rawContentValue };
   };
 
-  const hasSystemContextMessage = useMemo(() => {
-    return messages.some(
-      (message) =>
-        message.role === "user" &&
-        (message.content?.startsWith("[System Context]") ||
-          message.rawContent?.startsWith("[System Context]") ||
-          message.content?.startsWith("[System Context - Local Time:") ||
-          message.rawContent?.startsWith("[System Context - Local Time:")),
-    );
-  }, [messages]);
-
   const displayMessages = useMemo(() => {
     return messages.map((message) => {
       if (message.role === "user") {
@@ -1450,7 +1436,7 @@ export default function MessageList({
                                   {groupMessage.role === "user" ? (
                                     <User size={16} />
                                   ) : groupMessage.role === "system" ? (
-                                    "S"
+                                    <Terminal size={16} />
                                   ) : (
                                     <Bot size={16} />
                                   )}
