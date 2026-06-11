@@ -1056,10 +1056,15 @@ export default function ChatSessionComponent({
     // Check if the model is an always-on thinking model (e.g. Gemini 3.5 Flash)
     const canDisable =
       !modelDef.thinkingLevels || modelDef.thinkingLevels.includes("minimal");
-    const alwaysOn =
+    const isGoogleAlwaysOn =
       !canDisable && settings.provider === "google" && modelDef.thinking;
 
-    if (alwaysOn && !settings.thinkingEnabled) {
+    // Anthropic adaptive thinking models (Fable 5, Mythos 5, Opus 4.7+) have
+    // thinking as an inherent capability — default it on when switching to them.
+    const isAdaptiveThinking =
+      modelDef.adaptiveThinking === true && modelDef.thinking;
+
+    if ((isGoogleAlwaysOn || isAdaptiveThinking) && !settings.thinkingEnabled) {
       setSettings((s) => ({
         ...s,
         thinkingEnabled: true,

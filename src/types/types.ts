@@ -66,6 +66,7 @@ export interface ModelOption {
   rawInputTypes?: string[];
   modelType?: string;
   lockedSampling?: boolean;
+  adaptiveThinking?: boolean;
 }
 
 export interface ModelDefaults {
