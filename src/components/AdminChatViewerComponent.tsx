@@ -1335,7 +1335,6 @@ export default function AdminChatViewerComponent({
                 <MessageList
                   messages={prepareDisplayMessages(
                     selectedEntry?.messages || [],
-                    { showRaw },
                   )}
                   readOnly
                   showRaw={showRaw}

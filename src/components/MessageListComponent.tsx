@@ -254,10 +254,8 @@ function ThinkingBlock({
  */
 export function prepareDisplayMessages(
   rawMessages: Message[] | undefined | null,
-  options?: { showRaw?: boolean },
 ): Message[] {
   if (!rawMessages || rawMessages.length === 0) return [];
-  const includeSystemMessages = options?.showRaw === true;
 
   // Normalize any snake_case tool_calls to camelCase toolCalls
   const normalizedMessages = rawMessages.map((message) => {
@@ -311,10 +309,8 @@ export function prepareDisplayMessages(
     .filter((message, index) => {
       // Filter out tool role messages (they're merged into toolCalls)
       if (message.role === "tool") return false;
-      // Filter out system messages (keep in raw view for tool-update visibility)
-      if (message.role === "system") {
-        return includeSystemMessages;
-      }
+      // System messages pass through — visibility is controlled downstream
+      // by the filteredMessages memo based on the clean/raw view toggle
       // Filter out empty assistant messages with no useful content
       const isEmptyAssistant =
         message.role === "assistant" &&
@@ -917,16 +913,18 @@ export default function MessageList({
   };
 
   const displayMessages = useMemo(() => {
-    return messages.map((message) => {
-      if (message.role === "user") {
-        const { clean, raw } = getCleanAndRaw(message.content || "", message.rawContent);
-        return {
-          ...message,
-          content: showRaw ? raw : clean,
-        };
-      }
-      return message;
-    });
+    return messages
+      .filter((message) => showRaw || message.role !== "system")
+      .map((message) => {
+        if (message.role === "user") {
+          const { clean, raw } = getCleanAndRaw(message.content || "", message.rawContent);
+          return {
+            ...message,
+            content: showRaw ? raw : clean,
+          };
+        }
+        return message;
+      });
   }, [messages, showRaw]);
 
   // -- Sticky last user message (pinned header) -------------
