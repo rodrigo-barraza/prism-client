@@ -1636,8 +1636,12 @@ export default function ChatSessionComponent({
 
   // -- Memoize filtered messages for MessageList to prevent ref churn --
   const filteredMessages = useMemo(
-    () => messages.filter((message) => message.role === "user" || message.role === "assistant"),
-    [messages],
+    () => messages.filter((message) =>
+      message.role === "user" ||
+      message.role === "assistant" ||
+      (showRaw && message.role === "system"),
+    ),
+    [messages, showRaw],
   );
 
   const hasSystemContextMessage = useMemo(() => {

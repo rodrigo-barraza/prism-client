@@ -794,13 +794,15 @@ export default function AdminChatViewerComponent({
   // Resolve whether selected entry is an agent session
 
   const hasSystemContextMessage = useMemo(() => {
-    return (selectedEntry?.messages || []).some(
-      (message) =>
-        message.role === "user" &&
-        (message.content?.startsWith("[System Context]") ||
-          message.rawContent?.startsWith("[System Context]") ||
-          message.content?.startsWith("[System Context - Local Time:") ||
-          message.rawContent?.startsWith("[System Context - Local Time:")),
+    const allMessages = selectedEntry?.messages || [];
+    return allMessages.some(
+      (message, index) =>
+        (message.role === "user" &&
+          (message.content?.startsWith("[System Context]") ||
+            message.rawContent?.startsWith("[System Context]") ||
+            message.content?.startsWith("[System Context - Local Time:") ||
+            message.rawContent?.startsWith("[System Context - Local Time:"))) ||
+        (message.role === "system" && index > 0),
     );
   }, [selectedEntry?.messages]);
 
@@ -1333,6 +1335,7 @@ export default function AdminChatViewerComponent({
                 <MessageList
                   messages={prepareDisplayMessages(
                     selectedEntry?.messages || [],
+                    { showRaw },
                   )}
                   readOnly
                   showRaw={showRaw}
