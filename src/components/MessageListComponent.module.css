@@ -83,9 +83,9 @@
 }
 
 .system-node .avatar {
-  background: var(--calculated-color-warning-subtle, oklch(76.9% 0.1646 70.1 / 0.08));
-  color: var(--color-warning, var(--color-warning));
-  border: 1px solid var(--color-warning, var(--color-warning));
+  background: oklch(0 0 0);
+  color: oklch(1 0 0);
+  border: 1px solid oklch(0.3 0 0);
 }
 
 /* ── Task notification card (worker results) ── */
