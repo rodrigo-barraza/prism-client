@@ -63,6 +63,38 @@
   flex-shrink: 0;
 }
 
+/* ── Message navigation (up/down chevron pair) ──────────────── */
+
+.message-navigation-controls {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  background: oklch(0 0 0 / 0.06);
+  border-radius: var(--border-radius-sm);
+  padding: 1px;
+}
+
+.message-navigation-button {
+  width: 26px;
+  height: 26px;
+  border-radius: calc(var(--border-radius-sm) - 1px);
+  color: var(--text-secondary);
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+
+  &:hover:not(:disabled) {
+    color: var(--text-primary);
+    background: oklch(0 0 0 / 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.28;
+    cursor: default;
+  }
+}
+
 /* Override ButtonComponent sizing to fit the compact chat header */
 .chat-header-new-button {
   height: 28px;

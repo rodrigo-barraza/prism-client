@@ -23,6 +23,8 @@ import {
   FileSpreadsheet,
   Volume2,
   Video,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import IrisService, {
@@ -118,6 +120,7 @@ import ChatInputButton from "./ChatInputButtonComponent";
 import {
   ButtonComponent,
   EmptyStateComponent,
+  IconButtonComponent,
   layoutHeaderStyles,
   TabBarComponent,
   tabBarStyles,
@@ -782,6 +785,10 @@ export default function ChatSessionComponent({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesListRef = useRef<HTMLDivElement>(null);
 
+  // -- Message navigation (up/down chevron buttons in header) --
+  const [canNavigateUp, setCanNavigateUp] = useState(false);
+  const [canNavigateDown, setCanNavigateDown] = useState(false);
+
   // -- Sticky auto-scroll -------------------------------------
   // Only auto-scroll when the user is near the bottom of the messages container.
   // Re-engaged on send, session load, and new chat.
@@ -980,6 +987,83 @@ export default function ChatSessionComponent({
   // scroll container.  When they scroll up, auto-scroll disengages; when
   // they scroll back to the bottom (within SCROLL_BOTTOM_THRESHOLD px), it
   // re-engages.  Uses a passive scroll listener for zero main-thread cost.
+  // Helper: query all message nodes inside the scroll container
+  const getMessageElements = useCallback((): HTMLElement[] => {
+    const container = messagesListRef.current;
+    if (!container) return [];
+    return Array.from(
+      container.querySelectorAll<HTMLElement>('[data-message-index]'),
+    );
+  }, []);
+
+  // Helper: find the index of the message currently at or nearest the viewport top
+  const findCurrentVisibleMessageIndex = useCallback((): number => {
+    const container = messagesListRef.current;
+    if (!container) return -1;
+    const messageElements = getMessageElements();
+    if (messageElements.length === 0) return -1;
+
+    const containerTop = container.getBoundingClientRect().top;
+
+    // Find the first message whose bottom is below the container top
+    // (i.e., at least partially visible or the nearest one below the fold)
+    for (let index = 0; index < messageElements.length; index++) {
+      const messageRect = messageElements[index].getBoundingClientRect();
+      // Message is considered "current" if its top is near (within 8px)
+      // or below the container top, or if its bottom extends past it
+      if (messageRect.bottom > containerTop + 8) {
+        return index;
+      }
+    }
+    // Scrolled past everything — return last
+    return messageElements.length - 1;
+  }, [getMessageElements]);
+
+  // Update navigation button disabled states
+  const updateNavigationState = useCallback(() => {
+    const messageElements = getMessageElements();
+    if (messageElements.length === 0) {
+      setCanNavigateUp(false);
+      setCanNavigateDown(false);
+      return;
+    }
+    const currentIndex = findCurrentVisibleMessageIndex();
+    setCanNavigateUp(currentIndex > 0);
+    setCanNavigateDown(currentIndex < messageElements.length - 1);
+  }, [getMessageElements, findCurrentVisibleMessageIndex]);
+
+  // Navigate to the previous message (scroll its top into view)
+  const handleNavigateUp = useCallback(() => {
+    const container = messagesListRef.current;
+    if (!container) return;
+    const messageElements = getMessageElements();
+    const currentIndex = findCurrentVisibleMessageIndex();
+    if (currentIndex <= 0) return;
+
+    const targetElement = messageElements[currentIndex - 1];
+    const containerTop = container.getBoundingClientRect().top;
+    const targetTop = targetElement.getBoundingClientRect().top;
+    const scrollOffset = targetTop - containerTop + container.scrollTop;
+
+    container.scrollTo({ top: scrollOffset, behavior: 'smooth' });
+  }, [getMessageElements, findCurrentVisibleMessageIndex]);
+
+  // Navigate to the next message (scroll its top into view)
+  const handleNavigateDown = useCallback(() => {
+    const container = messagesListRef.current;
+    if (!container) return;
+    const messageElements = getMessageElements();
+    const currentIndex = findCurrentVisibleMessageIndex();
+    if (currentIndex >= messageElements.length - 1) return;
+
+    const targetElement = messageElements[currentIndex + 1];
+    const containerTop = container.getBoundingClientRect().top;
+    const targetTop = targetElement.getBoundingClientRect().top;
+    const scrollOffset = targetTop - containerTop + container.scrollTop;
+
+    container.scrollTo({ top: scrollOffset, behavior: 'smooth' });
+  }, [getMessageElements, findCurrentVisibleMessageIndex]);
+
   useEffect(() => {
     const element = messagesListRef.current;
     if (!element) return;
@@ -987,10 +1071,16 @@ export default function ChatSessionComponent({
       const { scrollTop, scrollHeight, clientHeight } = element;
       isUserNearBottomRef.current =
         scrollHeight - scrollTop - clientHeight <= SCROLL_BOTTOM_THRESHOLD;
+      updateNavigationState();
     };
     element.addEventListener("scroll", onScroll, { passive: true });
     return () => element.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [updateNavigationState]);
+
+  // Re-evaluate navigation state when messages change
+  useEffect(() => {
+    updateNavigationState();
+  }, [messages, updateNavigationState]);
 
   useEffect(() => {
     if (!isUserNearBottomRef.current) return;
@@ -5342,6 +5432,22 @@ export default function ChatSessionComponent({
                 }
               }}
             />
+          <div className={chatStyles['message-navigation-controls']}>
+            <IconButtonComponent
+              icon={<ChevronUp size={15} />}
+              onClick={handleNavigateUp}
+              disabled={!canNavigateUp}
+              tooltip="Previous message"
+              className={chatStyles['message-navigation-button']}
+            />
+            <IconButtonComponent
+              icon={<ChevronDown size={15} />}
+              onClick={handleNavigateDown}
+              disabled={!canNavigateDown}
+              tooltip="Next message"
+              className={chatStyles['message-navigation-button']}
+            />
+          </div>
           <ButtonComponent
             ref={chatNewBtnRef}
             variant="primary"

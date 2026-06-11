@@ -1574,6 +1574,7 @@ export default function MessageList({
                         ? lastUserMessageRef
                         : undefined
                     }
+                    data-message-index={i}
                     className={`${styles['message']} ${roleClass}${coalesce?.isContinuation ? ` ${styles['continuation-message']}` : ""}`}
                   >
                     {/* Avatar: hidden for continuation messages */}
