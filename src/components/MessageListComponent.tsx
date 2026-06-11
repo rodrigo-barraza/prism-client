@@ -1805,23 +1805,24 @@ export default function MessageList({
                             !readOnly &&
                             editingIndex === i
                           ) {
-                            const thinkingOnly = segs.filter(
-                              (s) => s.type === "thinking",
-                            );
                             const nonThinking = segs.filter(
                               (s) => s.type !== "thinking",
                             );
                             return (
                               <>
-                                {hasThinking && thinkingOnly.length > 0 && (
-                                  <ThinkingBlock isStreaming={false}>
-                                    {thinkingOnly.map((seg, si) =>
-                                      renderSeg(seg, si, {
-                                        insideThinking: true,
-                                      }),
-                                    )}
-                                  </ThinkingBlock>
-                                )}
+                                {hasThinking &&
+                                  segs
+                                    .filter((s) => s.type === "thinking")
+                                    .map((seg, segmentIndex) => (
+                                      <ThinkingBlock
+                                        key={`edit-think-${segmentIndex}`}
+                                        isStreaming={false}
+                                      >
+                                        {renderSeg(seg, segmentIndex, {
+                                          insideThinking: true,
+                                        })}
+                                      </ThinkingBlock>
+                                    ))}
                                 {nonThinking.map((seg, si) =>
                                   renderSeg(seg, si),
                                 )}
@@ -1841,76 +1842,58 @@ export default function MessageList({
                           }
 
                           // -- Normal rendering --
-                          // Only thinking segments go inside the ThinkingBlock.
-                          // Tools and text segments render outside in their original
-                          // interleaved order — this matches the post-refresh layout.
+                          // Render each segment in its original interleaved order.
+                          // Each thinking segment gets its own ThinkingBlock so they
+                          // appear separately between tool calls and text — both
+                          // during streaming and after refresh.
                           if (hasThinking) {
-                            const thinkingOnly = segs.filter(
-                              (s) => s.type === "thinking",
-                            );
-                            const visibleSegs = segs
-                              .map((s, index) => ({
-                                seg: s,
-                                originalIndex: index,
-                              }))
-                              .filter(
-                                ({ seg }: { seg: ContentSegment }) =>
-                                  seg.type !== "thinking",
-                              );
-                            // ThinkingBlock is streaming when thinking is the current
-                            // activity (last segment is thinking)
                             const lastSeg = segs[segs.length - 1];
-                            const thinkingIsStreaming =
-                              isStreaming && lastSeg?.type === "thinking";
 
-                            // Find the last text segment among visible segs for cursor
-                            const lastVisibleTextIndex = (() => {
-                              for (
-                                let k = visibleSegs.length - 1;
-                                k >= 0;
-                                k--
-                              ) {
-                                if (visibleSegs[k].seg.type === "text")
-                                  return k;
+                            // Find the last text segment index for streaming cursor
+                            const lastTextSegmentIndex = (() => {
+                              for (let k = segs.length - 1; k >= 0; k--) {
+                                if (segs[k].type === "text") return k;
                               }
                               return -1;
                             })();
 
+                            // Track whether any non-thinking content exists
+                            const hasVisibleContent = segs.some(
+                              (s) => s.type !== "thinking",
+                            );
+
                             return (
                               <>
-                                {thinkingOnly.length > 0 && (
-                                  <ThinkingBlock
-                                    isStreaming={thinkingIsStreaming}
-                                  >
-                                    {thinkingOnly.map((seg, si) =>
-                                      renderSeg(seg, si, {
-                                        insideThinking: true,
-                                      }),
-                                    )}
-                                  </ThinkingBlock>
-                                )}
-                                {/* Tools and text segments render outside in original order */}
-                                {visibleSegs.map(
-                                  (
-                                    {
-                                      seg,
-                                      originalIndex,
-                                    }: { seg: ContentSegment; originalIndex: number },
-                                    vi: number,
-                                  ) => {
-                                    const isLastText =
-                                      vi === lastVisibleTextIndex;
+                                {segs.map((seg, segmentIndex) => {
+                                  if (seg.type === "thinking") {
+                                    const isThinkingStreaming =
+                                      isStreaming &&
+                                      seg === lastSeg;
                                     return (
-                                      <React.Fragment key={`vis-${vi}`}>
-                                        {renderSeg(seg, originalIndex, {
-                                          isLastText,
+                                      <ThinkingBlock
+                                        key={`think-${segmentIndex}`}
+                                        isStreaming={isThinkingStreaming}
+                                      >
+                                        {renderSeg(seg, segmentIndex, {
+                                          insideThinking: true,
                                         })}
-                                      </React.Fragment>
+                                      </ThinkingBlock>
                                     );
-                                  },
-                                )}
+                                  }
+                                  const isLastText =
+                                    segmentIndex === lastTextSegmentIndex;
+                                  return (
+                                    <React.Fragment
+                                      key={`vis-${segmentIndex}`}
+                                    >
+                                      {renderSeg(seg, segmentIndex, {
+                                        isLastText,
+                                      })}
+                                    </React.Fragment>
+                                  );
+                                })}
                                 {/* Streaming cursor when no visible content yet */}
-                                {isStreaming && visibleSegs.length === 0 && (
+                                {isStreaming && !hasVisibleContent && (
                                   <StreamingCursorComponent active standalone />
                                 )}
                               </>
