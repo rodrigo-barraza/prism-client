@@ -1813,16 +1813,19 @@ export default function MessageList({
                                 {hasThinking &&
                                   segs
                                     .filter((s) => s.type === "thinking")
-                                    .map((seg, segmentIndex) => (
-                                      <ThinkingBlock
-                                        key={`edit-think-${segmentIndex}`}
-                                        isStreaming={false}
-                                      >
-                                        {renderSeg(seg, segmentIndex, {
-                                          insideThinking: true,
-                                        })}
-                                      </ThinkingBlock>
-                                    ))}
+                                    .map((seg, segmentIndex) => {
+                                      const fragment =
+                                        message.thinkingFragments?.[
+                                          seg.fragmentIndex ?? 0
+                                        ];
+                                      return (
+                                        <ThinkingBlock
+                                          key={`edit-think-${segmentIndex}`}
+                                          isStreaming={false}
+                                          thinking={fragment}
+                                        />
+                                      );
+                                    })}
                                 {nonThinking.map((seg, si) =>
                                   renderSeg(seg, si),
                                 )}
@@ -1869,15 +1872,16 @@ export default function MessageList({
                                     const isThinkingStreaming =
                                       isStreaming &&
                                       seg === lastSeg;
+                                    const fragment =
+                                      message.thinkingFragments?.[
+                                        seg.fragmentIndex ?? 0
+                                      ];
                                     return (
                                       <ThinkingBlock
                                         key={`think-${segmentIndex}`}
                                         isStreaming={isThinkingStreaming}
-                                      >
-                                        {renderSeg(seg, segmentIndex, {
-                                          insideThinking: true,
-                                        })}
-                                      </ThinkingBlock>
+                                        thinking={fragment}
+                                      />
                                     );
                                   }
                                   const isLastText =
