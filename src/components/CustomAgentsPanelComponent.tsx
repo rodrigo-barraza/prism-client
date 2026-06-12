@@ -135,6 +135,7 @@ const EMPTY_AGENT: EditableAgent = {
   guidelines: "",
   toolPolicy: "",
   enabledTools: [],
+  enabledByDefaultTools: [],
   policies: [],
   usesDirectoryTree: false,
   usesCodingGuidelines: false,
@@ -303,7 +304,7 @@ export default function CustomAgentsPanel({
   // -- CRUD -----------------------------------------------------
 
   const handleCreate = useCallback(() => {
-    setEditingAgent({ ...EMPTY_AGENT, enabledTools: [] });
+    setEditingAgent({ ...EMPTY_AGENT, enabledTools: [], enabledByDefaultTools: [] });
     setIsNew(true);
     setError(null);
   }, []);
@@ -312,6 +313,7 @@ export default function CustomAgentsPanel({
     setEditingAgent({
       ...agent,
       enabledTools: agent.enabledTools || [],
+      enabledByDefaultTools: agent.enabledByDefaultTools || [],
     });
     setIsNew(false);
     setError(null);
@@ -714,6 +716,11 @@ export default function CustomAgentsPanel({
             }
             coreToolsLocked={true}
             lockedOffTools={lockedOffTools}
+            triStateMode={true}
+            enabledByDefaultTools={editingAgent.enabledByDefaultTools || []}
+            onEnabledByDefaultToolsChange={(tools: string[]) =>
+              updateField("enabledByDefaultTools", tools)
+            }
           />
 
           {/* Policy Editor */}

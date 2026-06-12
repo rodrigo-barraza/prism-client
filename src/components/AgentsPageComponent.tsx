@@ -35,6 +35,7 @@ const EMPTY_AGENT: EditableAgent = {
   guidelines: "",
   toolPolicy: "",
   enabledTools: [],
+  enabledByDefaultTools: [],
   policies: [],
   usesDirectoryTree: false,
   usesCodingGuidelines: false,
@@ -126,6 +127,7 @@ export default function AgentsPageComponent() {
               setEditingAgent({
                 ...foundCustomAgent,
                 enabledTools: foundCustomAgent.enabledTools || [],
+                enabledByDefaultTools: foundCustomAgent.enabledByDefaultTools || [],
                 policies: foundCustomAgent.policies || [],
               });
             }
@@ -172,6 +174,7 @@ export default function AgentsPageComponent() {
           setEditingAgent({
             ...foundCustomAgent,
             enabledTools: foundCustomAgent.enabledTools || [],
+            enabledByDefaultTools: foundCustomAgent.enabledByDefaultTools || [],
             policies: foundCustomAgent.policies || [],
           });
           updateUrlAgentParameter(foundCustomAgent.name);
@@ -190,7 +193,7 @@ export default function AgentsPageComponent() {
     setIsCreateMode(true);
     setIsConfirmingDelete(false);
     setErrorMessage(null);
-    setEditingAgent({ ...EMPTY_AGENT, enabledTools: [] });
+    setEditingAgent({ ...EMPTY_AGENT, enabledTools: [], enabledByDefaultTools: [] });
     updateUrlAgentParameter(null);
   }, [updateUrlAgentParameter]);
 
@@ -292,6 +295,7 @@ export default function AgentsPageComponent() {
         guidelines: "",
         toolPolicy: "",
         enabledTools: sourceAgent.enabledToolNames || [],
+        enabledByDefaultTools: sourceAgent.enabledByDefaultToolNames || [],
         policies: [],
         usesDirectoryTree: sourceAgent.usesDirectoryTree,
         usesCodingGuidelines: sourceAgent.usesCodingGuidelines,

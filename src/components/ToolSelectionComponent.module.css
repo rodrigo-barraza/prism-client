@@ -356,3 +356,19 @@
 .tools-section[data-read-only="true"] .bulk-checkbox-row:hover {
   background: transparent;
 }
+
+/* ── Tri-State: Available-Only Visual ────────────────────────── */
+
+.available-only-checkbox [class*="is-selected-state"] {
+  background: oklch(0.7 0.14 65) !important;
+  border-color: oklch(0.7 0.14 65) !important;
+}
+
+.available-only-tool-row {
+  border-inline-start: 2px dashed oklch(0.7 0.14 65);
+}
+
+.available-only-tool-name {
+  color: var(--text-secondary) !important;
+  font-style: italic;
+}

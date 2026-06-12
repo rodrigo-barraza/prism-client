@@ -63,6 +63,12 @@ interface ToolSelectionProps {
   coreToolsLocked?: boolean;
   lockedOffTools?: Map<string, string>;
   readOnly?: boolean;
+  /** When true, enables tri-state cycling: Off → Available → Enabled by Default → Off. Used in agent configuration only. */
+  triStateMode?: boolean;
+  /** Subset of enabledTools that are enabled by default (only relevant in triStateMode). */
+  enabledByDefaultTools?: string[];
+  /** Callback when the enabled-by-default subset changes (only relevant in triStateMode). */
+  onEnabledByDefaultToolsChange?: (tools: string[]) => void;
 }
 
 const DOMAIN_ICONS: Record<string, LucideIcon> = {
@@ -191,6 +197,9 @@ export default function ToolSelectionComponent({
   coreToolsLocked = true,
   lockedOffTools = new Map(),
   readOnly = false,
+  triStateMode = false,
+  enabledByDefaultTools = [],
+  onEnabledByDefaultToolsChange,
 }: ToolSelectionProps) {
   const [toolSearch, setToolSearch] = useState("");
   const [collapsedDomains, setCollapsedDomains] = useState(new Set<string>());
@@ -300,33 +309,74 @@ export default function ToolSelectionComponent({
     return selectableCoreTools.length + selectableConfigurableTools.length;
   }, [selectableCoreTools.length, selectableConfigurableTools.length]);
 
+  // -- Resolved enabledByDefault set for tri-state mode ----------
+  const resolvedEnabledByDefaultSet = useMemo(
+    () => new Set(enabledByDefaultTools),
+    [enabledByDefaultTools],
+  );
+
   // -- Tool toggling --------------------------------------------
   const toggleTool = useCallback(
     (toolName: string) => {
       if (readOnly || lockedOffTools.has(toolName)) {
         return;
       }
-      const nextEnabledSet = new Set(resolvedEnabledSet);
-      if (nextEnabledSet.has(toolName)) {
-        nextEnabledSet.delete(toolName);
+
+      if (triStateMode) {
+        // Tri-state cycle: Off → Available → Enabled by Default → Off
+        const isAvailable = resolvedEnabledSet.has(toolName);
+        const isEnabledByDefault = resolvedEnabledByDefaultSet.has(toolName);
+
+        if (!isAvailable) {
+          // Off → Available (add to enabledTools, not to enabledByDefault)
+          const nextEnabled = new Set(resolvedEnabledSet);
+          nextEnabled.add(toolName);
+          onEnabledToolsChange?.(Array.from(nextEnabled));
+        } else if (isAvailable && !isEnabledByDefault) {
+          // Available → Enabled by Default (add to enabledByDefault)
+          const nextEnabledByDefault = new Set(resolvedEnabledByDefaultSet);
+          nextEnabledByDefault.add(toolName);
+          onEnabledByDefaultToolsChange?.(Array.from(nextEnabledByDefault));
+        } else {
+          // Enabled by Default → Off (remove from both)
+          const nextEnabled = new Set(resolvedEnabledSet);
+          nextEnabled.delete(toolName);
+          onEnabledToolsChange?.(Array.from(nextEnabled));
+          const nextEnabledByDefault = new Set(resolvedEnabledByDefaultSet);
+          nextEnabledByDefault.delete(toolName);
+          onEnabledByDefaultToolsChange?.(Array.from(nextEnabledByDefault));
+        }
       } else {
-        nextEnabledSet.add(toolName);
+        // Binary toggle (standard in-chat behavior)
+        const nextEnabledSet = new Set(resolvedEnabledSet);
+        if (nextEnabledSet.has(toolName)) {
+          nextEnabledSet.delete(toolName);
+        } else {
+          nextEnabledSet.add(toolName);
+        }
+        onEnabledToolsChange?.(Array.from(nextEnabledSet));
       }
-      onEnabledToolsChange?.(Array.from(nextEnabledSet));
     },
-    [readOnly, resolvedEnabledSet, lockedOffTools, onEnabledToolsChange],
+    [readOnly, resolvedEnabledSet, resolvedEnabledByDefaultSet, lockedOffTools, onEnabledToolsChange, onEnabledByDefaultToolsChange, triStateMode],
   );
 
   const selectAllTools = useCallback(() => {
     if (readOnly) return;
     const selectableTools = configurableTools.filter((tool) => !lockedOffTools.has(tool.name));
-    onEnabledToolsChange?.(selectableTools.map((tool) => tool.name));
-  }, [readOnly, configurableTools, lockedOffTools, onEnabledToolsChange]);
+    const toolNames = selectableTools.map((tool) => tool.name);
+    onEnabledToolsChange?.(toolNames);
+    if (triStateMode) {
+      onEnabledByDefaultToolsChange?.(toolNames);
+    }
+  }, [readOnly, configurableTools, lockedOffTools, onEnabledToolsChange, onEnabledByDefaultToolsChange, triStateMode]);
 
   const deselectAllTools = useCallback(() => {
     if (readOnly) return;
     onEnabledToolsChange?.([]);
-  }, [readOnly, onEnabledToolsChange]);
+    if (triStateMode) {
+      onEnabledByDefaultToolsChange?.([]);
+    }
+  }, [readOnly, onEnabledToolsChange, onEnabledByDefaultToolsChange, triStateMode]);
 
   // -- Filtering ------------------------------------------------
   const query = toolSearch.toLowerCase().trim();
@@ -387,26 +437,60 @@ export default function ToolSelectionComponent({
       if (toggleableGroupTools.length === 0) return;
 
       const toggleableGroupNames = toggleableGroupTools.map((tool) => tool.name);
-      const allToggleableEnabled = toggleableGroupNames.every((name) => resolvedEnabledSet.has(name));
 
-      const nextEnabledSet = new Set(resolvedEnabledSet);
-      if (allToggleableEnabled) {
-        for (const name of toggleableGroupNames) {
-          nextEnabledSet.delete(name);
+      if (triStateMode) {
+        // Tri-state group cycle: Off → Available → Enabled by Default → Off
+        const allAvailable = toggleableGroupNames.every((name) => resolvedEnabledSet.has(name));
+        const allEnabledByDefault = toggleableGroupNames.every((name) => resolvedEnabledByDefaultSet.has(name));
+
+        const nextEnabledSet = new Set(resolvedEnabledSet);
+        const nextEnabledByDefaultSet = new Set(resolvedEnabledByDefaultSet);
+
+        if (!allAvailable) {
+          // Not all available → make all Available
+          for (const name of toggleableGroupNames) {
+            nextEnabledSet.add(name);
+          }
+        } else if (allAvailable && !allEnabledByDefault) {
+          // All available but not all enabled by default → make all Enabled by Default
+          for (const name of toggleableGroupNames) {
+            nextEnabledByDefaultSet.add(name);
+          }
+        } else {
+          // All enabled by default → turn all Off
+          for (const name of toggleableGroupNames) {
+            nextEnabledSet.delete(name);
+            nextEnabledByDefaultSet.delete(name);
+          }
         }
+
+        onEnabledToolsChange?.(Array.from(nextEnabledSet));
+        onEnabledByDefaultToolsChange?.(Array.from(nextEnabledByDefaultSet));
       } else {
-        for (const name of toggleableGroupNames) {
-          nextEnabledSet.add(name);
+        // Binary group toggle
+        const allToggleableEnabled = toggleableGroupNames.every((name) => resolvedEnabledSet.has(name));
+        const nextEnabledSet = new Set(resolvedEnabledSet);
+        if (allToggleableEnabled) {
+          for (const name of toggleableGroupNames) {
+            nextEnabledSet.delete(name);
+          }
+        } else {
+          for (const name of toggleableGroupNames) {
+            nextEnabledSet.add(name);
+          }
         }
+        onEnabledToolsChange?.(Array.from(nextEnabledSet));
       }
-      onEnabledToolsChange?.(Array.from(nextEnabledSet));
     },
     [
       readOnly,
       resolvedEnabledSet,
+      resolvedEnabledByDefaultSet,
       onEnabledToolsChange,
+      onEnabledByDefaultToolsChange,
       lockedOffTools,
       coreToolsLocked,
+      triStateMode,
     ],
   );
 
@@ -616,6 +700,9 @@ export default function ToolSelectionComponent({
             const groupEnabled = selectableGroupTools.filter((tool) =>
               resolvedEnabledSet.has(tool.name) || (tool.system && coreToolsLocked),
             ).length;
+            const groupEnabledByDefault = triStateMode
+              ? selectableGroupTools.filter((tool) => resolvedEnabledByDefaultSet.has(tool.name)).length
+              : 0;
 
             return (
               <div
@@ -652,13 +739,17 @@ export default function ToolSelectionComponent({
                   ) : (
                     <>
                       <span className={styles['domain-count']}>
-                        {groupEnabled}/{selectableGroupTools.length}
+                        {triStateMode
+                          ? `${groupEnabledByDefault}/${groupEnabled}/${selectableGroupTools.length}`
+                          : `${groupEnabled}/${selectableGroupTools.length}`
+                        }
                       </span>
                       <CheckboxComponent
                         size="compact"
-                        checked={selectableGroupTools.length > 0 && groupEnabled === selectableGroupTools.length}
-                        indeterminate={groupEnabled > 0 && groupEnabled < selectableGroupTools.length}
+                        checked={selectableGroupTools.length > 0 && groupEnabled === selectableGroupTools.length && (!triStateMode || groupEnabledByDefault === selectableGroupTools.length)}
+                        indeterminate={groupEnabled > 0 && (groupEnabled < selectableGroupTools.length || (triStateMode && groupEnabledByDefault < groupEnabled))}
                         disabled={readOnly}
+                        className={triStateMode && groupEnabled > 0 && groupEnabledByDefault < groupEnabled ? styles['available-only-checkbox'] : ''}
                         onChange={() => {
                           if (readOnly) return;
                           toggleGroupTools(isCoreDomain ? "core" : groupKey, tools);
@@ -714,18 +805,19 @@ export default function ToolSelectionComponent({
                               <Lock size={10} className={styles['lock-icon']} />
                             </div>
                           ) : (
-                            <div className={styles['tool-row']}>
+                            <div className={`${styles['tool-row']}${triStateMode && resolvedEnabledSet.has(tool.name) && !resolvedEnabledByDefaultSet.has(tool.name) ? ` ${styles['available-only-tool-row']}` : ''}`}>
                               <CheckboxComponent
                                 size="compact"
-                                className={styles['tool-checkbox']}
-                                checked={resolvedEnabledSet.has(tool.name)}
+                                className={`${styles['tool-checkbox']}${triStateMode && resolvedEnabledSet.has(tool.name) && !resolvedEnabledByDefaultSet.has(tool.name) ? ` ${styles['available-only-checkbox']}` : ''}`}
+                                checked={triStateMode ? resolvedEnabledByDefaultSet.has(tool.name) : resolvedEnabledSet.has(tool.name)}
+                                indeterminate={triStateMode && resolvedEnabledSet.has(tool.name) && !resolvedEnabledByDefaultSet.has(tool.name)}
                                 disabled={readOnly}
                                 onChange={() => {
                                   if (readOnly) return;
                                   toggleTool(tool.name);
                                 }}
                                 label={
-                                  <span className={styles['tool-name']}>
+                                  <span className={`${styles['tool-name']}${triStateMode && resolvedEnabledSet.has(tool.name) && !resolvedEnabledByDefaultSet.has(tool.name) ? ` ${styles['available-only-tool-name']}` : ''}`}>
                                     {renderToolName(tool.name)}
                                   </span>
                                 }

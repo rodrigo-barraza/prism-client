@@ -751,6 +751,8 @@ export interface CustomAgent {
   backgroundImage?: string;
   project?: string;
   enabledTools?: string[];
+  availableTools?: string[];
+  enabledByDefaultTools?: string[];
   /** Declarative tool call policies for this agent. */
   policies?: SerializedPolicy[];
   custom?: boolean;
@@ -772,6 +774,7 @@ export interface AgentPersona {
   project?: string;
   toolCount: number;
   enabledToolNames: string[];
+  enabledByDefaultToolNames: string[];
   coreToolsLocked: boolean;
   canSpawnWorkers: boolean;
   usesDirectoryTree: boolean;

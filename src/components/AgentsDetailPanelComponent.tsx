@@ -686,6 +686,11 @@ export default function AgentsDetailPanelComponent({
             }
             coreToolsLocked={true}
             lockedOffTools={lockedOffTools}
+            triStateMode={true}
+            enabledByDefaultTools={editingAgent.enabledByDefaultTools || []}
+            onEnabledByDefaultToolsChange={(tools: string[]) =>
+              onUpdateField("enabledByDefaultTools", tools)
+            }
           />
 
           {/* Policies block */}
