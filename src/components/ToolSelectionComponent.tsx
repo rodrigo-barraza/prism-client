@@ -876,12 +876,15 @@ export default function ToolSelectionComponent({
                 : TIER_LABELS[groupKey] || groupKey;
             const collapsed = collapsedDomains.has(groupKey);
             const selectableGroupTools = tools.filter((tool) => !lockedOffTools.has(tool.name));
+            const toggleableGroupTools = selectableGroupTools.filter((tool) => !(tool.system && coreToolsLocked));
+            const isEntireGroupLockedOff = tools.length > 0 && selectableGroupTools.length === 0;
+            const isEntireGroupLockedOn = selectableGroupTools.length > 0 && toggleableGroupTools.length === 0;
             const groupEnabled = selectableGroupTools.filter((tool) =>
               resolvedEnabledSet.has(tool.name) || (tool.system && coreToolsLocked),
             ).length;
 
             return (
-              <div key={groupKey} className={styles['domain-group']}>
+              <div key={groupKey} className={`${styles['domain-group']}${isEntireGroupLockedOff ? ` ${styles['core-group-locked-off']}` : ''}`}>
                 <div
                   className={styles['domain-header']}
                   onClick={() => toggleDomain(groupKey)}
@@ -895,21 +898,29 @@ export default function ToolSelectionComponent({
                     <GroupIcon size={12} />
                   </span>
                   {label}
-                  <span className={styles['domain-count']}>
-                    {groupEnabled}/{selectableGroupTools.length}
-                  </span>
-                  <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
-                    <CheckboxComponent
-                      size="compact"
-                      checked={selectableGroupTools.length > 0 && groupEnabled === selectableGroupTools.length}
-                      indeterminate={groupEnabled > 0 && groupEnabled < selectableGroupTools.length}
-                      disabled={readOnly}
-                      onChange={() => {
-                        if (readOnly) return;
-                        toggleGroupTools(groupKey, tools);
-                      }}
-                    />
-                  </span>
+                  {isEntireGroupLockedOff ? (
+                    <span className={styles['core-badge-locked-off']}>Locked Off</span>
+                  ) : isEntireGroupLockedOn ? (
+                    <span className={styles['core-badge']}>Locked On</span>
+                  ) : (
+                    <>
+                      <span className={styles['domain-count']}>
+                        {groupEnabled}/{selectableGroupTools.length}
+                      </span>
+                      <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
+                        <CheckboxComponent
+                          size="compact"
+                          checked={selectableGroupTools.length > 0 && groupEnabled === selectableGroupTools.length}
+                          indeterminate={groupEnabled > 0 && groupEnabled < selectableGroupTools.length}
+                          disabled={readOnly}
+                          onChange={() => {
+                            if (readOnly) return;
+                            toggleGroupTools(groupKey, tools);
+                          }}
+                        />
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 {!collapsed && (
