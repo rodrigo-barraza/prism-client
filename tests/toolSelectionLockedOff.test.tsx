@@ -129,13 +129,15 @@ vi.mock("@rodrigo-barraza/components-library", () => ({
     value,
     onChange,
     options,
+    label,
   }: {
     value: string;
     onChange: (value: string) => void;
     options: Array<{ value: string; label: string }>;
+    label?: string;
   }) => (
     <select
-      data-testid="select-component"
+      data-testid={label ? `select-${label.toLowerCase()}` : "select-component"}
       value={value}
       onChange={(event) => onChange(event.target.value)}
     >
@@ -463,7 +465,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       );
 
       // Switch to the "Selected" option
-      const selectElement = screen.getByTestId("select-component");
+      const selectElement = screen.getByTestId("select-filter");
       fireEvent.change(selectElement, { target: { value: "selected" } });
 
       // Workspace tool names should NOT appear in the selected view
@@ -499,7 +501,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       );
 
       // Switch to "Selected" option
-      const selectElement = screen.getByTestId("select-component");
+      const selectElement = screen.getByTestId("select-filter");
       fireEvent.change(selectElement, { target: { value: "selected" } });
 
       // Harness tools SHOULD appear as they're locked on (not locked off)
