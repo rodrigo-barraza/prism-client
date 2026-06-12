@@ -113,7 +113,12 @@ export default function SettingsSidebarNavigationComponent({
           WorkspaceService.list().catch(() => []),
         ]);
         const warnings = computeSectionWarnings(loadedSettings);
-        if (!workspaceList || workspaceList.length === 0) {
+        const hasConnectedWorkspace =
+          workspaceList &&
+          workspaceList.length > 0 &&
+          workspaceList.some((workspace) => workspace.isAgentServed);
+
+        if (!hasConnectedWorkspace) {
           warnings["workspaces"] = 1;
         }
         setSectionWarnings(warnings);
@@ -268,7 +273,7 @@ export default function SettingsSidebarNavigationComponent({
                   variant="warning"
                   title={
                     section.id === "workspaces"
-                      ? "No workspaces configured"
+                      ? "No workspace agents connected"
                       : `${warningCount} model${warningCount > 1 ? "s" : ""} still need to be set`
                   }
                 />
