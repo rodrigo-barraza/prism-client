@@ -1021,27 +1021,41 @@ export default function ChatSessionComponent({
 
   // Update navigation button disabled states
   const updateNavigationState = useCallback(() => {
+    const container = messagesListRef.current;
     const messageElements = getMessageElements();
-    if (messageElements.length === 0) {
+    if (messageElements.length === 0 || !container) {
       setCanNavigateUp(false);
       setCanNavigateDown(false);
       return;
     }
     const currentIndex = findCurrentVisibleMessageIndex();
-    setCanNavigateUp(currentIndex > 0);
+    const containerTop = container.getBoundingClientRect().top;
+    const currentTop = messageElements[currentIndex]?.getBoundingClientRect().top ?? containerTop;
+    const isCurrentTopOffscreen = currentTop < containerTop - 8;
+    setCanNavigateUp(currentIndex > 0 || isCurrentTopOffscreen);
     setCanNavigateDown(currentIndex < messageElements.length - 1);
   }, [getMessageElements, findCurrentVisibleMessageIndex]);
 
   // Navigate to the previous message (scroll its top into view)
+  // If the current message's top is scrolled above the viewport,
+  // snap to it first before jumping to the previous message.
   const handleNavigateUp = useCallback(() => {
     const container = messagesListRef.current;
     if (!container) return;
     const messageElements = getMessageElements();
     const currentIndex = findCurrentVisibleMessageIndex();
-    if (currentIndex <= 0) return;
+    if (currentIndex < 0) return;
 
-    const targetElement = messageElements[currentIndex - 1];
     const containerTop = container.getBoundingClientRect().top;
+    const currentElement = messageElements[currentIndex];
+    const currentTop = currentElement.getBoundingClientRect().top;
+    const isCurrentTopOffscreen = currentTop < containerTop - 8;
+
+    const targetElement = isCurrentTopOffscreen
+      ? currentElement
+      : messageElements[currentIndex - 1];
+    if (!targetElement) return;
+
     const targetTop = targetElement.getBoundingClientRect().top;
     const scrollOffset = targetTop - containerTop + container.scrollTop;
 
