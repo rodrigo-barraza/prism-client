@@ -11,6 +11,7 @@ import {
   Lock,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
+import WorkspaceService from "../services/WorkspaceService";
 import type { PrismSettings } from "../types/types";
 import { EV_PRISM_SETTINGS_UPDATED } from "../constants";
 import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
@@ -105,16 +106,33 @@ export default function SettingsSidebarNavigationComponent({
   const isUserScrolling = useRef(true);
 
   useEffect(() => {
-    PrismService.getSettings()
-      .then((loadedSettings: PrismSettings) => {
-        setSectionWarnings(computeSectionWarnings(loadedSettings));
-      })
-      .catch(console.error);
+    const loadWarnings = async () => {
+      try {
+        const [loadedSettings, workspaceList] = await Promise.all([
+          PrismService.getSettings(),
+          WorkspaceService.list().catch(() => []),
+        ]);
+        const warnings = computeSectionWarnings(loadedSettings);
+        if (!workspaceList || workspaceList.length === 0) {
+          warnings["workspaces"] = 1;
+        }
+        setSectionWarnings(warnings);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    loadWarnings();
 
     const handleSettingsUpdated = (event: Event) => {
       const customEvent = event as CustomEvent<PrismSettings>;
       if (customEvent.detail) {
-        setSectionWarnings(computeSectionWarnings(customEvent.detail));
+        setSectionWarnings((previousWarnings) => {
+          const warnings = computeSectionWarnings(customEvent.detail);
+          if (previousWarnings["workspaces"]) {
+            warnings["workspaces"] = previousWarnings["workspaces"];
+          }
+          return warnings;
+        });
       }
     };
 
@@ -248,7 +266,11 @@ export default function SettingsSidebarNavigationComponent({
                 <NavigationIndicatorComponent
                   count={warningCount}
                   variant="warning"
-                  title={`${warningCount} model${warningCount > 1 ? "s" : ""} still need to be set`}
+                  title={
+                    section.id === "workspaces"
+                      ? "No workspaces configured"
+                      : `${warningCount} model${warningCount > 1 ? "s" : ""} still need to be set`
+                  }
                 />
                 {isActive && (
                   <span className={styles["is-active-indicator-state"]} />
