@@ -27,12 +27,12 @@ export default function ToolCallsBlockComponent({
   streamingOutputs,
   workerToolActivity,
 }: ToolCallsBlockProps) {
-  const [headerCollapsed, setHeaderCollapsed] = useState(false);
-  if (!toolCalls || toolCalls.length === 0) return null;
+  const hasActiveCalls = toolCalls
+    ? toolCalls.some((toolCall) => toolCall.status === "calling")
+    : false;
 
-  const hasActiveCalls = toolCalls.some(
-    (toolCall) => toolCall.status === "calling",
-  );
+  const [headerCollapsed, setHeaderCollapsed] = useState(!hasActiveCalls);
+  if (!toolCalls || toolCalls.length === 0) return null;
   const doneCount = toolCalls.filter(
     (toolCall: ToolCallEvent) =>
       toolCall.status === "done" || toolCall.status === "error",
