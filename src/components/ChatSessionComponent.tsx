@@ -992,7 +992,7 @@ export default function ChatSessionComponent({
     const container = messagesListRef.current;
     if (!container) return [];
     return Array.from(
-      container.querySelectorAll<HTMLElement>('[data-message-index]'),
+      container.querySelectorAll<HTMLElement>('[data-navigation-target]'),
     );
   }, []);
 

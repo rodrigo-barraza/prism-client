@@ -11,6 +11,7 @@
   min-inline-size: 18px;
   block-size: 18px;
   padding-inline: 5px;
+  padding-block-start: 1px;
   border-radius: 2px;
   color: oklch(1 0 0);
   font-size: 0.625rem;
