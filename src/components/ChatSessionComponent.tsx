@@ -76,7 +76,7 @@ import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ApprovalCardComponent from "./ApprovalCardComponent";
 import UserQuestionCardComponent from "./UserQuestionCardComponent";
 
-import StatusBarComponent from "./StatusBarComponent";
+import StatusBarComponent, { type StatusBarPhase } from "./StatusBarComponent";
 import PixelTransitionComponent from "./PixelTransitionComponent";
 import ChatSessionGraphComponent from "./ChatSessionGraphComponent";
 import ChatViewModeControlComponent from "./ChatViewModeControlComponent";
@@ -4267,7 +4267,7 @@ export default function ChatSessionComponent({
         setStreamingOutputs(snap.streamingOutputs || new Map());
         setPendingApprovals(snap.pendingApprovals || []);
         setPendingUserQuestion(snap.pendingUserQuestion || null);
-        setPlanProposal((snap.planProposal as any) || null);
+        setPlanProposal(snap.planProposal || null);
         setAgenticProgress(snap.agenticProgress || null);
         setSettings((previousSettings) => ({
           ...previousSettings,
@@ -5661,7 +5661,7 @@ export default function ChatSessionComponent({
         {/* Pending user question card */}
         {pendingUserQuestion && (
           <UserQuestionCardComponent
-            questions={pendingUserQuestion.questions as any}
+            questions={pendingUserQuestion.questions as Array<{ question: string; header?: string | null; options: Array<{ label: string; preview?: string | null }>; multiSelect?: boolean }>}
             context={pendingUserQuestion.context}
             onAnswer={(
               answers: Array<{
@@ -5813,7 +5813,7 @@ export default function ChatSessionComponent({
         return (
           <StatusBarComponent
             active={isGenerating}
-            phase={phase as any}
+            phase={phase as StatusBarPhase | undefined}
             label={label || undefined}
             progress={typeof progress === "number" ? progress : null}
             tokPerSec={orchestratorTokPerSec}

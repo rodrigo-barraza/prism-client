@@ -736,8 +736,8 @@ export default function CustomAgentsPanel({
             </span>
 
             {(editingAgent.policies || []).map(
-              (policy: SerializedPolicy, idx: number) => (
-                <div key={idx} className={styles['policy-row']}>
+              (policy: SerializedPolicy, index: number) => (
+                <div key={index} className={styles['policy-row']}>
                   <SelectComponent
                     value={policy.decision}
                     options={[
@@ -747,8 +747,8 @@ export default function CustomAgentsPanel({
                     ]}
                     onChange={(value: string) => {
                       const updated = [...(editingAgent.policies || [])];
-                      updated[idx] = {
-                        ...updated[idx],
+                      updated[index] = {
+                        ...updated[index],
                         decision: value as SerializedPolicy["decision"],
                       };
                       updateField("policies", updated);
@@ -761,7 +761,7 @@ export default function CustomAgentsPanel({
                     placeholder="Tool name or *"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const updated = [...(editingAgent.policies || [])];
-                      updated[idx] = { ...updated[idx], tool: e.target.value };
+                      updated[index] = { ...updated[index], tool: e.target.value };
                       updateField("policies", updated);
                     }}
                   />
@@ -772,8 +772,8 @@ export default function CustomAgentsPanel({
                     placeholder="Regex pattern (optional)"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const updated = [...(editingAgent.policies || [])];
-                      updated[idx] = {
-                        ...updated[idx],
+                      updated[index] = {
+                        ...updated[index],
                         pattern: e.target.value || undefined,
                       };
                       updateField("policies", updated);
@@ -787,8 +787,8 @@ export default function CustomAgentsPanel({
                     style={{ maxWidth: 140 }}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const updated = [...(editingAgent.policies || [])];
-                      updated[idx] = {
-                        ...updated[idx],
+                      updated[index] = {
+                        ...updated[index],
                         field: e.target.value || undefined,
                       };
                       updateField("policies", updated);
@@ -800,7 +800,7 @@ export default function CustomAgentsPanel({
                     className={styles['policy-remove-button']}
                     onClick={() => {
                       const updated = (editingAgent.policies || []).filter(
-                        (_: SerializedPolicy, i: number) => i !== idx,
+                        (_: SerializedPolicy, i: number) => i !== index,
                       );
                       updateField("policies", updated);
                     }}

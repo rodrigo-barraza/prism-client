@@ -121,6 +121,7 @@ const NONE_AGENT: AgentPersona = {
   color: "",
   backgroundImage: "",
   enabledToolNames: [],
+  enabledByDefaultToolNames: [],
   coreToolsLocked: false,
   canSpawnWorkers: false,
   usesDirectoryTree: false,

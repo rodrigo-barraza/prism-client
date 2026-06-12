@@ -28,7 +28,7 @@ const PHASE_ICONS = {
 // -- Per-phase canvas palettes ----------------------------------------
 // Custom gradient stops fed to RainbowCanvasComponent.
 // Phases without an entry use the default full-spectrum rainbow.
-const PHASE_PALETTES = {
+const PHASE_PALETTES: Record<string, [number, number, number][]> = {
   generating: [
     [59, 130, 246], // blue-500
     [99, 102, 241], // indigo-500
@@ -188,7 +188,7 @@ export default function StatusBarComponent({
   // Resolve per-phase canvas palette (undefined = default rainbow)
   const activePalette =
     active && isColorPhase
-      ? ((PHASE_PALETTES as Record<string, number[][]>)[phase ?? ""] as any)
+      ? (PHASE_PALETTES[phase ?? ""] ?? undefined)
       : undefined;
 
   // Progress percentage

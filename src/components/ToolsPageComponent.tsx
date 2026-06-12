@@ -9,10 +9,10 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import PrismService from "../services/PrismService";
 import ToolsApiService from "../services/ToolsApiService";
-import { ToolSchema, CustomAgent, ToolUsageStat } from "../types/types";
+import { ToolSchema, CustomAgent } from "../types/types";
 import { getErrorMessage } from "../utils/errorMessage";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
-import ToolsTableComponent from "./ToolsTableComponent";
+import ToolsTableComponent, { type ToolUsageStat } from "./ToolsTableComponent";
 
 interface ClientToolSchema extends ToolSchema {
   emoji?: string | string[];
@@ -137,13 +137,13 @@ function extractDomains(tools: ClientToolSchema[]): string[] {
 
 /** Extract output fields from the `fields` parameter enum, if present */
 function extractOutputFields(tool: ClientToolSchema) {
-  const fieldsParam = (tool.parameters?.properties as Record<string, any>)
-    ?.fields;
+  const properties = tool.parameters?.properties as Record<string, Record<string, unknown>> | undefined;
+  const fieldsParam = properties?.fields;
   if (!fieldsParam) return null;
-  if ((fieldsParam as { items?: { enum?: string[] } }).items?.enum)
-    return (fieldsParam as { items?: { enum?: string[] } }).items!.enum;
-  if ((fieldsParam as { enum?: string[] }).enum)
-    return (fieldsParam as { enum?: string[] }).enum;
+  const itemsEnum = (fieldsParam as { items?: { enum?: string[] } }).items?.enum;
+  if (itemsEnum) return itemsEnum;
+  const directEnum = (fieldsParam as { enum?: string[] }).enum;
+  if (directEnum) return directEnum;
   return null;
 }
 
@@ -565,7 +565,17 @@ export default function ToolsPageComponent() {
     try {
       const [prismStatistics, toolCallStatistics] = await Promise.all([
         PrismService.getToolStats().catch(() => []),
-        ToolsApiService.getToolCallStats().catch(() => null) as Promise<any>,
+        ToolsApiService.getToolCallStats().catch(() => null) as Promise<{
+          byTool?: Array<{
+            toolName: string;
+            count: number;
+            avgMs: number;
+            minMs: number;
+            maxMs: number;
+            errorRate: number;
+            totalTransferBytes: number;
+          }>;
+        } | null>,
       ]);
       const statisticsMap: Record<string, ExtendedToolStats> = {};
       for (const statistics of prismStatistics || []) {
@@ -725,7 +735,7 @@ export default function ToolsPageComponent() {
       <ToolsTableComponent
         tools={tools}
         agents={agents}
-        toolStats={toolStats as any}
+        toolStats={toolStats}
         onSelect={(tool) => setSelectedTool(tool as ClientToolSchema)}
       />
 
@@ -738,7 +748,7 @@ export default function ToolsPageComponent() {
               (selectedTool as ClientToolSchema).name
             ] || []
           }
-          stats={(toolStats as Record<string, any>)[(selectedTool as any).name]}
+          stats={toolStats[selectedTool.name] || {} as ExtendedToolStats}
           allTools={tools}
           onClose={() => setSelectedTool(null)}
         />

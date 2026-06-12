@@ -49,9 +49,9 @@ interface AgentMinimal {
 
 export interface ToolUsageStat {
   tool: string;
-  totalCalls: number;
-  totalRequests: number;
-  totalCost: number;
+  totalCalls?: number;
+  totalRequests?: number;
+  totalCost?: number;
   avgLatency?: number;
   minLatency?: number;
   maxLatency?: number;
@@ -598,7 +598,7 @@ export default function ToolsTableComponent({
       ) : viewMode === "table" ? (
         <div className={styles['table-wrapper']}>
           <TableComponent
-            columns={tableColumns as any}
+            columns={tableColumns}
             data={filteredTools}
             getRowKey={(tool: ToolSchema) => tool.name}
             emptyText={emptyText || "No tools match your filters."}
@@ -638,7 +638,7 @@ export default function ToolsTableComponent({
                 ) : (
                   <div className={styles['table-wrapper']}>
                     <TableComponent
-                      columns={tableColumns as any}
+                      columns={tableColumns}
                       data={domainTools}
                       getRowKey={(tool: ToolSchema) => tool.name}
                       emptyText="No tools in this domain."
