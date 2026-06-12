@@ -1452,7 +1452,7 @@ export default function ChatSessionComponent({
   // Maps tool name → human-readable reason (shown in tooltip).
   const lockedOffTools = useMemo(() => {
     const lockedToolsMap = new Map<string, string>();
-    if (!memoryConfigured) lockedToolsMap.set(TOOL_NAMES.UPSERT_MEMORY, "Configure all Memory Models in Settings to unlock");
+    if (!memoryConfigured) lockedToolsMap.set(TOOL_NAMES.SAVE_MEMORY, "Configure all Memory Models in Settings to unlock");
     if (!extractionModelConfigured) lockedToolsMap.set(TOOL_NAMES.EXTRACT_MEMORIES, "Configure the Extraction Model in Settings → Memory Models to unlock");
     if (!consolidationModelConfigured) lockedToolsMap.set(TOOL_NAMES.CONSOLIDATE_MEMORIES, "Configure the Consolidation Model in Settings → Memory Models to unlock");
     if (!embeddingModelConfigured) lockedToolsMap.set(TOOL_NAMES.SEARCH_MEMORIES, "Configure the Embedding Model in Settings → Memory Models to unlock");
@@ -2662,10 +2662,10 @@ export default function ChatSessionComponent({
               window.dispatchEvent(new CustomEvent(EV_CRON_JOB_SCHEDULED));
             }
 
-            // Auto-refresh memories panel when upsert_memory completes
+            // Auto-refresh memories panel when save_memory completes
             if (
               data.status !== "calling" &&
-              toolData.name === TOOL_NAMES.UPSERT_MEMORY
+              toolData.name === TOOL_NAMES.SAVE_MEMORY
             ) {
               if (hasAnyMemoryModelSet) {
                 setLeftTabBottom("memories");
@@ -2797,10 +2797,10 @@ export default function ChatSessionComponent({
               setTasksRefreshKey((k) => k + 1);
             }
 
-            // Auto-refresh memories panel when upsert_memory completes (MCP path)
+            // Auto-refresh memories panel when save_memory completes (MCP path)
             if (
               toolData.status !== "calling" &&
-              toolData.name === TOOL_NAMES.UPSERT_MEMORY
+              toolData.name === TOOL_NAMES.SAVE_MEMORY
             ) {
               if (hasAnyMemoryModelSet) {
                 setLeftTabBottom("memories");
