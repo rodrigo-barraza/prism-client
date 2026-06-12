@@ -306,20 +306,15 @@ export default function ToolSelectionComponent({
       if (readOnly || lockedOffTools.has(toolName)) {
         return;
       }
-      const tools = enabledTools || [];
-      const resolved = new Set<string>();
-      for (const entry of tools) {
-        if (!entry.startsWith("domain:")) {
-          resolved.add(entry);
-        }
-      }
-      if (resolved.has(toolName)) {
-        onEnabledToolsChange?.(tools.filter((entry) => entry !== toolName));
+      const nextEnabledSet = new Set(resolvedEnabledSet);
+      if (nextEnabledSet.has(toolName)) {
+        nextEnabledSet.delete(toolName);
       } else {
-        onEnabledToolsChange?.([...tools, toolName]);
+        nextEnabledSet.add(toolName);
       }
+      onEnabledToolsChange?.(Array.from(nextEnabledSet));
     },
-    [readOnly, enabledTools, lockedOffTools, onEnabledToolsChange],
+    [readOnly, resolvedEnabledSet, lockedOffTools, onEnabledToolsChange],
   );
 
   const selectAllTools = useCallback(() => {
@@ -387,54 +382,28 @@ export default function ToolSelectionComponent({
   const toggleGroupTools = useCallback(
     (groupKey: string, groupTools: ToolSchema[]) => {
       if (readOnly) return;
-      const currentTools = enabledTools || [];
-      const isDomain = sortMode === "domain";
-      const prefix = isDomain
-        ? `domain:${groupKey}`
-        : `tier:${groupKey}`;
-
-      const resolved = resolveEnabledTools(currentTools);
       const selectableGroupTools = groupTools.filter((tool) => !lockedOffTools.has(tool.name));
       const toggleableGroupTools = selectableGroupTools.filter((tool) => !(tool.system && coreToolsLocked));
       if (toggleableGroupTools.length === 0) return;
 
       const toggleableGroupNames = toggleableGroupTools.map((tool) => tool.name);
-      const allToggleableEnabled = toggleableGroupNames.every((name) => resolved.has(name));
+      const allToggleableEnabled = toggleableGroupNames.every((name) => resolvedEnabledSet.has(name));
 
-      const hasActiveSearch = query.length > 0;
-
-      if (groupKey === "core") {
-        if (allToggleableEnabled) {
-          onEnabledToolsChange?.(
-            currentTools.filter((enabledToolEntry) => !toggleableGroupNames.includes(enabledToolEntry)),
-          );
-        } else {
-          const cleaned = currentTools.filter((enabledToolEntry) => !toggleableGroupNames.includes(enabledToolEntry));
-          onEnabledToolsChange?.([...cleaned, ...toggleableGroupNames]);
+      const nextEnabledSet = new Set(resolvedEnabledSet);
+      if (allToggleableEnabled) {
+        for (const name of toggleableGroupNames) {
+          nextEnabledSet.delete(name);
         }
-        return;
-      }
-
-      const hasGroupRef = currentTools.includes(prefix);
-      if (hasGroupRef || allToggleableEnabled) {
-        onEnabledToolsChange?.(
-          currentTools.filter((enabledToolEntry) => enabledToolEntry !== prefix && !toggleableGroupNames.includes(enabledToolEntry)),
-        );
       } else {
-        const cleaned = currentTools.filter((enabledToolEntry) => !toggleableGroupNames.includes(enabledToolEntry));
-        if (hasActiveSearch) {
-          onEnabledToolsChange?.([...cleaned, ...toggleableGroupNames]);
-        } else {
-          onEnabledToolsChange?.([...cleaned, prefix]);
+        for (const name of toggleableGroupNames) {
+          nextEnabledSet.add(name);
         }
       }
+      onEnabledToolsChange?.(Array.from(nextEnabledSet));
     },
     [
       readOnly,
-      enabledTools,
-      sortMode,
-      query,
-      resolveEnabledTools,
+      resolvedEnabledSet,
       onEnabledToolsChange,
       lockedOffTools,
       coreToolsLocked,
@@ -655,7 +624,13 @@ export default function ToolSelectionComponent({
               >
                 <div
                   className={isCoreDomain ? styles['core-header'] : styles['domain-header']}
-                  onClick={() => toggleDomain(collapseKey)}
+                  onClick={(event: React.MouseEvent) => {
+                    const targetElement = event.target as HTMLElement;
+                    if (targetElement.closest(".checkbox-component")) {
+                      return;
+                    }
+                    toggleDomain(collapseKey);
+                  }}
                 >
                   {collapsed ? (
                     <ChevronRight size={12} />
@@ -679,18 +654,16 @@ export default function ToolSelectionComponent({
                       <span className={styles['domain-count']}>
                         {groupEnabled}/{selectableGroupTools.length}
                       </span>
-                      <span onClick={(event: React.MouseEvent) => event.stopPropagation()}>
-                        <CheckboxComponent
-                          size="compact"
-                          checked={selectableGroupTools.length > 0 && groupEnabled === selectableGroupTools.length}
-                          indeterminate={groupEnabled > 0 && groupEnabled < selectableGroupTools.length}
-                          disabled={readOnly}
-                          onChange={() => {
-                            if (readOnly) return;
-                            toggleGroupTools(isCoreDomain ? "core" : groupKey, tools);
-                          }}
-                        />
-                      </span>
+                      <CheckboxComponent
+                        size="compact"
+                        checked={selectableGroupTools.length > 0 && groupEnabled === selectableGroupTools.length}
+                        indeterminate={groupEnabled > 0 && groupEnabled < selectableGroupTools.length}
+                        disabled={readOnly}
+                        onChange={() => {
+                          if (readOnly) return;
+                          toggleGroupTools(isCoreDomain ? "core" : groupKey, tools);
+                        }}
+                      />
                     </>
                   )}
                 </div>

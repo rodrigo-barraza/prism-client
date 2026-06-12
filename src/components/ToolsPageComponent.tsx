@@ -15,7 +15,7 @@ import { useAdminHeader } from "./AdminHeaderContextComponent";
 import ToolsTableComponent from "./ToolsTableComponent";
 
 interface ClientToolSchema extends ToolSchema {
-  emoji?: string;
+  emoji?: string | string[];
   dataSource?: {
     type: string;
     provider?: string;
@@ -212,13 +212,16 @@ function ToolDetailModal({
         <div className={styles['detail-header']}>
           <div className={styles['detail-title-block']}>
             <div className={styles['detail-clean-name']}>
-              {tool.emoji && (
-                tool.emoji.startsWith("http") ? (
-                  <img src={tool.emoji} alt={tool.name} className={styles['detail-emoji-image']} />
-                ) : (
-                  <span className={styles['detail-emoji']}>{tool.emoji}</span>
-                )
-              )}
+              {(() => {
+                const resolvedEmoji = Array.isArray(tool.emoji) ? tool.emoji[0] : tool.emoji;
+                return resolvedEmoji && (
+                  resolvedEmoji.startsWith("http") ? (
+                    <img src={resolvedEmoji} alt={tool.name} className={styles['detail-emoji-image']} />
+                  ) : (
+                    <span className={styles['detail-emoji']}>{resolvedEmoji}</span>
+                  )
+                );
+              })()}
               {cleanName}
             </div>
             <div className={styles['detail-title']}>{tool.name}</div>

@@ -1000,6 +1000,7 @@ export type JsonSchemaObject = Record<string, unknown>;
 export interface ToolSchema {
   name: string;
   description: string;
+  emoji?: string | string[];
   domain?: string;
   domainKey?: string;
   system?: boolean;

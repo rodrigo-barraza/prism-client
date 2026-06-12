@@ -27,7 +27,7 @@ import styles from "./ToolsTableComponent.module.css";
 export interface ToolSchema {
   name: string;
   description?: string;
-  emoji?: string;
+  emoji?: string | string[];
   domain?: string;
   parameters?: {
     properties?: Record<string, unknown>;
@@ -191,11 +191,12 @@ function ToolCard({
   agents: { id: string; name: string }[];
 }) {
   const parameterCount = countParams(tool);
+  const resolvedEmoji = Array.isArray(tool.emoji) ? tool.emoji[0] : tool.emoji;
   return (
     <ToolSchemaCard
       name={tool.name}
       description={tool.description || ""}
-      emoji={tool.emoji}
+      emoji={resolvedEmoji}
       domain={tool.domain}
       onClick={() => onClick(tool)}
     >
@@ -298,22 +299,27 @@ export default function ToolsTableComponent({
         label: "",
         align: "center" as const,
         sortable: true,
-        sortValue: (row: ToolSchema) => row.emoji || "",
+        sortValue: (row: ToolSchema) => {
+          const resolvedEmoji = Array.isArray(row.emoji) ? row.emoji[0] : row.emoji;
+          return resolvedEmoji || "";
+        },
         width: "40px",
-        render: (row: ToolSchema) =>
-          row.emoji ? (
-            row.emoji.startsWith("http") ? (
+        render: (row: ToolSchema) => {
+          const resolvedEmoji = Array.isArray(row.emoji) ? row.emoji[0] : row.emoji;
+          return resolvedEmoji ? (
+            resolvedEmoji.startsWith("http") ? (
               <img
-                src={row.emoji}
+                src={resolvedEmoji}
                 alt={row.name}
                 style={{ width: "1.25rem", height: "1.25rem", objectFit: "contain" }}
               />
             ) : (
-              <span style={{ fontSize: "1.1rem" }}>{row.emoji}</span>
+              <span style={{ fontSize: "1.1rem" }}>{resolvedEmoji}</span>
             )
           ) : (
             <Wrench size={14} style={{ opacity: 0.4 }} />
-          ),
+          );
+        },
       },
       {
         key: "name",
