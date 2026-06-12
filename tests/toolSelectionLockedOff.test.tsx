@@ -125,6 +125,27 @@ vi.mock("@rodrigo-barraza/components-library", () => ({
       {label}
     </label>
   ),
+  SelectComponent: ({
+    value,
+    onChange,
+    options,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+    options: Array<{ value: string; label: string }>;
+  }) => (
+    <select
+      data-testid="select-component"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  ),
 }));
 
 // Import the component under test AFTER mocks are registered
@@ -441,9 +462,9 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         />,
       );
 
-      // Switch to the "Selected" tab
-      const selectedSegment = screen.getByTestId("segment-selected");
-      fireEvent.click(selectedSegment);
+      // Switch to the "Selected" option
+      const selectElement = screen.getByTestId("select-component");
+      fireEvent.change(selectElement, { target: { value: "selected" } });
 
       // Workspace tool names should NOT appear in the selected view
       for (const workspaceTool of coreWorkspaceTools) {
@@ -477,9 +498,9 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         />,
       );
 
-      // Switch to "Selected" tab
-      const selectedSegment = screen.getByTestId("segment-selected");
-      fireEvent.click(selectedSegment);
+      // Switch to "Selected" option
+      const selectElement = screen.getByTestId("select-component");
+      fireEvent.change(selectElement, { target: { value: "selected" } });
 
       // Harness tools SHOULD appear as they're locked on (not locked off)
       const allToolNames = container.querySelectorAll(".tool-name, .core-tool-name");
