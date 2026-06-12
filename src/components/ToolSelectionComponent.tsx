@@ -40,10 +40,10 @@ import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import {
   TooltipComponent,
   SearchInputComponent,
-  SegmentedControlComponent,
+  SelectComponent,
   CheckboxComponent,
 } from "@rodrigo-barraza/components-library";
-import type { SegmentDefinition } from "@rodrigo-barraza/components-library";
+import type { SelectOption } from "@rodrigo-barraza/components-library";
 import styles from "./ToolSelectionComponent.module.css";
 
 // -- Interfaces --------------------------------------------------
@@ -194,7 +194,17 @@ export default function ToolSelectionComponent({
 }: ToolSelectionProps) {
   const [toolSearch, setToolSearch] = useState("");
   const [collapsedDomains, setCollapsedDomains] = useState(new Set<string>());
-  const [groupMode, setGroupMode] = useState("domain");
+  type ToolGroupMode = "domain" | "tier" | "selected" | "unselected" | "locked-on" | "locked-off";
+  const [groupMode, setGroupMode] = useState<ToolGroupMode>("domain");
+
+  const GROUP_MODE_OPTIONS: SelectOption[] = [
+    { value: "domain", label: "By Domains" },
+    { value: "tier", label: "By Intelligence Tiers" },
+    { value: "selected", label: "By Selected" },
+    { value: "unselected", label: "By Unselected" },
+    { value: "locked-on", label: "By Locked-On" },
+    { value: "locked-off", label: "By Locked-Off" },
+  ];
 
   // -- Split availableTools into Core Agentic and Configurable ----
   const { coreTools, configurableTools } = useMemo(() => {
@@ -387,6 +397,73 @@ export default function ToolSelectionComponent({
     return sorted;
   }, [filteredCoreTools, filteredTools, coreToolsLocked, resolvedEnabledSet, lockedOffTools]);
 
+  // -- Unselected tools grouped by domain -----------------------
+  const unselectedGroupedByDomain = useMemo(() => {
+    const allUnselectedTools = [
+      ...filteredCoreTools.filter((tool) => {
+        if (lockedOffTools.has(tool.name)) return false;
+        if (coreToolsLocked) return false;
+        return !resolvedEnabledSet.has(tool.name);
+      }),
+      ...filteredTools.filter((tool) => !resolvedEnabledSet.has(tool.name) && !lockedOffTools.has(tool.name)),
+    ];
+    const groups = new Map<string, ToolSchema[]>();
+    for (const tool of allUnselectedTools) {
+      const domain = tool.domain || "Other";
+      if (!groups.has(domain)) groups.set(domain, []);
+      groups.get(domain)!.push(tool);
+    }
+    const sorted: [string, ToolSchema[]][] = [];
+    for (const domain of DOMAIN_ORDER) {
+      if (groups.has(domain)) sorted.push([domain, groups.get(domain)!]);
+    }
+    for (const [domain, tools] of groups) {
+      if (!DOMAIN_ORDER.includes(domain)) sorted.push([domain, tools]);
+    }
+    return sorted;
+  }, [filteredCoreTools, filteredTools, coreToolsLocked, resolvedEnabledSet, lockedOffTools]);
+
+  // -- Locked-On tools grouped by domain ------------------------
+  const lockedOnGroupedByDomain = useMemo(() => {
+    const allLockedOnTools = [
+      ...filteredCoreTools.filter((tool) => coreToolsLocked && !lockedOffTools.has(tool.name)),
+    ];
+    const groups = new Map<string, ToolSchema[]>();
+    for (const tool of allLockedOnTools) {
+      const domain = tool.domain || "Other";
+      if (!groups.has(domain)) groups.set(domain, []);
+      groups.get(domain)!.push(tool);
+    }
+    const sorted: [string, ToolSchema[]][] = [];
+    for (const domain of DOMAIN_ORDER) {
+      if (groups.has(domain)) sorted.push([domain, groups.get(domain)!]);
+    }
+    for (const [domain, tools] of groups) {
+      if (!DOMAIN_ORDER.includes(domain)) sorted.push([domain, tools]);
+    }
+    return sorted;
+  }, [filteredCoreTools, coreToolsLocked, lockedOffTools]);
+
+  // -- Locked-Off tools grouped by domain -----------------------
+  const lockedOffGroupedByDomain = useMemo(() => {
+    const allFilteredTools = [...filteredCoreTools, ...filteredTools];
+    const allLockedOffToolSchemas = allFilteredTools.filter((tool) => lockedOffTools.has(tool.name));
+    const groups = new Map<string, ToolSchema[]>();
+    for (const tool of allLockedOffToolSchemas) {
+      const domain = tool.domain || "Other";
+      if (!groups.has(domain)) groups.set(domain, []);
+      groups.get(domain)!.push(tool);
+    }
+    const sorted: [string, ToolSchema[]][] = [];
+    for (const domain of DOMAIN_ORDER) {
+      if (groups.has(domain)) sorted.push([domain, groups.get(domain)!]);
+    }
+    for (const [domain, tools] of groups) {
+      if (!DOMAIN_ORDER.includes(domain)) sorted.push([domain, tools]);
+    }
+    return sorted;
+  }, [filteredCoreTools, filteredTools, lockedOffTools]);
+
   // -- Group by domain ------------------------------------------
   const groupedTools = useMemo(() => {
     const groups = new Map<string, ToolSchema[]>();
@@ -529,23 +606,18 @@ export default function ToolSelectionComponent({
       />
 
       <div className={styles['tools-section-header-right']}>
-        <SegmentedControlComponent
+        <SelectComponent
           value={groupMode}
-          onChange={setGroupMode}
+          onChange={(nextMode) => setGroupMode(nextMode as ToolGroupMode)}
+          options={GROUP_MODE_OPTIONS}
           compact
-          fullWidth
-          segments={[
-            { value: "domain", label: "Domain" },
-            { value: "tier", label: "Tier" },
-            { value: "selected", label: "Selected" },
-          ] satisfies SegmentDefinition[]}
         />
       </div>
 
       <div className={styles['tools-list-wrapper']}>
 
         {/* Master select-all / deselect-all checkbox */}
-        {(groupMode !== "selected" || selectedGroupedByDomain.length > 0) && (
+        {(groupMode !== "selected" && groupMode !== "locked-on" && groupMode !== "locked-off" || (groupMode === "selected" && selectedGroupedByDomain.length > 0)) && (
           <div className={styles['bulk-checkbox-row']}>
             <CheckboxComponent
               size="compact"
@@ -712,18 +784,40 @@ export default function ToolSelectionComponent({
         })}
 
         {/* Group rendering — domain, label, tier, or selected mode */}
-        {groupMode === "selected" ? (
+        {(groupMode === "selected" || groupMode === "unselected" || groupMode === "locked-on" || groupMode === "locked-off") ? (
           <div className={styles['selected-tab-content']}>
-            {selectedGroupedByDomain.length === 0 ? (
-              <div className={styles['no-selected-tools-container']}>
-                <Layers size={24} className={styles['no-selected-tools-icon']} />
-                <span className={styles['no-selected-tools-message']}>No tools currently selected</span>
-                <span className={styles['no-selected-tools-subtext']}>
-                  Enable tools from the Domain, Label, or Tier tabs to see them here.
-                </span>
-              </div>
-            ) : (
-              selectedGroupedByDomain.map(([groupKey, tools]) => {
+            {(() => {
+              const filteredGroupData =
+                groupMode === "selected" ? selectedGroupedByDomain
+                : groupMode === "unselected" ? unselectedGroupedByDomain
+                : groupMode === "locked-on" ? lockedOnGroupedByDomain
+                : lockedOffGroupedByDomain;
+
+              const emptyMessage =
+                groupMode === "selected" ? "No tools currently selected"
+                : groupMode === "unselected" ? "All tools are currently selected"
+                : groupMode === "locked-on" ? "No tools are currently locked on"
+                : "No tools are currently locked off";
+
+              const emptySubtext =
+                groupMode === "selected" ? "Enable tools from the Domains or Intelligence Tiers views."
+                : groupMode === "unselected" ? "Deselect tools to see them appear here."
+                : groupMode === "locked-on" ? "Core tools lock is disabled, or no system tools are available."
+                : "No tools have been restricted by the agent persona.";
+
+              if (filteredGroupData.length === 0) {
+                return (
+                  <div className={styles['no-selected-tools-container']}>
+                    <Layers size={24} className={styles['no-selected-tools-icon']} />
+                    <span className={styles['no-selected-tools-message']}>{emptyMessage}</span>
+                    <span className={styles['no-selected-tools-subtext']}>
+                      {emptySubtext}
+                    </span>
+                  </div>
+                );
+              }
+
+              return filteredGroupData.map(([groupKey, tools]) => {
                 const isCoreDomain = groupKey === DOMAINS.CORE_HARNESS.displayName || groupKey === DOMAINS.CORE_WORKSPACE.displayName || groupKey === DOMAINS.CORE_ORCHESTRATOR.displayName;
                 const isMcp = groupKey.startsWith("Model Context Protocol:") || groupKey === "Model Context Protocol";
                 const GroupIcon: LucideIcon = isMcp
@@ -732,7 +826,7 @@ export default function ToolSelectionComponent({
                 const label = isMcp
                   ? groupKey.replace("Model Context Protocol: ", "MCP: ")
                   : DOMAIN_LABELS[groupKey] || groupKey;
-                const collapsed = collapsedDomains.has(`selected:${groupKey}`);
+                const collapsed = collapsedDomains.has(`${groupMode}:${groupKey}`);
                 const selectableGroupTools = tools.filter((tool) => !lockedOffTools.has(tool.name));
                 const groupEnabled = selectableGroupTools.filter((tool) =>
                   resolvedEnabledSet.has(tool.name),
@@ -742,7 +836,7 @@ export default function ToolSelectionComponent({
                   <div key={groupKey} className={isCoreDomain ? styles['core-group'] : styles['domain-group']}>
                     <div
                       className={isCoreDomain ? styles['core-header'] : styles['domain-header']}
-                      onClick={() => toggleDomain(`selected:${groupKey}`)}
+                      onClick={() => toggleDomain(`${groupMode}:${groupKey}`)}
                     >
                       {collapsed ? (
                         <ChevronRight size={12} />
@@ -757,7 +851,11 @@ export default function ToolSelectionComponent({
                       ) : (
                         label
                       )}
-                      {isCoreDomain && coreToolsLocked && selectableGroupTools.length === 0 && tools.length > 0 ? (
+                      {groupMode === "locked-off" ? (
+                        <span className={styles['core-badge-locked-off']}>Locked Off</span>
+                      ) : groupMode === "locked-on" ? (
+                        <span className={styles['core-badge']}>Locked On</span>
+                      ) : isCoreDomain && coreToolsLocked && selectableGroupTools.length === 0 && tools.length > 0 ? (
                         <span className={styles['core-badge-locked-off']}>Locked Off</span>
                       ) : isCoreDomain && coreToolsLocked ? (
                         <span className={styles['core-badge']}>Locked On</span>
@@ -853,8 +951,8 @@ export default function ToolSelectionComponent({
                     )}
                   </div>
                 );
-              })
-            )}
+              });
+            })()}
           </div>
         ) : (
           (groupMode === "domain"

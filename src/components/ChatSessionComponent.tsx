@@ -1568,7 +1568,9 @@ export default function ChatSessionComponent({
         ? (backendSessionStats.totalCost || 0) +
           (bgUsage?.cost || 0) +
           activeMessageCost
-        : totalCost;
+        : isNoAgent
+          ? Math.max((existing.totalCost as number) || 0, totalCost)
+          : totalCost;
       const resolvedModalities: Record<string, number> =
         (backendSessionStats?.modalities ?? modalities) as Record<
           string,
@@ -1632,11 +1634,47 @@ export default function ChatSessionComponent({
   const fetchSessionStats = useCallback(
     (sessionId: string) => {
       if (!sessionId) return;
-      // Direct Chat sessions live in the conversations collection which
-      // doesn't have the stats aggregation endpoint — skip, but update the refresh key.
+      // Direct Chat: re-fetch the conversation to get the enriched totalCost
+      // from the requests collection (background ops like memory extraction,
+      // embedding log costs there but don't update the conversation doc).
       if (isNoAgent) {
         setRequestsRefreshKey((previousKey) => previousKey + 1);
-        return;
+        const refetchDirectCost = () =>
+          PrismService.getConversation(sessionId)
+            .then((conversation) => {
+              if (conversation?.totalCost != null) {
+                setSessions((previousSessions) => {
+                  const index = previousSessions.findIndex(
+                    (session) => session.id === sessionId,
+                  );
+                  if (index === -1) return previousSessions;
+                  const existing = previousSessions[index] as unknown as Record<
+                    string,
+                    unknown
+                  >;
+                  if (
+                    existing.totalCost === conversation.totalCost
+                  ) {
+                    return previousSessions;
+                  }
+                  const updated = [
+                    ...previousSessions,
+                  ] as unknown as Record<string, unknown>[];
+                  updated[index] = {
+                    ...existing,
+                    totalCost: conversation.totalCost,
+                  };
+                  return updated as unknown as typeof previousSessions;
+                });
+              }
+            })
+            .catch(() => {});
+        const phaseOneTimeoutId = setTimeout(refetchDirectCost, 2000);
+        const phaseTwoTimeoutId = setTimeout(refetchDirectCost, 8000);
+        return () => {
+          clearTimeout(phaseOneTimeoutId);
+          clearTimeout(phaseTwoTimeoutId);
+        };
       }
       // Two-phase fetch: first at 2s catches iteration requests,
       // second at 8s catches background requests (memory extraction,
@@ -1665,11 +1703,11 @@ export default function ChatSessionComponent({
             }
           })
           .catch(() => {}); // silently ignore if no requests yet
-      const t1 = setTimeout(refetch, 2000);
-      const t2 = setTimeout(refetch, 8000);
+      const phaseOneTimeoutId = setTimeout(refetch, 2000);
+      const phaseTwoTimeoutId = setTimeout(refetch, 8000);
       return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
+        clearTimeout(phaseOneTimeoutId);
+        clearTimeout(phaseTwoTimeoutId);
       };
     },
     [agentProject, isNoAgent],
