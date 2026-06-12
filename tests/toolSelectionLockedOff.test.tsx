@@ -31,7 +31,7 @@ vi.mock("@rodrigo-barraza/utilities-library/taxonomy", () => ({
     TOOLS: { key: "tools", displayName: "Tools" },
     MCP: { key: "mcp", displayName: "Model Context Protocol" },
     META: { key: "meta", displayName: "Tool Discovery" },
-    CRON_JOBS: { key: "cron_jobs", displayName: "Cron Jobs" },
+    CORE_SCHEDULE: { key: "core_schedule", displayName: "Core Schedule Tools" },
     CONVERSATION_TIMERS: { key: "conversation_timers", displayName: "Conversation Timers" },
     SKILLS: { key: "skills", displayName: "Skills" },
     CONTROL: { key: "control", displayName: "Control" },
