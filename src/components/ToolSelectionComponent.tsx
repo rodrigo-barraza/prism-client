@@ -573,15 +573,57 @@ export default function ToolSelectionComponent({
               if (!groups.has(key)) groups.set(key, []);
               groups.get(key)!.push(tool);
             }
-            const order = isDomainSort ? DOMAIN_ORDER : TIER_ORDER;
-            const sorted: [string, ToolSchema[]][] = [];
-            for (const key of order) {
-              if (groups.has(key)) sorted.push([key, groups.get(key)!]);
+
+            // Sort tools inside each group alphabetically by their display name
+            for (const tools of groups.values()) {
+              tools.sort((toolA, toolB) => {
+                const nameA = renderToolName(toolA.name);
+                const nameB = renderToolName(toolB.name);
+                return nameA.localeCompare(nameB);
+              });
             }
-            for (const [key, tools] of groups) {
-              if (!order.includes(key)) sorted.push([key, tools]);
+
+            if (isDomainSort) {
+              const coreDomainKeys: string[] = [];
+              const otherDomainKeys: string[] = [];
+              for (const key of groups.keys()) {
+                const isCoreDomainGroup =
+                  key === DOMAINS.CORE_HARNESS.displayName ||
+                  key === DOMAINS.CORE_WORKSPACE.displayName ||
+                  key === DOMAINS.CORE_ORCHESTRATOR.displayName;
+                if (isCoreDomainGroup) {
+                  coreDomainKeys.push(key);
+                } else {
+                  otherDomainKeys.push(key);
+                }
+              }
+
+              coreDomainKeys.sort((keyA, keyB) => keyA.localeCompare(keyB));
+              otherDomainKeys.sort((keyA, keyB) => keyA.localeCompare(keyB));
+
+              const sorted: [string, ToolSchema[]][] = [];
+              for (const key of coreDomainKeys) {
+                sorted.push([key, groups.get(key)!]);
+              }
+              for (const key of otherDomainKeys) {
+                sorted.push([key, groups.get(key)!]);
+              }
+              return sorted;
+            } else {
+              const order = TIER_ORDER;
+              const sorted: [string, ToolSchema[]][] = [];
+              for (const key of order) {
+                if (groups.has(key)) {
+                  sorted.push([key, groups.get(key)!]);
+                }
+              }
+              for (const [key, tools] of groups) {
+                if (!order.includes(key)) {
+                  sorted.push([key, tools]);
+                }
+              }
+              return sorted;
             }
-            return sorted;
           })();
 
           return groupedFilteredTools.map(([groupKey, tools]) => {
