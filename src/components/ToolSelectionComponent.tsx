@@ -587,10 +587,7 @@ export default function ToolSelectionComponent({
               const coreDomainKeys: string[] = [];
               const otherDomainKeys: string[] = [];
               for (const key of groups.keys()) {
-                const isCoreDomainGroup =
-                  key === DOMAINS.CORE_HARNESS.displayName ||
-                  key === DOMAINS.CORE_WORKSPACE.displayName ||
-                  key === DOMAINS.CORE_ORCHESTRATOR.displayName;
+                const isCoreDomainGroup = key.toLowerCase().startsWith("core ");
                 if (isCoreDomainGroup) {
                   coreDomainKeys.push(key);
                 } else {
@@ -627,11 +624,7 @@ export default function ToolSelectionComponent({
           })();
 
           return groupedFilteredTools.map(([groupKey, tools]) => {
-            const isCoreDomain = isDomainSort && (
-              groupKey === DOMAINS.CORE_HARNESS.displayName ||
-              groupKey === DOMAINS.CORE_WORKSPACE.displayName ||
-              groupKey === DOMAINS.CORE_ORCHESTRATOR.displayName
-            );
+            const isCoreDomain = isDomainSort && groupKey.toLowerCase().startsWith("core ");
             const isMcp = isDomainSort && (
               groupKey.startsWith("Model Context Protocol:") || groupKey === "Model Context Protocol"
             );
