@@ -40,8 +40,13 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   [TOOL_NAMES.SEARCH_TOOLS]: "Tool Search",
   [TOOL_NAMES.CREATE_CRON]: "Schedule",
   [TOOL_NAMES.CREATE_CRON_JOB]: "Schedule",
+  [TOOL_NAMES.LIST_CRON_JOBS]: "Schedules",
+  [TOOL_NAMES.DELETE_CRON_JOB]: "Unschedule",
   [TOOL_NAMES.TRIGGER_CRON_JOB]: "Trigger",
   [TOOL_NAMES.REMOTE_TRIGGER]: "Trigger",
+  [TOOL_NAMES.SET_TIMER]: "Timer",
+  [TOOL_NAMES.LIST_TIMERS]: "Timers",
+  [TOOL_NAMES.CANCEL_TIMER]: "Cancel Timer",
   [TOOL_NAMES.EDIT_NOTEBOOK]: "Notebook",
   // Skill tools
   [TOOL_NAMES.CREATE_SKILL]: "Create Skill",
