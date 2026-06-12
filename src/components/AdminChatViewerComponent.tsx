@@ -222,6 +222,16 @@ export default function AdminChatViewerComponent({
   const targetAgentId = isSelectedAgent ? selectedEntry?.agent : (isAgentMode ? activeAgentId : null);
   const targetProject = isSelectedAgent ? (selectedEntry?.project || selectedEntry?.agent || PROJECT_AGENT) : (isAgentMode ? PROJECT_AGENT : null);
 
+  // ── Extract session-time tool snapshot from conversation settings ─────
+  const sessionToolConfig = useMemo(() => {
+    if (!selectedEntry) return null;
+    const sessionSettings = (selectedEntry as Conversation)?.settings as Record<string, unknown> | undefined;
+    return sessionSettings?.toolConfig as
+      | { availableTools?: string[]; enabledTools?: string[]; disabledTools?: string[] }
+      | undefined
+      ?? null;
+  }, [selectedEntry]);
+
   // ── Agent-specific data (tools, skills, memories, MCP, rules) ───────
   useEffect(() => {
     if (!targetAgentId) {
@@ -237,16 +247,33 @@ export default function AdminChatViewerComponent({
     PrismService.getSkills(project)
       .then((loadedSkills: Skill[]) => setSkills(loadedSkills))
       .catch(() => {});
-    PrismService.getBuiltInToolSchemas(targetAgentId)
-      .then((tools: ToolSchema[]) => setBuiltInTools(tools))
-      .catch(() => {});
+
+    // Use session-snapshot tool names to reconstruct point-in-time schemas.
+    // Fall back to current persona tools for legacy sessions without toolConfig.
+    const sessionAvailableToolNames = sessionToolConfig?.availableTools;
+    if (sessionAvailableToolNames && sessionAvailableToolNames.length > 0) {
+      const availableToolNameSet = new Set(sessionAvailableToolNames);
+      PrismService.getBuiltInToolSchemas()
+        .then((allSchemas: ToolSchema[]) => {
+          const sessionFilteredTools = allSchemas.filter(
+            (tool) => availableToolNameSet.has(tool.name),
+          );
+          setBuiltInTools(sessionFilteredTools);
+        })
+        .catch(() => {});
+    } else {
+      PrismService.getBuiltInToolSchemas(targetAgentId)
+        .then((tools: ToolSchema[]) => setBuiltInTools(tools))
+        .catch(() => {});
+    }
+
     PrismService.getAgentMemories(project, 1, undefined)
       .then((result: { total?: number }) => setTotalMemoriesCount(result.total || 0))
       .catch(() => {});
     PrismService.getRules(targetAgentId)
       .then((rulesList: Rule[]) => setRules(rulesList))
       .catch(() => {});
-  }, [targetAgentId, targetProject]);
+  }, [targetAgentId, targetProject, sessionToolConfig]);
 
   // Align active tab states on mode transitions (agent vs direct chat)
   useEffect(() => {
@@ -1146,7 +1173,10 @@ export default function AdminChatViewerComponent({
                     />
                     <ToolSelectionComponent
                       availableTools={builtInTools}
-                      enabledTools={builtInTools.map((tool) => tool.name)}
+                      enabledTools={
+                        sessionToolConfig?.enabledTools
+                          ?? builtInTools.map((tool) => tool.name)
+                      }
                       readOnly
                     />
                   </>
