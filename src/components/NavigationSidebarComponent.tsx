@@ -11,6 +11,7 @@ import React, {
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import PrismService from "../services/PrismService";
+import WorkspaceService from "../services/WorkspaceService";
 import type { PrismSettings } from "../types/types";
 import {
   ShieldCheck,
@@ -146,48 +147,67 @@ export default function NavigationSidebarComponent({
   useEffect(() => {
     if (mode !== "user") return;
 
-    const updateSettingsWarningCount = (settingsData: PrismSettings | null) => {
-      if (!settingsData) {
-        setSettingsWarningCount(0);
-        return;
-      }
-      const memoryConfig = settingsData.memory || {};
-      const creativeConfig = settingsData.creative || {};
+    const checkWarnings = async (settingsData?: PrismSettings | null) => {
+      try {
+        const [loadedSettings, workspaceList] = await Promise.all([
+          settingsData !== undefined && settingsData !== null
+            ? Promise.resolve(settingsData)
+            : PrismService.getSettings(),
+          WorkspaceService.list().catch(() => []),
+        ]);
 
-      let warningCount = 0;
-      if (!memoryConfig.extractionModel) {
-        warningCount++;
-      }
-      if (!memoryConfig.consolidationModel) {
-        warningCount++;
-      }
-      if (!memoryConfig.embeddingModel) {
-        warningCount++;
-      }
-      if (!creativeConfig.imageModel) {
-        warningCount++;
-      }
-      if (!creativeConfig.visionModel) {
-        warningCount++;
-      }
-      if (!creativeConfig.textToSpeechModel) {
-        warningCount++;
-      }
-      if (!creativeConfig.speechToTextModel) {
-        warningCount++;
-      }
+        if (!loadedSettings) {
+          setSettingsWarningCount(0);
+          return;
+        }
 
-      setSettingsWarningCount(warningCount);
+        const memoryConfig = loadedSettings.memory || {};
+        const creativeConfig = loadedSettings.creative || {};
+
+        let warningCount = 0;
+        if (!memoryConfig.extractionModel) {
+          warningCount++;
+        }
+        if (!memoryConfig.consolidationModel) {
+          warningCount++;
+        }
+        if (!memoryConfig.embeddingModel) {
+          warningCount++;
+        }
+        if (!creativeConfig.imageModel) {
+          warningCount++;
+        }
+        if (!creativeConfig.visionModel) {
+          warningCount++;
+        }
+        if (!creativeConfig.textToSpeechModel) {
+          warningCount++;
+        }
+        if (!creativeConfig.speechToTextModel) {
+          warningCount++;
+        }
+
+        const hasConnectedWorkspace =
+          workspaceList &&
+          workspaceList.length > 0 &&
+          workspaceList.some((workspace) => workspace.isAgentServed);
+
+        if (!hasConnectedWorkspace) {
+          warningCount++;
+        }
+
+        setSettingsWarningCount(warningCount);
+      } catch (error) {
+        // ignore
+      }
     };
 
-    PrismService.getSettings()
-      .then(updateSettingsWarningCount)
-      .catch(() => {});
+    checkWarnings();
 
     const handleSettingsUpdated = (event: Event) => {
       const customEvent = event as CustomEvent<PrismSettings>;
       if (customEvent.detail) {
-        updateSettingsWarningCount(customEvent.detail);
+        checkWarnings(customEvent.detail);
       }
     };
 
