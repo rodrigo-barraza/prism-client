@@ -380,7 +380,10 @@ export default function ParametersPanelComponent({
     setIsLoadingConfig(true);
     try {
       const response = await PrismService.getLmStudioModels();
-      const rawModels = (response as unknown as { data?: Array<Record<string, unknown>> }).data || [];
+      const rawModels =
+        (response as unknown as { data?: Array<Record<string, unknown>> }).data ||
+        (response as unknown as { models?: Array<Record<string, unknown>> }).models ||
+        [];
       const matchedModel = rawModels.find(
         (modelItem: Record<string, unknown>) => modelItem.key === settings.model || modelItem.id === settings.model,
       );

@@ -100,9 +100,10 @@ export default function ModelsPageComponent({
 
   // Helper: merge config + LM data + stats into the allModels array
   const buildMergedModels = useCallback(
-    (config: PrismConfig | null, lmData: { models: any[] }, modelStats: any[]) => {
+    (config: PrismConfig | null, lmData: { models?: any[]; data?: any[] }, modelStats: any[]) => {
       const flat = flattenConfigModels(config);
-      const lmApiModels = (lmData?.models || []).filter(
+      const rawModelsList = lmData?.models || lmData?.data || [];
+      const lmApiModels = rawModelsList.filter(
         (modelEntry: LmStudioApiModel) => modelEntry.type === "llm",
       );
       const lmApiMap = new Map(lmApiModels.map((modelEntry: LmStudioApiModel) => [modelEntry.key, modelEntry]));
