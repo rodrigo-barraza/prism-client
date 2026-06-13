@@ -224,7 +224,7 @@ function ThinkingBlock({
     }
   };
 
-  if (!thinking && !children) return null;
+  if (!thinking?.trim() && !children) return null;
 
   return (
     <div
