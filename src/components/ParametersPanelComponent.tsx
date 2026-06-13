@@ -18,6 +18,19 @@ interface LoadedModelConfig {
   kvCacheOffloaded: boolean | null;
   gpuLayers: number | null;
   instanceId: string | null;
+  sizeVram?: number | null;
+  expiresAt?: string | null;
+}
+
+/**
+ * Format bytes to human readable format.
+ */
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const kilobyte = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const index = Math.floor(Math.log(bytes) / Math.log(kilobyte));
+  return `${parseFloat((bytes / Math.pow(kilobyte, index)).toFixed(2))} ${sizes[index]}`;
 }
 
 export interface ParametersPanelProps {
@@ -367,25 +380,31 @@ export default function ParametersPanelComponent({
   };
 
   const isLmStudioProvider = currentProvider.startsWith("lm-studio");
+  const isOllamaProvider = currentProvider.startsWith("ollama");
 
-  // ── Loaded model runtime config (LM Studio) ──────────────
+  // ── Loaded model runtime config (LM Studio / Ollama) ──────────────
   const [loadedConfig, setLoadedConfig] = useState<LoadedModelConfig | null>(null);
   const [isLoadingConfig, setIsLoadingConfig] = useState(false);
 
   const fetchLoadedConfig = useCallback(async () => {
-    if (!isLmStudioProvider || !settings.model) {
+    if ((!isLmStudioProvider && !isOllamaProvider) || !settings.model) {
       setLoadedConfig(null);
       return;
     }
     setIsLoadingConfig(true);
     try {
-      const response = await PrismService.getLmStudioModels(currentProvider);
+      const response = isLmStudioProvider
+        ? await PrismService.getLmStudioModels(currentProvider)
+        : await PrismService.getOllamaModels(currentProvider);
       const rawModels =
         (response as unknown as { data?: Array<Record<string, unknown>> }).data ||
         (response as unknown as { models?: Array<Record<string, unknown>> }).models ||
         [];
       const matchedModel = rawModels.find(
-        (modelItem: Record<string, unknown>) => modelItem.key === settings.model || modelItem.id === settings.model,
+        (modelItem: Record<string, unknown>) =>
+          modelItem.key === settings.model ||
+          modelItem.id === settings.model ||
+          modelItem.name === settings.model,
       );
       const loadedInstances = (matchedModel?.loaded_instances as Array<Record<string, unknown>>) || [];
       if (loadedInstances.length > 0) {
@@ -397,6 +416,8 @@ export default function ParametersPanelComponent({
           kvCacheOffloaded: (instanceConfig?.offload_kv_cache_to_gpu as boolean) ?? null,
           gpuLayers: (instanceConfig?.gpu_layers as number) ?? null,
           instanceId: (loadedInstances[0].id as string) ?? null,
+          sizeVram: (instanceConfig?.size_vram as number) ?? null,
+          expiresAt: (instanceConfig?.expires_at as string) ?? null,
         });
       } else {
         setLoadedConfig(null);
@@ -406,18 +427,15 @@ export default function ParametersPanelComponent({
     } finally {
       setIsLoadingConfig(false);
     }
-  }, [isLmStudioProvider, settings.model, currentProvider]);
+  }, [isLmStudioProvider, isOllamaProvider, settings.model, currentProvider]);
 
   useEffect(() => {
     fetchLoadedConfig();
   }, [fetchLoadedConfig]);
 
-  if (isSpecialModel || settings.provider === "ollama") {
+  if (isSpecialModel) {
     return (
       <div className={styles['container']}>
-        <div className={styles['section-title']}>
-          <Settings2 size={16} /> Parameters
-        </div>
         <p style={{ fontSize: 12, color: "var(--text-tertiary)" }}>
           No configurable parameters for this model type.
         </p>
@@ -427,27 +445,9 @@ export default function ParametersPanelComponent({
 
   return (
     <div className={`parameters-panel-component ${styles['container']}`}>
-      <div className={styles['section-title']}>
-        <Settings2 size={16} /> Parameters
-        {isAgentMode && (
-          <span
-            style={{
-              fontSize: 10,
-              color: "var(--accent-primary)",
-              marginInlineStart: 8,
-              opacity: 0.8,
-              fontWeight: 500,
-            }}
-          >
-            Agent Defaults
-          </span>
-        )}
-      </div>
-
-      {/* Loaded Model Configuration (LM Studio) */}
-      {isLmStudioProvider && (
+      {/* Loaded Model Configuration (LM Studio / Ollama) */}
+      {(isLmStudioProvider || isOllamaProvider) && (
         <>
-          <hr style={{ border: 'none', borderTop: '1px solid var(--calculated-border-subtle)', margin: '8px 0' }} />
           <div
             style={{
               display: "flex",
@@ -489,7 +489,7 @@ export default function ParametersPanelComponent({
                   </span>
                 </div>
               )}
-              {loadedConfig.evalBatchSize !== null && (
+              {isLmStudioProvider && loadedConfig.evalBatchSize !== null && (
                 <div className={styles['modality-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>Eval Batch Size</span>
                   <span
@@ -500,7 +500,7 @@ export default function ParametersPanelComponent({
                   </span>
                 </div>
               )}
-              {loadedConfig.flashAttention !== null && (
+              {isLmStudioProvider && loadedConfig.flashAttention !== null && (
                 <div className={styles['modality-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>Flash Attention</span>
                   <span
@@ -511,7 +511,7 @@ export default function ParametersPanelComponent({
                   </span>
                 </div>
               )}
-              {loadedConfig.kvCacheOffloaded !== null && (
+              {isLmStudioProvider && loadedConfig.kvCacheOffloaded !== null && (
                 <div className={styles['modality-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>GPU KV Cache Offload</span>
                   <span
@@ -522,7 +522,7 @@ export default function ParametersPanelComponent({
                   </span>
                 </div>
               )}
-              {loadedConfig.gpuLayers !== null && (
+              {isLmStudioProvider && loadedConfig.gpuLayers !== null && (
                 <div className={styles['modality-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>GPU Layers</span>
                   <span
@@ -530,6 +530,28 @@ export default function ParametersPanelComponent({
                     style={{ fontSize: 11 }}
                   >
                     {loadedConfig.gpuLayers === -1 ? "All" : loadedConfig.gpuLayers}
+                  </span>
+                </div>
+              )}
+              {isOllamaProvider && loadedConfig.sizeVram !== null && loadedConfig.sizeVram !== undefined && (
+                <div className={styles['modality-row']}>
+                  <span className={styles['modality-name']} style={{ fontSize: 11 }}>VRAM Usage</span>
+                  <span
+                    className={`${styles['modality-status']} ${styles['modality-active']}`}
+                    style={{ fontSize: 11 }}
+                  >
+                    {formatBytes(loadedConfig.sizeVram)}
+                  </span>
+                </div>
+              )}
+              {isOllamaProvider && loadedConfig.expiresAt && (
+                <div className={styles['modality-row']}>
+                  <span className={styles['modality-name']} style={{ fontSize: 11 }}>Expires At</span>
+                  <span
+                    className={`${styles['modality-status']} ${styles['modality-active']}`}
+                    style={{ fontSize: 11 }}
+                  >
+                    {new Date(loadedConfig.expiresAt).toLocaleTimeString()}
                   </span>
                 </div>
               )}

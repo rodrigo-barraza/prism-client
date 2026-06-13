@@ -1610,6 +1610,17 @@ export default class PrismService {
   }
 
   /**
+   * List all Ollama models (loaded + downloaded).
+   */
+  static async getOllamaModels(instanceId?: string): Promise<{ models: LmStudioModel[] }> {
+    const queryString = instanceId ? `?instance=${encodeURIComponent(instanceId)}` : "";
+    return PrismService._request<{ models: LmStudioModel[] }>(
+      `/ollama/models${queryString}`,
+      { method: "GET" },
+    );
+  }
+
+  /**
    * Load a model into LM Studio with optional configuration.
 
 

@@ -376,6 +376,11 @@ export default class IrisService {
     return fetchJSON<{ models: LmStudioModel[] }>(`/lm-studio/models${queryString}`);
   }
 
+  static async getOllamaModels(instanceId?: string): Promise<{ models: LmStudioModel[] }> {
+    const queryString = instanceId ? `?instance=${encodeURIComponent(instanceId)}` : "";
+    return fetchJSON<{ models: LmStudioModel[] }>(`/ollama/models${queryString}`);
+  }
+
   static async loadLmStudioModel(
     model: string,
     options: {

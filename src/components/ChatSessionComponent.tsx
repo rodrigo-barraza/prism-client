@@ -1758,6 +1758,16 @@ export default function ChatSessionComponent({
     [builtInTools],
   );
 
+  const hasOrchestratorTools = useMemo(
+    () => builtInTools.some(
+      (tool) =>
+        tool.domain === DOMAINS.CORE_ORCHESTRATOR.displayName &&
+        !disabledTools.has(tool.name) &&
+        !lockedOffTools.has(tool.name),
+    ),
+    [builtInTools, disabledTools, lockedOffTools],
+  );
+
   const isWorkspaceTabVisible = useMemo(() => {
     return (
       !isNoAgent &&
@@ -1775,6 +1785,12 @@ export default function ChatSessionComponent({
       setLeftTab("settings");
     }
   }, [leftTab, isWorkspaceTabVisible]);
+
+  useEffect(() => {
+    if (leftTab === "workers" && !hasOrchestratorTools) {
+      setLeftTab("settings");
+    }
+  }, [leftTab, hasOrchestratorTools]);
 
   // -- Memoize filtered messages for MessageList to prevent ref churn --
   const filteredMessages = useMemo(
@@ -4812,7 +4828,7 @@ export default function ChatSessionComponent({
             icon: <span className={tabBarStyles['tab-emoji-icon']}>📄</span>,
             tooltip: "Info",
           },
-          ...(!isNoAgent
+          ...(hasOrchestratorTools
             ? [
                 {
                   key: "workers",
