@@ -2324,7 +2324,7 @@ export default function ChatSessionComponent({
                 thinkingLevel: settings.thinkingLevel,
               }),
               // Local models need enough context for MCP tool schemas + session
-              minContextLength: 65_000,
+              minContextLength: 120_000,
               project: agentProject,
               conversationId,
               conversationMeta: { title: resolvedTitle },

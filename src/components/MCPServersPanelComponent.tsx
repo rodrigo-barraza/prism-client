@@ -258,7 +258,7 @@ export default function MCPServersPanel({
             <label>Transport</label>
             <div className={styles['transport-tabs']}>
               <button
-                className={`${styles['transport-tab']} ${isStdio ? styles['transport-tab-active'] : ""}`}
+                className={`${styles['transport-tab']} ${editingServer.transport === "stdio" ? styles['transport-tab-active'] : ""}`}
                 onClick={() =>
                   setEditingServer((s: MCPServer | null) =>
                     s ? { ...s, transport: "stdio" } : null,
@@ -268,7 +268,17 @@ export default function MCPServersPanel({
                 stdio
               </button>
               <button
-                className={`${styles['transport-tab']} ${!isStdio ? styles['transport-tab-active'] : ""}`}
+                className={`${styles['transport-tab']} ${editingServer.transport === "sse" ? styles['transport-tab-active'] : ""}`}
+                onClick={() =>
+                  setEditingServer((s: MCPServer | null) =>
+                    s ? { ...s, transport: "sse" } : null,
+                  )
+                }
+              >
+                SSE
+              </button>
+              <button
+                className={`${styles['transport-tab']} ${editingServer.transport === "streamable-http" ? styles['transport-tab-active'] : ""}`}
                 onClick={() =>
                   setEditingServer((s: MCPServer | null) =>
                     s
