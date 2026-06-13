@@ -1601,9 +1601,10 @@ export default class PrismService {
   /**
    * List all LM Studio models (loaded + downloaded).
    */
-  static async getLmStudioModels(): Promise<{ models: LmStudioModel[] }> {
+  static async getLmStudioModels(instanceId?: string): Promise<{ models: LmStudioModel[] }> {
+    const queryString = instanceId ? `?instance=${encodeURIComponent(instanceId)}` : "";
     return PrismService._request<{ models: LmStudioModel[] }>(
-      "/lm-studio/models",
+      `/lm-studio/models${queryString}`,
       { method: "GET" },
     );
   }

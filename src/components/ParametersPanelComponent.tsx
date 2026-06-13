@@ -379,7 +379,7 @@ export default function ParametersPanelComponent({
     }
     setIsLoadingConfig(true);
     try {
-      const response = await PrismService.getLmStudioModels();
+      const response = await PrismService.getLmStudioModels(currentProvider);
       const rawModels =
         (response as unknown as { data?: Array<Record<string, unknown>> }).data ||
         (response as unknown as { models?: Array<Record<string, unknown>> }).models ||
@@ -406,7 +406,7 @@ export default function ParametersPanelComponent({
     } finally {
       setIsLoadingConfig(false);
     }
-  }, [isLmStudioProvider, settings.model]);
+  }, [isLmStudioProvider, settings.model, currentProvider]);
 
   useEffect(() => {
     fetchLoadedConfig();

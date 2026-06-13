@@ -371,8 +371,9 @@ export default class IrisService {
   }
 
   // -- LM Studio Model Management --------------------------
-  static async getLmStudioModels(): Promise<{ models: LmStudioModel[] }> {
-    return fetchJSON<{ models: LmStudioModel[] }>("/lm-studio/models");
+  static async getLmStudioModels(instanceId?: string): Promise<{ models: LmStudioModel[] }> {
+    const queryString = instanceId ? `?instance=${encodeURIComponent(instanceId)}` : "";
+    return fetchJSON<{ models: LmStudioModel[] }>(`/lm-studio/models${queryString}`);
   }
 
   static async loadLmStudioModel(
