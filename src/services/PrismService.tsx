@@ -850,27 +850,54 @@ export default class PrismService {
   // Coordinator Workers
   // ---------------------------------------------------------------------------
 
-  /**
-   * List coordinator workers, optionally filtered by session.
-
-   */
   static async getCoordinatorWorkers(
     conversationId?: string,
   ): Promise<{ workers: CoordinatorWorker[] }> {
     const queryString = conversationId
       ? `?conversationId=${encodeURIComponent(conversationId)}`
       : "";
-    return PrismService._request<{ workers: CoordinatorWorker[] }>(
-      `/coordinator/workers${queryString}`,
+    interface SubAgentsResponse {
+      subAgents: Array<{
+        agentId: string;
+        description: string;
+        status: string;
+        providerName?: string;
+        resolvedModel?: string;
+        durationMs: number;
+        toolUses: number;
+        hasChanges: boolean;
+        totalCost?: number | null;
+        branchName?: string | null;
+        files?: string[];
+        toolCallCount?: number;
+      }>;
+    }
+    const response = await PrismService._request<SubAgentsResponse>(
+      `/orchestrator/sub-agents${queryString}`,
       {
         method: "GET",
       },
     );
+    const subAgentsList = response.subAgents || [];
+    const mappedWorkersList = subAgentsList.map((subAgent) => ({
+      id: subAgent.agentId,
+      agentId: subAgent.agentId,
+      agentSessionId: conversationId || "",
+      status: subAgent.status,
+      description: subAgent.description,
+      resolvedModel: subAgent.resolvedModel,
+      provider: subAgent.providerName,
+      durationMs: subAgent.durationMs,
+      totalCost: subAgent.totalCost ?? undefined,
+      toolCallCount: subAgent.toolCallCount ?? subAgent.toolUses,
+      branchName: subAgent.branchName ?? undefined,
+      files: subAgent.files,
+    }));
+    return { workers: mappedWorkersList };
   }
 
   /**
    * Abort all running workers for a given agent session.
-
    */
   static async stopCoordinatorWorkers(
     conversationId: string,
@@ -878,7 +905,8 @@ export default class PrismService {
     return PrismService._request<{
       stopped: string[];
       alreadyStopped: string[];
-    }>("/coordinator/workers/stop", {
+    }>("/orchestrator/sub-agents/stop", {
+      method: "POST",
       body: { conversationId },
     });
   }

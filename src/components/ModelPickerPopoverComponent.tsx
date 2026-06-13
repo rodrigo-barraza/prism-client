@@ -490,6 +490,13 @@ export default function ModelPickerPopoverComponent({
     (m) => m.provider === settings?.provider && m.name === settings?.model,
   );
 
+  // Detect initial config loading — config is null until the API responds
+  const isConfigLoading = !config && !settings?.model && loadingProgress == null;
+
+  // Derive effective loading progress: explicit prop takes priority,
+  // otherwise pulse an indeterminate bar while config is being fetched
+  const effectiveLoadingProgress = loadingProgress ?? (isConfigLoading ? 0 : null);
+
   // Build display label
   const displayLabel = (() => {
     // Custom trigger label override
@@ -558,7 +565,7 @@ export default function ModelPickerPopoverComponent({
   const triggerIconElement = (() => {
     if (triggerIconProp) return triggerIconProp;
     if (multiSelect) return null;
-    if (loadingProgress != null) return null;
+    if (effectiveLoadingProgress != null) return null;
     return settings?.provider ? (
       <ProviderLogo provider={settings.provider} size={16} />
     ) : null;
@@ -584,7 +591,7 @@ export default function ModelPickerPopoverComponent({
 
   // Build rich tooltip content showing modality + tool capabilities
   const tooltipContent =
-    !disabled && triggerCapabilities && loadingProgress == null ? (
+    !disabled && triggerCapabilities && effectiveLoadingProgress == null ? (
       <div className={styles['tooltip-capabilities']}>
         <ModalityIconComponent modalities={triggerCapabilities} size={10} />
         <ModelToolsRow tools={triggerCapabilities} variant="condensed" />
@@ -606,7 +613,7 @@ export default function ModelPickerPopoverComponent({
         triggerRef={triggerRef}
         triggerClassName={triggerClassName}
         triggerTooltipContent={tooltipContent}
-        loadingProgress={loadingProgress}
+        loadingProgress={effectiveLoadingProgress}
         onMouseEnter={
           disabled
             ? undefined

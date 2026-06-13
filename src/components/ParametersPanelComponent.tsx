@@ -1,13 +1,24 @@
 "use client";
 
-import { Settings2, RotateCcw } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Settings2, RotateCcw, HardDrive } from "lucide-react";
 import {
   InputComponent,
   SelectComponent,
   SliderComponent,
 } from "@rodrigo-barraza/components-library";
+import PrismService from "../services/PrismService";
 import type { PrismSettings, PrismConfig, ModelOption, ParameterDescriptor } from "../types/types";
 import styles from "./SettingsPanelComponent.module.css";
+
+interface LoadedModelConfig {
+  contextLength: number | null;
+  evalBatchSize: number | null;
+  flashAttention: boolean | null;
+  kvCacheOffloaded: boolean | null;
+  gpuLayers: number | null;
+  instanceId: string | null;
+}
 
 export interface ParametersPanelProps {
   settings: PrismSettings;
@@ -355,6 +366,49 @@ export default function ParametersPanelComponent({
     }
   };
 
+  const isLmStudioProvider = currentProvider.startsWith("lm-studio");
+
+  // ── Loaded model runtime config (LM Studio) ──────────────
+  const [loadedConfig, setLoadedConfig] = useState<LoadedModelConfig | null>(null);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(false);
+
+  const fetchLoadedConfig = useCallback(async () => {
+    if (!isLmStudioProvider || !settings.model) {
+      setLoadedConfig(null);
+      return;
+    }
+    setIsLoadingConfig(true);
+    try {
+      const response = await PrismService.getLmStudioModels();
+      const rawModels = (response as unknown as { data?: Array<Record<string, unknown>> }).data || [];
+      const matchedModel = rawModels.find(
+        (modelItem: Record<string, unknown>) => modelItem.key === settings.model || modelItem.id === settings.model,
+      );
+      const loadedInstances = (matchedModel?.loaded_instances as Array<Record<string, unknown>>) || [];
+      if (loadedInstances.length > 0) {
+        const instanceConfig = loadedInstances[0].config as Record<string, unknown> | undefined;
+        setLoadedConfig({
+          contextLength: (instanceConfig?.context_length as number) ?? null,
+          evalBatchSize: (instanceConfig?.eval_batch_size as number) ?? null,
+          flashAttention: (instanceConfig?.flash_attention as boolean) ?? null,
+          kvCacheOffloaded: (instanceConfig?.offload_kv_cache_to_gpu as boolean) ?? null,
+          gpuLayers: (instanceConfig?.gpu_layers as number) ?? null,
+          instanceId: (loadedInstances[0].id as string) ?? null,
+        });
+      } else {
+        setLoadedConfig(null);
+      }
+    } catch {
+      setLoadedConfig(null);
+    } finally {
+      setIsLoadingConfig(false);
+    }
+  }, [isLmStudioProvider, settings.model]);
+
+  useEffect(() => {
+    fetchLoadedConfig();
+  }, [fetchLoadedConfig]);
+
   if (isSpecialModel || settings.provider === "ollama") {
     return (
       <div className={styles['container']}>
@@ -386,6 +440,104 @@ export default function ParametersPanelComponent({
           </span>
         )}
       </div>
+
+      {/* Loaded Model Configuration (LM Studio) */}
+      {isLmStudioProvider && (
+        <>
+          <hr style={{ border: 'none', borderTop: '1px solid var(--calculated-border-subtle)', margin: '8px 0' }} />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBlockEnd: 4,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: "var(--text-tertiary)",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <HardDrive size={10} />
+              Loaded Config
+            </span>
+          </div>
+          {isLoadingConfig ? (
+            <p style={{ fontSize: 11, color: "var(--text-tertiary)", margin: 0 }}>
+              Loading…
+            </p>
+          ) : loadedConfig ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {loadedConfig.contextLength !== null && (
+                <div className={styles['modality-row']}>
+                  <span className={styles['modality-name']} style={{ fontSize: 11 }}>Context Length</span>
+                  <span
+                    className={`${styles['modality-status']} ${styles['modality-active']}`}
+                    style={{ fontSize: 11 }}
+                  >
+                    {loadedConfig.contextLength.toLocaleString()}
+                  </span>
+                </div>
+              )}
+              {loadedConfig.evalBatchSize !== null && (
+                <div className={styles['modality-row']}>
+                  <span className={styles['modality-name']} style={{ fontSize: 11 }}>Eval Batch Size</span>
+                  <span
+                    className={`${styles['modality-status']} ${styles['modality-active']}`}
+                    style={{ fontSize: 11 }}
+                  >
+                    {loadedConfig.evalBatchSize.toLocaleString()}
+                  </span>
+                </div>
+              )}
+              {loadedConfig.flashAttention !== null && (
+                <div className={styles['modality-row']}>
+                  <span className={styles['modality-name']} style={{ fontSize: 11 }}>Flash Attention</span>
+                  <span
+                    className={`${styles['modality-status']} ${loadedConfig.flashAttention ? styles['modality-active'] : ''}`}
+                    style={{ fontSize: 11 }}
+                  >
+                    {loadedConfig.flashAttention ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+              )}
+              {loadedConfig.kvCacheOffloaded !== null && (
+                <div className={styles['modality-row']}>
+                  <span className={styles['modality-name']} style={{ fontSize: 11 }}>GPU KV Cache Offload</span>
+                  <span
+                    className={`${styles['modality-status']} ${loadedConfig.kvCacheOffloaded ? styles['modality-active'] : ''}`}
+                    style={{ fontSize: 11 }}
+                  >
+                    {loadedConfig.kvCacheOffloaded ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+              )}
+              {loadedConfig.gpuLayers !== null && (
+                <div className={styles['modality-row']}>
+                  <span className={styles['modality-name']} style={{ fontSize: 11 }}>GPU Layers</span>
+                  <span
+                    className={`${styles['modality-status']} ${styles['modality-active']}`}
+                    style={{ fontSize: 11 }}
+                  >
+                    {loadedConfig.gpuLayers === -1 ? "All" : loadedConfig.gpuLayers}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p style={{ fontSize: 11, color: "var(--text-tertiary)", margin: 0, opacity: 0.7 }}>
+              No model loaded
+            </p>
+          )}
+        </>
+      )}
 
       {GROUP_ORDER.map((group) => {
         const groupDescriptors = groupedDescriptors[group];
