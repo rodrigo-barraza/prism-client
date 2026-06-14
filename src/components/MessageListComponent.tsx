@@ -1213,7 +1213,9 @@ export default function MessageList({
         const roleClass =
           message.role === "user"
             ? styles['user-node']
-            : styles['assistant-node'];
+            : message.role === "system"
+              ? styles['system-node']
+              : styles['assistant-node'];
         const isStreaming =
           (isGenerating &&
             message.role === "assistant" &&
