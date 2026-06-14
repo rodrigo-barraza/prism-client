@@ -22,6 +22,23 @@ interface ToolCallsBlockProps {
   workerToolActivity?: Record<string, WorkerToolActivityItem> | null;
 }
 
+export const VISUAL_TOOL_NAMES = new Set([
+  "create_3d_mesh",
+  "create_3d_voxel",
+  "create_3d_model",
+  "create_3d_scene",
+  "draw_turtle_graphics",
+  "create_vector_animation",
+  "generate_qr_code",
+  "render_latex",
+  "generate_diagram",
+  "manipulate_image",
+  "convert_video_to_gif",
+  "generate_map",
+  "generate_chart",
+  "convert_image_to_ascii",
+]);
+
 export default function ToolCallsBlockComponent({
   toolCalls,
   streamingOutputs,

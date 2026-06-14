@@ -24,7 +24,8 @@ import {
   Bot,
   Terminal,
 } from "lucide-react";
-import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
+import ToolCallsBlockComponent, { VISUAL_TOOL_NAMES } from "./ToolCallsBlockComponent";
+import { ToolResultView } from "./ToolResultRenderersComponent";
 import MarkdownContent from "./MarkdownContentComponent";
 import StreamingCursorComponent from "./StreamingCursorComponent";
 
@@ -2018,6 +2019,27 @@ export default function MessageList({
                           ) : null}
                         </>
                       )}
+
+                      {/* Visual tool results rendered inline below prose */}
+                      {message.role === "assistant" &&
+                        message.toolCalls &&
+                        message.toolCalls.length > 0 &&
+                        (() => {
+                          const visualToolCalls = message.toolCalls.filter(
+                            (toolCall: ToolCallEvent) =>
+                              VISUAL_TOOL_NAMES.has(toolCall.name) &&
+                              toolCall.status === "done" &&
+                              toolCall.result,
+                          );
+                          if (visualToolCalls.length === 0) return null;
+                          return visualToolCalls.map(
+                            (toolCall: ToolCallEvent, toolCallIndex: number) => (
+                              <div key={`visual-${toolCall.id || toolCallIndex}`}>
+                                <ToolResultView toolCall={toolCall} />
+                              </div>
+                            ),
+                          );
+                        })()}
 
                       {/* Images / media */}
                       {message.images && message.images.length > 0 && (
