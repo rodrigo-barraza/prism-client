@@ -1700,6 +1700,7 @@ export default function MessageList({
                               isLastText?: boolean;
                               insideThinking?: boolean;
                               suppressCursor?: boolean;
+                              isAutoCollapsed?: boolean;
                             } = {},
                           ) => {
                             if (seg.type === "thinking") {
@@ -1736,6 +1737,7 @@ export default function MessageList({
                                   toolCalls={segmentTools}
                                   streamingOutputs={streamingOutputs}
                                   workerToolActivity={workerToolActivity}
+                                  isAutoCollapsed={opts.isAutoCollapsed}
                                 />
                               );
                             }
@@ -1860,6 +1862,14 @@ export default function MessageList({
                               (s) => s.type !== "thinking",
                             );
 
+                            // Find last tool segment for auto-collapse logic
+                            const lastToolSegmentIndex = (() => {
+                              for (let k = segs.length - 1; k >= 0; k--) {
+                                if (segs[k].type === "tools") return k;
+                              }
+                              return -1;
+                            })();
+
                             return (
                               <>
                                 {segs.map((seg, segmentIndex) => {
@@ -1887,6 +1897,10 @@ export default function MessageList({
                                     >
                                       {renderSeg(seg, segmentIndex, {
                                         isLastText,
+                                        isAutoCollapsed:
+                                          isStreaming &&
+                                          seg.type === "tools" &&
+                                          segmentIndex !== lastToolSegmentIndex,
                                       })}
                                     </React.Fragment>
                                   );
@@ -1907,9 +1921,20 @@ export default function MessageList({
                             }
                             return -1;
                           })();
+                          // Find last tool segment for auto-collapse logic
+                          const lastToolIndex = (() => {
+                            for (let k = segs.length - 1; k >= 0; k--) {
+                              if (segs[k].type === "tools") return k;
+                            }
+                            return -1;
+                          })();
                           return segs.map((seg, si) =>
                             renderSeg(seg, si, {
                               isLastText: si === lastTextIndex,
+                              isAutoCollapsed:
+                                isStreaming &&
+                                seg.type === "tools" &&
+                                si !== lastToolIndex,
                             }),
                           );
                         })()

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -20,6 +20,7 @@ interface ToolCallsBlockProps {
   toolCalls?: ToolCallEvent[];
   streamingOutputs?: Map<string, string> | null;
   workerToolActivity?: Record<string, WorkerToolActivityItem> | null;
+  isAutoCollapsed?: boolean;
 }
 
 export const VISUAL_TOOL_NAMES = new Set([
@@ -43,12 +44,21 @@ export default function ToolCallsBlockComponent({
   toolCalls,
   streamingOutputs,
   workerToolActivity,
+  isAutoCollapsed,
 }: ToolCallsBlockProps) {
   const hasActiveCalls = toolCalls
     ? toolCalls.some((toolCall) => toolCall.status === "calling" || toolCall.status === "streaming")
     : false;
 
   const [headerCollapsed, setHeaderCollapsed] = useState(!hasActiveCalls);
+  const wasManuallyExpanded = useRef(false);
+
+  useEffect(() => {
+    if (isAutoCollapsed && !wasManuallyExpanded.current) {
+      setHeaderCollapsed(true);
+    }
+  }, [isAutoCollapsed]);
+
   if (!toolCalls || toolCalls.length === 0) return null;
   const doneCount = toolCalls.filter(
     (toolCall: ToolCallEvent) =>
@@ -80,7 +90,13 @@ export default function ToolCallsBlockComponent({
       {/* -- Header toggle -- */}
       <button
         className={styles['tool-calls-toggle']}
-        onClick={() => setHeaderCollapsed((c) => !c)}
+        onClick={() => {
+          setHeaderCollapsed((previous) => {
+            const willCollapse = !previous;
+            wasManuallyExpanded.current = willCollapse ? false : true;
+            return !previous;
+          });
+        }}
       >
         <Zap size={13} />
         <span>{headerText}</span>
@@ -91,8 +107,8 @@ export default function ToolCallsBlockComponent({
         )}
       </button>
 
-      {/* -- Always-visible tool cards -- */}
-      {!headerCollapsed && (
+      {/* -- Collapsible tool cards (CSS grid disclosure for smooth animation) -- */}
+      <div className={`${styles['tool-calls-disclosure']}${headerCollapsed ? ` ${styles['tool-calls-disclosure-collapsed']}` : ''}`}>
         <div className={styles['tool-calls-content']}>
           {toolCalls.map((toolCall, j) => {
             const name =
@@ -230,7 +246,7 @@ export default function ToolCallsBlockComponent({
             );
           })}
         </div>
-      )}
+      </div>
     </div>
   );
 }

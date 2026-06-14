@@ -53,6 +53,11 @@
     }
   }
 
+  & .tool-calls-disclosure {
+    position: relative;
+    z-index: 1;
+  }
+
   & .tool-calls-content {
     position: relative;
     z-index: 1;
@@ -95,6 +100,19 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Disclosure wrapper for smooth collapse/expand ── */
+.tool-calls-disclosure {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.tool-calls-disclosure-collapsed {
+  grid-template-rows: 0fr;
 }
 
 .tool-call-item {
