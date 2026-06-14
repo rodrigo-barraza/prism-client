@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import WorkflowSidebar from "./WorkflowSidebarComponent";
 import WorkflowCanvas from "./WorkflowCanvasComponent";
 import WorkflowInspector, { type NodeResult } from "./WorkflowInspectorComponent";
-import type { WorkflowNode, WorkflowConnection, ModelOption } from "../types/types";
+import type { Workflow, WorkflowNode, WorkflowConnection, ModelOption } from "../types/types";
 import styles from "./WorkflowComponent.module.css";
 
 const noop = () => {};
@@ -26,7 +26,7 @@ interface WorkflowComponentProps {
   onUpdateNodeConfig?: (nodeId: string, key: string, value: unknown) => void;
   onUpdateFileInput?: (nodeId: string, fileData: string | ArrayBuffer | null, mimeType: string | null) => void;
   onDuplicateNode?: (node: WorkflowNode) => void;
-  workflows?: Array<Record<string, unknown>>;
+  workflows?: Workflow[];
   activeWorkflowId?: string;
   onLoadWorkflow?: (id: string) => void;
   onDeleteWorkflow?: (id: string) => void;

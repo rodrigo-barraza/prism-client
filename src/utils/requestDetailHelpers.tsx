@@ -12,7 +12,8 @@ import BadgeComponent from "../components/BadgeComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 import ToolIconComponent from "../components/ToolIconComponent";
 import { prepareDisplayMessages } from "../components/MessageListComponent";
-import type { TransformedRequestItem, Message } from "../types/types";
+import type { TransformedRequestItem, Message, JsonValue } from "../types/types";
+import type { DrawerSection } from "../components/RequestDetailsComponent";
 
 export interface TransformedMediaAsset {
   url: string;
@@ -31,7 +32,7 @@ export function extractMediaAssets(
 ): TransformedMediaAsset[] {
   const seen = new Set<string>();
   const assets: TransformedMediaAsset[] = [];
-  const search = (node: any, origin: string) => {
+  const search = (node: JsonValue | undefined, origin: string) => {
     if (!node) return;
     if (typeof node === "string") {
       if (seen.has(node)) return;
@@ -72,9 +73,9 @@ export function extractMediaAssets(
         }
       }
     } else if (Array.isArray(node)) {
-      node.forEach((childNode: any) => search(childNode, origin));
-    } else if (typeof node === "object") {
-      Object.values(node).forEach((childNode: any) => search(childNode, origin));
+      node.forEach((childNode) => search(childNode, origin));
+    } else if (typeof node === "object" && node !== null) {
+      Object.values(node).forEach((childNode) => search(childNode, origin));
     }
   };
   search(object?.requestPayload, "user");
@@ -85,16 +86,16 @@ export function extractMediaAssets(
 /**
  * Classify a media reference string into a type for MediaCardComponent.
  */
-export function getMediaTypeFromRef(ref: string) {
-  if (!ref) return "image";
-  const isData = ref.startsWith("data:");
+export function getMediaTypeFromRef(mediaReference: string) {
+  if (!mediaReference) return "image";
+  const isData = mediaReference.startsWith("data:");
   if (isData) {
-    if (ref.startsWith("data:audio")) return "audio";
-    if (ref.startsWith("data:video")) return "video";
-    if (ref.startsWith("data:application/pdf")) return "pdf";
+    if (mediaReference.startsWith("data:audio")) return "audio";
+    if (mediaReference.startsWith("data:video")) return "video";
+    if (mediaReference.startsWith("data:application/pdf")) return "pdf";
     return "image";
   }
-  const fileExtension = ref.split("?")[0].split(".").pop()?.toLowerCase();
+  const fileExtension = mediaReference.split("?")[0].split(".").pop()?.toLowerCase();
   if (["mp3", "wav", "ogg", "webm"].includes(fileExtension as string))
     return "audio";
   if (["mp4", "avi", "mov"].includes(fileExtension as string)) return "video";
@@ -123,30 +124,30 @@ export function formatHarnessLabel(harness: string): string {
  * section definitions — this function is the single source of truth.
  */
 export function buildRequestDetailSections(
-  req: TransformedRequestItem | null | undefined,
-) {
-  if (!req) return [];
+  request: TransformedRequestItem | null | undefined,
+): DrawerSection[] {
+  if (!request) return [];
   return [
     {
       title: "General",
       items: [
         {
           label: "Request ID",
-          value: req.requestId || "-",
+          value: request.requestId || "-",
           mono: true,
         },
         {
           label: "Timestamp",
-          value: req.timestamp ? (
-            <BadgeComponent type="dateTime" date={req.timestamp} />
+          value: request.timestamp ? (
+            <BadgeComponent type="dateTime" date={request.timestamp} />
           ) : (
             "-"
           ),
         },
         {
           label: "Project",
-          value: req.project ? (
-            <BadgeComponent variant="info">{req.project}</BadgeComponent>
+          value: request.project ? (
+            <BadgeComponent variant="info">{request.project}</BadgeComponent>
           ) : (
             "-"
           ),
@@ -155,7 +156,7 @@ export function buildRequestDetailSections(
           label: "Endpoint",
           value: (
             <BadgeComponent variant="endpoint">
-              {req.endpoint || "-"}
+              {request.endpoint || "-"}
             </BadgeComponent>
           ),
         },
@@ -163,29 +164,29 @@ export function buildRequestDetailSections(
           label: "Operation",
           value: (
             <BadgeComponent variant="info">
-              {req.operation || "-"}
+              {request.operation || "-"}
             </BadgeComponent>
           ),
         },
-        ...(req.agent
+        ...(request.agent
           ? [
               {
                 label: "Agent",
                 value: (
                   <BadgeComponent variant="accent">
-                    {req.agent as React.ReactNode}
+                    {request.agent as React.ReactNode}
                   </BadgeComponent>
                 ),
               },
             ]
           : []),
-        ...(req.harness
+        ...(request.harness
           ? [
               {
                 label: "Harness",
                 value: (
                   <BadgeComponent variant="accent">
-                    {formatHarnessLabel(req.harness as string)}
+                    {formatHarnessLabel(request.harness as string)}
                   </BadgeComponent>
                 ),
               },
@@ -193,19 +194,19 @@ export function buildRequestDetailSections(
           : []),
         {
           label: "Provider",
-          value: req.provider ? (
-            <BadgeComponent type="providers" providers={[req.provider]} />
+          value: request.provider ? (
+            <BadgeComponent type="providers" providers={[request.provider]} />
           ) : (
             "-"
           ),
         },
         {
           label: "Model",
-          value: req.model ? (
+          value: request.model ? (
             <BadgeComponent
               type="model"
-              models={[req.model]}
-              provider={req.provider}
+              models={[request.model]}
+              provider={request.provider}
             />
           ) : (
             "-"
@@ -213,8 +214,8 @@ export function buildRequestDetailSections(
         },
         {
           label: "Modalities",
-          value: req.modalities ? (
-            <ModalityIconComponent modalities={req.modalities} size={14} />
+          value: request.modalities ? (
+            <ModalityIconComponent modalities={request.modalities} size={14} />
           ) : (
             "-"
           ),
@@ -222,49 +223,49 @@ export function buildRequestDetailSections(
         {
           label: "Status",
           value: (
-            <BadgeComponent variant={req.success ? "success" : "error"}>
-              {req.success ? "Success" : "Error"}
+            <BadgeComponent variant={request.success ? "success" : "error"}>
+              {request.success ? "Success" : "Error"}
             </BadgeComponent>
           ),
         },
         {
           label: "Tools",
-          value: req.toolDisplayNames?.length ? (
+          value: request.toolDisplayNames?.length ? (
             <ToolIconComponent
-              toolDisplayNames={req.toolDisplayNames}
-              toolApiNames={req.toolApiNames}
+              toolDisplayNames={request.toolDisplayNames}
+              toolApiNames={request.toolApiNames}
               size={14}
             />
           ) : (
             <BadgeComponent variant="info">No</BadgeComponent>
           ),
         },
-        ...(req.toolApiNames?.length
+        ...(request.toolApiNames?.length
           ? [
               {
                 label: "Tool Calls",
-                value: req.toolApiNames.join(", "),
+                value: request.toolApiNames.join(", "),
                 mono: true,
               },
             ]
           : []),
-        ...(req.errorMessage
+        ...(request.errorMessage
           ? [
               {
                 label: "Error",
                 value: (
                   <span style={{ color: "var(--color-danger)" }}>
-                    {req.errorMessage}
+                    {request.errorMessage}
                   </span>
                 ),
               },
             ]
           : []),
-        ...(req.agentSessionId
-          ? [{ label: "Agent Session", value: req.agentSessionId, mono: true }]
+        ...(request.agentSessionId
+          ? [{ label: "Agent Session", value: request.agentSessionId, mono: true }]
           : []),
-        ...(req.conversationId
-          ? [{ label: "Conversation", value: req.conversationId, mono: true }]
+        ...(request.conversationId
+          ? [{ label: "Conversation", value: request.conversationId, mono: true }]
           : []),
       ],
     },
@@ -274,65 +275,65 @@ export function buildRequestDetailSections(
         {
           label: "Input Tokens",
           value:
-            (req.inputTokens ?? 0) > 0 ? (
+            (request.inputTokens ?? 0) > 0 ? (
               <BadgeComponent
                 type="tokens"
-                value={req.inputTokens ?? 0}
+                value={request.inputTokens ?? 0}
                 label="in"
               />
             ) : (
-              formatNumber(req.inputTokens ?? 0)
+              formatNumber(request.inputTokens ?? 0)
             ),
         },
         {
           label: "Output Tokens",
           value:
-            (req.outputTokens ?? 0) > 0 ? (
+            (request.outputTokens ?? 0) > 0 ? (
               <BadgeComponent
                 type="tokens"
-                value={req.outputTokens ?? 0}
+                value={request.outputTokens ?? 0}
                 label="out"
               />
             ) : (
-              formatNumber(req.outputTokens ?? 0)
+              formatNumber(request.outputTokens ?? 0)
             ),
         },
-        ...((req.cacheReadInputTokens ?? 0) > 0
+        ...((request.cacheReadInputTokens ?? 0) > 0
           ? [
               {
                 label: "Cache Read Tokens",
                 value: (
                   <BadgeComponent
                     type="tokens"
-                    value={req.cacheReadInputTokens ?? 0}
+                    value={request.cacheReadInputTokens ?? 0}
                     label="cached read"
                   />
                 ),
               },
             ]
           : []),
-        ...((req.cacheCreationInputTokens ?? 0) > 0
+        ...((request.cacheCreationInputTokens ?? 0) > 0
           ? [
               {
                 label: "Cache Write Tokens",
                 value: (
                   <BadgeComponent
                     type="tokens"
-                    value={req.cacheCreationInputTokens ?? 0}
+                    value={request.cacheCreationInputTokens ?? 0}
                     label="cached write"
                   />
                 ),
               },
             ]
           : []),
-        ...((req.reasoningOutputTokens ?? 0) > 0
+        ...((request.reasoningOutputTokens ?? 0) > 0
           ? [
               {
                 label: "Reasoning Tokens",
                 value: (
                   <BadgeComponent
                     type="tokens"
-                    value={req.reasoningOutputTokens ?? 0}
+                    value={request.reasoningOutputTokens ?? 0}
                     label="reasoning"
                   />
                 ),
@@ -341,30 +342,30 @@ export function buildRequestDetailSections(
           : []),
         {
           label: "Estimated Cost",
-          value: <BadgeComponent type="cost" cost={req.estimatedCost ?? 0} />,
+          value: <BadgeComponent type="cost" cost={request.estimatedCost ?? 0} />,
         },
         {
           label: "Tokens/sec",
           value:
-            (req.tokensPerSec ?? 0) > 0 ? (
+            (request.tokensPerSec ?? 0) > 0 ? (
               <BadgeComponent variant="accent">
-                {formatTokensPerSec(req.tokensPerSec ?? 0)}
+                {formatTokensPerSec(request.tokensPerSec ?? 0)}
               </BadgeComponent>
             ) : (
-              formatTokensPerSec(req.tokensPerSec ?? 0)
+              formatTokensPerSec(request.tokensPerSec ?? 0)
             ),
         },
         {
           label: "Input Chars",
-          value: formatNumber((req.inputCharacters as number) ?? 0),
+          value: formatNumber((request.inputCharacters as number) ?? 0),
         },
         {
           label: "Output Chars",
-          value: formatNumber((req.outputCharacters as number) ?? 0),
+          value: formatNumber((request.outputCharacters as number) ?? 0),
         },
         {
           label: "Messages",
-          value: req.messageCount || 0,
+          value: request.messageCount || 0,
         },
       ],
     },
@@ -374,34 +375,34 @@ export function buildRequestDetailSections(
         {
           label: "Time to Generation",
           value:
-            (req.timeToGeneration ?? 0) > 0 ? (
+            (request.timeToGeneration ?? 0) > 0 ? (
               <BadgeComponent
                 type="stopwatch"
-                seconds={req.timeToGeneration ?? 0}
+                seconds={request.timeToGeneration ?? 0}
               />
             ) : (
-              formatLatency(req.timeToGeneration ?? 0)
+              formatLatency(request.timeToGeneration ?? 0)
             ),
         },
         {
           label: "Generation Time",
           value:
-            (req.generationTime ?? 0) > 0 ? (
+            (request.generationTime ?? 0) > 0 ? (
               <BadgeComponent
                 type="stopwatch"
-                seconds={req.generationTime ?? 0}
+                seconds={request.generationTime ?? 0}
               />
             ) : (
-              formatLatency(req.generationTime ?? 0)
+              formatLatency(request.generationTime ?? 0)
             ),
         },
         {
           label: "Total Time",
           value:
-            (req.totalTime ?? 0) > 0 ? (
-              <BadgeComponent type="stopwatch" seconds={req.totalTime ?? 0} />
+            (request.totalTime ?? 0) > 0 ? (
+              <BadgeComponent type="stopwatch" seconds={request.totalTime ?? 0} />
             ) : (
-              formatLatency(req.totalTime ?? 0)
+              formatLatency(request.totalTime ?? 0)
             ),
         },
       ],
@@ -411,21 +412,21 @@ export function buildRequestDetailSections(
       items: [
         {
           label: "Temperature",
-          value: req.temperature ?? "-",
+          value: request.temperature ?? "-",
         },
         {
           label: "Max Tokens",
-          value: req.maxTokens ?? "-",
+          value: request.maxTokens ?? "-",
         },
-        { label: "Top P", value: req.topP ?? "-" },
-        { label: "Top K", value: req.topK ?? "-" },
+        { label: "Top P", value: request.topP ?? "-" },
+        { label: "Top K", value: request.topK ?? "-" },
         {
           label: "Frequency Penalty",
-          value: req.frequencyPenalty ?? "-",
+          value: request.frequencyPenalty ?? "-",
         },
         {
           label: "Presence Penalty",
-          value: req.presencePenalty ?? "-",
+          value: request.presencePenalty ?? "-",
         },
       ],
     },
@@ -445,29 +446,29 @@ export function reconstructChatMessages(
   selectedRequest: TransformedRequestItem | null | undefined,
 ) {
   if (!selectedRequest) return null;
-  const reqPayload = selectedRequest.requestPayload as
+  const requestPayload = selectedRequest.requestPayload as
     | { messages?: Message[] }
     | undefined;
-  const resPayload = selectedRequest.responsePayload as
+  const responsePayload = selectedRequest.responsePayload as
     | {
         text?: string;
         content?: string;
         candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-        choices?: Array<{ message?: { content?: string; tool_calls?: any[] } }>;
-        toolCalls?: any[];
+        choices?: Array<{ message?: { content?: string; tool_calls?: JsonValue[] } }>;
+        toolCalls?: JsonValue[];
         images?: string[];
         thinking?: string;
       }
     | string
     | undefined;
 
-  if (!reqPayload?.messages?.length) return null;
+  if (!requestPayload?.messages?.length) return null;
 
   // Start with the prompt messages from the request
-  const chatMessages = [...reqPayload.messages];
+  const chatMessages = [...requestPayload.messages];
 
   // Append the assistant response
-  if (resPayload) {
+  if (responsePayload) {
     const assistantMessage: Message = {
       role: "assistant",
       content: "",
@@ -476,41 +477,31 @@ export function reconstructChatMessages(
     };
 
     // Handle different response formats
-    if (typeof resPayload === "string") {
-      assistantMessage.content = resPayload;
-    } else if (resPayload.text) {
+    if (typeof responsePayload === "string") {
+      assistantMessage.content = responsePayload;
+    } else if (responsePayload.text) {
       // Prism standardized format
-      assistantMessage.content = resPayload.text;
-    } else if (resPayload.content) {
-      assistantMessage.content = resPayload.content;
-    } else if (Array.isArray(resPayload.candidates?.[0]?.content?.parts)) {
+      assistantMessage.content = responsePayload.text;
+    } else if (responsePayload.content) {
+      assistantMessage.content = responsePayload.content;
+    } else if (Array.isArray(responsePayload.candidates?.[0]?.content?.parts)) {
       // Google format
-      assistantMessage.content = resPayload.candidates[0].content.parts
+      assistantMessage.content = responsePayload.candidates[0].content.parts
         .map((part: { text?: string }) => part.text || "")
         .join("");
-    } else if (resPayload.choices?.[0]?.message?.content) {
+    } else if (responsePayload.choices?.[0]?.message?.content) {
       // OpenAI format
-      assistantMessage.content = resPayload.choices[0].message.content as string;
+      assistantMessage.content = responsePayload.choices[0].message.content as string;
     }
 
     // Extract tool calls if present
     const toolCalls =
-      typeof resPayload === "object" && resPayload
-        ? resPayload.choices?.[0]?.message?.tool_calls || resPayload.toolCalls
+      typeof responsePayload === "object" && responsePayload
+        ? responsePayload.choices?.[0]?.message?.tool_calls || responsePayload.toolCalls
         : undefined;
     if (Array.isArray(toolCalls) && toolCalls.length) {
       assistantMessage.toolCalls = toolCalls.map(
-        (toolCall: {
-          id: string;
-          name?: string;
-          args?: Record<string, unknown>;
-          function?: {
-            name: string;
-            arguments: string | Record<string, unknown>;
-          };
-          result?: unknown;
-          status?: string;
-        }) => ({
+        (toolCall: any) => ({
           id: toolCall.id,
           name: toolCall.function?.name || toolCall.name || "",
           args:
@@ -525,21 +516,21 @@ export function reconstructChatMessages(
 
     // Extract generated images
     if (
-      typeof resPayload === "object" &&
-      resPayload &&
-      Array.isArray(resPayload.images) &&
-      resPayload.images.length
+      typeof responsePayload === "object" &&
+      responsePayload &&
+      Array.isArray(responsePayload.images) &&
+      responsePayload.images.length
     ) {
-      assistantMessage.images = resPayload.images;
+      assistantMessage.images = responsePayload.images;
     }
 
     // Extract thinking content
     if (
-      typeof resPayload === "object" &&
-      resPayload &&
-      typeof resPayload.thinking === "string"
+      typeof responsePayload === "object" &&
+      responsePayload &&
+      typeof responsePayload.thinking === "string"
     ) {
-      assistantMessage.thinking = resPayload.thinking;
+      assistantMessage.thinking = responsePayload.thinking;
     }
 
     if (

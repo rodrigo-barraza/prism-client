@@ -21,7 +21,6 @@ import {
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
 import BadgeComponent from "./BadgeComponent";
-const Badge: any = BadgeComponent;
 
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
 import SoundService from "@/services/SoundService";
@@ -48,42 +47,30 @@ import styles from "./RunHistorySidebarComponent.module.css";
  *   allModels          — flat array of all model definitions
  */
 import type {
+  Benchmark,
   BenchmarkRun,
   BenchmarkRunResult,
   PrismConfig,
+  ModelInstance,
+  AgentInstance,
+  ModelOptionWithProvider,
 } from "../types/types";
-import type { ModelInstance } from "./BenchmarkDetailPageComponent";
+
+type SelectedModelInstance = ModelOptionWithProvider & ModelInstance;
 
 interface BenchmarkAssertion {
   expectedValue: string;
   matchMode: string;
 }
 
-interface AgentInstance {
-  instanceId: string;
-  agentId: string;
-  name: string;
-  description: string;
-  provider?: string;
-  modelName?: string;
-}
-
-interface ModelOptionWithProvider {
-  provider: string;
-  name: string;
-  thinking?: boolean;
-  tools?: string[];
-  instanceId: string;
-}
-
 interface RunHistorySidebarComponentProps {
-  benchmark: any;
+  benchmark: Benchmark;
   runHistory?: BenchmarkRun[];
   activeRunId?: string | null;
   onViewRun?: (run: BenchmarkRun) => void;
   running?: boolean;
   streamingCompleted?: number;
-  selectedModels?: any[];
+  selectedModels?: SelectedModelInstance[];
   onRemoveModel?: (instanceId: string) => void;
   onChangeModel?: (instanceId: string, provider: string, modelName: string) => void;
   onClearSelection?: () => void;
@@ -91,10 +78,10 @@ interface RunHistorySidebarComponentProps {
   onToggleThinking?: (instanceId: string) => void;
   toolsMap?: Record<string, boolean>;
   onToggleTools?: (instanceId: string) => void;
-  agentInstances?: any[];
+  agentInstances?: AgentInstance[];
   onRemoveAgent?: (instanceId: string) => void;
   onChangeAgentModel?: (instanceId: string, provider: string, modelName: string) => void;
-  allModels?: any[];
+  allModels?: ModelOptionWithProvider[];
   config?: PrismConfig | null;
 }
 
@@ -123,21 +110,20 @@ export default function RunHistorySidebarComponent({
 
   // Normalize assertions: fall back to single expectedValue/matchMode for older benchmarks
   const assertions: BenchmarkAssertion[] = useMemo(() => {
-    const benchmarkData = benchmark as Record<string, unknown> | null;
-    const existingAssertions = benchmarkData?.assertions as BenchmarkAssertion[] | undefined;
+    const existingAssertions = benchmark?.assertions;
     if (existingAssertions && existingAssertions.length > 0) return existingAssertions;
-    if (benchmarkData?.expectedValue) {
+    if (benchmark?.expectedValue) {
       return [
         {
-          expectedValue: benchmarkData.expectedValue as string,
-          matchMode: (benchmarkData.matchMode as string) || "contains",
+          expectedValue: benchmark.expectedValue,
+          matchMode: benchmark.matchMode || "contains",
         },
       ];
     }
     return [];
   }, [benchmark]);
 
-  const operator = (benchmark as Record<string, unknown>)?.assertionOperator as string || "AND";
+  const operator = benchmark?.assertionOperator || "AND";
 
   if (!benchmark) return null;
 
@@ -181,15 +167,15 @@ export default function RunHistorySidebarComponent({
                 {assertions.map((assertion: any, assertionIndex: number) => (
                   <div key={assertionIndex} className={styles['assertion-row']}>
                     {assertionIndex > 0 ? (
-                      <Badge
+                      <BadgeComponent
                         variant={operator === "OR" ? "warning" : "info"}
                       >
                         {operator}
-                      </Badge>
+                      </BadgeComponent>
                     ) : null}
-                    <Badge variant="accent">
+                    <BadgeComponent variant="accent">
                       {assertion.matchMode || "contains"}
-                    </Badge>
+                    </BadgeComponent>
                     <span
                       className={styles['assertion-value']}
                       title={assertion.expectedValue}
@@ -203,11 +189,11 @@ export default function RunHistorySidebarComponent({
           ) : null}
 
           {/* -- Prompt Preview ---------------------------- */}
-          {((benchmark as Record<string, unknown>)?.prompt || (benchmark as Record<string, unknown>)?.systemPrompt) ? (
+          {(benchmark?.prompt || benchmark?.systemPrompt) ? (
             <div className={styles['prompt-section']}>
               <ChatPreviewComponent
-                systemPrompt={(benchmark as Record<string, unknown>)?.systemPrompt as string | undefined}
-                messages={[{ role: "user" as const, content: ((benchmark as Record<string, unknown>)?.prompt as string) || "" }]}
+                systemPrompt={benchmark.systemPrompt}
+                messages={[{ role: "user" as const, content: benchmark.prompt || "" }]}
                 mini
               />
             </div>
@@ -226,12 +212,12 @@ export default function RunHistorySidebarComponent({
             {/* Selected model cards */}
             {selectedModels.length > 0 ? (
               <div className={styles['model-cards']}>
-                {selectedModels.map((modelInstance: ModelOptionWithProvider) => {
+                {selectedModels.map((modelInstance: SelectedModelInstance) => {
                   const isThinking = !!thinkingMap[modelInstance.instanceId];
                   const isTools = !!toolsMap[modelInstance.instanceId];
                   const supportsThinking = !!modelInstance.thinking;
                   const dupeCount = selectedModels.filter(
-                    (otherModel: ModelOptionWithProvider) => otherModel.provider === modelInstance.provider && otherModel.name === modelInstance.name,
+                    (otherModel: SelectedModelInstance) => otherModel.provider === modelInstance.provider && otherModel.name === modelInstance.name,
                   ).length;
                   return (
                     <ModelCardComponent
@@ -339,8 +325,8 @@ export default function RunHistorySidebarComponent({
                     data-panel-close
                   >
                     <div className={styles['run-item-header']}>
-                      <Badge type="dateTime" date={run.completedAt} />
-                      <Badge type="cost" cost={totalCost} mini />
+                      <BadgeComponent type="dateTime" date={run.completedAt} />
+                      <BadgeComponent type="cost" cost={totalCost} mini />
                       <span className={styles['run-index']}>
                         #{runHistory.length - index}
                       </span>

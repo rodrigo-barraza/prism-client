@@ -46,28 +46,12 @@ import type {
   SSECallbacks,
   SSEData,
   Message,
+  ModelInstance,
+  AgentInstance,
+  ModelOptionWithProvider,
 } from "../types/types";
 import { type AgentAssertion } from "./AgentAssertionsComponent";
 import { type ClientAgent } from "./BadgeComponent";
-
-export interface ModelInstance {
-  instanceId: string;
-  provider: string;
-  name: string;
-}
-
-export interface AgentInstance {
-  instanceId: string;
-  agentId: string;
-  name: string;
-  provider?: string;
-  modelName?: string;
-  description?: string;
-}
-
-export interface ModelOptionWithProvider extends ModelOption {
-  provider: string;
-}
 
 /** Per-model accumulated live data during streaming */
 interface LiveModelData {

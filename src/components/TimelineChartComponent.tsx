@@ -227,7 +227,7 @@ export default function TimelineChartComponent({
   const [activeTab, setActiveTab] = useState("requests");
   const tab = TABS.find((tabOption) => tabOption.key === activeTab) || TABS[0];
 
-  const gradientId = `timelineGrad_${tab.key}`;
+  const gradientId = `timeline-chart-gradient-${tab.key}`;
 
   const yDomain = useMemo(() => {
     if (tab.key === "successRate") return [0, 100];

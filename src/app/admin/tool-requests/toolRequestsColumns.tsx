@@ -6,6 +6,7 @@ import {
   emptyDash,
 } from "../../../utils/tableColumns";
 import { formatLatencyMs, formatFileSize } from "@rodrigo-barraza/utilities-library";
+import type { JsonValue } from "../../../types/types";
 export interface ToolCallRecord {
   _id?: string;
   toolName?: string;
@@ -26,8 +27,8 @@ export interface ToolCallRecord {
   callerIteration?: number;
   clientIp?: string;
   timestamp?: string;
-  args?: Record<string, unknown>;
-  result?: Record<string, unknown>;
+  args?: Record<string, JsonValue>;
+  result?: Record<string, JsonValue>;
 }
 
 /**
@@ -42,8 +43,8 @@ export const getToolRequestsColumns = ({
     label: "Tool",
     description: "The tool function that was invoked",
     sortable: true,
-    render: (r: ToolCallRecord) => (
-      <BadgeComponent variant="provider">{r.toolName || "—"}</BadgeComponent>
+    render: (record: ToolCallRecord) => (
+      <BadgeComponent variant="provider">{record.toolName || "—"}</BadgeComponent>
     ),
   },
   {
@@ -52,8 +53,8 @@ export const getToolRequestsColumns = ({
     description:
       "The functional domain this tool belongs to (e.g. Weather, Health, Compute)",
     sortable: true,
-    render: (r: ToolCallRecord) => (
-      <BadgeComponent variant="info">{r.domain || "—"}</BadgeComponent>
+    render: (record: ToolCallRecord) => (
+      <BadgeComponent variant="info">{record.domain || "—"}</BadgeComponent>
     ),
   },
   {
@@ -61,9 +62,9 @@ export const getToolRequestsColumns = ({
     label: "Method",
     description: "HTTP method used for the tool invocation",
     sortable: false,
-    render: (r: ToolCallRecord) => (
-      <BadgeComponent variant={r.method === "POST" ? "warning" : "endpoint"}>
-        {r.method || "—"}
+    render: (record: ToolCallRecord) => (
+      <BadgeComponent variant={record.method === "POST" ? "warning" : "endpoint"}>
+        {record.method || "—"}
       </BadgeComponent>
     ),
   },
@@ -73,9 +74,9 @@ export const getToolRequestsColumns = ({
     description:
       "The agentic persona that triggered this tool call (e.g. CODING, LUPOS)",
     sortable: true,
-    render: (r: ToolCallRecord) =>
-      r.callerAgent ? (
-        <BadgeComponent variant="accent">{r.callerAgent}</BadgeComponent>
+    render: (record: ToolCallRecord) =>
+      record.callerAgent ? (
+        <BadgeComponent variant="accent">{record.callerAgent}</BadgeComponent>
       ) : (
         emptyDash()
       ),
@@ -85,9 +86,9 @@ export const getToolRequestsColumns = ({
     label: "User",
     description: "The user whose session triggered the tool call",
     sortable: true,
-    render: (r: ToolCallRecord) =>
-      r.callerUsername ? (
-        <BadgeComponent variant="provider">{r.callerUsername}</BadgeComponent>
+    render: (record: ToolCallRecord) =>
+      record.callerUsername ? (
+        <BadgeComponent variant="provider">{record.callerUsername}</BadgeComponent>
       ) : (
         emptyDash()
       ),
@@ -98,10 +99,10 @@ export const getToolRequestsColumns = ({
     description: "Server-side execution time for this tool call",
     sortable: true,
     align: "right" as const,
-    render: (r: ToolCallRecord) => {
-      if (!r.elapsedMs || r.elapsedMs <= 0) return emptyDash();
+    render: (record: ToolCallRecord) => {
+      if (!record.elapsedMs || record.elapsedMs <= 0) return emptyDash();
       // Convert ms to human-readable latency
-      return formatLatencyMs(r.elapsedMs);
+      return formatLatencyMs(record.elapsedMs);
     },
   },
   {
@@ -109,10 +110,10 @@ export const getToolRequestsColumns = ({
     label: "Latency %",
     description: "Proportional share of total latency",
     sortable: true,
-    sortValue: (r: ToolCallRecord) => r.elapsedMs || 0,
-    render: (r: ToolCallRecord) => (
+    sortValue: (record: ToolCallRecord) => record.elapsedMs || 0,
+    render: (record: ToolCallRecord) => (
       <ProportionBarComponent
-        value={r.elapsedMs || 0}
+        value={record.elapsedMs || 0}
         total={totalDuration}
         color="var(--accent-primary)"
       />
@@ -124,8 +125,8 @@ export const getToolRequestsColumns = ({
     description: "Request payload size in bytes",
     sortable: true,
     align: "right" as const,
-    render: (r: ToolCallRecord) =>
-      (r.inBytes || 0) > 0 ? formatFileSize(r.inBytes || 0) : emptyDash(),
+    render: (record: ToolCallRecord) =>
+      (record.inBytes || 0) > 0 ? formatFileSize(record.inBytes || 0) : emptyDash(),
   },
   {
     key: "outBytes",
@@ -133,8 +134,8 @@ export const getToolRequestsColumns = ({
     description: "Response payload size in bytes",
     sortable: true,
     align: "right" as const,
-    render: (r: ToolCallRecord) =>
-      (r.outBytes || 0) > 0 ? formatFileSize(r.outBytes || 0) : emptyDash(),
+    render: (record: ToolCallRecord) =>
+      (record.outBytes || 0) > 0 ? formatFileSize(record.outBytes || 0) : emptyDash(),
   },
   {
     key: "callerIteration",
@@ -142,9 +143,9 @@ export const getToolRequestsColumns = ({
     description: "The agentic loop iteration that dispatched this tool call",
     sortable: true,
     align: "right" as const,
-    render: (r: ToolCallRecord) =>
-      r.callerIteration != null ? (
-        <BadgeComponent variant="info">#{r.callerIteration}</BadgeComponent>
+    render: (record: ToolCallRecord) =>
+      record.callerIteration != null ? (
+        <BadgeComponent variant="info">#{record.callerIteration}</BadgeComponent>
       ) : (
         emptyDash()
       ),

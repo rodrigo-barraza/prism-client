@@ -1,4 +1,5 @@
 import { TOOLS_SERVICE_URL } from "@/config";
+import type { JsonValue } from "../types/types";
 
 // ─── Response Interfaces ────────────────────────────────────
 
@@ -8,8 +9,8 @@ export interface ToolCallLogEntry {
   status: string;
   duration?: number;
   timestamp: string;
-  args?: Record<string, unknown>;
-  result?: Record<string, unknown>;
+  args?: Record<string, JsonValue>;
+  result?: Record<string, JsonValue>;
   error?: string;
 }
 
@@ -44,7 +45,7 @@ export interface AgenticTask {
   subject?: string;
   tags?: string[];
   activeForm?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, JsonValue>;
   conversationId?: string;
 }
 

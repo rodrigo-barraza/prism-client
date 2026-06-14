@@ -3,13 +3,13 @@
 import { DrawerComponent } from "@rodrigo-barraza/components-library";
 import type { ReactNode } from "react";
 
-interface DrawerSectionItem {
+export interface DrawerSectionItem {
   label: ReactNode;
   value: ReactNode;
   mono?: boolean;
 }
 
-interface DrawerSection {
+export interface DrawerSection {
   title: string;
   items: DrawerSectionItem[];
 }

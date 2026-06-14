@@ -133,8 +133,8 @@ function LogInContentComponent() {
   };
 
   return (
-    <div className={styles['login-page-container']}>
-      <div className={styles['authentication-card']} role="main">
+    <main className={styles['login-page-container']}>
+      <section className={styles['authentication-card']}>
         {/* Brand Header */}
         <header className={styles['brand-section-header']}>
           <div className={styles['brand-logo-container']} aria-hidden="true">
@@ -171,7 +171,7 @@ function LogInContentComponent() {
             <>
               {/* Display Name (Optional) */}
               <div className={styles['form-group-container']}>
-                <label className={styles['label-element']} htmlFor="displayNameInput">
+                <label className={styles['label-element']} htmlFor="display-name-input">
                   Display Name
                 </label>
                 <div style={{ position: "relative" }}>
@@ -186,7 +186,7 @@ function LogInContentComponent() {
                     }} 
                   />
                   <input
-                    id="displayNameInput"
+                    id="display-name-input"
                     type="text"
                     placeholder="John Doe"
                     value={displayNameValue}
@@ -199,7 +199,7 @@ function LogInContentComponent() {
 
               {/* Username (Required for Registration) */}
               <div className={styles['form-group-container']}>
-                <label className={styles['label-element']} htmlFor="usernameInput">
+                <label className={styles['label-element']} htmlFor="username-input">
                   Username
                 </label>
                 <div style={{ position: "relative" }}>
@@ -214,7 +214,7 @@ function LogInContentComponent() {
                     }} 
                   />
                   <input
-                    id="usernameInput"
+                    id="username-input"
                     type="text"
                     required
                     placeholder="johndoe"
@@ -230,7 +230,7 @@ function LogInContentComponent() {
 
           {/* Email Address */}
           <div className={styles['form-group-container']}>
-            <label className={styles['label-element']} htmlFor="emailInput">
+            <label className={styles['label-element']} htmlFor="email-input">
               Email Address
             </label>
             <div style={{ position: "relative" }}>
@@ -245,7 +245,7 @@ function LogInContentComponent() {
                 }} 
               />
               <input
-                id="emailInput"
+                id="email-input"
                 type="email"
                 required
                 placeholder="you@domain.com"
@@ -259,7 +259,7 @@ function LogInContentComponent() {
 
           {/* Password */}
           <div className={styles['form-group-container']}>
-            <label className={styles['label-element']} htmlFor="passwordInput">
+            <label className={styles['label-element']} htmlFor="password-input">
               Password
             </label>
             <div style={{ position: "relative" }}>
@@ -274,7 +274,7 @@ function LogInContentComponent() {
                 }} 
               />
               <input
-                id="passwordInput"
+                id="password-input"
                 type="password"
                 required
                 placeholder="••••••••"
@@ -337,8 +337,8 @@ function LogInContentComponent() {
             {isSignUpMode ? "Sign In" : "Sign Up"}
           </button>
         </p>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
 

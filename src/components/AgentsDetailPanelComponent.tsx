@@ -444,7 +444,7 @@ export default function AgentsDetailPanelComponent({
                   onClick={() => handleCopyIdentifier(editingAgent.agentId || "")}
                   tooltip={isIdentifierCopied ? "Copied!" : "Copy Identifier"}
                   className={styles["identifier-copy-button"]}
-                  data-is-copied={isIdentifierCopied}
+                  data-is-copied-state={isIdentifierCopied}
                 />
               )}
             </div>
@@ -874,7 +874,7 @@ export default function AgentsDetailPanelComponent({
                   onClick={() => handleCopyIdentifier(selectedBuiltInAgent.id || "")}
                   tooltip={isIdentifierCopied ? "Copied!" : "Copy Identifier"}
                   className={styles["identifier-copy-button"]}
-                  data-is-copied={isIdentifierCopied}
+                  data-is-copied-state={isIdentifierCopied}
                 />
               )}
             </div>

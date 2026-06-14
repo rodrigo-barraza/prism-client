@@ -11,6 +11,34 @@
 /** MongoDB ObjectId string or UUID */
 export type ObjectId = string;
 
+export type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+export interface ModelInstance {
+  instanceId: string;
+  provider: string;
+  name: string;
+}
+
+export interface AgentInstance {
+  instanceId: string;
+  agentId: string;
+  name: string;
+  provider?: string;
+  modelName?: string;
+  description?: string;
+}
+
+export interface ModelOptionWithProvider extends ModelOption {
+  provider: string;
+}
+
+
 // ─── Config / Models ────────────────────────────────────────
 
 export interface ArenaScores {
@@ -322,12 +350,12 @@ export interface Message {
   tool_calls?: Array<{
     id: string;
     name?: string;
-    args?: string | Record<string, unknown>;
+    args?: string | Record<string, JsonValue>;
     result?: string;
     status?: string;
     function?: {
       name?: string;
-      arguments?: string | Record<string, unknown>;
+      arguments?: string | Record<string, JsonValue>;
     };
   }>;
 }
@@ -616,8 +644,8 @@ export interface TransformedRequestItem {
   totalTime?: number;
   success?: boolean;
   conversationId?: string;
-  requestPayload?: Record<string, unknown>;
-  responsePayload?: Record<string, unknown>;
+  requestPayload?: Record<string, JsonValue>;
+  responsePayload?: Record<string, JsonValue>;
   modalities?: Record<string, number | boolean> | null;
   toolDisplayNames?: string[];
   toolApiNames?: string[];

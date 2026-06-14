@@ -45,15 +45,65 @@ import { PROVIDER_COLORS } from "../constants";
 import styles from "../components/TableComponentsComponent.module.css";
 import type { TokenUsage } from "../types/types";
 
-/* -- Generic table row type -------------------------------- */
+export interface TableRow {
+  _id?: string;
+  id?: string;
+  model?: string;
+  provider?: string;
+  project?: string;
+  username?: string;
+  models?: string[];
+  providers?: string[];
+  modelCount?: number;
+  providerCount?: number;
+  totalRequests?: number;
+  requestCount?: number;
+  modalities?: Record<string, boolean | number>;
+  toolDisplayNames?: string[];
+  toolApiNames?: string[];
+  totalInputTokens?: number;
+  totalOutputTokens?: number;
+  avgTokensPerSec?: number | null;
+  totalCost?: number | null;
+  avgLatency?: number | null;
+  traceCount?: number;
+  conversationCount?: number;
+  workflowCount?: number;
+  startedAt?: string;
+  finishedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  title?: string;
+  name?: string;
+  success?: boolean;
+  error?: string;
+  passed?: boolean | number | null;
+  failed?: number;
+  errored?: number;
+  _running?: boolean;
+  _pending?: boolean;
+  _phase?: string;
+  _progress?: number;
+  toolsEnabled?: boolean;
+  toolCalls?: Array<{ name?: string }>;
+  conversations?: TableRow[];
+  endpoint?: string;
+  operation?: string;
+  agents?: string[];
+  agent?: string;
+  label?: string;
+  thinkingEnabled?: boolean;
+  response?: string;
+  matchMode?: string;
+  latency?: number;
+  usage?: TokenUsage;
+  estimatedCost?: number;
+  completedAt?: string;
+  total?: number;
+  passRate?: number;
+}
 
-/**
- * Generic table row — columns are reused across many entity types
- * (conversations, sessions, requests, benchmarks, etc.) so we use
- * a wide index type. Individual column renderers narrow via field access.
- */
-export type TransformedTableRow = any;
-export type TableRow = any;
+export type TransformedTableRow = TableRow;
 
 /* -- Helpers ---------------------------------------------- */
 
@@ -69,8 +119,8 @@ export const valueOrDash = <T,>(
 /** Merge modalities from an array of conversations into a single object */
 export function mergeModalities(conversations: TableRow[]) {
   const merged: Record<string, boolean> = {};
-  for (const c of conversations) {
-    const modalities = c.modalities as
+  for (const conversation of conversations) {
+    const modalities = conversation.modalities as
       | Record<string, boolean | number>
       | undefined;
     if (!modalities) continue;
@@ -264,17 +314,17 @@ export const modalitiesColumn = ({
   label: "Modalities",
   description: "Input/output types supported (text, image, audio, video)",
   sortValue: (row: TableRow) => {
-    const mods = fromConversations
+    const modalitiesState = fromConversations
       ? mergeModalities((row.conversations as TableRow[] | undefined) ?? [])
       : (row.modalities as Record<string, boolean> | undefined);
-    return mods ? Object.values(mods).filter(Boolean).length : 0;
+    return modalitiesState ? Object.values(modalitiesState).filter(Boolean).length : 0;
   },
   render: (row: TableRow) => {
-    const mods = fromConversations
+    const modalitiesState = fromConversations
       ? mergeModalities((row.conversations as TableRow[] | undefined) ?? [])
       : (row.modalities as Record<string, boolean> | undefined);
-    if (!mods) return emptyDash();
-    return <ModalityIconComponent modalities={mods} size={mini ? 9 : 12} />;
+    if (!modalitiesState) return emptyDash();
+    return <ModalityIconComponent modalities={modalitiesState} size={mini ? 9 : 12} />;
   },
 });
 
@@ -318,12 +368,12 @@ export const toolsColumn = ({
 export const tokenColumns = ({
   inputKey = "totalInputTokens",
   outputKey = "totalOutputTokens",
-  tpsKey = "avgTokensPerSec",
+  tokensPerSecondKey = "avgTokensPerSec",
   showDash = false,
 }: {
   inputKey?: string;
   outputKey?: string;
-  tpsKey?: string;
+  tokensPerSecondKey?: string;
   showDash?: boolean;
 } = {}) => [
   {
@@ -332,7 +382,7 @@ export const tokenColumns = ({
     description: "Total input (prompt) tokens consumed",
     align: "right" as const,
     render: (row: TableRow) => {
-      const tokenValue = row[inputKey] as number | undefined;
+      const tokenValue = (row as Record<string, unknown>)[inputKey] as number | undefined;
       if (showDash && !(tokenValue && tokenValue > 0)) return emptyDash();
       return formatTokenCount(tokenValue);
     },
@@ -343,7 +393,7 @@ export const tokenColumns = ({
     description: "Total output (completion) tokens generated",
     align: "right" as const,
     render: (row: TableRow) => {
-      const tokenValue = row[outputKey] as number | undefined;
+      const tokenValue = (row as Record<string, unknown>)[outputKey] as number | undefined;
       if (showDash && !(tokenValue && tokenValue > 0)) return emptyDash();
       return formatTokenCount(tokenValue);
     },
@@ -354,23 +404,23 @@ export const tokenColumns = ({
     description: "Combined input + output token count",
     align: "right" as const,
     sortValue: (row: TableRow) =>
-      ((row[inputKey] as number | undefined) ?? 0) +
-      ((row[outputKey] as number | undefined) ?? 0),
+      (((row as Record<string, unknown>)[inputKey] as number | undefined) ?? 0) +
+      (((row as Record<string, unknown>)[outputKey] as number | undefined) ?? 0),
     render: (row: TableRow) => {
       const total =
-        ((row[inputKey] as number | undefined) ?? 0) +
-        ((row[outputKey] as number | undefined) ?? 0);
+        (((row as Record<string, unknown>)[inputKey] as number | undefined) ?? 0) +
+        (((row as Record<string, unknown>)[outputKey] as number | undefined) ?? 0);
       if (showDash && total <= 0) return emptyDash();
       return total > 0 ? formatTokenCount(total) : "0";
     },
   },
   {
-    key: tpsKey,
+    key: tokensPerSecondKey,
     label: "Tok/s",
     description: "Average output throughput in tokens per second",
     align: "right" as const,
     render: (row: TableRow) =>
-      formatTokensPerSec(row[tpsKey] as number | undefined),
+      formatTokensPerSec((row as Record<string, unknown>)[tokensPerSecondKey] as number | undefined),
   },
 ];
 
@@ -393,7 +443,7 @@ export const costColumns = (
     render: (row: TableRow) => (
       <BadgeComponent
         type="cost"
-        cost={(row[costKey] as number) || 0}
+        cost={((row as Record<string, unknown>)[costKey] as number) || 0}
         mini={mini}
       />
     ),
@@ -403,10 +453,10 @@ export const costColumns = (
     label: "Cost %",
     description: "Proportional share of total cost",
     sortable: true,
-    sortValue: (row: TableRow) => row[costKey] as number | undefined,
+    sortValue: (row: TableRow) => (row as Record<string, unknown>)[costKey] as number | undefined,
     render: (row: TableRow) => (
       <ProportionBarComponent
-        value={row[costKey] as number | undefined}
+        value={(row as Record<string, unknown>)[costKey] as number | undefined}
         total={totalCost}
         color="var(--color-warning)"
         mini={mini}
@@ -424,7 +474,7 @@ export const latencyColumn = (key = "avgLatency", label = "Avg Latency") => ({
   sortable: true,
   align: "right" as const,
   render: (row: TableRow) => {
-    const latencyValue = row[key] as number | undefined;
+    const latencyValue = (row as Record<string, unknown>)[key] as number | undefined;
     if (!latencyValue || latencyValue <= 0) return emptyDash();
     return formatLatency(latencyValue);
   },
@@ -513,7 +563,7 @@ export const durationColumn = ({
   align: "right" as const,
   sortValue: (row: TableRow) => (useDurationMs ? getDurationMs(row) : 0),
   render: (row: TableRow) => {
-    const ms = useDurationMs
+    const durationMilliseconds = useDurationMs
       ? getDurationMs(row)
       : (() => {
           const startedAtTimestamp = row.startedAt as string | undefined;
@@ -524,9 +574,9 @@ export const durationColumn = ({
             new Date(startedAtTimestamp).getTime()
           );
         })();
-    const duration = formatDuration(ms);
+    const duration = formatDuration(durationMilliseconds);
     if (!duration) return emptyDash();
-    return <BadgeComponent type="stopwatch" seconds={ms / 1000} />;
+    return <BadgeComponent type="stopwatch" seconds={durationMilliseconds / 1000} />;
   },
 });
 
@@ -561,10 +611,10 @@ export const createdAtColumn = (
   sortable: true,
   align: "right" as const,
   render: (row: TableRow) =>
-    row[key] ? (
+    (row as Record<string, unknown>)[key] ? (
       <BadgeComponent
         type="dateTime"
-        date={row[key] as string}
+        date={(row as Record<string, unknown>)[key] as string}
         highlightNew={highlightNew}
       />
     ) : (
@@ -579,16 +629,16 @@ export const traceIdColumn = () => ({
   label: "Trace",
   description: "Unique trace identifier (click to view conversations)",
   sortable: false,
-  render: (s: TableRow) => (
+  render: (row: TableRow) => (
     <a
-      href={`/admin/chat?trace=${s.id as string}`}
+      href={`/admin/chat?trace=${row.id as string}`}
       className={styles['session-id-cell']}
-      title={`View conversations for trace ${s.id as string}`}
-      onClick={(e: React.MouseEvent) => e.stopPropagation()}
+      title={`View conversations for trace ${row.id as string}`}
+      onClick={(event: React.MouseEvent) => event.stopPropagation()}
     >
       <FolderOpen size={12} className={styles['session-icon']} />
       <span className={styles['session-id-text']}>
-        {(s.id as string).slice(0, 8)}
+        {(row.id as string).slice(0, 8)}
       </span>
     </a>
   ),
@@ -603,12 +653,12 @@ export const conversationTitleColumn = ({
   label: "Conversation",
   description: "Auto-generated conversation title",
   sortable: false,
-  render: (c: TableRow) => (
+  render: (conversation: TableRow) => (
     <span
       className={`${styles['conversation-title']} ${mini ? styles['conversation-title-mini'] : ""}`}
     >
       <MessageSquare size={mini ? 9 : 12} />
-      {(c.title as string | undefined) || "Untitled"}
+      {(conversation.title as string | undefined) || "Untitled"}
     </span>
   ),
 });
@@ -622,10 +672,10 @@ export const projectBadgeColumn = ({
   label: "Project",
   description: "The project this conversation belongs to",
   sortable: false,
-  render: (c: TableRow) =>
-    c.project ? (
+  render: (conversation: TableRow) =>
+    conversation.project ? (
       <BadgeComponent variant="info" mini={mini}>
-        {c.project as string}
+        {conversation.project as string}
       </BadgeComponent>
     ) : (
       emptyDash()
@@ -637,10 +687,10 @@ export const userBadgeColumn = ({ mini = false }: { mini?: boolean } = {}) => ({
   label: "User",
   description: "The user who started this conversation",
   sortable: false,
-  render: (c: TableRow) =>
-    c.username && c.username !== "unknown" ? (
+  render: (conversation: TableRow) =>
+    conversation.username && conversation.username !== "unknown" ? (
       <BadgeComponent variant="provider" mini={mini}>
-        {c.username as string}
+        {conversation.username as string}
       </BadgeComponent>
     ) : (
       emptyDash()
@@ -653,9 +703,9 @@ export const endpointColumn = () => ({
   key: "endpoint",
   label: "Endpoint",
   description: "The API endpoint path called (e.g. /chat, /image, /audio)",
-  render: (r: TableRow) => (
+  render: (row: TableRow) => (
     <BadgeComponent variant="endpoint">
-      {(r.endpoint as string | undefined) || "-"}
+      {(row.endpoint as string | undefined) || "-"}
     </BadgeComponent>
   ),
 });
@@ -665,9 +715,9 @@ export const operationColumn = () => ({
   label: "Operation",
   description:
     "The semantic purpose of this LLM call (e.g. chat, agent:iteration, memory:extract)",
-  render: (r: TableRow) => (
+  render: (row: TableRow) => (
     <BadgeComponent variant="info">
-      {(r.operation as string | undefined) || "-"}
+      {(row.operation as string | undefined) || "-"}
     </BadgeComponent>
   ),
 });
@@ -680,11 +730,11 @@ export const agentColumn = () => ({
   description:
     "The originating agent that made this request (e.g. CODING, LUPOS)",
   sortable: false,
-  render: (r: TableRow) => {
+  render: (row: TableRow) => {
     // Normalize: sessions expose `agents` (array), requests expose `agent` (string)
     const agents =
-      (r.agents as string[] | undefined) ??
-      (r.agent ? [r.agent as string] : []);
+      (row.agents as string[] | undefined) ??
+      (row.agent ? [row.agent as string] : []);
     return <BadgeComponent type="agent" agents={agents} />;
   },
 });
@@ -697,9 +747,9 @@ export const statusColumn = () => ({
   description:
     "Whether the request completed successfully (OK) or failed (ERR)",
   align: "right" as const,
-  render: (r: TableRow) => (
-    <BadgeComponent variant={r.success ? "success" : "error"}>
-      {r.success ? "OK" : "ERR"}
+  render: (row: TableRow) => (
+    <BadgeComponent variant={row.success ? "success" : "error"}>
+      {row.success ? "OK" : "ERR"}
     </BadgeComponent>
   ),
 });
@@ -710,10 +760,10 @@ export const benchmarkStatusColumn = () => ({
   key: "status",
   label: "Status",
   description: "Whether the model passed, failed, or errored on this benchmark",
-  sortValue: (r: TableRow) =>
-    r._running ? -2 : r._pending ? -3 : r.error ? -1 : r.passed ? 1 : 0,
-  render: (r: TableRow) => {
-    if (r._pending) {
+  sortValue: (row: TableRow) =>
+    row._running ? -2 : row._pending ? -3 : row.error ? -1 : row.passed ? 1 : 0,
+  render: (row: TableRow) => {
+    if (row._pending) {
       return (
         <span className={styles['benchmark-status-cell']}>
           <Circle size={16} className={styles['benchmark-pending-icon']} />
@@ -721,15 +771,15 @@ export const benchmarkStatusColumn = () => ({
         </span>
       );
     }
-    if (r._running) {
+    if (row._running) {
       return (
         <span className={styles['benchmark-status-cell']}>
           <Loader2 size={16} className={styles['benchmark-running-icon']} />
-          <span>{(r._phase as string | undefined) || "Running"}</span>
+          <span>{(row._phase as string | undefined) || "Running"}</span>
         </span>
       );
     }
-    if (r.error) {
+    if (row.error) {
       return (
         <span className={styles['benchmark-status-cell']}>
           <AlertTriangle size={16} className={styles['benchmark-error-icon']} />
@@ -737,7 +787,7 @@ export const benchmarkStatusColumn = () => ({
         </span>
       );
     }
-    if (r.passed) {
+    if (row.passed) {
       return (
         <span className={styles['benchmark-status-cell']}>
           <CheckCircle2 size={16} className={styles['benchmark-pass-icon']} />
@@ -758,18 +808,18 @@ export const benchmarkModelColumn = () => ({
   key: "label",
   label: "Model",
   description: "The model and provider tested",
-  render: (r: TableRow) => (
+  render: (row: TableRow) => (
     <span
-      className={`${styles['benchmark-model-cell']} ${r._pending ? styles['benchmark-model-pending'] : ""}`}
+      className={`${styles['benchmark-model-cell']} ${row._pending ? styles['benchmark-model-pending'] : ""}`}
     >
-      <span className={styles['benchmark-model-name']}>{r.label as string}</span>
+      <span className={styles['benchmark-model-name']}>{row.label as string}</span>
       <span className={styles['benchmark-model-provider-row']}>
         <span className={styles['benchmark-model-provider']}>
-          {resolveProviderLabel(r.provider as string | undefined)}
+          {resolveProviderLabel(row.provider as string | undefined)}
         </span>
-        {!!r._running && typeof r._progress === "number" && r._progress > 0 && (
+        {!!row._running && typeof row._progress === "number" && row._progress > 0 && (
           <span className={styles['benchmark-progress-pct']}>
-            {Math.round(r._progress * 100)}%
+            {Math.round(row._progress * 100)}%
           </span>
         )}
       </span>
@@ -782,14 +832,14 @@ export const benchmarkToolsColumn = () => ({
   label: "Tools",
   description: "Whether tool use (function calling) was enabled for this run",
   sortable: true,
-  sortValue: (r: TableRow) => (r.toolsEnabled ? 1 : 0),
+  sortValue: (row: TableRow) => (row.toolsEnabled ? 1 : 0),
   defaultHidden: true,
-  render: (r: TableRow) => {
-    if (!r.toolsEnabled) return emptyDash();
-    const rawToolCalls = r.toolCalls as Array<{ name?: string }> | undefined;
+  render: (row: TableRow) => {
+    if (!row.toolsEnabled) return emptyDash();
+    const rawToolCalls = row.toolCalls as Array<{ name?: string }> | undefined;
     const toolNames = rawToolCalls?.length
       ? ([
-          ...new Set(rawToolCalls.map((tc) => tc.name).filter(Boolean)),
+          ...new Set(rawToolCalls.map((toolCall) => toolCall.name).filter(Boolean)),
         ] as string[])
       : null;
     const badge = (
@@ -809,10 +859,10 @@ export const benchmarkThinkingColumn = () => ({
   label: "Thinking",
   description: "Whether extended thinking / chain-of-thought was enabled",
   sortable: true,
-  sortValue: (r: TableRow) => (r.thinkingEnabled ? 1 : 0),
+  sortValue: (row: TableRow) => (row.thinkingEnabled ? 1 : 0),
   defaultHidden: true,
-  render: (r: TableRow) =>
-    r.thinkingEnabled ? (
+  render: (row: TableRow) =>
+    row.thinkingEnabled ? (
       <BadgeComponent variant="accent" mini>
         <Brain size={10} /> Thinking
       </BadgeComponent>
@@ -832,9 +882,9 @@ export const benchmarkSizeColumn = ({
   label: "Size",
   description: "Model file/weight size on disk (local models only)",
   sortable: true,
-  sortValue: (r: TableRow) => {
+  sortValue: (row: TableRow) => {
     const config =
-      modelConfigMap[`${r.provider as string}:${r.model as string}`];
+      modelConfigMap[`${row.provider as string}:${row.model as string}`];
     const sizeString = config?.size ?? "";
     const match = sizeString.match(/([\d.]+)\s*(GB|MB|KB)/i);
     if (!match) return 0;
@@ -845,9 +895,9 @@ export const benchmarkSizeColumn = ({
     return value / 1024;
   },
   align: "right" as const,
-  render: (r: TableRow) => {
+  render: (row: TableRow) => {
     const config =
-      modelConfigMap[`${r.provider as string}:${r.model as string}`];
+      modelConfigMap[`${row.provider as string}:${row.model as string}`];
     if (!config?.size) return emptyDash();
     return (
       <span className={styles['benchmark-tps-cell']}>
@@ -865,9 +915,9 @@ export const benchmarkSizeColumn = ({
 function highlightExpected(text: string, expected: string, matchMode: string) {
   if (!text || !expected) return text || "—";
 
-  const norm = (s: string) => s.trim().toLowerCase();
-  const normText = norm(text);
-  const normExpected = norm(expected);
+  const normalizeString = (textValue: string) => textValue.trim().toLowerCase();
+  const normalizedText = normalizeString(text);
+  const normalizedExpected = normalizeString(expected);
 
   // For regex mode, find the first match in the original text
   if (matchMode === "regex") {
@@ -892,12 +942,12 @@ function highlightExpected(text: string, expected: string, matchMode: string) {
   }
 
   // For exact mode — highlight the entire response if it matches
-  if (matchMode === "exact" && normText === normExpected) {
+  if (matchMode === "exact" && normalizedText === normalizedExpected) {
     return <mark className={styles['benchmark-highlight']}>{text}</mark>;
   }
 
   // For contains / startsWith — find the substring position (case-insensitive)
-  const index = normText.indexOf(normExpected);
+  const index = normalizedText.indexOf(normalizedExpected);
   if (index === -1) return text;
 
   const before = text.slice(0, index);
@@ -921,26 +971,26 @@ export const benchmarkResponseColumn = ({
   label: "Response",
   description: "The model's output text (or error message)",
   sortable: false,
-  render: (r: TableRow) => {
-    if (r.error) {
+  render: (row: TableRow) => {
+    if (row.error) {
       return (
         <span className={styles['benchmark-error-message']}>
-          {r.error as string}
+          {row.error as string}
         </span>
       );
     }
     return (
       <span
         className={styles['benchmark-response-cell']}
-        title={r.response as string | undefined}
+        title={row.response as string | undefined}
       >
         {expectedValue
           ? highlightExpected(
-              r.response as string,
+              row.response as string,
               expectedValue,
-              matchMode ?? (r.matchMode as string | undefined) ?? "contains",
+              matchMode ?? (row.matchMode as string | undefined) ?? "contains",
             )
-          : (r.response as string | undefined) || "—"}
+          : (row.response as string | undefined) || "—"}
       </span>
     );
   },
@@ -952,10 +1002,10 @@ export const benchmarkLatencyColumn = () => ({
   description: "Time taken for the model to respond",
   sortable: true,
   align: "right" as const,
-  render: (r: TableRow) =>
-    r.latency ? (
+  render: (row: TableRow) =>
+    row.latency ? (
       <span className={styles['mono-cell']}>
-        {formatLatency(r.latency as number)}
+        {formatLatency(row.latency as number)}
       </span>
     ) : (
       emptyDash()
@@ -967,11 +1017,11 @@ export const benchmarkDurationColumn = () => ({
   label: "Duration",
   description: "Wall-clock time from request start to finish",
   sortable: true,
-  sortValue: (r: TableRow) => (r.latency as number | undefined) ?? 0,
+  sortValue: (row: TableRow) => (row.latency as number | undefined) ?? 0,
   align: "right" as const,
-  render: (r: TableRow) => {
-    if (!r.latency) return emptyDash();
-    return <BadgeComponent type="stopwatch" seconds={r.latency as number} />;
+  render: (row: TableRow) => {
+    if (!row.latency) return emptyDash();
+    return <BadgeComponent type="stopwatch" seconds={row.latency as number} />;
   },
 });
 
@@ -980,11 +1030,11 @@ export const benchmarkTokensInColumn = () => ({
   label: "Tokens In",
   description: "Input (prompt) tokens consumed by this model",
   sortable: true,
-  sortValue: (r: TableRow) =>
-    getTotalInputTokens(r.usage as TokenUsage | undefined) ?? 0,
+  sortValue: (row: TableRow) =>
+    getTotalInputTokens(row.usage as TokenUsage | undefined) ?? 0,
   align: "right" as const,
-  render: (r: TableRow) => {
-    const inputTokens = getTotalInputTokens(r.usage as TokenUsage | undefined);
+  render: (row: TableRow) => {
+    const inputTokens = getTotalInputTokens(row.usage as TokenUsage | undefined);
     return inputTokens > 0 ? (
       <BadgeComponent type="tokens" value={inputTokens} label="in" mini />
     ) : (
@@ -998,12 +1048,12 @@ export const benchmarkTokensOutColumn = () => ({
   label: "Tokens Out",
   description: "Output (completion) tokens generated by this model",
   sortable: true,
-  sortValue: (r: TableRow) =>
-    (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0,
+  sortValue: (row: TableRow) =>
+    (row.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0,
   align: "right" as const,
-  render: (r: TableRow) => {
+  render: (row: TableRow) => {
     const outputTokens =
-      (r.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0;
+      (row.usage as { outputTokens?: number } | undefined)?.outputTokens ?? 0;
     return outputTokens > 0 ? (
       <BadgeComponent type="tokens" value={outputTokens} label="out" mini />
     ) : (
@@ -1017,23 +1067,23 @@ export const benchmarkTokPerSecColumn = () => ({
   label: "Tok/s",
   description: "Output throughput — completion tokens per second",
   sortable: true,
-  sortValue: (r: TableRow) => {
-    const usage = r.usage as { outputTokens?: number } | undefined;
-    const out = usage?.outputTokens ?? 0;
-    const lat = r.latency as number | undefined;
-    return lat && lat > 0 && out > 0 ? out / lat : 0;
+  sortValue: (row: TableRow) => {
+    const usage = row.usage as { outputTokens?: number } | undefined;
+    const outputTokens = usage?.outputTokens ?? 0;
+    const latencyValue = row.latency as number | undefined;
+    return latencyValue && latencyValue > 0 && outputTokens > 0 ? outputTokens / latencyValue : 0;
   },
   align: "right" as const,
-  render: (r: TableRow) => {
-    const usage = r.usage as { outputTokens?: number } | undefined;
-    const out = usage?.outputTokens ?? 0;
-    const lat = r.latency as number | undefined;
-    if (!lat || lat <= 0 || out <= 0) return emptyDash();
-    const tps = out / lat;
+  render: (row: TableRow) => {
+    const usage = row.usage as { outputTokens?: number } | undefined;
+    const outputTokens = usage?.outputTokens ?? 0;
+    const latencyValue = row.latency as number | undefined;
+    if (!latencyValue || latencyValue <= 0 || outputTokens <= 0) return emptyDash();
+    const tokensPerSecond = outputTokens / latencyValue;
     return (
       <span className={styles['benchmark-tps-cell']}>
         <Gauge size={10} />
-        {tps.toFixed(1)}
+        {tokensPerSecond.toFixed(1)}
       </span>
     );
   },
@@ -1045,9 +1095,9 @@ export const benchmarkCostColumn = () => ({
   description: "Estimated cost for this individual model run",
   sortable: true,
   align: "right" as const,
-  render: (r: TableRow) =>
-    r.estimatedCost != null ? (
-      <BadgeComponent type="cost" cost={r.estimatedCost as number} mini />
+  render: (row: TableRow) =>
+    row.estimatedCost != null ? (
+      <BadgeComponent type="cost" cost={row.estimatedCost as number} mini />
     ) : (
       emptyDash()
     ),
@@ -1059,9 +1109,9 @@ export const benchmarkDateColumn = () => ({
   description: "When this model was tested",
   sortable: true,
   align: "right" as const,
-  render: (r: TableRow) =>
-    r.completedAt ? (
-      <BadgeComponent type="dateTime" date={r.completedAt as string} />
+  render: (row: TableRow) =>
+    row.completedAt ? (
+      <BadgeComponent type="dateTime" date={row.completedAt as string} />
     ) : (
       emptyDash()
     ),
@@ -1080,10 +1130,10 @@ export const benchmarkMatchModeColumn = () => ({
   description:
     "Evaluation strategy used to compare response against expected value",
   sortable: false,
-  render: (r: TableRow) => (
+  render: (row: TableRow) => (
     <BadgeComponent variant="info" mini>
-      {MATCH_MODE_LABELS[r.matchMode as string] ??
-        (r.matchMode as string | undefined) ??
+      {MATCH_MODE_LABELS[row.matchMode as string] ??
+        (row.matchMode as string | undefined) ??
         "—"}
     </BadgeComponent>
   ),
@@ -1096,10 +1146,10 @@ export const dashboardModelColumn = () => ({
   label: "Model",
   description: "Model name and provider tested across benchmarks",
   sortable: true,
-  render: (r: TableRow) => (
+  render: (row: TableRow) => (
     <span className={styles['dashboard-model-cell']}>
-      <ProviderLogo provider={r.provider as string | undefined} size={16} />
-      <span className={styles['dashboard-model-name']}>{r.label as string}</span>
+      <ProviderLogo provider={row.provider as string | undefined} size={16} />
+      <span className={styles['dashboard-model-name']}>{row.label as string}</span>
     </span>
   ),
 });
@@ -1109,10 +1159,10 @@ export const dashboardProviderColumn = () => ({
   label: "Provider",
   description: "The API provider hosting this model",
   sortable: true,
-  render: (r: TableRow) => (
+  render: (row: TableRow) => (
     <BadgeComponent
       type="providers"
-      providers={r.provider ? [r.provider as string] : []}
+      providers={row.provider ? [row.provider as string] : []}
     />
   ),
 });
@@ -1123,8 +1173,8 @@ export const dashboardTestsColumn = () => ({
   description: "Total number of benchmark tests run for this model",
   sortable: true,
   align: "right" as const,
-  render: (r: TableRow) => (
-    <span className={styles['mono-cell']}>{r.total as number}</span>
+  render: (row: TableRow) => (
+    <span className={styles['mono-cell']}>{row.total as number}</span>
   ),
 });
 
@@ -1134,10 +1184,10 @@ export const dashboardPassedColumn = () => ({
   description: "Number of benchmark tests this model passed",
   sortable: true,
   align: "right" as const,
-  render: (r: TableRow) => (
+  render: (row: TableRow) => (
     <span className={styles['dashboard-passed-cell']}>
       <CheckCircle2 size={12} />
-      {r.passed as number}
+      {row.passed as number}
     </span>
   ),
 });
@@ -1147,12 +1197,12 @@ export const dashboardFailedColumn = () => ({
   label: "Fail",
   description: "Number of benchmark tests this model failed or errored",
   sortable: true,
-  sortValue: (r: TableRow) => (r.failed as number) + (r.errored as number),
+  sortValue: (row: TableRow) => (row.failed as number) + (row.errored as number),
   align: "right" as const,
-  render: (r: TableRow) => (
+  render: (row: TableRow) => (
     <span className={styles['dashboard-failed-cell']}>
       <XCircle size={12} />
-      {(r.failed as number) + (r.errored as number)}
+      {(row.failed as number) + (row.errored as number)}
     </span>
   ),
 });
@@ -1163,8 +1213,8 @@ export const dashboardPassRateColumn = () => ({
   description: "Percentage of benchmark tests this model passed",
   sortable: true,
   width: "100px",
-  render: (r: TableRow) => {
-    const percentage = Math.round((r.passRate as number) * 100);
+  render: (row: TableRow) => {
+    const percentage = Math.round((row.passRate as number) * 100);
     const color =
       percentage >= 80
         ? "var(--color-success)"
@@ -1193,8 +1243,8 @@ export const dashboardAvgLatencyColumn = () => ({
   description: "Average response latency across all benchmark tests",
   sortable: true,
   align: "right" as const,
-  render: (r: TableRow) => (
-    <BadgeComponent type="stopwatch" seconds={r.avgLatency as number} />
+  render: (row: TableRow) => (
+    <BadgeComponent type="stopwatch" seconds={row.avgLatency as number} />
   ),
 });
 
@@ -1204,9 +1254,9 @@ export const dashboardCostColumn = () => ({
   description: "Total estimated cost across all benchmark tests for this model",
   sortable: true,
   align: "right" as const,
-  render: (r: TableRow) =>
-    ((r.totalCost as number | undefined) ?? 0 > 0) ? (
-      <BadgeComponent type="cost" cost={r.totalCost as number} mini />
+  render: (row: TableRow) =>
+    ((row.totalCost as number | undefined) ?? 0 > 0) ? (
+      <BadgeComponent type="cost" cost={row.totalCost as number} mini />
     ) : (
       emptyDash()
     ),

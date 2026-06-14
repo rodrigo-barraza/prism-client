@@ -40,12 +40,12 @@ export const getRequestsColumns = ({
     label: "Tools",
     sortable: true,
     align: "left" as const,
-    render: (r: IrisRequestEntry) => {
-      if (!r.toolsUsed || !r.toolDisplayNames?.length) return emptyDash();
+    render: (request: IrisRequestEntry) => {
+      if (!request.toolsUsed || !request.toolDisplayNames?.length) return emptyDash();
       return (
         <ToolIconComponent
-          toolDisplayNames={r.toolDisplayNames}
-          toolApiNames={r.toolApiNames}
+          toolDisplayNames={request.toolDisplayNames}
+          toolApiNames={request.toolApiNames}
           size={mini ? 10 : undefined}
         />
       );
@@ -54,7 +54,7 @@ export const getRequestsColumns = ({
   ...tokenColumns({
     inputKey: "inputTokens",
     outputKey: "outputTokens",
-    tpsKey: "tokensPerSec",
+    tokensPerSecondKey: "tokensPerSec",
   }),
   ...costColumns(totalCost, { costKey: "estimatedCost", mini }),
   latencyColumn("totalTime", "Latency"),
@@ -62,19 +62,19 @@ export const getRequestsColumns = ({
     key: "duration",
     label: "Duration",
     sortable: true,
-    sortValue: (r: IrisRequestEntry) => r.totalTime || 0,
+    sortValue: (request: IrisRequestEntry) => request.totalTime || 0,
     align: "right" as const,
-    render: (r: IrisRequestEntry) =>
-      valueOrDash(r.totalTime, (v: number) => formatLatency(v)),
+    render: (request: IrisRequestEntry) =>
+      valueOrDash(request.totalTime, (value: number) => formatLatency(value)),
   },
   {
     key: "durationShare",
     label: "Duration %",
     sortable: true,
-    sortValue: (r: IrisRequestEntry) => r.totalTime || 0,
-    render: (r: IrisRequestEntry) => (
+    sortValue: (request: IrisRequestEntry) => request.totalTime || 0,
+    render: (request: IrisRequestEntry) => (
       <ProportionBarComponent
-        value={r.totalTime || 0}
+        value={request.totalTime || 0}
         total={totalDuration}
         color="var(--accent-primary)"
         mini={mini}

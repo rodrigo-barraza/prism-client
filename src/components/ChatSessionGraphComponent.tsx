@@ -869,7 +869,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
 
   // ── Canvas pan/zoom handlers ──────────────────────────────────
   const handleCanvasMouseDown = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    if ((event.target as SVGElement).closest("[data-node-id]")) return;
+    if ((event.target as SVGElement).closest("[data-node-identifier]")) return;
     setIsPanning(true);
     lastMousePositionRef.current = { x: event.clientX, y: event.clientY };
   }, []);
@@ -1122,7 +1122,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
                 return (
                   <g
                     key={node.id}
-                    data-node-id={node.id}
+                    data-node-identifier={node.id}
                     className={`${graphStyles['node-group']}${enteringNodeIds.has(node.id) ? ` ${graphStyles['node-entering']}` : ""}`}
                     onMouseDown={(event) => handleNodeMouseDown(event, node.id)}
                     onClick={() => handleNodeClick(node.id)}

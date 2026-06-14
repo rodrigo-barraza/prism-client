@@ -62,12 +62,12 @@ const LOGOS = {
       style={{ flexShrink: 0 }}
     >
       <defs>
-        <linearGradient id="lms-grad" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id="lm-studio-linear-gradient" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#7C5CFC" />
           <stop offset="100%" stopColor="#5B3CC4" />
         </linearGradient>
       </defs>
-      <rect width="24" height="24" rx="5" fill="url(#lms-grad)" />
+      <rect width="24" height="24" rx="5" fill="url(#lm-studio-linear-gradient)" />
       {/* Stacked horizontal bars — LM Studio logo mark */}
       <rect
         x="4.5"

@@ -213,7 +213,7 @@ function NodePorts({
               }
               strokeWidth={2}
               className={`${styles['port']} ${isCompatible ? styles['port-compatible'] : ""}`}
-              data-node-id={node.id}
+              data-node-identifier={node.id}
               data-port-type="input"
               data-port-modality={portId}
               onClick={(e: React.MouseEvent) =>
@@ -293,7 +293,7 @@ function NodePorts({
               stroke={isNodeRunning ? nodeStatusGradient : color}
               strokeWidth={2}
               className={`${styles['port']} ${styles['port-output']}`}
-              data-node-id={node.id}
+              data-node-identifier={node.id}
               data-port-type="output"
               data-port-modality={modality}
               onClick={(e: React.MouseEvent) =>
@@ -457,7 +457,7 @@ function NodeShell({
       transform={`translate(${node.position?.x ?? 0}, ${node.position?.y ?? 0})`}
       className={`${styles['node-group']} ${className || ""}`}
       data-workflow-node
-      data-node-id={node.id}
+      data-node-identifier={node.id}
       onMouseDown={(e: React.MouseEvent) => onMouseDown(e, node.id)}
       onTouchStart={(e: React.TouchEvent) => onTouchStart?.(e, node.id)}
     >

@@ -17,6 +17,7 @@ import type {
   IrisAgentStat,
   IrisUserStat,
   IrisTimelineEntry,
+  JsonValue,
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
@@ -49,8 +50,8 @@ export interface IrisRequestEntry {
   toolDisplayNames?: string[];
   toolApiNames?: string[];
   modalities?: Record<string, number>;
-  requestPayload?: Record<string, unknown>;
-  responsePayload?: Record<string, unknown>;
+  requestPayload?: Record<string, JsonValue>;
+  responsePayload?: Record<string, JsonValue>;
   agent?: string;
   username?: string;
   agentSessionId?: string;
@@ -85,7 +86,7 @@ export interface IrisTimelineResponse {
 /**
  * Generic paginated list response — shared by traces, media, text, agent-sessions, workflows.
  */
-export interface IrisPaginatedResponse<T = Record<string, unknown>> {
+export interface IrisPaginatedResponse<T = Record<string, JsonValue>> {
   data: T[];
   total: number;
 }
@@ -190,11 +191,11 @@ export default class IrisService {
     id: string,
   ): Promise<{
     conversation?: Conversation;
-    agentSession?: Record<string, unknown>;
+    agentSession?: AgentSession;
   }> {
     return fetchJSON<{
       conversation?: Conversation;
-      agentSession?: Record<string, unknown>;
+      agentSession?: AgentSession;
     }>(`/requests/${id}/associations`);
   }
 

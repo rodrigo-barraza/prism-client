@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import IrisService from "../../../services/IrisService";
-import type { Workflow, WorkflowNode } from "../../../types/types";
+import type { Workflow, WorkflowNode, WorkflowConnection } from "../../../types/types";
+import type { NodeResult } from "../../../components/WorkflowInspectorComponent";
 import WorkflowComponent from "../../../components/WorkflowComponent";
 import WorkflowHeaderStatsComponent from "../../../components/WorkflowHeaderStatsComponent";
 import {
@@ -117,7 +118,7 @@ function AdminWorkflowsPageInner() {
 
   // Use persisted nodeResults and nodeStatuses from the workflow document
   const nodeResults = useMemo(() => {
-    return (selectedWorkflow?.nodeResults || {}) as Record<string, any>;
+    return (selectedWorkflow?.nodeResults || {}) as Record<string, NodeResult | null | undefined>;
   }, [selectedWorkflow]);
 
   // nodeStatuses are ephemeral runtime state — always empty for read-only view
@@ -127,6 +128,17 @@ function AdminWorkflowsPageInner() {
     const edges =
       selectedWorkflow?.edges || selectedWorkflow?.connections || [];
     return edges.length;
+  }, [selectedWorkflow]);
+
+  const mappedConnections = useMemo((): WorkflowConnection[] => {
+    const edges = selectedWorkflow?.edges || selectedWorkflow?.connections || [];
+    return edges.map((edge) => ({
+      id: edge.id,
+      sourceNodeId: edge.sourceNodeId || edge.source || "",
+      sourceModality: edge.sourceModality || "",
+      targetNodeId: edge.targetNodeId || edge.target || "",
+      targetModality: edge.targetModality || "",
+    }));
   }, [selectedWorkflow]);
 
   // Local node state for drag-to-rearrange (not persisted)
@@ -231,15 +243,13 @@ function AdminWorkflowsPageInner() {
             readOnly
             admin
             nodes={localNodes}
-            connections={
-              (selectedWorkflow?.edges || selectedWorkflow?.connections || []) as any
-            }
+            connections={mappedConnections}
             selectedNodeId={selectedNodeId}
             onSelectNode={setSelectedNodeId}
             onUpdateNodePosition={handleUpdateNodePosition}
             nodeResults={nodeResults}
             nodeStatuses={nodeStatuses}
-            workflows={workflows as any}
+            workflows={workflows}
             activeWorkflowId={selectedId ?? undefined}
             onLoadWorkflow={selectWorkflow}
             loading={loading}

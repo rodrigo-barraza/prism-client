@@ -752,7 +752,7 @@
     opacity 0.25s ease;
 }
 
-.identifier-copy-button[data-is-copied="true"] {
+.identifier-copy-button[data-is-copied-state="true"] {
   color: var(--color-success, #22c55e);
 }
 
