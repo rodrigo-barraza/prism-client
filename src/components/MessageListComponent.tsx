@@ -1870,11 +1870,6 @@ export default function MessageList({
                               return -1;
                             })();
 
-                            // Dedup: track already-rendered thinking content
-                            // to skip verbatim duplicates from multi-iteration
-                            // agentic loops (e.g. vLLM re-generating identical reasoning)
-                            const renderedThinkingContent = new Set<string>();
-
                             return (
                               <>
                                 {segs.map((seg, segmentIndex) => {
@@ -1886,17 +1881,6 @@ export default function MessageList({
                                       message.thinkingFragments?.[
                                         seg.fragmentIndex ?? 0
                                       ];
-                                    const trimmedFragment = fragment?.trim() || "";
-                                    if (
-                                      !isThinkingStreaming &&
-                                      trimmedFragment &&
-                                      renderedThinkingContent.has(trimmedFragment)
-                                    ) {
-                                      return null;
-                                    }
-                                    if (trimmedFragment) {
-                                      renderedThinkingContent.add(trimmedFragment);
-                                    }
                                     return (
                                       <ThinkingBlock
                                         key={`think-${segmentIndex}`}
@@ -2069,7 +2053,6 @@ export default function MessageList({
                           const visualToolCalls = message.toolCalls.filter(
                             (toolCall: ToolCallEvent) =>
                               VISUAL_TOOL_NAMES.has(toolCall.name) &&
-                              toolCall.status === "done" &&
                               toolCall.result,
                           );
                           if (visualToolCalls.length === 0) return null;
