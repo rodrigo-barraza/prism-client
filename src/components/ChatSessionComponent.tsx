@@ -104,6 +104,7 @@ import {
   AGENT_IDS,
   LS_CRON_JOB_NOTIFICATIONS_COUNT,
   LS_CRITIC_GATE_ENABLED,
+  LOCAL_STORAGE_AUTO_APPROVE_ENABLED,
   LS_AGENT_MAX_ITERATIONS,
   LS_AGENT_MAX_WORKER_ITERATIONS,
   EV_SIDEBAR_TAB_CHANGE,
@@ -689,7 +690,12 @@ export default function ChatSessionComponent({
   const dragCounter = useRef<number>(0);
 
   // Phase 1: Agentic controls
-  const [autoApprove, setAutoApprove] = useState(false);
+  const [autoApprove, setAutoApprove] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(LOCAL_STORAGE_AUTO_APPROVE_ENABLED) === "true";
+    }
+    return false;
+  });
   const [maxIterations, setMaxIterations] = useState(MAX_TOOL_ITERATIONS);
   const [maxWorkerIterations, setMaxWorkerIterations] =
     useState(MAX_TOOL_ITERATIONS);
@@ -4912,7 +4918,16 @@ export default function ChatSessionComponent({
                       icon: <Zap size={12} />,
                       label: "Auto Approve Tool Use",
                       checked: autoApprove,
-                      onChange: () => setAutoApprove((v) => !v),
+                      onChange: () => {
+                        setAutoApprove((previousAutoApprove) => {
+                          const nextAutoApprove = !previousAutoApprove;
+                          localStorage.setItem(
+                            LOCAL_STORAGE_AUTO_APPROVE_ENABLED,
+                            String(nextAutoApprove),
+                          );
+                          return nextAutoApprove;
+                        });
+                      },
                     },
                     {
                       key: "criticGate",
