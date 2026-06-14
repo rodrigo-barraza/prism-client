@@ -292,6 +292,7 @@ export interface ToolResultViewProps {
     string,
     WorkerActivity | WorkerToolActivityItem
   > | null;
+  hideToggles?: boolean;
 }
 
 // --- Helpers ----------------------------------------------------------
@@ -2822,12 +2823,13 @@ export function ToolResultView({
   toolCall,
   streamingOutput,
   workerToolActivity,
+  hideToggles = false,
 }: ToolResultViewProps) {
   const { Renderer, language } = resolveToolResultRenderer(toolCall.name);
 
   return (
     <>
-      <InputArgsToggle args={toolCall.args} />
+      {!hideToggles && <InputArgsToggle args={toolCall.args} />}
       <Renderer
         result={toolCall.result}
         args={toolCall.args}
@@ -2835,7 +2837,7 @@ export function ToolResultView({
         language={language}
         workerToolActivity={workerToolActivity}
       />
-      <OutputResultToggle result={toolCall.result} />
+      {!hideToggles && <OutputResultToggle result={toolCall.result} />}
     </>
   );
 }

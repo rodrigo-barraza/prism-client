@@ -2035,7 +2035,7 @@ export default function MessageList({
                           return visualToolCalls.map(
                             (toolCall: ToolCallEvent, toolCallIndex: number) => (
                               <div key={`visual-${toolCall.id || toolCallIndex}`}>
-                                <ToolResultView toolCall={toolCall} />
+                                <ToolResultView toolCall={toolCall} hideToggles={true} />
                               </div>
                             ),
                           );
