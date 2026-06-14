@@ -753,6 +753,10 @@ export default class PrismService {
     return `${API_BASE}/workspaces/download/agent`;
   }
 
+  static getWorkspaceAgentPlatformDownloadUrl(platform: string): string {
+    return `${API_BASE}/workspaces/download/agent?platform=${encodeURIComponent(platform)}`;
+  }
+
   // ---------------------------------------------------------------------------
   // MCP Servers
   // ---------------------------------------------------------------------------

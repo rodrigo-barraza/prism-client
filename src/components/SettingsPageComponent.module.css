@@ -1085,6 +1085,78 @@
   transform: translateY(0);
 }
 
+/* ── Platform download grid ──────────────────────────────────────── */
+
+.platform-download-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.platform-download-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--background-base);
+  border: 1px solid var(--calculated-border-subtle);
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+  will-change: transform;
+}
+
+.platform-download-button:hover {
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent-primary) 10%, transparent);
+}
+
+.platform-download-button:active {
+  transform: translateY(0);
+}
+
+.platform-download-button.platform-recommended {
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-primary) 12%, transparent);
+}
+
+.platform-download-button.platform-recommended:hover {
+  border-color: var(--accent-primary);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent-primary) 20%, transparent),
+    0 4px 16px color-mix(in srgb, var(--accent-primary) 15%, transparent);
+}
+
+.platform-download-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.platform-download-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.platform-download-arch {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
@@ -1100,5 +1172,9 @@
   .harness-grid {
     grid-template-columns: 1fr;
     padding: 0 16px 14px;
+  }
+
+  .platform-download-grid {
+    grid-template-columns: 1fr;
   }
 }

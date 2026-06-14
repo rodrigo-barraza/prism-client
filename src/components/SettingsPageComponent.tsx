@@ -30,6 +30,7 @@ import {
   Volume2,
   Download,
   HardDrive,
+  Monitor,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
@@ -88,7 +89,7 @@ export default function SettingsPageComponent() {
   const [saved, setSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [harnesses, setHarnesses] = useState<AgenticHarness[]>([]);
-  const [expandedGuide, setExpandedGuide] = useState<"download" | "docker" | "local" | null>(null);
+  const [expandedGuide, setExpandedGuide] = useState<"desktop" | "download" | "docker" | "local" | null>(null);
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
 
   // -- MCP Servers state -----------------------------------------------
@@ -1210,6 +1211,165 @@ export default function SettingsPageComponent() {
                 access
               </span>
             </div>
+
+            {/* Desktop App — one-click standalone executable */}
+            <button
+              className={`${styles['guide-toggle']} ${expandedGuide === "desktop" ? styles['guide-expanded'] : ""}`}
+              onClick={() =>
+                setExpandedGuide(expandedGuide === "desktop" ? null : "desktop")
+              }
+            >
+              <Monitor size={16} className={styles['guide-toggle-icon']} />
+              <div className={styles['guide-toggle-label']}>
+                <span className={styles['guide-toggle-title']}>Desktop App</span>
+                <span className={styles['guide-toggle-hint']}>
+                  One-click standalone executable — no Node.js, no dependencies
+                </span>
+              </div>
+              <ChevronRight size={14} className={styles['guide-chevron']} />
+            </button>
+
+            {expandedGuide === "desktop" && (
+              <div className={styles['guide-content']}>
+                <div className={styles['single-file-explainer']}>
+                  <div className={styles['single-file-explainer-icon']}>
+                    <Monitor size={20} />
+                  </div>
+                  <div className={styles['single-file-explainer-text']}>
+                    <span className={styles['single-file-explainer-headline']}>
+                      Pre-configured standalone executable
+                    </span>
+                    <span className={styles['single-file-explainer-description']}>
+                      Downloads a single binary with your backend URL and
+                      credentials pre-baked. Just run it — no setup, no
+                      dependencies, no Node.js required. Works on Windows,
+                      macOS, and Linux.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles['guide-step']}>
+                  <span className={styles['step-number']}>1</span>
+                  <div className={styles['step-body']}>
+                    <span className={styles['step-title']}>
+                      Download for your platform
+                    </span>
+                    <div className={styles['platform-download-grid']}>
+                      <a
+                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
+                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl("win-x64")}
+                        download
+                      >
+                        <Download size={14} />
+                        <span className={styles['platform-download-label']}>
+                          <span className={styles['platform-download-name']}>Windows</span>
+                          <span className={styles['platform-download-arch']}>x64</span>
+                        </span>
+                      </a>
+                      <a
+                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Linux/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
+                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl("linux-x64")}
+                        download
+                      >
+                        <Download size={14} />
+                        <span className={styles['platform-download-label']}>
+                          <span className={styles['platform-download-name']}>Linux</span>
+                          <span className={styles['platform-download-arch']}>x64</span>
+                        </span>
+                      </a>
+                      <a
+                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && !/arm|aarch/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
+                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl("mac-x64")}
+                        download
+                      >
+                        <Download size={14} />
+                        <span className={styles['platform-download-label']}>
+                          <span className={styles['platform-download-name']}>macOS</span>
+                          <span className={styles['platform-download-arch']}>Intel</span>
+                        </span>
+                      </a>
+                      <a
+                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && /arm|aarch/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
+                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl("mac-arm64")}
+                        download
+                      >
+                        <Download size={14} />
+                        <span className={styles['platform-download-label']}>
+                          <span className={styles['platform-download-name']}>macOS</span>
+                          <span className={styles['platform-download-arch']}>Apple Silicon</span>
+                        </span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles['guide-step']}>
+                  <span className={styles['step-number']}>2</span>
+                  <div className={styles['step-body']}>
+                    <span className={styles['step-title']}>
+                      Run it from your project directory
+                    </span>
+                    <div className={styles['code-block']}>
+                      <code>
+                        {typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent)
+                          ? ".\\workspace-agent.exe --workspace C:\\path\\to\\project"
+                          : "./workspace-agent --workspace /path/to/project"}
+                      </code>
+                      <button
+                        className={styles['copy-button']}
+                        title="Copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent)
+                              ? ".\\workspace-agent.exe --workspace C:\\path\\to\\project"
+                              : "./workspace-agent --workspace /path/to/project",
+                          );
+                          setCopiedBlock("desktop-2");
+                          setTimeout(
+                            () => setCopiedBlock(null),
+                            FEEDBACK_STANDARD_MS,
+                          );
+                        }}
+                      >
+                        {copiedBlock === "desktop-2" ? (
+                          <CheckCheck size={12} />
+                        ) : (
+                          <Copy size={12} />
+                        )}
+                      </button>
+                    </div>
+                    <span className={styles['step-hint']}>
+                      Backend URL and credentials are already compiled in.
+                      Just point it at your workspace directory.
+                      On macOS/Linux, you may need to{" "}
+                      <code className={styles['inline-code']}>chmod +x workspace-agent</code>{" "}
+                      first.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles['guide-step']}>
+                  <span className={styles['step-number']}>3</span>
+                  <div className={styles['step-body']}>
+                    <span className={styles['step-title']}>
+                      Verify connection
+                    </span>
+                    <span className={styles['step-hint']}>
+                      Look for{" "}
+                      <code className={styles['inline-code']}>
+                        Connected to ws://…
+                      </code>{" "}
+                      and{" "}
+                      <code className={styles['inline-code']}>
+                        Server confirmed registration
+                      </code>{" "}
+                      in the output. The agent will appear in this settings
+                      panel under Remote Agents.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Single-file download (simplest path) */}
             <button
