@@ -219,12 +219,30 @@ export interface ParsedToolResult {
     prompt: string;
     mode: "one_shot" | "recurring";
   };
-  // 3D mesh renderer
+  // 3D mesh / voxel / model / scene renderer
   vertexCount?: number;
   faceCount?: number;
   totalVertices?: number;
   totalFaces?: number;
   sceneEmbedUrl?: string;
+  voxelCount?: number;
+  totalVoxels?: number;
+  objectCount?: number;
+  totalObjects?: number;
+  // QR code renderer
+  qrImageUrl?: string;
+  qrId?: string;
+  dataLength?: number;
+  // LaTeX renderer
+  latexEmbedUrl?: string;
+  latexId?: string;
+  // Diagram renderer
+  diagramEmbedUrl?: string;
+  diagramId?: string;
+  // Image manipulation renderer
+  imageUrl?: string;
+  imageId?: string;
+  metadata?: Record<string, unknown>;
   // Emoji Kitchen renderer
   leftEmoji?: string;
   leftEmojiCodepoint?: string;
@@ -1698,7 +1716,73 @@ function VectorAnimationRenderer({ result, args }: RendererProps) {
   );
 }
 
+/**
+ * Auto-resizing iframe for tool result embeds (LaTeX, Diagram, Map).
+ * Listens for postMessage `embed-resize` events from the embed page
+ * and dynamically adjusts iframe height to fit content — avoids
+ * fixed-height clipping for tall equations or complex diagrams.
+ */
+function AutoResizeToolEmbed({
+  sourceUrl,
+  title,
+  fallbackHeight = 360,
+  className,
+  wrapperClassName,
+}: {
+  sourceUrl: string;
+  title: string;
+  fallbackHeight?: number;
+  className?: string;
+  wrapperClassName?: string;
+}) {
+  const iframeReference = useRef<HTMLIFrameElement | null>(null);
+  const [dynamicHeight, setDynamicHeight] = useState(fallbackHeight);
+
+  const handleResizeMessage = useCallback((event: MessageEvent) => {
+    if (
+      event.data?.type === "embed-resize" &&
+      iframeReference.current &&
+      event.source === iframeReference.current.contentWindow
+    ) {
+      setDynamicHeight(event.data.height);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("message", handleResizeMessage);
+    return () => window.removeEventListener("message", handleResizeMessage);
+  }, [handleResizeMessage]);
+
+  return (
+    <div className={wrapperClassName || styles['visual-tool-embed-wrapper']}>
+      <iframe
+        ref={iframeReference}
+        src={sourceUrl}
+        className={className || styles['visual-tool-embed-frame']}
+        title={title}
+        style={{ height: `${dynamicHeight}px` }}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+    </div>
+  );
+}
+
 // -- 13.5 3D Mesh Rendering --------------------------------------------------
+
+function ThreeDimensionalSceneEmbed({ sourceUrl, title }: { sourceUrl: string; title: string }) {
+  return (
+    <div className={styles["three-dimensional-mesh-embed-wrapper"]}>
+      <iframe
+        src={sourceUrl}
+        className={styles["three-dimensional-mesh-embed-frame"]}
+        title={title}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+    </div>
+  );
+}
 
 function ThreeMeshRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
@@ -1727,13 +1811,347 @@ function ThreeMeshRenderer({ result, args }: RendererProps) {
       </div>
       {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasError && embedUrl && (
-        <div className={styles["three-dimensional-mesh-embed-wrapper"]}>
-          <iframe
-            src={embedUrl}
-            className={styles["three-dimensional-mesh-embed-frame"]}
-            title="3D Mesh Renderer"
+        <ThreeDimensionalSceneEmbed sourceUrl={embedUrl} title="3D Mesh Renderer" />
+      )}
+    </div>
+  );
+}
+
+function ThreeVoxelRenderer({ result, args }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const voxelCount = parsed.voxelCount || 0;
+  const totalVoxels = parsed.totalVoxels || voxelCount;
+  const isAppend = !!parsed.isAppend;
+  const embedUrl = parsed.sceneEmbedUrl || parsed.embedUrl || "";
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>🧊</span>
+        <span className={styles['renderer-title']}>
+          3D Voxel Grid — {isAppend ? `Added ${voxelCount} voxels` : `Created ${voxelCount} voxels`}
+          {isAppend && ` (Total: ${totalVoxels} voxels)`}
+        </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Interactive 3D"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <ThreeDimensionalSceneEmbed sourceUrl={embedUrl} title="3D Voxel Grid" />
+      )}
+    </div>
+  );
+}
+
+function ThreeModelRenderer({ result, args }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const objectCount = parsed.objectCount || (args as { objects?: unknown[] })?.objects?.length || 0;
+  const totalObjects = parsed.totalObjects || objectCount;
+  const isAppend = !!parsed.isAppend;
+  const embedUrl = parsed.sceneEmbedUrl || parsed.embedUrl || "";
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>🎨</span>
+        <span className={styles['renderer-title']}>
+          3D Model — {isAppend ? `Added ${objectCount} objects` : `Created ${objectCount} objects`}
+          {isAppend && ` (Total: ${totalObjects} objects)`}
+        </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Interactive 3D"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <ThreeDimensionalSceneEmbed sourceUrl={embedUrl} title="3D Model" />
+      )}
+    </div>
+  );
+}
+
+function ThreeSceneRenderer({ result, args }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const objectCount = parsed.objectCount || parsed.totalObjects || 0;
+  const isAppend = !!parsed.isAppend;
+  const embedUrl = parsed.sceneEmbedUrl || parsed.embedUrl || "";
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>🌐</span>
+        <span className={styles['renderer-title']}>
+          3D Scene — {isAppend ? `Updated (${objectCount} objects)` : `Created (${objectCount} objects)`}
+        </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Interactive 3D"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <ThreeDimensionalSceneEmbed sourceUrl={embedUrl} title="3D Scene" />
+      )}
+    </div>
+  );
+}
+
+// -- 13.6 QR Code Rendering --------------------------------------------------
+
+function QrCodeRenderer({ result }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const qrImageUrl = parsed.qrImageUrl || "";
+  const dataLength = parsed.dataLength || 0;
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>📱</span>
+        <span className={styles['renderer-title']}>
+          QR Code{!hasError && dataLength > 0 ? ` — ${dataLength} chars encoded` : ""}
+        </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Generated"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && qrImageUrl && (
+        <div className={styles['visual-tool-image-container']}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qrImageUrl}
+            alt="Generated QR Code"
+            className={styles['visual-tool-image']}
             loading="lazy"
-            referrerPolicy="no-referrer"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// -- 13.7 LaTeX Rendering ----------------------------------------------------
+
+function LatexRenderer({ result }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const embedUrl = parsed.latexEmbedUrl || parsed.embedUrl || "";
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>📐</span>
+        <span className={styles['renderer-title']}>LaTeX Equation</span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Rendered"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <AutoResizeToolEmbed
+          sourceUrl={embedUrl}
+          title="LaTeX Equation"
+          fallbackHeight={160}
+        />
+      )}
+    </div>
+  );
+}
+
+// -- 13.8 Diagram Rendering --------------------------------------------------
+
+function DiagramRenderer({ result }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const embedUrl = parsed.diagramEmbedUrl || parsed.embedUrl || "";
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>📊</span>
+        <span className={styles['renderer-title']}>Mermaid Diagram</span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Rendered"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <AutoResizeToolEmbed
+          sourceUrl={embedUrl}
+          title="Mermaid Diagram"
+          fallbackHeight={420}
+        />
+      )}
+    </div>
+  );
+}
+
+// -- 13.9 Image Manipulation Rendering ---------------------------------------
+
+function ImageManipulationRenderer({ result }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const imageUrl = parsed.imageUrl || "";
+  const hasMetadataOnly = !imageUrl && parsed.metadata && parsed.success;
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>🖼️</span>
+        <span className={styles['renderer-title']}>
+          {hasMetadataOnly ? "Image Metadata" : "Image Processing"}
+        </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : hasMetadataOnly ? "Inspected" : "Processed"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && imageUrl && (
+        <div className={styles['visual-tool-image-container']}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt="Processed image"
+            className={styles['visual-tool-image']}
+            loading="lazy"
+          />
+        </div>
+      )}
+      {hasMetadataOnly && parsed.metadata && (
+        <div className={styles['visual-tool-metadata']}>
+          {Object.entries(parsed.metadata).map(([key, value]) => (
+            <span key={key} className={styles['meta-item']}>
+              <strong>{key}:</strong> {String(value)}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// -- 13.10 Video to GIF Rendering --------------------------------------------
+
+function VideoToGifRenderer({ result }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const imageUrl = parsed.imageUrl || "";
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>🎞️</span>
+        <span className={styles['renderer-title']}>Video → GIF Conversion</span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Converted"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && imageUrl && (
+        <div className={styles['visual-tool-image-container']}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt="Converted GIF"
+            className={styles['visual-tool-image']}
+            loading="lazy"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// -- 13.11 Map Rendering -----------------------------------------------------
+
+function MapRenderer({ result }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const embedUrl = (parsed as Record<string, unknown>).mapEmbedUrl as string || parsed.embedUrl || "";
+  const markerCount = (parsed as Record<string, unknown>).markerCount as number || 0;
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>🗺️</span>
+        <span className={styles['renderer-title']}>
+          Interactive Map{markerCount > 0 ? ` — ${markerCount} marker${markerCount !== 1 ? "s" : ""}` : ""}
+        </span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Generated"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && embedUrl && (
+        <AutoResizeToolEmbed
+          sourceUrl={embedUrl}
+          title="Interactive Map"
+          fallbackHeight={360}
+        />
+      )}
+    </div>
+  );
+}
+
+// -- 13.12 Chart Rendering ----------------------------------------------------
+
+function ChartRenderer({ result }: RendererProps) {
+  const parsed = tryParse(result);
+  if (!parsed) return <RawResultToggle result={result} />;
+
+  const hasError = !!parsed.error;
+  const chartImageUrl = (parsed as Record<string, unknown>).chartImageUrl as string || parsed.imageUrl || "";
+
+  return (
+    <div className={styles['renderer-block']}>
+      <div className={styles['renderer-header']}>
+        <span style={{ fontSize: 13 }}>📈</span>
+        <span className={styles['renderer-title']}>Chart</span>
+        <StatusBadge
+          success={!hasError}
+          label={hasError ? "Error" : "Generated"}
+        />
+      </div>
+      {hasError && <div className={styles['error-text']}>{parsed.error}</div>}
+      {!hasError && chartImageUrl && (
+        <div className={styles['visual-tool-image-container']}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={chartImageUrl}
+            alt="Generated chart"
+            className={styles['visual-tool-image']}
+            loading="lazy"
           />
         </div>
       )}
@@ -2345,8 +2763,20 @@ const TOOL_RESULT_REGISTRY = {
   draw_turtle_graphics: { Renderer: TurtleDrawRenderer },
   create_vector_animation: { Renderer: VectorAnimationRenderer },
 
-  // 3D Mesh
+  // 3D Tools
   create_3d_mesh: { Renderer: ThreeMeshRenderer },
+  create_3d_voxel: { Renderer: ThreeVoxelRenderer },
+  create_3d_model: { Renderer: ThreeModelRenderer },
+  create_3d_scene: { Renderer: ThreeSceneRenderer },
+
+  // Visual Compute Tools
+  generate_qr_code: { Renderer: QrCodeRenderer },
+  render_latex: { Renderer: LatexRenderer },
+  generate_diagram: { Renderer: DiagramRenderer },
+  manipulate_image: { Renderer: ImageManipulationRenderer },
+  convert_video_to_gif: { Renderer: VideoToGifRenderer },
+  generate_map: { Renderer: MapRenderer },
+  generate_chart: { Renderer: ChartRenderer },
 
   // Image to ASCII Art
   convert_image_to_ascii: { Renderer: AsciiImageRenderer },
