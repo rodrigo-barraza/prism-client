@@ -28,7 +28,7 @@ export default function ToolCallsBlockComponent({
   workerToolActivity,
 }: ToolCallsBlockProps) {
   const hasActiveCalls = toolCalls
-    ? toolCalls.some((toolCall) => toolCall.status === "calling")
+    ? toolCalls.some((toolCall) => toolCall.status === "calling" || toolCall.status === "streaming")
     : false;
 
   const [headerCollapsed, setHeaderCollapsed] = useState(!hasActiveCalls);
@@ -84,7 +84,7 @@ export default function ToolCallsBlockComponent({
                 : renderToolName(toolCall.name);
             const { Icon, color } = resolveToolVisuals(toolCall.name);
 
-            const isCalling = toolCall.status === "calling";
+            const isCalling = toolCall.status === "calling" || toolCall.status === "streaming";
             const isError = toolCall.status === "error";
 
             return (

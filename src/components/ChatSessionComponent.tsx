@@ -2613,7 +2613,7 @@ export default function ChatSessionComponent({
 
             // Track segment ordering: group consecutive tool events
             // Guard: only add to segments if not already tracked
-            if (data.status === "calling") {
+            if (data.status === "streaming" || data.status === "calling") {
               if (!segmentToolIdSet.has(resolvedId)) {
                 segmentToolIdSet.add(resolvedId);
                 if (lastSegmentType === "tools") {
@@ -2773,7 +2773,7 @@ export default function ChatSessionComponent({
 
             // Track segment ordering: group consecutive tool events
             // Guard: only add to segments if not already tracked
-            if (toolData.status === "calling") {
+            if (toolData.status === "streaming" || toolData.status === "calling") {
               if (!segmentToolIdSet.has(resolvedId)) {
                 segmentToolIdSet.add(resolvedId);
                 if (lastSegmentType === "tools") {
@@ -3184,13 +3184,39 @@ export default function ChatSessionComponent({
               if (!toolData) return previousWorkerToolActivity;
 
               let updatedCalls = [...entry.toolCalls];
-              if (data.status === "calling") {
+              if (data.status === "streaming" || data.status === "calling") {
                 const newCall: ToolCallEvent = {
                   id: toolData.id || `wtc-${Date.now()}`,
                   name: toolData.name || "unknown",
                   args: toolData.args || {},
-                  status: "calling",
+                  status: data.status as string,
                 };
+                const existingIndex = updatedCalls.findIndex(
+                  (toolCall) => toolCall.id === newCall.id,
+                );
+                if (existingIndex >= 0) {
+                  updatedCalls = updatedCalls.map((toolCall) =>
+                    toolCall.id === newCall.id
+                      ? {
+                          ...toolCall,
+                          status: data.status as string,
+                          ...(toolData.args &&
+                          Object.keys(toolData.args).length > 0
+                            ? { args: toolData.args }
+                            : {}),
+                        }
+                      : toolCall,
+                  );
+                  return {
+                    ...previousWorkerToolActivity,
+                    [workerId]: {
+                      ...entry,
+                      currentTool: toolData.name || entry.currentTool,
+                      toolCalls: updatedCalls,
+                      phase: undefined,
+                    },
+                  };
+                }
                 updatedCalls.push(newCall);
 
                 const toolName = toolData.name || "unknown";
@@ -3214,7 +3240,8 @@ export default function ChatSessionComponent({
                   if (
                     toolCall.id === toolData.id ||
                     (toolCall.name === toolData.name &&
-                      toolCall.status === "calling")
+                      (toolCall.status === "calling" ||
+                        toolCall.status === "streaming"))
                   ) {
                     return {
                       ...toolCall,
@@ -5742,7 +5769,7 @@ export default function ChatSessionComponent({
           ? derivedLabel || lastMessage?.status || "Starting..."
           : undefined;
 
-        const hasActiveTools = toolActivity.some((t) => t.status === "calling");
+        const hasActiveTools = toolActivity.some((t) => t.status === "calling" || t.status === "streaming");
         // Detect awaiting-approval state (plan proposal or tool approval pending)
         const isAwaitingApproval =
           planProposal?.status === "pending" ||
@@ -5792,7 +5819,7 @@ export default function ChatSessionComponent({
           }
         }
 
-        const activeTool = toolActivity.find((t) => t.status === "calling");
+        const activeTool = toolActivity.find((t) => t.status === "calling" || t.status === "streaming");
         const activeToolLabel = activeTool
           ? `Running tool ${renderToolName(activeTool.name)}...`
           : "Processing...";

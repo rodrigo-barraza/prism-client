@@ -56,10 +56,29 @@ export function applyToolExecutionToMessages(
 
   let updatedToolCalls: ToolCallEvent[];
 
-  if (toolInput.status === "calling") {
-    // Deduplicate: if this ID is already in the message, no-op
-    if (currentToolCalls.some((tc) => tc.id === resolvedId)) {
-      updatedToolCalls = currentToolCalls;
+  if (toolInput.status === "streaming" || toolInput.status === "calling") {
+    const existingIndex = currentToolCalls.findIndex((toolCall) => toolCall.id === resolvedId);
+    if (existingIndex >= 0) {
+      const existingTool = currentToolCalls[existingIndex];
+      const hasArgsChange = toolInput.args && Object.keys(toolInput.args).length > 0 &&
+                            JSON.stringify(existingTool.args || {}) !== JSON.stringify(toolInput.args);
+      const hasStatusChange = existingTool.status !== toolInput.status;
+
+      if (hasArgsChange || hasStatusChange) {
+        updatedToolCalls = currentToolCalls.map((toolCall) =>
+          toolCall.id === resolvedId
+            ? {
+                ...toolCall,
+                status: toolInput.status,
+                ...(toolInput.args && Object.keys(toolInput.args).length > 0
+                  ? { args: toolInput.args }
+                  : {}),
+              }
+            : toolCall,
+        );
+      } else {
+        updatedToolCalls = currentToolCalls;
+      }
     } else {
       updatedToolCalls = [
         ...currentToolCalls,
@@ -67,7 +86,7 @@ export function applyToolExecutionToMessages(
           id: resolvedId,
           name: toolInput.name || "unknown",
           args: toolInput.args || {},
-          status: "calling",
+          status: toolInput.status,
           timestamp: Date.now(),
         },
       ];
@@ -127,9 +146,27 @@ export function applyToolExecutionToActivity(
   resolvedId: string,
   toolInput: ToolExecutionInput,
 ): ToolCallEvent[] | null {
-  if (toolInput.status === "calling") {
-    // Deduplicate
-    if (prev.some((a) => a.id === resolvedId)) {
+  if (toolInput.status === "streaming" || toolInput.status === "calling") {
+    const existingIndex = prev.findIndex((activity) => activity.id === resolvedId);
+    if (existingIndex >= 0) {
+      const existingTool = prev[existingIndex];
+      const hasArgsChange = toolInput.args && Object.keys(toolInput.args).length > 0 &&
+                            JSON.stringify(existingTool.args || {}) !== JSON.stringify(toolInput.args);
+      const hasStatusChange = existingTool.status !== toolInput.status;
+
+      if (hasArgsChange || hasStatusChange) {
+        return prev.map((activity) =>
+          activity.id === resolvedId
+            ? {
+                ...activity,
+                status: toolInput.status,
+                ...(toolInput.args && Object.keys(toolInput.args).length > 0
+                  ? { args: toolInput.args }
+                  : {}),
+              }
+            : activity,
+        );
+      }
       return null; // Signal: no change
     }
     return [
@@ -138,7 +175,7 @@ export function applyToolExecutionToActivity(
         id: resolvedId,
         name: toolInput.name || "unknown",
         args: toolInput.args || {},
-        status: "calling",
+        status: toolInput.status,
         timestamp: Date.now(),
       },
     ];
@@ -183,9 +220,29 @@ export function applyToolCallToMessages(
 
   let updatedToolCalls: ToolCallEvent[];
 
-  if (toolData.status === "calling") {
-    if (currentToolCalls.some((tc) => tc.id === resolvedId)) {
-      updatedToolCalls = currentToolCalls;
+  if (toolData.status === "streaming" || toolData.status === "calling") {
+    const existingIndex = currentToolCalls.findIndex((toolCall) => toolCall.id === resolvedId);
+    if (existingIndex >= 0) {
+      const existingTool = currentToolCalls[existingIndex];
+      const hasArgsChange = toolData.args && Object.keys(toolData.args).length > 0 &&
+                            JSON.stringify(existingTool.args || {}) !== JSON.stringify(toolData.args);
+      const hasStatusChange = existingTool.status !== toolData.status;
+
+      if (hasArgsChange || hasStatusChange) {
+        updatedToolCalls = currentToolCalls.map((toolCall) =>
+          toolCall.id === resolvedId
+            ? {
+                ...toolCall,
+                status: toolData.status,
+                ...(toolData.args && Object.keys(toolData.args).length > 0
+                  ? { args: toolData.args }
+                  : {}),
+              }
+            : toolCall,
+        );
+      } else {
+        updatedToolCalls = currentToolCalls;
+      }
     } else {
       updatedToolCalls = [
         ...currentToolCalls,
@@ -193,7 +250,7 @@ export function applyToolCallToMessages(
           id: resolvedId,
           name: toolData.name,
           args: toolData.args,
-          status: "calling",
+          status: toolData.status,
           timestamp: Date.now(),
         },
       ];
