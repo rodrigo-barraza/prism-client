@@ -612,4 +612,115 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       expect(lockedRows.length).toBe(0);
     });
   });
+
+  describe("native thinking — think tool locked off", () => {
+    function buildThinkingLockedOffMap(): Map<string, string> {
+      const lockedToolsMap = new Map<string, string>();
+      lockedToolsMap.set("think", "Disabled — this model has built-in thinking/reasoning");
+      return lockedToolsMap;
+    }
+
+    it("renders think tool as locked off when it is in lockedOffTools", () => {
+      const lockedOffTools = buildThinkingLockedOffMap();
+
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const lockedRows = container.querySelectorAll(".locked-tool-row");
+      const lockedRowNames = Array.from(lockedRows).map(
+        (row) => row.querySelector(".tool-name")?.textContent,
+      );
+      expect(lockedRowNames).toContain("Think");
+    });
+
+    it("renders the think locked-off checkbox as unchecked and disabled", () => {
+      const lockedOffTools = buildThinkingLockedOffMap();
+
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const lockedRows = container.querySelectorAll(".locked-tool-row");
+      expect(lockedRows.length).toBe(1);
+
+      const checkboxInput = lockedRows[0].querySelector("input[type='checkbox']") as HTMLInputElement;
+      expect(checkboxInput.checked).toBe(false);
+      expect(checkboxInput.disabled).toBe(true);
+    });
+
+    it("shows the thinking lock reason in the tooltip", () => {
+      const lockedOffTools = buildThinkingLockedOffMap();
+
+      render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const tooltips = screen.getAllByTestId("tooltip");
+      const thinkingTooltips = tooltips.filter(
+        (tooltip) =>
+          tooltip.getAttribute("data-tooltip-label")?.includes("built-in thinking"),
+      );
+      expect(thinkingTooltips.length).toBe(1);
+    });
+
+    it("still renders ask_user_question as locked on when only think is locked off", () => {
+      const lockedOffTools = buildThinkingLockedOffMap();
+
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const coreToolRows = container.querySelectorAll(".core-tool-row");
+      // ask_user_question should be in core-tool-row (locked on), plus all workspace tools
+      expect(coreToolRows.length).toBe(coreHarnessTools.length - 1 + coreWorkspaceTools.length);
+
+      for (const row of coreToolRows) {
+        const checkboxInput = row.querySelector("input[type='checkbox']") as HTMLInputElement;
+        expect(checkboxInput.checked).toBe(true);
+        expect(checkboxInput.disabled).toBe(true);
+      }
+    });
+
+    it("excludes think from the total enabled count when locked off", () => {
+      const lockedOffTools = buildThinkingLockedOffMap();
+
+      const { container } = render(
+        <ToolSelectionComponent
+          availableTools={allTools}
+          enabledTools={configurableTools.map((tool) => tool.name)}
+          coreToolsLocked={true}
+          lockedOffTools={lockedOffTools}
+        />,
+      );
+
+      const domainCounts = container.querySelectorAll(".domain-count");
+      const bulkCountElement = domainCounts[0];
+      const countText = bulkCountElement?.textContent || "";
+
+      // 1 harness (ask_user_question) locked on + 8 workspace locked on + 2 configurable = 11/11
+      // think is excluded from both numerator and denominator
+      expect(countText).toBe("11/11");
+    });
+  });
 });

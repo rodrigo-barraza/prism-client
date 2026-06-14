@@ -1467,6 +1467,30 @@ export default function ChatSessionComponent({
     if (!textToSpeechModelConfigured) lockedToolsMap.set(TOOL_NAMES.SYNTHESIZE_SPEECH, "Configure the Text-to-Speech Model in Settings → Audio to unlock");
     if (!speechToTextModelConfigured) lockedToolsMap.set(TOOL_NAMES.TRANSCRIBE_AUDIO, "Configure the Speech-to-Text Model in Settings → Audio to unlock");
 
+    // When the model has native thinking as a built-in capability, the think tool is redundant
+    const activeModelDefinition = (config && settings.provider && settings.model)
+      ? config.textToText?.models?.[settings.provider]?.find(
+          (model: { name: string }) => model.name === settings.model,
+        ) as Record<string, unknown> | undefined
+      : undefined;
+    const modelNameLower = (settings.model || "").toLowerCase();
+    const isNameBasedThinkingModel = [
+      "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
+      "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
+      "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
+      "dolphin-r1", "internlm3", "kimi-k2",
+    ].some((pattern) => modelNameLower.includes(pattern));
+    const hasNativeThinking = !!(
+      activeModelDefinition?.thinking ||
+      activeModelDefinition?.supportsThinking ||
+      (Array.isArray(activeModelDefinition?.thinkingLevels) && (activeModelDefinition.thinkingLevels as string[]).length > 0) ||
+      (Array.isArray(activeModelDefinition?.tools) && (activeModelDefinition.tools as string[]).includes("Thinking")) ||
+      (settings.provider === "lm-studio" && isNameBasedThinkingModel)
+    );
+    if (hasNativeThinking) {
+      lockedToolsMap.set(TOOL_NAMES.THINK, "Disabled — this model has built-in thinking/reasoning");
+    }
+
     // Force-disable workspace tools if no workspace is set up or active workspace is down
     const workspaceIsDown = !currentWorkspace || !currentWorkspace.isAgentServed;
     if (workspaceIsDown) {
@@ -1495,6 +1519,9 @@ export default function ChatSessionComponent({
     visionModelConfigured,
     textToSpeechModelConfigured,
     speechToTextModelConfigured,
+    config,
+    settings.provider,
+    settings.model,
     currentWorkspace,
     builtInTools,
   ]);
@@ -4120,11 +4147,10 @@ export default function ChatSessionComponent({
         if (modelDefinition) {
           const modelName = (currentSettings.model || "").toLowerCase();
           const nameBasedThinking = [
-            "qwen3",
-            "deepseek-r1",
-            "deepseek-v3",
-            "gpt-oss",
-            "gemma-4",
+            "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
+            "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
+            "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
+            "dolphin-r1", "internlm3", "kimi-k2",
           ].some((pattern) => modelName.includes(pattern));
 
           isThinkingSupported = !!(
