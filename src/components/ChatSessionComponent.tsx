@@ -2367,26 +2367,12 @@ export default function ChatSessionComponent({
         let prevCleanLen = 0; // length of cleanTextRaw at last onChunk — used for computing deltas
         let prevThinkingLen = 0; // length of thinking text at last onThinking — used for computing deltas
 
-        // Deep-copy segments for React state (objects are shared refs otherwise).
-        // Also deduplicates thinking fragments with identical trimmed content
-        // to prevent verbatim duplicate rendering when local models (vLLM/Gemma)
-        // re-generate identical reasoning across agentic loop iterations.
-        const snapshotSegments = () => {
-          const deduped: ContentSegment[] = [];
-          const seenThinkingContent = new Set<string>();
-          for (const segment of contentSegments) {
-            if (segment.type === "thinking") {
-              const trimmed = thinkingFragments[segment.fragmentIndex ?? 0]?.trim() || "";
-              if (trimmed && seenThinkingContent.has(trimmed)) continue;
-              if (trimmed) seenThinkingContent.add(trimmed);
-            }
-            deduped.push({
-              ...segment,
-              ...(segment.toolIds ? { toolIds: [...segment.toolIds] } : {}),
-            });
-          }
-          return deduped;
-        };
+        // Deep-copy segments for React state (objects are shared refs otherwise)
+        const snapshotSegments = () =>
+          contentSegments.map((segment) => ({
+            ...segment,
+            ...(segment.toolIds ? { toolIds: [...segment.toolIds] } : {}),
+          }));
 
         // Guard: returns true when the user switched sessions — skip all UI updates
         // but let the stream continue (the backend saves independently).
