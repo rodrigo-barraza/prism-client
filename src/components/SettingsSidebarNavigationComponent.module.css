@@ -65,6 +65,7 @@
 .navigation-item.is-active-state {
   background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
   color: var(--text-primary);
+  border-radius: 2px;
 }
 
 .navigation-item.is-active-state svg {
@@ -75,12 +76,15 @@
 
 .is-active-indicator-state {
   position: absolute;
-  inset-inline-start: 0;
+  inset-inline-end: 0;
   inset-block-start: 50%;
   translate: 0 -50%;
   inline-size: 3px;
   block-size: 18px;
-  border-radius: 0 3px 3px 0;
+  border-start-start-radius: 3px;
+  border-end-start-radius: 3px;
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
   background: var(--accent-primary);
   animation: indicator-slide-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
