@@ -4925,6 +4925,8 @@ export default function ChatSessionComponent({
                   key: "workspace",
                   icon: <span className={tabBarStyles['tab-emoji-icon']}>📂</span>,
                   tooltip: "Workspace",
+                  badge: workspaces.length,
+                  badgeDisabled: workspaces.length === 0,
                 },
               ]
             : []),

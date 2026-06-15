@@ -41,6 +41,7 @@ import { useWorkspace } from "./WorkspaceContextComponent";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
+import AvatarSelectorComponent from "./AvatarSelectorComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
 import {
   ButtonComponent,
@@ -2300,6 +2301,19 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           <CustomThemeEditorComponent />
+        </CardComponent.Body>
+      </CardComponent>
+
+      {/* -- Avatar Selection Section --------------------------------- */}
+      <CardComponent className={styles['section']} data-settings-section="avatar-selection">
+        <CardComponent.Header
+          icon={Palette}
+          title="Avatar Selection"
+          subtitle="Choose the static avatar image displayed next to the navigation bar"
+        />
+
+        <CardComponent.Body>
+          <AvatarSelectorComponent />
         </CardComponent.Body>
       </CardComponent>
     </div>

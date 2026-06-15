@@ -1,0 +1,89 @@
+.avatar-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
+  padding-block: 8px;
+}
+
+.avatar-option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: oklch(0.2 0.02 240 / 0.4);
+  border: 1px solid oklch(0.3 0.02 240 / 0.5);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  will-change: transform, border-color;
+  text-align: center;
+}
+
+.avatar-option-card:hover {
+  background-color: oklch(0.25 0.03 240 / 0.6);
+  border-color: oklch(0.4 0.05 240 / 0.7);
+  transform: translateY(-2px);
+}
+
+.avatar-option-card.is-selected-state {
+  background-color: oklch(0.3 0.08 240 / 0.5);
+  border-color: oklch(0.6 0.15 240);
+  box-shadow: 0 0 12px oklch(0.6 0.15 240 / 0.3);
+}
+
+.avatar-image-container {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid oklch(0.4 0.02 240 / 0.5);
+  background-color: oklch(0.1 0.02 240);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-option-card.is-selected-state .avatar-image-container {
+  border-color: oklch(0.6 0.15 240);
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.selected-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: oklch(0.6 0.15 240);
+  color: oklch(1 0 0);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid oklch(0.2 0.02 240);
+}
+
+.check-icon {
+  stroke-width: 3px;
+}
+
+.avatar-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: oklch(0.9 0.01 240);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatar-option-card.is-selected-state .avatar-name {
+  color: oklch(1 0 0);
+}

@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { parseGIF, decompressFrames } from "gifuct-js";
+import { useLocalStorage } from "@rodrigo-barraza/components-library";
 import styles from "./SpinningCatComponent.module.css";
 
 /**
@@ -71,6 +72,15 @@ function renderFrame(
   context.drawImage(bitmap, frame.dims.left, frame.dims.top);
 }
 
+const AVATAR_MAP: Record<string, string> = {
+  cat: "/cat.gif",
+  rocky: "/avatars/rocky.png",
+  taz: "/avatars/taz.jpg",
+  peon: "/avatars/peon.png",
+  "blademaster-classic": "/avatars/blademaster-classic.png",
+  "blademaster-hidef": "/avatars/blademaster-hidef.png",
+};
+
 export default function SpinningCatComponent({
   animate = false,
   className = "",
@@ -78,6 +88,23 @@ export default function SpinningCatComponent({
   animate?: boolean;
   className?: string;
 }) {
+  const [avatar, setAvatar] = useLocalStorage<string>("prism:avatar", "cat");
+
+  useEffect(() => {
+    const handleAvatarChange = (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      if (customEvent.detail) {
+        setAvatar(customEvent.detail);
+      }
+    };
+    window.addEventListener("prism-avatar-changed", handleAvatarChange);
+    return () => {
+      window.removeEventListener("prism-avatar-changed", handleAvatarChange);
+    };
+  }, [setAvatar]);
+
+  const avatarSrc = AVATAR_MAP[avatar] || "/cat.gif";
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const framesRef = useRef<DecodedFrame[] | null>(null);
   const bitmapsRef = useRef<ImageBitmap[] | null>(null);
@@ -344,9 +371,10 @@ export default function SpinningCatComponent({
       aria-label="Click the cat to meow"
     >
       <img
-        src="/cat.gif"
-        alt="Cat"
+        src={avatarSrc}
+        alt="Avatar"
         className={`${styles['static-cat']} ${visuallyActive ? styles['is-hidden-state'] : ""}`}
+        style={avatar !== "cat" ? { imageRendering: "auto" } : undefined}
       />
       <canvas
         ref={canvasRef}
