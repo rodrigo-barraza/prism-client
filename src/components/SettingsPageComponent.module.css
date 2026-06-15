@@ -405,6 +405,34 @@
   text-overflow: ellipsis;
 }
 
+.workspace-host-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.host-info-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent-primary) 6%, transparent);
+  color: var(--text-muted);
+  letter-spacing: 0.15px;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+
+.workspace-item:hover .host-info-tag {
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  color: var(--text-tertiary);
+}
+
 .pinned-badge {
   display: inline-flex;
   align-items: center;

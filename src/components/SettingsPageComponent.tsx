@@ -32,6 +32,7 @@ import {
   HardDrive,
   Monitor,
   AppWindow,
+  MemoryStick,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
@@ -53,6 +54,17 @@ import styles from "./SettingsPageComponent.module.css";
 
 import type { PrismSettings, AgenticHarness, MCPServer, PrismConfig } from "../types/types";
 
+interface HostInfo {
+  hostname?: string;
+  platform?: string;
+  arch?: string;
+  release?: string;
+  username?: string;
+  cpuModel?: string;
+  cpuCores?: number;
+  totalMemoryBytes?: number;
+}
+
 interface LocalWorkspace {
   id?: string;
   name?: string;
@@ -72,6 +84,7 @@ interface LocalAgent {
   clientIp?: string;
   connectedAt?: string;
   pendingRpcs?: number;
+  hostInfo?: HostInfo;
 }
 
 /**
@@ -518,6 +531,33 @@ export default function SettingsPageComponent() {
   const agentServedRoots = wsWorkspaces.filter(
     (workspace: LocalWorkspace) => workspace.isAgentServed,
   );
+
+  const findAgentForRoot = (rootPath: string): LocalAgent | undefined => {
+    return wsAgents.find((agent: LocalAgent) =>
+      agent.roots?.some((agentRoot) => {
+        const agentRootPath = typeof agentRoot === "string" ? agentRoot : agentRoot.path;
+        return rootPath.startsWith(agentRootPath + "/") || rootPath === agentRootPath;
+      }),
+    );
+  };
+
+  const formatMemorySize = (totalBytes: number): string => {
+    const gigabytes = totalBytes / (1024 ** 3);
+    return gigabytes >= 1
+      ? `${gigabytes.toFixed(gigabytes >= 10 ? 0 : 1)} GB`
+      : `${(totalBytes / (1024 ** 2)).toFixed(0)} MB`;
+  };
+
+  const formatPlatformLabel = (hostInfo: HostInfo): string => {
+    const platformLabels: Record<string, string> = {
+      win32: "Windows",
+      darwin: "macOS",
+      linux: "Linux",
+      freebsd: "FreeBSD",
+    };
+    const platformLabel = platformLabels[hostInfo.platform || ""] || hostInfo.platform || "Unknown";
+    return hostInfo.arch ? `${platformLabel} ${hostInfo.arch}` : platformLabel;
+  };
 
   // -- Loading state --------------------------------------------------
   if (!config || !settings) {
@@ -1002,7 +1042,9 @@ export default function SettingsPageComponent() {
                     </div>
                     <div className={styles['agent-info']}>
                       <div className={styles['agent-name-row']}>
-                        <span className={styles['agent-name']}>{agent.name}</span>
+                        <span className={styles['agent-name']}>
+                          {agent.hostInfo?.hostname || agent.name}
+                        </span>
                         {agent.version && (
                           <span className={styles['agent-version']}>
                             v{agent.version}
@@ -1013,6 +1055,14 @@ export default function SettingsPageComponent() {
                         <span className={styles['agent-meta-item']}>
                           {agent.clientIp}
                         </span>
+                        {agent.hostInfo?.platform && (
+                          <>
+                            <span className={styles['agent-meta-separator']} />
+                            <span className={styles['agent-meta-item']}>
+                              {formatPlatformLabel(agent.hostInfo)}
+                            </span>
+                          </>
+                        )}
                         <span className={styles['agent-meta-separator']} />
                         {agent.connectedAt && (
                           <span className={styles['agent-meta-item']}>
@@ -1028,6 +1078,33 @@ export default function SettingsPageComponent() {
                           </>
                         )}
                       </div>
+                      {agent.hostInfo && (
+                        <div className={styles['workspace-host-info']}>
+                          {agent.hostInfo.username && (
+                            <span className={styles['host-info-tag']}>
+                              {agent.hostInfo.username}
+                            </span>
+                          )}
+                          {agent.hostInfo.cpuModel && (
+                            <span className={styles['host-info-tag']}>
+                              <Cpu size={9} />
+                              {agent.hostInfo.cpuModel}
+                              {agent.hostInfo.cpuCores ? ` (${agent.hostInfo.cpuCores}c)` : ""}
+                            </span>
+                          )}
+                          {agent.hostInfo.totalMemoryBytes && (
+                            <span className={styles['host-info-tag']}>
+                              <MemoryStick size={9} />
+                              {formatMemorySize(agent.hostInfo.totalMemoryBytes)}
+                            </span>
+                          )}
+                          {agent.hostInfo.release && (
+                            <span className={styles['host-info-tag']}>
+                              {agent.hostInfo.release}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div className={styles['agent-capabilities']}>
                       {(agent.capabilities || []).map((cap: string) => (
@@ -1064,28 +1141,48 @@ export default function SettingsPageComponent() {
                 <FolderTree size={10} />
                 Agent Workspaces
               </div>
-              {agentServedRoots.map((workspace: LocalWorkspace) => (
-                <div key={workspace.id} className={styles['workspace-item']}>
-                  <div className={styles['workspace-item-info']}>
-                    <FolderOpen
-                      size={16}
-                      className={styles['workspace-item-icon']}
-                    />
-                    <div className={styles['workspace-item-details']}>
-                      <span className={styles['workspace-item-name']}>
-                        {workspace.name}
-                        <span className={styles['static-badge']}>
-                          <Wifi size={8} />
-                          Agent
+              {agentServedRoots.map((workspace: LocalWorkspace) => {
+                const servingAgent = findAgentForRoot(workspace.path);
+                const hostInfo = servingAgent?.hostInfo;
+                return (
+                  <div key={workspace.id} className={styles['workspace-item']}>
+                    <div className={styles['workspace-item-info']}>
+                      <FolderOpen
+                        size={16}
+                        className={styles['workspace-item-icon']}
+                      />
+                      <div className={styles['workspace-item-details']}>
+                        <span className={styles['workspace-item-name']}>
+                          {workspace.name}
+                          <span className={styles['static-badge']}>
+                            <Wifi size={8} />
+                            Agent
+                          </span>
                         </span>
-                      </span>
-                      <span className={styles['workspace-item-path']}>
-                        {workspace.path}
-                      </span>
+                        <span className={styles['workspace-item-path']}>
+                          {workspace.path}
+                        </span>
+                        {hostInfo && (
+                          <div className={styles['workspace-host-info']}>
+                            {hostInfo.hostname && (
+                              <span className={styles['host-info-tag']}>
+                                <Monitor size={9} />
+                                {hostInfo.hostname}
+                              </span>
+                            )}
+                            {hostInfo.platform && (
+                              <span className={styles['host-info-tag']}>
+                                <HardDrive size={9} />
+                                {formatPlatformLabel(hostInfo)}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </>
           )}
 
@@ -1130,31 +1227,69 @@ export default function SettingsPageComponent() {
                 <FolderOpen size={10} />
                 User Workspaces
               </div>
-              {userRoots.map((ws: LocalWorkspace) => (
-                <div key={ws.id} className={styles['workspace-item']}>
-                  <div className={styles['workspace-item-info']}>
-                    <FolderOpen
-                      size={16}
-                      className={styles['workspace-item-icon']}
-                    />
-                    <div className={styles['workspace-item-details']}>
-                      <span className={styles['workspace-item-name']}>
-                        {ws.name}
-                      </span>
-                      <span className={styles['workspace-item-path']}>
-                        {ws.path}
-                      </span>
+              {userRoots.map((ws: LocalWorkspace) => {
+                const servingAgent = findAgentForRoot(ws.path);
+                const hostInfo = servingAgent?.hostInfo;
+                return (
+                  <div key={ws.id} className={styles['workspace-item']}>
+                    <div className={styles['workspace-item-info']}>
+                      <FolderOpen
+                        size={16}
+                        className={styles['workspace-item-icon']}
+                      />
+                      <div className={styles['workspace-item-details']}>
+                        <span className={styles['workspace-item-name']}>
+                          {ws.name}
+                        </span>
+                        <span className={styles['workspace-item-path']}>
+                          {ws.path}
+                        </span>
+                        {hostInfo && (
+                          <div className={styles['workspace-host-info']}>
+                            {hostInfo.hostname && (
+                              <span className={styles['host-info-tag']}>
+                                <Monitor size={9} />
+                                {hostInfo.hostname}
+                              </span>
+                            )}
+                            {hostInfo.platform && (
+                              <span className={styles['host-info-tag']}>
+                                <HardDrive size={9} />
+                                {formatPlatformLabel(hostInfo)}
+                              </span>
+                            )}
+                            {hostInfo.username && (
+                              <span className={styles['host-info-tag']}>
+                                {hostInfo.username}
+                              </span>
+                            )}
+                            {hostInfo.cpuModel && (
+                              <span className={styles['host-info-tag']}>
+                                <Cpu size={9} />
+                                {hostInfo.cpuModel}
+                                {hostInfo.cpuCores ? ` (${hostInfo.cpuCores}c)` : ""}
+                              </span>
+                            )}
+                            {hostInfo.totalMemoryBytes && (
+                              <span className={styles['host-info-tag']}>
+                                <MemoryStick size={9} />
+                                {formatMemorySize(hostInfo.totalMemoryBytes)}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <button
+                      className={styles['remove-button']}
+                      onClick={() => handleRemoveWorkspace(ws.path)}
+                      title="Remove workspace"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
-                  <button
-                    className={styles['remove-button']}
-                    onClick={() => handleRemoveWorkspace(ws.path)}
-                    title="Remove workspace"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </>
           )}
 
