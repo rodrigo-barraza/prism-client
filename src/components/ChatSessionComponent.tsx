@@ -1232,7 +1232,52 @@ export default function ChatSessionComponent({
         : await PrismService.getAgentSessions(agentProject!, {
             agent: agentId,
           });
-      setSessions(result.items);
+      setSessions((previousSessions) => {
+        // Preserve client-side live enrichments (_liveModelNames,
+        // _liveModalities, providers) that the live-patch effect wrote
+        // during active generation. The backend listing response may
+        // not yet reflect these fields — without this merge, model
+        // badges vanish from history items after a session switch
+        // triggers a change-stream list refresh.
+        const liveEnrichmentsBySessionId = new Map<
+          string,
+          Record<string, unknown>
+        >();
+        for (const previousSession of previousSessions) {
+          const enrichedSession = previousSession as unknown as Record<string, unknown>;
+          if (
+            enrichedSession._liveModelNames ||
+            enrichedSession._liveModalities
+          ) {
+            liveEnrichmentsBySessionId.set(
+              previousSession.id || String(previousSession._id),
+              {
+                _liveModelNames: enrichedSession._liveModelNames,
+                _liveModalities: enrichedSession._liveModalities,
+              },
+            );
+          }
+        }
+
+        if (liveEnrichmentsBySessionId.size === 0) return result.items;
+
+        return result.items.map((session) => {
+          const sessionId = session.id || String(session._id);
+          const enrichment = liveEnrichmentsBySessionId.get(sessionId);
+          if (!enrichment) return session;
+
+          const backendSession = session as unknown as Record<string, unknown>;
+          const backendHasModelNames =
+            Array.isArray(backendSession.modelNames) &&
+            (backendSession.modelNames as string[]).length > 0;
+
+          // If the backend already has authoritative modelNames,
+          // the client-side enrichment is no longer needed.
+          if (backendHasModelNames) return session;
+
+          return { ...session, ...enrichment } as typeof session;
+        });
+      });
       sessionsCursorRef.current = result.nextCursor;
       setSessionsHasMore(result.hasMore);
     } catch (error: unknown) {

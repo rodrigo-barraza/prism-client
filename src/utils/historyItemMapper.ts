@@ -26,6 +26,7 @@ export interface MappedHistoryItem {
   agent?: string | AgentRef;
   parentAgentSessionId?: string | null;
   searchText?: string;
+  requestErrorCount?: number;
 }
 
 interface MapConversationOptions {
@@ -108,6 +109,7 @@ export function mapConversationToHistoryItem(
     agent: conversation.agent,
     parentAgentSessionId: conversation.parentAgentSessionId || null,
     searchText: searchTextParts.join(" "),
+    requestErrorCount: conversation.requestErrorCount || 0,
   };
 }
 
@@ -168,6 +170,7 @@ export function mapAgentSessionToHistoryItem(
     agent: session.agent,
     parentAgentSessionId: session.parentAgentSessionId || null,
     tags,
+    requestErrorCount: sessionStats?.requestErrorCount || 0,
   };
 }
 

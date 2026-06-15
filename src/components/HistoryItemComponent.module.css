@@ -101,25 +101,47 @@
 }
 
 .generating-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--accent-primary);
   flex-shrink: 0;
-  animation: history-item-pulse 1.4s ease-in-out infinite;
-  box-shadow: 0 0 6px var(--calculated-accent-primary-glow);
+  background: conic-gradient(
+    oklch(0.7 0.25 0),
+    oklch(0.7 0.25 60),
+    oklch(0.75 0.2 120),
+    oklch(0.7 0.25 180),
+    oklch(0.65 0.25 240),
+    oklch(0.7 0.25 300),
+    oklch(0.7 0.25 360)
+  );
+  animation:
+    generating-dot-rainbow-spin 2s linear infinite,
+    generating-dot-glow-pulse 1.4s ease-in-out infinite;
+  will-change: filter, box-shadow;
 }
 
-@keyframes history-item-pulse {
+@keyframes generating-dot-rainbow-spin {
+  from {
+    filter: hue-rotate(0deg);
+  }
+
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes generating-dot-glow-pulse {
   0%,
   100% {
-    opacity: 1;
-    transform: scale(1);
+    box-shadow:
+      0 0 4px oklch(0.7 0.25 300 / 0.8),
+      0 0 10px oklch(0.65 0.2 200 / 0.5);
   }
 
   50% {
-    opacity: 0.4;
-    transform: scale(0.7);
+    box-shadow:
+      0 0 6px oklch(0.75 0.2 60 / 0.9),
+      0 0 14px oklch(0.7 0.25 120 / 0.6);
   }
 }
 

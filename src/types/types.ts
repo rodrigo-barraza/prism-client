@@ -243,6 +243,7 @@ export interface SessionStats {
   totalCacheReadInputTokens?: number;
   totalCacheCreationInputTokens?: number;
   totalReasoningOutputTokens?: number;
+  requestErrorCount?: number;
   orchestrator?: SessionStats;
   workers?: SessionStats;
   providers?: string[];
@@ -393,6 +394,8 @@ export interface Conversation {
   toolCounts?: Record<string, number>;
   /** Backend-enriched: parent agent session ID if spawned as sub-agent */
   parentAgentSessionId?: string | null;
+  /** Backend-enriched: count of requests with errors (success === false) */
+  requestErrorCount?: number;
 }
 
 export interface ConversationListResponse {

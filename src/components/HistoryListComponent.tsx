@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Star, DollarSign, Bot } from "lucide-react";
+import { Star, DollarSign, Bot, AlertTriangle } from "lucide-react";
 import ProviderLogo, {
   PROVIDER_LABELS,
   resolveProviderLabel,
@@ -35,6 +35,7 @@ interface HistoryListItem {
   username?: string;
   agent?: string | { id: string; name?: string };
   parentAgentSessionId?: string | null;
+  requestErrorCount?: number;
 }
 
 interface FilterItem {
@@ -174,6 +175,9 @@ export default function HistoryList({
   const [shouldHideSubAgents, setShouldHideSubAgents] = useState(
     () => restoredFilters?.shouldHideSubAgents ?? false,
   );
+  const [showErrorsOnly, setShowErrorsOnly] = useState(
+    () => restoredFilters?.showErrorsOnly ?? false,
+  );
   const [localDateRange, setLocalDateRange] = useState({ from: "", to: "" });
 
   // -- Persist filter state to localStorage on change --
@@ -191,6 +195,7 @@ export default function HistoryList({
       costTiers: [...activeCostTiers],
       showFavoritesOnly,
       shouldHideSubAgents,
+      showErrorsOnly,
     };
     const hasActiveFilters =
       activeModalities.size > 0 ||
@@ -198,7 +203,8 @@ export default function HistoryList({
       activeProviders.size > 0 ||
       activeCostTiers.size > 0 ||
       showFavoritesOnly ||
-      shouldHideSubAgents;
+      shouldHideSubAgents ||
+      showErrorsOnly;
     try {
       if (hasActiveFilters) {
         localStorage.setItem(filterStorageKey, JSON.stringify(filterSnapshot));
@@ -214,6 +220,7 @@ export default function HistoryList({
     activeCostTiers,
     showFavoritesOnly,
     shouldHideSubAgents,
+    showErrorsOnly,
   ]);
 
   const dateRange =
@@ -283,9 +290,16 @@ export default function HistoryList({
     return (items || []).some((item) => !!item.parentAgentSessionId);
   }, [items]);
 
+  const hasItemsWithErrors = useMemo(() => {
+    return (items || []).some((item) => (item.requestErrorCount || 0) > 0);
+  }, [items]);
+
   const filtered = useMemo(() => {
     return (items || []).filter((item: HistoryListItem) => {
       if (shouldHideSubAgents && item.parentAgentSessionId) {
+        return false;
+      }
+      if (showErrorsOnly && (item.requestErrorCount || 0) === 0) {
         return false;
       }
       if (showFavoritesOnly && onToggleFavorite) {
@@ -349,6 +363,7 @@ export default function HistoryList({
     onToggleFavorite,
     dateRange,
     shouldHideSubAgents,
+    showErrorsOnly,
   ]);
 
   // -- Infinite scroll via IntersectionObserver -----------------
@@ -418,6 +433,24 @@ export default function HistoryList({
                     activeKeys: shouldHideSubAgents ? "hide-subagents" : null,
                     isSingleSelect: true,
                     onToggle: () => setShouldHideSubAgents(!shouldHideSubAgents),
+                  },
+                ]
+              : []),
+            ...(hasItemsWithErrors
+              ? [
+                  {
+                    label: "Errors",
+                    items: [
+                      {
+                        key: "show-errors-only",
+                        icon: AlertTriangle,
+                        title: "Has Errors",
+                        color: "#ef4444",
+                      },
+                    ],
+                    activeKeys: showErrorsOnly ? "show-errors-only" : null,
+                    isSingleSelect: true,
+                    onToggle: () => setShowErrorsOnly(!showErrorsOnly),
                   },
                 ]
               : []),
