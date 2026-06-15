@@ -11,7 +11,7 @@ import { LS_ADMIN_PROJECT_FILTER } from "../constants";
  * `?project=` URL search param. Persists the selection in localStorage
  * so it survives page navigations and reloads.
  */
-export default function useProjectFilter() {
+export default function useProjectFilter(enabled = true) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -22,6 +22,7 @@ export default function useProjectFilter() {
 
   // On mount, restore from localStorage if no URL param is present
   useEffect(() => {
+    if (!enabled) return;
     if (hasRestoredRef.current) return;
     hasRestoredRef.current = true;
 
@@ -37,15 +38,16 @@ export default function useProjectFilter() {
         /* localStorage unavailable */
       }
     }
-  }, [urlProject, pathname, router, searchParams]);
+  }, [enabled, urlProject, pathname, router, searchParams]);
 
   useEffect(() => {
+    if (!enabled) return;
     IrisService.getConversationFilters()
       .then((data) =>
         setProjects((data as { projects?: string[] }).projects || []),
       )
       .catch(() => {});
-  }, []);
+  }, [enabled]);
 
   const projectOptions = useMemo(
     () => [

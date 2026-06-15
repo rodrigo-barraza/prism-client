@@ -446,7 +446,7 @@ export default function ChatSessionComponent({
 
   // ── Admin mode hooks (called unconditionally per Rules of Hooks) ──
   const adminHeaderContext = useAdminHeader();
-  const adminProjectFilterHook = useProjectFilter();
+  const adminProjectFilterHook = useProjectFilter(isAdmin);
   const adminSearchParams = useSearchParams();
   const adminRouter = useRouter();
 
@@ -479,7 +479,6 @@ export default function ChatSessionComponent({
   const [adminGeneratingCount, setAdminGeneratingCount] = useState(0);
   const [adminChangeStreamsActive, setAdminChangeStreamsActive] = useState(false);
   const [adminSessionSystemPrompt, setAdminSessionSystemPrompt] = useState<string | null>(null);
-  const [adminWorkflows, setAdminWorkflows] = useState<Workflow[]>([]);
   const adminKnownIdsRef = useRef<Set<string> | null>(null);
   const adminLastFingerprintRef = useRef<string>("");
   const adminAutoSelectedRef = useRef<boolean>(!!initialId);
@@ -1890,17 +1889,7 @@ export default function ChatSessionComponent({
       .catch(() => {});
   }, [isAdmin, adminProjectFilter]);
 
-  // Admin: workflows for selected
-  useEffect(() => {
-    if (!isAdmin) return;
-    if (!activeId || adminSelectedSource === "agent_session") {
-      setAdminWorkflows([]);
-      return;
-    }
-    IrisService.getConversationWorkflows(activeId)
-      .then(setAdminWorkflows)
-      .catch(() => setAdminWorkflows([]));
-  }, [isAdmin, activeId, adminSelectedSource]);
+
 
   // Admin: backend session stats for agent sessions
   useEffect(() => {
@@ -2070,8 +2059,8 @@ export default function ChatSessionComponent({
   }, [agentProject]);
 
   useEffect(() => {
-    loadSkills();
-  }, [loadSkills]);
+    if (!isAdmin) loadSkills();
+  }, [loadSkills, isAdmin]);
 
   // Load rules (per-agent slash commands)
   const loadRules = useCallback(async () => {
@@ -2084,15 +2073,13 @@ export default function ChatSessionComponent({
   }, [agentId]);
 
   useEffect(() => {
-    loadRules();
-  }, [loadRules]);
+    if (!isAdmin) loadRules();
+  }, [loadRules, isAdmin]);
 
 
 
-  // Fetch built-in tools for the active agent (filtered server-side by persona)
-  // NONE = no agent filter → all tools exposed, but workspace/file tools are
-  // stripped client-side since agentless mode has no backend workspace awareness.
   useEffect(() => {
+    if (isAdmin) return;
     async function loadAgenticTools() {
       // Trigger Prism to re-fetch from tools-api (picks up newly added tools)
       try {
@@ -2119,7 +2106,7 @@ export default function ChatSessionComponent({
       setBuiltInTools(tools);
     }
     loadAgenticTools().catch(console.error);
-  }, [agentId, isNoAgent]);
+  }, [agentId, isNoAgent, isAdmin]);
 
   // -- Fetch settings to determine which model-dependent tools are configured --
   useEffect(() => {
@@ -2244,22 +2231,25 @@ export default function ChatSessionComponent({
   // -- Eager-fetch tab badge counts (fires on mount / session change) --
 
   useEffect(() => {
+    if (isAdmin) return;
     PrismService.getAgentMemories(agentProject, 1, agentId)
       .then((r) => setTotalMemoriesCount(r.total || 0))
       .catch(() => {});
-  }, [agentProject, agentId]);
+  }, [agentProject, agentId, isAdmin]);
 
   useEffect(() => {
+    if (isAdmin) return;
     ToolsApiService.getAllAgenticTasks({ conversationId })
       .then((r) => setTasksCount(r.summary?.total || (r.tasks || []).length))
       .catch(() => {});
-  }, [conversationId, tasksRefreshKey]);
+  }, [conversationId, tasksRefreshKey, isAdmin]);
 
   useEffect(() => {
+    if (isAdmin) return;
     PrismService.getCoordinatorWorkers(conversationId)
       .then((r) => setWorkersCount((r.workers || []).length))
       .catch(() => {});
-  }, [conversationId, tasksRefreshKey]);
+  }, [conversationId, tasksRefreshKey, isAdmin]);
 
   // System prompt is fully assembled server-side by SystemPromptAssembler.
   // The client sends a placeholder system message that gets replaced.
@@ -5653,6 +5643,7 @@ export default function ChatSessionComponent({
         <>
           <SidebarTabHeaderComponent icon="🛠︎" title="Settings" />
           <SettingsPanel
+            readOnly={isAdmin}
             config={filteredConfig}
             settings={settings}
             onChange={
@@ -6035,6 +6026,7 @@ export default function ChatSessionComponent({
         <>
           <SidebarTabHeaderComponent icon="🎚︎" title="Parameters" />
           <ParametersPanelComponent
+            readOnly={isAdmin}
             settings={settings}
             onChange={(updates: Partial<PrismSettings>) =>
               setSettings((s) => ({ ...s, ...updates }))
@@ -6215,6 +6207,7 @@ export default function ChatSessionComponent({
         <>
           <SidebarTabHeaderComponent icon="📖" title="Skills" count={skills.length} actions={skillsHeaderActions} />
           <SkillsPanel
+            readOnly={isAdmin}
             skills={skills}
             onSkillsChange={loadSkills}
             project={agentProject}
@@ -6227,6 +6220,7 @@ export default function ChatSessionComponent({
         <>
           <SidebarTabHeaderComponent icon="📏" title="Rules" count={rules.length} actions={rulesHeaderActions} />
           <RulesPanel
+            readOnly={isAdmin}
             rules={rules}
             onRulesChange={loadRules}
             agent={agentId}
