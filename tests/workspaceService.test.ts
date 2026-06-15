@@ -149,4 +149,37 @@ describe("WorkspaceService", () => {
       "WorkspaceService.list failed: 500",
     );
   });
+
+  it("should throw an error when listFull response is not ok", async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 403 });
+    await expect(WorkspaceService.listFull()).rejects.toThrow(
+      "WorkspaceService.listFull failed: 403",
+    );
+  });
+
+  it("should throw an error when update response is not ok", async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 422 });
+    await expect(WorkspaceService.update(["/bad/path"])).rejects.toThrow(
+      "WorkspaceService.update failed: 422",
+    );
+  });
+
+  it("should throw an error when validate response is not ok", async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 404 });
+    await expect(WorkspaceService.validate("/nonexistent")).rejects.toThrow(
+      "WorkspaceService.validate failed: 404",
+    );
+  });
+
+  it("should throw an error when tree response is not ok", async () => {
+    mockFetch.mockResolvedValue({ ok: false, status: 502 });
+    await expect(WorkspaceService.tree("/some/path")).rejects.toThrow(
+      "WorkspaceService.tree failed: 502",
+    );
+  });
+
+  it("should propagate network errors when fetch itself rejects", async () => {
+    mockFetch.mockRejectedValue(new TypeError("Failed to fetch"));
+    await expect(WorkspaceService.list()).rejects.toThrow("Failed to fetch");
+  });
 });

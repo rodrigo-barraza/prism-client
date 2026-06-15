@@ -62,4 +62,26 @@ describe("StorageService", () => {
     expect(StorageService.get("session-token")).toBeNull();
     expect(StorageService.get("layout")).toBeNull();
   });
+
+  it("should round-trip boolean values correctly", () => {
+    StorageService.set("feature-flag", true);
+    expect(StorageService.get<boolean>("feature-flag")).toBe(true);
+
+    StorageService.set("feature-flag", false);
+    expect(StorageService.get<boolean>("feature-flag")).toBe(false);
+  });
+
+  it("should round-trip numeric values correctly including zero", () => {
+    StorageService.set("counter", 0);
+    expect(StorageService.get<number>("counter")).toBe(0);
+
+    StorageService.set("counter", 42);
+    expect(StorageService.get<number>("counter")).toBe(42);
+  });
+
+  it("should round-trip array values correctly", () => {
+    const recentModels = ["gemini-3.5-flash", "claude-sonnet-4", "gpt-5.4"];
+    StorageService.set("recent-models", recentModels);
+    expect(StorageService.get<string[]>("recent-models")).toEqual(recentModels);
+  });
 });

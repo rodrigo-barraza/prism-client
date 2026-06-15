@@ -432,7 +432,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [triggeringId, setTriggeringId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [viewMode, setViewMode] = usePersistedState("scheduled-tasks:view-mode", "card");
+  const [viewMode, setViewMode] = usePersistedState("scheduled-tasks:view-mode", "calendar");
   const [activeSortKeys, setActiveSortKeys] = useState<string[]>(["createdAt"]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -1066,13 +1066,13 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   mode={viewMode}
                   onChange={setViewMode}
                   modes={[
-                    { key: "card", icon: LayoutGrid, title: "Card view" },
-                    { key: "table", icon: List, title: "Table view" },
                     {
                       key: "calendar",
                       icon: CalendarDays,
                       title: "Calendar view",
                     },
+                    { key: "card", icon: LayoutGrid, title: "Card view" },
+                    { key: "table", icon: List, title: "Table view" },
                   ]}
                 />
 

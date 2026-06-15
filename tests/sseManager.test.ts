@@ -189,4 +189,29 @@ describe("SSEManager", () => {
 
     thirdSubscription.unsubscribe();
   });
+
+  it("should create separate EventSource connections for different URLs", () => {
+    const firstCallback = vi.fn();
+    const secondCallback = vi.fn();
+
+    const firstSubscription = SSEManager.subscribe(
+      "http://localhost/stream-a",
+      firstCallback,
+    );
+    const secondSubscription = SSEManager.subscribe(
+      "http://localhost/stream-b",
+      secondCallback,
+    );
+
+    expect(MockEventSource.instancesList).toHaveLength(2);
+    expect(MockEventSource.instancesList[0].url).toBe("http://localhost/stream-a");
+    expect(MockEventSource.instancesList[1].url).toBe("http://localhost/stream-b");
+
+    MockEventSource.instancesList[0].simulateIncomingMessage({ source: "a" });
+    expect(firstCallback).toHaveBeenCalledWith({ source: "a" });
+    expect(secondCallback).not.toHaveBeenCalled();
+
+    firstSubscription.unsubscribe();
+    secondSubscription.unsubscribe();
+  });
 });

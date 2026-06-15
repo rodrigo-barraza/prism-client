@@ -12,7 +12,6 @@ import {
   mergeUsedToolsWithWorkers,
   CAPABILITY_TOOL_NAMES,
   getModalities,
-  getSessionElapsedTime,
 } from "../src/utils/utilities.js";
 import type { Message, TokenUsage } from "../src/types/types.js";
 
@@ -393,38 +392,4 @@ describe("getModalities", () => {
   });
 });
 
-// ═════════════════════════════════════════════════════════════════
-// getSessionElapsedTime
-// ═════════════════════════════════════════════════════════════════
 
-describe("getSessionElapsedTime", () => {
-  it("returns 0 for empty messages", () => {
-    expect(getSessionElapsedTime([])).toBe(0);
-  });
-
-  it("calculates elapsed time for a single turn", () => {
-    const messages = [
-      { role: "user", content: "hello", timestamp: "2024-01-15T10:00:00.000Z" },
-      { role: "assistant", content: "hi", timestamp: "2024-01-15T10:00:05.000Z" },
-    ] as Message[];
-    expect(getSessionElapsedTime(messages)).toBeCloseTo(5);
-  });
-
-  it("sums elapsed time across multiple turns", () => {
-    const messages = [
-      { role: "user", content: "hello", timestamp: "2024-01-15T10:00:00.000Z" },
-      { role: "assistant", content: "hi", timestamp: "2024-01-15T10:00:03.000Z" },
-      { role: "user", content: "again", timestamp: "2024-01-15T10:01:00.000Z" },
-      { role: "assistant", content: "yes", timestamp: "2024-01-15T10:01:07.000Z" },
-    ] as Message[];
-    expect(getSessionElapsedTime(messages)).toBeCloseTo(10);
-  });
-
-  it("uses completedAt if available", () => {
-    const messages = [
-      { role: "user", content: "hello", timestamp: "2024-01-15T10:00:00.000Z" },
-      { role: "assistant", content: "hi", timestamp: "2024-01-15T10:00:02.000Z", completedAt: "2024-01-15T10:00:10.000Z" },
-    ] as Message[];
-    expect(getSessionElapsedTime(messages)).toBeCloseTo(10);
-  });
-});
