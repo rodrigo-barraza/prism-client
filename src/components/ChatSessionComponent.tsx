@@ -25,6 +25,8 @@ import {
   Video,
   ChevronUp,
   ChevronDown,
+  Loader,
+  MessageSquare,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import IrisService, {
@@ -49,6 +51,9 @@ import {
   ModelOption,
   SSEData,
   ContentSegment,
+  Favorite,
+  Workflow,
+  TransformedRequestItem,
 } from "../types/types";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -93,7 +98,7 @@ import {
 import useSessionStats from "../hooks/useSessionStats";
 import { generateUUID, renderToolName } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES, SSE_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
-import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, resolveDefaultModel } from "../utils/utilities";
+import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams } from "../utils/utilities";
 import {
   PROJECT_AGENT,
   SETTINGS_DEFAULTS,
@@ -102,7 +107,9 @@ import {
   MAX_TOOL_ITERATIONS,
   LS_FILE_VIEWER_WIDTH,
   LS_CHAT_FILTERS,
+  LS_ADMIN_CHAT_FILTERS,
   AGENT_IDS,
+  AGENTLESS_AGENT,
   LS_CRON_JOB_NOTIFICATIONS_COUNT,
   LS_CRITIC_GATE_ENABLED,
   LOCAL_STORAGE_AUTO_APPROVE_ENABLED,
@@ -117,18 +124,25 @@ import {
   EV_MODEL_CHANGE,
   EV_CRON_JOB_SCHEDULED,
 } from "../constants";
+import adminPageStyles from "../app/admin/chat/page.module.css";
+import { useAdminHeader } from "./AdminHeaderContextComponent";
+import useProjectFilter from "../hooks/useProjectFilter";
+import { getErrorMessage } from "../utils/errorMessage";
+import { useSearchParams, useRouter } from "next/navigation";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent";
 import {
   ButtonComponent,
   EmptyStateComponent,
   IconButtonComponent,
+  SelectComponent,
   layoutHeaderStyles,
   TabBarComponent,
   tabBarStyles,
   ToastComponent,
   useToast,
 } from "@rodrigo-barraza/components-library";
+import { ErrorMessage } from "./StateMessageComponent";
 import useToolToggles from "../hooks/useToolToggles";
 import useModelMemory from "../hooks/useModelMemory";
 import AgentPickerComponent from "./AgentPickerComponent";
@@ -251,6 +265,35 @@ const WORKSPACE_FS_TOOLS: Set<string> = new Set([
 ]);
 
 const BOTTOM_PANEL_TABS = new Set(["tools", "skills", "rules", "memories", "tasks"]);
+
+const ADMIN_POLL_INTERVAL = 5000;
+
+const ADMIN_ALL_AGENT = {
+  id: "ALL",
+  name: "All",
+  description: "View all conversations and agent sessions.",
+  project: "",
+  toolCount: -1,
+  custom: false,
+  icon: "",
+  color: "",
+};
+
+const ADMIN_NONE_AGENT = {
+  id: AGENTLESS_AGENT.id,
+  name: AGENTLESS_AGENT.name,
+  description:
+    "A straightforward conversation with the AI — no automated workflows, just you and the model.",
+  project: "direct",
+  toolCount: -1,
+  custom: false,
+  icon: "",
+  color: "",
+};
+
+type UnifiedEntry = (Conversation | AgentSession) & {
+  _source?: "conversation" | "agent_session";
+};
 
 interface EmptyStateConfig {
   title: string;
@@ -379,11 +422,13 @@ export interface ChatSessionComponentProps {
   initialTabKey?: string | null;
   initialTabBottomKey?: string | null;
   initialViewMode?: string | null;
+  isAdmin?: boolean;
+  initialId?: string | null;
 }
 
 export default function ChatSessionComponent({
   agentId: propAgentId = AGENT_IDS.CODING,
-  agents = [],
+  agents: propAgents = [],
   initialFcEnabled = false,
   initialThinkingEnabled = false,
   initialModel = null,
@@ -391,13 +436,76 @@ export default function ChatSessionComponent({
   initialTabKey = null,
   initialTabBottomKey = null,
   initialViewMode = null,
+  isAdmin = false,
+  initialId = null,
 }: ChatSessionComponentProps) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef<boolean>(false);
   // Track whether the URL session param has been consumed
   const urlSessionAppliedRef = useRef<boolean>(false);
+
+  // ── Admin mode hooks (called unconditionally per Rules of Hooks) ──
+  const adminHeaderContext = useAdminHeader();
+  const adminProjectFilterHook = useProjectFilter();
+  const adminSearchParams = useSearchParams();
+  const adminRouter = useRouter();
+
+  // ── Admin mode state ──
+  const [adminAgents, setAdminAgents] = useState<
+    Array<
+      Partial<AgentPersona> & {
+        id: string;
+        name: string;
+        description: string;
+        project?: string;
+        toolCount: number;
+        custom: boolean;
+        icon: string;
+        color: string;
+      }
+    >
+  >([]);
+  const [adminEntries, setAdminEntries] = useState<UnifiedEntry[]>([]);
+  const [adminEntriesHasMore, setAdminEntriesHasMore] = useState(false);
+  const [adminEntriesLoading, setAdminEntriesLoading] = useState(false);
+  const adminEntriesPageRef = useRef<number>(1);
+  const adminEntriesTotalRef = useRef<number>(0);
+  const [adminError, setAdminError] = useState<string | null>(null);
+  const [adminSelectedSource, setAdminSelectedSource] = useState<
+    "conversation" | "agent_session" | null
+  >(null);
+  const [adminLoadingDetail, setAdminLoadingDetail] = useState(false);
+  const [adminNewIds, setAdminNewIds] = useState<Set<string>>(new Set());
+  const [adminGeneratingCount, setAdminGeneratingCount] = useState(0);
+  const [adminChangeStreamsActive, setAdminChangeStreamsActive] = useState(false);
+  const [adminSessionSystemPrompt, setAdminSessionSystemPrompt] = useState<string | null>(null);
+  const [adminWorkflows, setAdminWorkflows] = useState<Workflow[]>([]);
+  const adminKnownIdsRef = useRef<Set<string> | null>(null);
+  const adminLastFingerprintRef = useRef<string>("");
+  const adminAutoSelectedRef = useRef<boolean>(!!initialId);
+  const adminViewerBodyRef = useRef<HTMLDivElement | null>(null);
+  const adminFingerprintRef = useRef<string>("");
+  const [adminFingerprint, setAdminFingerprint] = useState("");
+
+  // Derive admin filter values from hooks
+  const adminProjectFilter = isAdmin ? adminProjectFilterHook.projectFilter : null;
+  const adminProjectOptions = isAdmin ? adminProjectFilterHook.projectOptions : [];
+  const adminHandleProjectChange = adminProjectFilterHook.handleProjectChange;
+  const adminProviderFilter = isAdmin ? (adminSearchParams.get("provider") || null) : null;
+  const adminModelFilter = isAdmin ? (adminSearchParams.get("model") || null) : null;
+  const adminAgentParam = isAdmin ? (adminSearchParams.get("agent") || null) : null;
+  const adminDateRange = isAdmin ? adminHeaderContext.dateRange : { from: "", to: "" };
+  const adminSessionFilter = isAdmin ? adminHeaderContext.sessionFilter : null;
+  const adminActiveAgentId = adminAgentParam || "ALL";
+  const adminIsAllMode = adminActiveAgentId === "ALL";
+  const adminIsNoAgent = adminActiveAgentId === AGENT_IDS.NONE;
+  const adminIsAgentMode = !adminIsAllMode && !adminIsNoAgent;
+
+  // In admin mode, use the admin-derived agents; otherwise use prop agents
+  const agents = isAdmin ? adminAgents : propAgents;
+
   const agentId = propAgentId;
-  const isNoAgent = agentId === AGENT_IDS.NONE;
+  const isNoAgent = isAdmin ? false : agentId === AGENT_IDS.NONE;
   const activeAgentData = agents.find((agent) => agent.id === agentId);
   const isCoreToolsLocked = !isNoAgent && (activeAgentData?.coreToolsLocked ?? true);
   // Direct Chat omits project so it uses the default x-project header — this
@@ -1313,14 +1421,14 @@ export default function ChatSessionComponent({
   }, [agentProject, isNoAgent, sessionsLoading]);
 
   useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
+    if (!isAdmin) loadSessions();
+  }, [loadSessions, isAdmin]);
 
   // -- Auto-load session from URL ?session= param ----------------
   // Runs once on mount. Fetches the full session and applies it.
   // Uses a ref guard to prevent double-loading on StrictMode re-mounts.
   useEffect(() => {
-    if (!initialSessionId || urlSessionAppliedRef.current) return;
+    if (isAdmin || !initialSessionId || urlSessionAppliedRef.current) return;
     urlSessionAppliedRef.current = true;
 
     (async () => {
@@ -1389,6 +1497,567 @@ export default function ChatSessionComponent({
       }
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ═══════════════════════════════════════════════════════════════
+  // ██  ADMIN MODE — Data Loading Effects
+  // ═══════════════════════════════════════════════════════════════
+
+  // Fetch agent personas for admin mode
+  useEffect(() => {
+    if (!isAdmin) return;
+    PrismService.getAgentPersonas()
+      .then((list: AgentPersona[]) =>
+        setAdminAgents([ADMIN_ALL_AGENT, ADMIN_NONE_AGENT, ...list]),
+      )
+      .catch(console.error);
+  }, [isAdmin]);
+
+  // Admin: determine if the selected entry is an agent session
+  const adminIsSelectedAgent = adminSelectedSource === "agent_session";
+  const adminTargetAgentId = adminIsSelectedAgent
+    ? (sessions.find((session) => session.id === activeId) as UnifiedEntry)?.agent
+    : (adminIsAgentMode ? adminActiveAgentId : null);
+  const adminTargetProject = adminIsSelectedAgent
+    ? ((sessions.find((session) => session.id === activeId) as UnifiedEntry)?.project || 
+       (sessions.find((session) => session.id === activeId) as UnifiedEntry)?.agent || 
+       PROJECT_AGENT)
+    : (adminIsAgentMode ? PROJECT_AGENT : null);
+
+  // Admin: extract session-time tool snapshot from conversation settings
+  const adminSessionToolConfig = useMemo(() => {
+    if (!isAdmin || !activeId) return null;
+    const selectedEntry = sessions.find((session) => session.id === activeId) as UnifiedEntry | undefined;
+    if (!selectedEntry) return null;
+    const sessionSettings = (selectedEntry as Conversation)?.settings as Record<string, unknown> | undefined;
+    return sessionSettings?.toolConfig as
+      | { availableTools?: string[]; enabledTools?: string[]; disabledTools?: string[] }
+      | undefined
+      ?? null;
+  }, [isAdmin, activeId, sessions]);
+
+  // Admin: load agent-specific data (tools, skills, memories, rules) for selected session
+  useEffect(() => {
+    if (!isAdmin) return;
+    if (!adminTargetAgentId) {
+      setSkills([]);
+      setBuiltInTools([]);
+      setTotalMemoriesCount(0);
+      setRules([]);
+      return;
+    }
+
+    const project = adminTargetProject || PROJECT_AGENT;
+
+    PrismService.getSkills(project)
+      .then((loadedSkills: Skill[]) => setSkills(loadedSkills))
+      .catch(() => {});
+
+    const sessionAvailableToolNames = adminSessionToolConfig?.availableTools;
+    if (sessionAvailableToolNames && sessionAvailableToolNames.length > 0) {
+      const availableToolNameSet = new Set(sessionAvailableToolNames);
+      PrismService.getBuiltInToolSchemas()
+        .then((allSchemas: ToolSchema[]) => {
+          const sessionFilteredTools = allSchemas.filter(
+            (tool) => availableToolNameSet.has(tool.name),
+          );
+          setBuiltInTools(sessionFilteredTools);
+        })
+        .catch(() => {});
+    } else {
+      PrismService.getBuiltInToolSchemas(adminTargetAgentId)
+        .then((tools: ToolSchema[]) => setBuiltInTools(tools))
+        .catch(() => {});
+    }
+
+    PrismService.getAgentMemories(project, 1, undefined)
+      .then((result: { total?: number }) => setTotalMemoriesCount(result.total || 0))
+      .catch(() => {});
+    PrismService.getRules(adminTargetAgentId)
+      .then((rulesList: Rule[]) => setRules(rulesList))
+      .catch(() => {});
+  }, [isAdmin, adminTargetAgentId, adminTargetProject, adminSessionToolConfig]);
+
+  // Admin: load entries (conversations / agent sessions / both)
+  const adminLoadEntries = useCallback(async () => {
+    if (!isAdmin) return;
+    try {
+      const params: Record<string, string | number | boolean> = {
+        page: 1,
+        limit: 200,
+        sort: "updatedAt",
+        order: "desc",
+      };
+      if (adminSessionFilter) {
+        params.trace = adminSessionFilter;
+      } else {
+        Object.assign(params, buildDateRangeParams(adminDateRange));
+        if (adminProjectFilter) params.project = adminProjectFilter;
+      }
+      if (adminProviderFilter) params.provider = adminProviderFilter;
+      if (adminModelFilter) params.model = adminModelFilter;
+
+      if (adminIsNoAgent) {
+        params.type = "direct";
+      } else if (adminIsAgentMode) {
+        params.agent = adminActiveAgentId;
+      }
+
+      const data = await IrisService.getConversations(params);
+      const list = (data.data || []).map(
+        (conversation: Conversation & { type?: string }) => ({
+          ...conversation,
+          _source:
+            conversation.type === "agent"
+              ? ("agent_session" as const)
+              : ("conversation" as const),
+        }),
+      );
+      const total = data.total || 0;
+
+      const fingerprint = list
+        .map(
+          (conversation: UnifiedEntry) =>
+            `${conversation.id}:${conversation.messages?.length || (conversation as Conversation).messageCount || 0}`,
+        )
+        .join("|");
+
+      if (fingerprint !== adminLastFingerprintRef.current) {
+        adminLastFingerprintRef.current = fingerprint;
+        setAdminEntries(list);
+        setAdminFingerprint(fingerprint);
+      }
+
+      adminEntriesPageRef.current = 1;
+      adminEntriesTotalRef.current = total;
+      setAdminEntriesHasMore(list.length < total);
+
+      const currentIds = new Set(list.map((conversation: UnifiedEntry) => conversation.id || ""));
+      if (adminKnownIdsRef.current === null) {
+        adminKnownIdsRef.current = currentIds;
+      } else {
+        const freshIds = new Set<string>();
+        for (const id of currentIds) {
+          if (!adminKnownIdsRef.current.has(id)) freshIds.add(id);
+        }
+        if (freshIds.size > 0) {
+          setAdminNewIds((previousNewIds) => {
+            const merged = new Set(previousNewIds);
+            for (const id of freshIds) merged.add(id);
+            return merged;
+          });
+          adminKnownIdsRef.current = currentIds;
+        }
+      }
+
+      // Auto-select first entry on load
+      if (list.length > 0 && !adminAutoSelectedRef.current) {
+        adminAutoSelectedRef.current = true;
+        adminSelectEntry(list[0].id || "", list[0]._source || "conversation");
+      }
+
+      setAdminError((previousError) => (previousError !== null ? null : previousError));
+    } catch (error) {
+      setAdminError(getErrorMessage(error));
+    }
+  }, [
+    isAdmin,
+    adminProjectFilter,
+    adminProviderFilter,
+    adminModelFilter,
+    adminDateRange,
+    adminSessionFilter,
+    adminActiveAgentId,
+    adminIsNoAgent,
+    adminIsAgentMode,
+  ]);
+
+  // Admin: load more entries (pagination)
+  const adminLoadMoreEntries = useCallback(async () => {
+    if (!isAdmin || adminEntriesLoading || !adminEntriesHasMore) return;
+    try {
+      setAdminEntriesLoading(true);
+      const nextPage = adminEntriesPageRef.current + 1;
+      const params: Record<string, string | number | boolean> = {
+        page: nextPage,
+        limit: 200,
+        sort: "updatedAt",
+        order: "desc",
+      };
+      if (adminSessionFilter) {
+        params.trace = adminSessionFilter;
+      } else {
+        Object.assign(params, buildDateRangeParams(adminDateRange));
+        if (adminProjectFilter) params.project = adminProjectFilter;
+      }
+      if (adminProviderFilter) params.provider = adminProviderFilter;
+      if (adminModelFilter) params.model = adminModelFilter;
+
+      if (adminIsNoAgent) {
+        params.type = "direct";
+      } else if (adminIsAgentMode) {
+        params.agent = adminActiveAgentId;
+      }
+
+      const data = await IrisService.getConversations(params);
+      const newItems = (data.data || []).map(
+        (conversation: Conversation & { type?: string }) => ({
+          ...conversation,
+          _source:
+            conversation.type === "agent"
+              ? ("agent_session" as const)
+              : ("conversation" as const),
+        }),
+      );
+
+      adminEntriesPageRef.current = nextPage;
+      setAdminEntries((previousEntries) => [...previousEntries, ...newItems]);
+      setAdminEntriesHasMore(
+        adminEntries.length + newItems.length < adminEntriesTotalRef.current,
+      );
+    } catch (error) {
+      console.error("Failed to load more entries:", error);
+    } finally {
+      setAdminEntriesLoading(false);
+    }
+  }, [
+    isAdmin,
+    adminEntriesLoading,
+    adminEntriesHasMore,
+    adminSessionFilter,
+    adminDateRange,
+    adminProjectFilter,
+    adminProviderFilter,
+    adminModelFilter,
+    adminEntries.length,
+    adminIsNoAgent,
+    adminIsAgentMode,
+    adminActiveAgentId,
+  ]);
+
+  // Admin: select an entry
+  const adminSelectEntry = useCallback(
+    async (id: string, source: "conversation" | "agent_session" = "conversation") => {
+      if (!isAdmin || id === activeId) return;
+      setActiveId(id);
+      setAdminSelectedSource(source);
+
+      // Update URL for deep-linking
+      const params = new URLSearchParams();
+      if (adminAgentParam) params.set("agent", adminAgentParam);
+      if (adminSessionFilter) params.set("trace", adminSessionFilter);
+      if (adminProjectFilter) params.set("project", adminProjectFilter);
+      if (adminProviderFilter) params.set("provider", adminProviderFilter);
+      if (adminModelFilter) params.set("model", adminModelFilter);
+
+      const queryString = params.toString();
+      window.history.replaceState(
+        null,
+        "",
+        `/admin/chat/${id}${queryString ? `?${queryString}` : ""}`,
+      );
+
+      setAdminNewIds((previousNewIds) => {
+        if (!previousNewIds.has(id)) return previousNewIds;
+        const next = new Set(previousNewIds);
+        next.delete(id);
+        return next;
+      });
+
+      setAdminLoadingDetail(true);
+      try {
+        const detail =
+          source === "agent_session"
+            ? await IrisService.getAgentSession(id)
+            : await IrisService.getConversation(id);
+        const fullEntry = detail as UnifiedEntry;
+        const displayMessages = prepareDisplayMessages(fullEntry.messages || []);
+        setMessages(displayMessages);
+        setConversationId(fullEntry.id || generateUUID());
+        setTitle(fullEntry.title || "Untitled");
+        setBackendSessionStats(fullEntry.stats || null);
+        setSettings((previousSettings) => {
+          const nextSettings = { ...previousSettings };
+          const sessionSettings = (fullEntry as Conversation)?.settings as Partial<PrismSettings> | undefined;
+          if (sessionSettings?.provider) nextSettings.provider = sessionSettings.provider;
+          if (sessionSettings?.model) nextSettings.model = sessionSettings.model;
+          if (fullEntry.systemPrompt != null) nextSettings.systemPrompt = fullEntry.systemPrompt;
+
+          // Fallback: extract from last assistant message
+          if (!nextSettings.model && fullEntry.messages?.length) {
+            for (let i = fullEntry.messages.length - 1; i >= 0; i--) {
+              const message = fullEntry.messages[i];
+              if (message.role === "assistant" && message.model) {
+                nextSettings.model = message.model;
+                nextSettings.provider = message.provider || nextSettings.provider;
+                break;
+              }
+            }
+          }
+
+          return nextSettings;
+        });
+
+        // Update sidebar sessions with the full entry
+        setSessions((previousSessions) => {
+          const exists = previousSessions.some((session) => session.id === id);
+          if (exists) return previousSessions;
+          return [fullEntry as AgentSession | Conversation, ...previousSessions];
+        });
+      } catch {
+        setMessages([]);
+      } finally {
+        setAdminLoadingDetail(false);
+      }
+    },
+    [isAdmin, activeId, adminAgentParam, adminSessionFilter, adminProjectFilter, adminProviderFilter, adminModelFilter],
+  );
+
+  // Admin: refresh selected entry
+  const adminRefreshSelectedEntry = useCallback(
+    async (id: string, source: "conversation" | "agent_session" | null) => {
+      if (!isAdmin || !id) return;
+      try {
+        const full =
+          source === "agent_session"
+            ? ((await IrisService.getAgentSession(id)) as UnifiedEntry)
+            : ((await IrisService.getConversation(id)) as UnifiedEntry);
+        const displayMessages = prepareDisplayMessages(full.messages || []);
+        setMessages(displayMessages);
+        setBackendSessionStats(full.stats || null);
+      } catch (error: unknown) {
+        console.error("Failed to refresh selected entry:", error);
+      }
+    },
+    [isAdmin],
+  );
+
+  // Admin: initial detail load by ID
+  useEffect(() => {
+    if (!isAdmin || !initialId) return;
+    setAdminLoadingDetail(true);
+    IrisService.getConversation(initialId)
+      .then((conversation: unknown) => {
+        const conversationEntry = conversation as UnifiedEntry & { type?: string };
+        const source = conversationEntry.type === "agent" ? "agent_session" : "conversation";
+        setAdminSelectedSource(source);
+        setActiveId(conversationEntry.id || initialId);
+        setConversationId(conversationEntry.id || generateUUID());
+        setTitle(conversationEntry.title || "Untitled");
+        const displayMessages = prepareDisplayMessages(conversationEntry.messages || []);
+        setMessages(displayMessages);
+        setBackendSessionStats(conversationEntry.stats || null);
+        setSessions((previousSessions) => [conversationEntry as AgentSession | Conversation, ...previousSessions]);
+      })
+      .catch(() => {
+        setMessages([]);
+      })
+      .finally(() => setAdminLoadingDetail(false));
+  }, [isAdmin, initialId]);
+
+  // Admin: lazy load system prompt for agent sessions
+  useEffect(() => {
+    if (!isAdmin) return;
+    setAdminSessionSystemPrompt(null);
+    if (!activeId || adminSelectedSource !== "agent_session") return;
+
+    let cancelled = false;
+    IrisService.getRequests({ conversationId: activeId, limit: 1 })
+      .then((response) => {
+        if (cancelled) return;
+        const firstRequest = response.data?.[0] as TransformedRequestItem | undefined;
+        const payload = firstRequest?.requestPayload as
+          | { messages?: Message[] }
+          | undefined;
+        const systemMessage = payload?.messages?.find(
+          (message: Message) => message.role === "system",
+        );
+        if (systemMessage?.content) {
+          setAdminSessionSystemPrompt(systemMessage.content as string);
+        }
+      })
+      .catch(console.error);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin, activeId, adminSelectedSource]);
+
+  // Admin: generating count
+  useEffect(() => {
+    if (!isAdmin) return;
+    IrisService.getConversationStats(adminProjectFilter)
+      .then((data) => setAdminGeneratingCount(data.generatingCount || 0))
+      .catch(() => {});
+  }, [isAdmin, adminProjectFilter]);
+
+  // Admin: workflows for selected
+  useEffect(() => {
+    if (!isAdmin) return;
+    if (!activeId || adminSelectedSource === "agent_session") {
+      setAdminWorkflows([]);
+      return;
+    }
+    IrisService.getConversationWorkflows(activeId)
+      .then(setAdminWorkflows)
+      .catch(() => setAdminWorkflows([]));
+  }, [isAdmin, activeId, adminSelectedSource]);
+
+  // Admin: backend session stats for agent sessions
+  useEffect(() => {
+    if (!isAdmin) return;
+    if (!activeId) {
+      setBackendSessionStats(null);
+      return;
+    }
+    if (adminSelectedSource === "agent_session") {
+      IrisService.getSessionStats(activeId)
+        .then((stats) => setBackendSessionStats(stats))
+        .catch(() => setBackendSessionStats(null));
+
+      ToolsApiService.getAllAgenticTasks({ conversationId: activeId })
+        .then((result) => setTasksCount(result.summary?.total || (result.tasks || []).length))
+        .catch(() => setTasksCount(0));
+
+      PrismService.getCoordinatorWorkers(activeId)
+        .then((result) => setWorkersCount((result.workers || []).length))
+        .catch(() => setWorkersCount(0));
+    } else {
+      setBackendSessionStats(null);
+      setTasksCount(0);
+      setWorkersCount(0);
+    }
+  }, [isAdmin, activeId, adminSelectedSource]);
+
+  // Admin: auto-scroll to bottom
+  useEffect(() => {
+    if (!isAdmin || adminLoadingDetail || !activeId || !adminViewerBodyRef.current) return;
+    const element = adminViewerBodyRef.current;
+    requestAnimationFrame(() => {
+      element.scrollTop = element.scrollHeight;
+    });
+  }, [isAdmin, activeId, adminLoadingDetail]);
+
+  // Admin: entry list SSE-driven + polling fallback
+  useEffect(() => {
+    if (!isAdmin) return;
+    adminKnownIdsRef.current = null;
+    if (!initialId) adminAutoSelectedRef.current = false;
+    adminLastFingerprintRef.current = "";
+    setAdminEntries([]);
+    setAdminFingerprint("");
+
+    adminLoadEntries();
+
+    let pollInterval: NodeJS.Timeout | null = null;
+    const sseSubscription = IrisService.subscribeCollectionChanges({
+      onStatus: (data: { changeStreams?: boolean }) => {
+        setAdminChangeStreamsActive(!!data.changeStreams);
+        if (!data.changeStreams) {
+          if (!pollInterval) {
+            pollInterval = setInterval(adminLoadEntries, ADMIN_POLL_INTERVAL);
+          }
+        }
+      },
+      onChange: (event: { collection?: string; id?: string }) => {
+        if (
+          event.collection === "model_conversations" ||
+          event.collection === "agent_conversations"
+        ) {
+          adminLoadEntries();
+          // Also refresh selected entry if it matches
+          if (event.id && event.id === activeId) {
+            adminRefreshSelectedEntry(activeId, adminSelectedSource);
+          }
+        }
+      },
+    });
+
+    return () => {
+      sseSubscription.close();
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [isAdmin, adminLoadEntries]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Admin: fingerprint-based fallback refresh for selected entry
+  useEffect(() => {
+    if (!isAdmin || adminChangeStreamsActive) return;
+    if (!activeId || adminFingerprint === adminFingerprintRef.current) return;
+    adminFingerprintRef.current = adminFingerprint;
+    adminRefreshSelectedEntry(activeId, adminSelectedSource);
+  }, [isAdmin, activeId, adminFingerprint, adminChangeStreamsActive, adminRefreshSelectedEntry, adminSelectedSource]);
+
+  // Admin: agent picker handler
+  const adminHandleAgentSelect = useCallback(
+    (agentPickedId: string) => {
+      if (!isAdmin) return;
+      const params = new URLSearchParams(adminSearchParams.toString());
+      if (agentPickedId === "ALL") {
+        params.delete("agent");
+      } else {
+        params.set("agent", agentPickedId);
+      }
+      const queryString = params.toString();
+      adminRouter.replace(
+        queryString ? `/admin/chat?${queryString}` : "/admin/chat",
+        { scroll: false },
+      );
+
+      setActiveId(null);
+      setMessages([]);
+      setAdminSelectedSource(null);
+      adminAutoSelectedRef.current = false;
+    },
+    [isAdmin, adminSearchParams, adminRouter],
+  );
+
+  // Admin: header controls
+  useEffect(() => {
+    if (!isAdmin) return;
+    adminHeaderContext.setControls(
+      <>
+        <SelectComponent
+          value={adminProjectFilter || ""}
+          options={adminProjectOptions}
+          onChange={adminHandleProjectChange}
+          placeholder="All Projects"
+          disabled={!!adminSessionFilter}
+        />
+        {adminGeneratingCount > 0 && (
+          <span className={`${adminPageStyles['stat-pill']} ${adminPageStyles['stat-pill-generating']}`}>
+            <Loader size={10} className={adminPageStyles['spinning']} />
+            {adminGeneratingCount} generating
+          </span>
+        )}
+        <ErrorMessage message={adminError} />
+      </>,
+    );
+  }, [
+    isAdmin,
+    adminProjectFilter,
+    adminProjectOptions,
+    adminHandleProjectChange,
+    adminGeneratingCount,
+    adminError,
+    adminSessionFilter,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Admin: title badge and cleanup
+  useEffect(() => {
+    if (!isAdmin) return;
+    adminHeaderContext.setTitleBadge(adminEntries.length);
+  }, [isAdmin, adminEntries.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    return () => {
+      adminHeaderContext.setControls(null);
+      adminHeaderContext.setTitleBadge(null);
+    };
+  }, [isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ═══════════════════════════════════════════════════════════════
+  // ██  END ADMIN MODE Data Loading
+  // ═══════════════════════════════════════════════════════════════
 
   // Load skills
   const loadSkills = useCallback(async () => {
@@ -4698,6 +5367,7 @@ export default function ChatSessionComponent({
   );
 
   useEffect(() => {
+    if (isAdmin) return;
     let listRefreshTimer: ReturnType<typeof setTimeout> | null = null;
 
     const debouncedListRefresh = () => {
@@ -5615,43 +6285,61 @@ export default function ChatSessionComponent({
                   setChatAreaTab("chat");
                   setShowRaw(mode === "raw");
                 }
+                if (isAdmin) {
+                  const searchParameters = new URLSearchParams(window.location.search);
+                  if (mode === "clean") {
+                    searchParameters.delete("view");
+                  } else {
+                    searchParameters.set("view", mode);
+                  }
+                  const queryString = searchParameters.toString();
+                  window.history.replaceState(
+                    null,
+                    "",
+                    `${window.location.pathname}${queryString ? `?${queryString}` : ""}`,
+                  );
+                }
               }}
             />
-          <div className={chatStyles['message-navigation-controls']}>
-            <IconButtonComponent
-              icon={<ChevronUp size={15} />}
-              onClick={handleNavigateUp}
-              disabled={!canNavigateUp}
-              tooltip="Previous message"
-              className={chatStyles['message-navigation-button']}
-            />
-            <IconButtonComponent
-              icon={<ChevronDown size={15} />}
-              onClick={handleNavigateDown}
-              disabled={!canNavigateDown}
-              tooltip="Next message"
-              className={chatStyles['message-navigation-button']}
-            />
-          </div>
-          <ButtonComponent
-            ref={chatNewBtnRef}
-            variant="primary"
-            size="small"
-            icon={chatGlitchLabel ? undefined : Plus}
-            onClick={handleNewChatGlitch}
-            disabled={messages.length === 0 && !activeId}
-            className={`${chatStyles['chat-header-new-button']} ${chatGlitchLabel ? chatStyles['chat-header-new-btn-glitch'] : ""}`}
-            title="Start a new session"
-          >
-            {chatGlitchLabel || "New Session"}
-          </ButtonComponent>
+          {!isAdmin && (
+            <>
+              <div className={chatStyles['message-navigation-controls']}>
+                <IconButtonComponent
+                  icon={<ChevronUp size={15} />}
+                  onClick={handleNavigateUp}
+                  disabled={!canNavigateUp}
+                  tooltip="Previous message"
+                  className={chatStyles['message-navigation-button']}
+                />
+                <IconButtonComponent
+                  icon={<ChevronDown size={15} />}
+                  onClick={handleNavigateDown}
+                  disabled={!canNavigateDown}
+                  tooltip="Next message"
+                  className={chatStyles['message-navigation-button']}
+                />
+              </div>
+              <ButtonComponent
+                ref={chatNewBtnRef}
+                variant="primary"
+                size="small"
+                icon={chatGlitchLabel ? undefined : Plus}
+                onClick={handleNewChatGlitch}
+                disabled={messages.length === 0 && !activeId}
+                className={`${chatStyles['chat-header-new-button']} ${chatGlitchLabel ? chatStyles['chat-header-new-btn-glitch'] : ""}`}
+                title="Start a new session"
+              >
+                {chatGlitchLabel || "New Session"}
+              </ButtonComponent>
+            </>
+          )}
         </div>
       </div>
       {/* Nodes tab — inline session graph */}
       {chatAreaTab === "nodes" && (
         <ChatSessionGraphComponent sessionId={activeId} />
       )}
-      {chatAreaTab !== "nodes" && (
+      {chatAreaTab !== "nodes" && !isAdmin && (
         <PixelTransitionComponent
           phase={pixelTransition}
           duration={
@@ -5667,6 +6355,38 @@ export default function ChatSessionComponent({
         />
       )}
       {/* Messages (hidden when Nodes tab is active) */}
+      {isAdmin && chatAreaTab !== "nodes" ? (
+        <div className={adminPageStyles['viewer-body']} ref={adminViewerBodyRef}>
+          {!activeId && !adminLoadingDetail ? (
+            <div className={adminPageStyles['empty-viewer']}>
+              <MessageSquare
+                size={40}
+                style={{ opacity: 0.3, marginBottom: 12 }}
+              />
+              <div>Select a conversation to view</div>
+            </div>
+          ) : adminLoadingDetail ? (
+            <div className={adminPageStyles['empty-viewer']}>
+              Loading conversation...
+            </div>
+          ) : (
+            <MessageList
+              messages={filteredMessages}
+              readOnly
+              showRaw={showRaw}
+              systemPrompt={
+                showRaw
+                  ? settings.systemPrompt ||
+                    adminSessionSystemPrompt ||
+                    messages.find(
+                      (message) => message.role === "system" && !message.deleted,
+                    )?.content
+                  : undefined
+              }
+            />
+          )}
+        </div>
+      ) : (
       <div
         className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""} ${chatAreaTab === "nodes" ? chatStyles['messages-list-hidden'] : ""}`}
         ref={messagesListRef}
@@ -5749,7 +6469,7 @@ export default function ChatSessionComponent({
         />
 
         {/* Pending approval cards */}
-        {pendingApprovals
+        {!isAdmin && pendingApprovals
           .filter((approvalItem) => approvalItem.status === "pending")
           .map((approval) => (
             <ApprovalCardComponent
@@ -5792,7 +6512,7 @@ export default function ChatSessionComponent({
           ))}
 
         {/* Pending user question card */}
-        {pendingUserQuestion && (
+        {!isAdmin && pendingUserQuestion && (
           <UserQuestionCardComponent
             questions={pendingUserQuestion.questions as Array<{ question: string; header?: string | null; options: Array<{ label: string; preview?: string | null }>; multiSelect?: boolean }>}
             context={pendingUserQuestion.context}
@@ -5813,9 +6533,10 @@ export default function ChatSessionComponent({
 
         <div ref={endRef} style={{ minHeight: 1 }} />
       </div>
+      )}
 
       {/* -- Status indicator bar (rainbow canvas above input) -- */}
-      {(() => {
+      {!isAdmin && (() => {
         const lastMessage = messages[messages.length - 1];
 
         // Derive raw status phase/label with robust local fallbacks when cloud models
@@ -5958,6 +6679,7 @@ export default function ChatSessionComponent({
         );
       })()}
 
+      {!isAdmin && (
       <div
         className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model ? chatStyles['input-wrapper-disabled'] : ""} ${chatAreaTab === "nodes" ? chatStyles['input-wrapper-hidden'] : ""}`}
       >
@@ -6229,7 +6951,8 @@ export default function ChatSessionComponent({
           </div>
         </form>
       </div>
-      {lightboxSourceUrl && (
+      )}
+      {!isAdmin && lightboxSourceUrl && (
         <ImagePreviewComponent
           src={lightboxSourceUrl}
           onClose={() => setLightboxSourceUrl(null)}
@@ -6251,16 +6974,19 @@ export default function ChatSessionComponent({
       <ThreePanelLayout
         className="chat-session-component"
         navSidebar={
-          <NavigationSidebarComponent
-            mode="user"
-            isGenerating={isGenerating}
-            activeApiCount={activeApiCount}
-          />
+          isAdmin ? null : (
+            <NavigationSidebarComponent
+              mode="user"
+              isGenerating={isGenerating}
+              activeApiCount={activeApiCount}
+            />
+          )
         }
         leftPanel={leftPanel}
         leftPanelBottom={leftPanelBottom}
         leftTitle={undefined}
         fileViewerPanel={
+          !isAdmin &&
           !isNoAgent &&
           currentWorkspace &&
           hasFileOperations && (
@@ -6271,7 +6997,6 @@ export default function ChatSessionComponent({
               onCloseFile={(id: string) => {
                 setViewerOpenFiles((previousViewerOpenFiles) => {
                   const next = previousViewerOpenFiles.filter((f) => f.id !== id);
-                  // If the closed tab was active, switch to the nearest tab
                   if (id === viewerActiveFileId) {
                     const closedTabIndex = previousViewerOpenFiles.findIndex(
                       (f: ViewerOpenFile) => f.id === id,
@@ -6284,7 +7009,6 @@ export default function ChatSessionComponent({
                 });
               }}
               onFileNotFound={(id: string) => {
-                // Auto-close tabs for files that no longer exist
                 setViewerOpenFiles((previousViewerOpenFiles) => {
                   const next = previousViewerOpenFiles.filter((f) => f.id !== id);
                   setViewerActiveFileId((activeId: string | null) => {
@@ -6311,49 +7035,91 @@ export default function ChatSessionComponent({
           )
         }
         rightPanel={
-          <HistoryPanel
-            sessions={sessions}
-            activeId={activeId}
-            onSelect={handleSelectSession}
-            onNew={handleNewChat}
-            onDelete={handleDeleteSession}
-            disableNew={messages.length === 0 && !activeId}
-            newLabel="New Session"
-            emptyText="No recent sessions"
-            searchText="Search sessions..."
-            countLabel="sessions"
-            generatingSessionIds={generatingSessionIds as Set<string>}
-            hasMore={sessionsHasMore}
-            loadingMore={sessionsLoading}
-            onLoadMore={loadMoreSessions}
-            filterStorageKey={LS_CHAT_FILTERS}
-          />
+          isAdmin ? (
+            <HistoryPanel
+              sessions={adminEntries as (AgentSession | Conversation)[]}
+              activeId={activeId}
+              onSelect={(entry: AgentSession | Conversation) => {
+                const unifiedEntry = entry as UnifiedEntry;
+                adminSelectEntry(
+                  unifiedEntry.id || "",
+                  unifiedEntry._source || "conversation",
+                );
+              }}
+              readOnly
+              showProject
+              showUsername
+              newIds={adminNewIds}
+              disableNew
+              newLabel="New Session"
+              emptyText="No conversations found"
+              searchText="Search sessions..."
+              countLabel="conversations"
+              hasMore={adminEntriesHasMore}
+              loadingMore={adminEntriesLoading}
+              onLoadMore={adminLoadMoreEntries}
+              filterStorageKey={LS_ADMIN_CHAT_FILTERS}
+              dateRange={adminDateRange}
+              initialProviders={adminProviderFilter ? [adminProviderFilter] : undefined}
+              initialSearch={adminSessionFilter || undefined}
+            />
+          ) : (
+            <HistoryPanel
+              sessions={sessions}
+              activeId={activeId}
+              onSelect={handleSelectSession}
+              onNew={handleNewChat}
+              onDelete={handleDeleteSession}
+              disableNew={messages.length === 0 && !activeId}
+              newLabel="New Session"
+              emptyText="No recent sessions"
+              searchText="Search sessions..."
+              countLabel="sessions"
+              generatingSessionIds={generatingSessionIds as Set<string>}
+              hasMore={sessionsHasMore}
+              loadingMore={sessionsLoading}
+              onLoadMore={loadMoreSessions}
+              filterStorageKey={LS_CHAT_FILTERS}
+            />
+          )
         }
-        rightTitle={`${sessions.length}${sessionsHasMore ? "+" : ""} Sessions`}
+        rightTitle={
+          isAdmin
+            ? `${adminEntries.length}${adminEntriesHasMore ? "+" : ""} Conversations`
+            : `${sessions.length}${sessionsHasMore ? "+" : ""} Sessions`
+        }
         sessionType="agent"
         headerCenter={
           <div className={layoutHeaderStyles["header-center-group"]}>
-            {agents.length > 1 && (
-              <AgentPickerComponent
-                agents={agents}
-                activeAgentId={agentId}
-                onSelect={(id: string) => {
-                  // Agent switching is handled by the parent page via URL/state
-                  // Emit a custom event or call a callback
-                  window.dispatchEvent(
-                    new CustomEvent(EV_AGENT_SWITCH, {
-                      detail: { agentId: id },
-                    }),
-                  );
-                }}
-                disabled={isGenerating}
-              />
+            {isAdmin ? (
+              adminAgents.length > 1 && (
+                <AgentPickerComponent
+                  agents={adminAgents as AgentPersona[]}
+                  activeAgentId={adminActiveAgentId}
+                  onSelect={adminHandleAgentSelect}
+                />
+              )
+            ) : (
+              agents.length > 1 && (
+                <AgentPickerComponent
+                  agents={agents}
+                  activeAgentId={agentId}
+                  onSelect={(id: string) => {
+                    window.dispatchEvent(
+                      new CustomEvent(EV_AGENT_SWITCH, {
+                        detail: { agentId: id },
+                      }),
+                    );
+                  }}
+                  disabled={isGenerating}
+                />
+              )
             )}
             <ModelPickerPopoverComponent
               config={filteredConfig}
               settings={{ provider: settings.provider, model: settings.model }}
-              disabled={isGenerating}
-              onSelectModel={(provider: string, modelName: string) => {
+              disabled={isAdmin || isGenerating}
+              onSelectModel={isAdmin ? undefined : (provider: string, modelName: string) => {
                 const modelDef = (
                   filteredConfig?.textToText?.models?.[provider] || []
                 ).find((model: ModelOption) => model.name === modelName);
@@ -6412,7 +7178,31 @@ export default function ChatSessionComponent({
             />
           </div>
         }
-        headerMeta={null}
+        headerMeta={
+          isAdmin && activeId ? (
+            <div className={adminPageStyles['header-meta']}>
+              {(() => {
+                const selectedEntry = adminEntries.find(
+                  (entry) => entry.id === activeId,
+                ) as UnifiedEntry | undefined;
+                if (!selectedEntry) return null;
+                return (
+                  <>
+                    {selectedEntry.project && (
+                      <span>{selectedEntry.project}</span>
+                    )}
+                    {(selectedEntry as Conversation).username && (
+                      <span>{(selectedEntry as Conversation).username}</span>
+                    )}
+                    {selectedEntry.agent && (
+                      <span>{selectedEntry.agent}</span>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          ) : null
+        }
         headerControls={null}
       >
         {chatContent}

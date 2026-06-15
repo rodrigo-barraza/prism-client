@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, use } from "react";
-import AdminChatViewerComponent from "../../../../components/AdminChatViewerComponent";
+import ChatSessionComponent from "../../../../components/ChatSessionComponent";
 
 export default function AdminChatDetailPage({
   params,
@@ -11,7 +11,7 @@ export default function AdminChatDetailPage({
   const { id } = use(params);
   return (
     <Suspense>
-      <AdminChatViewerComponent initialId={id} />
+      <ChatSessionComponent isAdmin initialId={id} />
     </Suspense>
   );
 }

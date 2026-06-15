@@ -820,18 +820,7 @@ export default function AdminChatViewerComponent({
 
   // Resolve whether selected entry is an agent session
 
-  const hasSystemContextMessage = useMemo(() => {
-    const allMessages = selectedEntry?.messages || [];
-    return allMessages.some(
-      (message, index) =>
-        (message.role === "user" &&
-          (message.content?.startsWith("[System Context]") ||
-            message.rawContent?.startsWith("[System Context]") ||
-            message.content?.startsWith("[System Context - Local Time:") ||
-            message.rawContent?.startsWith("[System Context - Local Time:"))) ||
-        (message.role === "system" && index > 0),
-    );
-  }, [selectedEntry?.messages]);
+
 
   // ── Admin header controls ────────────────────────────────────
   useEffect(() => {
@@ -1326,20 +1315,18 @@ export default function AdminChatViewerComponent({
                 </span>
               </div>
               <div className={chatStyles['chat-header-actions']}>
-                {hasSystemContextMessage && (
-                  <ChatViewModeControlComponent
-                    viewMode={chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean"}
-                    onViewModeChange={(mode: ChatViewMode) => {
-                      if (mode === "nodes") {
-                        setChatAreaTab("nodes");
-                      } else {
-                        setChatAreaTab("chat");
-                        setShowRaw(mode === "raw");
-                      }
-                      updateUrlWithViewMode(mode);
-                    }}
-                  />
-                )}
+                <ChatViewModeControlComponent
+                  viewMode={chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean"}
+                  onViewModeChange={(mode: ChatViewMode) => {
+                    if (mode === "nodes") {
+                      setChatAreaTab("nodes");
+                    } else {
+                      setChatAreaTab("chat");
+                      setShowRaw(mode === "raw");
+                    }
+                    updateUrlWithViewMode(mode);
+                  }}
+                />
               </div>
             </div>
 
@@ -1369,12 +1356,14 @@ export default function AdminChatViewerComponent({
                   readOnly
                   showRaw={showRaw}
                   systemPrompt={
-                    selectedEntry?.systemPrompt ||
-                    sessionSystemPrompt ||
-                    (selectedEntry as Conversation)?.settings?.systemPrompt ||
-                    selectedEntry?.messages?.find(
-                      (message) => message.role === "system" && !message.deleted,
-                    )?.content
+                    showRaw
+                      ? selectedEntry?.systemPrompt ||
+                        sessionSystemPrompt ||
+                        (selectedEntry as Conversation)?.settings?.systemPrompt ||
+                        selectedEntry?.messages?.find(
+                          (message) => message.role === "system" && !message.deleted,
+                        )?.content
+                      : undefined
                   }
                 />
               )}

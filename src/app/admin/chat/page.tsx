@@ -1,12 +1,12 @@
 "use client";
 
 import { Suspense } from "react";
-import AdminChatViewerComponent from "../../../components/AdminChatViewerComponent";
+import ChatSessionComponent from "../../../components/ChatSessionComponent";
 
 export default function AdminChatPage() {
   return (
     <Suspense>
-      <AdminChatViewerComponent />
+      <ChatSessionComponent isAdmin />
     </Suspense>
   );
 }
