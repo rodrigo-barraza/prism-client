@@ -67,6 +67,7 @@ import WorkersPanel from "./WorkersPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
 import RequestsTableComponent from "./RequestsTableComponent";
 import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent";
+import WorkspaceSwitcherButtonComponent from "./WorkspaceSwitcherButtonComponent";
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
 import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
@@ -5379,6 +5380,7 @@ export default function ChatSessionComponent({
             title="Workspace"
             count={workspaceTreeStats?.totalEntries}
             countSuffix={workspaceTreeStats?.truncated ? "+" : ""}
+            actions={<WorkspaceSwitcherButtonComponent />}
           />
           <WorkspaceTreePanelComponent
             workspaceTreeRefreshKey={workspaceTreeRefreshKey}

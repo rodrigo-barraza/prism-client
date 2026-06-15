@@ -102,8 +102,9 @@ export default function SettingsSidebarNavigationComponent({
   const [sectionWarnings, setSectionWarnings] = useState<Record<string, number>>(
     {},
   );
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const isUserScrolling = useRef(true);
+  const intersectionObserverReference = useRef<IntersectionObserver | null>(null);
+  const isUserScrollingActiveReference = useRef(true);
+  const scrolledInitialSectionIdReference = useRef<string | null>(null);
 
   useEffect(() => {
     const loadWarnings = async () => {
@@ -151,52 +152,80 @@ export default function SettingsSidebarNavigationComponent({
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return;
 
-    const sectionElements = SETTINGS_SECTIONS.map((section) =>
-      scrollContainer.querySelector(`[data-settings-section="${section.id}"]`),
-    ).filter(Boolean) as Element[];
+    let sectionElements: Element[] = [];
 
-    if (sectionElements.length === 0) return;
+    const initializeIntersectionObserver = () => {
+      if (intersectionObserverReference.current) {
+        intersectionObserverReference.current.disconnect();
+      }
 
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (!isUserScrolling.current) return;
+      sectionElements = SETTINGS_SECTIONS.map((section) =>
+        scrollContainer.querySelector(`[data-settings-section="${section.id}"]`),
+      ).filter(Boolean) as Element[];
 
-        const visibleEntries = entries.filter(
-          (entry) => entry.isIntersecting,
-        );
+      if (sectionElements.length === 0) return false;
 
-        if (visibleEntries.length > 0) {
-          const topMostEntry = visibleEntries.reduce(
-            (topEntry, currentEntry) =>
-              currentEntry.boundingClientRect.top <
-              topEntry.boundingClientRect.top
-                ? currentEntry
-                : topEntry,
+      intersectionObserverReference.current = new IntersectionObserver(
+        (entries) => {
+          if (!isUserScrollingActiveReference.current) return;
+
+          const visibleEntries = entries.filter(
+            (entry) => entry.isIntersecting,
           );
 
-          const sectionId = (topMostEntry.target as HTMLElement).dataset
-            .settingsSection;
-          if (sectionId) {
-            setActiveSectionId(sectionId);
-            onActiveSectionChange?.(sectionId);
-          }
-        }
-      },
-      {
-        root: scrollContainer,
-        rootMargin: "-10% 0px -70% 0px",
-        threshold: 0,
-      },
-    );
+          if (visibleEntries.length > 0) {
+            const topMostEntry = visibleEntries.reduce(
+              (topEntry, currentEntry) =>
+                currentEntry.boundingClientRect.top <
+                topEntry.boundingClientRect.top
+                  ? currentEntry
+                  : topEntry,
+            );
 
-    for (const element of sectionElements) {
-      observerRef.current.observe(element);
-    }
+            const sectionId = (topMostEntry.target as HTMLElement).dataset
+              .settingsSection;
+            if (sectionId) {
+              setActiveSectionId(sectionId);
+              onActiveSectionChange?.(sectionId);
+            }
+          }
+        },
+        {
+          root: scrollContainer,
+          rootMargin: "-10% 0px -70% 0px",
+          threshold: 0,
+        },
+      );
+
+      for (const element of sectionElements) {
+        intersectionObserverReference.current.observe(element);
+      }
+      return true;
+    };
+
+    // Initialize observer if elements exist
+    initializeIntersectionObserver();
+
+    // Observe container mutations to catch asynchronously loaded section elements
+    const containerMutationObserver = new MutationObserver(() => {
+      initializeIntersectionObserver();
+    });
+
+    containerMutationObserver.observe(scrollContainer, {
+      childList: true,
+      subtree: true,
+    });
 
     return () => {
-      observerRef.current?.disconnect();
+      intersectionObserverReference.current?.disconnect();
+      containerMutationObserver.disconnect();
     };
   }, [scrollContainerRef, onActiveSectionChange]);
+
+  useEffect(() => {
+    // Reset scrolledInitialSectionIdReference if initialSectionId changes
+    scrolledInitialSectionIdReference.current = null;
+  }, [initialSectionId]);
 
   useEffect(() => {
     if (!initialSectionId || initialSectionId === SETTINGS_SECTIONS[0].id) return;
@@ -204,21 +233,44 @@ export default function SettingsSidebarNavigationComponent({
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return;
 
-    const scrollToInitialSection = () => {
+    const attemptScrollToInitialSection = () => {
+      if (scrolledInitialSectionIdReference.current === initialSectionId) return true;
+
       const targetElement = scrollContainer.querySelector(
         `[data-settings-section="${initialSectionId}"]`,
       );
-      if (!targetElement) return;
+      if (!targetElement) return false;
 
-      isUserScrolling.current = false;
+      isUserScrollingActiveReference.current = false;
       targetElement.scrollIntoView({ behavior: "instant", block: "start" });
+      scrolledInitialSectionIdReference.current = initialSectionId;
 
-      requestAnimationFrame(() => {
-        isUserScrolling.current = true;
-      });
+      // Allow some time for scroll to settle before enabling user scroll tracking
+      setTimeout(() => {
+        isUserScrollingActiveReference.current = true;
+      }, 100);
+
+      return true;
     };
 
-    requestAnimationFrame(scrollToInitialSection);
+    // Try scrolling immediately
+    if (attemptScrollToInitialSection()) return;
+
+    // Observe mutations until the target element is loaded in DOM
+    const scrollMutationObserver = new MutationObserver(() => {
+      if (attemptScrollToInitialSection()) {
+        scrollMutationObserver.disconnect();
+      }
+    });
+
+    scrollMutationObserver.observe(scrollContainer, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      scrollMutationObserver.disconnect();
+    };
   }, [initialSectionId, scrollContainerRef]);
 
   const handleSectionClick = useCallback(
@@ -231,14 +283,14 @@ export default function SettingsSidebarNavigationComponent({
       );
       if (!targetElement) return;
 
-      isUserScrolling.current = false;
+      isUserScrollingActiveReference.current = false;
       setActiveSectionId(sectionId);
       onActiveSectionChange?.(sectionId);
 
       targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
 
       setTimeout(() => {
-        isUserScrolling.current = true;
+        isUserScrollingActiveReference.current = true;
       }, 800);
     },
     [scrollContainerRef, onActiveSectionChange],
