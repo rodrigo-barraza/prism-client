@@ -731,7 +731,7 @@
   margin-top: 4px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--background-surface);
+  background: oklch(0 0 0);
   border: 1px solid var(--calculated-border-color);
   max-height: 300px;
   overflow-y: auto;
@@ -750,7 +750,24 @@
 }
 
 .input-arg-row:hover {
-  background: var(--background-elevated);
+  background: oklch(1 0 0 / 0.06);
+}
+
+.input-arg-row-complex {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 4px;
+  background: oklch(1 0 0 / 0.02);
+  border: 1px solid oklch(1 0 0 / 0.05);
+  margin-bottom: 4px;
+}
+
+.input-arg-value-wrapper {
+  flex: 1;
+  min-width: 0;
 }
 
 .input-arg-key {
@@ -778,9 +795,8 @@
   margin-top: 2px;
   padding: 4px 6px;
   border-radius: 4px;
-  background: var(--background-elevated);
-  border: 1px solid
-    color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
+  background: oklch(1 0 0 / 0.04);
+  border: 1px solid oklch(1 0 0 / 0.08);
   max-height: 180px;
   overflow-y: auto;
 }
@@ -814,7 +830,7 @@
   margin-top: 4px;
   padding: 6px 8px;
   border-radius: 6px;
-  background: var(--background-surface);
+  background: oklch(0 0 0);
   border: 1px solid var(--calculated-border-color);
   max-height: 300px;
   overflow-y: auto;
@@ -833,7 +849,29 @@
 }
 
 .output-arg-row:hover {
-  background: var(--background-elevated);
+  background: oklch(1 0 0 / 0.06);
+}
+
+.output-arg-row-complex {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 4px;
+  background: oklch(1 0 0 / 0.02);
+  border: 1px solid oklch(1 0 0 / 0.05);
+  margin-bottom: 4px;
+}
+
+.output-arg-value-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.output-arg-row-single {
+  width: 100%;
+  padding: 2px 4px;
 }
 
 .output-arg-key {
@@ -861,11 +899,51 @@
   margin-top: 2px;
   padding: 4px 6px;
   border-radius: 4px;
-  background: var(--background-elevated);
-  border: 1px solid
-    color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
+  background: oklch(1 0 0 / 0.04);
+  border: 1px solid oklch(1 0 0 / 0.08);
   max-height: 180px;
   overflow-y: auto;
+}
+
+/* ── Value Types Colors ── */
+.value-string {
+  color: oklch(0.78 0.12 140);
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.value-string-long {
+  display: block;
+  margin-top: 2px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: oklch(1 0 0 / 0.04);
+  border: 1px solid oklch(1 0 0 / 0.08);
+  max-height: 180px;
+  overflow-y: auto;
+  font-family: var(--font-mono, monospace);
+}
+
+.value-number {
+  color: oklch(0.75 0.12 250);
+}
+
+.value-boolean {
+  color: oklch(0.72 0.14 300);
+}
+
+.value-null {
+  color: oklch(0.55 0 0);
+  font-style: italic;
+}
+
+.value-other {
+  color: oklch(0.85 0.03 260);
+}
+
+.json-value-wrapper {
+  width: 100%;
+  margin-top: 2px;
 }
 
 .output-raw-pre {

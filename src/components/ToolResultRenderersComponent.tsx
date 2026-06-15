@@ -50,6 +50,7 @@ import PrismService from "../services/PrismService";
 import { formatLatency, renderToolName } from "@rodrigo-barraza/utilities-library";
 import styles from "./ToolResultRenderersComponent.module.css";
 import TimerBadgeComponent from "./TimerBadgeComponent";
+import JsonViewerComponent from "./JsonViewerComponent";
 
 // --- Types & Interfaces ------------------------------------------------
 
@@ -431,11 +432,100 @@ function RawResultToggle({ result }: { result: unknown }) {
 }
 
 /**
+ * Formats and renders any parameter/argument value based on its type.
+ * Renders JSON objects/arrays with JsonViewerComponent, and primitives with class-specific colors.
+ */
+interface ArgValueViewerProps {
+  valueToRender: unknown;
+}
+
+function ArgValueViewerComponent({ valueToRender }: ArgValueViewerProps) {
+  const parsedData = useMemo(() => {
+    if (valueToRender === null || valueToRender === undefined) {
+      return { valueType: "null", parsedValue: null };
+    }
+    if (typeof valueToRender === "string") {
+      const trimmedString = valueToRender.trim();
+      if (
+        (trimmedString.startsWith("{") && trimmedString.endsWith("}")) ||
+        (trimmedString.startsWith("[") && trimmedString.endsWith("]"))
+      ) {
+        try {
+          const parsedObject = JSON.parse(valueToRender);
+          if (parsedObject && typeof parsedObject === "object") {
+            return { valueType: "json", parsedValue: parsedObject };
+          }
+        } catch {
+          // Treat as a regular string
+        }
+      }
+      if (trimmedString === "true" || trimmedString === "false") {
+        return { valueType: "boolean", parsedValue: trimmedString === "true" };
+      }
+      if (trimmedString === "null") {
+        return { valueType: "null", parsedValue: null };
+      }
+      if (trimmedString !== "" && !isNaN(Number(trimmedString))) {
+        return { valueType: "number", parsedValue: Number(trimmedString) };
+      }
+      return { valueType: "string", parsedValue: valueToRender };
+    }
+    if (typeof valueToRender === "object") {
+      return { valueType: "json", parsedValue: valueToRender };
+    }
+    if (typeof valueToRender === "boolean") {
+      return { valueType: "boolean", parsedValue: valueToRender };
+    }
+    if (typeof valueToRender === "number") {
+      return { valueType: "number", parsedValue: valueToRender };
+    }
+    return { valueType: typeof valueToRender, parsedValue: valueToRender };
+  }, [valueToRender]);
+
+  if (parsedData.valueType === "json") {
+    return (
+      <div className={styles['json-value-wrapper']}>
+        <JsonViewerComponent data={parsedData.parsedValue as import("../types/types").JsonValue} collapsed={1} />
+      </div>
+    );
+  }
+
+  if (parsedData.valueType === "string") {
+    const isLongContent = typeof parsedData.parsedValue === "string" && parsedData.parsedValue.length > 80;
+    return (
+      <span
+        className={`${styles['value-string']} ${isLongContent ? styles['value-string-long'] : ""}`}
+      >
+        {String(parsedData.parsedValue)}
+      </span>
+    );
+  }
+
+  if (parsedData.valueType === "number") {
+    return <span className={styles['value-number']}>{String(parsedData.parsedValue)}</span>;
+  }
+
+  if (parsedData.valueType === "boolean") {
+    return (
+      <span className={styles['value-boolean']}>
+        {parsedData.parsedValue ? "true" : "false"}
+      </span>
+    );
+  }
+
+  if (parsedData.valueType === "null") {
+    return <span className={styles['value-null']}>null</span>;
+  }
+
+  return <span className={styles['value-other']}>{String(parsedData.parsedValue)}</span>;
+}
+
+/**
  * Collapsible panel that shows all input arguments passed to a tool call.
  * Renders key-value pairs in a clean, readable format.
  */
 function InputArgsToggle({ args }: { args?: ToolArgs }) {
-  const [show, setShow] = useState(false);
+  const [showInput, setShowInput] = useState(false);
 
   const entries = useMemo(() => {
     if (!args || typeof args !== "object") return [];
@@ -450,29 +540,33 @@ function InputArgsToggle({ args }: { args?: ToolArgs }) {
     <div className={styles['input-args-toggle']}>
       <button
         className={styles['raw-toggle-button']}
-        onClick={() => setShow((previousState) => !previousState)}
+        onClick={() => setShowInput((previousState) => !previousState)}
       >
-        <ChevronRight size={11} className={show ? styles['chevron-open'] : ""} />
+        <ChevronRight size={11} className={showInput ? styles['chevron-open'] : ""} />
         <span>Input</span>
         <span className={styles['input-args-count']}>{entries.length}</span>
       </button>
-      {show && (
+      {showInput && (
         <div className={styles['input-args-content']}>
           {entries.map(([key, value]) => {
-            const isLong = typeof value === "string" && value.length > 80;
-            const display =
-              typeof value === "string"
-                ? value
-                : JSON.stringify(value, null, 2);
+            const isComplexObject = typeof value === "object" && value !== null;
+            let isJsonValue = isComplexObject;
+            if (typeof value === "string") {
+              const trimmedString = value.trim();
+              isJsonValue =
+                (trimmedString.startsWith("{") && trimmedString.endsWith("}")) ||
+                (trimmedString.startsWith("[") && trimmedString.endsWith("]"));
+            }
 
             return (
-              <div key={key} className={styles['input-arg-row']}>
+              <div
+                key={key}
+                className={`${isJsonValue ? styles['input-arg-row-complex'] : styles['input-arg-row']}`}
+              >
                 <span className={styles['input-arg-key']}>{key}</span>
-                <span
-                  className={`${styles['input-arg-value']} ${isLong ? styles['input-arg-value-long'] : ""}`}
-                >
-                  {display}
-                </span>
+                <div className={styles['input-arg-value-wrapper']}>
+                  <ArgValueViewerComponent valueToRender={value} />
+                </div>
               </div>
             );
           })}
@@ -489,77 +583,83 @@ function InputArgsToggle({ args }: { args?: ToolArgs }) {
  * Helps users understand exactly what the agent receives back.
  */
 function OutputResultToggle({ result }: { result: unknown }) {
-  const [show, setShow] = useState(false);
+  const [showOutput, setShowOutput] = useState(false);
 
-  const display = useMemo(() => {
+  const displayData = useMemo(() => {
     if (result === undefined || result === null) return null;
     if (typeof result === "string") {
       try {
-        const parsed = JSON.parse(result);
+        const parsedObject = JSON.parse(result);
         return {
-          type: "object",
-          data: parsed,
-          raw: JSON.stringify(parsed, null, 2),
+          dataType: "object",
+          dataValue: parsedObject,
+          rawString: JSON.stringify(parsedObject, null, 2),
         };
       } catch {
-        return { type: "string", data: result, raw: result };
+        return { dataType: "string", dataValue: result, rawString: result };
       }
     }
     if (typeof result === "object") {
       return {
-        type: "object",
-        data: result,
-        raw: JSON.stringify(result, null, 2),
+        dataType: "object",
+        dataValue: result,
+        rawString: JSON.stringify(result, null, 2),
       };
     }
-    return { type: "string", data: result, raw: String(result) };
+    return { dataType: "string", dataValue: result, rawString: String(result) };
   }, [result]);
 
-  if (!display) return null;
+  if (!displayData) return null;
 
   // Count meaningful entries for the badge
   const entryCount =
-    display.type === "object" && !Array.isArray(display.data)
-      ? Object.keys(display.data).length
+    displayData.dataType === "object" && !Array.isArray(displayData.dataValue)
+      ? Object.keys(displayData.dataValue).length
       : null;
 
   return (
     <div className={styles['output-result-toggle']}>
       <button
         className={styles['raw-toggle-button']}
-        onClick={() => setShow((previousState) => !previousState)}
+        onClick={() => setShowOutput((previousState) => !previousState)}
       >
-        <ChevronRight size={11} className={show ? styles['chevron-open'] : ""} />
+        <ChevronRight size={11} className={showOutput ? styles['chevron-open'] : ""} />
         <span>Output</span>
         {entryCount != null && (
           <span className={styles['output-result-count']}>{entryCount}</span>
         )}
       </button>
-      {show && (
+      {showOutput && (
         <div className={styles['output-result-content']}>
-          {display.type === "object" && !Array.isArray(display.data) ? (
-            Object.entries(display.data)
+          {displayData.dataType === "object" && !Array.isArray(displayData.dataValue) ? (
+            Object.entries(displayData.dataValue)
               .filter(([, value]) => value !== undefined && value !== null)
               .map(([key, value]) => {
-                const isComplex = typeof value === "object" && value !== null;
-                const valueString = isComplex
-                  ? JSON.stringify(value, null, 2)
-                  : String(value);
-                const isLong = valueString.length > 80;
+                const isComplexObject = typeof value === "object" && value !== null;
+                let isJsonValue = isComplexObject;
+                if (typeof value === "string") {
+                  const trimmedString = value.trim();
+                  isJsonValue =
+                    (trimmedString.startsWith("{") && trimmedString.endsWith("}")) ||
+                    (trimmedString.startsWith("[") && trimmedString.endsWith("]"));
+                }
 
                 return (
-                  <div key={key} className={styles['output-arg-row']}>
+                  <div
+                    key={key}
+                    className={`${isJsonValue ? styles['output-arg-row-complex'] : styles['output-arg-row']}`}
+                  >
                     <span className={styles['output-arg-key']}>{key}</span>
-                    <span
-                      className={`${styles['output-arg-value']} ${isLong ? styles['output-arg-value-long'] : ""}`}
-                    >
-                      {valueString}
-                    </span>
+                    <div className={styles['output-arg-value-wrapper']}>
+                      <ArgValueViewerComponent valueToRender={value} />
+                    </div>
                   </div>
                 );
               })
           ) : (
-            <pre className={styles['output-raw-pre']}>{display.raw}</pre>
+            <div className={styles['output-arg-row-single']}>
+              <ArgValueViewerComponent valueToRender={result} />
+            </div>
           )}
         </div>
       )}

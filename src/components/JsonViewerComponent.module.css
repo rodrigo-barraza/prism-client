@@ -119,7 +119,20 @@
   padding: 0 4px;
 }
 
+.value-string {
+  color: oklch(0.78 0.12 140);
+  word-break: break-all;
+}
+
+.value-number {
+  color: oklch(0.75 0.12 250);
+}
+
+.value-boolean {
+  color: oklch(0.72 0.14 300);
+}
+
 .value-null {
-  color: var(--text-muted);
+  color: oklch(0.55 0 0);
   font-style: italic;
 }
