@@ -31,6 +31,7 @@ import {
   Download,
   HardDrive,
   Monitor,
+  AppWindow,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
@@ -89,7 +90,7 @@ export default function SettingsPageComponent() {
   const [saved, setSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [harnesses, setHarnesses] = useState<AgenticHarness[]>([]);
-  const [expandedGuide, setExpandedGuide] = useState<"desktop" | "download" | "docker" | "local" | null>(null);
+  const [expandedGuide, setExpandedGuide] = useState<"desktop" | "tray" | "download" | "docker" | "local" | null>(null);
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
 
   // -- MCP Servers state -----------------------------------------------
@@ -513,6 +514,9 @@ export default function SettingsPageComponent() {
   );
   const userRoots = wsWorkspaces.filter(
     (workspace: LocalWorkspace) => !workspace.isPinned && !workspace.isAgentServed,
+  );
+  const agentServedRoots = wsWorkspaces.filter(
+    (workspace: LocalWorkspace) => workspace.isAgentServed,
   );
 
   // -- Loading state --------------------------------------------------
@@ -1052,6 +1056,39 @@ export default function SettingsPageComponent() {
             </>
           )}
 
+          {/* Agent-served workspace roots (managed by connected agents) */}
+          {agentServedRoots.length > 0 && (
+            <>
+              <div className={styles['workspace-divider']} />
+              <div className={styles['section-label']}>
+                <FolderTree size={10} />
+                Agent Workspaces
+              </div>
+              {agentServedRoots.map((workspace: LocalWorkspace) => (
+                <div key={workspace.id} className={styles['workspace-item']}>
+                  <div className={styles['workspace-item-info']}>
+                    <FolderOpen
+                      size={16}
+                      className={styles['workspace-item-icon']}
+                    />
+                    <div className={styles['workspace-item-details']}>
+                      <span className={styles['workspace-item-name']}>
+                        {workspace.name}
+                        <span className={styles['static-badge']}>
+                          <Wifi size={8} />
+                          Agent
+                        </span>
+                      </span>
+                      <span className={styles['workspace-item-path']}>
+                        {workspace.path}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
           {/* Local static roots (from env config, not agent-served) */}
           {localStaticRoots.length > 0 && (
             <>
@@ -1365,6 +1402,148 @@ export default function SettingsPageComponent() {
                       </code>{" "}
                       in the output. The agent will appear in this settings
                       panel under Remote Agents.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* System Tray App — Electron-based with setup wizard */}
+            <button
+              className={`${styles['guide-toggle']} ${expandedGuide === "tray" ? styles['guide-expanded'] : ""}`}
+              onClick={() =>
+                setExpandedGuide(expandedGuide === "tray" ? null : "tray")
+              }
+            >
+              <AppWindow size={16} className={styles['guide-toggle-icon']} />
+              <div className={styles['guide-toggle-label']}>
+                <span className={styles['guide-toggle-title']}>System Tray App</span>
+                <span className={styles['guide-toggle-hint']}>
+                  Installs to system tray with setup wizard — auto-launches on login
+                </span>
+              </div>
+              <ChevronRight size={14} className={styles['guide-chevron']} />
+            </button>
+
+            {expandedGuide === "tray" && (
+              <div className={styles['guide-content']}>
+                <div className={styles['single-file-explainer']}>
+                  <div className={styles['single-file-explainer-icon']}>
+                    <AppWindow size={20} />
+                  </div>
+                  <div className={styles['single-file-explainer-text']}>
+                    <span className={styles['single-file-explainer-headline']}>
+                      Always-on agent in your system tray
+                    </span>
+                    <span className={styles['single-file-explainer-description']}>
+                      A full desktop application that lives in your system tray.
+                      Includes a setup wizard, settings panel, log viewer, and
+                      auto-launch on login. Runs silently in the background —
+                      no terminal window needed.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles['guide-step']}>
+                  <span className={styles['step-number']}>1</span>
+                  <div className={styles['step-body']}>
+                    <span className={styles['step-title']}>
+                      Download the installer
+                    </span>
+                    <div className={styles['platform-download-grid']}>
+                      <a
+                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
+                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl("win-x64")}
+                        download
+                      >
+                        <Download size={14} />
+                        <span className={styles['platform-download-label']}>
+                          <span className={styles['platform-download-name']}>Windows</span>
+                          <span className={styles['platform-download-arch']}>Installer</span>
+                        </span>
+                      </a>
+                      <a
+                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && !/arm|aarch/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
+                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl("mac-x64")}
+                        download
+                      >
+                        <Download size={14} />
+                        <span className={styles['platform-download-label']}>
+                          <span className={styles['platform-download-name']}>macOS</span>
+                          <span className={styles['platform-download-arch']}>Intel</span>
+                        </span>
+                      </a>
+                      <a
+                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && /arm|aarch/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
+                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl("mac-arm64")}
+                        download
+                      >
+                        <Download size={14} />
+                        <span className={styles['platform-download-label']}>
+                          <span className={styles['platform-download-name']}>macOS</span>
+                          <span className={styles['platform-download-arch']}>Apple Silicon</span>
+                        </span>
+                      </a>
+                      <a
+                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Linux/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
+                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl("linux-x64")}
+                        download
+                      >
+                        <Download size={14} />
+                        <span className={styles['platform-download-label']}>
+                          <span className={styles['platform-download-name']}>Linux</span>
+                          <span className={styles['platform-download-arch']}>AppImage</span>
+                        </span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles['guide-step']}>
+                  <span className={styles['step-number']}>2</span>
+                  <div className={styles['step-body']}>
+                    <span className={styles['step-title']}>
+                      Run the installer
+                    </span>
+                    <span className={styles['step-hint']}>
+                      On Windows, run the installer — it installs to your user
+                      profile and launches automatically. On macOS, open the
+                      DMG and drag to Applications. On Linux, make the AppImage
+                      executable and run it.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles['guide-step']}>
+                  <span className={styles['step-number']}>3</span>
+                  <div className={styles['step-body']}>
+                    <span className={styles['step-title']}>
+                      Complete the setup wizard
+                    </span>
+                    <span className={styles['step-hint']}>
+                      On first launch, the app opens a setup wizard where you
+                      select your workspace directory. The backend URL and
+                      credentials are pre-configured — just pick your folder
+                      and click connect. The agent starts automatically and
+                      appears in your system tray.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles['guide-step']}>
+                  <span className={styles['step-number']}>4</span>
+                  <div className={styles['step-body']}>
+                    <span className={styles['step-title']}>
+                      Verify connection
+                    </span>
+                    <span className={styles['step-hint']}>
+                      Right-click the system tray icon to see the connection
+                      status. The agent will appear in this settings panel
+                      under Remote Agents. Enable{" "}
+                      <code className={styles['inline-code']}>
+                        Launch at login
+                      </code>{" "}
+                      in the tray menu to keep the agent running across restarts.
                     </span>
                   </div>
                 </div>
