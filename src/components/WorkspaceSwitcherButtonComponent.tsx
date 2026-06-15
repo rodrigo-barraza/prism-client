@@ -73,9 +73,19 @@ export default function WorkspaceSwitcherButtonComponent() {
                   size={11}
                   className={styles["workspace-switcher-menu-item-icon"]}
                 />
-                <span className={styles["workspace-switcher-menu-item-name"]}>
-                  {workspace.name}
-                </span>
+                <div className={styles["workspace-switcher-menu-item-details"]}>
+                  <span className={styles["workspace-switcher-menu-item-name"]}>
+                    {workspace.name}
+                  </span>
+                  <span className={styles["workspace-switcher-menu-item-path"]}>
+                    {workspace.path}
+                  </span>
+                </div>
+                {workspace.isAgentServed && (
+                  <span className={styles["workspace-switcher-menu-item-agent-badge"]}>
+                    remote
+                  </span>
+                )}
                 {isActive && (
                   <Check
                     size={10}

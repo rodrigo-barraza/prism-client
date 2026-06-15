@@ -11,6 +11,12 @@ export interface WorkspaceItem {
   path: string;
   isPinned: boolean;
   isAgentServed?: boolean;
+  agentId?: string | null;
+  agentName?: string | null;
+  hostname?: string | null;
+  platform?: string | null;
+  arch?: string | null;
+  clientIp?: string | null;
 }
 
 export interface WorkspaceListResponse {

@@ -420,7 +420,13 @@ export default function WorkspaceTreePanelComponent({
                     title={w.path}
                   >
                     <FolderOpen size={10} className={styles['switcher-item-icon']} />
-                    <span className={styles['switcher-item-name']}>{w.name}</span>
+                    <div className={styles['switcher-item-details']}>
+                      <span className={styles['switcher-item-name']}>{w.name}</span>
+                      <span className={styles['switcher-item-path']}>{w.path}</span>
+                    </div>
+                    {w.isAgentServed && (
+                      <span className={styles['switcher-item-agent-badge']}>remote</span>
+                    )}
                     {isActive && (
                       <Check size={10} className={styles['switcher-item-check']} />
                     )}

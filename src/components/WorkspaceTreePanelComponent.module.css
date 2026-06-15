@@ -124,7 +124,6 @@
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
   cursor: pointer;
   text-align: left;
-  white-space: nowrap;
   transition: background 0.1s;
 
   &:hover {
@@ -140,6 +139,8 @@
 .switcher-item-icon {
   flex-shrink: 0;
   opacity: 0.6;
+  align-self: flex-start;
+  margin-block-start: 2px;
 }
 
 .switcher-item-active .switcher-item-icon {
@@ -147,10 +148,43 @@
   color: var(--accent-primary);
 }
 
-.switcher-item-name {
+.switcher-item-details {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.switcher-item-name {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.switcher-item-path {
+  font-size: 0.5625rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.switcher-item-agent-badge {
+  flex-shrink: 0;
+  font-size: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  color: var(--accent-primary);
+  line-height: 1.4;
 }
 
 .switcher-item-check {

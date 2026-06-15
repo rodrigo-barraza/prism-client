@@ -90,7 +90,13 @@ export default function WorkspaceSelectorComponent({
               title={workspace.path}
             >
               <FolderOpen size={12} className={styles['menu-item-icon']} />
-              <span className={styles['menu-item-name']}>{workspace.name}</span>
+              <div className={styles['menu-item-details']}>
+                <span className={styles['menu-item-name']}>{workspace.name}</span>
+                <span className={styles['menu-item-path']}>{workspace.path}</span>
+              </div>
+              {workspace.isAgentServed && (
+                <span className={styles['menu-item-agent-badge']}>remote</span>
+              )}
               {workspace.isPinned && (
                 <Lock size={9} className={styles['menu-item-pinned']} />
               )}
