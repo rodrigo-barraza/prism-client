@@ -469,11 +469,6 @@ export default function PromptsPageComponent() {
         </div>
 
         <div className={styles["header-right"]}>
-          <div className={styles["stats-badges"]}>
-            <div className={styles["stat-badge"]}>
-              <span className={styles["stat-value"]}>{total}</span> prompts
-            </div>
-          </div>
           {!isCreating && (
             <ButtonComponent
               variant="primary"
