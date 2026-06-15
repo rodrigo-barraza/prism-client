@@ -1,47 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
-  sanitizeToolName,
   buildToolSchemas,
 } from "../src/utils/FunctionCallingUtilities";
 import type { ToolSchema } from "../src/types/types";
 
-// ═══════════════════════════════════════════════════════════════
-// sanitizeToolName
-// ═══════════════════════════════════════════════════════════════
-
-describe("sanitizeToolName", () => {
-  it("should pass through a valid alphanumeric name unchanged", () => {
-    expect(sanitizeToolName("search_web")).toBe("search_web");
-  });
-
-  it("should pass through names with dots, colons, hyphens, and slashes unchanged", () => {
-    expect(sanitizeToolName("tools:v2/read.file-json")).toBe("tools:v2/read.file-json");
-  });
-
-  it("should replace special characters with underscores", () => {
-    expect(sanitizeToolName("my tool (v2)")).toBe("my_tool__v2_");
-  });
-
-  it("should prefix names starting with a digit", () => {
-    const sanitized = sanitizeToolName("3d_render");
-    expect(sanitized).toMatch(/^[a-zA-Z_]/);
-  });
-
-  it("should truncate names longer than 128 characters", () => {
-    const longName = "a".repeat(200);
-    const sanitized = sanitizeToolName(longName);
-    expect(sanitized.length).toBe(128);
-  });
-
-  it("should handle empty string without throwing", () => {
-    expect(() => sanitizeToolName("")).not.toThrow();
-  });
-
-  it("should handle a name that is exactly 128 characters", () => {
-    const exactName = "a".repeat(128);
-    expect(sanitizeToolName(exactName)).toBe(exactName);
-  });
-});
 
 // ═══════════════════════════════════════════════════════════════
 // buildToolSchemas

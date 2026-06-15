@@ -10,18 +10,6 @@
 import type { ToolSchema } from "../types/types";
 
 /**
- * Sanitize a tool name for LLM function calling APIs.
- * Google's function calling API requires names to be alphanumeric + _ . : -
- * starting with a letter or underscore, max 128 chars.
- */
-export function sanitizeToolName(name: string): string {
-  return name
-    .replace(/[^a-zA-Z0-9_.:/-]/g, "_")
-    .replace(/^[^a-zA-Z_]/, "_$&")
-    .slice(0, 128);
-}
-
-/**
  * Build a filtered array of enabled tool schemas from built-in tools.
  * Used by ChatSessionComponent.
  */

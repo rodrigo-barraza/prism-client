@@ -57,7 +57,7 @@ describe("mapConversationToHistoryItem", () => {
     expect(result.totalCost).toBeCloseTo(0.42, 6);
   });
 
-  it("should sum estimatedCost from messages when totalCost is not precomputed", () => {
+  it("should default totalCost to 0 when server field is absent", () => {
     const messages = [
       { role: "user", content: "hello" } as Message,
       { role: "assistant", content: "hi", estimatedCost: 0.01 } as Message,
@@ -69,7 +69,7 @@ describe("mapConversationToHistoryItem", () => {
       messages,
     });
     const result = mapConversationToHistoryItem(conversation);
-    expect(result.totalCost).toBeCloseTo(0.03, 6);
+    expect(result.totalCost).toBe(0);
   });
 
   it("should add project tag when showProject is true and project exists", () => {
@@ -164,7 +164,7 @@ describe("mapConversationToHistoryItem", () => {
     expect(result.modelNames).toEqual(["fallback-model"]);
   });
 
-  it("should derive providers from assistant messages when providers array is absent", () => {
+  it("should return empty providers when server providers array is absent", () => {
     const messages = [
       { role: "user", content: "hi" } as Message,
       { role: "assistant", content: "hello", provider: "google" } as Message,
@@ -172,8 +172,7 @@ describe("mapConversationToHistoryItem", () => {
     ];
     const conversation = createMinimalConversation({ messages });
     const result = mapConversationToHistoryItem(conversation);
-    expect(result.providers).toContain("google");
-    expect(result.providers).toContain("anthropic");
+    expect(result.providers).toEqual([]);
   });
 
   it("should use pre-enriched providers when available", () => {

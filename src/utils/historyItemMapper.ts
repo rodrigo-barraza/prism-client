@@ -1,5 +1,4 @@
-import { getModalities } from "./utilities";
-import type { Conversation, AgentSession, Message } from "../types/types";
+import type { Conversation, AgentSession } from "../types/types";
 
 interface HistoryItemTag {
   label: string;
@@ -39,12 +38,7 @@ export function mapConversationToHistoryItem(
 ): MappedHistoryItem {
   const { showProject = false } = options;
 
-  const totalCost =
-    conversation.totalCost ??
-    (conversation.messages || []).reduce(
-      (sum: number, message: Message) => sum + (message.estimatedCost || 0),
-      0,
-    );
+  const totalCost = conversation.totalCost ?? 0;
 
   const tags: HistoryItemTag[] = [];
   if (showProject && conversation.project) {
@@ -67,10 +61,9 @@ export function mapConversationToHistoryItem(
   }
 
   const modelNames = deriveModelNames(conversation);
-  const derivedProviders = deriveProviders(conversation);
+  const derivedProviders = conversation.providers || [];
 
-  const baseModalities =
-    conversation.modalities || getModalities(conversation.messages);
+  const baseModalities = conversation.modalities || {};
   const modalities = conversation.toolCounts
     ? {
         ...baseModalities,
@@ -200,17 +193,4 @@ function deriveModelNames(conversation: Conversation): string[] {
   return Array.from(modelNamesSet);
 }
 
-function deriveProviders(conversation: Conversation): string[] {
-  if ((conversation.providers?.length ?? 0) > 0) {
-    return conversation.providers!;
-  }
 
-  const messages = conversation.messages || [];
-  const providersSet = new Set<string>();
-  for (let index = messages.length - 1; index >= 0; index--) {
-    if (messages[index].role === "assistant" && messages[index].provider) {
-      providersSet.add(messages[index].provider!);
-    }
-  }
-  return Array.from(providersSet);
-}
