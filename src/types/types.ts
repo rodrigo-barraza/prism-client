@@ -958,6 +958,8 @@ export interface PrismSettings {
   security?: SecurityConfig;
   /** Creative tools configuration (image generation & vision) */
   creative?: CreativeConfig;
+  /** Somatic state emotion analysis model config */
+  somatic?: SomaticConfig;
 }
 
 export interface CreativeConfig {
@@ -969,6 +971,11 @@ export interface CreativeConfig {
   textToSpeechModel?: string;
   speechToTextProvider?: string;
   speechToTextModel?: string;
+}
+
+export interface SomaticConfig {
+  emotionProvider?: string;
+  emotionModel?: string;
 }
 
 // ─── MCP Servers ────────────────────────────────────────────

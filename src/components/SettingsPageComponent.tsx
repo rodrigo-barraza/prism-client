@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Brain,
+  Heart,
   Network,
   RotateCcw,
   Check,
@@ -314,6 +315,27 @@ export default function SettingsPageComponent() {
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
+  const handleEmotionModelSelect = useCallback(
+    (provider: string, model: string) => {
+      const updated = {
+        somatic: {
+          ...settings?.somatic,
+          emotionProvider: provider || "",
+          emotionModel: model || "",
+        },
+      };
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
+  const handleResetSomatic = useCallback(async () => {
+    const updated = { somatic: { emotionProvider: "", emotionModel: "" } };
+    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    await persistSettings(updated);
+  }, [persistSettings]);
+
   // -- Workspace handlers ---------------------------------------------
   const handleWsPathChange = useCallback((value: string) => {
     setWsAddPath(value);
@@ -585,6 +607,7 @@ export default function SettingsPageComponent() {
   const memorySettings = settings?.memory || {} || {};
   const agentDefaults = settings?.agents || {} || {};
   const creativeSettings = settings?.creative || {} || {};
+  const somaticSettings = settings?.somatic || {};
   const hasAgents = wsAgents.length > 0;
   const hasAnyWorkspaces = wsWorkspaces.length > 0;
 
@@ -692,6 +715,53 @@ export default function SettingsPageComponent() {
             variant="disabled"
             icon={RotateCcw}
             onClick={handleResetMemory}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Emotion Models Section ----------------------------------- */}
+      <CardComponent className={styles['section']} data-settings-section="emotion-models">
+        <CardComponent.Header
+          icon={Heart}
+          title="Emotion Models"
+          subtitle="Model used for somatic state emotion analysis on incoming messages"
+        />
+
+        <CardComponent.Body>
+          {/* Emotion Analysis Model */}
+          <div className={styles['settings-row']}>
+            <div className={styles['row-label']}>
+              <span className={styles['row-title']}>Emotion Analysis Model</span>
+              <span className={styles['row-description']}>
+                Classifies user message emotion to drive the agent&apos;s somatic
+                state (Plutchik wheel). Runs on every incoming message for agents
+                with somatic state enabled.
+              </span>
+            </div>
+            <div className={styles['row-control']}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: somaticSettings.emotionProvider || "",
+                  model: somaticSettings.emotionModel || "",
+                }}
+                onSelectModel={handleEmotionModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetSomatic}
             disabled={saving}
           >
             Reset to Defaults

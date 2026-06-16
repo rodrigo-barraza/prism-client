@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   FolderOpen,
   Brain,
+  Heart,
   Network,
   Plug,
   Palette,
@@ -25,6 +26,7 @@ interface SettingsSection {
 
 const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: "memory-models", label: "Memory Models", icon: Brain },
+  { id: "emotion-models", label: "Emotion Models", icon: Heart },
   { id: "agent-defaults", label: "Agent Defaults", icon: Network },
   { id: "creative-tools", label: "Creative Tools", icon: Palette },
   { id: "audio-tools", label: "Audio Tools", icon: Volume2 },
@@ -80,6 +82,11 @@ function computeSectionWarnings(settings: PrismSettings | null): Record<string, 
   }
   if (audioMissingCount > 0) {
     warnings["audio-tools"] = audioMissingCount;
+  }
+
+  const somaticConfig = settings.somatic || {};
+  if (!somaticConfig.emotionModel) {
+    warnings["emotion-models"] = 1;
   }
 
   return warnings;
