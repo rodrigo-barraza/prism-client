@@ -34,6 +34,7 @@ import {
   Monitor,
   AppWindow,
   MemoryStick,
+  Workflow,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
@@ -769,172 +770,11 @@ export default function SettingsPageComponent() {
         </CardComponent.Footer>
       </CardComponent>
 
-      {/* -- Agent Defaults Section ----------------------------------- */}
-      <CardComponent className={styles['section']} data-settings-section="agent-defaults">
-        <CardComponent.Header
-          icon={Network}
-          title="Agent Defaults"
-          subtitle="Default model for subagent workers spawned by the coordinator"
-        />
-
-        <CardComponent.Body>
-          {/* Harness Selector */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Agentic Harness</span>
-              <span className={styles['row-description']}>
-                The execution strategy used by the agent loop. Different
-                harnesses define how the model interacts with tools.
-              </span>
-            </div>
-          </div>
-          <div className={styles['harness-grid']}>
-            {harnesses.map((h: AgenticHarness) => {
-              const isActive = (agentDefaults.harness || "standard") === h.id;
-              return (
-                <button
-                  key={h.id}
-                  className={`${styles['harness-card']} ${isActive ? styles['harness-active'] : ""}`}
-                  onClick={() => handleHarnessSelect(h.id)}
-                >
-                  <div className={styles['harness-card-header']}>
-                    <Cpu size={16} className={styles['harness-icon']} />
-                    <span className={styles['harness-label']}>{h.label}</span>
-                    {isActive && (
-                      <span className={styles['harness-badge']}>Current</span>
-                    )}
-                  </div>
-                  <span className={styles['harness-description']}>
-                    {h.description}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className={styles['harness-divider']} />
-
-          {/* Subagent Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Subagent Model</span>
-              <span className={styles['row-description']}>
-                Pick a default subagent model for Prism to use when it spawns
-                subagents. If not set, it will use the current active model.
-              </span>
-            </div>
-            <div className={styles['row-control']}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: agentDefaults.subAgentProvider || "",
-                  model: agentDefaults.subAgentModel || "",
-                }}
-                onSelectModel={handleSubagentModelSelect}
-                modelTypeFilter="conversation"
-                allowDeselect
-                placeholderLabel="Uses agent model"
-              />
-            </div>
-          </div>
-
-          {/* Critic Gate Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Critic Gate Model</span>
-              <span className={styles['row-description']}>
-                A fast reviewer model that evaluates dangerous tool calls before
-                execution. When enabled, high-risk actions are reviewed by this
-                model for safety. Uses the active agent model by default.
-              </span>
-            </div>
-            <div className={styles['row-control']}>
-              <ModelPickerPopoverComponent
-                config={config}
-                settings={{
-                  provider: agentDefaults.criticProvider || "",
-                  model: agentDefaults.criticModel || "",
-                }}
-                onSelectModel={handleCriticModelSelect}
-                modelTypeFilter="conversation"
-                allowDeselect
-                placeholderLabel="Uses agent model"
-              />
-            </div>
-          </div>
-
-          {/* Subagent Topology */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Subagent Topology</span>
-              <span className={styles['row-description']}>
-                Defines how subagents coordinate. Hierarchical executes in parallel;
-                Sequential executes in a pipeline; Peer-to-Peer operates in a collaborative mesh.
-              </span>
-            </div>
-            <div className={styles['row-control']}>
-              <SelectComponent
-                value={agentDefaults.topology || "hierarchical"}
-                options={[
-                  { value: "hierarchical", label: "Hierarchical (Parallel)" },
-                  { value: "sequential", label: "Sequential (Pipeline)" },
-                  { value: "peer_to_peer", label: "Peer-to-Peer (Mesh)" },
-                ]}
-                onChange={handleTopologySelect}
-              />
-            </div>
-          </div>
-
-          <div className={styles['harness-divider']} />
-
-          {/* Dynamic Tool Activation */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Dynamic Tool Activation</span>
-              <span className={styles['row-description']}>
-                Allow the agent to dynamically enable or disable tools mid-session
-                using <code>enable_tools</code> / <code>disable_tools</code>.
-                This reduces token usage and tool interference by loading only
-                the tools the agent needs for the current task.
-              </span>
-            </div>
-            <div className={styles['row-control']}>
-              <ToggleComponent
-                checked={agentDefaults.dynamicToolActivation ?? true}
-                onChange={(checked: boolean) => {
-                  const updated = {
-                    agents: {
-                      ...settings?.agents,
-                      dynamicToolActivation: checked,
-                    },
-                  };
-                  setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
-                  persistSettings(updated);
-                }}
-                size="mini"
-              />
-            </div>
-          </div>
-        </CardComponent.Body>
-
-        {/* Reset */}
-        <CardComponent.Footer>
-          <ButtonComponent
-            variant="disabled"
-            icon={RotateCcw}
-            onClick={handleResetAgents}
-            disabled={saving}
-          >
-            Reset to Defaults
-          </ButtonComponent>
-        </CardComponent.Footer>
-      </CardComponent>
-
-      {/* -- Creative Tools Section ------------------------------------ */}
-      <CardComponent className={styles['section']} data-settings-section="creative-tools">
+      {/* -- Creative Models Section ------------------------------------ */}
+      <CardComponent className={styles['section']} data-settings-section="creative-models">
         <CardComponent.Header
           icon={Palette}
-          title="Creative Tools"
+          title="Creative Models"
           subtitle="Models used for image generation and image description"
         />
 
@@ -999,11 +839,11 @@ export default function SettingsPageComponent() {
         </CardComponent.Footer>
       </CardComponent>
 
-      {/* -- Audio Tools Section -------------------------------------- */}
-      <CardComponent className={styles['section']} data-settings-section="audio-tools">
+      {/* -- Audio Models Section -------------------------------------- */}
+      <CardComponent className={styles['section']} data-settings-section="audio-models">
         <CardComponent.Header
           icon={Volume2}
-          title="Audio Tools"
+          title="Audio Models"
           subtitle="Models used for speech synthesis (text-to-speech) and transcription (speech-to-text)"
         />
 
@@ -1061,6 +901,190 @@ export default function SettingsPageComponent() {
             variant="disabled"
             icon={RotateCcw}
             onClick={handleResetAudio}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Harness Models Section ------------------------------------ */}
+      <CardComponent className={styles['section']} data-settings-section="harness-models">
+        <CardComponent.Header
+          icon={Workflow}
+          title="Harness Models"
+          subtitle="Models used by the agentic harness for subagent workers and critic safety gates"
+        />
+
+        <CardComponent.Body>
+          {/* Subagent Model */}
+          <div className={styles['settings-row']}>
+            <div className={styles['row-label']}>
+              <span className={styles['row-title']}>Subagent Model</span>
+              <span className={styles['row-description']}>
+                Pick a default subagent model for Prism to use when it spawns
+                subagents. If not set, it will use the current active model.
+              </span>
+            </div>
+            <div className={styles['row-control']}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.subAgentProvider || "",
+                  model: agentDefaults.subAgentModel || "",
+                }}
+                onSelectModel={handleSubagentModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="Uses agent model"
+              />
+            </div>
+          </div>
+
+          {/* Critic Gate Model */}
+          <div className={styles['settings-row']}>
+            <div className={styles['row-label']}>
+              <span className={styles['row-title']}>Critic Gate Model</span>
+              <span className={styles['row-description']}>
+                A fast reviewer model that evaluates dangerous tool calls before
+                execution. When enabled, high-risk actions are reviewed by this
+                model for safety. Uses the active agent model by default.
+              </span>
+            </div>
+            <div className={styles['row-control']}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.criticProvider || "",
+                  model: agentDefaults.criticModel || "",
+                }}
+                onSelectModel={handleCriticModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="Uses agent model"
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetAgents}
+            disabled={saving}
+          >
+            Reset to Defaults
+          </ButtonComponent>
+        </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Agent Defaults Section ----------------------------------- */}
+      <CardComponent className={styles['section']} data-settings-section="agent-defaults">
+        <CardComponent.Header
+          icon={Network}
+          title="Agent Defaults"
+          subtitle="Execution strategy and coordination settings for the agent loop"
+        />
+
+        <CardComponent.Body>
+          {/* Harness Selector */}
+          <div className={styles['settings-row']}>
+            <div className={styles['row-label']}>
+              <span className={styles['row-title']}>Agentic Harness</span>
+              <span className={styles['row-description']}>
+                The execution strategy used by the agent loop. Different
+                harnesses define how the model interacts with tools.
+              </span>
+            </div>
+          </div>
+          <div className={styles['harness-grid']}>
+            {harnesses.map((h: AgenticHarness) => {
+              const isActive = (agentDefaults.harness || "standard") === h.id;
+              return (
+                <button
+                  key={h.id}
+                  className={`${styles['harness-card']} ${isActive ? styles['harness-active'] : ""}`}
+                  onClick={() => handleHarnessSelect(h.id)}
+                >
+                  <div className={styles['harness-card-header']}>
+                    <Cpu size={16} className={styles['harness-icon']} />
+                    <span className={styles['harness-label']}>{h.label}</span>
+                    {isActive && (
+                      <span className={styles['harness-badge']}>Current</span>
+                    )}
+                  </div>
+                  <span className={styles['harness-description']}>
+                    {h.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className={styles['harness-divider']} />
+
+          {/* Subagent Topology */}
+          <div className={styles['settings-row']}>
+            <div className={styles['row-label']}>
+              <span className={styles['row-title']}>Subagent Topology</span>
+              <span className={styles['row-description']}>
+                Defines how subagents coordinate. Hierarchical executes in parallel;
+                Sequential executes in a pipeline; Peer-to-Peer operates in a collaborative mesh.
+              </span>
+            </div>
+            <div className={styles['row-control']}>
+              <SelectComponent
+                value={agentDefaults.topology || "hierarchical"}
+                options={[
+                  { value: "hierarchical", label: "Hierarchical (Parallel)" },
+                  { value: "sequential", label: "Sequential (Pipeline)" },
+                  { value: "peer_to_peer", label: "Peer-to-Peer (Mesh)" },
+                ]}
+                onChange={handleTopologySelect}
+              />
+            </div>
+          </div>
+
+          <div className={styles['harness-divider']} />
+
+          {/* Dynamic Tool Activation */}
+          <div className={styles['settings-row']}>
+            <div className={styles['row-label']}>
+              <span className={styles['row-title']}>Dynamic Tool Activation</span>
+              <span className={styles['row-description']}>
+                Allow the agent to dynamically enable or disable tools mid-session
+                using <code>enable_tools</code> / <code>disable_tools</code>.
+                This reduces token usage and tool interference by loading only
+                the tools the agent needs for the current task.
+              </span>
+            </div>
+            <div className={styles['row-control']}>
+              <ToggleComponent
+                checked={agentDefaults.dynamicToolActivation ?? true}
+                onChange={(checked: boolean) => {
+                  const updated = {
+                    agents: {
+                      ...settings?.agents,
+                      dynamicToolActivation: checked,
+                    },
+                  };
+                  setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+                  persistSettings(updated);
+                }}
+                size="mini"
+              />
+            </div>
+          </div>
+        </CardComponent.Body>
+
+        {/* Reset */}
+        <CardComponent.Footer>
+          <ButtonComponent
+            variant="disabled"
+            icon={RotateCcw}
+            onClick={handleResetAgents}
             disabled={saving}
           >
             Reset to Defaults

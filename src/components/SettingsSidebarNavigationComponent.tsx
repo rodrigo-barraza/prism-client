@@ -10,6 +10,7 @@ import {
   Palette,
   Volume2,
   Lock,
+  Workflow,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import WorkspaceService from "../services/WorkspaceService";
@@ -27,9 +28,10 @@ interface SettingsSection {
 const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: "memory-models", label: "Memory Models", icon: Brain },
   { id: "emotion-models", label: "Emotion Models", icon: Heart },
+  { id: "creative-models", label: "Creative Models", icon: Palette },
+  { id: "audio-models", label: "Audio Models", icon: Volume2 },
+  { id: "harness-models", label: "Harness Models", icon: Workflow },
   { id: "agent-defaults", label: "Agent Defaults", icon: Network },
-  { id: "creative-tools", label: "Creative Tools", icon: Palette },
-  { id: "audio-tools", label: "Audio Tools", icon: Volume2 },
   { id: "workspaces", label: "Workspaces", icon: FolderOpen },
   { id: "security-sandboxing", label: "Security & Sandboxing", icon: Lock },
   { id: "mcp-servers", label: "MCP Servers", icon: Plug },
@@ -70,7 +72,7 @@ function computeSectionWarnings(settings: PrismSettings | null): Record<string, 
     creativeMissingCount++;
   }
   if (creativeMissingCount > 0) {
-    warnings["creative-tools"] = creativeMissingCount;
+    warnings["creative-models"] = creativeMissingCount;
   }
 
   let audioMissingCount = 0;
@@ -81,7 +83,7 @@ function computeSectionWarnings(settings: PrismSettings | null): Record<string, 
     audioMissingCount++;
   }
   if (audioMissingCount > 0) {
-    warnings["audio-tools"] = audioMissingCount;
+    warnings["audio-models"] = audioMissingCount;
   }
 
   const somaticConfig = settings.somatic || {};
