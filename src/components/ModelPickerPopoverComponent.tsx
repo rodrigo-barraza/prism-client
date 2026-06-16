@@ -583,8 +583,11 @@ export default function ModelPickerPopoverComponent({
   })();
 
   // Build trigger class overrides for multi-select active state
+  const hasNoModelSelected = !multiSelect && !settings?.model;
+
   const triggerClassName = [
     multiSelect && (selectedKeys?.size ?? 0) > 0 ? styles['trigger-active'] : "",
+    hasNoModelSelected ? styles['trigger-no-model-warning'] : "",
   ]
     .filter(Boolean)
     .join(" ") || undefined;

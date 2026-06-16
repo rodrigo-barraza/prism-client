@@ -16,6 +16,11 @@
   );
 }
 
+.trigger-no-model-warning {
+  outline: 1px solid var(--color-warning);
+  outline-offset: -1px;
+}
+
 .tooltip-capabilities {
   display: flex;
   flex-direction: column;
