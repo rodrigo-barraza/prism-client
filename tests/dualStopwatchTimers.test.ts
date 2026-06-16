@@ -1,14 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { getSessionElapsedTime } from "../src/utils/utilities";
+import type { Message } from "../src/types/types";
 
-// Minimal Message shape matching the fields used by getSessionElapsedTime
-// and conversationStartTime derivation.
-interface MockMessage {
-  role: "user" | "assistant" | "system" | "tool";
-  content?: string;
-  timestamp?: string;
-  completedAt?: string;
-}
+type MockMessage = Partial<Message>;
 
 // ═══════════════════════════════════════════════════════════════════════
 // 1. Processing Timer — getSessionElapsedTime
@@ -25,7 +19,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       { role: "user", content: "Hello", timestamp: "2026-05-31T10:00:00Z" },
       { role: "user", content: "Anyone?", timestamp: "2026-05-31T10:01:00Z" },
     ];
-    expect(getSessionElapsedTime(messages as any)).toBe(0);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(0);
   });
 
   it("computes a single turn correctly using completedAt", () => {
@@ -39,7 +33,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       },
     ];
     // 5 seconds between user send and assistant completedAt
-    expect(getSessionElapsedTime(messages as any)).toBe(5);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(5);
   });
 
   it("computes a single turn using assistant timestamp when completedAt is absent", () => {
@@ -52,7 +46,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       },
     ];
     // Falls back to assistant.timestamp → 3 seconds
-    expect(getSessionElapsedTime(messages as any)).toBe(3);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(3);
   });
 
   it("accumulates multiple turns correctly", () => {
@@ -80,7 +74,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       },
     ];
     // Total processing time: 5 + 10 + 2 = 17 seconds
-    expect(getSessionElapsedTime(messages as any)).toBe(17);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(17);
   });
 
   it("excludes idle time between turns from the processing total", () => {
@@ -102,7 +96,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       },
     ];
     // Only processing time counts: 5 + 3 = 8, not the 10min idle gap
-    expect(getSessionElapsedTime(messages as any)).toBe(8);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(8);
   });
 
   it("skips user messages without timestamps", () => {
@@ -121,7 +115,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       },
     ];
     // Only the second turn counts (7s); first turn is skipped due to missing timestamp
-    expect(getSessionElapsedTime(messages as any)).toBe(7);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(7);
   });
 
   it("skips assistant messages without any timestamp or completedAt", () => {
@@ -136,7 +130,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       },
     ];
     // First turn is skipped (assistant has no end time); second turn: 4s
-    expect(getSessionElapsedTime(messages as any)).toBe(4);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(4);
   });
 
   it("ignores system and tool messages in the turn pairing", () => {
@@ -151,7 +145,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       },
     ];
     // Pairs user at :00 with assistant at :06 → 6 seconds
-    expect(getSessionElapsedTime(messages as any)).toBe(6);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(6);
   });
 
   it("handles restored sessions with only assistant.timestamp (no completedAt)", () => {
@@ -162,7 +156,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       { role: "assistant", content: "A2", timestamp: "2026-05-31T10:01:12Z" },
     ];
     // 8 + 12 = 20 seconds
-    expect(getSessionElapsedTime(messages as any)).toBe(20);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(20);
   });
 
   it("prefers completedAt over timestamp when both are present on assistant", () => {
@@ -176,7 +170,7 @@ describe("Processing timer (getSessionElapsedTime)", () => {
       },
     ];
     // Should use completedAt (10s) not timestamp (1s)
-    expect(getSessionElapsedTime(messages as any)).toBe(10);
+    expect(getSessionElapsedTime(messages as Message[])).toBe(10);
   });
 });
 
@@ -244,7 +238,7 @@ describe("Conversation timer (conversationStartTime derivation)", () => {
     ];
 
     const conversationStartTime = deriveConversationStartTime(messages);
-    const processingTime = getSessionElapsedTime(messages as any);
+    const processingTime = getSessionElapsedTime(messages as Message[]);
 
     // Conversation timer anchor: 10:00:00 — the wall-clock start
     expect(conversationStartTime).toBe("2026-05-31T10:00:00Z");
@@ -320,7 +314,7 @@ describe("SessionStats conversationStartTime assembly", () => {
     messages: MockMessage[],
     backendTotalElapsedTime: number | null,
   ): MinimalSessionStats {
-    const clientElapsedTime = getSessionElapsedTime(messages as any);
+    const clientElapsedTime = getSessionElapsedTime(messages as Message[]);
     return {
       conversationStartTime:
         messages.length > 0 ? (messages[0]?.timestamp ?? null) : null,

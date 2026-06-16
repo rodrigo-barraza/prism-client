@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { SETTINGS_DEFAULTS } from "../src/constants";
+import type { ModelOption } from "../src/types/types";
 
 describe("resetSessionState model parameter resetting", () => {
   it("should reset all model parameters to their defaults while keeping the current provider and model", () => {
@@ -41,7 +42,7 @@ describe("resetSessionState model parameter resetting", () => {
         const providerModels =
           (mockConfig.textToText?.models as Record<string, any>)?.[settings.provider] || [];
         const modelDefinition = providerModels.find(
-          (model: { name: string; defaultTemperature?: number; thinking?: boolean; supportsThinking?: boolean; thinkingLevels?: string[]; tools?: string[] }) => model.name === settings.model,
+          (model: ModelOption) => model.name === settings.model,
         );
         if (
           modelDefinition &&
@@ -52,11 +53,10 @@ describe("resetSessionState model parameter resetting", () => {
         if (modelDefinition) {
           const modelName = (settings.model || "").toLowerCase();
           const nameBasedThinking = [
-            "qwen3",
-            "deepseek-r1",
-            "deepseek-v3",
-            "gpt-oss",
-            "gemma-4",
+            "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
+            "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
+            "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
+            "dolphin-r1", "internlm3", "kimi-k2",
           ].some((pattern) => modelName.includes(pattern));
 
           isThinkingSupported = !!(
@@ -173,11 +173,10 @@ describe("resetSessionState model parameter resetting", () => {
         if (modelDefinition) {
           const modelName = (settings.model || "").toLowerCase();
           const nameBasedThinking = [
-            "qwen3",
-            "deepseek-r1",
-            "deepseek-v3",
-            "gpt-oss",
-            "gemma-4",
+            "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
+            "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
+            "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
+            "dolphin-r1", "internlm3", "kimi-k2",
           ].some((pattern) => modelName.includes(pattern));
 
           isThinkingSupported = !!(

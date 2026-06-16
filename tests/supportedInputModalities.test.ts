@@ -1,29 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-// Re-implementation of ChatSessionComponent's modality detection logic to test it in isolation
-interface ModelOption {
-  name: string;
-  tools?: string[];
-  inputTypes?: string[];
-}
-
-interface ToolOption {
-  name: string;
-  inputModalities?: string[];
-  system?: boolean;
-}
-
-interface FilteredConfig {
-  textToText?: {
-    models?: Record<string, ModelOption[]>;
-  };
-}
+import type { ModelOption, ToolSchema as ToolOption, PrismConfig as FilteredConfig } from "../src/types/types";
 
 function computeSupportedInputModalities(
-  filteredConfig: FilteredConfig | null,
+  filteredConfig: Partial<FilteredConfig> | null,
   provider: string,
   modelName: string,
-  builtInTools: ToolOption[],
+  builtInTools: Partial<ToolOption>[],
   disabledTools: Set<string>
 ): Set<string> {
   const modalities = new Set<string>();
@@ -39,7 +22,7 @@ function computeSupportedInputModalities(
 
   // Tool-level modality support (from enabled tools)
   for (const tool of builtInTools) {
-    if (disabledTools.has(tool.name)) {
+    if (!tool.name || disabledTools.has(tool.name)) {
       continue;
     }
     for (const modality of tool.inputModalities || []) {
@@ -102,7 +85,7 @@ function classifyFileModality(mimeType: string, supportedInputModalities: Set<st
 }
 
 describe("Client-side Input Modalities logic", () => {
-  const mockConfig: FilteredConfig = {
+  const mockConfig = {
     textToText: {
       models: {
         google: [
@@ -111,9 +94,9 @@ describe("Client-side Input Modalities logic", () => {
         ],
       },
     },
-  };
+  } as unknown as FilteredConfig;
 
-  const mockTools: ToolOption[] = [
+  const mockTools: Partial<ToolOption>[] = [
     { name: "generate_image", inputModalities: ["image"] },
     { name: "speech_to_text", inputModalities: ["audio"] },
     { name: "read_pdf", inputModalities: ["pdf"] },

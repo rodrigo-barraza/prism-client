@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { resolveDefaultModel } from "../src/utils/utilities";
+import type { PrismConfig } from "../src/types/types";
 
 describe("resolveDefaultModel utility", () => {
   it("resolves to server recommended default when model is available", () => {
-    const mockConfig = {
+    const mockConfig: Partial<PrismConfig> = {
       textToText: {
         recommendedDefault: {
           provider: "google",
@@ -17,7 +18,7 @@ describe("resolveDefaultModel utility", () => {
           ],
         },
       },
-    };
+    } as unknown as PrismConfig;
 
     const resolvedDefaultModel = resolveDefaultModel(mockConfig, false);
     expect(resolvedDefaultModel.provider).toBe("google");
@@ -26,7 +27,7 @@ describe("resolveDefaultModel utility", () => {
   });
 
   it("resolves to server recommended agentic default when fcOnly is true and model is available", () => {
-    const mockConfig = {
+    const mockConfig: Partial<PrismConfig> = {
       textToText: {
         recommendedAgenticDefault: {
           provider: "openai",
@@ -39,7 +40,7 @@ describe("resolveDefaultModel utility", () => {
           ],
         },
       },
-    };
+    } as unknown as PrismConfig;
 
     const resolvedDefaultModel = resolveDefaultModel(mockConfig, true);
     expect(resolvedDefaultModel.provider).toBe("openai");
@@ -48,7 +49,7 @@ describe("resolveDefaultModel utility", () => {
   });
 
   it("trusts server recommendation even if model is not in the local models list (server handles merging)", () => {
-    const mockConfig = {
+    const mockConfig: Partial<PrismConfig> = {
       textToText: {
         recommendedDefault: {
           provider: "google",
@@ -61,7 +62,7 @@ describe("resolveDefaultModel utility", () => {
           ],
         },
       },
-    };
+    } as unknown as PrismConfig;
 
     const resolvedDefaultModel = resolveDefaultModel(mockConfig, false);
     expect(resolvedDefaultModel.provider).toBe("google");

@@ -3,11 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 import useToolToggles from "../src/hooks/useToolToggles";
 
-interface ToolSchema {
-  name: string;
-  description: string;
-  system?: boolean;
-}
+import type { ToolSchema } from "../src/types/types";
 
 // Simple test helper component
 function TestToolTogglesComponent({

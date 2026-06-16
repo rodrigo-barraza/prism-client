@@ -1,29 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 
-// Mock types to match the real application
-interface Message {
-  role: "user" | "assistant" | "system" | "tool";
-  content?: string;
-}
+vi.mock("@rodrigo-barraza/components-library", () => ({
+  CopyButtonComponent: () => null,
+  IconButtonComponent: () => null,
+}));
 
-interface AgentSession {
-  id: string;
-  messages: Message[];
-}
-
-// Pure helper function to mimic prepareDisplayMessages without CSS module imports
-function prepareDisplayMessages(
-  rawMessages: Message[] | undefined | null,
-): Message[] {
-  if (!rawMessages || rawMessages.length === 0) return [];
-  return rawMessages.filter((message) => {
-    if (message.role === "tool") return false;
-    if (message.role === "system") return false;
-    const isEmptyAssistant =
-      message.role === "assistant" && !message.content?.trim();
-    return !isEmptyAssistant;
-  });
-}
+import type { Message, AgentSession } from "../src/types/types";
+import { prepareDisplayMessages } from "../src/components/MessageListComponent";
 
 describe("Post-Stream Refresh Guard", () => {
   it("should retry if the database has fewer messages, but ultimately skip updating to prevent disappearing messages", async () => {
@@ -39,11 +22,10 @@ describe("Post-Stream Refresh Guard", () => {
 
     const messagesRef = { current: localMessages };
 
-    // Database is stale (e.g. paused/suspended state) and only contains 0 messages for this turn
-    const databaseSession: AgentSession = {
+    const databaseSession = {
       id: "session-123",
       messages: [],
-    };
+    } as unknown as AgentSession;
 
     let fetchAttemptsCount = 0;
     const mockGetAgentSession = vi.fn().mockImplementation(async () => {
@@ -92,14 +74,13 @@ describe("Post-Stream Refresh Guard", () => {
 
     const messagesRef = { current: localMessages };
 
-    // Database is up-to-date and matches local messages count
-    const databaseSession: AgentSession = {
+    const databaseSession = {
       id: "session-123",
       messages: [
         { role: "user", content: "hey" },
         { role: "assistant", content: "hello" },
       ],
-    };
+    } as unknown as AgentSession;
 
     let fetchAttemptsCount = 0;
     const mockGetAgentSession = vi.fn().mockImplementation(async () => {

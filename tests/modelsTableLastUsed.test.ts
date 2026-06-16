@@ -1,24 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { timeAgo } from "@rodrigo-barraza/utilities-library";
 
-// Helper/interface matching the logic implemented in ModelsTableComponent and buildRow
-interface RawModel {
-  key?: string;
-  name?: string;
-  provider?: string;
-  lastUsed?: string | Date;
-}
-
-interface RowData {
-  _raw: RawModel;
-  lastUsed?: string | Date;
-}
+import type { RawModel, RowData } from "../src/components/ModelsTableComponent";
 
 function buildTestRow(rawModel: RawModel): RowData {
   return {
     _raw: rawModel,
     lastUsed: rawModel.lastUsed,
-  };
+  } as unknown as RowData;
 }
 
 describe("ModelsTableComponent lastUsed Column and Sorting", () => {

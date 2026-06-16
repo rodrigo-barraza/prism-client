@@ -155,13 +155,7 @@ import ToolSelectionComponent from "../src/components/ToolSelectionComponent";
 
 // ── Fixtures ───────────────────────────────────────────────────────
 
-interface ToolSchema {
-  name: string;
-  description?: string;
-  domain?: string;
-  system?: boolean;
-  intelligenceTier?: "low" | "medium" | "high" | "frontier";
-}
+import type { ToolSchema } from "../src/types/types";
 
 function createCoreHarnessTools(): ToolSchema[] {
   return [

@@ -1,14 +1,8 @@
 import { describe, it, expect } from "vitest";
 
-// Mock minimal interface matching Message for the uncounted request tests
-interface MockMessage {
-  role: "user" | "assistant" | "system" | "tool";
-  content?: string;
-  model?: string;
-  provider?: string;
-  usage?: unknown;
-  _intermediateUsage?: unknown;
-}
+import type { Message } from "../src/types/types";
+
+type MockMessage = Partial<Message>;
 
 
 
@@ -69,12 +63,12 @@ describe("Session cost consistency between sidebar and settings panel", () => {
   const lastMessageActive = {
     role: "assistant",
     _intermediateEstimatedCost: 0.15,
-  } as any;
+  } as unknown as Message;
   const lastMessageCompleted = {
     role: "assistant",
     estimatedCost: 0.20,
     usage: { inputTokens: 100, outputTokens: 50 },
-  } as any;
+  } as unknown as Message;
 
   it("ensures cost matches exactly in both places during active generation", () => {
     const isBackendStatsStale = true;

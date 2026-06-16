@@ -13,6 +13,7 @@
  * for client-driven generation.
  */
 import { describe, it, expect, vi } from "vitest";
+import type { AgentSession } from "../src/types/types";
 
 // Minimal simulated state to test the refreshActiveSession guard logic
 // without importing the full React component.
@@ -23,12 +24,6 @@ interface RefreshGuardContext {
   currentSessionId: string;
 }
 
-interface SessionDocument {
-  id: string;
-  isGenerating: boolean;
-  messages: Array<{ role: string; content: string }>;
-}
-
 /**
  * Extracted refreshActiveSession guard logic matching AgentComponent.tsx.
  * Returns true if the refresh was performed, false if it was skipped.
@@ -36,8 +31,8 @@ interface SessionDocument {
 async function refreshActiveSession(
   sessionId: string,
   context: RefreshGuardContext,
-  fetchSession: () => Promise<SessionDocument | null>,
-  applySessionData: (session: SessionDocument) => void,
+  fetchSession: () => Promise<AgentSession | null>,
+  applySessionData: (session: AgentSession) => void,
 ): Promise<boolean> {
   if (!sessionId || sessionId !== context.currentSessionId) return false;
 
@@ -58,20 +53,20 @@ async function refreshActiveSession(
 describe("refreshActiveSession guard — generation source distinction", () => {
   const SESSION_ID = "session-timer-test";
 
-  const COMPLETED_SESSION: SessionDocument = {
+  const COMPLETED_SESSION = {
     id: SESSION_ID,
     isGenerating: false,
     messages: [
       { role: "user", content: "⏰ Reminder fired: check build" },
       { role: "assistant", content: "Build completed successfully." },
     ],
-  };
+  } as unknown as AgentSession;
 
-  const GENERATING_SESSION: SessionDocument = {
+  const GENERATING_SESSION = {
     id: SESSION_ID,
     isGenerating: true,
     messages: [{ role: "user", content: "⏰ Reminder fired: check build" }],
-  };
+  } as unknown as AgentSession;
 
   it("should SKIP refresh when generation is client-driven (active SSE)", async () => {
     const context: RefreshGuardContext = {
@@ -145,11 +140,11 @@ describe("refreshActiveSession guard — generation source distinction", () => {
       currentSessionId: SESSION_ID,
     };
 
-    const differentSession: SessionDocument = {
+    const differentSession = {
       id: "different-session",
       isGenerating: false,
       messages: [],
-    };
+    } as unknown as AgentSession;
 
     const fetchSession = vi.fn().mockResolvedValue(differentSession);
     const applySessionData = vi.fn();
