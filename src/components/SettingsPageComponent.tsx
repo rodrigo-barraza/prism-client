@@ -947,8 +947,9 @@ export default function SettingsPageComponent() {
               <span className={styles['row-title']}>Critic Gate Model</span>
               <span className={styles['row-description']}>
                 A fast reviewer model that evaluates dangerous tool calls before
-                execution. When enabled, high-risk actions are reviewed by this
-                model for safety. Uses the active agent model by default.
+                execution. When set, high-risk actions (shell, code execution)
+                are reviewed by this model for safety before running. Leave
+                empty to disable the critic gate entirely.
               </span>
             </div>
             <div className={styles['row-control']}>
@@ -961,7 +962,7 @@ export default function SettingsPageComponent() {
                 onSelectModel={handleCriticModelSelect}
                 modelTypeFilter="conversation"
                 allowDeselect
-                placeholderLabel="Uses agent model"
+                placeholderLabel="Disabled"
               />
             </div>
           </div>

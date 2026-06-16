@@ -12,9 +12,9 @@ interface AvatarOption {
 
 const AVATAR_OPTIONS: AvatarOption[] = [
   { id: "cat", name: "Cat (Default)", path: "/cat.gif" },
-  { id: "rocky", name: "Rocky", path: "/avatars/rocky.png" },
-  { id: "taz", name: "Taz", path: "/avatars/taz.jpg" },
-  { id: "peon", name: "Peon", path: "/avatars/peon.png" },
+  { id: "rocky", name: "Peon", path: "/avatars/rocky.png" },
+  { id: "taz", name: "Rocky", path: "/avatars/taz.jpg" },
+  { id: "peon", name: "Taz", path: "/avatars/peon.png" },
   { id: "blademaster-classic", name: "Blademaster (Classic)", path: "/avatars/blademaster-classic.png" },
   { id: "blademaster-hidef", name: "Blademaster (Hi-Def)", path: "/avatars/blademaster-hidef.png" },
 ];
