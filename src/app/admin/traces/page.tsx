@@ -93,8 +93,18 @@ export default function TracesPage() {
     [dateRange],
   );
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const loadTraces = useCallback(async () => {
     const fetchGeneration = fetchGenRef.current;
+
+    // Abort any in-flight request before starting a new one
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       const params: Record<string, string | number | boolean> = {
         page,
@@ -106,12 +116,13 @@ export default function TracesPage() {
       if (projectFilter) params.project = projectFilter;
       if (agentFilter) params.agent = agentFilter;
 
-      const data = await IrisService.getTraces(params);
+      const data = await IrisService.getTraces(params, abortController.signal);
       // Discard stale responses from previous filter/page generations
       if (fetchGeneration !== fetchGenRef.current) return;
       setTraces(data.data || []);
       setTotal(data.total || 0);
     } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
       if (fetchGeneration !== fetchGenRef.current) return;
       console.error("Failed to load traces:", error);
     } finally {
@@ -160,6 +171,10 @@ export default function TracesPage() {
       es.close();
       if (pollInterval) clearInterval(pollInterval);
       if (debounceTimer) clearTimeout(debounceTimer);
+      // Abort any in-flight request on cleanup
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, [loadTraces]);
 

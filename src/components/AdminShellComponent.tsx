@@ -99,9 +99,14 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   // -- Change Stream SSE: detect new conversations in real time ----
   // Falls back to polling if Change Streams aren't available.
   useEffect(() => {
+    let sessionsAbortController: AbortController | null = null;
+    let requestsAbortController: AbortController | null = null;
+
     async function fetchSessions() {
+      if (sessionsAbortController) sessionsAbortController.abort();
+      sessionsAbortController = new AbortController();
       try {
-        const data = await IrisService.getTraces({ page: 1, limit: 50 });
+        const data = await IrisService.getTraces({ page: 1, limit: 50 }, sessionsAbortController.signal);
         const list = data.data || [];
         const currentIds = new Set(
           list.map(
@@ -121,8 +126,8 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         } else {
           knownSessionsRef.current = currentIds;
         }
-      } catch {
-        // ignore
+      } catch (error: unknown) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
       }
     }
 
@@ -174,12 +179,14 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
     }
 
     async function fetchRequests() {
+      if (requestsAbortController) requestsAbortController.abort();
+      requestsAbortController = new AbortController();
       try {
         const data = await IrisService.getRequests({
           limit: 50,
           sort: "timestamp",
           order: "desc",
-        });
+        }, requestsAbortController.signal);
         const list = data.data || [];
         const currentIds = new Set(list.map((r) => r.requestId || r._id));
 
@@ -195,8 +202,8 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         } else {
           knownRequestsRef.current = currentIds;
         }
-      } catch {
-        // ignore
+      } catch (error: unknown) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
       }
     }
 
@@ -279,6 +286,8 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       es.close();
       clearInterval(healthInterval);
       if (pollInterval) clearInterval(pollInterval);
+      if (sessionsAbortController) sessionsAbortController.abort();
+      if (requestsAbortController) requestsAbortController.abort();
     };
   }, []);
 

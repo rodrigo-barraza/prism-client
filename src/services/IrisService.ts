@@ -176,10 +176,12 @@ export default class IrisService {
   // -- Requests ----------------------------------------------
   static async getRequests(
     params: QueryParams = {},
+    signal?: AbortSignal,
   ): Promise<IrisRequestListResponse> {
     const query = toSearchParams(params);
     return fetchJSON<IrisRequestListResponse>(
       `/requests${query ? `?${query}` : ""}`,
+      signal ? { signal } : {},
     );
   }
 
@@ -442,10 +444,12 @@ export default class IrisService {
   // -- Traces ----------------------------------------------
   static async getTraces(
     params: QueryParams = {},
+    signal?: AbortSignal,
   ): Promise<IrisPaginatedResponse<IrisRequestEntry>> {
     const query = toSearchParams(params);
     return fetchJSON<IrisPaginatedResponse<IrisRequestEntry>>(
       `/traces${query ? `?${query}` : ""}`,
+      signal ? { signal } : {},
     );
   }
 
