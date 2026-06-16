@@ -9,6 +9,7 @@ import {
   useMemo,
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { toLocalDateString, daysAgo } from "@rodrigo-barraza/utilities-library";
 import { LS_DATE_RANGE } from "../constants";
 
 export interface DateRange {
@@ -63,26 +64,25 @@ export function AdminHeaderProvider({
   });
   const [sessionFilter, setSessionFilterState] = useState<string | null>(null);
 
-  // Hydrate dateRange from localStorage after mount to avoid SSR mismatch
   useEffect(() => {
     try {
       const stored = localStorage.getItem(LS_DATE_RANGE);
-      if (stored) {
+      if (stored !== null) {
         const parsed = JSON.parse(stored);
-        if (parsed.from || parsed.to) setDateRangeState(parsed);
+        setDateRangeState(parsed);
+        return;
       }
     } catch {
       // ignore
     }
+
+    setDateRangeState({
+      from: toLocalDateString(daysAgo(29)),
+      to: toLocalDateString(new Date()),
+    });
   }, []);
   const [previousPathname, setPreviousPathname] = useState(pathname);
 
-  // Render-phase derived state: clear stale controls and badge on route change.
-  // React re-renders this provider immediately (before rendering children) when
-  // own state is set during render, so the new page never sees the old page's
-  // controls or badge — eliminating the cross-page flicker entirely.
-  // Compare only the top-level route segment so sub-route navigations
-  // (e.g. /admin/chat → /admin/chat/[id]) don't wipe the badge.
   const routeSegment =
     pathname.replace("/admin", "").split("/").filter(Boolean)[0] || "";
   const previousRouteSegment =
@@ -96,14 +96,9 @@ export function AdminHeaderProvider({
     setPreviousPathname(pathname);
   }
 
-  // Persist to localStorage on change
   useEffect(() => {
     try {
-      if (dateRange.from || dateRange.to) {
-        localStorage.setItem(LS_DATE_RANGE, JSON.stringify(dateRange));
-      } else {
-        localStorage.removeItem(LS_DATE_RANGE);
-      }
+      localStorage.setItem(LS_DATE_RANGE, JSON.stringify(dateRange));
     } catch {
       // ignore
     }
