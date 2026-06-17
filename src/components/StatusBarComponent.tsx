@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import styles from "./StatusBarComponent.module.css";
 
 // -- Shared phase vocabulary ------------------------------------------
@@ -25,36 +24,55 @@ const PHASE_ICONS = {
   awaiting: "⏸️",
 };
 
-// -- Per-phase canvas palettes ----------------------------------------
-// Custom gradient stops fed to RainbowCanvasComponent.
-// Phases without an entry use the default full-spectrum rainbow.
-const PHASE_PALETTES: Record<string, [number, number, number][]> = {
+// -- Per-phase gradient stops (oklch) ---------------------------------
+// Each phase defines 7 gradient stops that produce a smooth, flowing
+// color shimmer via CSS translate animation. Phases without an entry
+// use the neutral default stops from the stylesheet.
+const PHASE_GRADIENT_STOPS: Record<string, string[]> = {
   generating: [
-    [59, 130, 246], // blue-500
-    [99, 102, 241], // indigo-500
-    [139, 92, 246], // violet-500
-    [168, 85, 247], // purple-500
-    [192, 132, 252], // purple-400
-    [139, 92, 246], // violet-500
-    [99, 102, 241], // indigo-500
+    "oklch(0.588 0.158 262)",   // blue-500
+    "oklch(0.546 0.198 275)",   // indigo-500
+    "oklch(0.541 0.214 292)",   // violet-500
+    "oklch(0.553 0.223 303)",   // purple-500
+    "oklch(0.714 0.168 300)",   // purple-400
+    "oklch(0.541 0.214 292)",   // violet-500
+    "oklch(0.546 0.198 275)",   // indigo-500
   ],
   thinking: [
-    [34, 197, 94], // green-500
-    [74, 222, 128], // green-400
-    [163, 230, 53], // lime-400
-    [250, 204, 21], // yellow-400
-    [234, 179, 8], // yellow-500
-    [163, 230, 53], // lime-400
-    [74, 222, 128], // green-400
+    "oklch(0.723 0.191 145)",   // green-500
+    "oklch(0.793 0.172 153)",   // green-400
+    "oklch(0.841 0.202 117)",   // lime-400
+    "oklch(0.852 0.176 95)",    // yellow-400
+    "oklch(0.795 0.164 90)",    // yellow-500
+    "oklch(0.841 0.202 117)",   // lime-400
+    "oklch(0.793 0.172 153)",   // green-400
   ],
   delegating: [
-    [59, 130, 246], // blue-500
-    [96, 165, 250], // blue-400
-    [147, 197, 253], // blue-300
-    [250, 204, 21], // yellow-400
-    [234, 179, 8], // yellow-500
-    [147, 197, 253], // blue-300
-    [96, 165, 250], // blue-400
+    "oklch(0.588 0.158 262)",   // blue-500
+    "oklch(0.681 0.126 254)",   // blue-400
+    "oklch(0.790 0.090 252)",   // blue-300
+    "oklch(0.852 0.176 95)",    // yellow-400
+    "oklch(0.795 0.164 90)",    // yellow-500
+    "oklch(0.790 0.090 252)",   // blue-300
+    "oklch(0.681 0.126 254)",   // blue-400
+  ],
+  loading: [
+    "oklch(0.546 0.198 275)",   // indigo-500
+    "oklch(0.588 0.158 262)",   // blue-500
+    "oklch(0.681 0.126 254)",   // blue-400
+    "oklch(0.588 0.158 262)",   // blue-500
+    "oklch(0.546 0.198 275)",   // indigo-500
+    "oklch(0.588 0.158 262)",   // blue-500
+    "oklch(0.681 0.126 254)",   // blue-400
+  ],
+  processing: [
+    "oklch(0.795 0.164 90)",    // yellow-500
+    "oklch(0.852 0.176 95)",    // yellow-400
+    "oklch(0.783 0.178 71)",    // amber-400
+    "oklch(0.852 0.176 95)",    // yellow-400
+    "oklch(0.795 0.164 90)",    // yellow-500
+    "oklch(0.852 0.176 95)",    // yellow-400
+    "oklch(0.783 0.178 71)",    // amber-400
   ],
 };
 
@@ -67,7 +85,7 @@ const SYNTHETIC_EXPECTED_MS = 20_000;
 const SYNTHETIC_TICK_MS = 200;
 
 /**
- * Unified rainbow status bar shared by the main orchestrator and worker agents.
+ * Unified animated status bar shared by the main orchestrator and worker agents.
  *
  * ### Orchestrator usage (ChatSessionComponent)
  * ```jsx
@@ -177,19 +195,24 @@ export default function StatusBarComponent({
       ? icon
       : (PHASE_ICONS as Record<string, string>)[phase ?? ""] || null;
 
-  // Rainbow visuals: colour when the model is actively producing tokens (text or reasoning)
-  const isColorPhase =
-    phase === "generating" || phase === "thinking" || phase === "delegating";
-  // Awaiting phase: greyscale + frozen canvas (no animation)
+  // Awaiting phase: greyscale + frozen (no animation)
   const isAwaitingPhase = phase === "awaiting";
   // Delegating phase: orchestrator waiting on workers — animated color but subdued glow
   const isDelegatingPhase = phase === "delegating";
 
-  // Resolve per-phase canvas palette (undefined = default rainbow)
-  const activePalette =
-    active && isColorPhase
-      ? (PHASE_PALETTES[phase ?? ""] ?? undefined)
-      : undefined;
+  // Resolve per-phase gradient CSS custom properties
+  const gradientStops = phase ? PHASE_GRADIENT_STOPS[phase] : undefined;
+  const gradientCustomProperties: React.CSSProperties | undefined = gradientStops
+    ? {
+        "--gradient-stop-1": gradientStops[0],
+        "--gradient-stop-2": gradientStops[1],
+        "--gradient-stop-3": gradientStops[2],
+        "--gradient-stop-4": gradientStops[3],
+        "--gradient-stop-5": gradientStops[4],
+        "--gradient-stop-6": gradientStops[5],
+        "--gradient-stop-7": gradientStops[6],
+      } as React.CSSProperties
+    : undefined;
 
   // Progress percentage
   const progressPercentage = hasEffectiveProgress
@@ -199,14 +222,8 @@ export default function StatusBarComponent({
   return (
     <div
       className={`status-bar-component ${styles['status-bar']}${isWorker ? ` ${styles['status-bar-worker']}` : ""}${active ? ` ${styles['status-bar-active']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
+      style={gradientCustomProperties}
     >
-      <RainbowCanvasComponent
-        turbo={active && !isAwaitingPhase}
-        animate={!active || isAwaitingPhase ? false : true}
-        greyscale={active ? !isColorPhase || isAwaitingPhase : true}
-        palette={activePalette}
-        className={styles['status-bar-canvas']}
-      />
       {/* Progress fill bar — slides right as prompt processing advances */}
       {active && hasEffectiveProgress && (
         <div

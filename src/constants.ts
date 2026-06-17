@@ -130,3 +130,14 @@ export {
   POLL_SLOW, // 30s — health checks
   POLL_LAZY, // 60s — dashboard refresh
 } from "@rodrigo-barraza/utilities-library";
+
+// -- Fallback for config?.thinkingPatterns — used when the server config hasn't loaded yet.
+// The canonical list lives in prism-service/src/services/local-provider/constants.ts
+// and is sent to the client via the /config endpoint as `thinkingPatterns`.
+export const FALLBACK_THINKING_PATTERNS = [
+  "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
+  "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
+  "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
+  "dolphin-r1", "internlm3", "kimi-k2",
+];
+

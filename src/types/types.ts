@@ -169,6 +169,7 @@ export interface PrismConfig {
   providerList: string[];
   availableProviders: string[];
   localProviders: LocalProviderInfo[];
+  thinkingPatterns?: string[];
   textToText: ModalityConfig;
   textToSpeech: TextToSpeechConfig;
   textToImage: ModalityConfig;

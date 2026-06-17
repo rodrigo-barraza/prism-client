@@ -216,7 +216,10 @@ export type BadgeProps =
 // 2. Constants & Clean Name Helpers
 // ═══════════════════════════════════════════════════════════════════════
 
-const KNOWN_MODELS: Record<string, string> = {
+// Static fallback label map — used before the server config loads.
+// Once config arrives, `registerModelLabels()` augments this with the
+// full catalog so new models don't require a client code change.
+const STATIC_MODEL_LABELS: Record<string, string> = {
   "gpt-5.2": "GPT 5.2",
   "gpt-5-mini": "GPT 5 Mini",
   "gpt-5-nano": "GPT 5 Nano",
@@ -269,6 +272,38 @@ const KNOWN_MODELS: Record<string, string> = {
   "gemini-3-pro-preview-stt": "Gemini 3 Pro",
   "gemini-3.5-flash-stt": "Gemini 3.5 Flash",
 };
+
+// Dynamic labels merged from server config (populated by registerModelLabels)
+let dynamicModelLabels: Record<string, string> = {};
+
+/**
+ * Merge model labels from the server's /config response into the lookup map.
+ * Called once after PrismConfig loads — ensures new models added to the
+ * server catalog are immediately available without a client code change.
+ */
+export function registerModelLabels(labels: Record<string, string>): void {
+  dynamicModelLabels = { ...dynamicModelLabels, ...labels };
+}
+
+// Unified lookup — dynamic (server) labels take priority over static fallback
+const KNOWN_MODELS = new Proxy({} as Record<string, string>, {
+  get(_target, property: string) {
+    return dynamicModelLabels[property] ?? STATIC_MODEL_LABELS[property] ?? undefined;
+  },
+  has(_target, property: string) {
+    return property in dynamicModelLabels || property in STATIC_MODEL_LABELS;
+  },
+  ownKeys() {
+    return Array.from(new Set([...Object.keys(dynamicModelLabels), ...Object.keys(STATIC_MODEL_LABELS)]));
+  },
+  getOwnPropertyDescriptor(_target, property: string | symbol) {
+    return {
+      enumerable: true,
+      configurable: true,
+      value: dynamicModelLabels[property as string] ?? STATIC_MODEL_LABELS[property as string] ?? undefined,
+    };
+  },
+});
 
 export function cleanModelName(raw: string): string {
   if (!raw) return "";

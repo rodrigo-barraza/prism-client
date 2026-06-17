@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_WORKFLOW_TITLE } from "@/constants";
+import { DEFAULT_WORKFLOW_TITLE, FALLBACK_THINKING_PATTERNS } from "@/constants";
 import { useState } from "react";
 import {
   Cpu,
@@ -864,13 +864,8 @@ export default function SettingsPanel({
                   const alwaysOn =
                     !canDisable && !!selectedModelDef?.thinkingLevels;
                   const modelName = (settings.model || "").toLowerCase();
-                  const nameBasedThinking = [
-                    "qwen3",
-                    "deepseek-r1",
-                    "deepseek-v3",
-                    "gpt-oss",
-                    "gemma-4",
-                  ].some((pattern) => modelName.includes(pattern));
+                  const nameBasedThinking = (config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS)
+                    .some((pattern) => modelName.includes(pattern));
                   const lmCanToggle =
                     isLmStudio &&
                     (selectedModelDef?.thinking || nameBasedThinking);

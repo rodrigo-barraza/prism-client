@@ -3,27 +3,13 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   Download,
-  MessageSquare,
-  GitBranch,
-  FolderOpen,
   Filter,
-  Wrench,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import HistoryItemComponent from "../../../components/HistoryItemComponent";
-import JsonViewerComponent from "../../../components/JsonViewerComponent";
+import { useSearchParams } from "next/navigation";
 import IrisService from "../../../services/IrisService";
-import PrismService from "../../../services/PrismService";
-import ToolsApiService from "../../../services/ToolsApiService";
 import { formatNumber, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import { getErrorMessage } from "../../../utils/errorMessage";
-import {
-  extractMediaAssets,
-  getMediaTypeFromRef,
-  buildRequestDetailSections,
-  reconstructChatMessages,
-} from "../../../utils/requestDetailHelpers";
 
 import RequestsTableComponent from "../../../components/RequestsTableComponent";
 import {
@@ -34,12 +20,8 @@ import {
 
 import { ErrorMessage } from "../../../components/StateMessageComponent";
 import { FilterInputComponent } from "../../../components/FilterBarComponent";
-import RequestDetailsComponent from "../../../components/RequestDetailsComponent";
-import ChatPreviewComponent from "../../../components/ChatPreviewComponent";
-import MediaCardComponent from "../../../components/MediaCardComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import useProjectFilter from "../../../hooks/useProjectFilter";
-import type { AgentPersona } from "../../../types/types";
 import styles from "./page.module.css";
 
 const POLL_INTERVAL = 5000;
@@ -55,44 +37,7 @@ interface RequestFilters {
   success: string[];
 }
 
-interface RequestAssociations {
-  conversations?: Array<{
-    id: string;
-    title?: string;
-    project?: string;
-    updatedAt?: string;
-    createdAt?: string;
-    totalCost?: number;
-    modalities?: Record<string, number>;
-    model?: string;
-    username?: string;
-    agent?: string;
-  }>;
-  workflows?: Array<{
-    id: string;
-    name?: string;
-    nodeCount?: number;
-    edgeCount?: number;
-    updatedAt?: string;
-    createdAt?: string;
-  }>;
-  sessions?: Array<{
-    id: string;
-    conversationCount?: number;
-    updatedAt?: string;
-    createdAt?: string;
-  }>;
-  toolCalls?: Array<{
-    _id: string;
-    toolName?: string;
-    elapsedMs?: number;
-    timestamp?: string;
-    success?: boolean;
-  }>;
-}
-
 export default function RequestsPage() {
-  const router = useRouter();
   const { projectFilter, projectOptions, handleProjectChange } =
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
@@ -103,13 +48,6 @@ export default function RequestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
-  const [selectedRequest, setSelectedRequest] = useState<RequestItem | null>(
-    null,
-  );
-  const [associations, setAssociations] = useState<RequestAssociations | null>(
-    null,
-  );
-  const [loadingAssociations, setLoadingAssociations] = useState(false);
   const [filters, setFilters] = useState<RequestFilters>({
     provider: [],
     model: "",
@@ -261,37 +199,7 @@ export default function RequestsPage() {
     };
   }, [loadRequests]);
 
-  // Fetch associations when a request is selected
-  useEffect(() => {
-    if (!selectedRequest?.requestId) {
-      setAssociations(null);
-      return;
-    }
-    let cancelled = false;
-    setLoadingAssociations(true);
-    Promise.all([
-      IrisService.getRequestAssociations(selectedRequest.requestId),
-      ToolsApiService.getToolCalls({ callerRequestId: selectedRequest.requestId }).catch(() => ({ toolCalls: [] }))
-    ])
-      .then(([associationsData, toolCallsData]) => {
-        if (!cancelled) {
-          setAssociations({
-            ...associationsData,
-            toolCalls: toolCallsData.toolCalls || [],
-          } as unknown as RequestAssociations);
-        }
-      })
-      .catch(() => {
-        if (!cancelled)
-          setAssociations({ conversations: [], workflows: [], sessions: [], toolCalls: [] });
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingAssociations(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedRequest?.requestId]);
+
 
   function handleSort(key: string, dir: string) {
     setSort(key);
@@ -553,16 +461,6 @@ export default function RequestsPage() {
             else if (fadingIds.has(id)) classes.push(styles['new-row-fade-out']);
             return classes.join(" ");
           }}
-          onRowClick={async (req: RequestItem) => {
-            setSelectedRequest(req as RequestItem);
-            if (!req.requestId) return;
-            try {
-              const full = await IrisService.getRequest(req.requestId);
-              setSelectedRequest(full as RequestItem);
-            } catch {
-              /* keep partial data */
-            }
-          }}
           emptyText={loading ? "Loading..." : "No requests found"}
         />
 
@@ -576,240 +474,7 @@ export default function RequestsPage() {
         />
       </div>
 
-      <RequestDetailsComponent
-        open={!!selectedRequest}
-        onClose={() => setSelectedRequest(null)}
-        title="Request Detail"
-        sections={buildRequestDetailSections(selectedRequest)}
-      >
-        {selectedRequest && (
-          <>
-            <div className={styles['detail-section']}>
-              <div className={styles['detail-section-title']}>Associations</div>
-              {loadingAssociations ? (
-                <span style={{ color: "var(--text-muted)" }}>Loading…</span>
-              ) : (
-                <div className={styles['association-grid']}>
-                  <div className={styles['association-group']}>
-                    <span className={styles['association-group-label']}>
-                      <MessageSquare size={12} /> Conversations
-                    </span>
-                    {associations?.conversations &&
-                    associations.conversations.length > 0 ? (
-                      <div className={styles['association-list']}>
-                        {associations?.conversations?.map((conversation) => (
-                          <HistoryItemComponent
-                            key={conversation.id}
-                            item={{
-                              id: conversation.id,
-                              title: conversation.title || "Untitled",
-                              tags: conversation.project
-                                ? [
-                                    {
-                                      label: conversation.project,
-                                      style: {
-                                        background:
-                                          "var(--accent-primary-subtle)",
-                                        color: "var(--accent-primary)",
-                                      },
-                                    },
-                                  ]
-                                : [],
-                              updatedAt: conversation.updatedAt || conversation.createdAt,
-                              createdAt: conversation.createdAt,
-                              totalCost: conversation.totalCost || 0,
-                              modalities: conversation.modalities || {},
-                              modelName: conversation.model || null,
-                              username: conversation.username,
-                              agent: conversation.agent,
-                            }}
-                            icon={MessageSquare}
-                            admin
-                            onClick={() => router.push(`/admin/chat/${conversation.id}`)}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <span className={styles['association-empty']}>—</span>
-                    )}
-                  </div>
-                  <div className={styles['association-group']}>
-                    <span className={styles['association-group-label']}>
-                      <GitBranch size={12} /> Workflows
-                    </span>
-                    {associations?.workflows &&
-                    associations.workflows.length > 0 ? (
-                      <div className={styles['association-list']}>
-                        {associations?.workflows?.map((workflow) => (
-                          <HistoryItemComponent
-                            key={workflow.id}
-                            item={{
-                              id: workflow.id,
-                              title: workflow.name || "Untitled",
-                              tags: [
-                                {
-                                  label: `${workflow.nodeCount} nodes · ${workflow.edgeCount} edges`,
-                                  style: {
-                                    background: "var(--background-elevated)",
-                                    color: "var(--text-muted)",
-                                  },
-                                },
-                              ],
-                              updatedAt: workflow.updatedAt || workflow.createdAt,
-                            }}
-                            icon={GitBranch}
-                            onClick={() =>
-                              router.push(`/admin/workflows/${workflow.id}`)
-                            }
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <span className={styles['association-empty']}>—</span>
-                    )}
-                  </div>
-                  <div className={styles['association-group']}>
-                    <span className={styles['association-group-label']}>
-                      <FolderOpen size={12} /> Sessions
-                    </span>
-                    {associations?.sessions &&
-                    associations.sessions.length > 0 ? (
-                      <div className={styles['association-list']}>
-                        {associations?.sessions?.map((s) => (
-                          <HistoryItemComponent
-                            key={s.id}
-                            item={{
-                              id: s.id,
-                              title: s.id.slice(0, 8),
-                              tags: [
-                                {
-                                  label: `${s.conversationCount} conversation${s.conversationCount !== 1 ? "s" : ""}`,
-                                  style: {
-                                    background: "var(--background-elevated)",
-                                    color: "var(--text-muted)",
-                                  },
-                                },
-                              ],
-                              updatedAt: s.updatedAt || s.createdAt,
-                            }}
-                            icon={FolderOpen}
-                            onClick={() => router.push("/admin/traces")}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <span className={styles['association-empty']}>—</span>
-                    )}
-                  </div>
-                  <div className={styles['association-group']}>
-                    <span className={styles['association-group-label']}>
-                      <Wrench size={12} /> Tool Requests
-                    </span>
-                    {associations?.toolCalls &&
-                    associations.toolCalls.length > 0 ? (
-                      <div className={styles['association-list']}>
-                        {associations.toolCalls.map((toolCall) => (
-                          <HistoryItemComponent
-                            key={toolCall._id}
-                            item={{
-                              id: toolCall._id,
-                              title: toolCall.toolName || "Untitled Tool",
-                              tags: [
-                                {
-                                  label: toolCall.elapsedMs != null ? `${toolCall.elapsedMs.toFixed(0)} ms` : "—",
-                                  style: {
-                                    background: "var(--background-elevated)",
-                                    color: "var(--text-muted)",
-                                  },
-                                },
-                                {
-                                  label: toolCall.success ? "Success" : "Error",
-                                  style: {
-                                    background: toolCall.success
-                                      ? "var(--accent-primary-subtle)"
-                                      : "var(--danger-subtle)",
-                                    color: toolCall.success
-                                      ? "var(--accent-primary)"
-                                      : "var(--danger)",
-                                  },
-                                },
-                              ],
-                              updatedAt: toolCall.timestamp,
-                            }}
-                            icon={Wrench}
-                            onClick={() => router.push(`/admin/tool-requests?id=${toolCall._id}`)}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <span className={styles['association-empty']}>—</span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-            {(() => {
-              const mediaAssets = extractMediaAssets(selectedRequest);
-              if (!mediaAssets.length) return null;
-              return (
-                <div className={styles['detail-section']}>
-                  <div className={styles['detail-section-title']}>Media Assets</div>
-                  <div className={styles['media-grid']}>
-                    {mediaAssets.map((asset, index: number) => (
-                      <MediaCardComponent
-                        key={index}
-                        media={{
-                          convId: selectedRequest?.conversationId || "",
-                          url: String(asset.url || ""),
-                          mediaType: getMediaTypeFromRef(
-                            String(asset.url || ""),
-                          ),
-                          origin: String(asset.origin || ""),
-                        }}
-                        compact
-                        showInfo={false}
-                        showOrigin
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-            {(() => {
-              const chat = reconstructChatMessages(selectedRequest);
-              if (!chat) return null;
-              return (
-                <div className={styles['detail-section']}>
-                  <div className={styles['detail-section-title']}>Chat Preview</div>
-                  <ChatPreviewComponent
-                    messages={chat.messages}
-                    systemPrompt={chat.systemPrompt}
-                    readOnly
-                  />
-                </div>
-              );
-            })()}
-            {selectedRequest.requestPayload && (
-              <div className={styles['detail-section']}>
-                <JsonViewerComponent
-                  data={selectedRequest.requestPayload}
-                  label="Request Payload"
-                  maxHeight="400px"
-                />
-              </div>
-            )}
-            {selectedRequest.responsePayload && (
-              <div className={styles['detail-section']}>
-                <JsonViewerComponent
-                  data={selectedRequest.responsePayload}
-                  label="Response Payload"
-                  maxHeight="400px"
-                />
-              </div>
-            )}
-          </>
-        )}
-      </RequestDetailsComponent>
+
     </div>
   );
 }

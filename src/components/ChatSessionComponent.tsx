@@ -123,6 +123,7 @@ import {
   EV_AGENT_SWITCH,
   EV_MODEL_CHANGE,
   EV_CRON_JOB_SCHEDULED,
+  FALLBACK_THINKING_PATTERNS,
 } from "../constants";
 import adminPageStyles from "../app/admin/chat/page.module.css";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
@@ -146,7 +147,7 @@ import { ErrorMessage } from "./StateMessageComponent";
 import useToolToggles from "../hooks/useToolToggles";
 import useModelMemory from "../hooks/useModelMemory";
 import AgentPickerComponent from "./AgentPickerComponent";
-import BadgeComponent from "./BadgeComponent";
+import BadgeComponent, { registerModelLabels } from "./BadgeComponent";
 import WorkspaceSelectorComponent from "./WorkspaceSelectorComponent";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import WorkspaceService from "../services/WorkspaceService";
@@ -265,6 +266,8 @@ const WORKSPACE_FS_TOOLS: Set<string> = new Set([
 ]);
 
 const BOTTOM_PANEL_TABS = new Set(["tools", "skills", "rules", "memories", "tasks"]);
+
+
 
 const ADMIN_POLL_INTERVAL = 5000;
 
@@ -1276,6 +1279,20 @@ export default function ChatSessionComponent({
     PrismService.getConfigWithLocalModels({
       onConfig: (config: PrismConfig) => {
         setConfig(config);
+
+        // Populate the dynamic model label map from all modality catalogs
+        const labelMap: Record<string, string> = {};
+        for (const modality of [config.textToText, config.textToSpeech, config.textToImage, config.imageToText, config.embedding, config.audioToText]) {
+          if (!modality?.models) continue;
+          for (const providerModels of Object.values(modality.models)) {
+            for (const model of providerModels) {
+              if (model.name && model.label) {
+                labelMap[model.name] = model.label;
+              }
+            }
+          }
+        }
+        registerModelLabels(labelMap);
         // URL model param takes priority over localStorage memory
         if (!tryApplyUrlModel(config)) {
           restoreModel(config, setSettings, {
@@ -2176,12 +2193,10 @@ export default function ChatSessionComponent({
         ) as Record<string, unknown> | undefined
       : undefined;
     const modelNameLower = (settings.model || "").toLowerCase();
-    const isNameBasedThinkingModel = [
-      "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
-      "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
-      "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
-      "dolphin-r1", "internlm3", "kimi-k2",
-    ].some((pattern) => modelNameLower.includes(pattern));
+    const thinkingPatterns = config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS;
+    const isNameBasedThinkingModel = thinkingPatterns.some((pattern) =>
+      modelNameLower.includes(pattern),
+    );
     const hasNativeThinking = !!(
       activeModelDefinition?.thinking ||
       activeModelDefinition?.supportsThinking ||
@@ -4851,12 +4866,8 @@ export default function ChatSessionComponent({
         }
         if (modelDefinition) {
           const modelName = (currentSettings.model || "").toLowerCase();
-          const nameBasedThinking = [
-            "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
-            "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
-            "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
-            "dolphin-r1", "internlm3", "kimi-k2",
-          ].some((pattern) => modelName.includes(pattern));
+          const nameBasedThinking = (config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS)
+            .some((pattern) => modelName.includes(pattern));
 
           isThinkingSupported = !!(
             modelDefinition.thinking ||

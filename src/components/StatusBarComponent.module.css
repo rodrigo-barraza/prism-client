@@ -1,4 +1,4 @@
-/* ── StatusBarComponent — shared rainbow status bar ─────────── */
+/* ── StatusBarComponent — shared animated status bar ─────────── */
 
 .status-bar {
   position: relative;
@@ -17,6 +17,52 @@
     box-shadow 0.3s ease;
 }
 
+/* ── Animated gradient shimmer (replaces canvas) ── */
+
+.status-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+
+  /* Default neutral gradient — overridden by phase custom properties */
+  background: linear-gradient(
+    90deg,
+    var(--gradient-stop-1, oklch(0.55 0.04 257)) 0%,
+    var(--gradient-stop-2, oklch(0.60 0.05 257)) 16%,
+    var(--gradient-stop-3, oklch(0.55 0.04 257)) 33%,
+    var(--gradient-stop-4, oklch(0.60 0.05 257)) 50%,
+    var(--gradient-stop-5, oklch(0.55 0.04 257)) 66%,
+    var(--gradient-stop-6, oklch(0.60 0.05 257)) 83%,
+    var(--gradient-stop-7, oklch(0.55 0.04 257)) 100%
+  );
+  background-size: 300% 100%;
+  will-change: translate;
+}
+
+.status-bar-active::before {
+  opacity: 1;
+  animation: status-bar-gradient-flow 6s linear infinite;
+}
+
+/* Paused gradient for awaiting phase — visible but static */
+.status-bar-awaiting::before {
+  opacity: 0.5;
+  animation: none;
+  filter: grayscale(1);
+}
+
+@keyframes status-bar-gradient-flow {
+  0% {
+    translate: 0 0;
+  }
+  100% {
+    translate: -66.67% 0;
+  }
+}
+
 /* Worker variant: never collapse — maintain full height + visible overlay when idle */
 .status-bar-worker {
   height: 28px;
@@ -30,9 +76,9 @@
   opacity: 1;
   box-shadow:
     0 0 8px -2px
-      color-mix(in srgb, var(--phase-pulse, oklch(0.708 0.1868 53.3)) 30%, transparent),
-    0 0 16px -4px
-      color-mix(in srgb, var(--phase-pulse, oklch(0.774 0.1784 79.8)) 15%, transparent);
+      color-mix(in srgb, var(--phase-pulse, oklch(0.708 0.1868 53.3)) 20%, transparent),
+    0 0 14px -4px
+      color-mix(in srgb, var(--phase-pulse, oklch(0.774 0.1784 79.8)) 10%, transparent);
 }
 
 .status-bar-awaiting {
@@ -41,21 +87,8 @@
 
 .status-bar-delegating {
   box-shadow:
-    0 0 8px -2px color-mix(in srgb, oklch(0.794 0.1289 216.3) 20%, transparent),
-    0 0 16px -4px color-mix(in srgb, oklch(0.712 0.1208 221.2) 10%, transparent);
-}
-
-.status-bar-canvas {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  /* Fixed canvas height so ResizeObserver always sees 28px,
-     even while the parent transitions from 4px → 28px.
-     overflow:hidden on .status-bar clips it when collapsed. */
-  height: 28px;
-  image-rendering: pixelated;
-  border-radius: 4px;
+    0 0 8px -2px color-mix(in srgb, oklch(0.794 0.1289 216.3) 15%, transparent),
+    0 0 14px -4px color-mix(in srgb, oklch(0.712 0.1208 221.2) 8%, transparent);
 }
 
 /* ── Progress fill bar ── */

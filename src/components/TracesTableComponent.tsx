@@ -32,7 +32,6 @@ export default function TracesTableComponent({
   sortKey,
   sortDir,
   onSort,
-  onRequestRowClick,
 }: {
   traces?: Record<string, any>[];
   emptyText?: string;
@@ -43,7 +42,6 @@ export default function TracesTableComponent({
   sortKey?: string;
   sortDir?: string;
   onSort?: (key: string, dir: string) => void;
-  onRequestRowClick?: (row: Record<string, any>) => void;
 }) {
   const SESSION_COLUMNS = [
     traceIdColumn(),
@@ -93,7 +91,6 @@ export default function TracesTableComponent({
             requests={trace.requests || []}
             emptyText="No requests"
             title="Requests"
-            onRowClick={onRequestRowClick}
           />
         </div>
       )}

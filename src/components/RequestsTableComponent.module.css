@@ -1,0 +1,57 @@
+/* ── Request Detail Drawer Content ──────────────────── */
+
+.detail-section {
+  margin-block-end: 20px;
+}
+
+.detail-section-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-block-end: 10px;
+}
+
+/* Associations */
+.association-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.association-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.association-group-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.association-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.association-empty {
+  font-size: var(--font-size-base);
+  color: var(--text-muted);
+  padding-inline-start: 2px;
+}
+
+/* Media Grid */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-block-start: 8px;
+}
