@@ -1,5 +1,9 @@
-import { describe, it, expect } from "vitest";
-import { timeAgo } from "@rodrigo-barraza/utilities-library";
+import { describe, it, expect, vi } from "vitest";
+import React from "react";
+
+vi.mock("@rodrigo-barraza/components-library", () => ({}));
+
+import BadgeComponent from "../src/components/BadgeComponent";
 
 import type { RawModel, RowData } from "../src/components/ModelsTableComponent";
 
@@ -52,10 +56,22 @@ describe("ModelsTableComponent lastUsed Column and Sorting", () => {
     const renderCell = (row: RowData) => {
       const timestamp = row._raw.lastUsed;
       if (!timestamp) return "—";
-      return timeAgo(timestamp);
+      return React.createElement(BadgeComponent, {
+        type: "dateTime",
+        date: timestamp,
+        relative: true,
+        highlightNew: true,
+      });
     };
 
     const output = renderCell(row);
-    expect(output).toContain("h ago");
+    expect(output).toEqual(
+      React.createElement(BadgeComponent, {
+        type: "dateTime",
+        date: rawModel.lastUsed,
+        relative: true,
+        highlightNew: true,
+      })
+    );
   });
 });

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { getBaseHeaders } from "../src/services/serviceHeaders";
 import { PROJECT_NAME } from "../src/config";
+import { LS_WORKSPACE_ROOT, LS_USERNAME } from "../src/constants";
 
 describe("serviceHeaders", () => {
   const originalWindow = global.window;
@@ -27,8 +28,8 @@ describe("serviceHeaders", () => {
   });
 
   it("should include workspace and username headers in browser context when present in localStorage", () => {
-    localStorage.setItem("prism:workspace", "/home/rodrigo/development");
-    localStorage.setItem("prism:username", "rodrigo");
+    localStorage.setItem(LS_WORKSPACE_ROOT, "/home/rodrigo/development");
+    localStorage.setItem(LS_USERNAME, "rodrigo");
 
     const retrievedHeaders = getBaseHeaders();
 

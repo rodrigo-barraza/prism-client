@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getSessionElapsedTime } from "../src/utils/utilities";
 import type { Message } from "../src/types/types";
+import type { SessionStats as SettingsSessionStats } from "../src/components/SettingsPanelComponent";
 
 type MockMessage = Partial<Message>;
 
@@ -301,10 +302,7 @@ describe("StopwatchBadge variant logic", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("SessionStats conversationStartTime assembly", () => {
-  interface MinimalSessionStats {
-    conversationStartTime: string | number | null;
-    completedElapsedTime: number;
-  }
+  type MinimalSessionStats = Pick<SettingsSessionStats, "conversationStartTime" | "completedElapsedTime">;
 
   /**
    * Replicates the sessionStats assembly pattern from ChatSessionComponent

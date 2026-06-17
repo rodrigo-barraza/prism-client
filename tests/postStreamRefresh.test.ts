@@ -50,6 +50,32 @@ describe("Post-Stream Refresh Guard", () => {
             return;
           }
         }
+
+        const lastStreamingUserMessage = [...messagesRef.current]
+          .reverse()
+          .find((message: Message) => message.role === "user");
+        if (lastStreamingUserMessage?.content) {
+          const databaseUserContents = displayMessages
+            .filter((message: Message) => message.role === "user")
+            .map((message: Message) =>
+              message.content?.toString().trim(),
+            );
+          const streamingUserContent = lastStreamingUserMessage.content
+            .toString()
+            .trim();
+          if (
+            streamingUserContent &&
+            !databaseUserContents.includes(streamingUserContent)
+          ) {
+            if (attempt < 3) {
+              await new Promise((resolve) => resolve(null));
+              return attemptPostStreamRefresh(attempt + 1);
+            } else {
+              return;
+            }
+          }
+        }
+
         setMessages(displayMessages);
       }
     };
@@ -102,6 +128,32 @@ describe("Post-Stream Refresh Guard", () => {
             return;
           }
         }
+
+        const lastStreamingUserMessage = [...messagesRef.current]
+          .reverse()
+          .find((message: Message) => message.role === "user");
+        if (lastStreamingUserMessage?.content) {
+          const databaseUserContents = displayMessages
+            .filter((message: Message) => message.role === "user")
+            .map((message: Message) =>
+              message.content?.toString().trim(),
+            );
+          const streamingUserContent = lastStreamingUserMessage.content
+            .toString()
+            .trim();
+          if (
+            streamingUserContent &&
+            !databaseUserContents.includes(streamingUserContent)
+          ) {
+            if (attempt < 3) {
+              await new Promise((resolve) => resolve(null));
+              return attemptPostStreamRefresh(attempt + 1);
+            } else {
+              return;
+            }
+          }
+        }
+
         setMessages(displayMessages);
       }
     };
@@ -113,5 +165,85 @@ describe("Post-Stream Refresh Guard", () => {
     // Verify it updated the messages state
     expect(messagesState).toHaveLength(2);
     expect(messagesState[0].content).toBe("hey");
+  });
+
+  it("should retry and skip updating if database matches the expected count but misses the latest user message content (Guard 2)", async () => {
+    // Local streaming state has 2 messages (user send "hey", assistant reply "hello")
+    const localMessages: Message[] = [
+      { role: "user", content: "hey" },
+      { role: "assistant", content: "hello" },
+    ];
+    let messagesState = [...localMessages];
+    const setMessages = (newMessages: Message[]) => {
+      messagesState = newMessages;
+    };
+
+    const messagesRef = { current: localMessages };
+
+    // Database matches count (2 messages) but has different user content ("different query")
+    const databaseSession = {
+      id: "session-123",
+      messages: [
+        { role: "user", content: "different query" },
+        { role: "assistant", content: "hello" },
+      ],
+    } as unknown as AgentSession;
+
+    let fetchAttemptsCount = 0;
+    const mockGetAgentSession = vi.fn().mockImplementation(async () => {
+      fetchAttemptsCount++;
+      return databaseSession;
+    });
+
+    const attemptPostStreamRefresh = async (attempt = 1): Promise<void> => {
+      const full = await mockGetAgentSession();
+      if (full && full.messages) {
+        const displayMessages = prepareDisplayMessages(full.messages);
+        const currentCount = messagesRef.current.length;
+
+        if (displayMessages.length < currentCount) {
+          if (attempt < 3) {
+            await new Promise((resolve) => resolve(null));
+            return attemptPostStreamRefresh(attempt + 1);
+          } else {
+            return;
+          }
+        }
+
+        const lastStreamingUserMessage = [...messagesRef.current]
+          .reverse()
+          .find((message: Message) => message.role === "user");
+        if (lastStreamingUserMessage?.content) {
+          const databaseUserContents = displayMessages
+            .filter((message: Message) => message.role === "user")
+            .map((message: Message) =>
+              message.content?.toString().trim(),
+            );
+          const streamingUserContent = lastStreamingUserMessage.content
+            .toString()
+            .trim();
+          if (
+            streamingUserContent &&
+            !databaseUserContents.includes(streamingUserContent)
+          ) {
+            if (attempt < 3) {
+              await new Promise((resolve) => resolve(null));
+              return attemptPostStreamRefresh(attempt + 1);
+            } else {
+              return;
+            }
+          }
+        }
+
+        setMessages(displayMessages);
+      }
+    };
+
+    await attemptPostStreamRefresh();
+
+    // Verify it retried 3 times due to mismatch in user message content (Guard 2)
+    expect(fetchAttemptsCount).toBe(3);
+    // Verify it did NOT overwrite state (it kept the local/streaming messages)
+    expect(messagesState).toEqual(localMessages);
   });
 });
