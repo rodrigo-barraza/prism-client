@@ -31,14 +31,14 @@ import styles from "./VisionPageComponent.module.css";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 
-// ── Source type definitions ───────────────────────────────────────
+// -- Source type definitions ---------------------------------------
 const SOURCE_TYPES = [
   { key: "webcam", label: "Webcam", icon: Camera },
   { key: "screen", label: "Screen Capture", icon: Monitor },
   { key: "ipcam", label: "IP Camera", icon: Globe },
 ];
 
-// ── Default analysis prompt ──────────────────────────────────────
+// -- Default analysis prompt --------------------------------------
 const DEFAULT_PROMPT =
   "Describe what you see in this image. Identify any people, objects, activities, and notable details. Be concise but thorough.";
 
@@ -65,12 +65,12 @@ interface VisionAnalysisResult {
 }
 
 export default function VisionPageComponent() {
-  // ── Config state ────────────────────────────────────────────────
+  // -- Config state ------------------------------------------------
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [settings, setSettings] = useState({ provider: "", model: "" });
   const [favorites, setFavorites] = useState<string[]>([]);
 
-  // ── Agent mode state ────────────────────────────────────────────
+  // -- Agent mode state --------------------------------------------
   const [mode, setMode] = useState<"analysis" | "agent">("analysis");
   const [conversationId] = useState(
     () => "vision-agent-" + Math.random().toString(36).substring(2, 15),
@@ -102,13 +102,13 @@ interface VisionChatMessage {
     Record<string, boolean>
   >({});
 
-  // ── Source state ────────────────────────────────────────────────
+  // -- Source state ------------------------------------------------
   const [sourceType, setSourceType] = useState<string | null>(null);
   const [ipCamUrl, setIpCamUrl] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [resolution, setResolution] = useState<string | null>(null);
 
-  // ── Analysis state ─────────────────────────────────────────────
+  // -- Analysis state ---------------------------------------------
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [intervalSec, setIntervalSec] = useState(10);
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
@@ -117,10 +117,10 @@ interface VisionChatMessage {
   const [showFlash, setShowFlash] = useState(false);
   const [snapshotCount, setSnapshotCount] = useState(0);
 
-  // ── Progress ring state ────────────────────────────────────────
+  // -- Progress ring state ----------------------------------------
   const [captureProgress, setCaptureProgress] = useState(0);
 
-  // ── Refs ────────────────────────────────────────────────────────
+  // -- Refs --------------------------------------------------------
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -131,7 +131,7 @@ interface VisionChatMessage {
   const isAnalyzingRef = useRef<boolean>(false);
   const abortRef = useRef<(() => void) | null>(null);
 
-  // ── Load Prism config ──────────────────────────────────────────
+  // -- Load Prism config ------------------------------------------
   useEffect(() => {
     PrismService.getConfigWithLocalModels({
       onConfig: setConfig,
@@ -206,7 +206,7 @@ interface VisionChatMessage {
     return filtered;
   }, [config]);
 
-  // ── Source management ──────────────────────────────────────────
+  // -- Source management ------------------------------------------
 
   const stopSource = useCallback(() => {
     if (streamRef.current) {
@@ -336,7 +336,7 @@ interface VisionChatMessage {
     }
   }, []);
 
-  // ── Frame capture ──────────────────────────────────────────────
+  // -- Frame capture ----------------------------------------------
 
   const captureFrame = useCallback(() => {
     const video = videoRef.current;
@@ -353,7 +353,7 @@ interface VisionChatMessage {
     return canvas.toDataURL("image/jpeg", 0.8);
   }, []);
 
-  // ── Analysis loop ──────────────────────────────────────────────
+  // -- Analysis loop ----------------------------------------------
 
   const runSingleAnalysis = useCallback(async () => {
     if (!settings.provider || !settings.model) return;
@@ -499,7 +499,7 @@ interface VisionChatMessage {
     }
   }, []);
 
-  // ── Cleanup on unmount ─────────────────────────────────────────
+  // -- Cleanup on unmount -----------------------------------------
   useEffect(() => {
     return () => {
       stopSource();
@@ -507,7 +507,7 @@ interface VisionChatMessage {
     };
   }, [stopSource, stopAnalysis]);
 
-  // ── Background Live Frame Uploader for Agent Mode ───────────────
+  // -- Background Live Frame Uploader for Agent Mode ---------------
   useEffect(() => {
     if (mode !== "agent" || !isStreaming) return;
 
@@ -680,7 +680,7 @@ interface VisionChatMessage {
     }
   }, [chatInput, chatMessages, settings, conversationId]);
 
-  // ── Model selection ────────────────────────────────────────────
+  // -- Model selection --------------------------------------------
 
   const handleModelSelect = useCallback((provider: string, model: string) => {
     setSettings({ provider, model });
@@ -701,10 +701,10 @@ interface VisionChatMessage {
     });
   }, []);
 
-  // ── Progress ring ──────────────────────────────────────────────
+  // -- Progress ring ----------------------------------------------
   const circumference = 2 * Math.PI * 14; // r=14
 
-  // ── Render ─────────────────────────────────────────────────────
+  // -- Render -----------------------------------------------------
   return (
     <div className={`vision-page-component ${styles['vision-layout-wrapper']}`}>
       <ThreePanelLayout

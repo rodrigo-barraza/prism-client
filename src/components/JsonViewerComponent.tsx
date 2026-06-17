@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { ChevronRight, Copy, Check } from "lucide-react";
-import { FEEDBACK_BRIEF_MS } from "@rodrigo-barraza/utilities-library";
+import { FEEDBACK_BRIEF_MILLISECONDS } from "@rodrigo-barraza/utilities-library";
 import { copyToClipboard } from "../utils/utilities";
 import styles from "./JsonViewerComponent.module.css";
 
@@ -39,7 +39,7 @@ export default function JsonViewerComponent({
     const ok = await copyToClipboard(JSON.stringify(data, null, 2));
     if (ok) {
       setCopied(true);
-      setTimeout(() => setCopied(false), FEEDBACK_BRIEF_MS);
+      setTimeout(() => setCopied(false), FEEDBACK_BRIEF_MILLISECONDS);
     }
   }, [data]);
 

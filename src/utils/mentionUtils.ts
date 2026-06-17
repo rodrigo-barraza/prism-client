@@ -7,7 +7,7 @@
 
 import badgeStyles from "../components/MentionBadgeComponent.module.css";
 
-// ── DOM Serialization ─────────────────────────────────────────────
+// -- DOM Serialization ---------------------------------------------
 // Walks a contentEditable element's DOM and produces the text that
 // will be sent to the model. Mention badge spans are replaced with
 // their full `@path` representation.
@@ -51,7 +51,7 @@ export interface WorkspaceEntry {
   children?: WorkspaceEntry[];
 }
 
-// ── Tree Flattening ───────────────────────────────────────────────
+// -- Tree Flattening -----------------------------------------------
 
 /**
  * Flatten a workspace tree node array into a flat list of entries.
@@ -76,7 +76,7 @@ export function flattenTree(
   return out;
 }
 
-// ── Mention Query Detection ───────────────────────────────────────
+// -- Mention Query Detection ---------------------------------------
 
 /**
  * Given a text string and a cursor position, detect if the cursor is
@@ -96,7 +96,7 @@ export function detectMentionToken(text: string, cursorOffset: number) {
   return null;
 }
 
-// ── Mention Filtering ─────────────────────────────────────────────
+// -- Mention Filtering ---------------------------------------------
 
 /**
  * Filter a flat entries list by a query string.
@@ -119,7 +119,7 @@ export function filterMentionResults(
     .slice(0, limit);
 }
 
-// ── Text → Mention Parsing (for rendering) ───────────────────────
+// -- Text → Mention Parsing (for rendering) -----------------------
 // Parse serialized `@path` tokens out of a plain text string so
 // they can be rendered as styled badges in the message list.
 
@@ -173,7 +173,7 @@ export function parseMentionTokens(text: string): MentionSegment[] {
   return segments.length > 0 ? segments : [{ type: "text", value: text }];
 }
 
-// ── Badge Creation ────────────────────────────────────────────
+// -- Badge Creation --------------------------------------------
 // Uses the shared MentionBadgeComponent CSS module so both the
 // contentEditable input and the message list render identical badges.
 
@@ -256,7 +256,7 @@ export function extractSlashCommandNames(element: HTMLElement): Set<string> {
   return names;
 }
 
-// ── Caret Utilities ───────────────────────────────────────────────
+// -- Caret Utilities -----------------------------------------------
 
 /**
  * Place the caret (cursor) immediately after a given DOM node.

@@ -21,7 +21,7 @@ import { SearchInputComponent } from "@rodrigo-barraza/components-library";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./WorkspaceTreePanelComponent.module.css";
 
-// ── Type Definitions ──────────────────────────────────────────
+// -- Type Definitions ------------------------------------------
 
 interface TreeNodeProps {
   node: WorkspaceTreeNode;
@@ -46,7 +46,7 @@ interface WorkspaceTreePanelProps {
   ) => void;
 }
 
-// ─── Recursive Directory Tree Node ──────────────────────────
+// --- Recursive Directory Tree Node --------------------------
 const TreeNode = memo(function TreeNode({
   node,
   depth = 0,
@@ -161,7 +161,7 @@ export default function WorkspaceTreePanelComponent({
   const switcherRef = useRef<HTMLDivElement | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // ── Lifted expanded-state: persists across data refreshes ──
+  // -- Lifted expanded-state: persists across data refreshes --
   const expandedPathsRef = useRef<Set<string>>(new Set());
   // Counter to force re-render when the Set mutates — also passed to TreeNode
   // so React.memo detects changes (the Set ref itself never changes)
@@ -194,7 +194,7 @@ export default function WorkspaceTreePanelComponent({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [switcherOpen]);
 
-  // ── Auto-expand root-level directories on initial load ──
+  // -- Auto-expand root-level directories on initial load --
   const autoExpandedRef = useRef<boolean>(false);
   const autoExpandRoots = useCallback(
     (tree: WorkspaceTreeNode[] | undefined) => {
@@ -211,7 +211,7 @@ export default function WorkspaceTreePanelComponent({
     [],
   );
 
-  // ── Initial fetch (shows loading indicator) ──
+  // -- Initial fetch (shows loading indicator) --
   const fetchTree = useCallback(async () => {
     if (!currentWorkspace?.path) return;
     setTreeLoading(true);
@@ -228,7 +228,7 @@ export default function WorkspaceTreePanelComponent({
     }
   }, [currentWorkspace?.path, autoExpandRoots]);
 
-  // ── Silent background refresh (no loading indicator, tree stays mounted) ──
+  // -- Silent background refresh (no loading indicator, tree stays mounted) --
   const silentRefresh = useCallback(async () => {
     if (!currentWorkspace?.path) return;
     try {
@@ -286,7 +286,7 @@ export default function WorkspaceTreePanelComponent({
     }
   }, [treeData?.totalEntries, treeData?.truncated, onTreeStats]);
 
-  // ── Substring Path Matching & Recursive Tree Filtering ──
+  // -- Substring Path Matching & Recursive Tree Filtering --
   const { filteredTree, autoExpandedPaths } = useMemo(() => {
     if (!searchQuery.trim() || !treeData?.tree) {
       return { filteredTree: treeData?.tree || [], autoExpandedPaths: null };
@@ -331,7 +331,7 @@ export default function WorkspaceTreePanelComponent({
 
   if (!currentWorkspace && !unavailableWorkspace) return null;
 
-  // ── Session workspace not currently connected ──
+  // -- Session workspace not currently connected --
   if (unavailableWorkspace) {
     // Extract the last path segment for a friendlier label
     const label =
@@ -371,7 +371,7 @@ export default function WorkspaceTreePanelComponent({
 
   return (
     <div className={`workspace-tree-panel-component ${styles['container']}`}>
-      {/* ── Header — static label or workspace switcher ── */}
+      {/* -- Header — static label or workspace switcher -- */}
       {!hideHeader && (
         <div className={styles['header-wrapper']} ref={switcherRef}>
           <div
@@ -403,7 +403,7 @@ export default function WorkspaceTreePanelComponent({
               )}
           </div>
 
-          {/* ── Workspace switcher dropdown ── */}
+          {/* -- Workspace switcher dropdown -- */}
           {switcherOpen && (
             <div className={styles['switcher-dropdown']}>
               {workspaces.map((w: WorkspaceItem) => {

@@ -18,7 +18,7 @@ const PROGRESS_STALE_MS = 3000;
  */
 const CHUNK_STALE_MS = 2000;
 
-// ─── Types ──────────────────────────────────────────────────
+// --- Types --------------------------------------------------
 
 interface TokPerSecState {
   current: number | null;

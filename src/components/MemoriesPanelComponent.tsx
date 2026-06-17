@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import {
-  TOAST_DURATION_MS,
-  HIGHLIGHT_DURATION_MS,
+  TOAST_DURATION_MILLISECONDS,
+  HIGHLIGHT_DURATION_MILLISECONDS,
 } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 import { getErrorMessage } from "../utils/errorMessage";
@@ -32,7 +32,7 @@ import {
   SearchInputComponent,
   parseDateValue,
 } from "@rodrigo-barraza/components-library";
-import { timeAgo as formatTimeAgo, formatLatencyMs } from "@rodrigo-barraza/utilities-library";
+import { timeAgo as formatTimeAgo, formatLatencyMilliseconds } from "@rodrigo-barraza/utilities-library";
 import FilterDropdownComponent, {
   type FilterGroup,
 } from "./FilterDropdownComponent";
@@ -180,7 +180,7 @@ export default function MemoriesPanel({
           // Auto-clear highlight after 6s
           setTimeout(
             () => setNewMemoryIds(new Set<string>()),
-            HIGHLIGHT_DURATION_MS,
+            HIGHLIGHT_DURATION_MILLISECONDS,
           );
         }
 
@@ -280,7 +280,7 @@ export default function MemoriesPanel({
     } else {
       setToast({ type: "info", text: summary || "No changes needed" });
     }
-    setTimeout(() => setToast(null), TOAST_DURATION_MS);
+    setTimeout(() => setToast(null), TOAST_DURATION_MILLISECONDS);
   }, [consolidationEvent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDelete = useCallback(async (memoryId: string) => {
@@ -329,7 +329,7 @@ export default function MemoriesPanel({
       });
     } finally {
       setConsolidating(false);
-      setTimeout(() => setToast(null), TOAST_DURATION_MS);
+      setTimeout(() => setToast(null), TOAST_DURATION_MILLISECONDS);
     }
   }, [project, agent, loadMemories, loadHistory, historyOpen]);
 
@@ -576,7 +576,7 @@ export default function MemoriesPanel({
                   {run.memoriesBefore} → {run.memoriesAfter} memories
                 </span>
                 {run.durationMs && (
-                  <span>{formatLatencyMs(run.durationMs)}</span>
+                  <span>{formatLatencyMilliseconds(run.durationMs)}</span>
                 )}
               </div>
             </div>

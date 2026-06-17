@@ -19,7 +19,7 @@ import ToolsApiService from "../services/ToolsApiService";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./FileViewerPanelComponent.module.css";
 
-// ─── Binary file type detection ─────────────────────────────
+// --- Binary file type detection -----------------------------
 const IMAGE_EXTENSIONS = new Set([
   "png",
   "jpg",
@@ -73,7 +73,7 @@ const EXT_TO_MIME = {
   tif: "image/tiff",
 };
 
-// ─── Extension → Prism language key mapping ─────────────────
+// --- Extension → Prism language key mapping -----------------
 // Keys must match Prism language identifiers for syntax highlighting
 const EXT_TO_PRISM = {
   js: "javascript",
@@ -246,7 +246,7 @@ function stripLineNumberPrefixes(
   return lines.map((line: string) => line.replace(/^\d+: ?/, "")).join("\n");
 }
 
-// ─── VS Code Dark+ with true black background ──────────────
+// --- VS Code Dark+ with true black background --------------
 const codeTheme = {
   ...vscDarkPlus,
   'pre[class*="language-"]': {
@@ -270,7 +270,7 @@ const codeTheme = {
   },
 };
 
-// ─── Single file tab ────────────────────────────────────────
+// --- Single file tab ----------------------------------------
 interface FileTabProps {
   file: { id: string; path: string };
   isActive: boolean;
@@ -538,7 +538,7 @@ export default function FileViewerPanelComponent({
     fetchFileContent(id, path);
   }, [activeFile, fileContents, fetchFileContent]);
 
-  // ── Live refresh: re-fetch all open files when refreshKey changes ─
+  // -- Live refresh: re-fetch all open files when refreshKey changes -
   const previousRefreshKeyRef = useRef<number>(refreshKey);
   useEffect(() => {
     if (refreshKey === previousRefreshKeyRef.current) return;
@@ -576,7 +576,7 @@ export default function FileViewerPanelComponent({
     }
   }, [activeFileId]);
 
-  // ── Resize handle drag ──────────────────────────────────────
+  // -- Resize handle drag --------------------------------------
   const handleResizeStart = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -604,7 +604,7 @@ export default function FileViewerPanelComponent({
     [width, onWidthChange],
   );
 
-  // ── Wheel-to-horizontal-scroll on tab bar ───────────────────
+  // -- Wheel-to-horizontal-scroll on tab bar -------------------
   useEffect(() => {
     const element = tabBarRef.current;
     if (!element) return;
@@ -633,7 +633,7 @@ export default function FileViewerPanelComponent({
     return 1;
   }, [cached]);
 
-  // ── Line selection state ──────────────────────────────────────
+  // -- Line selection state --------------------------------------
   // No hover state — all hover effects use pure CSS via .codeLine:hover
   const [selectedLines, setSelectedLines] = useState<Set<number>>(new Set());
   const lastClickedLineRef = useRef<number | null>(null);
@@ -685,7 +685,7 @@ export default function FileViewerPanelComponent({
     (e: React.MouseEvent<HTMLDivElement>) => {
       const target = e.target as HTMLElement;
 
-      // ── Inline @ mention button click ──
+      // -- Inline @ mention button click --
       const mentionButton = target.closest(`.${styles['line-mention-button']}`);
       if (mentionButton) {
         e.stopPropagation();
@@ -747,7 +747,7 @@ export default function FileViewerPanelComponent({
     [activeFile, selectedLines, onMentionLines, handleMentionSelection],
   );
 
-  // ── Inject inline @ buttons into every code line (DOM-level) ───
+  // -- Inject inline @ buttons into every code line (DOM-level) ---
   // Buttons are hidden by default and revealed on .codeLine:hover via CSS.
   // Uses direct DOM manipulation post-render to avoid re-rendering
   // the entire SyntaxHighlighter tree.

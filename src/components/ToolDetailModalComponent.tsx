@@ -26,12 +26,12 @@ import {
   humanizeToolName,
   formatCostAdaptive,
   formatCompact,
-  formatLatencyMs,
+  formatLatencyMilliseconds,
   timeAgo as formatTimeAgo,
 } from "@rodrigo-barraza/utilities-library";
 import styles from "./ToolsPageComponent.module.css";
 
-/* ── Types ─────────────────────────────────────────────────── */
+/* -- Types --------------------------------------------------- */
 
 export interface ToolDetailSchema {
   name: string;
@@ -88,7 +88,7 @@ interface ToolDetailModalComponentProps {
   allTools: ToolDetailSchema[];
 }
 
-/* ── Agent color mapping ───────────────────────────────────── */
+/* -- Agent color mapping ------------------------------------- */
 
 const AGENT_COLORS: Record<string, string> = {
   CODING: "#3b82f6",
@@ -105,7 +105,7 @@ function getAgentColor(agentId: string) {
   return AGENT_COLORS[agentId] || "var(--accent-primary)";
 }
 
-/* ── Helpers ───────────────────────────────────────────────── */
+/* -- Helpers ------------------------------------------------- */
 
 function extractOutputFields(tool: ToolDetailSchema) {
   const properties = tool.parameters?.properties as
@@ -134,7 +134,7 @@ function getInputParams(tool: ToolDetailSchema): [string, ParameterSchema][] {
   ) as [string, ParameterSchema][];
 }
 
-/* ── Component ─────────────────────────────────────────────── */
+/* -- Component ----------------------------------------------- */
 
 export default function ToolDetailModalComponent({
   tool,
@@ -317,7 +317,7 @@ export default function ToolDetailModalComponent({
                       className={styles['stat-cell-icon']}
                     />
                     <div className={styles['stat-cell-value']}>
-                      {formatLatencyMs(stats.avgLatency)}
+                      {formatLatencyMilliseconds(stats.avgLatency)}
                     </div>
                     <div className={styles['stat-cell-label']}>
                       Avg Latency

@@ -38,7 +38,7 @@ export const IS_LOCALHOST = !IS_PRODUCTION;
 // Environment-aware project name — isolates data between dev and prod
 export const PROJECT_NAME = IS_PRODUCTION ? "prism-client" : "prism-client-dev";
 
-// ── Raw values from process.env ────────────────────────────────
+// -- Raw values from process.env --------------------------------
 const RAW_PRISM_URL =
   process.env.NEXT_PUBLIC_PRISM_SERVICE_URL || process.env.PRISM_SERVICE_URL;
 const RAW_WS_URL =
@@ -46,7 +46,7 @@ const RAW_WS_URL =
 const RAW_TOOLS_URL =
   process.env.NEXT_PUBLIC_TOOLS_SERVICE_URL || process.env.TOOLS_SERVICE_URL;
 
-// ── Public URLs from vault (browser production overrides) ──────
+// -- Public URLs from vault (browser production overrides) ------
 const PUBLIC_PRISM_URL =
   process.env.NEXT_PUBLIC_PRISM_SERVICE_PUBLIC_URL ||
   process.env.PRISM_SERVICE_PUBLIC_URL;
@@ -54,7 +54,7 @@ const PUBLIC_WS_URL =
   process.env.NEXT_PUBLIC_PRISM_WS_PUBLIC_URL ||
   process.env.PRISM_WS_PUBLIC_URL;
 
-// ── Prism Service URL ──────────────────────────────────────────
+// -- Prism Service URL ------------------------------------------
 function resolvePrismUrl() {
   if (!IS_BROWSER) return RAW_PRISM_URL;
   if (IS_PRODUCTION && PUBLIC_PRISM_URL) return PUBLIC_PRISM_URL;
@@ -63,7 +63,7 @@ function resolvePrismUrl() {
 
 export const PRISM_SERVICE_URL = resolvePrismUrl();
 
-// ── Prism WebSocket URL ────────────────────────────────────────
+// -- Prism WebSocket URL ----------------------------------------
 function resolveWsUrl() {
   if (!IS_BROWSER) return RAW_WS_URL;
   if (IS_PRODUCTION && PUBLIC_WS_URL) return PUBLIC_WS_URL;
@@ -72,14 +72,14 @@ function resolveWsUrl() {
 
 export const PRISM_WS_URL = resolveWsUrl();
 
-// ── Tools Service URL ──────────────────────────────────────────
+// -- Tools Service URL ------------------------------------------
 // Browser (all environments): proxied through Next.js rewrites at
 // /api/tools → TOOLS_SERVICE_URL. Tools-service is internal-only
 // (no public hostname), so the browser must NEVER call it directly.
 // Server-side: vault value (LAN IP).
 export const TOOLS_SERVICE_URL = IS_BROWSER ? "/api/tools" : RAW_TOOLS_URL;
 
-// ── MinIO File Storage ─────────────────────────────────────────
+// -- MinIO File Storage -----------------------------------------
 // MINIO_PUBLIC_URL is the root (e.g. https://storage.rod.dev).
 // Append the bucket name so file refs resolve to the correct path:
 //   https://storage.rod.dev/prism/{object-key}
@@ -96,7 +96,7 @@ export const CUSTOM_MODEL_NAME =
   process.env.CUSTOM_MODEL_NAME ||
   "";
 
-// ── Accounts Service URL ───────────────────────────────────────
+// -- Accounts Service URL ---------------------------------------
 // Used for authentication (login, signup). Server-side only when
 // possible; the login page signup form also needs it client-side.
 export const ACCOUNTS_SERVICE_URL =

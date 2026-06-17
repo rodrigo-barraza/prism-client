@@ -1,7 +1,7 @@
 import { useReducer, useMemo } from "react";
 import type { SessionTokenStats } from "../utils/utilities";
 
-// ─── Types ──────────────────────────────────────────────────
+// --- Types --------------------------------------------------
 
 interface TtftState {
   value: number | null;

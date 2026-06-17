@@ -1137,7 +1137,7 @@ function formatInputPrompt(
     .join("\n");
 }
 
-// ── ANSI escape-code → React span parser ──────────────────────
+// -- ANSI escape-code → React span parser ----------------------
 const ANSI_RE = /\x1b\[([0-9;]*)m/g;
 
 const ANSI_COLORS = [

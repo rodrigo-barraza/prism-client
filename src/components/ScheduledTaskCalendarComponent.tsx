@@ -689,7 +689,7 @@ export default function ScheduledTaskCalendarComponent({
 
   return (
     <div className={`scheduled-task-calendar-component ${styles["calendar-container"]}`}>
-      {/* ── Header Navigation ── */}
+      {/* -- Header Navigation -- */}
       <header className={styles["calendar-header"]}>
         <nav className={styles["calendar-navigation-group"]}>
           <button
@@ -791,7 +791,7 @@ export default function ScheduledTaskCalendarComponent({
         </nav>
       </header>
 
-      {/* ── Weekday Labels ── */}
+      {/* -- Weekday Labels -- */}
       {activeView !== "day" && (
         <div className={styles["calendar-weekday-layout-row"]}>
           {WEEKDAY_LABELS.map((dayLabel) => (
@@ -802,7 +802,7 @@ export default function ScheduledTaskCalendarComponent({
         </div>
       )}
 
-      {/* ── Days Grid ── */}
+      {/* -- Days Grid -- */}
       {activeView !== "day" && (
         <div
           className={classNames(
@@ -886,7 +886,7 @@ export default function ScheduledTaskCalendarComponent({
                   </div>
                 )}
 
-                {/* ── Day Popover ── */}
+                {/* -- Day Popover -- */}
                 {isPopoverOpen && (
                   <>
                     <div
@@ -959,7 +959,7 @@ export default function ScheduledTaskCalendarComponent({
         </div>
       )}
 
-      {/* ── Day View ── */}
+      {/* -- Day View -- */}
       {activeView === "day" && (
         <div className={styles["calendar-day-view-container"]}>
           {dayEvents.length === 0 ? (
@@ -1099,7 +1099,7 @@ export default function ScheduledTaskCalendarComponent({
         </div>
       )}
 
-      {/* ── Legend ── */}
+      {/* -- Legend -- */}
       {activeScheduleTypes.length > 0 && (
         <footer className={styles["calendar-legend-bar"]}>
           {activeScheduleTypes.map((scheduleType) => (

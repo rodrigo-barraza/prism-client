@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import styles from "./DrawingCanvasComponent.module.css";
 
-// ── Type Definitions ──────────────────────────────────────────
+// -- Type Definitions ------------------------------------------
 
 interface DrawingCanvasProps {
   backgroundImageSourceUrl?: string;
@@ -54,7 +54,7 @@ type CanvasPointerEvent =
   | ReactMouseEvent<HTMLCanvasElement>
   | ReactTouchEvent<HTMLCanvasElement>;
 
-// ── Constants ─────────────────────────────────────────────────
+// -- Constants -------------------------------------------------
 
 const COLORS = [
   { value: "#000000", label: "Black" },

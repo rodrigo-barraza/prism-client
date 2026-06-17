@@ -547,7 +547,7 @@ export default function NavigationSidebarComponent({
     return () => cancelAnimationFrame(rafId);
   }, []);
 
-  // ── Programmatic contrast color for sidebar content ────────────
+  // -- Programmatic contrast color for sidebar content ------------
   useEffect(() => {
     const sidebarElement = sidebarReference.current;
     if (!sidebarElement) return;

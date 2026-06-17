@@ -65,7 +65,7 @@ export interface CustomChartDataPoint {
 export const isCustomPoint = (pt: unknown): pt is CustomChartDataPoint =>
   typeof pt === "object" && pt !== null;
 
-// ─── Local helper types (file-scoped) ──────────────────────
+// --- Local helper types (file-scoped) ----------------------
 
 /** Valid chart view keys — one per tab. */
 type ChartViewKey =

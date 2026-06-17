@@ -18,11 +18,11 @@ import {
 } from "lucide-react";
 import {
   formatCompact,
-  formatLatencyMs,
+  formatLatencyMilliseconds,
 } from "@rodrigo-barraza/utilities-library";
 import styles from "./ToolsTableComponent.module.css";
 
-/* ── Types ─────────────────────────────────────────────────── */
+/* -- Types --------------------------------------------------- */
 
 export interface ToolSchema {
   name: string;
@@ -67,7 +67,7 @@ export interface ToolUsageStat {
   lastUsed?: string;
 }
 
-/* ── Helpers ───────────────────────────────────────────────── */
+/* -- Helpers ------------------------------------------------- */
 
 function countParams(tool: ToolSchema): number {
   const properties = tool.parameters?.properties;
@@ -179,7 +179,7 @@ function getDomainIcon(domain: string): React.ElementType {
   return DOMAIN_ICONS[domain] || Wrench;
 }
 
-/* ── Sub-components ────────────────────────────────────────── */
+/* -- Sub-components ------------------------------------------ */
 
 function ToolCard({
   tool,
@@ -217,7 +217,7 @@ function ToolCard({
 
 
 
-/* ── Main Component ────────────────────────────────────────── */
+/* -- Main Component ------------------------------------------ */
 
 export interface ToolsTableComponentProps {
   tools: ToolSchema[];
@@ -408,7 +408,7 @@ export default function ToolsTableComponent({
           const stat = toolStats[row.name];
           return stat?.avgLatency ? (
             <span className={styles['table-stat-value']}>
-              {formatLatencyMs(stat.avgLatency)}
+              {formatLatencyMilliseconds(stat.avgLatency)}
             </span>
           ) : (
             <span style={{ color: "var(--text-muted)" }}>—</span>
@@ -428,7 +428,7 @@ export default function ToolsTableComponent({
           const stat = toolStats[row.name];
           return stat?.minLatency ? (
             <span className={styles['table-stat-value']}>
-              {formatLatencyMs(stat.minLatency)}
+              {formatLatencyMilliseconds(stat.minLatency)}
             </span>
           ) : (
             <span style={{ color: "var(--text-muted)" }}>—</span>
@@ -448,7 +448,7 @@ export default function ToolsTableComponent({
           const stat = toolStats[row.name];
           return stat?.maxLatency ? (
             <span className={styles['table-stat-value']}>
-              {formatLatencyMs(stat.maxLatency)}
+              {formatLatencyMilliseconds(stat.maxLatency)}
             </span>
           ) : (
             <span style={{ color: "var(--text-muted)" }}>—</span>

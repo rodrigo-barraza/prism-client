@@ -24,7 +24,7 @@ import type {
 const { getCustomThemeAttr } = CustomThemeService;
 import styles from "./CustomThemeEditorComponent.module.css";
 
-// ── Token Groups ───────────────────────────────────────────────────────
+// -- Token Groups -------------------------------------------------------
 
 interface TokenField {
   key: keyof CustomThemeTokens;
@@ -71,7 +71,7 @@ const TOKEN_GROUPS: { title: string; fields: TokenField[] }[] = [
   },
 ];
 
-// ── Built-in base themes for "clone from" ──────────────────────────────
+// -- Built-in base themes for "clone from" ------------------------------
 
 const CLONE_BASES = [
   { id: "dark", label: "Dark" },
@@ -83,7 +83,7 @@ const CLONE_BASES = [
   { id: "ember", label: "Ember" },
 ];
 
-// ── Component ──────────────────────────────────────────────────────────
+// -- Component ----------------------------------------------------------
 
 interface CustomThemeEditorComponentProps {
   onThemesChange?: () => void;
@@ -125,7 +125,7 @@ export default function CustomThemeEditorComponent({
     onThemesChange?.();
   }, [onThemesChange]);
 
-  // ── Live preview injection while editing ────────────────────────────
+  // -- Live preview injection while editing ----------------------------
 
   useEffect(() => {
     if (!editing || !editTokens) return;
@@ -138,7 +138,7 @@ export default function CustomThemeEditorComponent({
     CustomThemeService.injectThemeStyle(tempTheme);
   }, [editing, editName, editTokens]);
 
-  // ── Handlers ────────────────────────────────────────────────────────
+  // -- Handlers --------------------------------------------------------
 
   const handleNewTheme = useCallback((baseId: string) => {
     const baseTokens = CustomThemeService.getBuiltInPreset(baseId);
@@ -256,7 +256,7 @@ export default function CustomThemeEditorComponent({
     deleteTimerRef.current = setTimeout(() => setConfirmDeleteId(null), 3000);
   }, []);
 
-  // ── Render ──────────────────────────────────────────────────────────
+  // -- Render ----------------------------------------------------------
 
   return (
     <div className={`custom-theme-editor-component ${styles['wrapper']}`}>

@@ -97,7 +97,7 @@ import {
 
 import useSessionStats from "../hooks/useSessionStats";
 import { generateUUID, renderToolName } from "@rodrigo-barraza/utilities-library";
-import { TOOL_NAMES, SSE_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { TOOL_NAMES, SERVER_SENT_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams } from "../utils/utilities";
 import {
   PROJECT_AGENT,
@@ -447,13 +447,13 @@ export default function ChatSessionComponent({
   // Track whether the URL session param has been consumed
   const urlSessionAppliedRef = useRef<boolean>(false);
 
-  // ── Admin mode hooks (called unconditionally per Rules of Hooks) ──
+  // -- Admin mode hooks (called unconditionally per Rules of Hooks) --
   const adminHeaderContext = useAdminHeader();
   const adminProjectFilterHook = useProjectFilter(isAdmin);
   const adminSearchParams = useSearchParams();
   const adminRouter = useRouter();
 
-  // ── Admin mode state ──
+  // -- Admin mode state --
   const [adminAgents, setAdminAgents] = useState<
     Array<
       Partial<AgentPersona> & {
@@ -2556,7 +2556,7 @@ export default function ChatSessionComponent({
   );
 
 
-  // ── Editable serialization ─────────────────────────────────────
+  // -- Editable serialization -------------------------------------
   // The input is a contentEditable div. Mention badges are non-editable
   // <span data-mention-path="..."> elements. We serialize them back to
   // `@full/path` when sending so the model gets the real file reference.
@@ -2738,7 +2738,7 @@ export default function ChatSessionComponent({
     [createMentionBadge],
   );
 
-  // ── Mention Autocomplete ───────────────────────────────────────
+  // -- Mention Autocomplete ---------------------------------------
   const mentionCacheRef = useRef<ReturnType<typeof flattenTree> | null>(null);
   const mentionLoadingRef = useRef<boolean>(false);
   const [mentionOpen, setMentionOpen] = useState(false);
@@ -4958,7 +4958,7 @@ export default function ChatSessionComponent({
     disabledTools,
   ]);
 
-  /* ── Chat header "New Session" glitch effect ────────────────── */
+  /* -- Chat header "New Session" glitch effect ------------------ */
   const chatNewBtnRef = useRef<HTMLButtonElement | null>(null);
   const chatRainbowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const chatGlitchInterval = useRef<ReturnType<typeof setInterval> | null>(
@@ -5020,7 +5020,7 @@ export default function ChatSessionComponent({
     ) => {
       if (!full) return;
 
-      // ── Restore workspace selection from the session document ──
+      // -- Restore workspace selection from the session document --
       // Agent sessions record which workspace they were started with;
       // switch to it so the workspace tree and tool routing match.
       if (full.workspaceRoot) {
@@ -6835,7 +6835,7 @@ export default function ChatSessionComponent({
               data-placeholder={placeholderText}
               suppressContentEditableWarning
             />
-            {/* ── Slash Command Picker ── */}
+            {/* -- Slash Command Picker -- */}
             {slashCommandOpen &&
               rules.length > 0 &&
               (() => {
@@ -6905,7 +6905,7 @@ export default function ChatSessionComponent({
                   </div>
                 );
               })()}
-            {/* ── Mention Autocomplete Dropdown ── */}
+            {/* -- Mention Autocomplete Dropdown -- */}
             {mentionOpen && mentionResults.length > 0 && (
               <div className={chatStyles['mention-dropdown']}>
                 <div className={chatStyles['mention-list']} ref={mentionListRef}>

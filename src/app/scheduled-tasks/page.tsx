@@ -1113,7 +1113,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   </ButtonComponent>
                 </div>
               ) : viewMode === "calendar" ? (
-                /* ── Calendar View ── */
+                /* -- Calendar View -- */
                 <ScheduledTaskCalendarComponent
                   tasks={filteredTasks}
                   onEventClick={(taskId: string) => {
@@ -1122,7 +1122,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   }}
                 />
               ) : viewMode === "table" ? (
-                /* ── Table View ── */
+                /* -- Table View -- */
                 <TableComponent
                   columns={[
                     {
@@ -1321,7 +1321,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   storageKey="scheduled-tasks"
                 />
               ) : (
-                /* ── Card View ── */
+                /* -- Card View -- */
                 <div className={styles['grid']}>
                   {filteredTasks.map((task) => {
                     const isMenuOpen = activeMenuId === task.id;

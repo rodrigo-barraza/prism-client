@@ -87,7 +87,7 @@ export function resolvePageIcon(title: string): LucideIcon | null {
   return null;
 }
 
-// ── Navigation section definitions ──────────────────────────────────
+// -- Navigation section definitions ----------------------------------
 
 export interface NavigationItem {
   href: string;

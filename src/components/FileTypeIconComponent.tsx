@@ -53,7 +53,7 @@ interface FileIconEntry {
   cls: string;
 }
 
-// ─── File Extension → Icon + Color Class Mapping ────────────
+// --- File Extension → Icon + Color Class Mapping ------------
 const EXTENSION_ICON_MAP = {
   // JavaScript / TypeScript
   js: { icon: FileCode2, cls: "iconJs" },

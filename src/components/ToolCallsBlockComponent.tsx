@@ -10,7 +10,7 @@ import {
 import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderersComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
-import { renderToolName, formatLatencyMs } from "@rodrigo-barraza/utilities-library";
+import { renderToolName, formatLatencyMilliseconds } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { ToolCallEvent } from "../types/types";
 import type { WorkerToolActivityItem } from "./MessageListComponent";
@@ -141,7 +141,7 @@ export default function ToolCallsBlockComponent({
                 <span className={styles['tool-call-name']}>{name}</span>
                 {toolCall.durationMs != null && toolCall.durationMs > 0 && (
                   <span className={styles["tool-call-latency"]}>
-                    ({formatLatencyMs(toolCall.durationMs)})
+                    ({formatLatencyMilliseconds(toolCall.durationMs)})
                   </span>
                 )}
 

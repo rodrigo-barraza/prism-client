@@ -64,7 +64,7 @@ function LogInContentComponent() {
     setIsSubmitting(true);
 
     if (isSignUpMode) {
-      // ─── Sign Up Flow ───────────────────────────────────────────────
+      // --- Sign Up Flow -----------------------------------------------
       try {
         const signUpResponse = await fetch(`${ACCOUNTS_SERVICE_URL}/auth/signup`, {
           method: "POST",
@@ -105,7 +105,7 @@ function LogInContentComponent() {
         setIsSubmitting(false);
       }
     } else {
-      // ─── Log In Flow ────────────────────────────────────────────────
+      // --- Log In Flow ------------------------------------------------
       try {
         const signInResult = await signIn("credentials", {
           email: emailValue,

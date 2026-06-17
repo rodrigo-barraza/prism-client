@@ -20,7 +20,7 @@
 
 import * as THREE from "three";
 
-// ─── Types ──────────────────────────────────────────────────
+// --- Types --------------------------------------------------
 
 // Three.js v0.184+ ships its own types. Extract class instance types from the namespace.
 type Scene = InstanceType<typeof THREE.Scene>;
@@ -93,7 +93,7 @@ interface ThreeInstance {
   paused: boolean;
 }
 
-// ─── Constants ──────────────────────────────────────────────
+// --- Constants ----------------------------------------------
 
 const TONE_MAPPING_MAP = {
   None: THREE.NoToneMapping,

@@ -1,7 +1,7 @@
 import { TOOLS_SERVICE_URL } from "@/config";
 import type { JsonValue } from "../types/types";
 
-// ─── Response Interfaces ────────────────────────────────────
+// --- Response Interfaces ------------------------------------
 
 export interface ToolCallLogEntry {
   _id: string;
@@ -63,7 +63,7 @@ export interface FileReadResponse {
   truncated?: boolean;
 }
 
-// ─── Service ────────────────────────────────────────────────
+// --- Service ------------------------------------------------
 
 /**
  * ToolsApiService — client-side service for querying the

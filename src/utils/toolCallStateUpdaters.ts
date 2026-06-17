@@ -8,7 +8,7 @@
 
 import type { ToolCallEvent, ContentSegment } from "../types/types";
 
-// ─── Shared message shape (subset of ClientMessage) ─────────────
+// --- Shared message shape (subset of ClientMessage) -------------
 export interface ToolMessageSlice {
   role: string;
   content?: string;
@@ -18,7 +18,7 @@ export interface ToolMessageSlice {
   thinkingFragments?: string[];
 }
 
-// ─── Input for tool execution events (from SSE data.tool) ────────
+// --- Input for tool execution events (from SSE data.tool) --------
 export interface ToolExecutionInput {
   id?: string;
   name?: string;
@@ -28,7 +28,7 @@ export interface ToolExecutionInput {
   durationMs?: number;
 }
 
-// ─── Snapshot helpers passed from the streaming closure ──────────
+// --- Snapshot helpers passed from the streaming closure ----------
 export interface SegmentSnapshot {
   contentSegments: ContentSegment[];
   textFragments: string[];

@@ -24,7 +24,7 @@ import {
 } from "../../../components/FilterBarComponent";
 import RequestDetailsComponent from "../../../components/RequestDetailsComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
-import { formatNumber, formatLatencyMs, formatDateTime, formatFileSize, formatCost } from "@rodrigo-barraza/utilities-library";
+import { formatNumber, formatLatencyMilliseconds, formatDateTime, formatFileSize, formatCost } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import { getToolRequestsColumns, ToolCallRecord } from "./toolRequestsColumns";
 import styles from "./page.module.css";
@@ -255,7 +255,7 @@ export default function ToolRequestsPage() {
         items: [
           {
             label: "Latency",
-            value: tc.elapsedMs ? formatLatencyMs(tc.elapsedMs) : "—",
+            value: tc.elapsedMs ? formatLatencyMilliseconds(tc.elapsedMs) : "—",
           },
           {
             label: "Latency (raw)",

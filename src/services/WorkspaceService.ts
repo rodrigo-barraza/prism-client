@@ -3,7 +3,7 @@ import { getBaseHeaders } from "./serviceHeaders";
 
 const API_BASE = PRISM_SERVICE_URL;
 
-// ─── Response Interfaces ────────────────────────────────────
+// --- Response Interfaces ------------------------------------
 
 export interface WorkspaceItem {
   id: string;
@@ -61,7 +61,7 @@ export interface WorkspaceTreeResponse {
   truncated?: boolean;
 }
 
-// ─── Service ────────────────────────────────────────────────
+// --- Service ------------------------------------------------
 
 /**
  * WorkspaceService — fetches and manages configured workspace roots via Prism.

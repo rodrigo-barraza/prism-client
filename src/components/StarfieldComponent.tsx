@@ -10,7 +10,7 @@ import type { CSSProperties } from "react";
  * Sharp pinpoint stars, subtle twinkling, parallax offset.
  */
 
-// ── Type Definitions ──────────────────────────────────────────
+// -- Type Definitions ------------------------------------------
 
 interface StarfieldProps {
   className?: string;

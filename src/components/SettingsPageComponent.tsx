@@ -36,7 +36,7 @@ import {
   MemoryStick,
   Workflow,
 } from "lucide-react";
-import { FEEDBACK_STANDARD_MS } from "@rodrigo-barraza/utilities-library";
+import { FEEDBACK_STANDARD_MILLISECONDS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
 import WorkspaceService, { type WorkspaceValidateResponse } from "../services/WorkspaceService";
 import { useWorkspace } from "./WorkspaceContextComponent";
@@ -190,7 +190,7 @@ export default function SettingsPageComponent() {
         clearTimeout(savedTimerRef.current!);
         savedTimerRef.current = setTimeout(
           () => setSaved(false),
-          FEEDBACK_STANDARD_MS,
+          FEEDBACK_STANDARD_MILLISECONDS,
         );
       } catch (error: unknown) {
         console.error("Failed to save settings:", error);
@@ -1468,7 +1468,7 @@ export default function SettingsPageComponent() {
             </div>
           )}
 
-          {/* ── Workspace Setup Guide ─────────────────────────────── */}
+          {/* -- Workspace Setup Guide ------------------------------- */}
           <div className={styles['setup-guide']}>
             <div className={styles['setup-guide-header']}>
               <span className={styles['setup-guide-title']}>
@@ -1595,7 +1595,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("desktop-2");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >
@@ -1858,7 +1858,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("download-2");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >
@@ -1941,7 +1941,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("docker-1");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >
@@ -1972,7 +1972,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("docker-2");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >
@@ -2010,7 +2010,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("docker-3");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >
@@ -2050,7 +2050,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("docker-4");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >
@@ -2149,7 +2149,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("local-1");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >
@@ -2180,7 +2180,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("local-2");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >
@@ -2210,7 +2210,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("local-2b");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >
@@ -2238,7 +2238,7 @@ export default function SettingsPageComponent() {
                           setCopiedBlock("local-3");
                           setTimeout(
                             () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MS,
+                            FEEDBACK_STANDARD_MILLISECONDS,
                           );
                         }}
                       >

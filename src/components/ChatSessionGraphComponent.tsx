@@ -564,7 +564,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     return () => resizeObserver.disconnect();
   }, []);
 
-  // ── Collision physics ─────────────────────────────────────────
+  // -- Collision physics -----------------------------------------
   const nodesRef = useRef<GraphNode[]>([]);
   const draggingRef = useRef<{ id: string } | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -664,7 +664,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     if (draggedNode) startCollisionLoop(30);
   }, [draggedNode, startCollisionLoop]);
 
-  // ── Incremental rebuild ───────────────────────────────────────
+  // -- Incremental rebuild ---------------------------------------
   const incrementalGraphRebuild = useCallback((
     activeSession: AgentSession,
     updatedStats: SessionStats | null,
@@ -707,7 +707,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     });
   }, [dimensions]);
 
-  // ── Load session graph ────────────────────────────────────────
+  // -- Load session graph ----------------------------------------
   useEffect(() => {
     if (!sessionId) {
       setSession(null);
@@ -759,7 +759,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     return () => { isCancelled = true; };
   }, [sessionId, dimensions.width, dimensions.height]);
 
-  // ── SSE live updates ──────────────────────────────────────────
+  // -- SSE live updates ------------------------------------------
   useEffect(() => {
     if (!sessionId) return;
 
@@ -855,7 +855,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     };
   }, [sessionId, dimensions.width, dimensions.height, incrementalGraphRebuild, startCollisionLoop]);
 
-  // ── Screen ↔ SVG coordinate helper ───────────────────────────
+  // -- Screen ↔ SVG coordinate helper ---------------------------
   const screenToSvg = useCallback(
     (clientX: number, clientY: number) => {
       const rect = canvasWrapperRef.current?.getBoundingClientRect();
@@ -867,7 +867,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     [dimensions.width, dimensions.height, zoom, panOffset],
   );
 
-  // ── Canvas pan/zoom handlers ──────────────────────────────────
+  // -- Canvas pan/zoom handlers ----------------------------------
   const handleCanvasMouseDown = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
     if ((event.target as SVGElement).closest("[data-node-identifier]")) return;
     setIsPanning(true);
@@ -995,7 +995,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     return `${originX} ${originY} ${scaledWidth} ${scaledHeight}`;
   }, [canvasWidth, canvasHeight, zoom, panOffset]);
 
-  // ── Empty state when no sessionId ─────────────────────────────
+  // -- Empty state when no sessionId -----------------------------
   if (!sessionId) {
     return (
       <div className={styles['graph-embed-wrapper']}>
@@ -1303,7 +1303,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
   );
 }
 
-/* ── Local Detail Row ────────────────────────────────────────── */
+/* -- Local Detail Row ------------------------------------------ */
 
 function InlineDetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -1314,7 +1314,7 @@ function InlineDetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-/* ── Inline Collapsible Section ──────────────────────────────── */
+/* -- Inline Collapsible Section -------------------------------- */
 
 function InlineCollapsibleSectionHeader({
   label,
@@ -1343,7 +1343,7 @@ function InlineCollapsibleSectionHeader({
   );
 }
 
-/* ── Inline Request Payload Section ──────────────────────────── */
+/* -- Inline Request Payload Section ---------------------------- */
 
 interface RequestPayloadMessage {
   role?: string;

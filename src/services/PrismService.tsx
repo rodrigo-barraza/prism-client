@@ -1,5 +1,5 @@
 import { AGENT_IDS, EV_PRISM_SETTINGS_UPDATED } from "@/constants";
-import { SSE_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { SERVER_SENT_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
@@ -1152,10 +1152,10 @@ export default class PrismService {
             try {
               const data = JSON.parse(json);
               if (
-                data.type === SSE_EVENT_TYPES.TOOL_EXECUTION ||
-                data.type === SSE_EVENT_TYPES.TOOL_CALL ||
-                data.type === SSE_EVENT_TYPES.DONE ||
-                data.type === SSE_EVENT_TYPES.ERROR
+                data.type === SERVER_SENT_EVENT_TYPES.TOOL_EXECUTION ||
+                data.type === SERVER_SENT_EVENT_TYPES.TOOL_CALL ||
+                data.type === SERVER_SENT_EVENT_TYPES.DONE ||
+                data.type === SERVER_SENT_EVENT_TYPES.ERROR
               ) {
                 console.debug(
                   `[SSE dispatch] type=${data.type} status=${data.status || ""} tool=${data.tool?.name || data.name || ""} (${json.length}ch)`,
@@ -1222,40 +1222,40 @@ export default class PrismService {
     } = callbacks;
 
     switch (data.type) {
-      case SSE_EVENT_TYPES.CHUNK:
+      case SERVER_SENT_EVENT_TYPES.CHUNK:
         onChunk?.(
           data.content as string,
           data._sourceModel as string | undefined,
           data.outputCharacters as number | undefined,
         );
         break;
-      case SSE_EVENT_TYPES.THINKING:
+      case SERVER_SENT_EVENT_TYPES.THINKING:
         onThinking?.(
           data.content as string,
           data._sourceModel as string | undefined,
           data.outputCharacters as number | undefined,
         );
         break;
-      case SSE_EVENT_TYPES.IMAGE:
+      case SERVER_SENT_EVENT_TYPES.IMAGE:
         onImage?.(
           data.data as string,
           data.mimeType as string,
           data.minioRef as string | undefined,
         );
         break;
-      case SSE_EVENT_TYPES.AUDIO:
+      case SERVER_SENT_EVENT_TYPES.AUDIO:
         onAudio?.(data.data as string, data.mimeType as string);
         break;
-      case SSE_EVENT_TYPES.EXECUTABLE_CODE:
+      case SERVER_SENT_EVENT_TYPES.EXECUTABLE_CODE:
         onExecutableCode?.(data.code as string, data.language as string);
         break;
-      case SSE_EVENT_TYPES.CODE_EXECUTION_RESULT:
+      case SERVER_SENT_EVENT_TYPES.CODE_EXECUTION_RESULT:
         onCodeExecutionResult?.(data.output as string, data.outcome as string);
         break;
-      case SSE_EVENT_TYPES.WEB_SEARCH_RESULT:
+      case SERVER_SENT_EVENT_TYPES.WEB_SEARCH_RESULT:
         onWebSearchResult?.(data.results as WebSearchResult[]);
         break;
-      case SSE_EVENT_TYPES.TOOL_CALL:
+      case SERVER_SENT_EVENT_TYPES.TOOL_CALL:
         onToolCall?.({
           id: data.id as string,
           name: data.name as string,
@@ -1266,64 +1266,64 @@ export default class PrismService {
           _sourceModel: data._sourceModel as string | undefined,
         });
         break;
-      case SSE_EVENT_TYPES.TOOL_EXECUTION:
+      case SERVER_SENT_EVENT_TYPES.TOOL_EXECUTION:
         onToolExecution?.(data);
         break;
-      case SSE_EVENT_TYPES.TOOL_OUTPUT:
+      case SERVER_SENT_EVENT_TYPES.TOOL_OUTPUT:
         onToolOutput?.(data);
         break;
-      case SSE_EVENT_TYPES.APPROVAL_REQUIRED:
+      case SERVER_SENT_EVENT_TYPES.APPROVAL_REQUIRED:
         onApprovalRequired?.(data);
         break;
-      case SSE_EVENT_TYPES.PLAN_PROPOSAL:
+      case SERVER_SENT_EVENT_TYPES.PLAN_PROPOSAL:
         onPlanProposal?.(data);
         break;
       // Sub-agent events — forwarded from spawned sub-agents
-      case SSE_EVENT_TYPES.SUB_AGENT_TOOL_EXECUTION:
-      case SSE_EVENT_TYPES.WORKER_TOOL_EXECUTION:
+      case SERVER_SENT_EVENT_TYPES.SUB_AGENT_TOOL_EXECUTION:
+      case SERVER_SENT_EVENT_TYPES.WORKER_TOOL_EXECUTION:
         onWorkerToolExecution?.(data);
         break;
-      case SSE_EVENT_TYPES.SUB_AGENT_TOOL_OUTPUT:
-      case SSE_EVENT_TYPES.WORKER_TOOL_OUTPUT:
+      case SERVER_SENT_EVENT_TYPES.SUB_AGENT_TOOL_OUTPUT:
+      case SERVER_SENT_EVENT_TYPES.WORKER_TOOL_OUTPUT:
         onWorkerToolOutput?.(data);
         break;
-      case SSE_EVENT_TYPES.SUB_AGENT_STATUS:
-      case SSE_EVENT_TYPES.WORKER_STATUS:
+      case SERVER_SENT_EVENT_TYPES.SUB_AGENT_STATUS:
+      case SERVER_SENT_EVENT_TYPES.WORKER_STATUS:
         onWorkerStatus?.(data);
         break;
       // Prism-local agentic events
-      case SSE_EVENT_TYPES.USER_QUESTION:
+      case SERVER_SENT_EVENT_TYPES.USER_QUESTION:
         onUserQuestion?.(data);
         break;
-      case SSE_EVENT_TYPES.TODO_UPDATE:
+      case SERVER_SENT_EVENT_TYPES.TODO_UPDATE:
         onTodoUpdate?.(data);
         break;
-      case SSE_EVENT_TYPES.BRIEF_UPDATE:
+      case SERVER_SENT_EVENT_TYPES.BRIEF_UPDATE:
         onBriefUpdate?.(data);
         break;
       // Benchmark-specific events
-      case SSE_EVENT_TYPES.RUN_INFO:
+      case SERVER_SENT_EVENT_TYPES.RUN_INFO:
         onRunInfo?.(data);
         break;
-      case SSE_EVENT_TYPES.MODEL_START:
+      case SERVER_SENT_EVENT_TYPES.MODEL_START:
         onModelStart?.(data);
         break;
-      case SSE_EVENT_TYPES.MODEL_COMPLETE:
+      case SERVER_SENT_EVENT_TYPES.MODEL_COMPLETE:
         onModelComplete?.(data);
         break;
-      case SSE_EVENT_TYPES.RUN_COMPLETE:
+      case SERVER_SENT_EVENT_TYPES.RUN_COMPLETE:
         onRunComplete?.(data);
         break;
-      case SSE_EVENT_TYPES.USAGE_UPDATE:
+      case SERVER_SENT_EVENT_TYPES.USAGE_UPDATE:
         onUsageUpdate?.(data);
         break;
-      case SSE_EVENT_TYPES.STATUS:
+      case SERVER_SENT_EVENT_TYPES.STATUS:
         onStatus?.(data);
         break;
-      case SSE_EVENT_TYPES.DONE:
+      case SERVER_SENT_EVENT_TYPES.DONE:
         onDone?.(data);
         break;
-      case SSE_EVENT_TYPES.ERROR:
+      case SERVER_SENT_EVENT_TYPES.ERROR:
         onError?.(new Error(data.message as string));
         break;
       default:

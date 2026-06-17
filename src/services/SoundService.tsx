@@ -10,7 +10,7 @@
  * GainNode → ChannelMerger topology.
  */
 
-// ─── Types ──────────────────────────────────────────────────
+// --- Types --------------------------------------------------
 
 interface StereoOptions {
   event?: Event;
@@ -23,7 +23,7 @@ interface SpatialResult {
   right: number;
 }
 
-// ─── State ──────────────────────────────────────────────────
+// --- State --------------------------------------------------
 
 let context: AudioContext | null = null;
 

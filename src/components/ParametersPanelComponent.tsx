@@ -382,7 +382,7 @@ export default function ParametersPanelComponent({
   const isLmStudioProvider = currentProvider.startsWith("lm-studio");
   const isOllamaProvider = currentProvider.startsWith("ollama");
 
-  // ── Loaded model runtime config (LM Studio / Ollama) ──────────────
+  // -- Loaded model runtime config (LM Studio / Ollama) --------------
   const [loadedConfig, setLoadedConfig] = useState<LoadedModelConfig | null>(null);
   const [isLoadingConfig, setIsLoadingConfig] = useState(false);
 

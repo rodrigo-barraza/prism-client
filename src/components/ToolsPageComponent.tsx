@@ -23,7 +23,7 @@ import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import ToolsSidebarNavigationComponent from "./ToolsSidebarNavigationComponent";
 
-/* ── Types ─────────────────────────────────────────────────── */
+/* -- Types --------------------------------------------------- */
 
 interface ClientToolSchema extends ToolSchema {
   emoji?: string | string[];
@@ -57,7 +57,7 @@ interface ExtendedToolStats extends ToolUsageStat {
   totalTransferBytes?: number;
 }
 
-/* ── Helpers ───────────────────────────────────────────────── */
+/* -- Helpers ------------------------------------------------- */
 
 function buildToolAgentMap(agents: AgentMinimal[]) {
   const map: Record<string, { id: string; name: string }[]> = {};
@@ -80,7 +80,7 @@ function extractDomains(tools: ClientToolSchema[]): string[] {
   return [...domainSet].sort();
 }
 
-/* ── Main Component ────────────────────────────────────────── */
+/* -- Main Component ------------------------------------------ */
 
 export default function ToolsPageComponent() {
   const router = useRouter();
@@ -105,7 +105,7 @@ export default function ToolsPageComponent() {
 
   const toolNameFromUrl = searchParameters.get("name");
 
-  /* ── Deep-link: resolve ?name= once tools are loaded ──────── */
+  /* -- Deep-link: resolve ?name= once tools are loaded -------- */
   const hasResolvedDeepLink = useRef(false);
   useEffect(() => {
     if (hasResolvedDeepLink.current || !toolNameFromUrl || tools.length === 0) return;
@@ -118,7 +118,7 @@ export default function ToolsPageComponent() {
     hasResolvedDeepLink.current = true;
   }, [toolNameFromUrl, tools]);
 
-  /* ── Sync URL when selected tool changes ──────────────────── */
+  /* -- Sync URL when selected tool changes -------------------- */
   const handleToolSelect = useCallback(
     (tool: ClientToolSchema) => {
       setSelectedTool(tool);
@@ -139,7 +139,7 @@ export default function ToolsPageComponent() {
     });
   }, [router, pathname, searchParameters]);
 
-  /* ── Fetch tools ──────────────────────────────────────────── */
+  /* -- Fetch tools -------------------------------------------- */
   const fetchTools = useCallback(async () => {
     try {
       setLoading(true);
@@ -157,7 +157,7 @@ export default function ToolsPageComponent() {
     }
   }, []);
 
-  /* ── Fetch tool usage stats (non-blocking) ────────────────── */
+  /* -- Fetch tool usage stats (non-blocking) ------------------ */
   const fetchToolStats = useCallback(async () => {
     try {
       const [prismStatistics, toolCallStatistics] = await Promise.all([
@@ -205,7 +205,7 @@ export default function ToolsPageComponent() {
     fetchToolStats();
   }, [fetchTools, fetchToolStats]);
 
-  /* ── Refresh (re-fetch from tools-api) ────────────────────── */
+  /* -- Refresh (re-fetch from tools-api) ---------------------- */
   const handleRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
@@ -218,7 +218,7 @@ export default function ToolsPageComponent() {
     }
   }, [fetchTools]);
 
-  /* ── Admin header controls & badge ────────────────────────── */
+  /* -- Admin header controls & badge -------------------------- */
   const { setControls, setTitleBadge } = adminHeader;
   useEffect(() => {
     if (!isAdministratorMode) return;
@@ -245,11 +245,11 @@ export default function ToolsPageComponent() {
     setTitleBadge(tools.length);
   }, [isAdministratorMode, setTitleBadge, tools.length]);
 
-  /* ── Derived data ─────────────────────────────────────────── */
+  /* -- Derived data ------------------------------------------- */
   const allDomains = useMemo(() => extractDomains(tools), [tools]);
   const toolAgentMap = useMemo(() => buildToolAgentMap(agents), [agents]);
 
-  /* ── Render ───────────────────────────────────────────────── */
+  /* -- Render ------------------------------------------------- */
 
   if (loading) {
     return (

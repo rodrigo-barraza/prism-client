@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  FEEDBACK_STANDARD_MS,
+  FEEDBACK_STANDARD_MILLISECONDS,
   POLL_LAZY,
 } from "@rodrigo-barraza/utilities-library";
 import IrisService from "../../../services/IrisService";
@@ -68,7 +68,7 @@ export default function AdminUsersPage() {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         loadUsers();
-      }, FEEDBACK_STANDARD_MS);
+      }, FEEDBACK_STANDARD_MILLISECONDS);
     };
 
     const eventSource = IrisService.subscribeCollectionChanges({

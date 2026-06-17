@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import {
   POLL_LAZY,
-  FEEDBACK_STANDARD_MS,
+  FEEDBACK_STANDARD_MILLISECONDS,
 } from "@rodrigo-barraza/utilities-library";
 import IrisService, { type IrisRequestEntry } from "../../services/IrisService";
 import PrismService from "../../services/PrismService";
@@ -227,7 +227,7 @@ export default function DashboardPage() {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         loadDashboard();
-      }, FEEDBACK_STANDARD_MS);
+      }, FEEDBACK_STANDARD_MILLISECONDS);
     };
 
     const eventSource = IrisService.subscribeCollectionChanges({

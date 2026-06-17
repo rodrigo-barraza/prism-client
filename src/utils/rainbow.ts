@@ -1,8 +1,8 @@
-// ─────────────────────────────────────────────────────────────
+// -------------------------------------------------------------
 // Rainbow — Shared pixel-level color interpolation for the
 // 8-bit dithered rainbow effect used in AnimatedFaviconComponent
 // and RainbowCanvasComponent.
-// ─────────────────────────────────────────────────────────────
+// -------------------------------------------------------------
 
 import {
   lerpRgb,

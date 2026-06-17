@@ -26,7 +26,7 @@ function getAdminHeaders(): Record<string, string> {
   return { ...getBaseHeaders(), "x-username": "admin" };
 }
 
-// ─── Response Interfaces ────────────────────────────────────
+// --- Response Interfaces ------------------------------------
 
 export interface IrisRequestEntry {
   _id: string;
@@ -140,7 +140,7 @@ export interface RateLimitData {
   note?: string;
 }
 
-// ─── Service ────────────────────────────────────────────────
+// --- Service ------------------------------------------------
 
 /**
  * Query parameter values — callers may pass numbers/booleans alongside strings.

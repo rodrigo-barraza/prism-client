@@ -11,7 +11,7 @@ import { PRISM_SERVICE_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { getErrorMessage } from "../utils/errorMessage";
 
-// ─── Types ───────────────────────────────────────────────────
+// --- Types ---------------------------------------------------
 
 interface WorkflowOutputs {
   text?: string;
@@ -56,11 +56,11 @@ interface WorkflowRunEvent {
   totalNodes?: number;
 }
 
-// ─── Internal abort handle ───────────────────────────────────
+// --- Internal abort handle -----------------------------------
 
 let activeAbortController: AbortController | null = null;
 
-// ─── SSE Executor ────────────────────────────────────────────
+// --- SSE Executor --------------------------------------------
 
 export async function executeWorkflow(
   workflowId: string,

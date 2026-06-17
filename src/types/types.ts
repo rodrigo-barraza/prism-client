@@ -6,7 +6,7 @@
 // PrismService → hooks → components → utils — eliminating `as any`.
 // ============================================================
 
-// ─── Identifiers ────────────────────────────────────────────
+// --- Identifiers --------------------------------------------
 
 /** MongoDB ObjectId string or UUID */
 export type ObjectId = string;
@@ -39,7 +39,7 @@ export interface ModelOptionWithProvider extends ModelOption {
 }
 
 
-// ─── Config / Models ────────────────────────────────────────
+// --- Config / Models ----------------------------------------
 
 export interface ArenaScores {
   text?: number;
@@ -134,7 +134,7 @@ export interface LocalProviderInfo {
   nickname?: string;
 }
 
-// ─── Parameter Descriptors ──────────────────────────────────
+// --- Parameter Descriptors ----------------------------------
 
 export interface ParameterDescriptor {
   key: string;
@@ -179,7 +179,7 @@ export interface PrismConfig {
   parameterDescriptors?: ParameterDescriptor[];
 }
 
-// ─── Background / Incremental Usage ─────────────────────────
+// --- Background / Incremental Usage -------------------------
 
 export interface BackgroundUsage {
   inputTokens?: number;
@@ -187,7 +187,7 @@ export interface BackgroundUsage {
   cost?: number;
 }
 
-// ─── Generation Settings (server snapshot) ──────────────────
+// --- Generation Settings (server snapshot) ------------------
 
 export interface GenerationSettings {
   temperature?: number;
@@ -217,7 +217,7 @@ export interface GenerationSettings {
   logprobs?: number;
 }
 
-// ─── Worker Generation Progress ─────────────────────────────
+// --- Worker Generation Progress -----------------------------
 
 export interface WorkerGenerationProgress {
   outputTokens?: number;
@@ -227,7 +227,7 @@ export interface WorkerGenerationProgress {
   toolNames?: Record<string, number>;
 }
 
-// ─── Session / Conversation Stats ───────────────────────────
+// --- Session / Conversation Stats ---------------------------
 
 export interface SessionStats {
   totalCost?: number;
@@ -250,7 +250,7 @@ export interface SessionStats {
   providers?: string[];
 }
 
-// ─── Token Usage ────────────────────────────────────────────
+// --- Token Usage --------------------------------------------
 
 export interface TokenUsage {
   inputTokens?: number;
@@ -261,7 +261,7 @@ export interface TokenUsage {
   requests?: number;
 }
 
-// ─── Conversations ──────────────────────────────────────────
+// --- Conversations ------------------------------------------
 
 export interface ConversationMeta {
   title?: string;
@@ -288,7 +288,7 @@ export interface Message {
   timestamp?: string;
   _id?: ObjectId;
 
-  // ─── Server-enriched fields ───────────────────────────────
+  // --- Server-enriched fields -------------------------------
   /** Provider-reported usage stats (set on completion) */
   usage?: TokenUsage;
   estimatedCost?: number;
@@ -297,13 +297,13 @@ export interface Message {
   /** When this assistant message completed */
   completedAt?: string;
 
-  // ─── Modality fields ──────────────────────────────────────
+  // --- Modality fields --------------------------------------
   audio?: string | string[];
   image?: string;
   documents?: Array<{ name?: string; data?: string; mimeType?: string }>;
   liveTranscription?: boolean;
 
-  // ─── Live streaming metadata (client-side, prefixed with _) ─
+  // --- Live streaming metadata (client-side, prefixed with _) -
   /** Intermediate usage from per-iteration backend events */
   _intermediateUsage?: TokenUsage;
   /** Backend-computed estimatedCost from per-iteration usage_update events */
@@ -405,7 +405,7 @@ export interface ConversationListResponse {
   hasMore: boolean;
 }
 
-// ─── Agent Sessions ─────────────────────────────────────────
+// --- Agent Sessions -----------------------------------------
 
 export interface AgentSession {
   _id: ObjectId;
@@ -432,7 +432,7 @@ export interface AgentSessionListResponse {
   hasMore: boolean;
 }
 
-// ─── SSE Stream Events ──────────────────────────────────────
+// --- SSE Stream Events --------------------------------------
 
 export interface SSEChunkEvent {
   type: "chunk";
@@ -546,7 +546,7 @@ export type SSEEvent =
   | SSEDoneEvent
   | SSEErrorEvent;
 
-// ─── SSE Callback Interfaces ────────────────────────────────
+// --- SSE Callback Interfaces --------------------------------
 
 export interface TransformedSSEData {
   type: string;
@@ -716,7 +716,7 @@ export interface ContentSegment {
   toolIds?: string[];
 }
 
-// ─── Tool Calls ─────────────────────────────────────────────
+// --- Tool Calls ---------------------------------------------
 
 export interface ToolCallEvent {
   id: string;
@@ -731,7 +731,7 @@ export interface ToolCallEvent {
   durationMs?: number;
 }
 
-// ─── Web Search ─────────────────────────────────────────────
+// --- Web Search ---------------------------------------------
 
 export interface WebSearchResult {
   title: string;
@@ -740,7 +740,7 @@ export interface WebSearchResult {
   displayUrl?: string;
 }
 
-// ─── Files / Attachments ────────────────────────────────────
+// --- Files / Attachments ------------------------------------
 
 export interface FileAttachment {
   name: string;
@@ -751,7 +751,7 @@ export interface FileAttachment {
 }
 
 
-// ─── Custom Agents ──────────────────────────────────────────
+// --- Custom Agents ------------------------------------------
 
 /**
  * Serialized policy format — stored in MongoDB and sent over the wire.
@@ -792,7 +792,7 @@ export interface CustomAgent {
   updatedAt?: string;
 }
 
-// ─── Agent Personas (from /config/agents) ───────────────────
+// --- Agent Personas (from /config/agents) -------------------
 
 export interface AgentPersona {
   id: string;
@@ -813,7 +813,7 @@ export interface AgentPersona {
   usesCodingGuidelines: boolean;
 }
 
-// ─── Skills ─────────────────────────────────────────────────
+// --- Skills -------------------------------------------------
 
 export interface Skill {
   _id?: ObjectId;
@@ -830,7 +830,7 @@ export interface Skill {
   updatedAt?: string;
 }
 
-// ─── Rules (Per-Agent Slash Commands) ───────────────────────
+// --- Rules (Per-Agent Slash Commands) -----------------------
 
 export interface Rule {
   _id?: ObjectId;
@@ -845,7 +845,7 @@ export interface Rule {
   updatedAt?: string;
 }
 
-// ─── Agent Memories ─────────────────────────────────────────
+// --- Agent Memories -----------------------------------------
 
 export interface AgentMemory {
   _id: ObjectId;
@@ -894,7 +894,7 @@ export interface ConsolidateResult {
 
 export type MemoryType = "user" | "feedback" | "project" | "reference";
 
-// ─── Settings ───────────────────────────────────────────────
+// --- Settings -----------------------------------------------
 
 export interface MemoryConfig {
   extractionProvider?: string;
@@ -979,7 +979,7 @@ export interface SomaticConfig {
   emotionModel?: string;
 }
 
-// ─── MCP Servers ────────────────────────────────────────────
+// --- MCP Servers --------------------------------------------
 
 export interface MCPServer {
   _id?: ObjectId;
@@ -1001,7 +1001,7 @@ export interface MCPServer {
   updatedAt?: string;
 }
 
-// ─── Coordinator Workers ────────────────────────────────────
+// --- Coordinator Workers ------------------------------------
 
 export interface CoordinatorWorker {
   id: string;
@@ -1024,7 +1024,7 @@ export interface CoordinatorWorker {
   files?: string[];
 }
 
-// ─── Favorites ──────────────────────────────────────────────
+// --- Favorites ----------------------------------------------
 
 export interface Favorite {
   _id?: ObjectId;
@@ -1034,7 +1034,7 @@ export interface Favorite {
   createdAt?: string;
 }
 
-// ─── Tool Schemas ───────────────────────────────────────────
+// --- Tool Schemas -------------------------------------------
 
 /** JSON Schema parameter definition */
 export type JsonSchemaObject = Record<string, unknown>;
@@ -1056,7 +1056,7 @@ export interface ToolSchema {
   };
 }
 
-// ─── Benchmark Presets ──────────────────────────────────────
+// --- Benchmark Presets --------------------------------------
 
 export interface BenchmarkPreset {
   name: string;
@@ -1066,7 +1066,7 @@ export interface BenchmarkPreset {
   assertionOperator: string;
 }
 
-// ─── Benchmarks ─────────────────────────────────────────────
+// --- Benchmarks ---------------------------------------------
 
 export interface BenchmarkPrompt {
   role: string;
@@ -1201,7 +1201,7 @@ export interface BenchmarkModelStats {
   totalBenchmarks: number;
 }
 
-// ─── VRAM Benchmarks ────────────────────────────────────────
+// --- VRAM Benchmarks ----------------------------------------
 
 export interface VramBenchmarkGpuTelemetry {
   name?: string;
@@ -1266,7 +1266,7 @@ export interface VramBenchmarkMachine {
   lastRun: string;
 }
 
-// ─── Workflows ──────────────────────────────────────────────
+// --- Workflows ----------------------------------------------
 
 export interface WorkflowNodeConfig {
   systemPrompt?: string;
@@ -1361,7 +1361,7 @@ export interface Workflow {
   userName?: string;
 }
 
-// ─── Synthesis ──────────────────────────────────────────────
+// --- Synthesis ----------------------------------------------
 
 export interface SynthesisRun {
   _id: ObjectId;
@@ -1391,7 +1391,7 @@ export interface SynthesisRun {
   createdAt: string;
 }
 
-// ─── Media ──────────────────────────────────────────────────
+// --- Media --------------------------------------------------
 
 export interface MediaItem {
   _id: ObjectId;
@@ -1418,7 +1418,7 @@ export interface MediaListResponse {
   usernames?: string[];
 }
 
-// ─── Text Content ───────────────────────────────────────────
+// --- Text Content -------------------------------------------
 
 export interface TextContentItem {
   _id: ObjectId;
@@ -1438,7 +1438,7 @@ export interface TextListResponse {
   models: string[];
 }
 
-// ─── LM Studio ──────────────────────────────────────────────
+// --- LM Studio ----------------------------------------------
 
 export interface LmStudioModel {
   id: string;
@@ -1459,7 +1459,7 @@ export interface LmStudioVramEstimate {
   totalLayers: number;
 }
 
-// ─── Stats ──────────────────────────────────────────────────
+// --- Stats --------------------------------------------------
 
 export interface ModelUsageStat {
   model: string;
@@ -1477,7 +1477,7 @@ export interface ToolUsageStat {
   totalCost?: number;
 }
 
-// ─── Chat Payloads ──────────────────────────────────────────
+// --- Chat Payloads ------------------------------------------
 
 export interface ChatGenerationResult {
   text?: string;
@@ -1527,7 +1527,7 @@ export interface ImageGenerationPayload {
   conversationMeta?: ConversationMeta;
 }
 
-// ─── Audio ──────────────────────────────────────────────────
+// --- Audio --------------------------------------------------
 
 export interface TTSPayload {
   text: string;
@@ -1558,7 +1558,7 @@ export interface TranscriptionResponse {
   totalTime?: number;
 }
 
-// ─── Embeddings ─────────────────────────────────────────────
+// --- Embeddings ---------------------------------------------
 
 export interface EmbeddingPayload {
   input?: string | string[];
@@ -1576,7 +1576,7 @@ export interface EmbeddingResponse {
   model: string;
 }
 
-// ─── Harnesses ──────────────────────────────────────────────
+// --- Harnesses ----------------------------------------------
 
 export interface AgenticHarness {
   id: string;
@@ -1584,7 +1584,7 @@ export interface AgenticHarness {
   description: string;
 }
 
-// ─── Approval ───────────────────────────────────────────────
+// --- Approval -----------------------------------------------
 
 export interface ApprovalResponse {
   ok: boolean;
@@ -1596,7 +1596,7 @@ export interface UserQuestionAnswer {
   annotations?: string;
 }
 
-// ─── Iris Stats ──────────────────────────────────────────────
+// --- Iris Stats ----------------------------------------------
 
 export interface IrisDashboardStats {
   totalRequests: number;

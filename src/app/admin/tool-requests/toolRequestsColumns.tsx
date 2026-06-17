@@ -5,7 +5,7 @@ import {
   statusColumn,
   emptyDash,
 } from "../../../utils/tableColumns";
-import { formatLatencyMs, formatFileSize } from "@rodrigo-barraza/utilities-library";
+import { formatLatencyMilliseconds, formatFileSize } from "@rodrigo-barraza/utilities-library";
 import type { JsonValue } from "../../../types/types";
 export interface ToolCallRecord {
   _id?: string;
@@ -102,7 +102,7 @@ export const getToolRequestsColumns = ({
     render: (record: ToolCallRecord) => {
       if (!record.elapsedMs || record.elapsedMs <= 0) return emptyDash();
       // Convert ms to human-readable latency
-      return formatLatencyMs(record.elapsedMs);
+      return formatLatencyMilliseconds(record.elapsedMs);
     },
   },
   {
