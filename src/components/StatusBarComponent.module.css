@@ -17,7 +17,7 @@
     box-shadow 0.3s ease;
 }
 
-/* ── Animated gradient shimmer (replaces canvas) ── */
+/* ── Animated gradient shimmer (on decay bar element) ── */
 
 .status-bar::before {
   content: "";
@@ -43,13 +43,13 @@
 }
 
 .status-bar-active::before {
-  opacity: 1;
+  opacity: 0.25;
   animation: status-bar-gradient-flow 6s linear infinite;
 }
 
 /* Paused gradient for awaiting phase — visible but static */
 .status-bar-awaiting::before {
-  opacity: 0.5;
+  opacity: 0.15;
   animation: none;
   filter: grayscale(1);
 }
@@ -61,6 +61,47 @@
   100% {
     translate: -66.67% 0;
   }
+}
+
+/* ── Exponential decay fill bar ──
+   Shrinks from 100% → 0% via scaleX on each phase change.
+   Contains the same flowing gradient but at full opacity,
+   giving a "drain" visual as the bar narrows. */
+
+.status-bar-decay-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  transform-origin: left center;
+  transform: scaleX(0);
+  will-change: transform;
+  pointer-events: none;
+  z-index: 1;
+
+  background: linear-gradient(
+    90deg,
+    var(--gradient-stop-1, oklch(0.55 0.04 257)) 0%,
+    var(--gradient-stop-2, oklch(0.60 0.05 257)) 16%,
+    var(--gradient-stop-3, oklch(0.55 0.04 257)) 33%,
+    var(--gradient-stop-4, oklch(0.60 0.05 257)) 50%,
+    var(--gradient-stop-5, oklch(0.55 0.04 257)) 66%,
+    var(--gradient-stop-6, oklch(0.60 0.05 257)) 83%,
+    var(--gradient-stop-7, oklch(0.55 0.04 257)) 100%
+  );
+  background-size: 300% 100%;
+  animation: status-bar-gradient-flow 6s linear infinite;
+}
+
+/* Hide decay bar when inactive */
+.status-bar:not(.status-bar-active) .status-bar-decay-fill {
+  opacity: 0;
+}
+
+/* Awaiting phase: desaturated, frozen */
+.status-bar-awaiting .status-bar-decay-fill {
+  animation: none;
+  filter: grayscale(1);
+  opacity: 0.5;
 }
 
 /* Worker variant: never collapse — maintain full height + visible overlay when idle */

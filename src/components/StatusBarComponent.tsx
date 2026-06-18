@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./StatusBarComponent.module.css";
 
 // -- Shared phase vocabulary ------------------------------------------
@@ -84,6 +84,13 @@ const PHASE_GRADIENT_STOPS: Record<string, string[]> = {
 const SYNTHETIC_EXPECTED_MS = 20_000;
 const SYNTHETIC_TICK_MS = 200;
 
+// -- Exponential decay bar --------------------------------------------
+// The gradient bar decays from 100% → 0% on each phase change using an
+// exponential curve: progress = e^(-k * t). The half-life controls how
+// fast the initial drop is; the tail becomes asymptotically slow.
+const DECAY_HALF_LIFE_MS = 3_000;
+const DECAY_RATE = Math.LN2 / DECAY_HALF_LIFE_MS;
+
 /**
  * Unified animated status bar shared by the main orchestrator and worker agents.
  *
@@ -143,6 +150,69 @@ export default function StatusBarComponent({
   const isWorker = variant === "worker";
   const [syntheticProgress, setSyntheticProgress] = useState(0);
   const syntheticStartRef = useRef<number | null>(null);
+
+  // -- Exponential decay bar state ------------------------------------
+  const decayBarRef = useRef<HTMLDivElement | null>(null);
+  const previousPhaseRef = useRef<string | null | undefined>(null);
+  const decayStartRef = useRef<number | null>(null);
+  const decayAnimationFrameRef = useRef<number | null>(null);
+
+  const runDecayLoop = useCallback(() => {
+    const startTimestamp = decayStartRef.current;
+    const barElement = decayBarRef.current;
+    if (startTimestamp === null || !barElement) return;
+
+    const elapsed = performance.now() - startTimestamp;
+    const decayValue = Math.exp(-DECAY_RATE * elapsed);
+
+    barElement.style.transform = `scaleX(${decayValue})`;
+
+    if (decayValue > 0.001) {
+      decayAnimationFrameRef.current = requestAnimationFrame(runDecayLoop);
+    } else {
+      barElement.style.transform = "scaleX(0)";
+    }
+  }, []);
+
+  // Reset decay on phase change
+  useEffect(() => {
+    if (!active) {
+      // Inactive: cancel animation, reset
+      if (decayAnimationFrameRef.current !== null) {
+        cancelAnimationFrame(decayAnimationFrameRef.current);
+        decayAnimationFrameRef.current = null;
+      }
+      decayStartRef.current = null;
+      previousPhaseRef.current = null;
+      if (decayBarRef.current) {
+        decayBarRef.current.style.transform = "scaleX(0)";
+      }
+      return;
+    }
+
+    if (phase !== previousPhaseRef.current) {
+      previousPhaseRef.current = phase;
+
+      // Cancel any running decay
+      if (decayAnimationFrameRef.current !== null) {
+        cancelAnimationFrame(decayAnimationFrameRef.current);
+      }
+
+      // Reset to full and start new decay
+      decayStartRef.current = performance.now();
+      if (decayBarRef.current) {
+        decayBarRef.current.style.transform = "scaleX(1)";
+      }
+      decayAnimationFrameRef.current = requestAnimationFrame(runDecayLoop);
+    }
+
+    return () => {
+      if (decayAnimationFrameRef.current !== null) {
+        cancelAnimationFrame(decayAnimationFrameRef.current);
+        decayAnimationFrameRef.current = null;
+      }
+    };
+  }, [active, phase, runDecayLoop]);
 
   const isProgressPhase = phase === "processing" || phase === "loading";
   const backendStuck = isProgressPhase && progress != null && progress === 0;
@@ -224,6 +294,12 @@ export default function StatusBarComponent({
       className={`status-bar-component ${styles['status-bar']}${isWorker ? ` ${styles['status-bar-worker']}` : ""}${active ? ` ${styles['status-bar-active']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
       style={gradientCustomProperties}
     >
+      {/* Exponential decay gradient bar — resets to 100% on each phase change */}
+      <div
+        ref={decayBarRef}
+        className={styles['status-bar-decay-fill']}
+        style={{ transform: active ? undefined : "scaleX(0)" }}
+      />
       {/* Progress fill bar — slides right as prompt processing advances */}
       {active && hasEffectiveProgress && (
         <div
