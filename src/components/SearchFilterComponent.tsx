@@ -132,7 +132,7 @@ export default function SearchFilterComponent({
           <div className={styles['menu']}>
             <button
               type="button"
-              className={`${styles['menu-item']} ${!value ? styles['menu-item-active'] : ""}`}
+              className={`${styles['menu-item']} ${!value ? styles['menu-item-is-active-state'] : ""}`}
               onClick={() => handleSelect("")}
             >
               <span>{allLabel}</span>
@@ -145,7 +145,7 @@ export default function SearchFilterComponent({
               <button
                 key={opt}
                 type="button"
-                className={`${styles['menu-item']} ${opt === value ? styles['menu-item-active'] : ""}`}
+                className={`${styles['menu-item']} ${opt === value ? styles['menu-item-is-active-state'] : ""}`}
                 onClick={() => handleSelect(opt)}
               >
                 <span>{opt}</span>

@@ -13,7 +13,7 @@
   border-radius: var(--border-radius-md);
 }
 
-.filter-row {
+.filter-layout-row {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -37,7 +37,7 @@
 }
 
 @media (max-width: 1024px) {
-  .filter-row {
+  .filter-layout-row {
     flex-direction: column;
     align-items: stretch;
 
@@ -85,7 +85,7 @@
   font-weight: 500;
   color: var(--text-tertiary);
   letter-spacing: 0.01em;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   user-select: none;
 }
 
@@ -98,11 +98,11 @@
 }
 
 /* Shared conversation row highlighting */
-.shared-conversation-row td {
+.shared-conversation-layout-row td {
   background: oklch(58.5% 0.2041 277.1 / 0.06) !important;
 }
 
-.shared-conversation-row td:first-child {
+.shared-conversation-layout-row td:first-child {
   background: oklch(58.5% 0.2041 277.1 / 0.1) !important;
   box-shadow: inset 2px 0 0 var(--accent-primary) !important;
 }
@@ -110,7 +110,7 @@
 
 /* ── "Just now" row highlight ──────────────────────── */
 
-.new-row td {
+.new-layout-row td {
   background: color-mix(
     in srgb,
     var(--accent-primary) 8%,
@@ -118,16 +118,16 @@
   ) !important;
 }
 
-.new-row td:first-child {
+.new-layout-row td:first-child {
   box-shadow: inset 3px 0 0 var(--accent-primary) !important;
 }
 
 /* Fade-out when row ages past "just now" */
-.new-row-fade-out td {
+.new-layout-row-fade-out td {
   animation: new-row-fade 1s ease-out forwards;
 }
 
-.new-row-fade-out td:first-child {
+.new-layout-row-fade-out td:first-child {
   animation:
     new-row-fade 1s ease-out forwards,
     new-row-border-fade 1s ease-out forwards;
@@ -135,7 +135,7 @@
 
 @keyframes new-row-fade {
   0% {
-    background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+    background: color-mix(in oklch, var(--accent-primary) 8%, transparent);
   }
   100% {
     background: transparent;

@@ -82,7 +82,7 @@ export default function WorkspaceSelectorComponent({
           {workspaces.map((workspace) => (
             <button
               key={workspace.id}
-              className={`${styles['menu-item']} ${currentWorkspace?.path === workspace.path ? styles['menu-item-active'] : ""}`}
+              className={`${styles['menu-item']} ${currentWorkspace?.path === workspace.path ? styles['menu-item-is-active-state'] : ""}`}
               onClick={() => {
                 setCurrentWorkspace(workspace);
                 setIsOpen(false);

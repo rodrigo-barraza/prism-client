@@ -271,7 +271,7 @@ export default function BenchmarkDashboardComponent({
   const getRowClassName = useCallback(
     (statEntry: BenchmarkModelRow) => {
       if (selectedModel && statId(statEntry) === statId(selectedModel)) {
-        return styles['selected-row'];
+        return styles['selected-layout-row'];
       }
       return "";
     },
@@ -364,7 +364,7 @@ export default function BenchmarkDashboardComponent({
     >
       <div className={styles['container']}>
         {loading ? (
-          <div className={styles['loading-state']}>
+          <div className={styles['is-loading-state']}>
             <PanelLoadingSpinner size="large" />
           </div>
         ) : !stats || stats.models.length === 0 ? (
@@ -440,7 +440,7 @@ export default function BenchmarkDashboardComponent({
                 return (
                   <button
                     key={tab.key}
-                    className={`${styles['segmented-button']} ${isActive ? styles['segmented-btn-active'] : ""}`}
+                    className={`${styles['segmented-button']} ${isActive ? styles['segmented-button-element-is-active-state'] : ""}`}
                     onClick={() => setActiveTab(tab.key)}
                   >
                     {Icon && <Icon size={13} />}

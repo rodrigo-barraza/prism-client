@@ -392,7 +392,7 @@ export default function CustomAgentsPanel({
 
         <div className={styles['form']}>
           {/* Name + Project */}
-          <div className={styles['form-row']}>
+          <div className={styles['form-layout-row']}>
             <div className={styles['form-group']} style={{ flex: 2 }}>
               <label>Agent Name</label>
               <InputComponent
@@ -658,7 +658,7 @@ export default function CustomAgentsPanel({
           {/* Toggles */}
           <div className={styles['form-group']}>
             <label>Context Injection</label>
-            <div className={styles['toggle-row']}>
+            <div className={styles['toggle-layout-row']}>
               <div className={styles['toggle-label']}>
                 <span className={styles['toggle-title']}>
                   <FolderTree
@@ -681,7 +681,7 @@ export default function CustomAgentsPanel({
                 }
               />
             </div>
-            <div className={styles['toggle-row']}>
+            <div className={styles['toggle-layout-row']}>
               <div className={styles['toggle-label']}>
                 <span className={styles['toggle-title']}>
                   <BookOpen
@@ -737,7 +737,7 @@ export default function CustomAgentsPanel({
 
             {(editingAgent.policies || []).map(
               (policy: SerializedPolicy, index: number) => (
-                <div key={index} className={styles['policy-row']}>
+                <div key={index} className={styles['policy-layout-row']}>
                   <SelectComponent
                     value={policy.decision}
                     options={[
@@ -955,7 +955,7 @@ export default function CustomAgentsPanel({
                         <Edit3 size={14} />
                       </button>
                       <button
-                        className={`${styles['action-button']} ${styles['action-btn-danger']}`}
+                        className={`${styles['action-button']} ${styles['action-button-element-danger']}`}
                         onClick={() => handleDelete(String(agent._id))}
                         title="Delete"
                       >

@@ -339,7 +339,7 @@ export default function DistributionChartComponent({
   return (
     <div className={`distribution-chart-component ${styles['container']}`}>
       {/* -- Metric selector + title -- */}
-      <div className={styles['metric-row']}>
+      <div className={styles['metric-layout-row']}>
         {title && <h2 className={styles['title']}>{title}</h2>}
         <SelectComponent
           value={activeMetric}
@@ -420,7 +420,7 @@ export default function DistributionChartComponent({
                 return (
                   <div
                     key={name}
-                    className={`${styles['legend-row']} ${activeIndex === i ? styles['legend-row-active'] : ""}`}
+                    className={`${styles['legend-layout-row']} ${activeIndex === i ? styles['legend-layout-row-is-active-state'] : ""}`}
                     onMouseEnter={() => setActiveIndex(i)}
                     onMouseLeave={() => setActiveIndex(null)}
                   >

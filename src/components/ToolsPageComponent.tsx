@@ -263,7 +263,7 @@ export default function ToolsPageComponent() {
         <div className={styles['container']}>
           <div className={styles['is-loading-state']}>
             <PanelLoadingSpinner size="large" />
-            <span className={styles['loading-text']}>Loading tools from Prism…</span>
+            <span className={styles['is-loading-state-text']}>Loading tools from Prism…</span>
           </div>
         </div>
       </ThreePanelLayout>

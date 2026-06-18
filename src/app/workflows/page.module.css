@@ -57,7 +57,7 @@
   }
 }
 
-.run-btn-stop {
+.run-button-element-stop {
   background: linear-gradient(135deg, var(--color-rose), oklch(58.6% 0.222 17.6));
 
   &:hover {
@@ -113,7 +113,7 @@
   border: 1px solid var(--calculated-border-subtle);
   border-radius: var(--border-radius-sm);
   transition: all var(--transition-fast);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 
   &:hover {
     border-color: var(--accent-primary);
@@ -225,7 +225,7 @@
   height: 100%;
 }
 
-.loading-overlay {
+.is-loading-state-overlay {
   position: absolute;
   inset: 0;
   z-index: 20;

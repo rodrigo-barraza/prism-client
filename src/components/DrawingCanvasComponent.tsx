@@ -370,7 +370,7 @@ export default function DrawingCanvas({
             return (
               <button
                 key={toolOption.id}
-                className={`${styles['tool-button']} ${tool === toolOption.id ? styles['tool-btn-active'] : ""}`}
+                className={`${styles['tool-button']} ${tool === toolOption.id ? styles['tool-button-element-is-active-state'] : ""}`}
                 onClick={() => setTool(toolOption.id)}
                 title={toolOption.label}
               >
@@ -386,7 +386,7 @@ export default function DrawingCanvas({
           {COLORS.map((colorOption) => (
             <button
               key={colorOption.value}
-              className={`${styles['swatch']} ${color === colorOption.value && tool !== "eraser" ? styles['swatch-active'] : ""}`}
+              className={`${styles['swatch']} ${color === colorOption.value && tool !== "eraser" ? styles['swatch-is-active-state'] : ""}`}
               style={{
                 background: colorOption.value,
                 border: colorOption.value === "#000000" ? "2px solid #555" : undefined,
@@ -406,7 +406,7 @@ export default function DrawingCanvas({
           {SIZES.map((sizeOption, i) => (
             <button
               key={sizeOption.label}
-              className={`${styles['size-button']} ${sizeIndex === i ? styles['size-btn-active'] : ""}`}
+              className={`${styles['size-button']} ${sizeIndex === i ? styles['size-button-element-is-active-state'] : ""}`}
               onClick={() => setSizeIndex(i)}
               title={sizeOption.label}
             >

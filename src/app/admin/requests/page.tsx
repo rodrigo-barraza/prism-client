@@ -361,7 +361,7 @@ export default function RequestsPage() {
     <div className={styles['page']}>
       {/* Filters */}
       <div className={styles['filter-bar']}>
-        <div className={styles['filter-row']}>
+        <div className={styles['filter-layout-row']}>
           <SelectComponent
             multiple
             label="Provider"
@@ -383,7 +383,7 @@ export default function RequestsPage() {
             />
           </div>
         </div>
-        <div className={styles['filter-row']}>
+        <div className={styles['filter-layout-row']}>
           <SelectComponent
             multiple
             label="Endpoint"
@@ -455,10 +455,10 @@ export default function RequestsPage() {
               hoveredConversationId &&
               row.conversationId === hoveredConversationId
             ) {
-              classes.push(styles['shared-conversation-row']);
+              classes.push(styles['shared-conversation-layout-row']);
             }
-            if (justNowIds.has(id)) classes.push(styles['new-row']);
-            else if (fadingIds.has(id)) classes.push(styles['new-row-fade-out']);
+            if (justNowIds.has(id)) classes.push(styles['new-layout-row']);
+            else if (fadingIds.has(id)) classes.push(styles['new-layout-row-fade-out']);
             return classes.join(" ");
           }}
           emptyText={isLoading ? "Loading..." : "No requests found"}

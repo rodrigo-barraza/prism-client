@@ -191,7 +191,7 @@ export default function SubAgentsPanel({
             className={`${styles['sub-agent-card']} ${cardClass ? styles[cardClass] : ""}`}
           >
             {/* -- Title row (HistoryItem-style) --------------- */}
-            <div className={styles['title-row']}>
+            <div className={styles['title-layout-row']}>
               <span className={styles['agent-badge']}>
                 Agent {getAgentNumber(subAgent.agentId)}
               </span>

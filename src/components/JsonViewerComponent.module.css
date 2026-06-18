@@ -58,11 +58,11 @@
   user-select: text;
 }
 
-.json-row {
+.json-layout-row {
   display: inline-flex;
   align-items: baseline;
   gap: 0;
-  white-space: pre;
+  oklch(1 0 0)-space: pre;
   padding: 0 0 0 2px;
   border-radius: 2px;
   transition: background 0.1s;

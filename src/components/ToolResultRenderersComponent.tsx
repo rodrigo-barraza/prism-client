@@ -561,7 +561,7 @@ function InputArgsToggle({ args }: { args?: ToolArgs }) {
             return (
               <div
                 key={key}
-                className={`${isJsonValue ? styles['input-arg-row-complex'] : styles['input-arg-row']}`}
+                className={`${isJsonValue ? styles['input-arg-layout-row-complex'] : styles['input-arg-layout-row']}`}
               >
                 <span className={styles['input-arg-key']}>{key}</span>
                 <div className={styles['input-arg-value-wrapper']}>
@@ -647,7 +647,7 @@ function OutputResultToggle({ result }: { result: unknown }) {
                 return (
                   <div
                     key={key}
-                    className={`${isJsonValue ? styles['output-arg-row-complex'] : styles['output-arg-row']}`}
+                    className={`${isJsonValue ? styles['output-arg-layout-row-complex'] : styles['output-arg-layout-row']}`}
                   >
                     <span className={styles['output-arg-key']}>{key}</span>
                     <div className={styles['output-arg-value-wrapper']}>
@@ -657,7 +657,7 @@ function OutputResultToggle({ result }: { result: unknown }) {
                 );
               })
           ) : (
-            <div className={styles['output-arg-row-single']}>
+            <div className={styles['output-arg-layout-row-single']}>
               <ArgValueViewerComponent valueToRender={result} />
             </div>
           )}
@@ -1096,7 +1096,7 @@ function TextToSpeechRenderer({ result, args }: RendererProps) {
         )}
       </div>
       {inputText && (
-        <div className={styles['input-arg-row']}>
+        <div className={styles['input-arg-layout-row']}>
           <span className={styles['input-arg-key']}>text</span>
           <span className={styles['input-arg-value']}>
             {inputText.length > 120 ? inputText.slice(0, 120) + "…" : inputText}
@@ -1557,7 +1557,7 @@ function GitLogRenderer({ result }: RendererProps) {
             <span className={styles['git-hash']}>
               {(commitEntry.hash || commitEntry.sha || "").slice(0, 7)}
             </span>
-            <span className={styles['git-msg']}>
+            <span className={styles['git-message']}>
               {commitEntry.message || commitEntry.subject || ""}
             </span>
             {commitEntry.author && <span className={styles['git-author']}>{commitEntry.author}</span>}
@@ -2349,7 +2349,7 @@ function EmojiCombinationRenderer({ result }: RendererProps) {
           />
         </div>
       </div>
-      <div className={styles['emoji-meta-row']}>
+      <div className={styles['emoji-meta-layout-row']}>
         <span className={styles['meta-item']}>Order: {gBoardOrder || "N/A"}</span>
         <span className={styles['meta-separator']}>·</span>
         <span className={styles['meta-item']}>Date: {date || "N/A"}</span>

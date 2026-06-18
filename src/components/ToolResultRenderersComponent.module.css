@@ -64,13 +64,13 @@
   max-width: 360px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .path-full {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   direction: rtl;
   text-align: left;
 }
@@ -90,7 +90,7 @@
   overflow-x: auto;
   max-height: 240px;
   overflow-y: auto;
-  white-space: pre;
+  oklch(1 0 0)-space: pre;
 }
 
 .code-block code {
@@ -123,7 +123,7 @@
   overflow-x: auto;
   max-height: 300px;
   overflow-y: auto;
-  white-space: pre;
+  oklch(1 0 0)-space: pre;
 }
 
 .diff-block code {
@@ -239,7 +239,7 @@
 
 .grep-line-content {
   color: var(--text-secondary);
-  white-space: pre;
+  oklch(1 0 0)-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -305,7 +305,7 @@
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .search-link:hover {
@@ -394,7 +394,7 @@
   display: flex;
   padding: 0 10px;
   gap: 0;
-  white-space: pre;
+  oklch(1 0 0)-space: pre;
   border-left: 2px solid transparent;
   transition: background 60ms ease;
 }
@@ -427,7 +427,7 @@
   flex: 1;
   color: var(--text-primary);
   word-break: break-all;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
 }
 
 /* ── Log Level Line Accents ────────────────────────────────── */
@@ -539,11 +539,11 @@
   flex-shrink: 0;
 }
 
-.git-msg {
+.git-message {
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   flex: 1;
 }
 
@@ -691,7 +691,7 @@
   line-height: 1;
   letter-spacing: 0.02em;
   color: oklch(87.0% 0.0258 250.0);
-  white-space: pre;
+  oklch(1 0 0)-space: pre;
   user-select: all;
 }
 
@@ -719,7 +719,7 @@
   border-radius: 8px;
   font-size: 0.625rem;
   font-weight: 700;
-  background: color-mix(in srgb, var(--accent-primary) 14%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 14%, transparent);
   color: var(--accent-primary);
   line-height: 1;
 }
@@ -737,7 +737,7 @@
   overflow-y: auto;
 }
 
-.input-arg-row {
+.input-arg-layout-row {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -749,11 +749,11 @@
   transition: background 0.1s;
 }
 
-.input-arg-row:hover {
+.input-arg-layout-row:hover {
   background: oklch(1 0 0 / 0.06);
 }
 
-.input-arg-row-complex {
+.input-arg-layout-row-complex {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -787,7 +787,7 @@
 .input-arg-value {
   color: var(--text-primary);
   word-break: break-word;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
 }
 
 .input-arg-value-long {
@@ -818,7 +818,7 @@
   border-radius: 8px;
   font-size: 0.625rem;
   font-weight: 700;
-  background: color-mix(in srgb, var(--color-teal) 14%, transparent);
+  background: color-mix(in oklch, var(--color-teal) 14%, transparent);
   color: var(--color-teal);
   line-height: 1;
 }
@@ -836,7 +836,7 @@
   overflow-y: auto;
 }
 
-.output-arg-row {
+.output-arg-layout-row {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -848,11 +848,11 @@
   transition: background 0.1s;
 }
 
-.output-arg-row:hover {
+.output-arg-layout-row:hover {
   background: oklch(1 0 0 / 0.06);
 }
 
-.output-arg-row-complex {
+.output-arg-layout-row-complex {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -869,7 +869,7 @@
   min-width: 0;
 }
 
-.output-arg-row-single {
+.output-arg-layout-row-single {
   width: 100%;
   padding: 2px 4px;
 }
@@ -891,7 +891,7 @@
 .output-arg-value {
   color: var(--text-primary);
   word-break: break-word;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
 }
 
 .output-arg-value-long {
@@ -909,7 +909,7 @@
 .value-string {
   color: oklch(0.78 0.12 140);
   word-break: break-all;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
 }
 
 .value-string-long {
@@ -952,7 +952,7 @@
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   color: var(--text-primary);
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
   word-break: break-word;
   line-height: 1.5;
 }
@@ -1005,7 +1005,7 @@
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .sub-agent-result-meta {
@@ -1156,7 +1156,7 @@
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--accent-primary) 25%, transparent) 0%,
+    color-mix(in oklch, var(--accent-primary) 25%, transparent) 0%,
     transparent 70%
   );
   filter: blur(10px);
@@ -1192,7 +1192,7 @@
   transform: scale(1.1) rotate(2deg);
 }
 
-.emoji-meta-row {
+.emoji-meta-layout-row {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1258,7 +1258,7 @@
   transform: translateY(-3px);
   border-color: var(--accent-primary);
   box-shadow: 0 8px 20px
-    color-mix(in srgb, var(--accent-primary) 12%, oklch(0.0% 0.0 0.0 / 0.1));
+    color-mix(in oklch, var(--accent-primary) 12%, oklch(0.0% 0.0 0.0 / 0.1));
 }
 
 .option-card-header {

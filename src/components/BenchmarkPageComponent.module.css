@@ -81,7 +81,7 @@
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .tag {
@@ -212,7 +212,7 @@
     grid-template-columns: 1fr;
   }
 
-  .form-row {
+  .form-layout-row {
     grid-template-columns: 1fr;
   }
 

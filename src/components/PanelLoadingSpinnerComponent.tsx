@@ -37,7 +37,7 @@ export default function PanelLoadingSpinner({
 
   return (
     <div
-      className={`panel-loading-spinner-component ${styles["loading-spinner-container"]}`}
+      className={`panel-loading-spinner-component ${styles["is-loading-state-spinner-container"]}`}
       role="status"
       aria-label="Loading"
     >

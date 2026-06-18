@@ -116,7 +116,7 @@ export default function ToolCallBadgeComponent({
 
   const badge = (
     <span
-      className={`${styles['badge']}${active ? ` ${styles['badge-active']}` : ""}`}
+      className={`${styles['badge']}${active ? ` ${styles['badge-is-active-state']}` : ""}`}
       style={{
         color,
         borderColor: `color-mix(in srgb, ${color} 20%, transparent)`,
@@ -156,7 +156,7 @@ export function ToolCallBadgeRow({ tools, activeTool }: ToolCallBadgeRowProps) {
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
-    <div className={`tool-call-badge-component ${styles['badge-row']}`}>
+    <div className={`tool-call-badge-component ${styles['badge-layout-row']}`}>
       {Object.entries(tools)
         .sort(([, countA]: [string, number], [, countB]: [string, number]) => countB - countA)
         .map(([name, count]: [string, number]) => (

@@ -33,22 +33,22 @@
   transition: all 0.2s;
   background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  border: 1px solid color-mix(in oklch, var(--accent-primary) 30%, transparent);
 }
 
 .operator-toggle:hover {
-  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 20%, transparent);
   border-color: var(--accent-primary);
 }
 
 .operator-or {
-  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  background: color-mix(in oklch, var(--color-warning) 12%, transparent);
   color: var(--color-warning);
-  border-color: color-mix(in srgb, var(--color-warning) 30%, transparent);
+  border-color: color-mix(in oklch, var(--color-warning) 30%, transparent);
 }
 
 .operator-or:hover {
-  background: color-mix(in srgb, var(--color-warning) 20%, transparent);
+  background: color-mix(in oklch, var(--color-warning) 20%, transparent);
   border-color: var(--color-warning);
 }
 
@@ -59,7 +59,7 @@
   flex-direction: column;
 }
 
-.assertion-row {
+.assertion-layout-row {
   display: flex;
   flex-direction: column;
 }

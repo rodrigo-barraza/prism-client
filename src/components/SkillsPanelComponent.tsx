@@ -391,13 +391,13 @@ export default function SkillsPanel({
                   Delete &ldquo;{skill.name}&rdquo;?
                 </span>
                 <button
-                  className={`${styles['confirm-button']} ${styles['confirm-btn-yes']}`}
+                  className={`${styles['confirm-button']} ${styles['confirm-button-element-yes']}`}
                   onClick={() => confirmDelete(skillId)}
                 >
                   Delete
                 </button>
                 <button
-                  className={`${styles['confirm-button']} ${styles['confirm-btn-no']}`}
+                  className={`${styles['confirm-button']} ${styles['confirm-button-element-no']}`}
                   onClick={() => setConfirmingDeleteId(null)}
                 >
                   Cancel

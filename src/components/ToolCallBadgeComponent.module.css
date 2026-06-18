@@ -16,7 +16,7 @@
   letter-spacing: 0.15px;
   background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   line-height: 1;
   transition:
     border-color 0.2s,
@@ -26,8 +26,8 @@
 }
 
 .badge:hover {
-  border-color: color-mix(in srgb, currentColor 35%, transparent);
-  background: color-mix(in srgb, currentColor 6%, var(--background-elevated));
+  border-color: color-mix(in oklch, currentColor 35%, transparent);
+  background: color-mix(in oklch, currentColor 6%, var(--background-elevated));
 }
 
 .badge svg {
@@ -51,13 +51,13 @@
 }
 
 /* ── Active state (currently executing) ── */
-.badge-active {
+.badge-is-active-state {
   border-color: currentColor;
-  background: color-mix(in srgb, currentColor 8%, var(--background-elevated));
-  box-shadow: 0 0 6px -1px color-mix(in srgb, currentColor 30%, transparent);
+  background: color-mix(in oklch, currentColor 8%, var(--background-elevated));
+  box-shadow: 0 0 6px -1px color-mix(in oklch, currentColor 30%, transparent);
 }
 
-.badge-active svg {
+.badge-is-active-state svg {
   opacity: 1;
   animation: tool-call-pulse 1.2s ease-in-out infinite;
 }
@@ -86,7 +86,7 @@
 }
 
 /* ── Container for a row of badges ── */
-.badge-row {
+.badge-layout-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;

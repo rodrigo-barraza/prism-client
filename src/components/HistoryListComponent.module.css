@@ -12,7 +12,7 @@
 }
 
 /* ── Count Row ── */
-.count-row {
+.count-layout-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -23,7 +23,7 @@
   opacity: 0.7;
   flex-shrink: 0;
   border-bottom: 1px solid
-    color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
+    color-mix(in oklch, var(--calculated-border-color) 50%, transparent);
 }
 
 .count-label {
@@ -55,7 +55,7 @@
   flex-shrink: 0;
 }
 
-.loading-more {
+.is-loading-state-more {
   display: flex;
   align-items: center;
   justify-content: center;

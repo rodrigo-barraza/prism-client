@@ -55,7 +55,7 @@
 }
 
 /* ── Row 1: time (left) · cost (right) ── */
-.top-row {
+.top-layout-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -80,7 +80,7 @@
 .title {
   font-size: 0.8125rem;
   font-weight: 500;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   color: var(--text-primary);
@@ -169,7 +169,7 @@
 }
 
 /* ── Row 4: modalities (left) · tools (right) ── */
-.bottom-row {
+.bottom-layout-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -231,7 +231,7 @@
 }
 
 .agent-badge-name {
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   letter-spacing: 0.2px;
 }
 
@@ -382,7 +382,7 @@
   }
 }
 
-.favorite-button-active {
+.favorite-button-is-active-state {
   color: var(--color-warning);
   opacity: 1;
 

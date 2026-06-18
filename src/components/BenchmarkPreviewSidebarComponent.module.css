@@ -129,7 +129,7 @@
   gap: 6px;
 }
 
-.assertion-row {
+.assertion-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -147,7 +147,7 @@
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   flex: 1;
   min-width: 0;
 }

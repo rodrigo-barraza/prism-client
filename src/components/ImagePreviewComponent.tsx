@@ -296,14 +296,14 @@ export default function ImagePreviewComponent({
           {/* Mode toggle */}
           <div className={styles['tool-group']}>
             <button
-              className={`${styles['action-button']} ${!isEraser ? styles['size-btn-active'] : ""}`}
+              className={`${styles['action-button']} ${!isEraser ? styles['size-button-element-is-active-state'] : ""}`}
               onClick={() => setIsEraser(false)}
               title="Draw"
             >
               <Pen size={14} />
             </button>
             <button
-              className={`${styles['action-button']} ${isEraser ? styles['size-btn-active'] : ""}`}
+              className={`${styles['action-button']} ${isEraser ? styles['size-button-element-is-active-state'] : ""}`}
               onClick={() => setIsEraser(true)}
               title="Eraser"
             >
@@ -317,7 +317,7 @@ export default function ImagePreviewComponent({
             {COLORS.map((c) => (
               <button
                 key={c.value}
-                className={`${styles['swatch']} ${color === c.value && !isEraser ? styles['swatch-active'] : ""}`}
+                className={`${styles['swatch']} ${color === c.value && !isEraser ? styles['swatch-is-active-state'] : ""}`}
                 style={{ background: c.value }}
                 onClick={() => {
                   setColor(c.value);
@@ -334,7 +334,7 @@ export default function ImagePreviewComponent({
             {SIZES.map((s, i) => (
               <button
                 key={s.label}
-                className={`${styles['size-button']} ${sizeIdx === i ? styles['size-btn-active'] : ""}`}
+                className={`${styles['size-button']} ${sizeIdx === i ? styles['size-button-element-is-active-state'] : ""}`}
                 onClick={() => setSizeIdx(i)}
                 title={s.label}
               >

@@ -288,7 +288,7 @@ const FileTab = memo(function FileTab({
   return (
     <button
       type="button"
-      className={`${styles['tab']} ${isActive ? styles['tab-active'] : ""}`}
+      className={`${styles['tab']} ${isActive ? styles['tab-is-active-state'] : ""}`}
       onClick={() => onSelect(file.id)}
       title={file.path}
     >
@@ -791,7 +791,7 @@ export default function FileViewerPanelComponent({
           {cached?.isSvg && activeFileId && (
             <button
               type="button"
-              className={`${styles['title-bar-button']} ${styles['title-bar-btn-active']}`}
+              className={`${styles['title-bar-button']} ${styles['title-bar-button-element-is-active-state']}`}
               onClick={() => {
                 setSvgViewMode((previousState) => ({
                   ...previousState,
@@ -814,7 +814,7 @@ export default function FileViewerPanelComponent({
           )}
           <button
             type="button"
-            className={`${styles['title-bar-button']} ${wordWrap ? styles['title-bar-btn-active'] : ""}`}
+            className={`${styles['title-bar-button']} ${wordWrap ? styles['title-bar-button-element-is-active-state'] : ""}`}
             onClick={() => setWordWrap((previousWordWrap) => !previousWordWrap)}
             title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
           >

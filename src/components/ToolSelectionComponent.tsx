@@ -527,7 +527,7 @@ export default function ToolSelectionComponent({
 
         {/* Master select-all / deselect-all checkbox */}
         {filterMode !== "locked" && (
-          <div className={styles['bulk-checkbox-row']}>
+          <div className={styles['bulk-checkbox-layout-row']}>
             <CheckboxComponent
               size="compact"
               checked={
@@ -773,7 +773,7 @@ export default function ToolSelectionComponent({
                           delay={isLocked ? 0 : 400}
                         >
                           {isCoreLockedTool ? (
-                            <div className={`${styles['tool-row']} ${styles['core-tool-row']}`}>
+                            <div className={`${styles['tool-layout-row']} ${styles['core-tool-layout-row']}`}>
                               <CheckboxComponent
                                 size="compact"
                                 className={styles['tool-checkbox']}
@@ -789,7 +789,7 @@ export default function ToolSelectionComponent({
                               <Lock size={10} className={styles['lock-icon']} />
                             </div>
                           ) : isLocked ? (
-                            <div className={`${styles['tool-row']} ${styles['locked-tool-row']}`}>
+                            <div className={`${styles['tool-layout-row']} ${styles['locked-tool-layout-row']}`}>
                               <CheckboxComponent
                                 size="compact"
                                 className={styles['tool-checkbox']}
@@ -805,7 +805,7 @@ export default function ToolSelectionComponent({
                               <Lock size={10} className={styles['lock-icon']} />
                             </div>
                           ) : (
-                            <div className={`${styles['tool-row']}${triStateMode && resolvedEnabledSet.has(tool.name) && !resolvedEnabledByDefaultSet.has(tool.name) ? ` ${styles['available-only-tool-row']}` : ''}`}>
+                            <div className={`${styles['tool-layout-row']}${triStateMode && resolvedEnabledSet.has(tool.name) && !resolvedEnabledByDefaultSet.has(tool.name) ? ` ${styles['available-only-tool-layout-row']}` : ''}`}>
                               <CheckboxComponent
                                 size="compact"
                                 className={`${styles['tool-checkbox']}${triStateMode && resolvedEnabledSet.has(tool.name) && !resolvedEnabledByDefaultSet.has(tool.name) ? ` ${styles['available-only-checkbox']}` : ''}`}

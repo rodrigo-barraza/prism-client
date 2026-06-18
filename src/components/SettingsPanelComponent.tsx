@@ -833,7 +833,7 @@ export default function SettingsPanel({
             {agentToggles?.map((toggle) => (
               <div
                 key={toggle.key}
-                className={`${styles['modality-row']} ${styles['tool-toggle-row']}`}
+                className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
               >
                 <span className={styles['modality-icon']}>{toggle.icon}</span>
                 <span className={styles['modality-name']}>{toggle.label}</span>
@@ -863,7 +863,7 @@ export default function SettingsPanel({
 
             {/* Harness */}
             <div
-              className={`${styles['modality-row']} ${styles['tool-toggle-row']}`}
+              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
             >
               <span className={styles['modality-icon']}>
                 <Brain size={12} />
@@ -886,7 +886,7 @@ export default function SettingsPanel({
 
             {/* Topology */}
             <div
-              className={`${styles['modality-row']} ${styles['tool-toggle-row']}`}
+              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
             >
               <span className={styles['modality-icon']}>
                 <Network size={12} />
@@ -914,7 +914,7 @@ export default function SettingsPanel({
 
             {/* Reasoning Strategy */}
             <div
-              className={`${styles['modality-row']} ${styles['tool-toggle-row']}`}
+              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
             >
               <span className={styles['modality-icon']}>
                 <Layers size={12} />
@@ -1070,7 +1070,7 @@ export default function SettingsPanel({
                   return (
                     <div
                       key={tool}
-                      className={`${styles['modality-row']} ${toggle ? styles['tool-toggle-row'] : ""}`}
+                      className={`${styles['modality-layout-row']} ${toggle ? styles['tool-toggle-layout-row'] : ""}`}
                     >
                       <ToolBadgeComponent
                         name={getToolLabel(tool)}
@@ -1128,7 +1128,7 @@ export default function SettingsPanel({
             }}
           >
             <button
-              className={`${styles['system-prompt-button']} ${settings.systemPrompt ? styles['system-prompt-active'] : ""}`}
+              className={`${styles['system-prompt-button']} ${settings.systemPrompt ? styles['system-prompt-is-active-state'] : ""}`}
               onClick={() => {
                 setIsSystemPromptOpen((previousOpenState) => !previousOpenState);
                 onSystemPromptClick?.();

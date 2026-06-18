@@ -301,7 +301,7 @@ export default function SidebarFilterComponent({
 
   return (
     <div className={`sidebar-filter-component ${styles['filter-section']}`}>
-      <div className={styles['filter-row']}>
+      <div className={styles['filter-layout-row']}>
         {/* -- Dropdown trigger -- */}
         <div className={styles['dropdown-wrapper']} ref={dropdownRef}>
           <button
@@ -338,7 +338,7 @@ export default function SidebarFilterComponent({
                       <button
                         key={preset.label}
                         type="button"
-                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
+                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
                         onClick={() => onDateChange(preset.getValue())}
                       >
                         <Calendar size={13} style={{ color: "#6366f1" }} />
@@ -351,7 +351,7 @@ export default function SidebarFilterComponent({
                   })}
                   <button
                     type="button"
-                    className={`${styles['menu-item']} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles['menu-item-active'] : ""}`}
+                    className={`${styles['menu-item']} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles['menu-item-is-active-state'] : ""}`}
                     onClick={() => {
                       setShowCustomDatePicker(true);
                       setIsOpen(false);
@@ -372,7 +372,7 @@ export default function SidebarFilterComponent({
                   <div className={styles['menu-group-label']}>Favorites</div>
                   <button
                     type="button"
-                    className={`${styles['menu-item']} ${showFavoritesOnly ? styles['menu-item-active'] : ""}`}
+                    className={`${styles['menu-item']} ${showFavoritesOnly ? styles['menu-item-is-active-state'] : ""}`}
                     onClick={() => {
                       onFavoritesToggle();
                     }}
@@ -396,7 +396,7 @@ export default function SidebarFilterComponent({
                       <button
                         key={m.key}
                         type="button"
-                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
+                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
                         onClick={() => toggleModality(m.key)}
                       >
                         <Icon
@@ -423,7 +423,7 @@ export default function SidebarFilterComponent({
                       <button
                         key={t.key}
                         type="button"
-                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
+                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
                         onClick={() => toggleTool(t.key)}
                       >
                         <Icon
@@ -449,7 +449,7 @@ export default function SidebarFilterComponent({
                       <button
                         key={p}
                         type="button"
-                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
+                        className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
                         onClick={() => toggleProvider(p)}
                       >
                         <ProviderLogo provider={p} size={13} />

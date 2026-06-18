@@ -1037,7 +1037,7 @@ export default function WorkflowCanvas({
         <div className={styles['canvas-toolbar']}>
           {onToggleSidebar && (
             <button
-              className={`${styles['toolbar-button']} ${sidebarVisible ? styles['toolbar-btn-active'] : ""}`}
+              className={`${styles['toolbar-button']} ${sidebarVisible ? styles['toolbar-button-element-is-active-state'] : ""}`}
               onClick={onToggleSidebar}
               title={sidebarVisible ? "Hide sidebar" : "Show sidebar"}
             >

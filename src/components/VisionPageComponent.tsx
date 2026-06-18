@@ -716,7 +716,7 @@ interface VisionChatMessage {
               <Video size={15} className={styles['panel-title-icon']} />
               <span className={styles['panel-title']}>Video Source</span>
               {isAnalyzing && (
-                <span className={styles['status-active']}>
+                <span className={styles['status-is-active-state']}>
                   <Eye size={10} /> Active
                 </span>
               )}
@@ -730,7 +730,7 @@ interface VisionChatMessage {
                   return (
                     <button
                       key={source.key}
-                      className={`${styles['source-button']} ${sourceType === source.key ? styles['source-btn-active'] : ""}`}
+                      className={`${styles['source-button']} ${sourceType === source.key ? styles['source-button-element-is-active-state'] : ""}`}
                       onClick={() => handleSourceSelect(source.key)}
                     >
                       <Icon size={14} />
@@ -742,7 +742,7 @@ interface VisionChatMessage {
 
               {/* IP Camera URL input */}
               {sourceType === "ipcam" && (
-                <div className={styles['url-input-row']}>
+                <div className={styles['url-input-layout-row']}>
                   <InputComponent
                     type="text"
                     placeholder="rtsp://user:pass@192.168.1.100/stream1 or http://…/mjpeg"
@@ -859,13 +859,13 @@ interface VisionChatMessage {
 
             <div className={styles['mode-tabs']}>
               <button
-                className={`${styles['mode-tab']} ${mode === "analysis" ? styles['mode-tab-active'] : ""}`}
+                className={`${styles['mode-tab']} ${mode === "analysis" ? styles['mode-tab-is-active-state'] : ""}`}
                 onClick={() => setMode("analysis")}
               >
                 Analysis
               </button>
               <button
-                className={`${styles['mode-tab']} ${mode === "agent" ? styles['mode-tab-active'] : ""}`}
+                className={`${styles['mode-tab']} ${mode === "agent" ? styles['mode-tab-is-active-state'] : ""}`}
                 onClick={() => setMode("agent")}
               >
                 Live Agent
@@ -961,7 +961,7 @@ interface VisionChatMessage {
               </div>
 
               {/* Prompt */}
-              <div className={styles['prompt-row']}>
+              <div className={styles['prompt-layout-row']}>
                 <TextAreaComponent
                   className={styles['prompt-textarea']}
                   value={prompt}
@@ -1038,7 +1038,7 @@ interface VisionChatMessage {
 
                 <span className={styles['live-vision-status']}>
                   {isStreaming ? (
-                    <span className={styles['live-vision-status-active']}>
+                    <span className={styles['live-vision-status-is-active-state']}>
                       <Cpu size={12} /> Feed Streaming
                     </span>
                   ) : (
@@ -1136,7 +1136,7 @@ interface VisionChatMessage {
 
                           {/* Streaming cursor */}
                           {!isUser && message.streaming && !message.content && (
-                            <div className={styles['agent-loading-text']}>
+                            <div className={styles['agent-is-loading-state-text']}>
                               <Loader2 size={12} className={styles['spin-icon']} />{" "}
                               Thinking...
                             </div>
@@ -1187,7 +1187,7 @@ interface VisionChatMessage {
               </div>
 
               {/* Chat Input Row */}
-              <div className={styles['chat-input-row']}>
+              <div className={styles['chat-input-layout-row']}>
                 <TextAreaComponent
                   className={styles['chat-input']}
                   value={chatInput}

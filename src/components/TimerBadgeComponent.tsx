@@ -68,7 +68,7 @@ export default function TimerBadgeComponent({
     status === "active" && !isTimerFired && !isTimerCancelled;
 
   let stateLabel = "";
-  let badgeClass = styles['timer-badge-state-active'];
+  let badgeClass = styles['timer-badge-state-is-active-state'];
   let statusIcon = <Clock size={14} className={styles['timer-badge-spinner-icon']} />;
 
   if (isTimerCancelled) {

@@ -53,7 +53,7 @@ export default function SummaryBarComponent({
               </>
             ) : (
               <>
-                <div className={`${costBadgeStyles['badge']} ${styles['value-row']}`}>
+                <div className={`${costBadgeStyles['badge']} ${styles['value-layout-row']}`}>
                   {item.icon && (
                     <span className={styles['icon']}>{item.icon}</span>
                   )}

@@ -70,7 +70,7 @@ const TreeNode = memo(function TreeNode({
   return (
     <div className={styles['tree-node']}>
       <div
-        className={`${styles['tree-row']} ${isDir ? styles['tree-row-dir'] : styles['tree-row-file']}`}
+        className={`${styles['tree-layout-row']} ${isDir ? styles['tree-layout-row-dir'] : styles['tree-layout-row-file']}`}
         style={{ paddingLeft: `${8 + depth * 14}px` }}
         onClick={() => {
           if (isDir) {
@@ -412,7 +412,7 @@ export default function WorkspaceTreePanelComponent({
                   <button
                     key={w.id}
                     type="button"
-                    className={`${styles['switcher-item']} ${isActive ? styles['switcher-item-active'] : ""}`}
+                    className={`${styles['switcher-item']} ${isActive ? styles['switcher-item-is-active-state'] : ""}`}
                     onClick={() => {
                       setCurrentWorkspace(w);
                       setSwitcherOpen(false);
@@ -484,10 +484,10 @@ export default function WorkspaceTreePanelComponent({
         {!treeLoading &&
           treeData &&
           (!treeData.tree || treeData.tree.length === 0) && (
-            <div className={styles['tree-loading']}>Empty directory</div>
+            <div className={styles['tree-is-loading-state']}>Empty directory</div>
           )}
         {!treeLoading && hasTreeFetchFailed && (
-          <div className={styles['tree-loading']}>Unable to load tree</div>
+          <div className={styles['tree-is-loading-state']}>Unable to load tree</div>
         )}
       </div>
     </div>

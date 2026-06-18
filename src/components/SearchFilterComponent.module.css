@@ -24,7 +24,7 @@
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   cursor: text;
 
   &:hover {
@@ -117,7 +117,7 @@
   cursor: pointer;
   transition: all 0.1s ease;
   text-align: left;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -130,7 +130,7 @@
   color: var(--text-primary);
 }
 
-.menu-item-active {
+.menu-item-is-active-state {
   color: var(--text-primary);
   background: var(
     --calculated-accent-primary-subtle,
@@ -138,7 +138,7 @@
   );
 }
 
-.menu-item-active:hover {
+.menu-item-is-active-state:hover {
   background: var(
     --calculated-accent-primary-subtle,
     var(--calculated-accent-primary-glow)
@@ -195,7 +195,7 @@
   background: var(--badge-background, var(--background-elevated));
   border: 1px solid var(--badge-border, var(--calculated-border-color));
   border-radius: var(--border-radius-sm, 4px);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   user-select: none;
   cursor: default;
   animation: search-filter-badge-fade-in 0.2s ease-out;

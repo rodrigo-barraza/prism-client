@@ -264,7 +264,7 @@ export default function BenchmarkFormComponent({
 
           <div className={styles['assertions-list']}>
             {assertions.map((a, i: number) => (
-              <div key={i} className={styles['assertion-row']}>
+              <div key={i} className={styles['assertion-layout-row']}>
                 {/* Operator divider between assertions */}
                 {i > 0 && (
                   <div className={styles['operator-divider']}>

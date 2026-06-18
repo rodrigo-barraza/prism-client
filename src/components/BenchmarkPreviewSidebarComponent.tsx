@@ -143,7 +143,7 @@ export default function BenchmarkPreviewSidebarComponent({ form }: { form: Bench
               {assertions.map((assertion: ModelAssertion, assertionIndex: number) => {
                 if (!assertion.expectedValue?.trim()) return null;
                 return (
-                  <div key={assertionIndex} className={styles['assertion-row']}>
+                  <div key={assertionIndex} className={styles['assertion-layout-row']}>
                     {assertionIndex > 0 && (
                       <BadgeComponent
                         variant={operator === "OR" ? "warning" : "info"}
@@ -182,7 +182,7 @@ export default function BenchmarkPreviewSidebarComponent({ form }: { form: Bench
               if (!typeDef) return null;
               const Icon = typeDef.icon;
               return (
-                <div key={`${agentAssertion.type}-${assertionIndex}`} className={styles['assertion-row']}>
+                <div key={`${agentAssertion.type}-${assertionIndex}`} className={styles['assertion-layout-row']}>
                   {assertionIndex > 0 && (
                     <BadgeComponent
                       variant={agentOperator === "OR" ? "warning" : "info"}

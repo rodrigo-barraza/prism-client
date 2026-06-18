@@ -151,7 +151,7 @@ export default function BenchmarkSidebarComponent({
 
       {/* "All Benchmarks" link */}
       <button
-        className={`${styles['all-link']} ${pathname === "/benchmarks" && !activeBenchmarkId ? styles['all-link-active'] : ""}`}
+        className={`${styles['all-link']} ${pathname === "/benchmarks" && !activeBenchmarkId ? styles['all-link-is-active-state'] : ""}`}
         onClick={() => router.push("/benchmarks")}
         data-panel-close
       >
@@ -180,12 +180,12 @@ export default function BenchmarkSidebarComponent({
             return (
               <div
                 key={b.id}
-                className={`${styles['item']} ${isActive ? styles['item-active'] : ""} ${isRunning ? styles['item-running'] : ""}`}
+                className={`${styles['item']} ${isActive ? styles['item-is-active-state'] : ""} ${isRunning ? styles['item-running'] : ""}`}
                 {...SoundService.interactive(() => navigate(b))}
                 data-panel-close
               >
                 {/* Row 1: date (left) · cost (right) */}
-                <div className={styles['top-row']}>
+                <div className={styles['top-layout-row']}>
                   <BadgeComponent
                     type="dateTime"
                     date={b.updatedAt || b.createdAt}
@@ -201,7 +201,7 @@ export default function BenchmarkSidebarComponent({
 
                 {/* Row 3: passed/failed (left) · pass bar (right) */}
                 {run ? (
-                  <div className={styles['bottom-row']}>
+                  <div className={styles['bottom-layout-row']}>
                     <div className={styles['stats-left']}>
                       <span className={styles['stat-passed']}>
                         <CheckCircle2 size={10} />
@@ -220,7 +220,7 @@ export default function BenchmarkSidebarComponent({
                     />
                   </div>
                 ) : (
-                  <div className={styles['bottom-row']}>
+                  <div className={styles['bottom-layout-row']}>
                     <div className={styles['stats-left']}>
                       <Clock size={10} />
                       <span className={styles['no-runs']}>No runs yet</span>

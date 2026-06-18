@@ -55,7 +55,7 @@
   font-weight: 500;
   font-family: var(--font-sans);
   opacity: 0.6;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -259,7 +259,7 @@
   color: var(--text-primary);
   overflow-y: auto;
   flex: 1;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -280,13 +280,13 @@
   background: oklch(64.5% 0.2154 16.4 / 0.1);
   border: 1px solid oklch(64.5% 0.2154 16.4 / 0.2);
   border-radius: 2px;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* ── Node config panel ── */
-.config-btn-active {
+.config-button-element-is-active-state {
   color: var(--accent-primary) !important;
   background: var(--calculated-accent-primary-subtle) !important;
 }
@@ -417,7 +417,7 @@
   background: oklch(70.5% 0.1867 47.6 / 0.08);
   border: 1px solid oklch(70.5% 0.1867 47.6 / 0.15);
   border-radius: 3px;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-transform: capitalize;

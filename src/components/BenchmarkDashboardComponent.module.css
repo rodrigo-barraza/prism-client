@@ -59,23 +59,23 @@
     color 0.2s ease,
     background 0.2s ease,
     box-shadow 0.2s ease;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .segmented-button:hover {
   color: var(--text-primary);
-  background: color-mix(in srgb, var(--background-surface) 80%, transparent);
+  background: color-mix(in oklch, var(--background-surface) 80%, transparent);
 }
 
-.segmented-btn-active {
+.segmented-button-element-is-active-state {
   color: var(--text-primary);
   background: var(--background-surface);
   box-shadow:
     0 1px 3px oklch(0.0% 0.0 0.0 / 0.12),
-    0 0 0 1px color-mix(in srgb, var(--accent-primary) 12%, transparent);
+    0 0 0 1px color-mix(in oklch, var(--accent-primary) 12%, transparent);
 }
 
-.segmented-btn-active:hover {
+.segmented-button-element-is-active-state:hover {
   background: var(--background-surface);
 }
 
@@ -84,7 +84,7 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
-  background: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  background: color-mix(in oklch, var(--text-muted) 10%, transparent);
   padding: 1px 5px;
   border-radius: 6px;
   min-width: 18px;
@@ -95,14 +95,14 @@
     background 0.2s ease;
 }
 
-.segmented-btn-active .segmented-count {
+.segmented-button-element-is-active-state .segmented-count {
   color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 12%, transparent);
 }
 
 /* ── Loading ──────────────────────────────────────────────── */
 
-.loading-state {
+.is-loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,7 +155,7 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
@@ -170,17 +170,17 @@
   padding: 1px 5px;
   border-radius: 2px;
   flex-shrink: 0;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .detail-status-passed {
   color: var(--color-success);
-  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  background: color-mix(in oklch, var(--color-success) 10%, transparent);
 }
 
 .detail-status-failed {
   color: var(--color-danger);
-  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  background: color-mix(in oklch, var(--color-danger) 10%, transparent);
 }
 
 .detail-stats {
@@ -218,7 +218,7 @@
 
 /* ── Selected Row Highlight ─────────────────────────────── */
 
-.selected-row td {
+.selected-layout-row td {
   background: color-mix(
     in srgb,
     var(--accent-primary) 8%,
@@ -226,11 +226,11 @@
   ) !important;
 }
 
-.selected-row td:first-child {
+.selected-layout-row td:first-child {
   box-shadow: inset 3px 0 0 var(--accent-primary);
 }
 
-.selected-row:hover td {
+.selected-layout-row:hover td {
   background: color-mix(
     in srgb,
     var(--accent-primary) 12%,

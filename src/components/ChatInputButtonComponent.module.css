@@ -37,7 +37,7 @@
   height: auto;
   min-height: 40px;
   background: var(--accent-primary);
-  color: white;
+  color: oklch(1 0 0);
   margin-left: auto;
 }
 
@@ -56,7 +56,7 @@
   position: relative;
   overflow: hidden;
   background: transparent !important;
-  color: white !important;
+  color: oklch(1 0 0) !important;
   border: none;
   z-index: 0;
   cursor: pointer;
@@ -77,7 +77,7 @@
 }
 
 .chat-input-button.submit-generating svg {
-  color: white !important;
+  color: oklch(1 0 0) !important;
 }
 
 /* Rotating modality icon */

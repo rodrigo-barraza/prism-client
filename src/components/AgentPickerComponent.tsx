@@ -281,7 +281,7 @@ export default function AgentPickerComponent({
 
   // Resolve trigger class based on mode
   const triggerClassName = addMode
-    ? `${styles['trigger-add']} ${isPopoverOpen ? styles['trigger-add-open'] : ""} ${addCount > 0 ? styles['trigger-add-active'] : ""}`
+    ? `${styles['trigger-add']} ${isPopoverOpen ? styles['trigger-add-open'] : ""} ${addCount > 0 ? styles['trigger-add-is-active-state'] : ""}`
     : undefined;
 
   const triggerContent = (
@@ -382,7 +382,7 @@ export default function AgentPickerComponent({
                         ) : isActive ? (
                           <Check
                             size={14}
-                            className={styles['active-check']}
+                            className={styles['is-active-state-check']}
                             style={agent.color ? { color: agent.color } : undefined}
                           />
                         ) : null}

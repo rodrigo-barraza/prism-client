@@ -69,7 +69,7 @@
   transform: scale(1.15);
 }
 
-.swatch-active {
+.swatch-is-active-state {
   border-color: var(--text-primary);
   box-shadow: 0 0 8px var(--calculated-accent-primary-glow);
   transform: scale(1.15);
@@ -96,10 +96,10 @@
   color: var(--text-primary);
 }
 
-.size-btn-active {
+.size-button-element-is-active-state {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  color: white;
+  color: oklch(1 0 0);
 }
 
 .size-dot {
@@ -179,7 +179,7 @@
   border-radius: var(--border-radius-sm);
   background: var(--accent-primary);
   border: none;
-  color: white;
+  color: oklch(1 0 0);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;

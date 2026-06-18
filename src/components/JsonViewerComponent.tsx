@@ -96,7 +96,7 @@ function JsonNode({
     return (
       <div className={styles['node']}>
         <div
-          className={styles['json-row']}
+          className={styles['json-layout-row']}
           onClick={() => !isEmpty && setExpanded((previousExpandedState) => !previousExpandedState)}
           style={{ cursor: isEmpty ? "default" : "pointer" }}
         >
@@ -144,7 +144,7 @@ function JsonNode({
                 />
               ))}
             </div>
-            <div className={styles['json-row']}>
+            <div className={styles['json-layout-row']}>
               <span className={styles['bracket']}>{bracket[1]}</span>
               {!isLast && <span className={styles['comma']}>,</span>}
             </div>
@@ -157,7 +157,7 @@ function JsonNode({
   // Primitive value
   return (
     <div className={`json-viewer-component ${styles['node']}`}>
-      <div className={styles['json-row']}>
+      <div className={styles['json-layout-row']}>
         {keyName !== undefined && (
           <span className={styles['key']}>
             {JSON.stringify(String(keyName))}:{" "}

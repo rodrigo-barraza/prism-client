@@ -213,7 +213,7 @@ export default function ToolDetailModalComponent({
               {cleanName}
             </div>
             <div className={styles['detail-title']}>{tool.name}</div>
-            <div className={styles['detail-domain-row']}>
+            <div className={styles['detail-domain-layout-row']}>
               {tool.domain && (
                 <span className={styles['tool-domain']}>{tool.domain}</span>
               )}
@@ -387,14 +387,14 @@ export default function ToolDetailModalComponent({
                   (stats.topAgents && stats.topAgents.length > 0)) && (
                   <div className={styles['stats-breakdown']}>
                     {stats.topModels && stats.topModels.length > 0 && (
-                      <div className={styles['stats-breakdown-col']}>
+                      <div className={styles['stats-breakdown-layout-column']}>
                         <div className={styles['stats-breakdown-title']}>
                           Top Models
                         </div>
                         {stats.topModels.map((modelStat: TopModelStat) => (
                           <div
                             key={modelStat.model}
-                            className={styles['stats-breakdown-row']}
+                            className={styles['stats-breakdown-layout-row']}
                           >
                             <span
                               className={styles['stats-breakdown-name']}
@@ -411,14 +411,14 @@ export default function ToolDetailModalComponent({
                       </div>
                     )}
                     {stats.topAgents && stats.topAgents.length > 0 && (
-                      <div className={styles['stats-breakdown-col']}>
+                      <div className={styles['stats-breakdown-layout-column']}>
                         <div className={styles['stats-breakdown-title']}>
                           Top Agents
                         </div>
                         {stats.topAgents.map((agentStat: TopAgentStat) => (
                           <div
                             key={agentStat.agent}
-                            className={styles['stats-breakdown-row']}
+                            className={styles['stats-breakdown-layout-row']}
                           >
                             <span
                               className={styles['stats-breakdown-name']}

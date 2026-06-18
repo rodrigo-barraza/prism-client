@@ -1067,7 +1067,7 @@ function AssetNode(props: AssetNodeProps) {
         })}
       {/* Gear / eye button */}
       <button
-        className={`${styles['delete-node-button']} ${isExpanded ? styles['config-btn-active'] : ""}`}
+        className={`${styles['delete-node-button']} ${isExpanded ? styles['config-button-element-is-active-state'] : ""}`}
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onToggleExpand(node.id);
@@ -1464,7 +1464,7 @@ function ToolNode(props: ToolNodeProps) {
         />
       )}
       <button
-        className={`${styles['delete-node-button']} ${isExpanded ? styles['config-btn-active'] : ""}`}
+        className={`${styles['delete-node-button']} ${isExpanded ? styles['config-button-element-is-active-state'] : ""}`}
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation();
           onToggleExpand(node.id);

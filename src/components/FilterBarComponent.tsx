@@ -61,7 +61,7 @@ export function FilterPillsComponent({
           <button
             key={f.key}
             type="button"
-            className={`${styles['pill']} ${value === f.key ? styles['pill-active'] : ""}`}
+            className={`${styles['pill']} ${value === f.key ? styles['pill-is-active-state'] : ""}`}
             onClick={() => onChange(f.key)}
           >
             {Icon && (
@@ -132,7 +132,7 @@ export function ViewModeToggleComponent({
           <TooltipComponent key={m.key} label={m.title} position="bottom">
             <button
               type="button"
-              className={`${styles['view-button']} ${mode === m.key ? styles['view-btn-active'] : ""}`}
+              className={`${styles['view-button']} ${mode === m.key ? styles['view-button-element-is-active-state'] : ""}`}
               onClick={() => onChange(m.key)}
             >
               <Icon size={14} />
@@ -177,7 +177,7 @@ export function FilterIconButtonGroupComponent({
           <TooltipComponent key={opt.key} label={opt.label} position="bottom">
             <button
               type="button"
-              className={`${styles['discrete-button']} ${isActive ? styles['discrete-btn-active'] : ""}`}
+              className={`${styles['discrete-button']} ${isActive ? styles['discrete-button-element-is-active-state'] : ""}`}
               onClick={() => {
                 if (isSingleSelect) {
                   onChange(isActive ? null : opt.key);

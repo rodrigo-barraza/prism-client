@@ -324,7 +324,7 @@ export default function AgentsPageComponent() {
         leftPanel={null}
         leftTitle="Agents"
       >
-        <div className={styles["loading-spinner-wrapper"]}>
+        <div className={styles["is-loading-state-spinner-wrapper"]}>
           <PanelLoadingSpinner size="medium" />
         </div>
       </ThreePanelLayout>

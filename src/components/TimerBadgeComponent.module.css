@@ -36,7 +36,7 @@
 }
 
 /* ── Status Theme Scopes ── */
-.timer-badge-state-active {
+.timer-badge-state-is-active-state {
   border-color: var(--accent-primary, oklch(0.6 0.18 240));
   background: oklch(0.6 0.18 240 / 0.05);
 }
@@ -70,7 +70,7 @@
   transition: background-color var(--timer-badge-transition-speed) ease;
 }
 
-.timer-badge-state-active .timer-badge-avatar-section {
+.timer-badge-state-is-active-state .timer-badge-avatar-section {
   background: oklch(0.6 0.18 240 / 0.15);
   color: oklch(0.7 0.18 240);
   border: 1px solid oklch(0.6 0.18 240 / 0.3);
@@ -118,7 +118,7 @@
   text-shadow: 0 1px 2px oklch(0 0 0 / 0.4);
 }
 
-.timer-badge-state-active .timer-badge-status-label {
+.timer-badge-state-is-active-state .timer-badge-status-label {
   color: oklch(0.8 0.12 240);
 }
 

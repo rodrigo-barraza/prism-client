@@ -22,7 +22,7 @@
     background 0.15s ease,
     border-color 0.15s ease,
     color 0.15s ease;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .button:hover {
@@ -64,7 +64,7 @@
   opacity: 0.65;
   font-style: italic;
   text-decoration: line-through;
-  text-decoration-color: color-mix(in srgb, var(--text-muted) 40%, transparent);
+  text-decoration-color: color-mix(in oklch, var(--text-muted) 40%, transparent);
 }
 
 .button-icon {
@@ -143,7 +143,7 @@
   color: var(--text-primary);
 }
 
-.menu-item-active {
+.menu-item-is-active-state {
   color: var(--accent-primary);
   background: var(--calculated-accent-primary-subtle);
 }
@@ -166,7 +166,7 @@
 .menu-item-name {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   font-weight: 500;
   line-height: 1.3;
 }
@@ -178,7 +178,7 @@
   opacity: 0.6;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   line-height: 1.3;
 }
 
@@ -190,7 +190,7 @@
   letter-spacing: 0.5px;
   padding: 1px 5px;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 12%, transparent);
   color: var(--accent-primary);
   line-height: 1.4;
 }
@@ -231,7 +231,7 @@
   animation: ws-slide-down 0.1s ease-out;
 }
 
-.add-input-row {
+.add-input-layout-row {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -296,7 +296,7 @@
 
 /* ── Validation feedback ─────────────────────────────────────────── */
 
-.validation-row {
+.validation-layout-row {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -305,15 +305,15 @@
   animation: ws-slide-down 0.1s ease-out;
 }
 
-.validation-row.success {
+.validation-layout-row.success {
   color: var(--color-success, var(--color-success-bright));
 }
 
-.validation-row.error {
+.validation-layout-row.error {
   color: var(--color-danger, var(--color-danger));
 }
 
-.validation-row.info {
+.validation-layout-row.info {
   color: var(--text-tertiary);
   font-family: var(--font-mono, monospace);
 }

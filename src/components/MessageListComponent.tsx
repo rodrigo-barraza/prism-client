@@ -1111,7 +1111,7 @@ export default function MessageList({
                 if (!isExpanded) {
                   // -- Collapsed: single summary row --
                   return (
-                    <div className={styles['deleted-row']}>
+                    <div className={styles['deleted-layout-row']}>
                       <button
                         className={styles['deleted-toggle']}
                         onClick={() => toggleDeletedExpanded(i)}
@@ -1185,7 +1185,7 @@ export default function MessageList({
                 // -- Expanded: show all messages in the group --
                 return (
                   <div className={styles['deleted-expanded']}>
-                    <div className={styles['deleted-row']}>
+                    <div className={styles['deleted-layout-row']}>
                       <button
                         className={styles['deleted-toggle']}
                         onClick={() => toggleDeletedExpanded(i)}
@@ -1301,7 +1301,7 @@ export default function MessageList({
                                       />
                                     )}
                                   {groupMessage.images && groupMessage.images.length > 0 && (
-                                    <div className={styles['image-preview-row']}>
+                                    <div className={styles['image-preview-layout-row']}>
                                       {groupMessage.images.map(
                                         (rawUrl: string, j: number) => {
                                           const resolvedUrl =
@@ -1930,7 +1930,7 @@ export default function MessageList({
 
                       {/* Images / media */}
                       {message.images && message.images.length > 0 && (
-                        <div className={styles['image-preview-row']}>
+                        <div className={styles['image-preview-layout-row']}>
                           {message.images.map((rawUrl, j) => {
                             const resolvedUrl = PrismService.getFileUrl(rawUrl);
                             const cat = getMimeCategory(rawUrl);
@@ -1963,7 +1963,7 @@ export default function MessageList({
 
                       {/* Audio */}
                       {message.audio && (
-                        <div className={styles['image-preview-row']}>
+                        <div className={styles['image-preview-layout-row']}>
                           {(Array.isArray(message.audio)
                             ? message.audio
                             : [message.audio]
@@ -1979,7 +1979,7 @@ export default function MessageList({
                           ? message.video
                           : [message.video]
                         ).length > 0 && (
-                          <div className={styles['image-preview-row']}>
+                          <div className={styles['image-preview-layout-row']}>
                             {(Array.isArray(message.video)
                               ? message.video
                               : [message.video]
@@ -1995,7 +1995,7 @@ export default function MessageList({
                           ? message.pdf
                           : [message.pdf]
                         ).length > 0 && (
-                          <div className={styles['image-preview-row']}>
+                          <div className={styles['image-preview-layout-row']}>
                             {(Array.isArray(message.pdf)
                               ? message.pdf
                               : [message.pdf]

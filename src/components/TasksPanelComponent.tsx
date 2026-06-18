@@ -289,7 +289,7 @@ export default function TasksPanel({
 
           {/* -- Summary badges ------------------------------------ */}
           {summary && summary.total > 0 && (
-            <div className={styles['summary-row']}>
+            <div className={styles['summary-layout-row']}>
               {STATUS_CYCLE.map((s) => {
                 const config = STATUS_CONFIG[s];
                 const count = summary[s] || 0;
@@ -298,7 +298,7 @@ export default function TasksPanel({
                 return (
                   <button
                     key={s}
-                    className={`${styles['summary-badge']} ${styles[config.colorClass]} ${isActive ? styles['summary-badge-active'] : ""}`}
+                    className={`${styles['summary-badge']} ${styles[config.colorClass]} ${isActive ? styles['summary-badge-is-active-state'] : ""}`}
                     onClick={() => setStatusFilter(isActive ? null : s)}
                     title={`${isActive ? "Clear" : "Filter"}: ${config.label}`}
                   >
@@ -427,8 +427,8 @@ export default function TasksPanel({
                     {config.label}
                   </span>
                   {task.status === "in_progress" && task.activeForm && (
-                    <span className={styles['active-form-badge']}>
-                      <Loader2 size={9} className={styles['active-form-spin']} />
+                    <span className={styles['is-active-state-form-badge']}>
+                      <Loader2 size={9} className={styles['is-active-state-form-spin']} />
                       {task.activeForm}
                     </span>
                   )}
@@ -497,13 +497,13 @@ export default function TasksPanel({
                   Delete task #{task.taskId}?
                 </span>
                 <button
-                  className={`${styles['confirm-button']} ${styles['confirm-btn-yes']}`}
+                  className={`${styles['confirm-button']} ${styles['confirm-button-element-yes']}`}
                   onClick={() => handleDelete(task)}
                 >
                   Delete
                 </button>
                 <button
-                  className={`${styles['confirm-button']} ${styles['confirm-btn-no']}`}
+                  className={`${styles['confirm-button']} ${styles['confirm-button-element-no']}`}
                   onClick={() => setConfirmingDeleteId(null)}
                 >
                   Cancel

@@ -49,7 +49,7 @@
   color: var(--text-primary);
 }
 
-.pill-active {
+.pill-is-active-state {
   background: var(--background-surface);
   color: var(--text-primary);
   box-shadow: var(--calculated-shadow-sm);
@@ -131,7 +131,7 @@
   }
 }
 
-.view-btn-active {
+.view-button-element-is-active-state {
   background: var(--background-surface);
   color: var(--text-primary);
   box-shadow: var(--calculated-shadow-sm);
@@ -164,7 +164,7 @@
   color: var(--text-primary);
 }
 
-.discrete-btn-active {
+.discrete-button-element-is-active-state {
   background: var(--calculated-accent-primary-glow);
   border-color: var(--accent-primary);
   color: var(--accent-primary);

@@ -813,7 +813,7 @@ export const benchmarkModelColumn = () => ({
       className={`${styles['benchmark-model-cell']} ${row._pending ? styles['benchmark-model-pending'] : ""}`}
     >
       <span className={styles['benchmark-model-name']}>{row.label as string}</span>
-      <span className={styles['benchmark-model-provider-row']}>
+      <span className={styles['benchmark-model-provider-layout-row']}>
         <span className={styles['benchmark-model-provider']}>
           {resolveProviderLabel(row.provider as string | undefined)}
         </span>

@@ -54,7 +54,7 @@
 }
 
 /* Hide fill when inactive */
-.status-bar:not(.status-bar-active) .status-bar-fill {
+.status-bar:not(.status-bar-is-active-state) .status-bar-fill {
   opacity: 0;
 }
 
@@ -72,15 +72,15 @@
   opacity: 0.6;
 }
 
-.status-bar-active {
+.status-bar-is-active-state {
   height: 28px;
   min-height: 28px;
   opacity: 1;
   box-shadow:
     0 0 8px -2px
-      color-mix(in srgb, var(--phase-pulse, oklch(0.708 0.1868 53.3)) 20%, transparent),
+      color-mix(in oklch, var(--phase-pulse, oklch(0.708 0.1868 53.3)) 20%, transparent),
     0 0 14px -4px
-      color-mix(in srgb, var(--phase-pulse, oklch(0.774 0.1784 79.8)) 10%, transparent);
+      color-mix(in oklch, var(--phase-pulse, oklch(0.774 0.1784 79.8)) 10%, transparent);
 }
 
 .status-bar-awaiting {
@@ -89,8 +89,8 @@
 
 .status-bar-delegating {
   box-shadow:
-    0 0 8px -2px color-mix(in srgb, oklch(0.794 0.1289 216.3) 15%, transparent),
-    0 0 14px -4px color-mix(in srgb, oklch(0.712 0.1208 221.2) 8%, transparent);
+    0 0 8px -2px color-mix(in oklch, oklch(0.794 0.1289 216.3) 15%, transparent),
+    0 0 14px -4px color-mix(in oklch, oklch(0.712 0.1208 221.2) 8%, transparent);
 }
 
 /* ── Overlay (text, icons, chips) ── */
@@ -140,7 +140,7 @@
   font-weight: 600;
   color: var(--phase-text, oklch(100.0% 0.0001 263.3 / 0.9));
   letter-spacing: 0.02em;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow: 0 1px 3px oklch(0.0% 0.0 0.0 / 0.5);

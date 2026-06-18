@@ -132,7 +132,7 @@
 }
 
 /* Loading state */
-.loading-state {
+.is-loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -157,7 +157,7 @@
   cursor: pointer;
   border: none;
   transition: all 0.15s ease;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .load-button {
@@ -174,7 +174,7 @@
   }
 }
 
-.loading-button {
+.is-loading-state-button {
   background: oklch(58.5% 0.2041 277.1 / 0.1);
   color: var(--accent-primary);
   opacity: 0.7;

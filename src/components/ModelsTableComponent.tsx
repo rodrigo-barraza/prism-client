@@ -835,7 +835,7 @@ function ModelsTableInner({
         key: "_select",
         label: (
           <span
-            className={`${styles['select-wrap']} ${allSelected ? styles['select-wrap-active'] : ""}`}
+            className={`${styles['select-wrap']} ${allSelected ? styles['select-wrap-is-active-state'] : ""}`}
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               handleSelectAll();
@@ -861,7 +861,7 @@ function ModelsTableInner({
           const isSelected = selectedKeys.has(key);
           return (
             <span
-              className={`${styles['select-wrap']} ${isSelected ? styles['select-wrap-active'] : ""}`}
+              className={`${styles['select-wrap']} ${isSelected ? styles['select-wrap-is-active-state'] : ""}`}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onToggleSelect(row._raw);
@@ -961,7 +961,7 @@ function ModelsTableInner({
           >
             <Star
               size={14}
-              className={`${styles['favorite-star']} ${isFav ? styles['favorite-star-active'] : ""}`}
+              className={`${styles['favorite-star']} ${isFav ? styles['favorite-star-is-active-state'] : ""}`}
               fill={isFav ? "currentColor" : "none"}
             />
           </span>
@@ -1004,7 +1004,7 @@ function ModelsTableInner({
         const model = row._model;
         const rawModel = row._raw;
         return (
-          <span className={styles['name-row']}>
+          <span className={styles['name-layout-row']}>
             <ProviderLogo provider={model.provider} size={16} />
             <span className={styles['model-name']}>{model.name}</span>
             {model.provider === "lm-studio" && model.isLoaded && (
@@ -1018,8 +1018,8 @@ function ModelsTableInner({
             {model.provider === "lm-studio" &&
               !model.isLoaded &&
               loadingModelKey === model.key && (
-                <span className={styles['loading-badge']}>
-                  <Loader2 size={9} className={styles['loading-spin']} />
+                <span className={styles['is-loading-state-badge']}>
+                  <Loader2 size={9} className={styles['is-loading-state-spin']} />
                   Loading
                 </span>
               )}
@@ -1718,7 +1718,7 @@ function ModelsTableInner({
             : hasSelection && selectedKeys
               ? (row: RowData) => {
                   const key = `${row._model.provider}:${row._model.key}`;
-                  return selectedKeys.has(key) ? styles['selected-row'] : "";
+                  return selectedKeys.has(key) ? styles['selected-layout-row'] : "";
                 }
               : undefined
         }

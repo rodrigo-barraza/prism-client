@@ -34,7 +34,7 @@
   border-left-color: var(--color-info);
   background: oklch(71.4% 0.1435 254.6 / 0.06);
   box-shadow: 0 0 8px -2px
-    color-mix(in srgb, var(--color-info) 15%, transparent);
+    color-mix(in oklch, var(--color-info) 15%, transparent);
 
   &:hover {
     background: oklch(71.4% 0.1435 254.6 / 0.1);
@@ -54,7 +54,7 @@
 
 /* ── Title Row ───────────────────────────────────────────── */
 
-.title-row {
+.title-layout-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -92,7 +92,7 @@
 /* ── Status Colors ────────────────────────────────────────── */
 
 .status-running {
-  background: color-mix(in srgb, var(--color-info) 12%, transparent);
+  background: color-mix(in oklch, var(--color-info) 12%, transparent);
   color: var(--color-info);
   animation: status-pulse 1.5s ease-in-out infinite;
 }
@@ -108,18 +108,18 @@
 }
 
 .status-complete {
-  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  background: color-mix(in oklch, var(--color-success) 12%, transparent);
   color: var(--color-success);
 }
 
 .status-failed,
 .status-stopped {
-  background: color-mix(in srgb, var(--color-rose) 12%, transparent);
+  background: color-mix(in oklch, var(--color-rose) 12%, transparent);
   color: var(--color-rose);
 }
 
 .status-pending {
-  background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+  background: color-mix(in oklch, var(--text-muted) 12%, transparent);
   color: var(--text-muted);
 }
 
@@ -130,7 +130,7 @@
   font-weight: 500;
   color: var(--text-primary);
   line-height: 1.4;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
@@ -150,7 +150,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .meta-item svg {
@@ -181,12 +181,12 @@
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   color: var(--text-muted);
   padding: 1px 4px;
-  background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
+  background: color-mix(in oklch, var(--background-elevated) 60%, transparent);
   border-radius: 3px;
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 /* ── Empty State ──────────────────────────────────────────── */
@@ -227,8 +227,8 @@
   padding: 8px 10px;
   font-size: var(--font-size-xs);
   color: var(--color-rose);
-  border: 1px solid color-mix(in srgb, var(--color-rose) 20%, transparent);
-  background: color-mix(in srgb, var(--color-rose) 6%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-rose) 20%, transparent);
+  background: color-mix(in oklch, var(--color-rose) 6%, transparent);
   border-radius: 6px;
 }
 
@@ -249,7 +249,7 @@
   font-size: 0.625rem;
   font-weight: 500;
   color: var(--color-info);
-  background: color-mix(in srgb, var(--color-info) 8%, transparent);
+  background: color-mix(in oklch, var(--color-info) 8%, transparent);
   border-radius: 4px;
   animation: live-slide-in 0.2s ease-out;
   width: fit-content;
@@ -288,7 +288,7 @@
 }
 
 .live-tool-name {
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 140px;
@@ -299,5 +299,5 @@
   font-size: 0.5625rem;
   color: var(--text-muted);
   font-weight: 400;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }

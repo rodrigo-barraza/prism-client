@@ -77,7 +77,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: oklch(1 0 0);
   flex-shrink: 0;
   filter: drop-shadow(0 1px 3px oklch(0.0% 0.0 0.0 / 0.4));
 }
@@ -119,8 +119,8 @@
 .streaming-label {
   font-size: var(--font-size-xs);
   font-weight: 600;
-  color: white;
-  white-space: nowrap;
+  color: oklch(1 0 0);
+  oklch(1 0 0)-space: nowrap;
   flex-shrink: 0;
   filter: drop-shadow(0 1px 3px oklch(0.0% 0.0 0.0 / 0.4));
 }
@@ -175,7 +175,7 @@
   border-radius: 50%;
   background: var(--color-danger);
   border: none;
-  color: white;
+  color: oklch(1 0 0);
   cursor: pointer;
   flex-shrink: 0;
   transition:
@@ -194,7 +194,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -203,7 +203,7 @@
   font-weight: 600;
   color: var(--color-danger);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   flex-shrink: 0;
 }
 

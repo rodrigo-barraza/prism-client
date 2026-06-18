@@ -36,7 +36,7 @@ export default function StatsTabBarComponent({
           delay={200}
         >
           <button
-            className={`${styles['stats-tab-button']}${activeTab === tab.key ? ` ${styles['stats-tab-btn-active']}` : ""}`}
+            className={`${styles['stats-tab-button']}${activeTab === tab.key ? ` ${styles['stats-tab-button-element-is-active-state']}` : ""}`}
             onClick={() => onChange(tab.key)}
           >
             {tab.icon}

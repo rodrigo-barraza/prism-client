@@ -124,7 +124,7 @@ function QuestionBlock({
       {/* Options + Preview side-by-side layout */}
       {isPending && options.length > 0 && (
         <div
-          className={`${styles['options-row']} ${activePreview ? styles['with-preview'] : ""}`}
+          className={`${styles['options-layout-row']} ${activePreview ? styles['with-preview'] : ""}`}
         >
           <div className={styles['options-list']}>
             {options.map((option: QuestionOption, optionIndex: number) => {
@@ -168,7 +168,7 @@ function QuestionBlock({
 
       {/* Free-text input (always available) */}
       {isPending && (
-        <div className={styles['input-row']}>
+        <div className={styles['input-layout-row']}>
           <InputComponent
             ref={inputRef}
             type="text"
@@ -185,7 +185,7 @@ function QuestionBlock({
           />
           {/* Annotation toggle */}
           <button
-            className={`${styles['annotate-button']} ${showAnnotations ? styles['annotate-btn-active'] : ""}`}
+            className={`${styles['annotate-button']} ${showAnnotations ? styles['annotate-button-element-is-active-state'] : ""}`}
             onClick={() => setShowAnnotations((v) => !v)}
             title="Add notes"
           >
@@ -207,7 +207,7 @@ function QuestionBlock({
 
       {/* Annotations textarea */}
       {isPending && showAnnotations && (
-        <div className={styles['annotations-row']}>
+        <div className={styles['annotations-layout-row']}>
           <TextAreaComponent
             placeholder="Add notes or context for this answer…"
             value={annotations}
@@ -221,7 +221,7 @@ function QuestionBlock({
 
       {/* Resolved state */}
       {!isPending && answeredWith && (
-        <div className={styles['answered-row']}>
+        <div className={styles['answered-layout-row']}>
           <CornerDownLeft size={12} className={styles['answered-icon']} />
           <span className={styles['answered-text']}>
             {Array.isArray(answeredWith)

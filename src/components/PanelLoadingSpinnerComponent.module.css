@@ -4,7 +4,7 @@
    Supports size variants: small (20px), medium (36px), large (48px).
    ============================================================ */
 
-.loading-spinner-container {
+.is-loading-state-spinner-container {
   display: flex;
   align-items: center;
   justify-content: center;

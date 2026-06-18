@@ -31,14 +31,14 @@
   );
 }
 
-.stats-tab-btn-active {
+.stats-tab-button-element-is-active-state {
   color: var(--accent-primary);
   background: var(--calculated-accent-primary-glow);
   box-shadow: 0 0 0 1px
-    color-mix(in srgb, var(--accent-primary) 20%, transparent);
+    color-mix(in oklch, var(--accent-primary) 20%, transparent);
 }
 
-.stats-tab-btn-active:hover {
+.stats-tab-button-element-is-active-state:hover {
   background: var(--calculated-accent-primary-glow);
   color: var(--accent-primary);
 }

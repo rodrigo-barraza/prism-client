@@ -658,7 +658,7 @@ export default function NavigationSidebarComponent({
               </div>
 
               {/* Navigation links */}
-              <nav className={styles['mobile-popover-nav']}>
+              <nav className={styles['mobile-popover-navigation-bar']}>
                 {navSections.map(
                   (
                     section: NavigationSection,
@@ -706,7 +706,7 @@ export default function NavigationSidebarComponent({
                                 }
                               }}
                             >
-                              <span className={styles['active-state-layer']}>
+                              <span className={styles['is-active-state-layer']}>
                                 <Icon className={styles['navigation-icon']} />
                                 <span className={styles['navigation-label']}>
                                   {item.label}
@@ -751,7 +751,7 @@ export default function NavigationSidebarComponent({
                       setMobileOpen(false);
                     }}
                   >
-                    <span className={styles['active-state-layer']}>
+                    <span className={styles['is-active-state-layer']}>
                       <LogOut className={styles['navigation-icon']} />
                       <span className={styles['navigation-label']}>Log Out</span>
                     </span>
@@ -764,7 +764,7 @@ export default function NavigationSidebarComponent({
                       setMobileOpen(false);
                     }}
                   >
-                    <span className={styles['active-state-layer']}>
+                    <span className={styles['is-active-state-layer']}>
                       <CircleUser className={styles['navigation-icon']} />
                       <span className={styles['navigation-label']}>Log In</span>
                     </span>
@@ -776,7 +776,7 @@ export default function NavigationSidebarComponent({
                     className={styles['navigation-link']}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <span className={styles['active-state-layer']}>
+                    <span className={styles['is-active-state-layer']}>
                       <ShieldCheck className={styles['navigation-icon']} />
                       <span className={styles['navigation-label']}>
                         User Side
@@ -789,7 +789,7 @@ export default function NavigationSidebarComponent({
                     className={styles['navigation-link']}
                     onClick={() => setMobileOpen(false)}
                   >
-                    <span className={styles['active-state-layer']}>
+                    <span className={styles['is-active-state-layer']}>
                       <Settings className={styles['navigation-icon']} />
                       <span className={styles['navigation-label']}>Admin Side</span>
                     </span>
@@ -887,7 +887,7 @@ export default function NavigationSidebarComponent({
                           }
                         }}
                       >
-                        <span className={styles['active-state-layer']}>
+                        <span className={styles['is-active-state-layer']}>
                           <Icon className={styles['navigation-icon']} />
                           <span className={styles['navigation-label']}>
                             {item.label}
@@ -952,7 +952,7 @@ export default function NavigationSidebarComponent({
                   SoundService.playHover({ event: e.nativeEvent })
                 }
               >
-                <span className={styles['active-state-layer']}>
+                <span className={styles['is-active-state-layer']}>
                   <LogOut className={styles['navigation-icon']} />
                   <span className={styles['navigation-label']}>Log Out</span>
                 </span>
@@ -973,7 +973,7 @@ export default function NavigationSidebarComponent({
                   SoundService.playHover({ event: e.nativeEvent })
                 }
               >
-                <span className={styles['active-state-layer']}>
+                <span className={styles['is-active-state-layer']}>
                   <CircleUser className={styles['navigation-icon']} />
                   <span className={styles['navigation-label']}>Log In</span>
                 </span>
@@ -998,7 +998,7 @@ export default function NavigationSidebarComponent({
                   SoundService.playClick({ event: e.nativeEvent })
                 }
               >
-                <span className={styles['active-state-layer']}>
+                <span className={styles['is-active-state-layer']}>
                   <ShieldCheck className={styles['navigation-icon']} />
                   <span className={styles['navigation-label']}>User Side</span>
                 </span>
@@ -1022,7 +1022,7 @@ export default function NavigationSidebarComponent({
                   SoundService.playClick({ event: e.nativeEvent })
                 }
               >
-                <span className={styles['active-state-layer']}>
+                <span className={styles['is-active-state-layer']}>
                   <Settings className={styles['navigation-icon']} />
                   <span className={styles['navigation-label']}>Admin Side</span>
                 </span>
@@ -1030,7 +1030,7 @@ export default function NavigationSidebarComponent({
             </TooltipComponent>
           ) : null}
           {isAdmin && (
-            <div className={styles['status-row']}>
+            <div className={styles['status-layout-row']}>
               <span
                 className={`${styles['status-dot']} ${systemStatus !== "connected" ? styles['offline'] : ""}`}
               />

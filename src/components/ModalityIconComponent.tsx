@@ -146,7 +146,7 @@ export default function ModalityIconComponent({
   };
 
   return (
-    <div className={`modality-icon-component ${styles['modalities-row']} ${className || ""}`}>
+    <div className={`modality-icon-component ${styles['modalities-layout-row']} ${className || ""}`}>
       <BadgeComponent variant="modality" tooltip={tooltipContent}>
         {activeInputs.map(renderIcon)}
         {hasInputs && hasOutputs && (

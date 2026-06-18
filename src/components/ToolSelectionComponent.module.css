@@ -81,7 +81,7 @@
 }
 
 .domain-header:hover {
-  background: color-mix(in srgb, var(--accent-primary) 3%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 3%, transparent);
 }
 
 .domain-icon {
@@ -107,7 +107,7 @@
 
 /* ── Tool row within domain ───────────────────────────────────── */
 
-.tool-row {
+.tool-layout-row {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -118,8 +118,8 @@
   border-radius: var(--border-radius-sm);
 }
 
-.tool-row:hover {
-  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
+.tool-layout-row:hover {
+  background: color-mix(in oklch, var(--accent-primary) 4%, transparent);
 }
 
 .tool-checkbox {
@@ -142,7 +142,7 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   transition: color var(--transition-fast);
 }
 
@@ -154,7 +154,7 @@
 
 /* ── Bulk select-all checkbox ─────────────────────────────────── */
 
-.bulk-checkbox-row {
+.bulk-checkbox-layout-row {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -165,8 +165,8 @@
   transition: background var(--transition-fast);
 }
 
-.bulk-checkbox-row:hover {
-  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
+.bulk-checkbox-layout-row:hover {
+  background: color-mix(in oklch, var(--accent-primary) 4%, transparent);
 }
 
 .bulk-checkbox-label {
@@ -181,7 +181,7 @@
 
 .core-group {
   border-bottom: 1px solid var(--calculated-border-subtle);
-  background: color-mix(in srgb, var(--accent-primary) 2%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 2%, transparent);
 }
 
 .core-header {
@@ -200,7 +200,7 @@
 }
 
 .core-header:hover {
-  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 4%, transparent);
 }
 
 .core-icon {
@@ -216,7 +216,7 @@
 .core-badge {
   font-size: 9px;
   font-weight: 700;
-  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 12%, transparent);
   color: var(--accent-primary);
   padding: 1px 6px;
   border-radius: 10px;
@@ -227,7 +227,7 @@
 .core-badge-locked-off {
   font-size: 9px;
   font-weight: 700;
-  background: color-mix(in srgb, var(--text-tertiary) 12%, transparent);
+  background: color-mix(in oklch, var(--text-tertiary) 12%, transparent);
   color: var(--text-tertiary);
   padding: 1px 6px;
   border-radius: 10px;
@@ -264,12 +264,12 @@
   padding-inline: 32px 12px;
 }
 
-.core-tool-row {
+.core-tool-layout-row {
   opacity: 0.85;
   cursor: default !important;
 }
 
-.core-tool-row:hover {
+.core-tool-layout-row:hover {
   background: transparent !important;
 }
 
@@ -288,13 +288,13 @@
 
 /* ── Locked (settings-dependent) tool rows ────────────────────── */
 
-.locked-tool-row {
+.locked-tool-layout-row {
   opacity: 0.5;
   cursor: default !important;
   pointer-events: auto;
 }
 
-.locked-tool-row:hover {
+.locked-tool-layout-row:hover {
   background: transparent !important;
 }
 
@@ -347,13 +347,13 @@
   }
 }
 
-.tools-section[data-read-only="true"] .tool-row,
-.tools-section[data-read-only="true"] .bulk-checkbox-row {
+.tools-section[data-read-only="true"] .tool-layout-row,
+.tools-section[data-read-only="true"] .bulk-checkbox-layout-row {
   cursor: default;
 }
 
-.tools-section[data-read-only="true"] .tool-row:hover,
-.tools-section[data-read-only="true"] .bulk-checkbox-row:hover {
+.tools-section[data-read-only="true"] .tool-layout-row:hover,
+.tools-section[data-read-only="true"] .bulk-checkbox-layout-row:hover {
   background: transparent;
 }
 
@@ -364,7 +364,7 @@
   border-color: oklch(0.7 0.14 65) !important;
 }
 
-.available-only-tool-row {
+.available-only-tool-layout-row {
   border-inline-start: 2px dashed oklch(0.7 0.14 65);
 }
 

@@ -277,7 +277,7 @@ export default function TextPageComponent({
                     <div key={`${textItem.convId}-${index}`} className={styles['text-card']}>
                       <div className={styles['text-header']}>
                         <button
-                          className={`${styles['favorite-button']} ${isFav ? styles['favorite-button-active'] : ""}`}
+                          className={`${styles['favorite-button']} ${isFav ? styles['favorite-button-is-active-state'] : ""}`}
                           onClick={() => toggleFavorite(textKey)}
                           title={
                             isFav ? "Remove from favorites" : "Add to favorites"
@@ -449,7 +449,7 @@ export default function TextPageComponent({
                   <div key={`${textItem.convId}-${index}`} className={styles['text-card']}>
                     <div className={styles['text-header']}>
                       <button
-                        className={`${styles['favorite-button']} ${isFav ? styles['favorite-button-active'] : ""}`}
+                        className={`${styles['favorite-button']} ${isFav ? styles['favorite-button-is-active-state'] : ""}`}
                         onClick={() => toggleFavorite(textKey)}
                         title={
                           isFav ? "Remove from favorites" : "Add to favorites"

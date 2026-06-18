@@ -258,7 +258,7 @@ export default function MCPServersPanel({
             <label>Transport</label>
             <div className={styles['transport-tabs']}>
               <button
-                className={`${styles['transport-tab']} ${editingServer.transport === "stdio" ? styles['transport-tab-active'] : ""}`}
+                className={`${styles['transport-tab']} ${editingServer.transport === "stdio" ? styles['transport-tab-is-active-state'] : ""}`}
                 onClick={() =>
                   setEditingServer((s: MCPServer | null) =>
                     s ? { ...s, transport: "stdio" } : null,
@@ -268,7 +268,7 @@ export default function MCPServersPanel({
                 stdio
               </button>
               <button
-                className={`${styles['transport-tab']} ${editingServer.transport === "sse" ? styles['transport-tab-active'] : ""}`}
+                className={`${styles['transport-tab']} ${editingServer.transport === "sse" ? styles['transport-tab-is-active-state'] : ""}`}
                 onClick={() =>
                   setEditingServer((s: MCPServer | null) =>
                     s ? { ...s, transport: "sse" } : null,
@@ -278,7 +278,7 @@ export default function MCPServersPanel({
                 SSE
               </button>
               <button
-                className={`${styles['transport-tab']} ${editingServer.transport === "streamable-http" ? styles['transport-tab-active'] : ""}`}
+                className={`${styles['transport-tab']} ${editingServer.transport === "streamable-http" ? styles['transport-tab-is-active-state'] : ""}`}
                 onClick={() =>
                   setEditingServer((s: MCPServer | null) =>
                     s
@@ -361,7 +361,7 @@ export default function MCPServersPanel({
             </div>
           )}
 
-          {error && <div className={styles['error-msg']}>{error}</div>}
+          {error && <div className={styles['error-message']}>{error}</div>}
 
           <div className={styles['form-actions']}>
             <ButtonComponent
@@ -387,7 +387,7 @@ export default function MCPServersPanel({
 
   return (
     <div className={`m-c-p-servers-panel-component ${styles['container']}`}>
-      {error && <div className={styles['error-msg']}>{error}</div>}
+      {error && <div className={styles['error-message']}>{error}</div>}
 
       {servers.length === 0 && (
         <div className={styles['empty-state']}>

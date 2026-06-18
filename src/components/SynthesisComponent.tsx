@@ -988,7 +988,7 @@ export default function SynthesisComponent() {
           </div>
 
           {/* System Prompt + User Persona — side by side */}
-          <div className={styles['prompt-row']}>
+          <div className={styles['prompt-layout-row']}>
             <PromptSectionComponent
               icon={<Settings2 size={14} />}
               label="System Prompt"
@@ -1035,7 +1035,7 @@ export default function SynthesisComponent() {
                   <span className={styles['template-category']}>
                     {seed.category}
                   </span>
-                  <span className={styles['template-msg-count']}>
+                  <span className={styles['template-message-count']}>
                     {seed.messages.length} messages
                   </span>
                 </button>
@@ -1100,7 +1100,7 @@ export default function SynthesisComponent() {
                   />
                 </div>
               ))}
-              <div className={styles['add-seed-row']}>
+              <div className={styles['add-seed-layout-row']}>
                 <ButtonComponent
                   variant="disabled"
                   icon={Plus}

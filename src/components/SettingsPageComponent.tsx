@@ -691,14 +691,14 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Extraction Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Extraction Model</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Extraction Model</span>
+              <span className={styles["layout-row-description"]}>
                 Extracts personal facts and knowledge from conversations
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -713,14 +713,14 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Consolidation Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Consolidation Model</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Consolidation Model</span>
+              <span className={styles["layout-row-description"]}>
                 Merges, deduplicates, and prunes stored memories
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -735,14 +735,14 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Embedding Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Embedding Model</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Embedding Model</span>
+              <span className={styles["layout-row-description"]}>
                 Generates vector embeddings for semantic memory search
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -783,18 +783,18 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Emotion Analysis Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>
                 Emotion Analysis Model
               </span>
-              <span className={styles["row-description"]}>
+              <span className={styles["layout-row-description"]}>
                 Classifies user message emotion to drive the agent&apos;s
                 somatic state (Plutchik wheel). Runs on every incoming message
                 for agents with somatic state enabled.
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -835,18 +835,18 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Image Generation Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>
                 Image Generation Model
               </span>
-              <span className={styles["row-description"]}>
+              <span className={styles["layout-row-description"]}>
                 Model used by the{" "}
                 <ToolLinkComponent toolName="generate_image" /> tool to create
                 native illustrations
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -861,16 +861,16 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Image Description (Vision) Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Vision Model</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Vision Model</span>
+              <span className={styles["layout-row-description"]}>
                 Model used by the{" "}
                 <ToolLinkComponent toolName="describe_image" /> tool to analyze
                 user-attached or reference images
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -911,18 +911,18 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Text-to-Speech Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>
                 Speech Synthesis Model
               </span>
-              <span className={styles["row-description"]}>
+              <span className={styles["layout-row-description"]}>
                 Model used by the{" "}
                 <ToolLinkComponent toolName="synthesize_speech" /> tool to
                 generate audio files from written text
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -937,16 +937,16 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Speech-to-Text (Transcription) Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Transcription Model</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Transcription Model</span>
+              <span className={styles["layout-row-description"]}>
                 Model used by the{" "}
                 <ToolLinkComponent toolName="transcribe_audio" /> tool to
                 transcribe spoken audio recordings into text
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -987,15 +987,15 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Sub-Agent Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Sub-Agent Model</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Sub-Agent Model</span>
+              <span className={styles["layout-row-description"]}>
                 Pick a default sub-agent model for Prism to use when it spawns
                 sub-agents. If not set, it will use the current active model.
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -1011,17 +1011,17 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Critic Gate Model */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Critic Gate Model</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Critic Gate Model</span>
+              <span className={styles["layout-row-description"]}>
                 A fast reviewer model that evaluates dangerous tool calls before
                 execution. When set, high-risk actions (shell, code execution)
                 are reviewed by this model for safety before running. Leave
                 empty to disable the critic gate entirely.
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -1063,10 +1063,10 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Harness Selector */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Agentic Harness</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Agentic Harness</span>
+              <span className={styles["layout-row-description"]}>
                 The execution strategy used by the agent loop. Different
                 harnesses define how the model interacts with tools.
               </span>
@@ -1078,7 +1078,7 @@ export default function SettingsPageComponent() {
               return (
                 <button
                   key={h.id}
-                  className={`${styles["harness-card"]} ${isActive ? styles["harness-active"] : ""}`}
+                  className={`${styles["harness-card"]} ${isActive ? styles["harness-is-active-state"] : ""}`}
                   onClick={() => handleHarnessSelect(h.id)}
                 >
                   <div className={styles["harness-card-header"]}>
@@ -1099,17 +1099,17 @@ export default function SettingsPageComponent() {
           <div className={styles["harness-divider"]} />
 
           {/* Subagent Topology */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Subagent Topology</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Subagent Topology</span>
+              <span className={styles["layout-row-description"]}>
                 Defines how sub-agents coordinate. Each topology maps to a
                 reasoning strategy: Chain of Thought (sequential), Tree of
                 Thoughts (parallel), Graph of Thoughts (aggregation), or DAG
                 mesh (peer-to-peer).
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <SelectComponent
                 value={agentDefaults.topology || "hierarchical"}
                 options={[
@@ -1217,17 +1217,17 @@ export default function SettingsPageComponent() {
           <div className={styles["harness-divider"]} />
 
           {/* Reasoning Strategy */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>Reasoning Strategy</span>
-              <span className={styles["row-description"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Reasoning Strategy</span>
+              <span className={styles["layout-row-description"]}>
                 Controls how the agent reasons within each iteration. Chain of
                 Thought uses sequential single-pass reasoning. Tree of Thoughts
                 generates parallel branches, scores them, and backtracks on
                 failure.
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <SelectComponent
                 value={(agentDefaults.reasoningStrategy as string) || "chain_of_thought"}
                 options={[
@@ -1300,12 +1300,12 @@ export default function SettingsPageComponent() {
           <div className={styles["harness-divider"]} />
 
           {/* Dynamic Tool Activation */}
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>
                 Dynamic Tool Activation
               </span>
-              <span className={styles["row-description"]}>
+              <span className={styles["layout-row-description"]}>
                 Allow the agent to dynamically enable or disable tools
                 mid-session using <ToolLinkComponent toolName="enable_tools" />{" "}
                 / <ToolLinkComponent toolName="disable_tools" />. This reduces
@@ -1313,7 +1313,7 @@ export default function SettingsPageComponent() {
                 agent needs for the current task.
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ToggleComponent
                 checked={agentDefaults.dynamicToolActivation ?? true}
                 onChange={(checked: boolean) => {
@@ -1395,7 +1395,7 @@ export default function SettingsPageComponent() {
                       <Wifi size={16} />
                     </div>
                     <div className={styles["agent-info"]}>
-                      <div className={styles["agent-name-row"]}>
+                      <div className={styles["agent-name-layout-row"]}>
                         <span className={styles["agent-name"]}>
                           {agent.hostInfo?.hostname || agent.name}
                         </span>
@@ -1678,7 +1678,7 @@ export default function SettingsPageComponent() {
           )}
 
           {/* Add workspace input */}
-          <div className={styles["add-workspace-row"]}>
+          <div className={styles["add-workspace-layout-row"]}>
             <InputComponent
               type="text"
               className={`${wsValidation ? (wsValidation.valid ? styles["valid"] : styles["invalid"]) : ""}`}
@@ -1705,7 +1705,7 @@ export default function SettingsPageComponent() {
           {/* Validation feedback */}
           {wsAddPath.trim() && wsValidation && (
             <div
-              className={`${styles["validation-row"]} ${wsValidation.valid ? styles["success"] : styles["error"]}`}
+              className={`${styles["validation-layout-row"]} ${wsValidation.valid ? styles["success"] : styles["error"]}`}
             >
               {wsValidation.valid ? (
                 <>
@@ -1721,7 +1721,7 @@ export default function SettingsPageComponent() {
 
           {/* Windows → WSL translation preview */}
           {wsAddPath.trim() && isWindowsPath(wsAddPath.trim()) && (
-            <div className={`${styles["validation-row"]} ${styles["info"]}`}>
+            <div className={`${styles["validation-layout-row"]} ${styles["info"]}`}>
               <ArrowRight size={12} />
               <span>Translates to: </span>
               <span className={styles["wsl-translation"]}>
@@ -2411,7 +2411,7 @@ export default function SettingsPageComponent() {
                   <span className={styles["environment-table-title"]}>
                     Environment Variables
                   </span>
-                  <div className={styles["environment-row"]}>
+                  <div className={styles["environment-layout-row"]}>
                     <code className={styles["environment-key"]}>
                       WORKSPACE_BACKEND
                     </code>
@@ -2423,7 +2423,7 @@ export default function SettingsPageComponent() {
                       )
                     </span>
                   </div>
-                  <div className={styles["environment-row"]}>
+                  <div className={styles["environment-layout-row"]}>
                     <code className={styles["environment-key"]}>
                       WORKSPACE_ROOTS
                     </code>
@@ -2432,7 +2432,7 @@ export default function SettingsPageComponent() {
                       <code className={styles["inline-code"]}>/workspace</code>)
                     </span>
                   </div>
-                  <div className={styles["environment-row"]}>
+                  <div className={styles["environment-layout-row"]}>
                     <code className={styles["environment-key"]}>
                       WORKSPACE_SERVICE_SECRET
                     </code>
@@ -2624,7 +2624,7 @@ export default function SettingsPageComponent() {
                   <span className={styles["environment-table-title"]}>
                     Docker vs. Local
                   </span>
-                  <div className={styles["compare-row"]}>
+                  <div className={styles["compare-layout-row"]}>
                     <span className={styles["compare-label"]}>Filesystem</span>
                     <span className={styles["compare-docker"]}>
                       Volume-mounted
@@ -2633,7 +2633,7 @@ export default function SettingsPageComponent() {
                       Native — no mount overhead
                     </span>
                   </div>
-                  <div className={styles["compare-row"]}>
+                  <div className={styles["compare-layout-row"]}>
                     <span className={styles["compare-label"]}>Performance</span>
                     <span className={styles["compare-docker"]}>
                       Container + I/O
@@ -2642,7 +2642,7 @@ export default function SettingsPageComponent() {
                       Faster grep, glob, git
                     </span>
                   </div>
-                  <div className={styles["compare-row"]}>
+                  <div className={styles["compare-layout-row"]}>
                     <span className={styles["compare-label"]}>Git / Shell</span>
                     <span className={styles["compare-docker"]}>
                       Inside container
@@ -2651,7 +2651,7 @@ export default function SettingsPageComponent() {
                       Host environment
                     </span>
                   </div>
-                  <div className={styles["compare-row"]}>
+                  <div className={styles["compare-layout-row"]}>
                     <span className={styles["compare-label"]}>Use case</span>
                     <span className={styles["compare-docker"]}>
                       Servers, NAS
@@ -2686,12 +2686,12 @@ export default function SettingsPageComponent() {
         />
 
         <CardComponent.Body>
-          <div className={styles["settings-row"]}>
-            <div className={styles["row-label"]}>
-              <span className={styles["row-title"]}>
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>
                 Allow `.env` & Sensitive Files Access
               </span>
-              <span className={styles["row-description"]}>
+              <span className={styles["layout-row-description"]}>
                 Allow the agent to view, search, or edit `.env` environment
                 configurations, `.pem` certificates, `.key` private keys, and
                 SSH credentials inside the workspace. When disabled, these files
@@ -2699,7 +2699,7 @@ export default function SettingsPageComponent() {
                 credential leakage.
               </span>
             </div>
-            <div className={styles["row-control"]}>
+            <div className={styles["layout-row-control"]}>
               <ToggleComponent
                 checked={settings?.security?.allowEnvFiles ?? false}
                 onChange={(checked: boolean) =>

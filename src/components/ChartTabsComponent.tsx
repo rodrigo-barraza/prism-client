@@ -35,7 +35,7 @@ export default function ChartTabsComponent({
         <button
           key={tab.key}
           type="button"
-          className={`${styles['tab']} ${activeTab === tab.key ? styles['tab-active'] : ""}`}
+          className={`${styles['tab']} ${activeTab === tab.key ? styles['tab-is-active-state'] : ""}`}
           {...SoundService.interactive(() => onChange(tab.key))}
           style={
             activeTab === tab.key && tab.color

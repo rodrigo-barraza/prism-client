@@ -28,7 +28,7 @@
   position: relative;
   animation: fade-in 0.3s ease-out;
   box-shadow: 0 0 0 1px
-    color-mix(in srgb, var(--accent-primary) 10%, transparent);
+    color-mix(in oklch, var(--accent-primary) 10%, transparent);
 }
 
 .live::before {
@@ -101,7 +101,7 @@
 }
 
 /* Row for icon + value — overrides CostBadge .badge box model */
-.value-row {
+.value-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -125,7 +125,7 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
   color: var(--text-primary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .label {
@@ -135,7 +135,7 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   line-height: 1.2;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 /* ── Responsive ── */

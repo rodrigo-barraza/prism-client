@@ -89,7 +89,7 @@ export default function ModelInfoPanel({
       <div className={styles['container']}>
         <div className={styles['section']}>
           <div className={styles['section-header']}>Model Info</div>
-          <div className={styles['modality-row']}>
+          <div className={styles['modality-layout-row']}>
             <span className={styles['modality-name']} style={{ opacity: 0.5 }}>
               Select a model to view details
             </span>
@@ -113,7 +113,7 @@ export default function ModelInfoPanel({
       {selectedModelDef.description && (
         <div className={styles['section']} style={{ paddingBottom: 8 }}>
           <div className={styles['section-header']}>Description</div>
-          <div className={styles['modality-row']}>
+          <div className={styles['modality-layout-row']}>
             <span className={styles['modality-name']} style={{ opacity: 0.8, lineHeight: 1.5, fontSize: "0.75rem" }}>
               {selectedModelDef.description}
             </span>
@@ -149,7 +149,7 @@ export default function ModelInfoPanel({
           <div className={styles['section']}>
             <div className={styles['section-header']}>Modalities</div>
             {mods.map((m) => (
-              <div key={m.type} className={styles['modality-row']}>
+              <div key={m.type} className={styles['modality-layout-row']}>
                 <span
                   className={styles['modality-icon']}
                   style={{
@@ -176,7 +176,7 @@ export default function ModelInfoPanel({
         <div className={styles['section']}>
           <div className={styles['section-header']}>Token Limits</div>
           {selectedModelDef.contextLength && (
-            <div className={styles['modality-row']}>
+            <div className={styles['modality-layout-row']}>
               <span className={styles['modality-name']}>Context Window</span>
               <span
                 className={`${styles['modality-status']} ${styles['modality-active']}`}
@@ -186,7 +186,7 @@ export default function ModelInfoPanel({
             </div>
           )}
           {selectedModelDef.maxOutputTokens && (
-            <div className={styles['modality-row']}>
+            <div className={styles['modality-layout-row']}>
               <span className={styles['modality-name']}>Max Output</span>
               <span
                 className={`${styles['modality-status']} ${styles['modality-active']}`}
@@ -245,7 +245,7 @@ export default function ModelInfoPanel({
           <div className={styles['section']}>
             <div className={styles['section-header']}>Pricing</div>
             {entries.map((e) => (
-              <div key={e.label} className={styles['modality-row']}>
+              <div key={e.label} className={styles['modality-layout-row']}>
                 <span className={styles['modality-icon']}>
                   <DollarSign size={12} />
                 </span>
@@ -283,7 +283,7 @@ export default function ModelInfoPanel({
           <div className={styles['section']}>
             <div className={styles['section-header']}>Arena Scores</div>
             {entries.map(([key, value]) => (
-              <div key={key} className={styles['modality-row']}>
+              <div key={key} className={styles['modality-layout-row']}>
                 <span className={styles['modality-icon']}>
                   <Brain size={12} />
                 </span>

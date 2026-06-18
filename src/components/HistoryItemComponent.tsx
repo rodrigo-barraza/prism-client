@@ -179,7 +179,7 @@ export default function HistoryItemComponent({
     >
       {onToggleFavorite && (
         <button
-          className={`${styles['favorite-button']} ${isFavorite ? styles['favorite-button-active'] : ""}`}
+          className={`${styles['favorite-button']} ${isFavorite ? styles['favorite-button-is-active-state'] : ""}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onToggleFavorite(item.id);
@@ -191,7 +191,7 @@ export default function HistoryItemComponent({
       )}
       <div className={styles['content']}>
         {/* Row 1: time + tags (left) · agentBadge + cost (right) */}
-        <div className={styles['top-row']}>
+        <div className={styles['top-layout-row']}>
           <div className={styles['top-left']}>
             <BadgeComponent type="dateTime" date={itemDate} />
             {admin &&
@@ -288,7 +288,7 @@ export default function HistoryItemComponent({
         {!isCondensed &&
           (hasInputOutputModalities ||
             (item.totalCost !== undefined && item.totalCost > 0)) && (
-            <div className={styles['bottom-row']}>
+            <div className={styles['bottom-layout-row']}>
               <div className={styles['bottom-left']}>
                 {hasInputOutputModalities && (
                   <ModalityIconComponent modalities={modalities} />

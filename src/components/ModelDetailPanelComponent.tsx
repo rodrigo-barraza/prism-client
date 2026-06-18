@@ -471,7 +471,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: ModelDetai
                   <Layers size={12} />
                   Modalities
                 </div>
-                <div className={styles['modalities-row']}>
+                <div className={styles['modalities-layout-row']}>
                   {modelDetail.inputTypes.map((inputType: string) => {
                     const meta = (MODALITY_ICONS as Record<string, { icon: React.ElementType; label: string }>)[inputType];
                     if (!meta) return null;
@@ -622,7 +622,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: ModelDetai
                 </div>
                 <div className={styles['pricing-grid']}>
                   {pricingEntries.map(([key, value]: [string, unknown]) => (
-                    <div key={key} className={styles['pricing-row']}>
+                    <div key={key} className={styles['pricing-layout-row']}>
                       <span className={styles['pricing-label']}>
                         {(PRICING_LABELS as Record<string, string>)[key] || key}
                       </span>
@@ -719,7 +719,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: ModelDetai
 
               {/* -- Success / Error Rate Bar ---------- */}
               {(modelDetail.successCount > 0 || modelDetail.errorCount > 0) && (
-                <div className={styles['success-rate-row']}>
+                <div className={styles['success-rate-layout-row']}>
                   <div className={styles['success-rate-bar']}>
                     <div
                       className={styles['success-rate-fill']}

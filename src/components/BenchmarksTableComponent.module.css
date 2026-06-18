@@ -1,14 +1,14 @@
 /* ── BenchmarksTableComponent ─────────────────────── */
 
 /* Running-model row: progress bar overlay spanning the full row */
-.running-row {
+.running-layout-row {
   position: relative;
 }
 
 /* Running cells stay transparent — the ::after progress overlay provides visual feedback */
 
 /* Full-width progress bar overlay on the row itself */
-.running-row::after {
+.running-layout-row::after {
   content: "";
   position: absolute;
   left: 0;
@@ -17,12 +17,12 @@
   width: var(--progress, 0%);
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--color-success) 10%, transparent) 0%,
-    color-mix(in srgb, var(--color-success) 18%, transparent) 70%,
-    color-mix(in srgb, var(--color-success) 8%, transparent) 100%
+    color-mix(in oklch, var(--color-success) 10%, transparent) 0%,
+    color-mix(in oklch, var(--color-success) 18%, transparent) 70%,
+    color-mix(in oklch, var(--color-success) 8%, transparent) 100%
   );
   border-right: 2px solid
-    color-mix(in srgb, var(--color-success) 30%, transparent);
+    color-mix(in oklch, var(--color-success) 30%, transparent);
   transform-origin: left;
   transition: transform 0.12s linear;
   pointer-events: none;
@@ -30,12 +30,12 @@
 }
 
 /* Keep cell content above the bar */
-.running-row td {
+.running-layout-row td {
   position: relative;
   z-index: 1;
 }
 
 /* Pending/queued model row — dimmed to indicate not yet started */
-.pending-row {
+.pending-layout-row {
   opacity: 0.5;
 }

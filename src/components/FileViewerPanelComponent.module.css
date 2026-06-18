@@ -63,7 +63,7 @@
   font-weight: 600;
   color: oklch(100.0% 0.0001 263.3 / 0.85);
   letter-spacing: 0.02em;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   pointer-events: none;
 }
 
@@ -100,12 +100,12 @@
   background: oklch(100.0% 0.0001 263.3 / 0.22);
 }
 
-.title-bar-btn-active {
+.title-bar-button-element-is-active-state {
   background: oklch(100.0% 0.0001 263.3 / 0.12);
   color: var(--color-white);
 }
 
-.title-bar-btn-active:hover {
+.title-bar-button-element-is-active-state:hover {
   background: oklch(100.0% 0.0001 263.3 / 0.22);
 }
 
@@ -140,7 +140,7 @@
   color: var(--text-muted);
   font-size: var(--font-size-xs);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   cursor: pointer;
   user-select: none;
   transition:
@@ -160,7 +160,7 @@
   }
 }
 
-.tab-active {
+.tab-is-active-state {
   background: var(--background-base);
   color: var(--text-primary);
   border-bottom: 2px solid var(--accent-primary);
@@ -172,7 +172,7 @@
   opacity: 0.5;
 }
 
-.tab-active .tab-icon {
+.tab-is-active-state .tab-icon {
   opacity: 1;
 }
 
@@ -206,7 +206,7 @@
   }
 }
 
-.tab-active .tab-close {
+.tab-is-active-state .tab-close {
   opacity: 0.6;
 }
 
@@ -234,7 +234,7 @@
   color: var(--text-tertiary, var(--text-muted));
   border-bottom: 1px solid var(--calculated-border-subtle);
   flex-shrink: 0;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-height: 24px;
@@ -259,13 +259,13 @@
 .code-scroll pre {
   background: var(--background-base) !important;
   word-wrap: break-word;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
 }
 
 /* No-wrap mode: horizontal scrolling instead of line wrapping */
 .code-scroll-no-wrap pre {
   word-wrap: normal;
-  white-space: pre;
+  oklch(1 0 0)-space: pre;
   overflow-x: auto;
 }
 
@@ -388,7 +388,7 @@
   justify-content: center;
   width: 22px;
   height: 22px;
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 40%, transparent);
+  border: 1px solid color-mix(in oklch, var(--accent-primary) 40%, transparent);
   border-radius: 4px;
   background: color-mix(
     in srgb,
@@ -426,7 +426,7 @@
   color: var(--color-white);
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px
-    color-mix(in srgb, var(--accent-primary) 25%, transparent);
+    color-mix(in oklch, var(--accent-primary) 25%, transparent);
   transform: translateY(-50%) scale(1.05);
 }
 

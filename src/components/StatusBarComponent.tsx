@@ -189,7 +189,7 @@ export default function StatusBarComponent({
 
   return (
     <div
-      className={`status-bar-component ${styles['status-bar']}${isSubAgent ? ` ${styles['status-bar-sub-agent']}` : ""}${active ? ` ${styles['status-bar-active']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
+      className={`status-bar-component ${styles['status-bar']}${isSubAgent ? ` ${styles['status-bar-sub-agent']}` : ""}${active ? ` ${styles['status-bar-is-active-state']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
       style={gradientCustomProperties}
     >
       <div

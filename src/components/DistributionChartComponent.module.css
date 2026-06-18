@@ -14,7 +14,7 @@
 
 /* ── Metric selector row ── */
 
-.metric-row {
+.metric-layout-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -45,7 +45,7 @@
   padding: 3px 8px;
   background: var(--background-elevated);
   border-radius: var(--border-radius-sm);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 /* ── Body: chart + legend ── */
@@ -77,7 +77,7 @@
   padding-right: 4px;
 }
 
-.legend-row {
+.legend-layout-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -91,7 +91,7 @@
   }
 }
 
-.legend-row-active {
+.legend-layout-row-is-active-state {
   background: var(--calculated-accent-primary-subtle);
 }
 
@@ -107,14 +107,14 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
   transition: color 0.15s ease;
 
-  .legend-row-active &,
-  .legend-row:hover & {
+  .legend-layout-row-is-active-state &,
+  .legend-layout-row:hover & {
     color: var(--text-primary);
   }
 }
@@ -124,7 +124,7 @@
   font-weight: 600;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .legend-pct {

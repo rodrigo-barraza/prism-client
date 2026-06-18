@@ -1,6 +1,6 @@
 /* ── ModalityIconComponent ── */
 
-.modalities-row {
+.modalities-layout-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;

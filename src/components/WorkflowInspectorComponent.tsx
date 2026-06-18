@@ -437,7 +437,7 @@ export default function WorkflowInspector({
                         return (
                           <button
                             key={key}
-                            className={`${styles['model-dropdown-item']} ${isCurrent ? styles['model-dropdown-item-active'] : ""}`}
+                            className={`${styles['model-dropdown-item']} ${isCurrent ? styles['model-dropdown-item-is-active-state'] : ""}`}
                             onClick={() => {
                               onChangeModel?.(node.id, modelOption);
                               setModelDropdownOpen(false);
@@ -765,7 +765,7 @@ export default function WorkflowInspector({
               <section
                 className={`${styles['section']} ${styles['scrollable-section']}`}
               >
-                <div className={styles['section-header-row']}>
+                <div className={styles['section-header-layout-row']}>
                   <label className={styles['section-label']}>
                     {conversationView === "json"
                       ? "Conversation JSON"
@@ -773,14 +773,14 @@ export default function WorkflowInspector({
                   </label>
                   <div className={styles['content-tabs']}>
                     <button
-                      className={`${styles['content-tab']} ${conversationView === "json" ? styles['content-tab-active'] : ""}`}
+                      className={`${styles['content-tab']} ${conversationView === "json" ? styles['content-tab-is-active-state'] : ""}`}
                       onClick={() => setConversationView("json")}
                     >
                       <Code size={10} />
                       JSON
                     </button>
                     <button
-                      className={`${styles['content-tab']} ${conversationView === "preview" ? styles['content-tab-active'] : ""}`}
+                      className={`${styles['content-tab']} ${conversationView === "preview" ? styles['content-tab-is-active-state'] : ""}`}
                       onClick={() => setConversationView("preview")}
                     >
                       <BookOpen size={10} />
@@ -840,15 +840,15 @@ export default function WorkflowInspector({
                 : t.parameters?.length || 0;
               const displayName = renderToolName(name);
               return (
-                <div key={name} className={styles['tool-row']}>
-                  <div className={styles['tool-row-left']}>
+                <div key={name} className={styles['tool-layout-row']}>
+                  <div className={styles['tool-layout-row-left']}>
                     <span
-                      className={`${styles['tool-row-name']} ${isDisabled ? styles['tool-row-name-disabled'] : ""}`}
+                      className={`${styles['tool-layout-row-name']} ${isDisabled ? styles['tool-layout-row-name-disabled'] : ""}`}
                     >
                       {displayName}
                     </span>
                     {paramCount > 0 && (
-                      <span className={styles['tool-row-params']}>
+                      <span className={styles['tool-layout-row-params']}>
                         {paramCount} params
                       </span>
                     )}

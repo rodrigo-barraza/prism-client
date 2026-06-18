@@ -45,7 +45,7 @@
       var(--color-cyan) 30%,
       var(--calculated-border-color)
     );
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-cyan) 8%, transparent);
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--color-cyan) 8%, transparent);
   }
 }
 
@@ -66,7 +66,7 @@
 
 .status-dot-connected {
   background: var(--color-emerald);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--color-emerald) 50%, transparent);
+  box-shadow: 0 0 8px color-mix(in oklch, var(--color-emerald) 50%, transparent);
   animation: status-pulse 2s ease-in-out infinite;
 }
 
@@ -89,7 +89,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -112,7 +112,7 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  background: color-mix(in oklch, var(--text-muted) 10%, transparent);
   color: var(--text-muted);
 }
 
@@ -124,7 +124,7 @@
   font-size: 0.5625rem;
   font-weight: 600;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--color-cyan) 10%, transparent);
+  background: color-mix(in oklch, var(--color-cyan) 10%, transparent);
   color: var(--color-cyan);
 }
 
@@ -143,14 +143,14 @@
   font-size: 0.625rem;
   font-weight: 600;
   color: var(--color-emerald);
-  background: color-mix(in srgb, var(--color-emerald) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-emerald) 25%, transparent);
+  background: color-mix(in oklch, var(--color-emerald) 10%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-emerald) 25%, transparent);
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--color-emerald) 18%, transparent);
+    background: color-mix(in oklch, var(--color-emerald) 18%, transparent);
   }
 
   &:disabled {
@@ -167,14 +167,14 @@
   font-size: 0.625rem;
   font-weight: 600;
   color: var(--color-warning);
-  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-warning) 25%, transparent);
+  background: color-mix(in oklch, var(--color-warning) 10%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-warning) 25%, transparent);
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--color-warning) 18%, transparent);
+    background: color-mix(in oklch, var(--color-warning) 18%, transparent);
   }
 }
 
@@ -194,7 +194,7 @@
   padding: 2px 7px;
   font-size: 0.625rem;
   color: var(--text-secondary);
-  background: color-mix(in srgb, var(--background-elevated) 80%, transparent);
+  background: color-mix(in oklch, var(--background-elevated) 80%, transparent);
   border-radius: 4px;
   font-family: var(--font-mono, "JetBrains Mono", monospace);
 }
@@ -270,7 +270,7 @@
 
   &:focus {
     border-color: var(--color-cyan);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-cyan) 15%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-cyan) 15%, transparent);
   }
 
   &::placeholder {
@@ -311,12 +311,12 @@
 
   &:hover {
     color: var(--text-secondary);
-    background: color-mix(in srgb, var(--text-muted) 5%, transparent);
+    background: color-mix(in oklch, var(--text-muted) 5%, transparent);
   }
 }
 
-.transport-tab-active {
-  background: color-mix(in srgb, var(--color-cyan) 12%, transparent);
+.transport-tab-is-active-state {
+  background: color-mix(in oklch, var(--color-cyan) 12%, transparent);
   color: var(--color-cyan);
 }
 
@@ -331,11 +331,11 @@
 
 /* ── Error message ──────────────────────────────────────────── */
 
-.error-msg {
+.error-message {
   font-size: var(--font-size-xs);
   color: var(--color-rose);
   padding: 6px 8px;
-  background: color-mix(in srgb, var(--color-rose) 8%, transparent);
+  background: color-mix(in oklch, var(--color-rose) 8%, transparent);
   border-radius: 4px;
-  border: 1px solid color-mix(in srgb, var(--color-rose) 15%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-rose) 15%, transparent);
 }

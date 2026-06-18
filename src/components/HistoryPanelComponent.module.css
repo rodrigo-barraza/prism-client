@@ -30,14 +30,14 @@
 }
 
 /* Transient rainbow — applied on click, removed after ~1s */
-.new-btn-rainbow {
+.new-button-element-rainbow {
   filter: hue-rotate(0deg);
   animation: new-btn-hue 1s linear forwards;
   will-change: filter;
 }
 
 /* Glitch text scramble — chaotic distortion during rainbow flash */
-.new-btn-glitch {
+.new-button-element-glitch {
   font-weight: 800;
   letter-spacing: -0.5px;
   color: oklch(86.1% 0.1325 326.6) !important;

@@ -42,7 +42,7 @@
   background: oklch(from var(--accent-primary) l c h / 0.04);
 }
 
-.associated-request-row {
+.associated-request-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -55,7 +55,7 @@
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 .associated-request-cost {

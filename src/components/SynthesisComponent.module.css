@@ -52,7 +52,7 @@
 
 /* ── Prompt Row (system prompt + user persona side-by-side) ── */
 
-.prompt-row {
+.prompt-layout-row {
   display: flex;
   gap: 16px;
 
@@ -63,7 +63,7 @@
 }
 
 @media (max-width: 640px) {
-  .prompt-row {
+  .prompt-layout-row {
     flex-direction: column;
   }
 }
@@ -97,7 +97,7 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -151,7 +151,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -163,7 +163,7 @@
   letter-spacing: 0.5px;
 }
 
-.template-msg-count {
+.template-message-count {
   font-size: 0.625rem;
   color: var(--text-muted);
 }
@@ -228,7 +228,7 @@
   }
 }
 
-.add-seed-row {
+.add-seed-layout-row {
   display: flex;
   gap: 8px;
 }
@@ -349,7 +349,7 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 }
 
 /* ── Output Panel ── */

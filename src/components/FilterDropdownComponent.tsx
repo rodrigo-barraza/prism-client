@@ -159,7 +159,7 @@ export default function FilterDropdownComponent({
       }
     >
       <div
-        className={styles['filter-row']}
+        className={styles['filter-layout-row']}
         style={fullWidth ? { flexDirection: "column" } : undefined}
       >
         {/* -- Dropdown trigger -- */}
@@ -210,7 +210,7 @@ export default function FilterDropdownComponent({
                         <button
                           key={preset.label}
                           type="button"
-                          className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
+                          className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
                           {...(SoundService.interactive(() =>
                             onDateChange(preset.getValue()),
                           ) as Record<string, React.MouseEventHandler>)}
@@ -226,7 +226,7 @@ export default function FilterDropdownComponent({
                   )}
                   <button
                     type="button"
-                    className={`${styles['menu-item']} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles['menu-item-active'] : ""}`}
+                    className={`${styles['menu-item']} ${!getActiveDatePreset(dateFrom, dateTo) && (dateFrom || dateTo) ? styles['menu-item-is-active-state'] : ""}`}
                     {...(SoundService.interactive(() => {
                       setShowCustomDatePicker(true);
                       setIsOpen(false);
@@ -266,7 +266,7 @@ export default function FilterDropdownComponent({
                         <button
                           key={item.key}
                           type="button"
-                          className={`${styles['menu-item']} ${isActive ? styles['menu-item-active'] : ""}`}
+                          className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
                           {...(SoundService.interactive(() =>
                             onToggle(
                               isSingleSelect && isActive ? null : item.key,

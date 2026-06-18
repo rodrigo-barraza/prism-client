@@ -92,7 +92,7 @@ export default function ToolBadgeComponent({
 
   const badge = (
     <span
-      className={`${styles['badge']}${active ? ` ${styles['badge-active']}` : ""}`}
+      className={`${styles['badge']}${active ? ` ${styles['badge-is-active-state']}` : ""}`}
       style={{
         color,
         borderColor: `color-mix(in srgb, ${color} 30%, transparent)`,
@@ -136,7 +136,7 @@ export function ToolBadgeRow({
   if (!tools || Object.keys(tools).length === 0) return null;
 
   return (
-    <div className={styles['badge-row']}>
+    <div className={styles['badge-layout-row']}>
       {Object.entries(tools)
         .sort(([, a]: [string, number], [, b]: [string, number]) => b - a)
         .map(([name, count]: [string, number]) => (
@@ -198,7 +198,7 @@ export function ModelToolsRow({
   if (activeTools.length === 0) return null;
 
   return (
-    <div className={`tool-badge-component ${styles['badge-row']} ${className || ""}`}>
+    <div className={`tool-badge-component ${styles['badge-layout-row']} ${className || ""}`}>
       {activeTools.map((def) => {
         const raw = tools[def.key];
         const count = typeof raw === "number" ? raw : 0;

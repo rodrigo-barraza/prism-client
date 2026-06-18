@@ -30,18 +30,18 @@ export default function TextContentComponent({
 
   return (
     <div className={`text-content-component ${styles['wrapper']} ${className || ""}`}>
-      <div className={styles['header-row']}>
+      <div className={styles['header-layout-row']}>
         <label className={styles['label']}>{label}</label>
         <div className={styles['tabs']}>
           <button
-            className={`${styles['tab']} ${!preview ? styles['tab-active'] : ""}`}
+            className={`${styles['tab']} ${!preview ? styles['tab-is-active-state'] : ""}`}
             onClick={() => setPreview(false)}
           >
             <Code size={10} />
             Raw
           </button>
           <button
-            className={`${styles['tab']} ${preview ? styles['tab-active'] : ""}`}
+            className={`${styles['tab']} ${preview ? styles['tab-is-active-state'] : ""}`}
             onClick={() => setPreview(true)}
           >
             <BookOpen size={10} />

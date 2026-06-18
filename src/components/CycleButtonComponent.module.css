@@ -40,7 +40,7 @@
 }
 
 /* Highlighted state — when value differs from the default */
-.cycle-button-active {
+.cycle-button-is-active-state {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: var(--color-white);
@@ -55,7 +55,7 @@
   }
 }
 
-.cycle-button-active:hover {
+.cycle-button-is-active-state:hover {
   background: var(--calculated-accent-primary-hover);
   border-color: var(--calculated-accent-primary-hover);
   color: var(--color-white);
@@ -79,7 +79,7 @@
 }
 
 /* Override the slow hue cycle during active tweening */
-.cycle-button-active.tweening {
+.cycle-button-is-active-state.tweening {
   animation: cycle-count-rainbow 0.5s linear;
 }
 
@@ -109,7 +109,7 @@
 }
 
 /* Override active colors during glitch */
-.cycle-button-active.glitching {
+.cycle-button-is-active-state.glitching {
   animation:
     glitch-hue 0.15s linear infinite,
     glitch-jitter 0.05s steps(2) infinite;

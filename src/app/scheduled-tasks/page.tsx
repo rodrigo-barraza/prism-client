@@ -253,7 +253,7 @@ function CronJobDetailPanel({
             <div className={styles['detail-section-title']}>
               Status & Actions
             </div>
-            <div className={styles['detail-actions-row']}>
+            <div className={styles['detail-actions-layout-row']}>
               <button
                 className={`${styles['detail-action-button']} ${styles['detail-edit-button']}`}
                 onClick={() => {
@@ -1034,9 +1034,9 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
             {/* Header */}
             <header className={styles['header']}>
-              <div className={styles['header-top-row']}>
+              <div className={styles['header-top-layout-row']}>
                 <div className={styles['header-left']}>
-                  <div className={styles['header-title-row']}>
+                  <div className={styles['header-title-layout-row']}>
                     <Clock className={styles['header-icon']} />
                     <h1 className={styles['header-title']}>Scheduled Tasks</h1>
                   </div>
@@ -1094,7 +1094,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
             {/* Task Content */}
             <div>
               {loading ? (
-                <div className={styles['loading-state']}>
+                <div className={styles['is-loading-state']}>
                   <PanelLoadingSpinner size="large" />
                 </div>
               ) : filteredTasks.length === 0 ? (
@@ -1301,7 +1301,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                         setConfirmDeleteId(row.id);
                                         setActiveMenuId(null);
                                       }}
-                                      className={styles['delete-btn-text']}
+                                      className={styles['delete-button-element-text']}
                                     >
                                       <Trash2 size={13} />
                                       <span>Delete</span>
@@ -1435,7 +1435,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                         setConfirmDeleteId(task.id);
                                         setActiveMenuId(null);
                                       }}
-                                      className={styles['delete-btn-text']}
+                                      className={styles['delete-button-element-text']}
                                     >
                                       <Trash2 size={13} />
                                       <span>Delete Task</span>
@@ -1452,7 +1452,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                             <p className={styles['prompt-text']}>{task.prompt}</p>
                           </div>
 
-                          <div className={styles['tags-row']}>
+                          <div className={styles['tags-layout-row']}>
                             <span className={styles['tag']}>
                               <Bot size={11} />
                               <span>
@@ -1556,7 +1556,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     />
                   </FormGroupComponent>
 
-                  <div className={styles['form-row']}>
+                  <div className={styles['form-layout-row']}>
                     {/* Project / Workspace */}
                     <FormGroupComponent label="Project">
                       <SelectComponent
@@ -1634,7 +1634,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
                     {/* Time picker for daily */}
                     {formScheduleType === "daily" && (
-                      <div className={styles['time-picker-row']}>
+                      <div className={styles['time-picker-layout-row']}>
                         <span className={styles['picker-label']}>around</span>
                         <SelectComponent
                           value={formTimeHour}
@@ -1671,7 +1671,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
                     {/* Day + time picker for weekly */}
                     {formScheduleType === "weekly" && (
-                      <div className={styles['weekly-picker-row']}>
+                      <div className={styles['weekly-picker-layout-row']}>
                         <SelectComponent
                           value={String(formWeeklyDay)}
                           onChange={(value: string) =>
@@ -1723,7 +1723,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
 
                     {/* Date + time picker for once */}
                     {formScheduleType === "once" && (
-                      <div className={styles['weekly-picker-row']}>
+                      <div className={styles['weekly-picker-layout-row']}>
                         <InputComponent
                           type="date"
                           value={formOnceDate}
@@ -1783,7 +1783,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                     {/* Custom recurrence visual builder panel */}
                     {formScheduleType === "custom" && (
                       <div className={styles['custom-recurrence-panel']}>
-                        <div className={styles['recurrence-row']}>
+                        <div className={styles['recurrence-layout-row']}>
                           <span className={styles['recurrence-text']}>Repeat every</span>
                           <InputComponent
                             type="number"
@@ -1844,7 +1844,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                         setFormCustomWeekdays(previousWeekdays => [...previousWeekdays, dayIndex].sort());
                                       }
                                     }}
-                                    className={`${styles['weekday-badge-button']} ${isSelected ? styles['weekday-badge-active'] : ""}`}
+                                    className={`${styles['weekday-badge-button']} ${isSelected ? styles['weekday-badge-is-active-state'] : ""}`}
                                   >
                                     {label}
                                   </button>
@@ -1942,7 +1942,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                                         setFormCustomMonths(previousMonths => [...previousMonths, monthOneIndexed].sort());
                                       }
                                     }}
-                                    className={`${styles['month-badge-button']} ${isSelected ? styles['month-badge-active'] : ""}`}
+                                    className={`${styles['month-badge-button']} ${isSelected ? styles['month-badge-is-active-state'] : ""}`}
                                   >
                                     {label}
                                   </button>

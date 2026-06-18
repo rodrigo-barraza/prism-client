@@ -246,7 +246,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         />,
       );
 
-      const lockedToolRows = container.querySelectorAll(".locked-tool-row");
+      const lockedToolRows = container.querySelectorAll(".locked-tool-layout-row");
       expect(lockedToolRows.length).toBe(coreWorkspaceTools.length);
 
       for (const row of lockedToolRows) {
@@ -267,7 +267,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         />,
       );
 
-      const coreToolRows = container.querySelectorAll(".core-tool-row");
+      const coreToolRows = container.querySelectorAll(".core-tool-layout-row");
       expect(coreToolRows.length).toBe(coreHarnessTools.length);
 
       for (const row of coreToolRows) {
@@ -401,8 +401,8 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         />,
       );
 
-      const coreToolRows = container.querySelectorAll(".core-tool-row");
-      // All core tools (harness + workspace) should be core-tool-row
+      const coreToolRows = container.querySelectorAll(".core-tool-layout-row");
+      // All core tools (harness + workspace) should be core-tool-layout-row
       expect(coreToolRows.length).toBe(coreHarnessTools.length + coreWorkspaceTools.length);
 
       for (const row of coreToolRows) {
@@ -473,8 +473,8 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
           (element) => element.textContent === renderedName,
         );
 
-        // Locked-off tools in the "locked-tool-row" pattern should not be in the selected tab
-        const lockedRows = container.querySelectorAll(".locked-tool-row");
+        // Locked-off tools in the "locked-tool-layout-row" pattern should not be in the selected tab
+        const lockedRows = container.querySelectorAll(".locked-tool-layout-row");
         // In the selected tab, workspace tools should be completely absent
         // (they are filtered out at the memo level)
         const lockedRowNames = Array.from(lockedRows).map(
@@ -552,7 +552,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       );
 
       // 2 locked-off rows
-      const lockedRows = container.querySelectorAll(".locked-tool-row");
+      const lockedRows = container.querySelectorAll(".locked-tool-layout-row");
       expect(lockedRows.length).toBe(2);
       for (const row of lockedRows) {
         const checkboxInput = row.querySelector("input[type='checkbox']") as HTMLInputElement;
@@ -560,8 +560,8 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         expect(checkboxInput.disabled).toBe(true);
       }
 
-      // Remaining workspace tools + all harness tools should be core-tool-row (checked, locked on)
-      const coreRows = container.querySelectorAll(".core-tool-row");
+      // Remaining workspace tools + all harness tools should be core-tool-layout-row (checked, locked on)
+      const coreRows = container.querySelectorAll(".core-tool-layout-row");
       expect(coreRows.length).toBe(coreHarnessTools.length + coreWorkspaceTools.length - 2);
       for (const row of coreRows) {
         const checkboxInput = row.querySelector("input[type='checkbox']") as HTMLInputElement;
@@ -599,10 +599,10 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       );
 
       // No locked rows — all tools should be normal toggleable rows
-      const coreToolRows = container.querySelectorAll(".core-tool-row");
+      const coreToolRows = container.querySelectorAll(".core-tool-layout-row");
       expect(coreToolRows.length).toBe(0);
 
-      const lockedRows = container.querySelectorAll(".locked-tool-row");
+      const lockedRows = container.querySelectorAll(".locked-tool-layout-row");
       expect(lockedRows.length).toBe(0);
     });
   });
@@ -626,7 +626,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         />,
       );
 
-      const lockedRows = container.querySelectorAll(".locked-tool-row");
+      const lockedRows = container.querySelectorAll(".locked-tool-layout-row");
       const lockedRowNames = Array.from(lockedRows).map(
         (row) => row.querySelector(".tool-name")?.textContent,
       );
@@ -645,7 +645,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         />,
       );
 
-      const lockedRows = container.querySelectorAll(".locked-tool-row");
+      const lockedRows = container.querySelectorAll(".locked-tool-layout-row");
       expect(lockedRows.length).toBe(1);
 
       const checkboxInput = lockedRows[0].querySelector("input[type='checkbox']") as HTMLInputElement;
@@ -685,8 +685,8 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         />,
       );
 
-      const coreToolRows = container.querySelectorAll(".core-tool-row");
-      // ask_user_question should be in core-tool-row (locked on), plus all workspace tools
+      const coreToolRows = container.querySelectorAll(".core-tool-layout-row");
+      // ask_user_question should be in core-tool-layout-row (locked on), plus all workspace tools
       expect(coreToolRows.length).toBe(coreHarnessTools.length - 1 + coreWorkspaceTools.length);
 
       for (const row of coreToolRows) {

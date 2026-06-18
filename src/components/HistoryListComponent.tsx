@@ -545,7 +545,7 @@ export default function HistoryList({
       />
 
       {countLabel && (
-        <div className={styles['count-row']}>
+        <div className={styles['count-layout-row']}>
           <span className={styles['count-label']}>
             {filtered.length === items.length
               ? `${items.length}${hasMore ? "+" : ""} ${countLabel}`
@@ -588,7 +588,7 @@ export default function HistoryList({
         {/* Infinite scroll sentinel */}
         {hasMore && <div ref={sentinelRef} className={styles['sentinel']} />}
         {loadingMore && (
-          <div className={styles['loading-more']}>
+          <div className={styles['is-loading-state-more']}>
             <PanelLoadingSpinner size="small" inline />
           </div>
         )}

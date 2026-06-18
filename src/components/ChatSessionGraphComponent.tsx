@@ -1255,7 +1255,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
                     </div>
 
                     {isRequestDetailLoading && (
-                      <div className={graphStyles['request-payload-loading']}>
+                      <div className={graphStyles['request-payload-is-loading-state']}>
                         <Loader2 size={14} className={graphStyles['spinning-icon']} />
                         Loading payloads…
                       </div>

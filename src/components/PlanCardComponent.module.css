@@ -1,6 +1,6 @@
 .card {
   border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--color-info) 25%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-info) 25%, transparent);
   background: color-mix(
     in srgb,
     var(--color-info) 4%,
@@ -11,7 +11,7 @@
   animation: slide-in 0.25s ease-out;
 
   &.approved {
-    border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
+    border-color: color-mix(in oklch, var(--color-success) 25%, transparent);
     background: color-mix(
       in srgb,
       var(--color-success) 4%,
@@ -20,7 +20,7 @@
   }
 
   &.rejected {
-    border-color: color-mix(in srgb, var(--color-danger) 20%, transparent);
+    border-color: color-mix(in oklch, var(--color-danger) 20%, transparent);
     background: color-mix(
       in srgb,
       var(--color-danger) 3%,
@@ -30,7 +30,7 @@
   }
 
   &.executing {
-    border-color: color-mix(in srgb, var(--color-success) 30%, transparent);
+    border-color: color-mix(in oklch, var(--color-success) 30%, transparent);
     background: color-mix(
       in srgb,
       var(--color-success) 5%,
@@ -52,7 +52,7 @@
   transition: background 0.15s ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+    background: color-mix(in oklch, var(--text-primary) 4%, transparent);
   }
 }
 
@@ -76,7 +76,7 @@
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid;
-  background: color-mix(in srgb, currentColor 8%, transparent);
+  background: color-mix(in oklch, currentColor 8%, transparent);
 }
 
 .plan-content {
@@ -145,10 +145,10 @@
   border-color: var(--color-success);
 
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-success) 85%, white);
-    border-color: color-mix(in srgb, var(--color-success) 85%, white);
+    background: color-mix(in oklch, var(--color-success) 85%, oklch(1 0 0));
+    border-color: color-mix(in oklch, var(--color-success) 85%, oklch(1 0 0));
     box-shadow: 0 0 12px
-      color-mix(in srgb, var(--color-success) 35%, transparent);
+      color-mix(in oklch, var(--color-success) 35%, transparent);
   }
 }
 

@@ -4977,9 +4977,9 @@ export default function ChatSessionComponent({
   const handleNewChatGlitch = useCallback(() => {
     const element = chatNewBtnRef.current;
     if (element) {
-      element.classList.remove(chatStyles['chat-header-new-btn-rainbow']);
+      element.classList.remove(chatStyles['chat-header-new-button-element-rainbow']);
       void element.offsetWidth;
-      element.classList.add(chatStyles['chat-header-new-btn-rainbow']);
+      element.classList.add(chatStyles['chat-header-new-button-element-rainbow']);
 
       setChatGlitchLabel(glitchText());
       if (chatGlitchInterval.current) clearInterval(chatGlitchInterval.current);
@@ -4989,7 +4989,7 @@ export default function ChatSessionComponent({
 
       if (chatRainbowTimer.current) clearTimeout(chatRainbowTimer.current);
       chatRainbowTimer.current = setTimeout(() => {
-        element.classList.remove(chatStyles['chat-header-new-btn-rainbow']);
+        element.classList.remove(chatStyles['chat-header-new-button-element-rainbow']);
         if (chatGlitchInterval.current)
           clearInterval(chatGlitchInterval.current);
         chatGlitchInterval.current = null;
@@ -6341,7 +6341,7 @@ export default function ChatSessionComponent({
                 icon={chatGlitchLabel ? undefined : Plus}
                 onClick={handleNewChatGlitch}
                 disabled={messages.length === 0 && !activeId}
-                className={`${chatStyles['chat-header-new-button']} ${chatGlitchLabel ? chatStyles['chat-header-new-btn-glitch'] : ""}`}
+                className={`${chatStyles['chat-header-new-button']} ${chatGlitchLabel ? chatStyles['chat-header-new-button-element-glitch'] : ""}`}
                 title="Start a new session"
               >
                 {chatGlitchLabel || "New Session"}
@@ -6732,7 +6732,7 @@ export default function ChatSessionComponent({
       >
         <form
           onSubmit={handleSend}
-          className={`${chatStyles['input-box']} ${isDragging ? chatStyles['input-box-drag-active'] : ""} ${isGenerating ? chatStyles['input-box-generating'] : ""}`}
+          className={`${chatStyles['input-box']} ${isDragging ? chatStyles['input-box-drag-is-active-state'] : ""} ${isGenerating ? chatStyles['input-box-generating'] : ""}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -6830,7 +6830,7 @@ export default function ChatSessionComponent({
             </div>
           )}
           {/* Active rule badges are now inline in the contentEditable */}
-          <div className={chatStyles['input-row']}>
+          <div className={chatStyles['input-layout-row']}>
             {supportsAnyFileInput && (
               <>
                 <input
@@ -6955,7 +6955,7 @@ export default function ChatSessionComponent({
                     <button
                       key={entry.path}
                       type="button"
-                      className={`${chatStyles['mention-item']} ${i === mentionIndex ? chatStyles['mention-item-active'] : ""}`}
+                      className={`${chatStyles['mention-item']} ${i === mentionIndex ? chatStyles['mention-item-is-active-state'] : ""}`}
                       onMouseDown={(e: React.MouseEvent) => {
                         e.preventDefault();
                         applyMention(entry);

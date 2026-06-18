@@ -19,7 +19,7 @@
   min-height: 42px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--calculated-border-color);
-  background: color-mix(in srgb, var(--background-surface) 85%, transparent);
+  background: color-mix(in oklch, var(--background-surface) 85%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 5;
@@ -37,7 +37,7 @@
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-secondary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: 0.01em;
@@ -107,14 +107,14 @@
 }
 
 /* Transient rainbow — applied on click, removed after ~1s */
-.chat-header-new-btn-rainbow {
+.chat-header-new-button-element-rainbow {
   filter: hue-rotate(0deg);
   animation: chat-new-btn-hue 1s linear forwards;
   will-change: filter;
 }
 
 /* Glitch text scramble — chaotic distortion during rainbow flash */
-.chat-header-new-btn-glitch {
+.chat-header-new-button-element-glitch {
   font-weight: 800;
   letter-spacing: -0.5px;
   color: oklch(86.1% 0.1325 326.6) !important;
@@ -284,7 +284,7 @@
 
 /* ── Workspace context row (above input box) ─────────────── */
 
-.workspace-row {
+.workspace-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -295,14 +295,14 @@
   animation: fade-in 0.2s ease-out;
 }
 
-.workspace-row-locked {
+.workspace-layout-row-locked {
   composes: workspace-row;
   opacity: 0.55;
   pointer-events: none;
   user-select: none;
 }
 
-.workspace-row-locked .workspace-button {
+.workspace-layout-row-locked .workspace-button {
   cursor: default;
   background: transparent;
   border-color: transparent;
@@ -311,7 +311,7 @@
 }
 
 .workspace-label {
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   font-weight: 500;
 }
 
@@ -338,7 +338,7 @@
     0 4px 20px oklch(0.0% 0.0 0.0 / 0.3);
 }
 
-.input-box-drag-active {
+.input-box-drag-is-active-state {
   border-color: var(--accent-primary);
   border-style: dashed;
   box-shadow:
@@ -377,13 +377,13 @@
   pointer-events: none;
 }
 
-.input-row {
+.input-layout-row {
   display: flex;
   align-items: flex-end;
   gap: 2px;
 }
 
-.input-row textarea,
+.input-layout-row textarea,
 .editable-input {
   flex: 1;
   background: transparent;
@@ -398,11 +398,11 @@
   font-size: inherit;
   color: inherit;
   line-height: 1.5;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
   word-break: break-word;
 }
 
-.input-row textarea:focus,
+.input-layout-row textarea:focus,
 .editable-input:focus {
   box-shadow: none;
 }
@@ -457,7 +457,7 @@
   transition:
     background 0.1s,
     color 0.1s;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
 
   & svg {
@@ -466,8 +466,8 @@
   }
 }
 
-.mention-item-active {
-  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+.mention-item-is-active-state {
+  background: color-mix(in oklch, var(--accent-primary) 10%, transparent);
   color: var(--text-primary);
 
   & svg {
@@ -652,7 +652,7 @@
 .queued-text {
   font-size: 0.8125rem;
   color: var(--text-secondary);
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
   word-break: break-word;
   max-height: 60px;
   overflow: hidden;
@@ -749,7 +749,7 @@
   font-size: var(--font-size-base);
   font-weight: 500;
   color: var(--text-primary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-transform: capitalize;
@@ -858,7 +858,7 @@
     background 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 
   &:hover {
     color: var(--text-primary);
@@ -870,7 +870,7 @@
     );
     transform: translateY(-1px);
     box-shadow: 0 2px 8px
-      color-mix(in srgb, var(--accent-primary) 15%, transparent);
+      color-mix(in oklch, var(--accent-primary) 15%, transparent);
   }
 }
 
@@ -988,12 +988,12 @@
     border-color 0.3s ease;
 }
 
-.status-bar-active {
+.status-bar-is-active-state {
   background: linear-gradient(
     to right,
-    color-mix(in srgb, var(--accent-primary) 6%, transparent),
-    color-mix(in srgb, var(--accent-primary) 12%, transparent),
-    color-mix(in srgb, var(--accent-primary) 6%, transparent)
+    color-mix(in oklch, var(--accent-primary) 6%, transparent),
+    color-mix(in oklch, var(--accent-primary) 12%, transparent),
+    color-mix(in oklch, var(--accent-primary) 6%, transparent)
   );
   border-top-color: color-mix(
     in srgb,
@@ -1013,7 +1013,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   letter-spacing: 0.02em;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }

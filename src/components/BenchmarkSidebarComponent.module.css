@@ -62,10 +62,10 @@
   }
 }
 
-.all-link-active {
+.all-link-is-active-state {
   background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
-  border-color: color-mix(in srgb, var(--accent-primary) 25%, transparent);
+  border-color: color-mix(in oklch, var(--accent-primary) 25%, transparent);
 
   & svg {
     color: var(--accent-primary);
@@ -119,13 +119,13 @@
   }
 }
 
-.item-active {
-  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+.item-is-active-state {
+  background: color-mix(in oklch, var(--accent-primary) 8%, transparent);
   border-left: 3px solid var(--accent-primary);
 }
 
 .item-running {
-  background: color-mix(in srgb, var(--accent-primary) 4%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 4%, transparent);
 }
 
 .item-running::after {
@@ -152,7 +152,7 @@
 /* ── Item Header ──────────────────────────────────────────── */
 
 /* Row 1: date (left) · cost (right) */
-.top-row {
+.top-layout-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -164,18 +164,18 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
 }
 
-.item-active .item-name {
+.item-is-active-state .item-name {
   color: var(--accent-primary);
 }
 
 /* Row 3: passed/failed (left) · pass bar (right) */
-.bottom-row {
+.bottom-layout-row {
   display: flex;
   align-items: center;
   justify-content: space-between;

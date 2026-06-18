@@ -15,7 +15,7 @@
   letter-spacing: 0.2px;
   background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   line-height: 1;
   text-transform: none;
   transition:
@@ -26,7 +26,7 @@
 }
 
 .badge:hover {
-  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+  border-color: color-mix(in oklch, var(--accent-primary) 40%, transparent);
   background: color-mix(
     in srgb,
     var(--accent-primary) 6%,
@@ -49,7 +49,7 @@
 }
 
 /* ── Active state (currently executing) ── */
-.badge-active {
+.badge-is-active-state {
   border-color: var(--accent-primary);
   background: color-mix(
     in srgb,
@@ -57,10 +57,10 @@
     var(--background-elevated)
   );
   box-shadow: 0 0 6px -1px
-    color-mix(in srgb, var(--accent-primary) 40%, transparent);
+    color-mix(in oklch, var(--accent-primary) 40%, transparent);
 }
 
-.badge-active svg {
+.badge-is-active-state svg {
   animation: tool-badge-pulse 1.2s ease-in-out infinite;
 }
 
@@ -88,7 +88,7 @@
 }
 
 /* ── Container for a row of badges ── */
-.badge-row {
+.badge-layout-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;

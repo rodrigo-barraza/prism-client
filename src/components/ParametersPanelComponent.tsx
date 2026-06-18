@@ -479,7 +479,7 @@ export default function ParametersPanelComponent({
           ) : loadedConfig ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {loadedConfig.contextLength !== null && (
-                <div className={styles['modality-row']}>
+                <div className={styles['modality-layout-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>Context Length</span>
                   <span
                     className={`${styles['modality-status']} ${styles['modality-active']}`}
@@ -490,7 +490,7 @@ export default function ParametersPanelComponent({
                 </div>
               )}
               {isLmStudioProvider && loadedConfig.evalBatchSize !== null && (
-                <div className={styles['modality-row']}>
+                <div className={styles['modality-layout-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>Eval Batch Size</span>
                   <span
                     className={`${styles['modality-status']} ${styles['modality-active']}`}
@@ -501,7 +501,7 @@ export default function ParametersPanelComponent({
                 </div>
               )}
               {isLmStudioProvider && loadedConfig.flashAttention !== null && (
-                <div className={styles['modality-row']}>
+                <div className={styles['modality-layout-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>Flash Attention</span>
                   <span
                     className={`${styles['modality-status']} ${loadedConfig.flashAttention ? styles['modality-active'] : ''}`}
@@ -512,7 +512,7 @@ export default function ParametersPanelComponent({
                 </div>
               )}
               {isLmStudioProvider && loadedConfig.kvCacheOffloaded !== null && (
-                <div className={styles['modality-row']}>
+                <div className={styles['modality-layout-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>GPU KV Cache Offload</span>
                   <span
                     className={`${styles['modality-status']} ${loadedConfig.kvCacheOffloaded ? styles['modality-active'] : ''}`}
@@ -523,7 +523,7 @@ export default function ParametersPanelComponent({
                 </div>
               )}
               {isLmStudioProvider && loadedConfig.gpuLayers !== null && (
-                <div className={styles['modality-row']}>
+                <div className={styles['modality-layout-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>GPU Layers</span>
                   <span
                     className={`${styles['modality-status']} ${styles['modality-active']}`}
@@ -534,7 +534,7 @@ export default function ParametersPanelComponent({
                 </div>
               )}
               {isOllamaProvider && loadedConfig.sizeVram !== null && loadedConfig.sizeVram !== undefined && (
-                <div className={styles['modality-row']}>
+                <div className={styles['modality-layout-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>VRAM Usage</span>
                   <span
                     className={`${styles['modality-status']} ${styles['modality-active']}`}
@@ -545,7 +545,7 @@ export default function ParametersPanelComponent({
                 </div>
               )}
               {isOllamaProvider && loadedConfig.expiresAt && (
-                <div className={styles['modality-row']}>
+                <div className={styles['modality-layout-row']}>
                   <span className={styles['modality-name']} style={{ fontSize: 11 }}>Expires At</span>
                   <span
                     className={`${styles['modality-status']} ${styles['modality-active']}`}

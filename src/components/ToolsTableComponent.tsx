@@ -567,21 +567,21 @@ export default function ToolsTableComponent({
 
         <div className={styles['view-toggle']}>
           <button
-            className={`${styles['view-button']} ${viewMode === "grid" ? styles['view-active'] : ""}`}
+            className={`${styles['view-button']} ${viewMode === "grid" ? styles['view-is-active-state'] : ""}`}
             onClick={() => setViewMode("grid")}
             title="Grid view"
           >
             <LayoutGrid />
           </button>
           <button
-            className={`${styles['view-button']} ${viewMode === "list" ? styles['view-active'] : ""}`}
+            className={`${styles['view-button']} ${viewMode === "list" ? styles['view-is-active-state'] : ""}`}
             onClick={() => setViewMode("list")}
             title="List view"
           >
             <List />
           </button>
           <button
-            className={`${styles['view-button']} ${viewMode === "table" ? styles['view-active'] : ""}`}
+            className={`${styles['view-button']} ${viewMode === "table" ? styles['view-is-active-state'] : ""}`}
             onClick={() => setViewMode("table")}
             title="Table view"
           >

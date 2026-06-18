@@ -153,7 +153,7 @@ export default function ToolLinkComponent({
         disabled={isLoading}
       >
         {children || toolName}
-        {isLoading && <span className={styles["loading-spinner-element"]} />}
+        {isLoading && <span className={styles["is-loading-state-spinner-element"]} />}
       </button>
 
       {isModalOpen &&

@@ -5,7 +5,7 @@
   margin: 8px auto;
   width: 100%;
   border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--color-info) 25%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-info) 25%, transparent);
   background: color-mix(
     in srgb,
     var(--color-info) 4%,
@@ -48,7 +48,7 @@
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--color-info) 15%, transparent);
+  background: color-mix(in oklch, var(--color-info) 15%, transparent);
   color: var(--color-info);
 }
 
@@ -68,7 +68,7 @@
   line-height: 1.45;
   color: var(--text-secondary);
   font-family: var(--font-mono, "JetBrains Mono", monospace);
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -94,8 +94,8 @@
   border-radius: 4px;
   margin-bottom: 6px;
   color: var(--color-info);
-  border: 1px solid color-mix(in srgb, var(--color-info) 25%, transparent);
-  background: color-mix(in srgb, var(--color-info) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-info) 25%, transparent);
+  background: color-mix(in oklch, var(--color-info) 8%, transparent);
 }
 
 .question-text {
@@ -103,12 +103,12 @@
   line-height: 1.5;
   color: var(--text-primary);
   margin-bottom: 10px;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
 }
 
 /* ─── Options + Preview layout ────────────────────────── */
 
-.options-row {
+.options-layout-row {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
@@ -133,8 +133,8 @@
   gap: 8px;
   padding: 7px 12px;
   border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--color-info) 20%, transparent);
-  background: color-mix(in srgb, var(--color-info) 5%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-info) 20%, transparent);
+  background: color-mix(in oklch, var(--color-info) 5%, transparent);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   font-weight: 400;
@@ -143,21 +143,21 @@
   transition: all 0.15s ease;
 
   &:hover {
-    background: color-mix(in srgb, var(--color-info) 14%, transparent);
-    border-color: color-mix(in srgb, var(--color-info) 35%, transparent);
+    background: color-mix(in oklch, var(--color-info) 14%, transparent);
+    border-color: color-mix(in oklch, var(--color-info) 35%, transparent);
     transform: translateX(2px);
   }
 
   &.option-selected {
-    background: color-mix(in srgb, var(--color-info) 18%, transparent);
-    border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
+    background: color-mix(in oklch, var(--color-info) 18%, transparent);
+    border-color: color-mix(in oklch, var(--color-info) 50%, transparent);
     color: var(--color-info);
     font-weight: 500;
   }
 
   &.option-focused {
-    border-color: color-mix(in srgb, var(--color-info) 60%, transparent);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-info) 15%, transparent);
+    border-color: color-mix(in oklch, var(--color-info) 60%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-info) 15%, transparent);
   }
 }
 
@@ -208,7 +208,7 @@
   overflow: auto;
   padding: 10px 12px;
   border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--color-info) 20%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-info) 20%, transparent);
   background: var(--background-elevated);
   animation: fade-in 0.15s ease-out;
 }
@@ -219,13 +219,13 @@
   line-height: 1.5;
   color: var(--text-secondary);
   font-family: var(--font-mono, "JetBrains Mono", monospace);
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
   word-break: break-word;
 }
 
 /* ─── Free-text input ─────────────────────────────────── */
 
-.input-row {
+.input-layout-row {
   display: flex;
   gap: 6px;
   align-items: center;
@@ -248,7 +248,7 @@
   }
 
   &:focus {
-    border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
+    border-color: color-mix(in oklch, var(--color-info) 50%, transparent);
   }
 }
 
@@ -258,14 +258,14 @@
   justify-content: center;
   padding: 7px 10px;
   border-radius: 6px;
-  border: 1px solid color-mix(in srgb, var(--color-info) 30%, transparent);
-  background: color-mix(in srgb, var(--color-info) 15%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-info) 30%, transparent);
+  background: color-mix(in oklch, var(--color-info) 15%, transparent);
   color: var(--color-info);
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-info) 25%, transparent);
+    background: color-mix(in oklch, var(--color-info) 25%, transparent);
   }
 
   &:disabled {
@@ -293,14 +293,14 @@
     background: var(--background-elevated);
   }
 
-  &.annotate-btn-active {
+  &.annotate-button-element-is-active-state {
     color: var(--color-info);
-    border-color: color-mix(in srgb, var(--color-info) 30%, transparent);
-    background: color-mix(in srgb, var(--color-info) 8%, transparent);
+    border-color: color-mix(in oklch, var(--color-info) 30%, transparent);
+    background: color-mix(in oklch, var(--color-info) 8%, transparent);
   }
 }
 
-.annotations-row {
+.annotations-layout-row {
   margin-top: 6px;
   animation: fade-in 0.15s ease-out;
 }
@@ -324,13 +324,13 @@
   }
 
   &:focus {
-    border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
+    border-color: color-mix(in oklch, var(--color-info) 50%, transparent);
   }
 }
 
 /* ─── Answered (resolved) state ───────────────────────── */
 
-.answered-row {
+.answered-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -374,12 +374,12 @@
 
   &.submit-all-ready {
     cursor: pointer;
-    background: color-mix(in srgb, var(--color-info) 15%, transparent);
-    border-color: color-mix(in srgb, var(--color-info) 35%, transparent);
+    background: color-mix(in oklch, var(--color-info) 15%, transparent);
+    border-color: color-mix(in oklch, var(--color-info) 35%, transparent);
     color: var(--color-info);
 
     &:hover {
-      background: color-mix(in srgb, var(--color-info) 25%, transparent);
+      background: color-mix(in oklch, var(--color-info) 25%, transparent);
       transform: translateY(-1px);
     }
   }

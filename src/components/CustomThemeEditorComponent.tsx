@@ -272,7 +272,7 @@ export default function CustomThemeEditorComponent({
                 return (
                   <div
                     key={theme.id}
-                    className={`${styles['theme-item']} ${isActive ? styles['theme-item-active'] : ""}`}
+                    className={`${styles['theme-item']} ${isActive ? styles['theme-item-is-active-state'] : ""}`}
                   >
                     <button
                       className={styles['theme-item-main']}
@@ -292,7 +292,7 @@ export default function CustomThemeEditorComponent({
                       </span>
                       <span className={styles['theme-item-name']}>{theme.name}</span>
                       {isActive && (
-                        <span className={styles['active-badge']}>
+                        <span className={styles['is-active-state-badge']}>
                           <Check size={10} strokeWidth={3} />
                           Active
                         </span>
@@ -317,7 +317,7 @@ export default function CustomThemeEditorComponent({
                       </button>
                       {isConfirmingDelete ? (
                         <button
-                          className={`${styles['action-button']} ${styles['action-btn-danger']}`}
+                          className={`${styles['action-button']} ${styles['action-button-element-danger']}`}
                           onClick={() => handleDelete(theme.id)}
                           title="Confirm delete"
                           type="button"
@@ -342,7 +342,7 @@ export default function CustomThemeEditorComponent({
           )}
 
           {/* New Theme button */}
-          <div className={styles['new-theme-row']}>
+          <div className={styles['new-theme-layout-row']}>
             <div className={styles['new-theme-button-wrapper']}>
               <button
                 className={styles['new-theme-button']}
@@ -428,7 +428,7 @@ export default function CustomThemeEditorComponent({
           </div>
 
           {/* Name input */}
-          <div className={styles['editor-name-row']}>
+          <div className={styles['editor-name-layout-row']}>
             <label className={styles['editor-label']}>Name</label>
             <InputComponent
               type="text"
@@ -464,7 +464,7 @@ export default function CustomThemeEditorComponent({
             <div className={styles['preview-content']}>
               <div className={styles['preview-sidebar']}>
                 <div
-                  className={styles['preview-nav-item']}
+                  className={styles['preview-navigation-bar-item']}
                   data-is-active-state="true"
                 >
                   <span
@@ -473,14 +473,14 @@ export default function CustomThemeEditorComponent({
                   />
                   <span>Active</span>
                 </div>
-                <div className={styles['preview-nav-item']}>
+                <div className={styles['preview-navigation-bar-item']}>
                   <span
                     className={styles['preview-dot']}
                     data-color-variant="accent2"
                   />
                   <span>Nav Item</span>
                 </div>
-                <div className={styles['preview-nav-item']}>
+                <div className={styles['preview-navigation-bar-item']}>
                   <span
                     className={styles['preview-dot']}
                     data-color-variant="muted"
@@ -570,7 +570,7 @@ export default function CustomThemeEditorComponent({
                   {isExpanded && (
                     <div className={styles['token-group-body']}>
                       {group.fields.map((field) => (
-                        <div key={field.key} className={styles['token-row']}>
+                        <div key={field.key} className={styles['token-layout-row']}>
                           <label className={styles['token-label']}>
                             {field.label}
                           </label>

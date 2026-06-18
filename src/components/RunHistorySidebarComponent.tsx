@@ -165,7 +165,7 @@ export default function RunHistorySidebarComponent({
               </div>
               <div className={styles['assertions-list']}>
                 {assertions.map((assertion: any, assertionIndex: number) => (
-                  <div key={assertionIndex} className={styles['assertion-row']}>
+                  <div key={assertionIndex} className={styles['assertion-layout-row']}>
                     {assertionIndex > 0 ? (
                       <BadgeComponent
                         variant={operator === "OR" ? "warning" : "info"}
@@ -320,7 +320,7 @@ export default function RunHistorySidebarComponent({
                 return (
                   <div
                     key={run.id}
-                    className={`${styles['run-item']} ${isActive ? styles['run-item-active'] : ""} ${run.aborted ? styles['run-item-aborted'] : ""}`}
+                    className={`${styles['run-item']} ${isActive ? styles['run-item-is-active-state'] : ""} ${run.aborted ? styles['run-item-aborted'] : ""}`}
                     {...(SoundService.interactive(() => onViewRun?.(run)) as Record<string, unknown>)}
                     data-panel-close
                   >

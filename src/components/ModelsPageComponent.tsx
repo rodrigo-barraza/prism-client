@@ -372,7 +372,7 @@ export default function ModelsPageComponent({
         if (isActioning) {
           return (
             <button
-              className={`${styles['action-button']} ${actionType === "unload" ? styles['unload-button'] : styles['loading-button']}`}
+              className={`${styles['action-button']} ${actionType === "unload" ? styles['unload-button'] : styles['is-loading-state-button']}`}
               disabled
             >
               <Loader2 size={10} className={styles['spinning']} />
@@ -461,7 +461,7 @@ export default function ModelsPageComponent({
             <ToastComponent toasts={toasts} onRemove={removeToast} />
 
             {loading && allModels.length === 0 ? (
-              <div className={styles['loading-state']}>
+              <div className={styles['is-loading-state']}>
                 <PanelLoadingSpinner size="large" />
               </div>
             ) : (
@@ -492,7 +492,7 @@ export default function ModelsPageComponent({
             <ToastComponent toasts={toasts} onRemove={removeToast} />
 
             {loading && allModels.length === 0 ? (
-              <div className={styles['loading-state']}>
+              <div className={styles['is-loading-state']}>
                 <PanelLoadingSpinner size="large" />
               </div>
             ) : (

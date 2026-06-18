@@ -23,7 +23,7 @@
 
 /* ── Model name cell layout ───────────────────────── */
 
-.name-row {
+.name-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -48,7 +48,7 @@
   letter-spacing: 0.04em;
   padding: 2px 6px;
   border-radius: 2px;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -57,12 +57,12 @@
   background: oklch(69.6% 0.1491 162.5 / 0.1);
 }
 
-.loading-badge {
+.is-loading-state-badge {
   color: var(--color-warning);
   background: oklch(76.9% 0.1646 70.1 / 0.1);
 }
 
-.loading-spin {
+.is-loading-state-spin {
   animation: loading-spin 1s linear infinite;
 }
 
@@ -130,7 +130,7 @@
   }
 }
 
-.favorite-star-active {
+.favorite-star-is-active-state {
   color: var(--color-warning);
   opacity: 1;
 
@@ -186,17 +186,17 @@
   transition: all 0.15s ease;
 }
 
-.select-wrap-active {
+.select-wrap-is-active-state {
   .select-check {
     filter: drop-shadow(
-      0 0 3px color-mix(in srgb, var(--accent-primary) 40%, transparent)
+      0 0 3px color-mix(in oklch, var(--accent-primary) 40%, transparent)
     );
   }
 }
 
 /* ── Selected row highlight ───────────────────────── */
 
-.selected-row td {
+.selected-layout-row td {
   background: color-mix(
     in srgb,
     var(--accent-primary) 8%,
@@ -209,11 +209,11 @@
   ) !important;
 }
 
-.selected-row td:first-child {
+.selected-layout-row td:first-child {
   box-shadow: inset 3px 0 0 var(--accent-primary);
 }
 
-.selected-row:hover td {
+.selected-layout-row:hover td {
   background: color-mix(
     in srgb,
     var(--accent-primary) 14%,
@@ -285,7 +285,7 @@
   align-items: center;
   gap: 4px;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 
   & svg {
     opacity: 0.5;
@@ -302,10 +302,10 @@
   font-size: 0.625rem;
   font-weight: 600;
   color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 10%, transparent);
   padding: 2px 6px;
   border-radius: 2px;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 
   & svg {
     flex-shrink: 0;
@@ -331,7 +331,7 @@
   background: oklch(70.9% 0.1592 293.5 / 0.1);
   padding: 2px 6px;
   border-radius: 2px;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 
   & svg {
     flex-shrink: 0;
@@ -348,7 +348,7 @@
   background: oklch(77.3% 0.1535 163.3 / 0.1);
   padding: 2px 6px;
   border-radius: 2px;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
 
   & svg {
     flex-shrink: 0;

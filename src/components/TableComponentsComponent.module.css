@@ -147,7 +147,7 @@
   font-family: var(--font-mono);
   font-weight: 600;
   color: var(--color-success);
-  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  background: color-mix(in oklch, var(--color-success) 10%, transparent);
   padding: 1px 5px;
   border-radius: 2px;
   margin-left: 4px;
@@ -160,7 +160,7 @@
 }
 
 /* Keep provider + progress badge on a single row */
-.benchmark-model-provider-row {
+.benchmark-model-provider-layout-row {
   display: flex;
   align-items: center;
 }
@@ -179,7 +179,7 @@
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -213,7 +213,7 @@
 
 /* Highlighted expected-value match inside response text */
 .benchmark-highlight {
-  background: color-mix(in srgb, var(--color-success) 20%, transparent);
+  background: color-mix(in oklch, var(--color-success) 20%, transparent);
   color: var(--color-success);
   border-radius: 2px;
   padding: 1px 2px;
@@ -231,7 +231,7 @@
 .dashboard-model-name {
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }

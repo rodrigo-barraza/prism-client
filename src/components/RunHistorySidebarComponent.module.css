@@ -23,7 +23,7 @@
 
   /* Thin custom scrollbar */
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--text-muted) 20%, transparent)
+  scrollbar-color: color-mix(in oklch, var(--text-muted) 20%, transparent)
     transparent;
 
   &::-webkit-scrollbar {
@@ -33,11 +33,11 @@
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--text-muted) 20%, transparent);
+    background: color-mix(in oklch, var(--text-muted) 20%, transparent);
     border-radius: 4px;
   }
   &::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--text-muted) 40%, transparent);
+    background: color-mix(in oklch, var(--text-muted) 40%, transparent);
   }
 }
 
@@ -123,7 +123,7 @@
   gap: 6px;
 }
 
-.assertion-row {
+.assertion-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -140,7 +140,7 @@
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   flex: 1;
   min-width: 0;
 }
@@ -186,13 +186,13 @@
 
   &:hover {
     background: var(--calculated-accent-primary-glow);
-    border-color: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+    border-color: color-mix(in oklch, var(--accent-primary) 15%, transparent);
   }
 }
 
-.run-item-active {
-  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
-  border-color: color-mix(in srgb, var(--accent-primary) 30%, transparent);
+.run-item-is-active-state {
+  background: color-mix(in oklch, var(--accent-primary) 8%, transparent);
+  border-color: color-mix(in oklch, var(--accent-primary) 30%, transparent);
 }
 
 .run-item-aborted {
@@ -217,7 +217,7 @@
   min-width: 18px;
 }
 
-.run-item-active .run-index {
+.run-item-is-active-state .run-index {
   color: var(--accent-primary);
 }
 
@@ -261,7 +261,7 @@
     var(--accent-primary) 8%,
     var(--background-surface)
   );
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);
+  border: 1px solid color-mix(in oklch, var(--accent-primary) 25%, transparent);
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--accent-primary);

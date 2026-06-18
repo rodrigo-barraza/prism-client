@@ -61,7 +61,7 @@
 
 /* ── Summary badges ──────────────────────────────────────────── */
 
-.summary-row {
+.summary-layout-row {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -86,29 +86,29 @@
   }
 }
 
-.summary-badge-active {
+.summary-badge-is-active-state {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px color-mix(in srgb, currentColor 15%, transparent);
+  box-shadow: 0 2px 8px color-mix(in oklch, currentColor 15%, transparent);
 }
 
 /* ── Status colors ───────────────────────────────────────────── */
 
 .status-pending {
   color: var(--color-neutral);
-  background: color-mix(in srgb, var(--color-neutral) 10%, transparent);
-  border-color: color-mix(in srgb, var(--color-neutral) 25%, transparent);
+  background: color-mix(in oklch, var(--color-neutral) 10%, transparent);
+  border-color: color-mix(in oklch, var(--color-neutral) 25%, transparent);
 }
 
 .status-in-progress {
   color: var(--color-info);
-  background: color-mix(in srgb, var(--color-info) 10%, transparent);
-  border-color: color-mix(in srgb, var(--color-info) 25%, transparent);
+  background: color-mix(in oklch, var(--color-info) 10%, transparent);
+  border-color: color-mix(in oklch, var(--color-info) 25%, transparent);
 }
 
 .status-completed {
   color: var(--color-success);
-  background: color-mix(in srgb, var(--color-success) 10%, transparent);
-  border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
+  background: color-mix(in oklch, var(--color-success) 10%, transparent);
+  border-color: color-mix(in oklch, var(--color-success) 25%, transparent);
 }
 
 /* ── New Task Form ───────────────────────────────────────────── */
@@ -120,7 +120,7 @@
   padding: 10px;
   background: var(--background-surface);
   border: 1px solid
-    color-mix(in srgb, var(--color-violet) 30%, var(--calculated-border-color));
+    color-mix(in oklch, var(--color-violet) 30%, var(--calculated-border-color));
   border-radius: 6px;
   animation: slide-in 0.15s ease-out;
 }
@@ -192,14 +192,14 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--color-violet);
-  background: color-mix(in srgb, var(--color-violet) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-violet) 30%, transparent);
+  background: color-mix(in oklch, var(--color-violet) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-violet) 30%, transparent);
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-violet) 20%, transparent);
+    background: color-mix(in oklch, var(--color-violet) 20%, transparent);
     transform: translateY(-1px);
   }
 
@@ -264,23 +264,23 @@
       var(--calculated-border-color)
     );
     box-shadow: 0 2px 8px
-      color-mix(in srgb, var(--color-violet) 6%, transparent);
+      color-mix(in oklch, var(--color-violet) 6%, transparent);
   }
 }
 
 /* Status-specific left accent via border-left */
 .status-pending-card {
   border-left: 2px solid
-    color-mix(in srgb, var(--color-neutral) 40%, transparent);
+    color-mix(in oklch, var(--color-neutral) 40%, transparent);
 }
 
 .status-in-progress-card {
-  border-left: 2px solid color-mix(in srgb, var(--color-info) 50%, transparent);
+  border-left: 2px solid color-mix(in oklch, var(--color-info) 50%, transparent);
 }
 
 .status-completed-card {
   border-left: 2px solid
-    color-mix(in srgb, var(--color-success) 40%, transparent);
+    color-mix(in oklch, var(--color-success) 40%, transparent);
 }
 
 .task-card-header {
@@ -362,7 +362,7 @@
 
 /* ── Active Form Spinner ────────────────────────────────────── */
 
-.active-form-badge {
+.is-active-state-form-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -370,13 +370,13 @@
   font-size: 0.5625rem;
   font-weight: 600;
   color: var(--color-info);
-  background: color-mix(in srgb, var(--color-info) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-info) 20%, transparent);
+  background: color-mix(in oklch, var(--color-info) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-info) 20%, transparent);
   border-radius: 10px;
   animation: active-form-pulse 2s ease-in-out infinite;
 }
 
-.active-form-spin {
+.is-active-state-form-spin {
   animation: spin 1.2s linear infinite;
   will-change: transform;
 }
@@ -395,9 +395,9 @@
   font-size: 0.5625rem;
   font-weight: 600;
   color: var(--text-muted);
-  background: color-mix(in srgb, var(--text-muted) 8%, transparent);
+  background: color-mix(in oklch, var(--text-muted) 8%, transparent);
   border: 1px solid
-    color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
+    color-mix(in oklch, var(--calculated-border-color) 60%, transparent);
   border-radius: 4px;
   padding: 0 5px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
@@ -424,7 +424,7 @@
 
   &:hover {
     color: var(--text-primary);
-    background: color-mix(in srgb, var(--text-muted) 10%, transparent);
+    background: color-mix(in oklch, var(--text-muted) 10%, transparent);
   }
 }
 
@@ -449,7 +449,7 @@
 
   &:hover {
     color: var(--color-rose);
-    background: color-mix(in srgb, var(--color-rose) 12%, transparent);
+    background: color-mix(in oklch, var(--color-rose) 12%, transparent);
   }
 }
 
@@ -467,13 +467,13 @@
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.5;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
   padding: 8px;
-  background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
+  background: color-mix(in oklch, var(--background-elevated) 60%, transparent);
   border-radius: 6px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   border: 1px solid
-    color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
+    color-mix(in oklch, var(--calculated-border-color) 50%, transparent);
 }
 
 .task-metadata {
@@ -490,12 +490,12 @@
   font-size: 0.5625rem;
   font-weight: 600;
   border: 1px solid
-    color-mix(in srgb, var(--calculated-border-color) 60%, transparent);
+    color-mix(in oklch, var(--calculated-border-color) 60%, transparent);
 }
 
 .meta-key {
   padding: 1px 5px;
-  background: color-mix(in srgb, var(--background-elevated) 80%, transparent);
+  background: color-mix(in oklch, var(--background-elevated) 80%, transparent);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -532,17 +532,17 @@
   composes: confirm-button from "./PanelShared.module.css";
 }
 
-.confirm-btn-yes {
-  background: color-mix(in srgb, var(--color-rose) 15%, transparent);
+.confirm-button-element-yes {
+  background: color-mix(in oklch, var(--color-rose) 15%, transparent);
   color: var(--color-rose);
-  border-color: color-mix(in srgb, var(--color-rose) 30%, transparent);
+  border-color: color-mix(in oklch, var(--color-rose) 30%, transparent);
 
   &:hover {
-    background: color-mix(in srgb, var(--color-rose) 25%, transparent);
+    background: color-mix(in oklch, var(--color-rose) 25%, transparent);
   }
 }
 
-.confirm-btn-no {
+.confirm-button-element-no {
   background: transparent;
   color: var(--text-muted);
 
@@ -564,7 +564,7 @@
   padding: 12px;
   font-size: var(--font-size-sm);
   color: var(--color-rose);
-  background: color-mix(in srgb, var(--color-rose) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-rose) 20%, transparent);
+  background: color-mix(in oklch, var(--color-rose) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-rose) 20%, transparent);
   border-radius: 6px;
 }

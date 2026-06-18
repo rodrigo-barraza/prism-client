@@ -241,7 +241,7 @@ export default function ModelLoadConfigPanel({
             ) : (
               <>
                 Load Model
-                <span className={styles['load-btn-shortcut']}>Ctrl + Enter</span>
+                <span className={styles['load-button-element-shortcut']}>Ctrl + Enter</span>
               </>
             )}
           </button>
@@ -374,7 +374,7 @@ export default function ModelLoadConfigPanel({
       <div className={styles['divider']} />
 
       {/* Toggle options */}
-      <div className={styles['toggle-row']}>
+      <div className={styles['toggle-layout-row']}>
         <span className={styles['toggle-label']}>
           <Zap size={14} />
           Flash Attention
@@ -389,7 +389,7 @@ export default function ModelLoadConfigPanel({
         />
       </div>
 
-      <div className={styles['toggle-row']}>
+      <div className={styles['toggle-layout-row']}>
         <span className={styles['toggle-label']}>
           <Database size={14} />
           KV Cache → GPU
@@ -405,7 +405,7 @@ export default function ModelLoadConfigPanel({
       <div className={styles['divider']} />
 
       {/* Remember settings */}
-      <div className={styles['remember-row']}>
+      <div className={styles['remember-layout-row']}>
         <CheckboxComponent
           size="compact"
           checked={rememberSettings}

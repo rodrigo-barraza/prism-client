@@ -429,14 +429,14 @@ export default function ToolRequestsPage() {
                   role="button"
                   tabIndex={0}
                 >
-                  <div className={styles['associated-request-row']}>
+                  <div className={styles['associated-request-layout-row']}>
                     <BadgeComponent variant="provider">{associatedRequest.provider || "—"}</BadgeComponent>
                     <BadgeComponent variant="info">{associatedRequest.operation || associatedRequest.endpoint || "—"}</BadgeComponent>
                     {associatedRequest.agent && (
                       <BadgeComponent variant="accent">{associatedRequest.agent}</BadgeComponent>
                     )}
                   </div>
-                  <div className={styles['associated-request-row']}>
+                  <div className={styles['associated-request-layout-row']}>
                     <span className={styles['associated-request-model']}>{associatedRequest.model || "—"}</span>
                     {associatedRequest.estimatedCost != null && (
                       <span className={styles['associated-request-cost']}>{formatCost(associatedRequest.estimatedCost)}</span>

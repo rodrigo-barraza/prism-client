@@ -69,7 +69,7 @@ export default function ApprovalCardComponent({
             const truncated =
               stringValue.length > 120 ? stringValue.slice(0, 117) + "..." : stringValue;
             return (
-              <div key={key} className={styles['argument-row']}>
+              <div key={key} className={styles['argument-layout-row']}>
                 <span className={styles['argument-key']}>{key}</span>
                 <span className={styles['argument-value']}>{truncated}</span>
               </div>

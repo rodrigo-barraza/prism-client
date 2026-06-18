@@ -45,7 +45,7 @@
       var(--calculated-border-color)
     );
     box-shadow: 0 2px 8px
-      color-mix(in srgb, var(--color-purple) 8%, transparent);
+      color-mix(in oklch, var(--color-purple) 8%, transparent);
   }
 }
 
@@ -66,7 +66,7 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: color-mix(in srgb, var(--color-purple) 12%, transparent);
+  background: color-mix(in oklch, var(--color-purple) 12%, transparent);
   color: var(--color-purple);
   flex-shrink: 0;
 }
@@ -80,7 +80,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -88,7 +88,7 @@
 .skill-description {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
-  white-space: nowrap;
+  oklch(1 0 0)-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 1px;
@@ -116,26 +116,26 @@
 
   &:hover {
     color: var(--text-primary);
-    background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+    background: color-mix(in oklch, var(--text-muted) 12%, transparent);
   }
 }
 
 .skill-delete-button:hover {
   color: var(--color-rose) !important;
-  background: color-mix(in srgb, var(--color-rose) 12%, transparent) !important;
+  background: color-mix(in oklch, var(--color-rose) 12%, transparent) !important;
 }
 
 .skill-content-preview {
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.5;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
   padding: 8px;
-  background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
+  background: color-mix(in oklch, var(--background-elevated) 60%, transparent);
   border-radius: 6px;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   border: 1px solid
-    color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
+    color-mix(in oklch, var(--calculated-border-color) 50%, transparent);
 }
 
 .skill-char-count {
@@ -168,17 +168,17 @@
   composes: confirm-button from "./PanelShared.module.css";
 }
 
-.confirm-btn-yes {
-  background: color-mix(in srgb, var(--color-rose) 15%, transparent);
+.confirm-button-element-yes {
+  background: color-mix(in oklch, var(--color-rose) 15%, transparent);
   color: var(--color-rose);
-  border-color: color-mix(in srgb, var(--color-rose) 30%, transparent);
+  border-color: color-mix(in oklch, var(--color-rose) 30%, transparent);
 
   &:hover {
-    background: color-mix(in srgb, var(--color-rose) 25%, transparent);
+    background: color-mix(in oklch, var(--color-rose) 25%, transparent);
   }
 }
 
-.confirm-btn-no {
+.confirm-button-element-no {
   background: transparent;
   color: var(--text-muted);
 
@@ -220,7 +220,7 @@
 
   &:hover {
     color: var(--text-primary);
-    background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+    background: color-mix(in oklch, var(--text-muted) 12%, transparent);
   }
 }
 
@@ -259,7 +259,7 @@
   &:focus {
     border-color: var(--color-purple);
     box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--color-purple) 15%, transparent);
+      color-mix(in oklch, var(--color-purple) 15%, transparent);
   }
 
   &::placeholder {
@@ -283,7 +283,7 @@
   &:focus {
     border-color: var(--color-purple);
     box-shadow: 0 0 0 2px
-      color-mix(in srgb, var(--color-purple) 15%, transparent);
+      color-mix(in oklch, var(--color-purple) 15%, transparent);
   }
 
   &::placeholder {
@@ -297,7 +297,7 @@
   font-size: var(--font-size-sm);
   line-height: 1.6;
   tab-size: 2;
-  white-space: pre-wrap;
+  oklch(1 0 0)-space: pre-wrap;
 }
 
 .hint {
@@ -340,7 +340,7 @@
   padding: 8px 14px;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: white;
+  color: oklch(1 0 0);
   background: var(--color-purple);
   border: none;
   border-radius: 6px;
@@ -348,10 +348,10 @@
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-purple) 90%, white);
+    background: color-mix(in oklch, var(--color-purple) 90%, oklch(1 0 0));
     transform: translateY(-1px);
     box-shadow: 0 4px 12px
-      color-mix(in srgb, var(--color-purple) 30%, transparent);
+      color-mix(in oklch, var(--color-purple) 30%, transparent);
   }
 
   &:disabled {

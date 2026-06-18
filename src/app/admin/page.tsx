@@ -399,7 +399,7 @@ export default function DashboardPage() {
       <AdminFiltersCardComponent />
       <ErrorMessage message={error} />
       {/* -- Resource Navigation -- */}
-      <div className={styles['resource-nav']}>
+      <div className={styles['resource-navigation-bar']}>
         <ResourceCardComponent
           href="#"
           icon={Box}
@@ -543,7 +543,7 @@ export default function DashboardPage() {
       </div>
 
       {/* -- Charts Row -- */}
-      <div className={styles['charts-row']}>
+      <div className={styles['charts-layout-row']}>
         {/* Requests Timeline — Tabbed Chart */}
         <div className={styles['chart-card']}>
           <TimelineChartComponent

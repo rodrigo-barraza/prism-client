@@ -1402,7 +1402,7 @@ export default function WorkflowsPage({
           />
           {isRunning ? (
             <button
-              className={`${styles['run-button']} ${styles['run-btn-stop']}`}
+              className={`${styles['run-button']} ${styles['run-button-element-stop']}`}
               onClick={handleStopWorkflow}
             >
               <Square size={14} />
@@ -1425,7 +1425,7 @@ export default function WorkflowsPage({
       {/* Center: Workflow Canvas */}
       <div className={styles['canvas-wrapper']}>
         {isLoadingWorkflow && (
-          <div className={styles['loading-overlay']}>
+          <div className={styles['is-loading-state-overlay']}>
             <PanelLoadingSpinner />
           </div>
         )}
