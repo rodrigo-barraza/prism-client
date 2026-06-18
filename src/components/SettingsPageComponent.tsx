@@ -1101,12 +1101,12 @@ export default function SettingsPageComponent() {
                     tooltipRich: true,
                     tooltip: (
                       <div>
-                        <strong>Sequential Pipeline (CoT)</strong>
-                        <p style={{ margin: "6px 0 8px", opacity: 0.7 }}>
+                        <span className={styles["topology-tooltip-title"]}>Sequential Pipeline (CoT)</span>
+                        <p className={styles["topology-tooltip-description"]}>
                           Sub-agents execute one at a time. Each receives the
                           previous agent&apos;s output as context, forming a chain.
                         </p>
-                        <pre style={{ fontSize: 11, lineHeight: 1.4, margin: 0, fontFamily: "var(--font-mono, monospace)" }}>
+                        <pre className={styles["topology-tooltip-diagram"]}>
 {`  [Orchestrator]
         │
      [Agent A]
@@ -1126,12 +1126,12 @@ export default function SettingsPageComponent() {
                     tooltipRich: true,
                     tooltip: (
                       <div>
-                        <strong>Hierarchical Parallel (ToT)</strong>
-                        <p style={{ margin: "6px 0 8px", opacity: 0.7 }}>
+                        <span className={styles["topology-tooltip-title"]}>Hierarchical Parallel (ToT)</span>
+                        <p className={styles["topology-tooltip-description"]}>
                           Sub-agents execute in parallel. The orchestrator
                           selects the best result. Branches never merge.
                         </p>
-                        <pre style={{ fontSize: 11, lineHeight: 1.4, margin: 0, fontFamily: "var(--font-mono, monospace)" }}>
+                        <pre className={styles["topology-tooltip-diagram"]}>
 {`  [Orchestrator]
      /   |   \\
   [A]   [B]  [C]
@@ -1149,12 +1149,12 @@ export default function SettingsPageComponent() {
                     tooltipRich: true,
                     tooltip: (
                       <div>
-                        <strong>Hierarchical Aggregation (GoT)</strong>
-                        <p style={{ margin: "6px 0 8px", opacity: 0.7 }}>
+                        <span className={styles["topology-tooltip-title"]}>Hierarchical Aggregation (GoT)</span>
+                        <p className={styles["topology-tooltip-description"]}>
                           Sub-agents execute in parallel, then a synthesis pass
                           merges all outputs into a unified result.
                         </p>
-                        <pre style={{ fontSize: 11, lineHeight: 1.4, margin: 0, fontFamily: "var(--font-mono, monospace)" }}>
+                        <pre className={styles["topology-tooltip-diagram"]}>
 {`  [Orchestrator]
      /   |   \\
   [A]   [B]  [C]
@@ -1172,13 +1172,13 @@ export default function SettingsPageComponent() {
                     tooltipRich: true,
                     tooltip: (
                       <div>
-                        <strong>Peer-to-Peer Mesh (GoT DAG)</strong>
-                        <p style={{ margin: "6px 0 8px", opacity: 0.7 }}>
+                        <span className={styles["topology-tooltip-title"]}>Peer-to-Peer Mesh (GoT DAG)</span>
+                        <p className={styles["topology-tooltip-description"]}>
                           Agents communicate laterally in a turn-based
                           discussion. Each agent sees all prior messages from
                           every other agent.
                         </p>
-                        <pre style={{ fontSize: 11, lineHeight: 1.4, margin: 0, fontFamily: "var(--font-mono, monospace)" }}>
+                        <pre className={styles["topology-tooltip-diagram"]}>
 {`  [Orchestrator]
      /       \\
   [A] ←————→ [B]

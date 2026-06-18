@@ -1185,6 +1185,24 @@
   font-weight: 400;
 }
 
+/* ── Topology tooltip content ────────────────────────────────────── */
+
+.topology-tooltip-title {
+  font-weight: 600;
+}
+
+.topology-tooltip-description {
+  margin-block: 6px 8px;
+  opacity: 0.7;
+}
+
+.topology-tooltip-diagram {
+  font-size: 11px;
+  line-height: 1.4;
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
