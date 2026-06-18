@@ -184,12 +184,14 @@ function getMimeCategory(ref: string | undefined | null) {
 interface ThinkingBlockProps {
   thinking?: string;
   isStreaming?: boolean;
+  streamKeepVisible?: boolean;
   children?: React.ReactNode;
 }
 
 function ThinkingBlock({
   thinking,
   isStreaming,
+  streamKeepVisible,
   children,
 }: ThinkingBlockProps) {
   // User can manually toggle after streaming has finished
@@ -225,7 +227,7 @@ function ThinkingBlock({
     }
   };
 
-  if (!isStreaming && !thinking?.trim() && !children) return null;
+  if (!isStreaming && !streamKeepVisible && !thinking?.trim() && !children) return null;
 
   return (
     <div
@@ -1714,12 +1716,26 @@ export default function MessageList({
                               return -1;
                             })();
 
+                            // Find the last thinking segment — the streaming cursor
+                            // should attach to this one (not the absolute last segment)
+                            // so intermediate thinking blocks remain visible during
+                            // multi-iteration agentic flows.
+                            const lastThinkingSegmentIndex = (() => {
+                              for (let k = segs.length - 1; k >= 0; k--) {
+                                if (segs[k].type === "thinking") return k;
+                              }
+                              return -1;
+                            })();
+
                             return (
                               <>
                                 {segs.map((seg, segmentIndex) => {
                                   if (seg.type === "thinking") {
+                                    const isLastThinkingSegment =
+                                      segmentIndex === lastThinkingSegmentIndex;
                                     const isThinkingStreaming =
                                       isStreaming &&
+                                      isLastThinkingSegment &&
                                       seg === lastSeg;
                                     const fragment =
                                       message.thinkingFragments?.[
@@ -1729,6 +1745,9 @@ export default function MessageList({
                                       <ThinkingBlock
                                         key={`think-${segmentIndex}`}
                                         isStreaming={isThinkingStreaming}
+                                        streamKeepVisible={
+                                          isStreaming && isLastThinkingSegment
+                                        }
                                         thinking={fragment}
                                       />
                                     );

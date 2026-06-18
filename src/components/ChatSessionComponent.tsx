@@ -3773,14 +3773,14 @@ export default function ChatSessionComponent({
                   updatedMessages[updatedMessages.length - 1] = {
                     ...lastMessage,
                     status: "Compacting conversation...",
-                    statusPhase: "processing",
+                    statusPhase: "prefilling",
                   };
                 } else {
                   updatedMessages.push({
                     role: "assistant",
                     content: "",
                     status: "Compacting conversation...",
-                    statusPhase: "processing",
+                    statusPhase: "prefilling",
                   });
                 }
                 return updatedMessages;
@@ -3794,7 +3794,7 @@ export default function ChatSessionComponent({
                 const lastMessage = updatedMessages[updatedMessages.length - 1];
                 if (
                   lastMessage?.role === "assistant" &&
-                  lastMessage.statusPhase === "processing"
+                  lastMessage.statusPhase === "prefilling"
                 ) {
                   updatedMessages[updatedMessages.length - 1] = {
                     ...lastMessage,
@@ -3883,14 +3883,14 @@ export default function ChatSessionComponent({
                     ...last,
                     status: statusData.message,
                     statusPhase: statusData.phase,
-                    // Structured progress (0-1) from LM Studio prompt processing
+                    // Structured progress (0-1) from LM Studio prompt prefilling
                     _statusProgress:
                       statusData.progress != null
                         ? statusData.progress
                         : last._statusProgress,
-                    // Track when processing phase started for live TTFT estimation
+                    // Track when prefilling phase started for live TTFT estimation
                     _processingStartTime:
-                      statusData.phase === "processing" &&
+                      statusData.phase === "prefilling" &&
                       !last._processingStartTime
                         ? performance.now()
                         : last._processingStartTime,
@@ -3909,7 +3909,7 @@ export default function ChatSessionComponent({
                         ? statusData.progress
                         : undefined,
                     _processingStartTime:
-                      statusData.phase === "processing"
+                      statusData.phase === "prefilling"
                         ? performance.now()
                         : undefined,
                   });
@@ -4063,7 +4063,7 @@ export default function ChatSessionComponent({
                 },
               }));
             } else if (data.message === STATUS_MESSAGES.PHASE) {
-              // Worker LLM phase updates (generating, thinking, processing, loading)
+              // Worker LLM phase updates (generating, thinking, prefilling, loading)
               setWorkerToolActivity((previousWorkerToolActivity) => ({
                 ...previousWorkerToolActivity,
                 [workerId]: {
@@ -6555,7 +6555,15 @@ export default function ChatSessionComponent({
         let derivedPhase = null;
         let derivedLabel = null;
 
-        if (isGenerating && lastMessage?.role === "assistant") {
+        // Only derive phase from the last message's content/thinking when
+        // it's the actively streaming message (no toolCalls). Finalized
+        // messages from prior agentic iterations carry stale thinking/content
+        // that would incorrectly show "Thinking..." during prompt prefill.
+        const isActiveStreamingMessage =
+          lastMessage?.role === "assistant" &&
+          (!lastMessage.toolCalls || lastMessage.toolCalls.length === 0);
+
+        if (isGenerating && isActiveStreamingMessage) {
           if (lastMessage.content && lastMessage.content.trim().length > 0) {
             derivedPhase = "generating";
             derivedLabel = "Generating...";
@@ -6568,12 +6576,19 @@ export default function ChatSessionComponent({
           }
         }
 
+        // On iteration 2+, the model is doing prompt prefill,
+        // not bootstrapping — use "prefilling" as the default phase.
+        const iterationFallbackPhase =
+          (agenticProgress?.iteration ?? 0) > 1 ? "prefilling" : "starting";
+        const iterationFallbackLabel =
+          (agenticProgress?.iteration ?? 0) > 1 ? "Prefilling..." : "Starting...";
+
         const rawPhase = isGenerating
-          ? derivedPhase || lastMessage?.statusPhase || "starting"
+          ? derivedPhase || lastMessage?.statusPhase || iterationFallbackPhase
           : null;
 
         const rawLabel = isGenerating
-          ? derivedLabel || lastMessage?.status || "Starting..."
+          ? derivedLabel || lastMessage?.status || iterationFallbackLabel
           : undefined;
 
         const hasActiveTools = toolActivity.some((t) => t.status === "calling" || t.status === "streaming");
@@ -6600,11 +6615,12 @@ export default function ChatSessionComponent({
               worker.phase !== "spawned",
           );
           if (activeWorkers.length > 0) {
-            // Priority: generating > thinking > processing > loading > starting
+            // Priority: generating > thinking > prefilling > executing > loading > starting
             const phasePriority = [
               "generating",
               "thinking",
-              "processing",
+              "prefilling",
+              "executing",
               "loading",
               "starting",
             ];
@@ -6629,12 +6645,12 @@ export default function ChatSessionComponent({
         const activeTool = toolActivity.find((t) => t.status === "calling" || t.status === "streaming");
         const activeToolLabel = activeTool
           ? `Running tool ${renderToolName(activeTool.name)}...`
-          : "Processing...";
+          : "Executing...";
 
         const phase = isGenerating
           ? isAwaitingApproval
             ? "awaiting"
-            : workerDerivedPhase || (hasActiveTools ? "processing" : rawPhase)
+            : workerDerivedPhase || (hasActiveTools ? "executing" : rawPhase)
           : null;
         const label = isGenerating
           ? isAwaitingApproval
@@ -6645,9 +6661,9 @@ export default function ChatSessionComponent({
                 ? activeToolLabel
                 : rawLabel
           : undefined;
-        // Structured progress (0-1) from LM Studio prompt processing / model loading
+        // Structured progress (0-1) from LM Studio prompt prefilling / model loading
         const progress =
-          phase === "processing" || phase === "loading"
+          phase === "prefilling" || phase === "loading"
             ? (lastMessage?._statusProgress ?? null)
             : null;
 

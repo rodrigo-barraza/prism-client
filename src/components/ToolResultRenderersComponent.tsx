@@ -2437,11 +2437,11 @@ function WorkerStatusBar({ activity }: { activity: WorkerActivity | null }) {
   const toolLabel = currentTool ? renderToolName(currentTool) : null;
 
   // Derive the effective phase for StatusBarComponent:
-  // - Tool executing → "processing" (amber — actively running a tool)
+  // - Tool executing → "executing" (orange — actively running a tool)
   // - Terminal → null (idle)
-  // - Otherwise → actual model phase (generating, thinking, processing, etc.)
+  // - Otherwise → actual model phase (generating, thinking, prefilling, etc.)
   const effectivePhase = isToolActive
-    ? "processing"
+    ? "executing"
     : isTerminal
       ? null
       : phase;
@@ -2451,7 +2451,7 @@ function WorkerStatusBar({ activity }: { activity: WorkerActivity | null }) {
   const icon = isToolActive ? "🔧" : undefined;
   // Progress (0-1) from LM Studio prompt processing / model loading
   const progress =
-    effectivePhase === "processing" || effectivePhase === "loading"
+    effectivePhase === "prefilling" || effectivePhase === "loading"
       ? (activity.phaseProgress ?? null)
       : null;
 

@@ -43,8 +43,7 @@
 }
 
 .status-bar-active::before {
-  opacity: 0.25;
-  animation: status-bar-gradient-flow 6s linear infinite;
+  opacity: 0.15;
 }
 
 /* Paused gradient for awaiting phase — visible but static */
@@ -281,10 +280,16 @@
   --phase-pulse: oklch(0.704 0.158 269.1);
 }
 
-.phase-is-processing-state {
+.phase-is-prefilling-state {
   background: oklch(76.9% 0.1646 70.1 / 0.2);
   --phase-text: oklch(0.93 0.1376 105);
   --phase-pulse: oklch(0.843 0.1896 94.3);
+}
+
+.phase-is-executing-state {
+  background: oklch(70.5% 0.191 41 / 0.2);
+  --phase-text: oklch(0.93 0.15 60);
+  --phase-pulse: oklch(0.783 0.178 41);
 }
 
 .phase-is-thinking-state {

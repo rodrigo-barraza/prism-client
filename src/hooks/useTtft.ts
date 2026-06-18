@@ -28,7 +28,7 @@ interface TtftAction {
  * When the turn ends (active=false), it resets.
  *
  * For the client-side fallback (LM Studio native path), it live-counts
- * during the "processing" phase and latches on phase transition.
+ * during the "prefilling" phase and latches on phase transition.
  */
 function ttftReducer(
   prev: TtftState,
@@ -55,18 +55,18 @@ function ttftReducer(
     };
   }
 
-  // Active processing → live counting (client-side fallback for LM Studio native)
-  if (phase === "processing" && startTime) {
+  // Active prefilling → live counting (client-side fallback for LM Studio native)
+  if (phase === "prefilling" && startTime) {
     return {
       value: (perfNow - startTime) / 1000,
       live: true,
-      prevPhase: "processing",
+      prevPhase: "prefilling",
       seenCount: prev.seenCount,
     };
   }
 
-  // Phase just transitioned away from processing → latch final value
-  if (prev.prevPhase === "processing" && phase !== "processing" && prev.live) {
+  // Phase just transitioned away from prefilling → latch final value
+  if (prev.prevPhase === "prefilling" && phase !== "prefilling" && prev.live) {
     return {
       value: prev.value,
       live: false,

@@ -7,9 +7,10 @@ import styles from "./StatusBarComponent.module.css";
 const PHASE_LABELS = {
   starting: "Starting...",
   loading: "Loading...",
-  processing: "Processing...",
+  prefilling: "Prefilling...",
   generating: "Generating...",
   thinking: "Thinking...",
+  executing: "Executing...",
   delegating: "Awaiting Workers...",
   awaiting: "Awaiting For User Input...",
 };
@@ -17,9 +18,10 @@ const PHASE_LABELS = {
 const PHASE_ICONS = {
   starting: "⚡",
   loading: "📦",
-  processing: "🛠️",
+  prefilling: "📥",
   generating: "✨",
   thinking: "🧠",
+  executing: "🔧",
   delegating: "👥",
   awaiting: "⏸️",
 };
@@ -65,7 +67,7 @@ const PHASE_GRADIENT_STOPS: Record<string, string[]> = {
     "oklch(0.588 0.158 262)",   // blue-500
     "oklch(0.681 0.126 254)",   // blue-400
   ],
-  processing: [
+  prefilling: [
     "oklch(0.795 0.164 90)",    // yellow-500
     "oklch(0.852 0.176 95)",    // yellow-400
     "oklch(0.783 0.178 71)",    // amber-400
@@ -73,6 +75,15 @@ const PHASE_GRADIENT_STOPS: Record<string, string[]> = {
     "oklch(0.795 0.164 90)",    // yellow-500
     "oklch(0.852 0.176 95)",    // yellow-400
     "oklch(0.783 0.178 71)",    // amber-400
+  ],
+  executing: [
+    "oklch(0.705 0.191 41)",    // orange-500
+    "oklch(0.783 0.178 71)",    // amber-400
+    "oklch(0.646 0.222 22)",    // red-500
+    "oklch(0.783 0.178 71)",    // amber-400
+    "oklch(0.705 0.191 41)",    // orange-500
+    "oklch(0.783 0.178 71)",    // amber-400
+    "oklch(0.646 0.222 22)",    // red-500
   ],
 };
 
@@ -98,7 +109,7 @@ const DECAY_STEP_FACTOR = 0.6;
  * ```jsx
  * <StatusBarComponent
  *   active={isGenerating}
- *   phase={effectivePhase}    // "starting" | "loading" | "processing" | "generating" | "thinking"
+ *   phase={effectivePhase}    // "starting" | "loading" | "prefilling" | "generating" | "thinking"
  *   label={statusText}        // optional override — falls back to PHASE_LABELS[phase]
  *   progress={0.45}           // optional 0-1 progress (LM Studio prompt processing / model loading)
  * />
@@ -118,7 +129,7 @@ const DECAY_STEP_FACTOR = 0.6;
  * />
  * ```
  */
-export type StatusBarPhase = "starting" | "loading" | "processing" | "generating" | "thinking" | "delegating" | "awaiting";
+export type StatusBarPhase = "starting" | "loading" | "prefilling" | "generating" | "thinking" | "executing" | "delegating" | "awaiting";
 
 interface StatusBarProps {
   active?: boolean;
@@ -158,11 +169,16 @@ export default function StatusBarComponent({
   const decayBarRef = useRef<HTMLDivElement | null>(null);
   const previousPhaseRef = useRef<string | null | undefined>(null);
   const decayLevelRef = useRef(1.0);
+  const phaseDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!active) {
       previousPhaseRef.current = null;
       decayLevelRef.current = 1.0;
+      if (phaseDebounceTimerRef.current) {
+        clearTimeout(phaseDebounceTimerRef.current);
+        phaseDebounceTimerRef.current = null;
+      }
       if (decayBarRef.current) {
         decayBarRef.current.style.transform = "scaleX(0)";
         decayBarRef.current.style.transitionDuration = "0.3s";
@@ -182,24 +198,35 @@ export default function StatusBarComponent({
           decayBarRef.current.style.transform = "scaleX(1)";
         }
       } else {
-        // Subsequent phase change — step down multiplicatively
-        decayLevelRef.current = Math.max(
-          0.02,
-          decayLevelRef.current * DECAY_STEP_FACTOR,
-        );
-
-        // Transition slows down as bar gets lower (exponential feel)
-        const transitionDuration = 0.4 + (1 - decayLevelRef.current) * 1.0;
-
-        if (decayBarRef.current) {
-          decayBarRef.current.style.transitionDuration = `${transitionDuration}s`;
-          decayBarRef.current.style.transform = `scaleX(${decayLevelRef.current})`;
+        // Debounce rapid phase flickers during agentic tool loops
+        // so the bar doesn't drain to minimum within seconds.
+        if (phaseDebounceTimerRef.current) {
+          clearTimeout(phaseDebounceTimerRef.current);
         }
+        phaseDebounceTimerRef.current = setTimeout(() => {
+          phaseDebounceTimerRef.current = null;
+
+          // Subsequent phase change — step down multiplicatively
+          decayLevelRef.current = Math.max(
+            0.02,
+            decayLevelRef.current * DECAY_STEP_FACTOR,
+          );
+
+          // Transition slows down as bar gets lower (exponential feel)
+          const transitionDuration = 0.4 + (1 - decayLevelRef.current) * 1.2;
+
+          if (decayBarRef.current) {
+            decayBarRef.current.style.transitionDuration = `${transitionDuration}s`;
+            decayBarRef.current.style.transitionTimingFunction =
+              `cubic-bezier(0.1, 0, ${0.2 + decayLevelRef.current * 0.3}, 1)`;
+            decayBarRef.current.style.transform = `scaleX(${decayLevelRef.current})`;
+          }
+        }, 150);
       }
     }
   }, [active, phase]);
 
-  const isProgressPhase = phase === "processing" || phase === "loading";
+  const isProgressPhase = phase === "prefilling" || phase === "loading";
   const backendStuck = isProgressPhase && progress != null && progress === 0;
 
   useEffect(() => {
@@ -283,7 +310,6 @@ export default function StatusBarComponent({
       <div
         ref={decayBarRef}
         className={styles['status-bar-decay-fill']}
-        style={{ transform: active ? "scaleX(1)" : "scaleX(0)" }}
       />
       {/* Progress fill bar — slides right as prompt processing advances */}
       {active && hasEffectiveProgress && (
