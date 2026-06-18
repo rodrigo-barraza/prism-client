@@ -912,6 +912,8 @@ export type AgentDefaultsConfig = Record<string, unknown> & {
   subAgentModel?: string;
   criticProvider?: string;
   criticModel?: string;
+  reminderProvider?: string;
+  reminderModel?: string;
   harness?: string;
   topology?: string;
   dynamicToolActivation?: boolean;

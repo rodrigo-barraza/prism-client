@@ -290,6 +290,21 @@ export default function SettingsPageComponent() {
     [settings, persistSettings],
   );
 
+  const handleReminderModelSelect = useCallback(
+    (provider: string, model: string) => {
+      const updated = {
+        agents: {
+          ...settings?.agents,
+          reminderProvider: provider || "",
+          reminderModel: model || "",
+        },
+      };
+      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
   // -- Harness change handler -----------------------------------------
   const handleHarnessSelect = useCallback(
     (harnessId: string) => {
@@ -1029,6 +1044,32 @@ export default function SettingsPageComponent() {
                   model: agentDefaults.criticModel || "",
                 }}
                 onSelectModel={handleCriticModelSelect}
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="Disabled"
+              />
+            </div>
+          </div>
+
+          {/* System Reminder Model */}
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>System Reminder Model</span>
+              <span className={styles["layout-row-description"]}>
+                Distills the system prompt into key behavioral constraints and
+                re-injects them periodically to counteract instruction fade-out
+                on long sessions. When set, runs a one-time extraction on the
+                first reminder interval. Leave empty to disable.
+              </span>
+            </div>
+            <div className={styles["layout-row-control"]}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.reminderProvider || "",
+                  model: agentDefaults.reminderModel || "",
+                }}
+                onSelectModel={handleReminderModelSelect}
                 modelTypeFilter="conversation"
                 allowDeselect
                 placeholderLabel="Disabled"
