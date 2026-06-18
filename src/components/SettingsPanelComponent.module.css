@@ -178,7 +178,6 @@
   margin-top: 8px;
   border: 1px solid var(--calculated-border-color);
   border-radius: var(--border-radius-sm);
-  overflow: hidden;
   background: var(--background-surface);
 }
 
@@ -190,6 +189,7 @@
   color: var(--text-secondary);
   padding: 6px 10px;
   border-bottom: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
 }
 
 .modality-layout-row {
@@ -202,6 +202,7 @@
 
 .modality-layout-row:last-child {
   border-bottom: none;
+  border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
 }
 
 .modality-icon {
