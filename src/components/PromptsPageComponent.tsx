@@ -38,6 +38,19 @@ const PAGE_SIZE = 30;
 
 const ESTIMATED_TOKENS_PER_WORD = 1.33;
 
+const COLOR_OPTIONS = [
+  { name: "Muted", value: "oklch(0.53 0.03 240)" },
+  { name: "Blue", value: "oklch(0.61 0.16 245)" },
+  { name: "Indigo", value: "oklch(0.58 0.19 275)" },
+  { name: "Purple", value: "oklch(0.60 0.18 300)" },
+  { name: "Pink", value: "oklch(0.63 0.19 335)" },
+  { name: "Crimson", value: "oklch(0.57 0.20 20)" },
+  { name: "Orange", value: "oklch(0.68 0.17 50)" },
+  { name: "Amber", value: "oklch(0.74 0.15 75)" },
+  { name: "Teal", value: "oklch(0.67 0.12 190)" },
+  { name: "Emerald", value: "oklch(0.66 0.15 150)" }
+];
+
 function countWords(text: string): number {
   if (!text) return 0;
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -62,6 +75,7 @@ export default function PromptsPageComponent() {
   const [formTitle, setFormTitle] = useState("");
   const [formContent, setFormContent] = useState("");
   const [formTags, setFormTags] = useState("");
+  const [formColor, setFormColor] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const [viewMode, setViewMode] = usePersistedState("prompts-page:view-mode", "card");
@@ -71,6 +85,7 @@ export default function PromptsPageComponent() {
   const [modalTitle, setModalTitle] = useState("");
   const [modalContent, setModalContent] = useState("");
   const [modalTags, setModalTags] = useState("");
+  const [modalColor, setModalColor] = useState("");
   const [isModalSaving, setIsModalSaving] = useState(false);
 
   const loadPrompts = useCallback(async () => {
@@ -97,6 +112,7 @@ export default function PromptsPageComponent() {
     setFormTitle("");
     setFormContent("");
     setFormTags("");
+    setFormColor("");
     setIsCreating(false);
     setIsSaving(false);
   };
@@ -113,6 +129,7 @@ export default function PromptsPageComponent() {
         title: formTitle.trim(),
         content: formContent.trim(),
         tags,
+        color: formColor || undefined,
       });
       resetForm();
       loadPrompts();
@@ -150,11 +167,13 @@ export default function PromptsPageComponent() {
     setModalTitle(prompt.title);
     setModalContent(prompt.content);
     setModalTags((prompt.tags || []).join(", "));
+    setModalColor(prompt.color || "");
   };
 
   const closePromptModal = () => {
     setModalPrompt(null);
     setModalEditMode(false);
+    setModalColor("");
     setIsModalSaving(false);
   };
 
@@ -170,6 +189,7 @@ export default function PromptsPageComponent() {
         title: modalTitle.trim(),
         content: modalContent.trim(),
         tags,
+        color: modalColor || "",
       });
       closePromptModal();
       loadPrompts();
@@ -188,7 +208,16 @@ export default function PromptsPageComponent() {
       sortable: true,
       sortValue: (row: PromptDocument) => row.title.toLowerCase(),
       render: (row: PromptDocument) => (
-        <span className={styles["table-title-cell"]}>{row.title}</span>
+        <div className={styles["table-title-container"]}>
+          {row.color && (
+            <span
+              className={styles["color-indicator-dot"]}
+              style={{ backgroundColor: row.color }}
+              title="Prompt color label"
+            />
+          )}
+          <span className={styles["table-title-cell"]}>{row.title}</span>
+        </div>
       ),
     },
     {
@@ -287,6 +316,32 @@ export default function PromptsPageComponent() {
             placeholder="e.g. coding, creative, analysis"
           />
         </div>
+        <div className={styles["form-field"]}>
+          <label className={styles["form-label"]}>Label Color</label>
+          <div className={styles["color-picker-group"]}>
+            {COLOR_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`${styles["color-picker-button"]} ${formColor === option.value ? styles["is-selected-state"] : ""}`}
+                style={{ "--option-color": option.value } as React.CSSProperties}
+                onClick={() => setFormColor(option.value)}
+                title={option.name}
+              >
+                {formColor === option.value && <Check size={12} />}
+              </button>
+            ))}
+            {formColor && (
+              <button
+                type="button"
+                className={styles["clear-color-button"]}
+                onClick={() => setFormColor("")}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
       </div>
       <div className={styles["form-actions"]}>
         <ButtonComponent
@@ -315,6 +370,10 @@ export default function PromptsPageComponent() {
       <div
         key={prompt.id}
         className={styles["prompt-card"]}
+        style={{
+          borderLeft: prompt.color ? `4px solid ${prompt.color}` : undefined,
+          "--prompt-color": prompt.color || undefined,
+        } as React.CSSProperties}
         onClick={() => openPromptModal(prompt)}
         role="button"
         tabIndex={0}
@@ -326,6 +385,13 @@ export default function PromptsPageComponent() {
         }}
       >
         <div className={styles["prompt-card-header"]}>
+          {prompt.color && (
+            <span
+              className={styles["color-indicator-dot"]}
+              style={{ backgroundColor: prompt.color }}
+              title="Prompt color label"
+            />
+          )}
           <span className={styles["prompt-title"]}>
             {prompt.title}
           </span>
@@ -407,6 +473,9 @@ export default function PromptsPageComponent() {
       <div
         key={prompt.id}
         className={styles["list-item"]}
+        style={{
+          borderLeft: prompt.color ? `4px solid ${prompt.color}` : undefined,
+        } as React.CSSProperties}
         onClick={() => openPromptModal(prompt)}
         role="button"
         tabIndex={0}
@@ -417,6 +486,13 @@ export default function PromptsPageComponent() {
           }
         }}
       >
+        {prompt.color && (
+          <span
+            className={styles["color-indicator-dot"]}
+            style={{ backgroundColor: prompt.color }}
+            title="Prompt color label"
+          />
+        )}
         <span className={styles["list-item-title"]}>{prompt.title}</span>
         <div className={styles["list-item-tags"]}>
           {prompt.tags?.map((tag) => (
@@ -584,6 +660,12 @@ export default function PromptsPageComponent() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className={styles["modal-header"]}>
+              {modalPrompt.color && (
+                <span
+                  className={styles["color-indicator-dot"]}
+                  style={{ backgroundColor: modalPrompt.color, marginInlineEnd: 4 }}
+                />
+              )}
               {modalEditMode ? (
                 <input
                   type="text"
@@ -682,6 +764,32 @@ export default function PromptsPageComponent() {
                     onChange={(event) => setModalTags(event.target.value)}
                     placeholder="e.g. coding, creative, analysis"
                   />
+                </div>
+                <div className={styles["form-field"]}>
+                  <label className={styles["form-label"]}>Label Color</label>
+                  <div className={styles["color-picker-group"]}>
+                    {COLOR_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`${styles["color-picker-button"]} ${modalColor === option.value ? styles["is-selected-state"] : ""}`}
+                        style={{ "--option-color": option.value } as React.CSSProperties}
+                        onClick={() => setModalColor(option.value)}
+                        title={option.name}
+                      >
+                        {modalColor === option.value && <Check size={12} />}
+                      </button>
+                    ))}
+                    {modalColor && (
+                      <button
+                        type="button"
+                        className={styles["clear-color-button"]}
+                        onClick={() => setModalColor("")}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (

@@ -2077,6 +2077,7 @@ export default class PrismService {
     title: string;
     content: string;
     tags?: string[];
+    color?: string;
   }): Promise<Prompt> {
     return PrismService._request<Prompt>("/prompts", {
       method: "POST",
@@ -2086,7 +2087,7 @@ export default class PrismService {
 
   static async updatePrompt(
     id: string,
-    updates: Partial<{ title: string; content: string; tags: string[] }>,
+    updates: Partial<{ title: string; content: string; tags: string[]; color: string }>,
   ): Promise<Prompt> {
     return PrismService._request<Prompt>(`/prompts/${id}`, {
       method: "PATCH",
