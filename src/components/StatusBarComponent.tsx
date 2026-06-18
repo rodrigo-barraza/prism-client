@@ -87,31 +87,29 @@ const PHASE_GRADIENT_STOPS: Record<string, string[]> = {
   ],
 };
 
-// -- Synthetic asymptotic progress ------------------------------------
-// When the backend doesn't emit real progress events (e.g. OpenAI-compat
-// path used by agentic mode), we generate a client-side asymptotic curve
-// that approaches 95% over ~20s. This gives the user visual feedback
-// that something is happening during prompt prefill.
-const SYNTHETIC_EXPECTED_MS = 20_000;
-const SYNTHETIC_TICK_MS = 200;
-
-// -- Multiplicative step decay bar ------------------------------------
-// Each phase change multiplies the current bar level by this factor,
-// producing a naturally exponential curve: large drops early,
-// asymptotically smaller drops as the bar approaches zero.
-// e.g. 1.0 → 0.6 → 0.36 → 0.216 → 0.13 → 0.078 → 0.047 …
-const DECAY_STEP_FACTOR = 0.6;
+// -- Asymptotic synthetic progress ------------------------------------
+// Exponential approach curve: progress = 1 - e^(-t/τ)
+// Fast initial growth that exponentially slows near 100%.
+// Reaches ~63% at τ (15s), ~86% at 2τ (30s), ~95% at 3τ (45s).
+const ASYMPTOTIC_TIME_CONSTANT_MS = 15_000;
+const SYNTHETIC_TICK_MS = 150;
+const MAX_SYNTHETIC_PROGRESS = 0.99;
 
 /**
  * Unified animated status bar shared by the main orchestrator and sub-agents.
+ *
+ * Single progress bar that fills left-to-right using an asymptotic exponential
+ * approach curve — fast at first, exponentially slower near 100%. When the
+ * backend provides real progress values, those take precedence. Otherwise
+ * a synthetic curve provides visual feedback.
  *
  * ### Orchestrator usage (ChatSessionComponent)
  * ```jsx
  * <StatusBarComponent
  *   active={isGenerating}
- *   phase={effectivePhase}    // "starting" | "loading" | "prefilling" | "generating" | "thinking"
- *   label={statusText}        // optional override — falls back to PHASE_LABELS[phase]
- *   progress={0.45}           // optional 0-1 progress (LM Studio prompt processing / model loading)
+ *   phase={effectivePhase}
+ *   label={statusText}
+ *   progress={0.45}
  * />
  * ```
  *
@@ -121,7 +119,7 @@ const DECAY_STEP_FACTOR = 0.6;
  *   active={isToolActive || hasPhase}
  *   phase={phase}
  *   label={label}
- *   icon={icon}               // override emoji icon or pass null for default phase icon
+ *   icon={icon}
  *   iteration={iteration}
  *   maxIterations={maxIterations}
  *   idleIcon={<Users size={10} />}
@@ -162,124 +160,53 @@ export default function StatusBarComponent({
   const [syntheticProgress, setSyntheticProgress] = useState(0);
   const syntheticStartRef = useRef<number | null>(null);
 
-  // -- Multiplicative step decay bar state -----------------------------
-  // Tracks the current bar level (1.0 = full, 0 = empty). Each phase
-  // change multiplies the level by DECAY_STEP_FACTOR. CSS transition on
-  // the element handles smooth animation between discrete steps.
-  const decayBarRef = useRef<HTMLDivElement | null>(null);
-  const previousPhaseRef = useRef<string | null | undefined>(null);
-  const decayLevelRef = useRef(1.0);
-  const phaseDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // Asymptotic synthetic progress: runs whenever active, producing a
+  // monotonically increasing baseline via 1 - e^(-t/τ). Fast initial
+  // movement that exponentially decelerates as it approaches 100%.
   useEffect(() => {
     if (!active) {
-      previousPhaseRef.current = null;
-      decayLevelRef.current = 1.0;
-      if (phaseDebounceTimerRef.current) {
-        clearTimeout(phaseDebounceTimerRef.current);
-        phaseDebounceTimerRef.current = null;
-      }
-      if (decayBarRef.current) {
-        decayBarRef.current.style.transform = "scaleX(0)";
-        decayBarRef.current.style.transitionDuration = "0.3s";
-      }
-      return;
-    }
-
-    if (phase !== previousPhaseRef.current) {
-      const isFirstPhase = previousPhaseRef.current === null;
-      previousPhaseRef.current = phase;
-
-      if (isFirstPhase) {
-        // Generation just started — bar appears at full width instantly
-        decayLevelRef.current = 1.0;
-        if (decayBarRef.current) {
-          decayBarRef.current.style.transitionDuration = "0s";
-          decayBarRef.current.style.transform = "scaleX(1)";
-        }
-      } else {
-        // Debounce rapid phase flickers during agentic tool loops
-        // so the bar doesn't drain to minimum within seconds.
-        if (phaseDebounceTimerRef.current) {
-          clearTimeout(phaseDebounceTimerRef.current);
-        }
-        phaseDebounceTimerRef.current = setTimeout(() => {
-          phaseDebounceTimerRef.current = null;
-
-          // Subsequent phase change — step down multiplicatively
-          decayLevelRef.current = Math.max(
-            0.02,
-            decayLevelRef.current * DECAY_STEP_FACTOR,
-          );
-
-          // Transition slows down as bar gets lower (exponential feel)
-          const transitionDuration = 0.4 + (1 - decayLevelRef.current) * 1.2;
-
-          if (decayBarRef.current) {
-            decayBarRef.current.style.transitionDuration = `${transitionDuration}s`;
-            decayBarRef.current.style.transitionTimingFunction =
-              `cubic-bezier(0.1, 0, ${0.2 + decayLevelRef.current * 0.3}, 1)`;
-            decayBarRef.current.style.transform = `scaleX(${decayLevelRef.current})`;
-          }
-        }, 150);
-      }
-    }
-  }, [active, phase]);
-
-  const isProgressPhase = phase === "prefilling" || phase === "loading";
-  const backendStuck = isProgressPhase && progress != null && progress === 0;
-
-  useEffect(() => {
-    if (!active || !backendStuck) {
       setSyntheticProgress(0);
       syntheticStartRef.current = null;
       return;
     }
 
-    // Start synthetic timer
     if (!syntheticStartRef.current) {
       syntheticStartRef.current = performance.now();
     }
 
-    const id = setInterval(() => {
+    const intervalId = setInterval(() => {
       const elapsed = performance.now() - (syntheticStartRef.current ?? 0);
-      // Asymptotic: approaches 0.95 over SYNTHETIC_EXPECTED_MS
-      const percentage = Math.min(
-        0.95,
-        elapsed / (elapsed + SYNTHETIC_EXPECTED_MS),
+      const progressValue = Math.min(
+        MAX_SYNTHETIC_PROGRESS,
+        1 - Math.exp(-elapsed / ASYMPTOTIC_TIME_CONSTANT_MS),
       );
-      setSyntheticProgress(percentage);
+      setSyntheticProgress(progressValue);
     }, SYNTHETIC_TICK_MS);
 
-    return () => clearInterval(id);
-  }, [active, backendStuck]);
+    return () => clearInterval(intervalId);
+  }, [active]);
 
-  // Use real backend progress when available, synthetic when stuck at 0
-  const effectiveProgress =
-    isProgressPhase && progress != null
-      ? progress > 0
-        ? progress
-        : syntheticProgress
-      : null;
+  // Unified progress: the greater of real backend progress and the
+  // synthetic asymptotic floor. Ensures the bar never moves backward
+  // across phase transitions.
+  const realBackendProgress = progress != null && progress > 0 ? progress : 0;
+  const effectiveProgress = active
+    ? Math.max(syntheticProgress, realBackendProgress)
+    : 0;
+  const progressPercentage = Math.round(effectiveProgress * 100);
 
-  // Strip trailing " 45%" / " done" from label when structured progress is shown via chip
+  // Strip trailing " 45%" / " done" from label since progress is shown separately
   const rawLabel =
     label || (PHASE_LABELS as Record<string, string>)[phase ?? ""] || "Starting...";
-  const hasEffectiveProgress =
-    effectiveProgress != null && effectiveProgress >= 0;
-  const resolvedLabel = hasEffectiveProgress
-    ? rawLabel
-        .replace(/[\u2026.]+\s*\d+%$/, "\u2026")
-        .replace(/[\u2026.]+\s*done$/i, "\u2026")
-    : rawLabel;
+  const resolvedLabel = rawLabel
+    .replace(/[\u2026.]+\s*\d+%$/, "\u2026")
+    .replace(/[\u2026.]+\s*done$/i, "\u2026");
   const resolvedIcon =
     icon !== undefined
       ? icon
       : (PHASE_ICONS as Record<string, string>)[phase ?? ""] || null;
 
-  // Awaiting phase: greyscale + frozen (no animation)
   const isAwaitingPhase = phase === "awaiting";
-  // Delegating phase: orchestrator waiting on sub-agents — animated color but subdued glow
   const isDelegatingPhase = phase === "delegating";
 
   // Resolve per-phase gradient CSS custom properties
@@ -296,28 +223,16 @@ export default function StatusBarComponent({
       } as React.CSSProperties
     : undefined;
 
-  // Progress percentage
-  const progressPercentage = hasEffectiveProgress
-    ? Math.round(effectiveProgress * 100)
-    : null;
-
   return (
     <div
       className={`status-bar-component ${styles['status-bar']}${isSubAgent ? ` ${styles['status-bar-sub-agent']}` : ""}${active ? ` ${styles['status-bar-active']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
       style={gradientCustomProperties}
     >
-      {/* Multiplicative step decay bar — steps down per phase change */}
+      {/* Unified asymptotic progress fill — single bar, left to right */}
       <div
-        ref={decayBarRef}
-        className={styles['status-bar-decay-fill']}
+        className={styles['status-bar-fill']}
+        style={{ transform: `scaleX(${effectiveProgress})` }}
       />
-      {/* Progress fill bar — slides right as prompt processing advances */}
-      {active && hasEffectiveProgress && (
-        <div
-          className={styles['status-bar-progress-fill']}
-          style={{ width: `${progressPercentage}%` }}
-        />
-      )}
       <div
         className={`${styles['status-bar-overlay']}${phase ? ` ${styles[`phase-is-${phase}-state`] || ""}` : ""}`}
       >
@@ -328,11 +243,9 @@ export default function StatusBarComponent({
             )}
             <span className={styles['status-bar-message']}>
               {resolvedLabel}
-              {hasEffectiveProgress && (
-                <span className={styles['status-bar-progress']}>
-                  {progressPercentage}%
-                </span>
-              )}
+              <span className={styles['status-bar-progress']}>
+                {progressPercentage}%
+              </span>
               {tokPerSec != null && tokPerSec > 0 && (
                 <span className={styles['status-bar-speed']}>
                   ⚡ {tokPerSec.toFixed(1)} tok/s

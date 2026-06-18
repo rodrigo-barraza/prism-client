@@ -17,41 +17,7 @@
     box-shadow 0.3s ease;
 }
 
-/* ── Animated gradient shimmer (on decay bar element) ── */
-
-.status-bar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 4px;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-
-  /* Default neutral gradient — overridden by phase custom properties */
-  background: linear-gradient(
-    90deg,
-    var(--gradient-stop-1, oklch(0.55 0.04 257)) 0%,
-    var(--gradient-stop-2, oklch(0.60 0.05 257)) 16%,
-    var(--gradient-stop-3, oklch(0.55 0.04 257)) 33%,
-    var(--gradient-stop-4, oklch(0.60 0.05 257)) 50%,
-    var(--gradient-stop-5, oklch(0.55 0.04 257)) 66%,
-    var(--gradient-stop-6, oklch(0.60 0.05 257)) 83%,
-    var(--gradient-stop-7, oklch(0.55 0.04 257)) 100%
-  );
-  background-size: 300% 100%;
-  will-change: translate;
-}
-
-.status-bar-active::before {
-  opacity: 0.15;
-}
-
-/* Paused gradient for awaiting phase — visible but static */
-.status-bar-awaiting::before {
-  opacity: 0.15;
-  animation: none;
-  filter: grayscale(1);
-}
+/* ── Animated gradient shimmer keyframe ── */
 
 @keyframes status-bar-gradient-flow {
   0% {
@@ -62,12 +28,12 @@
   }
 }
 
-/* ── Exponential decay fill bar ──
-   Shrinks from 100% → 0% via scaleX on each phase change.
-   Contains the same flowing gradient but at full opacity,
-   giving a "drain" visual as the bar narrows. */
+/* ── Unified asymptotic progress fill bar ──
+   Single bar that grows from left (0%) toward right (100%)
+   following an exponential approach curve. Contains a flowing
+   gradient shimmer for visual life. */
 
-.status-bar-decay-fill {
+.status-bar-fill {
   position: absolute;
   inset: 0;
   border-radius: 4px;
@@ -76,7 +42,7 @@
   will-change: transform;
   pointer-events: none;
   z-index: 1;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
 
   background: linear-gradient(
     90deg,
@@ -92,13 +58,13 @@
   animation: status-bar-gradient-flow 6s linear infinite;
 }
 
-/* Hide decay bar when inactive */
-.status-bar:not(.status-bar-active) .status-bar-decay-fill {
+/* Hide fill bar when inactive */
+.status-bar:not(.status-bar-active) .status-bar-fill {
   opacity: 0;
 }
 
 /* Awaiting phase: desaturated, frozen */
-.status-bar-awaiting .status-bar-decay-fill {
+.status-bar-awaiting .status-bar-fill {
   animation: none;
   filter: grayscale(1);
   opacity: 0.5;
@@ -132,24 +98,7 @@
     0 0 14px -4px color-mix(in srgb, oklch(0.712 0.1208 221.2) 8%, transparent);
 }
 
-/* ── Progress fill bar ── */
-
-.status-bar-progress-fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    oklch(100.0% 0.0001 263.3 / 0.04) 0%,
-    oklch(100.0% 0.0001 263.3 / 0.08) 100%
-  );
-  border-radius: 4px;
-  z-index: 1;
-  transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
+/* ── Overlay (text, icons, chips) ── */
 
 .status-bar-overlay {
   position: absolute;
@@ -255,7 +204,7 @@
   border-radius: 50%;
   background: var(--phase-pulse, oklch(100.0% 0.0001 263.3 / 0.8));
   flex-shrink: 0;
-  margin-left: auto;
+  margin-inline-start: auto;
   animation: status-bar-pulse-dot 1.4s ease-in-out infinite;
   will-change: opacity, transform;
 }
