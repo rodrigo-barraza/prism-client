@@ -64,7 +64,7 @@ export interface SessionStats {
   conversationStartTime?: string | number | null;
   usedTools?: Array<{ name: string; count: number }>;
   orchestrator?: SessionStats;
-  workers?: SessionStats;
+  subAgents?: SessionStats;
   modalities?: Record<string, boolean>;
 }
 
@@ -97,7 +97,7 @@ export interface SettingsPanelProps {
   sessionStats?: SessionStats | null;
   lockedTools?: Set<string>;
   sessionType?: string;
-  canSpawnWorkers?: boolean;
+  canSpawnSubAgents?: boolean;
   agentToggles?: AgentToggleOption[];
 }
 
@@ -146,7 +146,7 @@ export default function SettingsPanel({
   sessionStats = null,
   lockedTools,
   sessionType = "conversation",
-  canSpawnWorkers = false,
+  canSpawnSubAgents = false,
   agentToggles,
 }: SettingsPanelProps) {
   const sessionLabel = sessionType === "agent" ? "Session" : "Conversation";
@@ -223,24 +223,24 @@ export default function SettingsPanel({
     totalElapsedTime,
     liveTokensPerSec,
     computedTokPerSec,
-    hasActiveWorkers,
+    hasActiveSubAgents,
   } = useTokenRate(sessionStats);
 
   // -- Live TTFT (Time To First Token) ---------------------------
   const { liveTtft, isLiveTtft } = useTtft(sessionStats, perfNow, needsTicker);
 
-  // -- Stats tab (All / Orchestrator / Workers) --------------
+  // -- Stats tab (All / Orchestrator / Sub-Agents) --------------
   const [statsTab, setStatsTab] = useState("all");
 
   const showStatsTabBar =
-    canSpawnWorkers && !!(sessionStats?.orchestrator || sessionStats?.workers);
+    canSpawnSubAgents && !!(sessionStats?.orchestrator || sessionStats?.subAgents);
 
   // Resolve which stats object to render based on active tab
   const activeStats = sessionStats
     ? statsTab === "orchestrator"
       ? sessionStats.orchestrator
-      : statsTab === "workers"
-        ? sessionStats.workers
+      : statsTab === "subAgents"
+        ? sessionStats.subAgents
         : sessionStats
     : null;
 
@@ -361,7 +361,7 @@ export default function SettingsPanel({
           type="throughput"
           liveTokensPerSecond={liveTokensPerSec}
           averageTokensPerSecond={stats.avgTokensPerSec}
-          isActivelyGenerating={computedTokPerSec !== null || hasActiveWorkers}
+          isActivelyGenerating={computedTokPerSec !== null || hasActiveSubAgents}
           turnActive={turnActive}
         />
         {/* TTFT badge — live during processing, latched after first token, static after completion */}
@@ -412,17 +412,17 @@ export default function SettingsPanel({
             />
           )}
         {(() => {
-          // When viewing "all" stats and there are workers, aggregate tools from orchestrator and workers
+          // When viewing "all" stats and there are sub-agents, aggregate tools from orchestrator and sub-agents
           const displayTools: Array<{ name: string; count: number }> = (() => {
             if (
               statsTab !== "all" ||
-              !sessionStats?.workers ||
+              !sessionStats?.subAgents ||
               !sessionStats?.orchestrator
             ) {
               return stats.usedTools || [];
             }
 
-            // Merge tools from orchestrator and workers
+            // Merge tools from orchestrator and sub-agents
             const toolMap = new Map<string, number>();
 
             // Add orchestrator tools
@@ -435,9 +435,9 @@ export default function SettingsPanel({
               }
             }
 
-            // Add worker tools
-            if (sessionStats.workers?.usedTools) {
-              for (const tool of sessionStats.workers.usedTools) {
+            // Add sub-agent tools
+            if (sessionStats.subAgents?.usedTools) {
+              for (const tool of sessionStats.subAgents.usedTools) {
                 toolMap.set(
                   tool.name,
                   (toolMap.get(tool.name) || 0) + (tool.count || 1),

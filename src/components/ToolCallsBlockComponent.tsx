@@ -13,13 +13,13 @@ import { ToolBadgeRow } from "./ToolBadgeComponent";
 import { renderToolName, formatLatencyMilliseconds } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { ToolCallEvent } from "../types/types";
-import type { WorkerToolActivityItem } from "./MessageListComponent";
+import type { SubAgentToolActivityItem } from "./MessageListComponent";
 import styles from "./ToolCallsBlockComponent.module.css";
 
 interface ToolCallsBlockProps {
   toolCalls?: ToolCallEvent[];
   streamingOutputs?: Map<string, string> | null;
-  workerToolActivity?: Record<string, WorkerToolActivityItem> | null;
+  subAgentToolActivity?: Record<string, SubAgentToolActivityItem> | null;
   isAutoCollapsed?: boolean;
 }
 
@@ -43,7 +43,7 @@ export const VISUAL_TOOL_NAMES = new Set([
 export default function ToolCallsBlockComponent({
   toolCalls,
   streamingOutputs,
-  workerToolActivity,
+  subAgentToolActivity,
   isAutoCollapsed,
 }: ToolCallsBlockProps) {
   const hasActiveCalls = toolCalls
@@ -173,8 +173,8 @@ export default function ToolCallsBlockComponent({
                     let activeTool: string | null = null;
                     for (const member of members) {
                       const activity =
-                        member.agent_id && workerToolActivity
-                          ? workerToolActivity[member.agent_id]
+                        member.agent_id && subAgentToolActivity
+                          ? subAgentToolActivity[member.agent_id]
                           : null;
                       if (activity?.toolNames) {
                         for (const [name, count] of Object.entries(
@@ -194,11 +194,11 @@ export default function ToolCallsBlockComponent({
                     };
                     if (
                       Object.keys(allToolNames).length === 0 &&
-                      workerToolActivity &&
+                      subAgentToolActivity &&
                       Array.isArray(tcArgs?.members)
                     ) {
                       for (const argMember of tcArgs.members) {
-                        const match = Object.values(workerToolActivity).find(
+                        const match = Object.values(subAgentToolActivity).find(
                           (v) =>
                             v.description &&
                             argMember.description &&
@@ -240,7 +240,7 @@ export default function ToolCallsBlockComponent({
                 <ToolResultView
                   toolCall={toolCall}
                   streamingOutput={streamingOutputs?.get(toolCall.id)}
-                  workerToolActivity={workerToolActivity}
+                  subAgentToolActivity={subAgentToolActivity}
                 />
               </div>
             );

@@ -1,7 +1,7 @@
 import { useState, useEffect, useReducer, useMemo } from "react";
 import type {
   SessionTokenStats,
-  WorkerProgress,
+  SubAgentProgress,
   GenProgress,
 } from "../utils/utilities";
 
@@ -39,7 +39,7 @@ export interface TokenRateResult {
   totalElapsedTime: number;
   liveTokensPerSec: number | null;
   computedTokPerSec: number | null;
-  hasActiveWorkers: boolean;
+  hasActiveSubAgents: boolean;
 }
 
 /**
@@ -87,22 +87,22 @@ const TOK_PER_SEC_INITIAL: TokPerSecState = {
 };
 
 /**
- * Sum per-worker tok/s from workerGenerationProgress.
+ * Sum per-sub-agent tok/s from subAgentGenerationProgress.
  *
- * Each worker's `tokPerSec` is computed independently by CoordinatorService's
+ * Each sub-agent's `tokPerSec` is computed independently by CoordinatorService's
  * `buildProgress()` using burst-scoped chunk counters — these values are
- * accurate per-worker rates.
+ * accurate per-sub-agent rates.
  *
  * The aggregate shown in the SettingsPanel should be the **additive sum**
- * of all concurrent workers (e.g. 3 × 40 = 120 tok/s), not the average.
+ * of all concurrent sub-agents (e.g. 3 × 40 = 120 tok/s), not the average.
  */
-function sumWorkerThroughput(
-  workerGenerationProgress: Record<string, WorkerProgress> | null,
+function sumSubAgentThroughput(
+  subAgentGenerationProgress: Record<string, SubAgentProgress> | null,
 ): { sum: number; count: number } {
   let sum = 0;
   let count = 0;
-  if (!workerGenerationProgress) return { sum: 0, count: 0 };
-  for (const wp of Object.values(workerGenerationProgress)) {
+  if (!subAgentGenerationProgress) return { sum: 0, count: 0 };
+  for (const wp of Object.values(subAgentGenerationProgress)) {
     if (wp.tokPerSec != null && wp.tokPerSec > 0) {
       sum += wp.tokPerSec;
       count++;
@@ -117,15 +117,15 @@ function sumWorkerThroughput(
  *
  * Three data sources (in priority order):
  *
- *   1. **Worker aggregation** (coordinator sessions): Sum of per-worker
- *      `tokPerSec` values from `workerGenerationProgress`. These are
+ *   1. **Sub-agent aggregation** (coordinator sessions): Sum of per-sub-agent
+ *      `tokPerSec` values from `subAgentGenerationProgress`. These are
  *      computed by CoordinatorService's `buildProgress()` using accurate
  *      burst-scoped chunk counters. Plus the orchestrator's own rate if
  *      it's also generating.
  *
  *   2. **Backend-sourced** (`liveGenProgress`): tok/s from Prism's
  *      SessionGenerationTracker. Used for solo agentic sessions without
- *      workers (orchestrator-only), where the tracker has accurate data.
+ *      sub-agents (orchestrator-only), where the tracker has accurate data.
  *
  *   3. **Frontend chunk-counting** (fallback): For non-agentic
  *      sessions (regular conversations) that don't emit
@@ -177,18 +177,18 @@ export default function useTokenRate(
 
   // -- Live tok/s computation ------------------------------------
   let computedTokPerSec: number | null = null;
-  let hasActiveWorkers = false;
+  let hasActiveSubAgents = false;
 
-  // Priority 1: Sum per-worker tok/s from workerGenerationProgress.
+  // Priority 1: Sum per-sub-agent tok/s from subAgentGenerationProgress.
   // These come from CoordinatorService's buildProgress() which uses
-  // burst-scoped chunk counters — accurate and independent per worker.
-  const { sum: workerSum, count: activeWorkerCount } = sumWorkerThroughput(
-    sessionStats?.workerGenerationProgress ?? null,
+  // burst-scoped chunk counters — accurate and independent per sub-agent.
+  const { sum: subAgentSum, count: activeSubAgentCount } = sumSubAgentThroughput(
+    sessionStats?.subAgentGenerationProgress ?? null,
   );
 
-  if (activeWorkerCount > 0) {
-    hasActiveWorkers = true;
-    let totalRate = workerSum;
+  if (activeSubAgentCount > 0) {
+    hasActiveSubAgents = true;
+    let totalRate = subAgentSum;
 
     // Add orchestrator's own rate if it's also generating
     // (the orchestrator streams chunks independently via its own SSE path)
@@ -216,7 +216,7 @@ export default function useTokenRate(
 
     if (genProgressFresh && genProgress.tokPerSec != null) {
       computedTokPerSec = genProgress.tokPerSec;
-      hasActiveWorkers = (genProgress.activeRequests || 0) > 1;
+      hasActiveSubAgents = (genProgress.activeRequests || 0) > 1;
     } else {
       // Priority 3: Frontend chunk-counting fallback for non-agentic
       // sessions (Direct Chat) that don't go through the agentic loop.
@@ -256,6 +256,6 @@ export default function useTokenRate(
     totalElapsedTime,
     liveTokensPerSec,
     computedTokPerSec,
-    hasActiveWorkers,
+    hasActiveSubAgents,
   };
 }

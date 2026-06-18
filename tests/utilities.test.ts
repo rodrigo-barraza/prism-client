@@ -9,7 +9,7 @@ import {
   buildLmStudioLoadBody,
   getUsedTools,
   toolCountsToUsedTools,
-  mergeUsedToolsWithWorkers,
+  mergeUsedToolsWithSubAgents,
   CAPABILITY_TOOL_NAMES,
   getModalities,
 } from "../src/utils/utilities.js";
@@ -269,16 +269,16 @@ describe("toolCountsToUsedTools", () => {
 });
 
 // ═════════════════════════════════════════════════════════════════
-// mergeUsedToolsWithWorkers
+// mergeUsedToolsWithSubAgents
 // ═════════════════════════════════════════════════════════════════
 
-describe("mergeUsedToolsWithWorkers", () => {
+describe("mergeUsedToolsWithSubAgents", () => {
   it("preserves capabilities from client tools", () => {
     const clientTools = [
       { name: "Thinking", count: 3 },
       { name: "read_file", count: 2 },
     ];
-    const result = mergeUsedToolsWithWorkers(clientTools, null, null);
+    const result = mergeUsedToolsWithSubAgents(clientTools, null, null);
     expect(result[0]).toEqual({ name: "Thinking", count: 3 });
     expect(result[1]).toEqual({ name: "read_file", count: 2 });
   });
@@ -286,18 +286,18 @@ describe("mergeUsedToolsWithWorkers", () => {
   it("uses backend tool counts over client when available", () => {
     const clientTools = [{ name: "read_file", count: 2 }];
     const backendCounts = { read_file: 10, grep_search: 5 };
-    const result = mergeUsedToolsWithWorkers(clientTools, backendCounts, null);
+    const result = mergeUsedToolsWithSubAgents(clientTools, backendCounts, null);
     const readFile = result.find((entry) => entry.name === "read_file");
     expect(readFile?.count).toBe(10);
   });
 
-  it("merges worker tool activity with max strategy", () => {
+  it("merges sub-agent tool activity with max strategy", () => {
     const clientTools = [{ name: "Thinking", count: 1 }];
     const backendCounts = { read_file: 3 };
-    const workerActivity = {
+    const subAgentActivity = {
       worker1: { toolNames: { read_file: 5 } },
     };
-    const result = mergeUsedToolsWithWorkers(clientTools, backendCounts, workerActivity);
+    const result = mergeUsedToolsWithSubAgents(clientTools, backendCounts, subAgentActivity);
     const readFile = result.find((entry) => entry.name === "read_file");
     expect(readFile?.count).toBe(5);
   });

@@ -957,9 +957,9 @@
   line-height: 1.5;
 }
 
-/* ── Worker result card (absorbed task-notification) ──────── */
+/* ── Sub-agent result card (absorbed task-notification) ──────── */
 
-.worker-result-card {
+.sub-agent-result-card {
   margin-top: 6px;
   border-radius: 6px;
   border: 1px solid
@@ -974,10 +974,10 @@
     var(--background-surface)
   );
   overflow: hidden;
-  animation: worker-result-fade-in 0.3s ease-out;
+  animation: sub-agent-result-fade-in 0.3s ease-out;
 }
 
-.worker-result-toggle {
+.sub-agent-result-toggle {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -992,7 +992,7 @@
   transition: background 0.15s ease;
 }
 
-.worker-result-toggle:hover {
+.sub-agent-result-toggle:hover {
   background: color-mix(
     in srgb,
     var(--accent-primary, var(--color-indigo)) 8%,
@@ -1000,7 +1000,7 @@
   );
 }
 
-.worker-result-summary {
+.sub-agent-result-summary {
   flex: 1;
   font-weight: 500;
   overflow: hidden;
@@ -1008,7 +1008,7 @@
   white-space: nowrap;
 }
 
-.worker-result-meta {
+.sub-agent-result-meta {
   flex-shrink: 0;
   font-size: 0.625rem;
   color: var(--text-muted);
@@ -1022,7 +1022,7 @@
   );
 }
 
-.worker-result-body {
+.sub-agent-result-body {
   padding: 10px 6px 10px;
   border-top: 1px solid
     color-mix(
@@ -1034,7 +1034,7 @@
   color: var(--text-secondary);
 }
 
-@keyframes worker-result-fade-in {
+@keyframes sub-agent-result-fade-in {
   from {
     opacity: 0;
     transform: translateY(4px);
@@ -1045,9 +1045,9 @@
   }
 }
 
-/* ── Worker live tok/s badge ─────────────────────────────── */
+/* ── Sub-agent live tok/s badge ─────────────────────────────── */
 
-.worker-speed-badge {
+.sub-agent-speed-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -1060,12 +1060,12 @@
   color: var(--color-success);
   background: oklch(77.3% 0.1535 163.3 / 0.08);
   border: 1px solid oklch(77.3% 0.1535 163.3 / 0.25);
-  animation: worker-speed-pulse 2s ease-in-out infinite;
+  animation: sub-agent-speed-pulse 2s ease-in-out infinite;
   will-change: opacity;
   flex-shrink: 0;
 }
 
-@keyframes worker-speed-pulse {
+@keyframes sub-agent-speed-pulse {
   0%,
   100% {
     opacity: 1;

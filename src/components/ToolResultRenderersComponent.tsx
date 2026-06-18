@@ -41,7 +41,7 @@ import MarkdownContent from "./MarkdownContentComponent";
 const LazyMessageList = lazy(() => import("./MessageListComponent"));
 import {
   prepareDisplayMessages,
-  type WorkerToolActivityItem,
+  type SubAgentToolActivityItem,
 } from "./MessageListComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 import StatusBarComponent from "./StatusBarComponent";
@@ -54,7 +54,7 @@ import JsonViewerComponent from "./JsonViewerComponent";
 
 // --- Types & Interfaces ------------------------------------------------
 
-export interface WorkerActivity {
+export interface SubAgentActivity {
   phase?: string | null;
   currentTool?: string | null;
   toolCount?: number;
@@ -274,9 +274,9 @@ export interface RendererProps {
   args?: ToolArgs;
   streamingOutput?: string;
   language?: string;
-  workerToolActivity?: Record<
+  subAgentToolActivity?: Record<
     string,
-    WorkerActivity | WorkerToolActivityItem
+    SubAgentActivity | SubAgentToolActivityItem
   > | null;
 }
 
@@ -289,9 +289,9 @@ export interface ToolResultViewProps {
     status?: string;
   };
   streamingOutput?: string;
-  workerToolActivity?: Record<
+  subAgentToolActivity?: Record<
     string,
-    WorkerActivity | WorkerToolActivityItem
+    SubAgentActivity | SubAgentToolActivityItem
   > | null;
   hideToggles?: boolean;
 }
@@ -2418,10 +2418,10 @@ function EmojiCombinationsRenderer({ result, args }: RendererProps) {
 // -- 14. Coordinator Tools ---------------------------------------------------
 
 /**
- * Mini status bar for an individual spawned worker agent.
+ * Mini status bar for an individual spawned sub-agent.
  * Uses the shared StatusBarComponent.
  */
-function WorkerStatusBar({ activity }: { activity: WorkerActivity | null }) {
+function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) {
   if (!activity) return null;
   const {
     currentTool,
@@ -2458,11 +2458,11 @@ function WorkerStatusBar({ activity }: { activity: WorkerActivity | null }) {
   // Idle label reflects terminal state or tool count
   const idleLabel = isTerminal
     ? phase === "failed"
-      ? "Worker failed"
+      ? "Sub-agent failed"
       : `Done · ${toolCount} tool${toolCount !== 1 ? "s" : ""} used`
     : toolCount > 0
       ? `${toolCount} tools used`
-      : "Worker idle";
+      : "Sub-agent idle";
 
   // Per-worker tok/s from the backend's burst-scoped generation progress.
   // Use the pre-computed value directly — it's authoritative from the
@@ -2475,7 +2475,7 @@ function WorkerStatusBar({ activity }: { activity: WorkerActivity | null }) {
   return (
     <StatusBarComponent
       active={isActive}
-      variant="worker"
+      variant="subAgent"
       phase={(effectivePhase ?? undefined) as import("./StatusBarComponent").StatusBarPhase | undefined}
       label={label ?? undefined}
       icon={icon}
@@ -2492,7 +2492,7 @@ function WorkerStatusBar({ activity }: { activity: WorkerActivity | null }) {
 function TeamCreateRenderer({
   result,
   args,
-  workerToolActivity,
+  subAgentToolActivity,
 }: RendererProps) {
   const [expandedMembers, setExpandedMembers] = useState<Set<number>>(
     new Set(),
@@ -2505,45 +2505,45 @@ function TeamCreateRenderer({
   const resultMembers = Array.isArray(rawResultMembers) ? rawResultMembers : [];
   const teamName = args?.name || parsed?.team || "";
 
-  const hasActiveWorkers = useMemo(() => {
-    if (!workerToolActivity) return false;
-    return Object.values(workerToolActivity).some(
+  const hasActiveSubAgents = useMemo(() => {
+    if (!subAgentToolActivity) return false;
+    return Object.values(subAgentToolActivity).some(
       (activity) =>
         activity.phase === "generating" || activity.phase === "thinking",
     );
-  }, [workerToolActivity]);
+  }, [subAgentToolActivity]);
 
   const [, setTick] = useState(0);
   useEffect(() => {
-    if (!hasActiveWorkers) return;
+    if (!hasActiveSubAgents) return;
     const intervalId = setInterval(() => setTick((tick) => tick + 1), 500);
     return () => clearInterval(intervalId);
-  }, [hasActiveWorkers]);
+  }, [hasActiveSubAgents]);
 
-  const getWorkerTokPerSec = (activity: WorkerActivity | null) => {
+  const getSubAgentTokPerSec = (activity: SubAgentActivity | null) => {
     if (!activity?.tokPerSec) return null;
     if (activity.phase !== "generating" && activity.phase !== "thinking")
       return null;
     return activity.tokPerSec;
   };
 
-  const orderedWorkerIds = useMemo(() => {
-    if (!workerToolActivity) return [];
-    return Object.keys(workerToolActivity);
-  }, [workerToolActivity]);
+  const orderedSubAgentIds = useMemo(() => {
+    if (!subAgentToolActivity) return [];
+    return Object.keys(subAgentToolActivity);
+  }, [subAgentToolActivity]);
 
   const getActivity = (
     member: { agent_id?: string; description?: string; [key: string]: unknown },
     memberIndex: number,
   ) => {
-    if (!workerToolActivity) return null;
-    if (member.agent_id) return workerToolActivity[member.agent_id] || null;
-    if (memberIndex != null && orderedWorkerIds[memberIndex]) {
-      return workerToolActivity[orderedWorkerIds[memberIndex]] || null;
+    if (!subAgentToolActivity) return null;
+    if (member.agent_id) return subAgentToolActivity[member.agent_id] || null;
+    if (memberIndex != null && orderedSubAgentIds[memberIndex]) {
+      return subAgentToolActivity[orderedSubAgentIds[memberIndex]] || null;
     }
     if (member.description) {
       return (
-        Object.values(workerToolActivity).find(
+        Object.values(subAgentToolActivity).find(
           (activity) =>
             activity.description &&
             member.description &&
@@ -2601,7 +2601,7 @@ function TeamCreateRenderer({
       <div className={styles['renderer-header']}>
         <Users size={13} />
         <span className={styles['renderer-title']}>
-          Team <strong>{teamName}</strong> — {membersList.length} worker
+          Team <strong>{teamName}</strong> — {membersList.length} sub-agent
           {membersList.length !== 1 ? "s" : ""}
         </span>
         <StatusBadge
@@ -2630,7 +2630,7 @@ function TeamCreateRenderer({
         const durationLabel = member.durationMs
           ? formatLatency(Number(member.durationMs) / 1000)
           : null;
-        const tokPerSec = !isTerminal ? getWorkerTokPerSec(activity) : null;
+        const tokPerSec = !isTerminal ? getSubAgentTokPerSec(activity) : null;
 
         const toolNames = activity?.toolNames || member.toolNames;
         const toolUsesCount = !isTerminal
@@ -2648,10 +2648,10 @@ function TeamCreateRenderer({
           >
             <div className={styles['renderer-header']}>
               <span className={styles['renderer-title']}>
-                Worker {index + 1}: <strong>{member.description}</strong>
+                Sub-Agent {index + 1}: <strong>{member.description}</strong>
               </span>
               {tokPerSec !== null && (
-                <span className={styles['worker-speed-badge']}>
+                <span className={styles['sub-agent-speed-badge']}>
                   ⚡ {tokPerSec.toFixed(1)} tok/s
                 </span>
               )}
@@ -2677,38 +2677,38 @@ function TeamCreateRenderer({
               <div className={styles['error-text']}>{member.error}</div>
             )}
 
-            {activity && !isTerminal && <WorkerStatusBar activity={activity} />}
+            {activity && !isTerminal && <SubAgentStatusBar activity={activity} />}
 
-            <div className={styles['worker-result-card']}>
+            <div className={styles['sub-agent-result-card']}>
               <button
-                className={styles['worker-result-toggle']}
+                className={styles['sub-agent-result-toggle']}
                 onClick={() => toggleMember(index)}
               >
                 <Zap size={12} />
-                <span className={styles['worker-result-summary']}>
+                <span className={styles['sub-agent-result-summary']}>
                   {member.summary ||
                     (!isTerminal
                       ? activity?.currentTool
                         ? `Executing ${renderToolName(activity.currentTool)}...`
-                        : "Worker running..."
+                        : "Sub-agent running..."
                       : isCompleted
-                        ? "Worker completed"
+                        ? "Sub-agent completed"
                         : isFailed
-                          ? "Worker failed"
-                          : "Worker finished")}
+                          ? "Sub-agent failed"
+                          : "Sub-agent finished")}
                 </span>
                 {durationLabel && (
-                  <span className={styles['worker-result-meta']}>
+                  <span className={styles['sub-agent-result-meta']}>
                     {durationLabel}
                   </span>
                 )}
                 {toolUsesCount > 0 && (
-                  <span className={styles['worker-result-meta']}>
+                  <span className={styles['sub-agent-result-meta']}>
                     {toolUsesCount} tools
                   </span>
                 )}
                 {iterationsCount > 0 && (
-                  <span className={styles['worker-result-meta']}>
+                  <span className={styles['sub-agent-result-meta']}>
                     {iterationsCount} iteration
                     {iterationsCount !== 1 ? "s" : ""}
                   </span>
@@ -2720,7 +2720,7 @@ function TeamCreateRenderer({
                 )}
               </button>
               {memberExpanded && (
-                <div className={styles['worker-result-body']}>
+                <div className={styles['sub-agent-result-body']}>
                   {isTerminal && (member.messages?.length ?? 0) > 0 ? (
                     <Suspense fallback={null}>
                       <LazyMessageList
@@ -2736,7 +2736,7 @@ function TeamCreateRenderer({
                     <div style={{ padding: "4px 0" }}>
                       <ToolCallsBlockComponent
                         toolCalls={activity.toolCalls}
-                        workerToolActivity={workerToolActivity}
+                        subAgentToolActivity={subAgentToolActivity}
                       />
                     </div>
                   ) : member.result ? (
@@ -2922,7 +2922,7 @@ export function resolveToolResultRenderer(toolName: string): {
 export function ToolResultView({
   toolCall,
   streamingOutput,
-  workerToolActivity,
+  subAgentToolActivity,
   hideToggles = false,
 }: ToolResultViewProps) {
   const { Renderer, language } = resolveToolResultRenderer(toolCall.name);
@@ -2935,7 +2935,7 @@ export function ToolResultView({
         args={toolCall.args}
         streamingOutput={streamingOutput}
         language={language}
-        workerToolActivity={workerToolActivity}
+        subAgentToolActivity={subAgentToolActivity}
       />
       {!hideToggles && <OutputResultToggle result={toolCall.result} />}
     </>

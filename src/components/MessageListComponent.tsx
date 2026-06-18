@@ -1582,7 +1582,7 @@ export default function MessageList({
                                   key={`seg-t-${si}`}
                                   toolCalls={segmentTools}
                                   streamingOutputs={streamingOutputs}
-                                  workerToolActivity={workerToolActivity}
+                                  subAgentToolActivity={subAgentToolActivity}
                                   isAutoCollapsed={opts.isAutoCollapsed}
                                 />
                               );
@@ -1821,7 +1821,7 @@ export default function MessageList({
                               <ToolCallsBlockComponent
                                 toolCalls={message.toolCalls}
                                 streamingOutputs={streamingOutputs}
-                                workerToolActivity={workerToolActivity}
+                                subAgentToolActivity={subAgentToolActivity}
                               />
                             )}
 

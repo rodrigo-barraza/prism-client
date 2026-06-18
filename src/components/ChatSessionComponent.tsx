@@ -808,7 +808,7 @@ export default function ChatSessionComponent({
     return false;
   });
   const [maxIterations, setMaxIterations] = useState(MAX_TOOL_ITERATIONS);
-  const [maxWorkerIterations, setMaxWorkerIterations] =
+  const [maxSubAgentIterations, setMaxSubAgentIterations] =
     useState(MAX_TOOL_ITERATIONS);
 
   // Hydrate from localStorage after mount to avoid SSR mismatch
@@ -821,8 +821,8 @@ export default function ChatSessionComponent({
     };
     const iter = parseStored(LS_AGENT_MAX_ITERATIONS);
     if (iter != null) setMaxIterations(iter);
-    const workerIter = parseStored(LS_AGENT_MAX_WORKER_ITERATIONS);
-    if (workerIter != null) setMaxWorkerIterations(workerIter);
+    const subAgentIter = parseStored(LS_AGENT_MAX_SUB_AGENT_ITERATIONS);
+    if (subAgentIter != null) setMaxSubAgentIterations(subAgentIter);
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
   const [criticGateEnabled, setCriticGateEnabled] = useState(() => {
@@ -1466,7 +1466,7 @@ export default function ChatSessionComponent({
         setActiveId(full.id || null);
         setTitle(full.title || (isNoAgent ? "Agentless Chat" : "Agent"));
         setToolActivity([]);
-        setWorkerToolActivity({});
+        setSubAgentToolActivity({});
 
         const lastAssistant = [...(full.messages || [])]
           .reverse()
@@ -2284,7 +2284,7 @@ export default function ChatSessionComponent({
     liveStreamingLastChunkTime,
     liveStreamingBurstTokens,
     liveStreamingBurstElapsed,
-    workerGenerationProgress,
+    subAgentGenerationProgress,
     lastTimeToGeneration,
     liveProcessingStartTime,
     liveProcessingPhase,
@@ -3089,8 +3089,8 @@ export default function ChatSessionComponent({
               autoApprove,
               planFirst,
               maxIterations: Number.isFinite(maxIterations) ? maxIterations : 0,
-              maxWorkerIterations: Number.isFinite(maxWorkerIterations)
-                ? maxWorkerIterations
+              maxSubAgentIterations: Number.isFinite(maxSubAgentIterations)
+                ? maxSubAgentIterations
                 : 0,
               ...(criticGateEnabled && { enableCriticGate: true }),
             };
@@ -3918,13 +3918,13 @@ export default function ChatSessionComponent({
               });
             }
           },
-          // -- Worker agent live events -----------------------------
-          onWorkerToolExecution: (data: SSEData) => {
+          // -- Sub-agent agent live events -----------------------------
+          onSubAgentToolExecution: (data: SSEData) => {
             if (isStale()) return;
-            const workerId = data.workerId;
-            if (!workerId) return;
-            setWorkerToolActivity((previousWorkerToolActivity) => {
-              const raw = previousWorkerToolActivity[workerId];
+            const subAgentId = data.subAgentId;
+            if (!subAgentId) return;
+            setSubAgentToolActivity((previousSubAgentToolActivity) => {
+              const raw = previousSubAgentToolActivity[subAgentId];
               const entry = {
                 toolCount: 0,
                 currentTool: null as string | null,
@@ -3934,7 +3934,7 @@ export default function ChatSessionComponent({
                 ...raw,
               };
               const toolData = data.tool;
-              if (!toolData) return previousWorkerToolActivity;
+              if (!toolData) return previousSubAgentToolActivity;
 
               let updatedCalls = [...entry.toolCalls];
               if (data.status === "streaming" || data.status === "calling") {
@@ -3961,8 +3961,8 @@ export default function ChatSessionComponent({
                       : toolCall,
                   );
                   return {
-                    ...previousWorkerToolActivity,
-                    [workerId]: {
+                    ...previousSubAgentToolActivity,
+                    [subAgentId]: {
                       ...entry,
                       currentTool: toolData.name || entry.currentTool,
                       toolCalls: updatedCalls,
@@ -3978,8 +3978,8 @@ export default function ChatSessionComponent({
                   [toolName]: (entry.toolNames[toolName] || 0) + 1,
                 };
                 return {
-                  ...previousWorkerToolActivity,
-                  [workerId]: {
+                  ...previousSubAgentToolActivity,
+                  [subAgentId]: {
                     ...entry,
                     currentTool: toolName,
                     toolCount: entry.toolCount + 1,
@@ -4006,8 +4006,8 @@ export default function ChatSessionComponent({
                   return toolCall;
                 });
                 return {
-                  ...previousWorkerToolActivity,
-                  [workerId]: {
+                  ...previousSubAgentToolActivity,
+                  [subAgentId]: {
                     ...entry,
                     currentTool: null,
                     toolCalls: updatedCalls,
@@ -4015,14 +4015,14 @@ export default function ChatSessionComponent({
                   },
                 };
               }
-              return previousWorkerToolActivity;
+              return previousSubAgentToolActivity;
             });
           },
-          onWorkerToolOutput: (data: SSEData) => {
+          onSubAgentToolOutput: (data: SSEData) => {
             if (isStale()) return;
-            const workerId = data.workerId;
+            const subAgentId = data.subAgentId;
             const key = data.toolCallId || data.name || "";
-            if (!workerId || !key) return;
+            if (!subAgentId || !key) return;
             setStreamingOutputs((previousStreamingOutputs) => {
               const updated = new Map<string, string>(previousStreamingOutputs);
               const existing = updated.get(key) || "";
@@ -4030,17 +4030,17 @@ export default function ChatSessionComponent({
               return updated;
             });
           },
-          onWorkerStatus: (data: SSEData) => {
+          onSubAgentStatus: (data: SSEData) => {
             if (isStale()) return;
-            const workerId = data.workerId;
-            if (!workerId) return;
+            const subAgentId = data.subAgentId;
+            if (!subAgentId) return;
             if (data.message === STATUS_MESSAGES.SPAWNED) {
-              // Early mapping: store workerId indexed by description
+              // Early mapping: store subAgentId indexed by description
               // so SpawnAgentRenderer can look up activity before tool result arrives
-              setWorkerToolActivity((previousWorkerToolActivity) => ({
-                ...previousWorkerToolActivity,
-                [workerId]: {
-                  ...(previousWorkerToolActivity[workerId] || {
+              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
+                ...previousSubAgentToolActivity,
+                [subAgentId]: {
+                  ...(previousSubAgentToolActivity[subAgentId] || {
                     toolCount: 0,
                     currentTool: null,
                     iteration: 0,
@@ -4051,10 +4051,10 @@ export default function ChatSessionComponent({
                 },
               }));
             } else if (data.message === STATUS_MESSAGES.ITERATION_PROGRESS) {
-              setWorkerToolActivity((previousWorkerToolActivity) => ({
-                ...previousWorkerToolActivity,
-                [workerId]: {
-                  ...(previousWorkerToolActivity[workerId] || {
+              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
+                ...previousSubAgentToolActivity,
+                [subAgentId]: {
+                  ...(previousSubAgentToolActivity[subAgentId] || {
                     toolCount: 0,
                     currentTool: null,
                   }),
@@ -4063,11 +4063,11 @@ export default function ChatSessionComponent({
                 },
               }));
             } else if (data.message === STATUS_MESSAGES.PHASE) {
-              // Worker LLM phase updates (generating, thinking, prefilling, loading)
-              setWorkerToolActivity((previousWorkerToolActivity) => ({
-                ...previousWorkerToolActivity,
-                [workerId]: {
-                  ...(previousWorkerToolActivity[workerId] || {
+              // Sub-agent LLM phase updates (generating, thinking, prefilling, loading)
+              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
+                ...previousSubAgentToolActivity,
+                [subAgentId]: {
+                  ...(previousSubAgentToolActivity[subAgentId] || {
                     toolCount: 0,
                     currentTool: null,
                     iteration: 0,
@@ -4077,12 +4077,12 @@ export default function ChatSessionComponent({
                   phaseProgress:
                     data.progress != null
                       ? data.progress
-                      : (previousWorkerToolActivity[workerId]?.phaseProgress ??
+                      : (previousSubAgentToolActivity[subAgentId]?.phaseProgress ??
                         undefined),
                 },
               }));
             } else if (data.message === STATUS_MESSAGES.GENERATION_STARTED) {
-              // Worker server-computed TTFT — push into the shared samples array
+              // Sub-agent server-computed TTFT — push into the shared samples array
               setMessages((previousMessages) => {
                 const updated = [...previousMessages];
                 const last = updated[updated.length - 1];
@@ -4102,13 +4102,13 @@ export default function ChatSessionComponent({
                 const updated = [...previousMessages];
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
-                  const wp = last._workerGenerationProgress || {};
-                  const existing = wp[workerId] || {};
+                  const wp = last._subAgentGenerationProgress || {};
+                  const existing = wp[subAgentId] || {};
                   updated[updated.length - 1] = {
                     ...last,
-                    _workerGenerationProgress: {
+                    _subAgentGenerationProgress: {
                       ...wp,
-                      [workerId]: {
+                      [subAgentId]: {
                         ...existing,
                         // Burst-scoped values for tok/s computation — only update when present
                         ...(data.outputTokens != null && {
@@ -4125,7 +4125,7 @@ export default function ChatSessionComponent({
                           data.totalOutputTokens ||
                           data.outputTokens ||
                           existing.totalOutputTokens,
-                        // Per-worker tok/s from burst counters
+                        // Per-sub-agent tok/s from burst counters
                         tokPerSec: data.tokPerSec ?? existing.tokPerSec,
                         ...(data.inputTokens != null && {
                           inputTokens: data.inputTokens,
@@ -4140,18 +4140,18 @@ export default function ChatSessionComponent({
                 }
                 return updated;
               });
-              // Also store on workerToolActivity so TeamCreateRenderer can
-              // display live per-worker metrics on each worker's header
-              setWorkerToolActivity((previousWorkerToolActivity) => {
-                const existing = previousWorkerToolActivity[workerId] || {
+              // Also store on subAgentToolActivity so TeamCreateRenderer can
+              // display live per-sub-agent metrics on each sub-agent's header
+              setSubAgentToolActivity((previousSubAgentToolActivity) => {
+                const existing = previousSubAgentToolActivity[subAgentId] || {
                   toolCount: 0,
                   currentTool: null,
                   iteration: 0,
                   toolNames: {},
                 };
                 return {
-                  ...previousWorkerToolActivity,
-                  [workerId]: {
+                  ...previousSubAgentToolActivity,
+                  [subAgentId]: {
                     ...existing,
                     // Burst-scoped values — only update when present to prevent undefined overwrites
                     ...(data.outputTokens != null && {
@@ -4167,7 +4167,7 @@ export default function ChatSessionComponent({
                       data.totalOutputTokens ||
                       data.outputTokens ||
                       existing.totalOutputTokens,
-                    // Per-worker tok/s from burst counters
+                    // Per-sub-agent tok/s from burst counters
                     tokPerSec: data.tokPerSec ?? existing.tokPerSec,
                     ...(data.inputTokens != null && {
                       inputTokens: data.inputTokens,
@@ -4180,43 +4180,43 @@ export default function ChatSessionComponent({
                 };
               });
             } else if (data.message === STATUS_MESSAGES.COMPLETE) {
-              // Worker finished — clear phase so StatusBar stops showing "Generating..."
-              setWorkerToolActivity((previousWorkerToolActivity) => ({
-                ...previousWorkerToolActivity,
-                [workerId]: {
-                  ...(previousWorkerToolActivity[workerId] || {}),
+              // Sub-agent finished — clear phase so StatusBar stops showing "Generating..."
+              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
+                ...previousSubAgentToolActivity,
+                [subAgentId]: {
+                  ...(previousSubAgentToolActivity[subAgentId] || {}),
                   phase: "complete",
                   currentTool: null,
                   durationMs: data.durationMs,
                   toolCount:
-                    data.toolCount ?? previousWorkerToolActivity[workerId]?.toolCount,
+                    data.toolCount ?? previousSubAgentToolActivity[subAgentId]?.toolCount,
                 },
               }));
-              // Accumulate worker usage into the streaming assistant message
-              // so stats badges update in real-time per worker completion
+              // Accumulate sub-agent usage into the streaming assistant message
+              // so stats badges update in real-time per sub-agent completion
               if (data.usage) {
                 setMessages((previousMessages) => {
                   const updated = [...previousMessages];
                   const last = updated[updated.length - 1];
                   if (last?.role === "assistant") {
-                    const wt = last._workerTokens || {
+                    const wt = last._subAgentTokens || {
                       input: 0,
                       output: 0,
                       requests: 0,
                     };
-                    // Remove completed worker from live progress so stale tok/s doesn't linger
-                    const wp = { ...(last._workerGenerationProgress || {}) };
-                    delete wp[workerId];
+                    // Remove completed sub-agent from live progress so stale tok/s doesn't linger
+                    const wp = { ...(last._subAgentGenerationProgress || {}) };
+                    delete wp[subAgentId];
                     updated[updated.length - 1] = {
                       ...last,
-                      _workerTokens: {
+                      _subAgentTokens: {
                         input: (wt.input || 0) + (data.usage?.inputTokens || 0),
                         output:
                           (wt.output || 0) + (data.usage?.outputTokens || 0),
                         requests:
                           (wt.requests || 0) + (data.usage?.requests || 1),
                       },
-                      _workerGenerationProgress:
+                      _subAgentGenerationProgress:
                         Object.keys(wp).length > 0 ? wp : undefined,
                     };
                   }
@@ -4224,11 +4224,11 @@ export default function ChatSessionComponent({
                 });
               }
             } else if (data.message === STATUS_MESSAGES.FAILED) {
-              // Worker errored — mark as failed
-              setWorkerToolActivity((previousWorkerToolActivity) => ({
-                ...previousWorkerToolActivity,
-                [workerId]: {
-                  ...(previousWorkerToolActivity[workerId] || {}),
+              // Sub-agent errored — mark as failed
+              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
+                ...previousSubAgentToolActivity,
+                [subAgentId]: {
+                  ...(previousSubAgentToolActivity[subAgentId] || {}),
                   phase: "failed",
                   currentTool: null,
                   error: data.error,
@@ -4469,7 +4469,7 @@ export default function ChatSessionComponent({
         new Set(previousGeneratingSessionIds).add(genId),
       );
       setToolActivity([]);
-      setWorkerToolActivity({});
+      setSubAgentToolActivity({});
       setStreamingOutputs(new Map());
       setPendingApprovals([]);
       setPendingUserQuestion(null);
@@ -4830,7 +4830,7 @@ export default function ChatSessionComponent({
     console.debug(`[resetSessionState] clearing all messages and state`);
     setMessages([]);
     setToolActivity([]);
-    setWorkerToolActivity({});
+    setSubAgentToolActivity({});
     setStreamingOutputs(new Map());
     setPendingImages([]);
     setPendingApprovals([]);
@@ -4925,7 +4925,7 @@ export default function ChatSessionComponent({
         messages,
         title,
         toolActivity,
-        workerToolActivity,
+        subAgentToolActivity,
         streamingOutputs,
         pendingApprovals,
         pendingUserQuestion,
@@ -4950,7 +4950,7 @@ export default function ChatSessionComponent({
     messages,
     title,
     toolActivity,
-    workerToolActivity,
+    subAgentToolActivity,
     streamingOutputs,
     pendingApprovals,
     pendingUserQuestion,
@@ -5060,7 +5060,7 @@ export default function ChatSessionComponent({
         );
         setTitle(snap.title || "");
         setToolActivity(snap.toolActivity || []);
-        setWorkerToolActivity(snap.workerToolActivity || {});
+        setSubAgentToolActivity(snap.subAgentToolActivity || {});
         setStreamingOutputs(snap.streamingOutputs || new Map());
         setPendingApprovals(snap.pendingApprovals || []);
         setPendingUserQuestion(snap.pendingUserQuestion || null);
@@ -5162,7 +5162,7 @@ export default function ChatSessionComponent({
         );
         setTitle(full.title || "Agent");
         setToolActivity([]);
-        setWorkerToolActivity({});
+        setSubAgentToolActivity({});
 
         const lastAssistant = [...(full.messages || [])]
           .reverse()
@@ -5247,7 +5247,7 @@ export default function ChatSessionComponent({
           messages,
           title,
           toolActivity,
-          workerToolActivity,
+          subAgentToolActivity,
           streamingOutputs,
           pendingApprovals,
           pendingUserQuestion,
@@ -5322,7 +5322,7 @@ export default function ChatSessionComponent({
       messages,
       title,
       toolActivity,
-      workerToolActivity,
+      subAgentToolActivity,
       streamingOutputs,
       pendingApprovals,
       pendingUserQuestion,
@@ -5678,8 +5678,8 @@ export default function ChatSessionComponent({
             lockedTools={isNoAgent ? new Set() : AGENT_LOCKED_TOOLS}
             hideSystemPrompt={!isNoAgent}
             sessionType={isNoAgent ? "chat" : "agent"}
-            canSpawnWorkers={
-              !isNoAgent && (activeAgentData?.canSpawnWorkers || false)
+            canSpawnSubAgents={
+              !isNoAgent && (activeAgentData?.canSpawnSubAgents || false)
             }
             agentToggles={
               isNoAgent
@@ -5757,7 +5757,7 @@ export default function ChatSessionComponent({
                         const next = steps[(index + 1) % steps.length];
                         setMaxWorkerIterations(next);
                         localStorage.setItem(
-                          LS_AGENT_MAX_WORKER_ITERATIONS,
+                          LS_AGENT_MAX_SUB_AGENT_ITERATIONS,
                           String(next),
                         );
                       },
@@ -6004,10 +6004,10 @@ export default function ChatSessionComponent({
                           ((bgUsage?.cost || 0) as number),
                         originalTotalCost: 0,
                         // Merge client-side usedTools with live worker tool counts
-                        usedTools: mergeUsedToolsWithWorkers(
+                        usedTools: mergeUsedToolsWithSubAgents(
                           usedTools,
                           null,
-                          workerToolActivity,
+                          subAgentToolActivity,
                         ),
                         modalities: (() => {
                           const original = modalities || {};
@@ -6025,7 +6025,7 @@ export default function ChatSessionComponent({
                         liveStreamingLastChunkTime,
                         liveStreamingBurstTokens,
                         liveStreamingBurstElapsed,
-                        workerGenerationProgress,
+                        subAgentGenerationProgress,
                         lastTimeToGeneration,
                         liveProcessingStartTime,
                         liveProcessingPhase,
@@ -6455,7 +6455,7 @@ export default function ChatSessionComponent({
           }
           isGenerating={isGenerating}
           streamingOutputs={streamingOutputs}
-          workerToolActivity={workerToolActivity}
+          subAgentToolActivity={subAgentToolActivity}
           activeAgent={activeAgentData}
           knownPaths={knownPaths}
           onMentionFileOpen={(relativePath: string) => {
@@ -6618,23 +6618,23 @@ export default function ChatSessionComponent({
           pendingApprovals.some((approvalItem) => approvalItem.status === "pending") ||
           pendingUserQuestion !== null;
 
-        // -- Derive phase from live worker activity --------------
+        // -- Derive phase from live sub-agent activity --------------
         // When coordinator tools (team_create) are executing, the
-        // orchestrator bar should reflect the aggregate worker state
-        // rather than a static "Thinking...". Scan workerToolActivity
-        // for the dominant phase among active workers.
-        let workerDerivedPhase = null;
-        let workerDerivedLabel = null;
-        if (hasActiveTools && Object.keys(workerToolActivity).length > 0) {
-          const workers = Object.values(workerToolActivity);
-          const activeWorkers = workers.filter(
-            (worker: WorkerActivityEntry) =>
-              worker.phase &&
-              worker.phase !== "complete" &&
-              worker.phase !== "failed" &&
-              worker.phase !== "spawned",
+        // orchestrator bar should reflect the aggregate sub-agent state
+        // rather than a static "Thinking...". Scan subAgentToolActivity
+        // for the dominant phase among active sub-agents.
+        let subAgentDerivedPhase = null;
+        let subAgentDerivedLabel = null;
+        if (hasActiveTools && Object.keys(subAgentToolActivity).length > 0) {
+          const subAgents = Object.values(subAgentToolActivity);
+          const activeSubAgents = subAgents.filter(
+            (subAgent: SubAgentActivityEntry) =>
+              subAgent.phase &&
+              subAgent.phase !== "complete" &&
+              subAgent.phase !== "failed" &&
+              subAgent.phase !== "spawned",
           );
-          if (activeWorkers.length > 0) {
+          if (activeSubAgents.length > 0) {
             // Priority: generating > thinking > prefilling > executing > loading > starting
             const phasePriority = [
               "generating",
@@ -6645,16 +6645,16 @@ export default function ChatSessionComponent({
               "starting",
             ];
             for (const phase of phasePriority) {
-              const count = activeWorkers.filter(
-                (worker: WorkerActivityEntry) => worker.phase === phase,
+              const count = activeSubAgents.filter(
+                (subAgent: SubAgentActivityEntry) => subAgent.phase === phase,
               ).length;
               if (count > 0) {
-                workerDerivedPhase = phase;
-                const total = activeWorkers.length;
-                // Multiple workers — show aggregate count; single worker uses default phase label (null)
-                workerDerivedLabel =
+                subAgentDerivedPhase = phase;
+                const total = activeSubAgents.length;
+                // Multiple sub-agents — show aggregate count; single sub-agent uses default phase label (null)
+                subAgentDerivedLabel =
                   total > 1
-                    ? `${count}/${total} worker${total !== 1 ? "s" : ""} ${phase}…`
+                    ? `${count}/${total} sub-agent${total !== 1 ? "s" : ""} ${phase}…`
                     : null;
                 break;
               }
@@ -6670,13 +6670,13 @@ export default function ChatSessionComponent({
         const phase = isGenerating
           ? isAwaitingApproval
             ? "awaiting"
-            : workerDerivedPhase || (hasActiveTools ? "executing" : rawPhase)
+            : subAgentDerivedPhase || (hasActiveTools ? "executing" : rawPhase)
           : null;
         const label = isGenerating
           ? isAwaitingApproval
             ? "Awaiting For User Input..."
-            : workerDerivedPhase
-              ? workerDerivedLabel
+            : subAgentDerivedPhase
+              ? subAgentDerivedLabel
               : hasActiveTools
                 ? activeToolLabel
                 : rawLabel
@@ -6695,7 +6695,7 @@ export default function ChatSessionComponent({
         let orchestratorTokPerSec = null;
         const isOrchestratorGenerating =
           ((phase === "generating" || phase === "thinking") &&
-            !workerDerivedPhase) ||
+            !subAgentDerivedPhase) ||
           (hasActiveTools && isChunksFlowing); // tool-call JSON still streaming
         if (
           isOrchestratorGenerating &&
