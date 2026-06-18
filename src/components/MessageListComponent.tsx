@@ -225,7 +225,7 @@ function ThinkingBlock({
     }
   };
 
-  if (!thinking?.trim() && !children) return null;
+  if (!isStreaming && !thinking?.trim() && !children) return null;
 
   return (
     <div

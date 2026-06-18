@@ -3216,10 +3216,6 @@ export default function ChatSessionComponent({
             outputCharacters?: number,
           ) => {
             streamedThinking += content;
-            console.debug(
-              `[onThinking] content=${content.length}ch, totalThinking=${streamedThinking.length}ch, ` +
-              `lastSegType=${lastSegmentType}, fragments=${thinkingFragments.length}, stale=${isStale()}`,
-            );
             if (isStale()) return;
 
             // Backend sends authoritative running token count on each thinking chunk
@@ -3239,11 +3235,6 @@ export default function ChatSessionComponent({
 
             // Track segment ordering: start a new thinking fragment when thinking resumes after tools
             if (lastSegmentType !== "thinking") {
-              console.debug(
-                `[onThinking] NEW thinking segment: lastSegType=${lastSegmentType}, ` +
-                `fragments=${thinkingFragments.length}, segments=${contentSegments.length}, ` +
-                `contentLen=${content.length}ch`,
-              );
               contentSegments.push({
                 type: "thinking",
                 fragmentIndex: thinkingFragments.length,
