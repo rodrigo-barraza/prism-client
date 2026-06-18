@@ -38,7 +38,9 @@ import {
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MILLISECONDS } from "@rodrigo-barraza/utilities-library";
 import PrismService from "../services/PrismService";
-import WorkspaceService, { type WorkspaceValidateResponse } from "../services/WorkspaceService";
+import WorkspaceService, {
+  type WorkspaceValidateResponse,
+} from "../services/WorkspaceService";
 import { useWorkspace } from "./WorkspaceContextComponent";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
@@ -53,9 +55,15 @@ import {
   SelectComponent,
 } from "@rodrigo-barraza/components-library";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
+import ToolLinkComponent from "./ToolLinkComponent";
 import styles from "./SettingsPageComponent.module.css";
 
-import type { PrismSettings, AgenticHarness, MCPServer, PrismConfig } from "../types/types";
+import type {
+  PrismSettings,
+  AgenticHarness,
+  MCPServer,
+  PrismConfig,
+} from "../types/types";
 
 interface HostInfo {
   hostname?: string;
@@ -106,7 +114,9 @@ export default function SettingsPageComponent() {
   const [saved, setSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [harnesses, setHarnesses] = useState<AgenticHarness[]>([]);
-  const [expandedGuide, setExpandedGuide] = useState<"desktop" | "tray" | "download" | "docker" | "local" | null>(null);
+  const [expandedGuide, setExpandedGuide] = useState<
+    "desktop" | "tray" | "download" | "docker" | "local" | null
+  >(null);
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
 
   // -- MCP Servers state -----------------------------------------------
@@ -117,12 +127,14 @@ export default function SettingsPageComponent() {
   const [wsWorkspaces, setWsWorkspaces] = useState<LocalWorkspace[]>([]);
   const [wsAgents, setWsAgents] = useState<LocalAgent[]>([]);
   const [wsAddPath, setWsAddPath] = useState("");
-  const [wsValidation, setWsValidation] = useState<WorkspaceValidateResponse | null>(null);
+  const [wsValidation, setWsValidation] =
+    useState<WorkspaceValidateResponse | null>(null);
   const [wsAdding, setWsAdding] = useState(false);
   const wsValidateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /** Detect Windows-style path for instant client-side preview */
-  const isWindowsPath = (pathString: string) => /^[A-Za-z]:[/\\]/.test(pathString);
+  const isWindowsPath = (pathString: string) =>
+    /^[A-Za-z]:[/\\]/.test(pathString);
   const windowsToWslPreview = (pathString: string) => {
     const pathMatch = pathString.match(/^([A-Za-z]):[/\\](.*)/);
     if (!pathMatch) return null;
@@ -302,7 +314,10 @@ export default function SettingsPageComponent() {
           topology: topologyId,
         },
       };
-      setSettings((previousSettings: PrismSettings | null) => ({ ...previousSettings, ...updated }));
+      setSettings((previousSettings: PrismSettings | null) => ({
+        ...previousSettings,
+        ...updated,
+      }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -400,7 +415,10 @@ export default function SettingsPageComponent() {
     async (pathToRemove: string) => {
       try {
         const remainingUserRoots = wsWorkspaces
-          .filter((workspace: LocalWorkspace) => !workspace.isPinned && workspace.path !== pathToRemove)
+          .filter(
+            (workspace: LocalWorkspace) =>
+              !workspace.isPinned && workspace.path !== pathToRemove,
+          )
           .map((workspace: LocalWorkspace) => workspace.path);
         await WorkspaceService.update(remainingUserRoots);
         const { workspaces, agents } = await WorkspaceService.listFull();
@@ -547,10 +565,14 @@ export default function SettingsPageComponent() {
 
   // -- Derived workspace data -----------------------------------------
   const localStaticRoots = wsWorkspaces.filter(
-    (workspace: LocalWorkspace) => workspace.isPinned && !workspace.isAgentServed && workspace.path !== "/workspace",
+    (workspace: LocalWorkspace) =>
+      workspace.isPinned &&
+      !workspace.isAgentServed &&
+      workspace.path !== "/workspace",
   );
   const userRoots = wsWorkspaces.filter(
-    (workspace: LocalWorkspace) => !workspace.isPinned && !workspace.isAgentServed,
+    (workspace: LocalWorkspace) =>
+      !workspace.isPinned && !workspace.isAgentServed,
   );
   const agentServedRoots = wsWorkspaces.filter(
     (workspace: LocalWorkspace) => workspace.isAgentServed,
@@ -559,17 +581,20 @@ export default function SettingsPageComponent() {
   const findAgentForRoot = (rootPath: string): LocalAgent | undefined => {
     return wsAgents.find((agent: LocalAgent) =>
       agent.roots?.some((agentRoot) => {
-        const agentRootPath = typeof agentRoot === "string" ? agentRoot : agentRoot.path;
-        return rootPath.startsWith(agentRootPath + "/") || rootPath === agentRootPath;
+        const agentRootPath =
+          typeof agentRoot === "string" ? agentRoot : agentRoot.path;
+        return (
+          rootPath.startsWith(agentRootPath + "/") || rootPath === agentRootPath
+        );
       }),
     );
   };
 
   const formatMemorySize = (totalBytes: number): string => {
-    const gigabytes = totalBytes / (1024 ** 3);
+    const gigabytes = totalBytes / 1024 ** 3;
     return gigabytes >= 1
       ? `${gigabytes.toFixed(gigabytes >= 10 ? 0 : 1)} GB`
-      : `${(totalBytes / (1024 ** 2)).toFixed(0)} MB`;
+      : `${(totalBytes / 1024 ** 2).toFixed(0)} MB`;
   };
 
   const formatPlatformLabel = (hostInfo: HostInfo): string => {
@@ -579,26 +604,27 @@ export default function SettingsPageComponent() {
       linux: "Linux",
       freebsd: "FreeBSD",
     };
-    const platformLabel = platformLabels[hostInfo.platform || ""] || hostInfo.platform || "Unknown";
+    const platformLabel =
+      platformLabels[hostInfo.platform || ""] || hostInfo.platform || "Unknown";
     return hostInfo.arch ? `${platformLabel} ${hostInfo.arch}` : platformLabel;
   };
 
   // -- Loading state --------------------------------------------------
   if (!config || !settings) {
     return (
-      <div className={styles['container']}>
-        <div className={styles['header']}>
-          <div className={styles['header-left']}>
-            <h1 className={styles['title']}>
-              <Settings className={styles['title-icon']} size={22} />
+      <div className={styles["container"]}>
+        <div className={styles["header"]}>
+          <div className={styles["header-left"]}>
+            <h1 className={styles["title"]}>
+              <Settings className={styles["title-icon"]} size={22} />
               Settings
             </h1>
-            <p className={styles['subtitle']}>
+            <p className={styles["subtitle"]}>
               Configure system-wide preferences
             </p>
           </div>
         </div>
-        <div className={styles['is-loading-state']}>
+        <div className={styles["is-loading-state"]}>
           <PanelLoadingSpinner size="medium" />
         </div>
       </div>
@@ -613,20 +639,20 @@ export default function SettingsPageComponent() {
   const hasAnyWorkspaces = wsWorkspaces.length > 0;
 
   return (
-    <div className={`settings-page-component ${styles['container']}`}>
-      <div className={styles['header']}>
-        <div className={styles['header-left']}>
-          <h1 className={styles['title']}>
-            <Settings className={styles['title-icon']} size={22} />
+    <div className={`settings-page-component ${styles["container"]}`}>
+      <div className={styles["header"]}>
+        <div className={styles["header-left"]}>
+          <h1 className={styles["title"]}>
+            <Settings className={styles["title-icon"]} size={22} />
             Settings
           </h1>
-          <p className={styles['subtitle']}>
+          <p className={styles["subtitle"]}>
             Configure system-wide preferences
           </p>
         </div>
-        <div className={styles['header-right']}>
+        <div className={styles["header-right"]}>
           <span
-            className={`${styles['saved-indicator']} ${saved ? styles['is-visible-state'] : ""}`}
+            className={`${styles["saved-indicator"]} ${saved ? styles["is-visible-state"] : ""}`}
           >
             <Check size={14} />
             Saved
@@ -635,7 +661,10 @@ export default function SettingsPageComponent() {
       </div>
 
       {/* -- Memory Models Section ------------------------------------ */}
-      <CardComponent className={styles['section']} data-settings-section="memory-models">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="memory-models"
+      >
         <CardComponent.Header
           icon={Brain}
           title="Memory Models"
@@ -644,14 +673,14 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Extraction Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Extraction Model</span>
-              <span className={styles['row-description']}>
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Extraction Model</span>
+              <span className={styles["row-description"]}>
                 Extracts personal facts and knowledge from conversations
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -666,14 +695,14 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Consolidation Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Consolidation Model</span>
-              <span className={styles['row-description']}>
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Consolidation Model</span>
+              <span className={styles["row-description"]}>
                 Merges, deduplicates, and prunes stored memories
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -688,14 +717,14 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Embedding Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Embedding Model</span>
-              <span className={styles['row-description']}>
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Embedding Model</span>
+              <span className={styles["row-description"]}>
                 Generates vector embeddings for semantic memory search
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -724,7 +753,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Emotion Models Section ----------------------------------- */}
-      <CardComponent className={styles['section']} data-settings-section="emotion-models">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="emotion-models"
+      >
         <CardComponent.Header
           icon={Heart}
           title="Emotion Models"
@@ -733,16 +765,18 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Emotion Analysis Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Emotion Analysis Model</span>
-              <span className={styles['row-description']}>
-                Classifies user message emotion to drive the agent&apos;s somatic
-                state (Plutchik wheel). Runs on every incoming message for agents
-                with somatic state enabled.
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>
+                Emotion Analysis Model
+              </span>
+              <span className={styles["row-description"]}>
+                Classifies user message emotion to drive the agent&apos;s
+                somatic state (Plutchik wheel). Runs on every incoming message
+                for agents with somatic state enabled.
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -771,7 +805,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Creative Models Section ------------------------------------ */}
-      <CardComponent className={styles['section']} data-settings-section="creative-models">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="creative-models"
+      >
         <CardComponent.Header
           icon={Palette}
           title="Creative Models"
@@ -780,15 +817,18 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Image Generation Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Image Generation Model</span>
-              <span className={styles['row-description']}>
-                Model used by the generate_image tool to create native
-                illustrations
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>
+                Image Generation Model
+              </span>
+              <span className={styles["row-description"]}>
+                Model used by the{" "}
+                <ToolLinkComponent toolName="generate_image" /> tool to create
+                native illustrations
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -803,15 +843,16 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Image Description (Vision) Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Vision Model</span>
-              <span className={styles['row-description']}>
-                Model used by the describe_image tool to analyze user-attached
-                or reference images
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Vision Model</span>
+              <span className={styles["row-description"]}>
+                Model used by the{" "}
+                <ToolLinkComponent toolName="describe_image" /> tool to analyze
+                user-attached or reference images
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -840,7 +881,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Audio Models Section -------------------------------------- */}
-      <CardComponent className={styles['section']} data-settings-section="audio-models">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="audio-models"
+      >
         <CardComponent.Header
           icon={Volume2}
           title="Audio Models"
@@ -849,15 +893,18 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Text-to-Speech Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Speech Synthesis Model</span>
-              <span className={styles['row-description']}>
-                Model used by the synthesize_speech tool to generate audio files
-                from written text
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>
+                Speech Synthesis Model
+              </span>
+              <span className={styles["row-description"]}>
+                Model used by the{" "}
+                <ToolLinkComponent toolName="synthesize_speech" /> tool to
+                generate audio files from written text
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -872,15 +919,16 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Speech-to-Text (Transcription) Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Transcription Model</span>
-              <span className={styles['row-description']}>
-                Model used by the transcribe_audio tool to transcribe spoken audio
-                recordings into text
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Transcription Model</span>
+              <span className={styles["row-description"]}>
+                Model used by the{" "}
+                <ToolLinkComponent toolName="transcribe_audio" /> tool to
+                transcribe spoken audio recordings into text
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -909,7 +957,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Harness Models Section ------------------------------------ */}
-      <CardComponent className={styles['section']} data-settings-section="harness-models">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="harness-models"
+      >
         <CardComponent.Header
           icon={Workflow}
           title="Harness Models"
@@ -918,15 +969,15 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Sub-Agent Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Sub-Agent Model</span>
-              <span className={styles['row-description']}>
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Sub-Agent Model</span>
+              <span className={styles["row-description"]}>
                 Pick a default sub-agent model for Prism to use when it spawns
                 sub-agents. If not set, it will use the current active model.
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -942,17 +993,17 @@ export default function SettingsPageComponent() {
           </div>
 
           {/* Critic Gate Model */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Critic Gate Model</span>
-              <span className={styles['row-description']}>
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Critic Gate Model</span>
+              <span className={styles["row-description"]}>
                 A fast reviewer model that evaluates dangerous tool calls before
                 execution. When set, high-risk actions (shell, code execution)
                 are reviewed by this model for safety before running. Leave
                 empty to disable the critic gate entirely.
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ModelPickerPopoverComponent
                 config={config}
                 settings={{
@@ -982,7 +1033,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Agent Defaults Section ----------------------------------- */}
-      <CardComponent className={styles['section']} data-settings-section="agent-defaults">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="agent-defaults"
+      >
         <CardComponent.Header
           icon={Network}
           title="Agent Defaults"
@@ -991,32 +1045,32 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Harness Selector */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Agentic Harness</span>
-              <span className={styles['row-description']}>
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Agentic Harness</span>
+              <span className={styles["row-description"]}>
                 The execution strategy used by the agent loop. Different
                 harnesses define how the model interacts with tools.
               </span>
             </div>
           </div>
-          <div className={styles['harness-grid']}>
+          <div className={styles["harness-grid"]}>
             {harnesses.map((h: AgenticHarness) => {
               const isActive = (agentDefaults.harness || "standard") === h.id;
               return (
                 <button
                   key={h.id}
-                  className={`${styles['harness-card']} ${isActive ? styles['harness-active'] : ""}`}
+                  className={`${styles["harness-card"]} ${isActive ? styles["harness-active"] : ""}`}
                   onClick={() => handleHarnessSelect(h.id)}
                 >
-                  <div className={styles['harness-card-header']}>
-                    <Cpu size={16} className={styles['harness-icon']} />
-                    <span className={styles['harness-label']}>{h.label}</span>
+                  <div className={styles["harness-card-header"]}>
+                    <Cpu size={16} className={styles["harness-icon"]} />
+                    <span className={styles["harness-label"]}>{h.label}</span>
                     {isActive && (
-                      <span className={styles['harness-badge']}>Current</span>
+                      <span className={styles["harness-badge"]}>Current</span>
                     )}
                   </div>
-                  <span className={styles['harness-description']}>
+                  <span className={styles["harness-description"]}>
                     {h.description}
                   </span>
                 </button>
@@ -1024,44 +1078,141 @@ export default function SettingsPageComponent() {
             })}
           </div>
 
-          <div className={styles['harness-divider']} />
+          <div className={styles["harness-divider"]} />
 
           {/* Subagent Topology */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Subagent Topology</span>
-              <span className={styles['row-description']}>
-                Defines how subagents coordinate. Hierarchical executes in parallel;
-                Sequential executes in a pipeline; Peer-to-Peer operates in a collaborative mesh.
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Subagent Topology</span>
+              <span className={styles["row-description"]}>
+                Defines how sub-agents coordinate. Each topology maps to a
+                reasoning strategy: Chain of Thought (sequential), Tree of
+                Thoughts (parallel), Graph of Thoughts (aggregation), or DAG
+                mesh (peer-to-peer).
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <SelectComponent
                 value={agentDefaults.topology || "hierarchical"}
                 options={[
-                  { value: "hierarchical", label: "Hierarchical (Parallel)" },
-                  { value: "sequential", label: "Sequential (Pipeline)" },
-                  { value: "peer_to_peer", label: "Peer-to-Peer (Mesh)" },
+                  {
+                    value: "sequential",
+                    label: "Sequential Pipeline (CoT)",
+                    tooltipRich: true,
+                    tooltip: (
+                      <div>
+                        <strong>Sequential Pipeline (CoT)</strong>
+                        <p style={{ margin: "6px 0 8px", opacity: 0.7 }}>
+                          Sub-agents execute one at a time. Each receives the
+                          previous agent&apos;s output as context, forming a chain.
+                        </p>
+                        <pre style={{ fontSize: 11, lineHeight: 1.4, margin: 0, fontFamily: "var(--font-mono, monospace)" }}>
+{`  [Orchestrator]
+        │
+     [Agent A]
+        │ output
+     [Agent B]
+        │ output
+     [Agent C]
+        │
+    [Results]`}
+                        </pre>
+                      </div>
+                    ),
+                  },
+                  {
+                    value: "hierarchical",
+                    label: "Hierarchical Parallel (ToT)",
+                    tooltipRich: true,
+                    tooltip: (
+                      <div>
+                        <strong>Hierarchical Parallel (ToT)</strong>
+                        <p style={{ margin: "6px 0 8px", opacity: 0.7 }}>
+                          Sub-agents execute in parallel. The orchestrator
+                          selects the best result. Branches never merge.
+                        </p>
+                        <pre style={{ fontSize: 11, lineHeight: 1.4, margin: 0, fontFamily: "var(--font-mono, monospace)" }}>
+{`  [Orchestrator]
+     /   |   \\
+  [A]   [B]  [C]
+   |     |    |
+  (pick winner)
+        │
+    [Results]`}
+                        </pre>
+                      </div>
+                    ),
+                  },
+                  {
+                    value: "hierarchical_aggregation",
+                    label: "Hierarchical Aggregation (GoT)",
+                    tooltipRich: true,
+                    tooltip: (
+                      <div>
+                        <strong>Hierarchical Aggregation (GoT)</strong>
+                        <p style={{ margin: "6px 0 8px", opacity: 0.7 }}>
+                          Sub-agents execute in parallel, then a synthesis pass
+                          merges all outputs into a unified result.
+                        </p>
+                        <pre style={{ fontSize: 11, lineHeight: 1.4, margin: 0, fontFamily: "var(--font-mono, monospace)" }}>
+{`  [Orchestrator]
+     /   |   \\
+  [A]   [B]  [C]
+     \\   |   /
+     [Merge]
+        │
+    [Results]`}
+                        </pre>
+                      </div>
+                    ),
+                  },
+                  {
+                    value: "peer_to_peer",
+                    label: "Peer-to-Peer Mesh (GoT DAG)",
+                    tooltipRich: true,
+                    tooltip: (
+                      <div>
+                        <strong>Peer-to-Peer Mesh (GoT DAG)</strong>
+                        <p style={{ margin: "6px 0 8px", opacity: 0.7 }}>
+                          Agents communicate laterally in a turn-based
+                          discussion. Each agent sees all prior messages from
+                          every other agent.
+                        </p>
+                        <pre style={{ fontSize: 11, lineHeight: 1.4, margin: 0, fontFamily: "var(--font-mono, monospace)" }}>
+{`  [Orchestrator]
+     /       \\
+  [A] ←————→ [B]
+    \\   ↗   /
+     [C]
+      │
+  [Results]`}
+                        </pre>
+                      </div>
+                    ),
+                  },
                 ]}
                 onChange={handleTopologySelect}
               />
             </div>
           </div>
 
-          <div className={styles['harness-divider']} />
+          <div className={styles["harness-divider"]} />
 
           {/* Dynamic Tool Activation */}
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Dynamic Tool Activation</span>
-              <span className={styles['row-description']}>
-                Allow the agent to dynamically enable or disable tools mid-session
-                using <code>enable_tools</code> / <code>disable_tools</code>.
-                This reduces token usage and tool interference by loading only
-                the tools the agent needs for the current task.
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>
+                Dynamic Tool Activation
+              </span>
+              <span className={styles["row-description"]}>
+                Allow the agent to dynamically enable or disable tools
+                mid-session using <ToolLinkComponent toolName="enable_tools" />{" "}
+                / <ToolLinkComponent toolName="disable_tools" />. This reduces
+                token usage and tool interference by loading only the tools the
+                agent needs for the current task.
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ToggleComponent
                 checked={agentDefaults.dynamicToolActivation ?? true}
                 onChange={(checked: boolean) => {
@@ -1071,7 +1222,10 @@ export default function SettingsPageComponent() {
                       dynamicToolActivation: checked,
                     },
                   };
-                  setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+                  setSettings((s: PrismSettings | null) => ({
+                    ...s,
+                    ...updated,
+                  }));
                   persistSettings(updated);
                 }}
                 size="mini"
@@ -1094,7 +1248,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Workspaces Section ---------------------------------------- */}
-      <CardComponent className={styles['section']} data-settings-section="workspaces">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="workspaces"
+      >
         <CardComponent.Header
           icon={FolderOpen}
           title="Workspaces"
@@ -1103,11 +1260,11 @@ export default function SettingsPageComponent() {
 
         <CardComponent.Body>
           {/* Agent status banner */}
-          <div className={styles['agent-status-banner']}>
+          <div className={styles["agent-status-banner"]}>
             <div
-              className={`${styles['agent-status-dot']} ${hasAgents ? styles['connected'] : styles['disconnected']}`}
+              className={`${styles["agent-status-dot"]} ${hasAgents ? styles["connected"] : styles["disconnected"]}`}
             />
-            <span className={styles['agent-status-text']}>
+            <span className={styles["agent-status-text"]}>
               {hasAgents ? (
                 <>
                   <strong>{wsAgents.length}</strong> workspace agent
@@ -1117,7 +1274,7 @@ export default function SettingsPageComponent() {
                 "No workspace agents connected"
               )}
             </span>
-            <span className={styles['agent-status-meta']}>
+            <span className={styles["agent-status-meta"]}>
               {wsWorkspaces.length} root{wsWorkspaces.length !== 1 ? "s" : ""}{" "}
               total
             </span>
@@ -1126,85 +1283,89 @@ export default function SettingsPageComponent() {
           {/* Connected Agents */}
           {hasAgents && (
             <>
-              <div className={styles['section-label']}>
+              <div className={styles["section-label"]}>
                 <Server size={10} />
                 Remote Agents
               </div>
               {wsAgents.map((agent: LocalAgent) => (
-                <div key={agent.id} className={styles['agent-card']}>
-                  <div className={styles['agent-card-header']}>
-                    <div className={styles['agent-icon']}>
+                <div key={agent.id} className={styles["agent-card"]}>
+                  <div className={styles["agent-card-header"]}>
+                    <div className={styles["agent-icon"]}>
                       <Wifi size={16} />
                     </div>
-                    <div className={styles['agent-info']}>
-                      <div className={styles['agent-name-row']}>
-                        <span className={styles['agent-name']}>
+                    <div className={styles["agent-info"]}>
+                      <div className={styles["agent-name-row"]}>
+                        <span className={styles["agent-name"]}>
                           {agent.hostInfo?.hostname || agent.name}
                         </span>
                         {agent.version && (
-                          <span className={styles['agent-version']}>
+                          <span className={styles["agent-version"]}>
                             v{agent.version}
                           </span>
                         )}
                       </div>
-                      <div className={styles['agent-meta']}>
-                        <span className={styles['agent-meta-item']}>
+                      <div className={styles["agent-meta"]}>
+                        <span className={styles["agent-meta-item"]}>
                           {agent.clientIp}
                         </span>
                         {agent.hostInfo?.platform && (
                           <>
-                            <span className={styles['agent-meta-separator']} />
-                            <span className={styles['agent-meta-item']}>
+                            <span className={styles["agent-meta-separator"]} />
+                            <span className={styles["agent-meta-item"]}>
                               {formatPlatformLabel(agent.hostInfo)}
                             </span>
                           </>
                         )}
-                        <span className={styles['agent-meta-separator']} />
+                        <span className={styles["agent-meta-separator"]} />
                         {agent.connectedAt && (
-                          <span className={styles['agent-meta-item']}>
+                          <span className={styles["agent-meta-item"]}>
                             up {formatUptime(agent.connectedAt)}
                           </span>
                         )}
                         {(agent.pendingRpcs ?? 0) > 0 && (
                           <>
-                            <span className={styles['agent-meta-separator']} />
-                            <span className={styles['agent-meta-item']}>
+                            <span className={styles["agent-meta-separator"]} />
+                            <span className={styles["agent-meta-item"]}>
                               {agent.pendingRpcs} pending
                             </span>
                           </>
                         )}
                       </div>
                       {agent.hostInfo && (
-                        <div className={styles['workspace-host-info']}>
+                        <div className={styles["workspace-host-info"]}>
                           {agent.hostInfo.username && (
-                            <span className={styles['host-info-tag']}>
+                            <span className={styles["host-info-tag"]}>
                               {agent.hostInfo.username}
                             </span>
                           )}
                           {agent.hostInfo.cpuModel && (
-                            <span className={styles['host-info-tag']}>
+                            <span className={styles["host-info-tag"]}>
                               <Cpu size={9} />
                               {agent.hostInfo.cpuModel}
-                              {agent.hostInfo.cpuCores ? ` (${agent.hostInfo.cpuCores}c)` : ""}
+                              {agent.hostInfo.cpuCores
+                                ? ` (${agent.hostInfo.cpuCores}c)`
+                                : ""}
                             </span>
                           )}
                           {agent.hostInfo.totalMemoryBytes && (
-                            <span className={styles['host-info-tag']}>
+                            <span className={styles["host-info-tag"]}>
                               <MemoryStick size={9} />
-                              {formatMemorySize(agent.hostInfo.totalMemoryBytes)}
+                              {formatMemorySize(
+                                agent.hostInfo.totalMemoryBytes,
+                              )}
                             </span>
                           )}
                           {agent.hostInfo.release && (
-                            <span className={styles['host-info-tag']}>
+                            <span className={styles["host-info-tag"]}>
                               {agent.hostInfo.release}
                             </span>
                           )}
                         </div>
                       )}
                     </div>
-                    <div className={styles['agent-capabilities']}>
+                    <div className={styles["agent-capabilities"]}>
                       {(agent.capabilities || []).map((cap: string) => (
-                        <span key={cap} className={styles['capability-tag']}>
+                        <span key={cap} className={styles["capability-tag"]}>
                           {cap}
                         </span>
                       ))}
@@ -1213,10 +1374,13 @@ export default function SettingsPageComponent() {
 
                   {/* Roots served by this agent */}
                   {agent.roots && agent.roots.length > 0 && (
-                    <div className={styles['agent-roots']}>
+                    <div className={styles["agent-roots"]}>
                       {agent.roots.map(
                         (root: { path: string; isAgentServed?: boolean }) => (
-                          <div key={root.path} className={styles['agent-root-item']}>
+                          <div
+                            key={root.path}
+                            className={styles["agent-root-item"]}
+                          >
                             <FolderOpen size={13} />
                             {root.path}
                           </div>
@@ -1232,8 +1396,8 @@ export default function SettingsPageComponent() {
           {/* Agent-served workspace roots (managed by connected agents) */}
           {agentServedRoots.length > 0 && (
             <>
-              <div className={styles['workspace-divider']} />
-              <div className={styles['section-label']}>
+              <div className={styles["workspace-divider"]} />
+              <div className={styles["section-label"]}>
                 <FolderTree size={10} />
                 Agent Workspaces
               </div>
@@ -1241,33 +1405,33 @@ export default function SettingsPageComponent() {
                 const servingAgent = findAgentForRoot(workspace.path);
                 const hostInfo = servingAgent?.hostInfo;
                 return (
-                  <div key={workspace.id} className={styles['workspace-item']}>
-                    <div className={styles['workspace-item-info']}>
+                  <div key={workspace.id} className={styles["workspace-item"]}>
+                    <div className={styles["workspace-item-info"]}>
                       <FolderOpen
                         size={16}
-                        className={styles['workspace-item-icon']}
+                        className={styles["workspace-item-icon"]}
                       />
-                      <div className={styles['workspace-item-details']}>
-                        <span className={styles['workspace-item-name']}>
+                      <div className={styles["workspace-item-details"]}>
+                        <span className={styles["workspace-item-name"]}>
                           {workspace.name}
-                          <span className={styles['static-badge']}>
+                          <span className={styles["static-badge"]}>
                             <Wifi size={8} />
                             Agent
                           </span>
                         </span>
-                        <span className={styles['workspace-item-path']}>
+                        <span className={styles["workspace-item-path"]}>
                           {workspace.path}
                         </span>
                         {hostInfo && (
-                          <div className={styles['workspace-host-info']}>
+                          <div className={styles["workspace-host-info"]}>
                             {hostInfo.hostname && (
-                              <span className={styles['host-info-tag']}>
+                              <span className={styles["host-info-tag"]}>
                                 <Monitor size={9} />
                                 {hostInfo.hostname}
                               </span>
                             )}
                             {hostInfo.platform && (
-                              <span className={styles['host-info-tag']}>
+                              <span className={styles["host-info-tag"]}>
                                 <HardDrive size={9} />
                                 {formatPlatformLabel(hostInfo)}
                               </span>
@@ -1285,27 +1449,27 @@ export default function SettingsPageComponent() {
           {/* Local static roots (from env config, not agent-served) */}
           {localStaticRoots.length > 0 && (
             <>
-              <div className={styles['workspace-divider']} />
-              <div className={styles['section-label']}>
+              <div className={styles["workspace-divider"]} />
+              <div className={styles["section-label"]}>
                 <Settings2 size={10} />
                 Static Roots
               </div>
               {localStaticRoots.map((ws: LocalWorkspace) => (
-                <div key={ws.id} className={styles['workspace-item']}>
-                  <div className={styles['workspace-item-info']}>
+                <div key={ws.id} className={styles["workspace-item"]}>
+                  <div className={styles["workspace-item-info"]}>
                     <FolderOpen
                       size={16}
-                      className={styles['workspace-item-icon']}
+                      className={styles["workspace-item-icon"]}
                     />
-                    <div className={styles['workspace-item-details']}>
-                      <span className={styles['workspace-item-name']}>
+                    <div className={styles["workspace-item-details"]}>
+                      <span className={styles["workspace-item-name"]}>
                         {ws.name}
-                        <span className={styles['static-badge']}>
+                        <span className={styles["static-badge"]}>
                           <Lock size={8} />
                           Static
                         </span>
                       </span>
-                      <span className={styles['workspace-item-path']}>
+                      <span className={styles["workspace-item-path"]}>
                         {ws.path}
                       </span>
                     </div>
@@ -1318,8 +1482,8 @@ export default function SettingsPageComponent() {
           {/* User-configured workspace roots */}
           {userRoots.length > 0 && (
             <>
-              <div className={styles['workspace-divider']} />
-              <div className={styles['section-label']}>
+              <div className={styles["workspace-divider"]} />
+              <div className={styles["section-label"]}>
                 <FolderOpen size={10} />
                 User Workspaces
               </div>
@@ -1327,47 +1491,49 @@ export default function SettingsPageComponent() {
                 const servingAgent = findAgentForRoot(ws.path);
                 const hostInfo = servingAgent?.hostInfo;
                 return (
-                  <div key={ws.id} className={styles['workspace-item']}>
-                    <div className={styles['workspace-item-info']}>
+                  <div key={ws.id} className={styles["workspace-item"]}>
+                    <div className={styles["workspace-item-info"]}>
                       <FolderOpen
                         size={16}
-                        className={styles['workspace-item-icon']}
+                        className={styles["workspace-item-icon"]}
                       />
-                      <div className={styles['workspace-item-details']}>
-                        <span className={styles['workspace-item-name']}>
+                      <div className={styles["workspace-item-details"]}>
+                        <span className={styles["workspace-item-name"]}>
                           {ws.name}
                         </span>
-                        <span className={styles['workspace-item-path']}>
+                        <span className={styles["workspace-item-path"]}>
                           {ws.path}
                         </span>
                         {hostInfo && (
-                          <div className={styles['workspace-host-info']}>
+                          <div className={styles["workspace-host-info"]}>
                             {hostInfo.hostname && (
-                              <span className={styles['host-info-tag']}>
+                              <span className={styles["host-info-tag"]}>
                                 <Monitor size={9} />
                                 {hostInfo.hostname}
                               </span>
                             )}
                             {hostInfo.platform && (
-                              <span className={styles['host-info-tag']}>
+                              <span className={styles["host-info-tag"]}>
                                 <HardDrive size={9} />
                                 {formatPlatformLabel(hostInfo)}
                               </span>
                             )}
                             {hostInfo.username && (
-                              <span className={styles['host-info-tag']}>
+                              <span className={styles["host-info-tag"]}>
                                 {hostInfo.username}
                               </span>
                             )}
                             {hostInfo.cpuModel && (
-                              <span className={styles['host-info-tag']}>
+                              <span className={styles["host-info-tag"]}>
                                 <Cpu size={9} />
                                 {hostInfo.cpuModel}
-                                {hostInfo.cpuCores ? ` (${hostInfo.cpuCores}c)` : ""}
+                                {hostInfo.cpuCores
+                                  ? ` (${hostInfo.cpuCores}c)`
+                                  : ""}
                               </span>
                             )}
                             {hostInfo.totalMemoryBytes && (
-                              <span className={styles['host-info-tag']}>
+                              <span className={styles["host-info-tag"]}>
                                 <MemoryStick size={9} />
                                 {formatMemorySize(hostInfo.totalMemoryBytes)}
                               </span>
@@ -1377,7 +1543,7 @@ export default function SettingsPageComponent() {
                       </div>
                     </div>
                     <button
-                      className={styles['remove-button']}
+                      className={styles["remove-button"]}
                       onClick={() => handleRemoveWorkspace(ws.path)}
                       title="Remove workspace"
                     >
@@ -1391,17 +1557,19 @@ export default function SettingsPageComponent() {
 
           {/* Onboarding when nothing is configured */}
           {!hasAnyWorkspaces && !hasAgents && (
-            <div className={styles['onboarding-card']}>
+            <div className={styles["onboarding-card"]}>
               <WifiOff
                 size={24}
                 style={{ color: "var(--text-muted)", margin: "0 auto" }}
               />
-              <span className={styles['onboarding-title']}>
+              <span className={styles["onboarding-title"]}>
                 No workspaces configured
               </span>
-              <span className={styles['onboarding-description']}>
+              <span className={styles["onboarding-description"]}>
                 Deploy the{" "}
-                <span className={styles['onboarding-code']}>workspace-service</span>{" "}
+                <span className={styles["onboarding-code"]}>
+                  workspace-service
+                </span>{" "}
                 on a device to give the agent remote file, git, and shell
                 access. Or add a local workspace path below.
               </span>
@@ -1409,29 +1577,23 @@ export default function SettingsPageComponent() {
           )}
 
           {/* Add workspace input */}
-          <div className={styles['add-workspace-row']}>
+          <div className={styles["add-workspace-row"]}>
             <InputComponent
               type="text"
-              className={`${wsValidation ? (wsValidation.valid ? styles['valid'] : styles['invalid']) : ""}`}
+              className={`${wsValidation ? (wsValidation.valid ? styles["valid"] : styles["invalid"]) : ""}`}
               placeholder="Add workspace path (e.g. /home/user/projects or C:\Users\...)"
               value={wsAddPath}
-              onChange={(
-                e: React.ChangeEvent<HTMLInputElement>,
-              ) => handleWsPathChange(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleWsPathChange(e.target.value)
+              }
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (
-                  e.key === "Enter" &&
-                  wsValidation?.valid
-                )
+                if (e.key === "Enter" && wsValidation?.valid)
                   handleAddWorkspace();
               }}
             />
             <button
-              className={styles['add-button']}
-              disabled={
-                !wsValidation?.valid ||
-                wsAdding
-              }
+              className={styles["add-button"]}
+              disabled={!wsValidation?.valid || wsAdding}
               onClick={handleAddWorkspace}
             >
               <Plus size={14} />
@@ -1442,7 +1604,7 @@ export default function SettingsPageComponent() {
           {/* Validation feedback */}
           {wsAddPath.trim() && wsValidation && (
             <div
-              className={`${styles['validation-row']} ${wsValidation.valid ? styles['success'] : styles['error']}`}
+              className={`${styles["validation-row"]} ${wsValidation.valid ? styles["success"] : styles["error"]}`}
             >
               {wsValidation.valid ? (
                 <>
@@ -1450,8 +1612,7 @@ export default function SettingsPageComponent() {
                 </>
               ) : (
                 <>
-                  <XCircle size={12} />{" "}
-                  {wsValidation.error}
+                  <XCircle size={12} /> {wsValidation.error}
                 </>
               )}
             </div>
@@ -1459,22 +1620,22 @@ export default function SettingsPageComponent() {
 
           {/* Windows → WSL translation preview */}
           {wsAddPath.trim() && isWindowsPath(wsAddPath.trim()) && (
-            <div className={`${styles['validation-row']} ${styles['info']}`}>
+            <div className={`${styles["validation-row"]} ${styles["info"]}`}>
               <ArrowRight size={12} />
               <span>Translates to: </span>
-              <span className={styles['wsl-translation']}>
+              <span className={styles["wsl-translation"]}>
                 {windowsToWslPreview(wsAddPath.trim())}
               </span>
             </div>
           )}
 
           {/* -- Workspace Setup Guide ------------------------------- */}
-          <div className={styles['setup-guide']}>
-            <div className={styles['setup-guide-header']}>
-              <span className={styles['setup-guide-title']}>
+          <div className={styles["setup-guide"]}>
+            <div className={styles["setup-guide-header"]}>
+              <span className={styles["setup-guide-title"]}>
                 Workspace Setup Guide
               </span>
-              <span className={styles['setup-guide-subtitle']}>
+              <span className={styles["setup-guide-subtitle"]}>
                 Connect a workspace agent to give Prism file, git, and shell
                 access
               </span>
@@ -1482,32 +1643,36 @@ export default function SettingsPageComponent() {
 
             {/* Desktop App — one-click standalone executable */}
             <button
-              className={`${styles['guide-toggle']} ${expandedGuide === "desktop" ? styles['guide-expanded'] : ""}`}
+              className={`${styles["guide-toggle"]} ${expandedGuide === "desktop" ? styles["guide-expanded"] : ""}`}
               onClick={() =>
                 setExpandedGuide(expandedGuide === "desktop" ? null : "desktop")
               }
             >
-              <Monitor size={16} className={styles['guide-toggle-icon']} />
-              <div className={styles['guide-toggle-label']}>
-                <span className={styles['guide-toggle-title']}>Desktop App</span>
-                <span className={styles['guide-toggle-hint']}>
+              <Monitor size={16} className={styles["guide-toggle-icon"]} />
+              <div className={styles["guide-toggle-label"]}>
+                <span className={styles["guide-toggle-title"]}>
+                  Desktop App
+                </span>
+                <span className={styles["guide-toggle-hint"]}>
                   One-click standalone executable — no Node.js, no dependencies
                 </span>
               </div>
-              <ChevronRight size={14} className={styles['guide-chevron']} />
+              <ChevronRight size={14} className={styles["guide-chevron"]} />
             </button>
 
             {expandedGuide === "desktop" && (
-              <div className={styles['guide-content']}>
-                <div className={styles['single-file-explainer']}>
-                  <div className={styles['single-file-explainer-icon']}>
+              <div className={styles["guide-content"]}>
+                <div className={styles["single-file-explainer"]}>
+                  <div className={styles["single-file-explainer-icon"]}>
                     <Monitor size={20} />
                   </div>
-                  <div className={styles['single-file-explainer-text']}>
-                    <span className={styles['single-file-explainer-headline']}>
+                  <div className={styles["single-file-explainer-text"]}>
+                    <span className={styles["single-file-explainer-headline"]}>
                       Pre-configured standalone executable
                     </span>
-                    <span className={styles['single-file-explainer-description']}>
+                    <span
+                      className={styles["single-file-explainer-description"]}
+                    >
                       Downloads a single binary with your backend URL and
                       credentials pre-baked. Just run it — no setup, no
                       dependencies, no Node.js required. Works on Windows,
@@ -1516,79 +1681,105 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>1</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>1</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Download for your platform
                     </span>
-                    <div className={styles['platform-download-grid']}>
+                    <div className={styles["platform-download-grid"]}>
                       <a
-                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
-                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl("win-x64")}
+                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
+                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl(
+                          "win-x64",
+                        )}
                         download
                       >
                         <Download size={14} />
-                        <span className={styles['platform-download-label']}>
-                          <span className={styles['platform-download-name']}>Windows</span>
-                          <span className={styles['platform-download-arch']}>x64</span>
+                        <span className={styles["platform-download-label"]}>
+                          <span className={styles["platform-download-name"]}>
+                            Windows
+                          </span>
+                          <span className={styles["platform-download-arch"]}>
+                            x64
+                          </span>
                         </span>
                       </a>
                       <a
-                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Linux/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
-                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl("linux-x64")}
+                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Linux/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
+                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl(
+                          "linux-x64",
+                        )}
                         download
                       >
                         <Download size={14} />
-                        <span className={styles['platform-download-label']}>
-                          <span className={styles['platform-download-name']}>Linux</span>
-                          <span className={styles['platform-download-arch']}>x64</span>
+                        <span className={styles["platform-download-label"]}>
+                          <span className={styles["platform-download-name"]}>
+                            Linux
+                          </span>
+                          <span className={styles["platform-download-arch"]}>
+                            x64
+                          </span>
                         </span>
                       </a>
                       <a
-                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && !/arm|aarch/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
-                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl("mac-x64")}
+                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && !/arm|aarch/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
+                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl(
+                          "mac-x64",
+                        )}
                         download
                       >
                         <Download size={14} />
-                        <span className={styles['platform-download-label']}>
-                          <span className={styles['platform-download-name']}>macOS</span>
-                          <span className={styles['platform-download-arch']}>Intel</span>
+                        <span className={styles["platform-download-label"]}>
+                          <span className={styles["platform-download-name"]}>
+                            macOS
+                          </span>
+                          <span className={styles["platform-download-arch"]}>
+                            Intel
+                          </span>
                         </span>
                       </a>
                       <a
-                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && /arm|aarch/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
-                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl("mac-arm64")}
+                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && /arm|aarch/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
+                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl(
+                          "mac-arm64",
+                        )}
                         download
                       >
                         <Download size={14} />
-                        <span className={styles['platform-download-label']}>
-                          <span className={styles['platform-download-name']}>macOS</span>
-                          <span className={styles['platform-download-arch']}>Apple Silicon</span>
+                        <span className={styles["platform-download-label"]}>
+                          <span className={styles["platform-download-name"]}>
+                            macOS
+                          </span>
+                          <span className={styles["platform-download-arch"]}>
+                            Apple Silicon
+                          </span>
                         </span>
                       </a>
                     </div>
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>2</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>2</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Run it from your project directory
                     </span>
-                    <div className={styles['code-block']}>
+                    <div className={styles["code-block"]}>
                       <code>
-                        {typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent)
+                        {typeof navigator !== "undefined" &&
+                        /Win/i.test(navigator.userAgent)
                           ? ".\\workspace-agent.exe --workspace C:\\path\\to\\project"
                           : "./workspace-agent --workspace /path/to/project"}
                       </code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
-                            typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent)
+                            typeof navigator !== "undefined" &&
+                              /Win/i.test(navigator.userAgent)
                               ? ".\\workspace-agent.exe --workspace C:\\path\\to\\project"
                               : "./workspace-agent --workspace /path/to/project",
                           );
@@ -1606,29 +1797,31 @@ export default function SettingsPageComponent() {
                         )}
                       </button>
                     </div>
-                    <span className={styles['step-hint']}>
-                      Backend URL and credentials are already compiled in.
-                      Just point it at your workspace directory.
-                      On macOS/Linux, you may need to{" "}
-                      <code className={styles['inline-code']}>chmod +x workspace-agent</code>{" "}
+                    <span className={styles["step-hint"]}>
+                      Backend URL and credentials are already compiled in. Just
+                      point it at your workspace directory. On macOS/Linux, you
+                      may need to{" "}
+                      <code className={styles["inline-code"]}>
+                        chmod +x workspace-agent
+                      </code>{" "}
                       first.
                     </span>
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>3</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>3</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Verify connection
                     </span>
-                    <span className={styles['step-hint']}>
+                    <span className={styles["step-hint"]}>
                       Look for{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>
                         Connected to ws://…
                       </code>{" "}
                       and{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>
                         Server confirmed registration
                       </code>{" "}
                       in the output. The agent will appear in this settings
@@ -1641,140 +1834,170 @@ export default function SettingsPageComponent() {
 
             {/* System Tray App — Electron-based with setup wizard */}
             <button
-              className={`${styles['guide-toggle']} ${expandedGuide === "tray" ? styles['guide-expanded'] : ""}`}
+              className={`${styles["guide-toggle"]} ${expandedGuide === "tray" ? styles["guide-expanded"] : ""}`}
               onClick={() =>
                 setExpandedGuide(expandedGuide === "tray" ? null : "tray")
               }
             >
-              <AppWindow size={16} className={styles['guide-toggle-icon']} />
-              <div className={styles['guide-toggle-label']}>
-                <span className={styles['guide-toggle-title']}>System Tray App</span>
-                <span className={styles['guide-toggle-hint']}>
-                  Installs to system tray with setup wizard — auto-launches on login
+              <AppWindow size={16} className={styles["guide-toggle-icon"]} />
+              <div className={styles["guide-toggle-label"]}>
+                <span className={styles["guide-toggle-title"]}>
+                  System Tray App
+                </span>
+                <span className={styles["guide-toggle-hint"]}>
+                  Installs to system tray with setup wizard — auto-launches on
+                  login
                 </span>
               </div>
-              <ChevronRight size={14} className={styles['guide-chevron']} />
+              <ChevronRight size={14} className={styles["guide-chevron"]} />
             </button>
 
             {expandedGuide === "tray" && (
-              <div className={styles['guide-content']}>
-                <div className={styles['single-file-explainer']}>
-                  <div className={styles['single-file-explainer-icon']}>
+              <div className={styles["guide-content"]}>
+                <div className={styles["single-file-explainer"]}>
+                  <div className={styles["single-file-explainer-icon"]}>
                     <AppWindow size={20} />
                   </div>
-                  <div className={styles['single-file-explainer-text']}>
-                    <span className={styles['single-file-explainer-headline']}>
+                  <div className={styles["single-file-explainer-text"]}>
+                    <span className={styles["single-file-explainer-headline"]}>
                       Always-on agent in your system tray
                     </span>
-                    <span className={styles['single-file-explainer-description']}>
+                    <span
+                      className={styles["single-file-explainer-description"]}
+                    >
                       A full desktop application that lives in your system tray.
                       Includes a setup wizard, settings panel, log viewer, and
-                      auto-launch on login. Runs silently in the background —
-                      no terminal window needed.
+                      auto-launch on login. Runs silently in the background — no
+                      terminal window needed.
                     </span>
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>1</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>1</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Download the installer
                     </span>
-                    <div className={styles['platform-download-grid']}>
+                    <div className={styles["platform-download-grid"]}>
                       <a
-                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
-                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl("win-x64")}
+                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
+                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl(
+                          "win-x64",
+                        )}
                         download
                       >
                         <Download size={14} />
-                        <span className={styles['platform-download-label']}>
-                          <span className={styles['platform-download-name']}>Windows</span>
-                          <span className={styles['platform-download-arch']}>Installer</span>
+                        <span className={styles["platform-download-label"]}>
+                          <span className={styles["platform-download-name"]}>
+                            Windows
+                          </span>
+                          <span className={styles["platform-download-arch"]}>
+                            Installer
+                          </span>
                         </span>
                       </a>
                       <a
-                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && !/arm|aarch/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
-                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl("mac-x64")}
+                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && !/arm|aarch/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
+                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl(
+                          "mac-x64",
+                        )}
                         download
                       >
                         <Download size={14} />
-                        <span className={styles['platform-download-label']}>
-                          <span className={styles['platform-download-name']}>macOS</span>
-                          <span className={styles['platform-download-arch']}>Intel</span>
+                        <span className={styles["platform-download-label"]}>
+                          <span className={styles["platform-download-name"]}>
+                            macOS
+                          </span>
+                          <span className={styles["platform-download-arch"]}>
+                            Intel
+                          </span>
                         </span>
                       </a>
                       <a
-                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && /arm|aarch/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
-                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl("mac-arm64")}
+                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && /arm|aarch/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
+                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl(
+                          "mac-arm64",
+                        )}
                         download
                       >
                         <Download size={14} />
-                        <span className={styles['platform-download-label']}>
-                          <span className={styles['platform-download-name']}>macOS</span>
-                          <span className={styles['platform-download-arch']}>Apple Silicon</span>
+                        <span className={styles["platform-download-label"]}>
+                          <span className={styles["platform-download-name"]}>
+                            macOS
+                          </span>
+                          <span className={styles["platform-download-arch"]}>
+                            Apple Silicon
+                          </span>
                         </span>
                       </a>
                       <a
-                        className={`${styles['platform-download-button']} ${typeof navigator !== "undefined" && /Linux/i.test(navigator.userAgent) ? styles['platform-recommended'] : ""}`}
-                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl("linux-x64")}
+                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Linux/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
+                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl(
+                          "linux-x64",
+                        )}
                         download
                       >
                         <Download size={14} />
-                        <span className={styles['platform-download-label']}>
-                          <span className={styles['platform-download-name']}>Linux</span>
-                          <span className={styles['platform-download-arch']}>AppImage</span>
+                        <span className={styles["platform-download-label"]}>
+                          <span className={styles["platform-download-name"]}>
+                            Linux
+                          </span>
+                          <span className={styles["platform-download-arch"]}>
+                            AppImage
+                          </span>
                         </span>
                       </a>
                     </div>
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>2</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>2</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Run the installer
                     </span>
-                    <span className={styles['step-hint']}>
+                    <span className={styles["step-hint"]}>
                       On Windows, run the installer — it installs to your user
-                      profile and launches automatically. On macOS, open the
-                      DMG and drag to Applications. On Linux, make the AppImage
+                      profile and launches automatically. On macOS, open the DMG
+                      and drag to Applications. On Linux, make the AppImage
                       executable and run it.
                     </span>
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>3</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>3</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Complete the setup wizard
                     </span>
-                    <span className={styles['step-hint']}>
+                    <span className={styles["step-hint"]}>
                       On first launch, the app opens a setup wizard where you
                       select your workspace directory. The backend URL and
-                      credentials are pre-configured — just pick your folder
-                      and click connect. The agent starts automatically and
-                      appears in your system tray.
+                      credentials are pre-configured — just pick your folder and
+                      click connect. The agent starts automatically and appears
+                      in your system tray.
                     </span>
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>4</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>4</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Verify connection
                     </span>
-                    <span className={styles['step-hint']}>
+                    <span className={styles["step-hint"]}>
                       Right-click the system tray icon to see the connection
-                      status. The agent will appear in this settings panel
-                      under Remote Agents. Enable{" "}
-                      <code className={styles['inline-code']}>
+                      status. The agent will appear in this settings panel under
+                      Remote Agents. Enable{" "}
+                      <code className={styles["inline-code"]}>
                         Launch at login
                       </code>{" "}
-                      in the tray menu to keep the agent running across restarts.
+                      in the tray menu to keep the agent running across
+                      restarts.
                     </span>
                   </div>
                 </div>
@@ -1783,33 +2006,39 @@ export default function SettingsPageComponent() {
 
             {/* Single-file download (simplest path) */}
             <button
-              className={`${styles['guide-toggle']} ${expandedGuide === "download" ? styles['guide-expanded'] : ""}`}
+              className={`${styles["guide-toggle"]} ${expandedGuide === "download" ? styles["guide-expanded"] : ""}`}
               onClick={() =>
-                setExpandedGuide(expandedGuide === "download" ? null : "download")
+                setExpandedGuide(
+                  expandedGuide === "download" ? null : "download",
+                )
               }
             >
-              <Download size={16} className={styles['guide-toggle-icon']} />
-              <div className={styles['guide-toggle-label']}>
-                <span className={styles['guide-toggle-title']}>Single File</span>
-                <span className={styles['guide-toggle-hint']}>
+              <Download size={16} className={styles["guide-toggle-icon"]} />
+              <div className={styles["guide-toggle-label"]}>
+                <span className={styles["guide-toggle-title"]}>
+                  Single File
+                </span>
+                <span className={styles["guide-toggle-hint"]}>
                   Download one file, run it anywhere — zero dependencies except
                   Node.js 22+
                 </span>
               </div>
-              <ChevronRight size={14} className={styles['guide-chevron']} />
+              <ChevronRight size={14} className={styles["guide-chevron"]} />
             </button>
 
             {expandedGuide === "download" && (
-              <div className={styles['guide-content']}>
-                <div className={styles['single-file-explainer']}>
-                  <div className={styles['single-file-explainer-icon']}>
+              <div className={styles["guide-content"]}>
+                <div className={styles["single-file-explainer"]}>
+                  <div className={styles["single-file-explainer-icon"]}>
                     <HardDrive size={20} />
                   </div>
-                  <div className={styles['single-file-explainer-text']}>
-                    <span className={styles['single-file-explainer-headline']}>
+                  <div className={styles["single-file-explainer-text"]}>
+                    <span className={styles["single-file-explainer-headline"]}>
                       Connect your local machine to Prism
                     </span>
-                    <span className={styles['single-file-explainer-description']}>
+                    <span
+                      className={styles["single-file-explainer-description"]}
+                    >
                       The Workspace Agent is a single file that bridges your
                       local project files to Prism&apos;s AI tools over
                       WebSocket. Nothing is uploaded — all file access stays on
@@ -1818,14 +2047,14 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>1</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>1</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Download the agent
                     </span>
                     <a
-                      className={styles['single-file-download-button']}
+                      className={styles["single-file-download-button"]}
                       href={PrismService.getWorkspaceAgentDownloadUrl()}
                       download="workspace-agent.mjs"
                     >
@@ -1835,13 +2064,13 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>2</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>2</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Run it from your terminal
                     </span>
-                    <div className={styles['code-block']}>
+                    <div className={styles["code-block"]}>
                       <code>
                         node workspace-agent.mjs{"\n"}
                         {"  "}--backend ws://YOUR_SERVER:5590{"\n"}
@@ -1849,7 +2078,7 @@ export default function SettingsPageComponent() {
                         {"  "}--secret YOUR_API_SECRET
                       </code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
@@ -1869,7 +2098,7 @@ export default function SettingsPageComponent() {
                         )}
                       </button>
                     </div>
-                    <span className={styles['step-hint']}>
+                    <span className={styles["step-hint"]}>
                       Replace the backend URL, workspace path, and secret with
                       your own values. Leave the terminal running — the agent
                       reconnects automatically if interrupted.
@@ -1877,19 +2106,19 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>3</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>3</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Verify connection
                     </span>
-                    <span className={styles['step-hint']}>
+                    <span className={styles["step-hint"]}>
                       Look for{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>
                         Connected to ws://…
                       </code>{" "}
                       and{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>
                         Server confirmed registration
                       </code>{" "}
                       in the output. The agent will appear in this settings
@@ -1902,37 +2131,37 @@ export default function SettingsPageComponent() {
 
             {/* Docker setup */}
             <button
-              className={`${styles['guide-toggle']} ${expandedGuide === "docker" ? styles['guide-expanded'] : ""}`}
+              className={`${styles["guide-toggle"]} ${expandedGuide === "docker" ? styles["guide-expanded"] : ""}`}
               onClick={() =>
                 setExpandedGuide(expandedGuide === "docker" ? null : "docker")
               }
             >
-              <Container size={16} className={styles['guide-toggle-icon']} />
-              <div className={styles['guide-toggle-label']}>
-                <span className={styles['guide-toggle-title']}>Docker</span>
-                <span className={styles['guide-toggle-hint']}>
+              <Container size={16} className={styles["guide-toggle-icon"]} />
+              <div className={styles["guide-toggle-label"]}>
+                <span className={styles["guide-toggle-title"]}>Docker</span>
+                <span className={styles["guide-toggle-hint"]}>
                   Headless servers, NAS, always-on deployments
                 </span>
               </div>
-              <ChevronRight size={14} className={styles['guide-chevron']} />
+              <ChevronRight size={14} className={styles["guide-chevron"]} />
             </button>
 
             {expandedGuide === "docker" && (
-              <div className={styles['guide-content']}>
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>1</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+              <div className={styles["guide-content"]}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>1</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Clone the repository
                     </span>
-                    <div className={styles['code-block']}>
+                    <div className={styles["code-block"]}>
                       <code>
                         git clone
                         https://github.com/rodrigo-barraza/workspace-service.git
                         {"\n"}cd workspace-service
                       </code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
@@ -1955,17 +2184,17 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>2</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>2</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Create your{" "}
-                      <code className={styles['inline-code']}>.env</code> file
+                      <code className={styles["inline-code"]}>.env</code> file
                     </span>
-                    <div className={styles['code-block']}>
+                    <div className={styles["code-block"]}>
                       <code>cp .env.example .env</code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText("cp .env.example .env");
@@ -1983,10 +2212,10 @@ export default function SettingsPageComponent() {
                         )}
                       </button>
                     </div>
-                    <span className={styles['step-hint']}>
-                      Edit <code className={styles['inline-code']}>.env</code> and
-                      set your{" "}
-                      <code className={styles['inline-code']}>
+                    <span className={styles["step-hint"]}>
+                      Edit <code className={styles["inline-code"]}>.env</code>{" "}
+                      and set your{" "}
+                      <code className={styles["inline-code"]}>
                         WORKSPACE_SERVICE_SECRET
                       </code>{" "}
                       to match your tools-service agent secret.
@@ -1994,16 +2223,16 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>3</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>3</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Build and start the container
                     </span>
-                    <div className={styles['code-block']}>
+                    <div className={styles["code-block"]}>
                       <code>docker compose up -d</code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText("docker compose up -d");
@@ -2021,12 +2250,12 @@ export default function SettingsPageComponent() {
                         )}
                       </button>
                     </div>
-                    <span className={styles['step-hint']}>
+                    <span className={styles["step-hint"]}>
                       The container exposes{" "}
-                      <code className={styles['inline-code']}>/workspace</code> as
-                      the root. Mount your project directories via{" "}
-                      <code className={styles['inline-code']}>volumes</code> in{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>/workspace</code>{" "}
+                      as the root. Mount your project directories via{" "}
+                      <code className={styles["inline-code"]}>volumes</code> in{" "}
+                      <code className={styles["inline-code"]}>
                         docker-compose.yml
                       </code>
                       .
@@ -2034,14 +2263,16 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>4</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>Verify connection</span>
-                    <div className={styles['code-block']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>4</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
+                      Verify connection
+                    </span>
+                    <div className={styles["code-block"]}>
                       <code>docker logs workspace-service</code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
@@ -2061,13 +2292,13 @@ export default function SettingsPageComponent() {
                         )}
                       </button>
                     </div>
-                    <span className={styles['step-hint']}>
+                    <span className={styles["step-hint"]}>
                       Look for{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>
                         Connected to ws://…
                       </code>{" "}
                       and{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>
                         Server confirmed registration
                       </code>
                       .
@@ -2075,32 +2306,36 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-env-table']}>
-                  <span className={styles['environment-table-title']}>
+                <div className={styles["guide-env-table"]}>
+                  <span className={styles["environment-table-title"]}>
                     Environment Variables
                   </span>
-                  <div className={styles['environment-row']}>
-                    <code className={styles['environment-key']}>WORKSPACE_BACKEND</code>
-                    <span className={styles['environment-description']}>
+                  <div className={styles["environment-row"]}>
+                    <code className={styles["environment-key"]}>
+                      WORKSPACE_BACKEND
+                    </code>
+                    <span className={styles["environment-description"]}>
                       WebSocket URL of tools-service (e.g.{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>
                         ws://192.168.86.2:5590
                       </code>
                       )
                     </span>
                   </div>
-                  <div className={styles['environment-row']}>
-                    <code className={styles['environment-key']}>WORKSPACE_ROOTS</code>
-                    <span className={styles['environment-description']}>
+                  <div className={styles["environment-row"]}>
+                    <code className={styles["environment-key"]}>
+                      WORKSPACE_ROOTS
+                    </code>
+                    <span className={styles["environment-description"]}>
                       Comma-separated root directories (default:{" "}
-                      <code className={styles['inline-code']}>/workspace</code>)
+                      <code className={styles["inline-code"]}>/workspace</code>)
                     </span>
                   </div>
-                  <div className={styles['environment-row']}>
-                    <code className={styles['environment-key']}>
+                  <div className={styles["environment-row"]}>
+                    <code className={styles["environment-key"]}>
                       WORKSPACE_SERVICE_SECRET
                     </code>
-                    <span className={styles['environment-description']}>
+                    <span className={styles["environment-description"]}>
                       Must match your tools-service agent secret
                     </span>
                   </div>
@@ -2110,37 +2345,39 @@ export default function SettingsPageComponent() {
 
             {/* Local (Node) setup */}
             <button
-              className={`${styles['guide-toggle']} ${expandedGuide === "local" ? styles['guide-expanded'] : ""}`}
+              className={`${styles["guide-toggle"]} ${expandedGuide === "local" ? styles["guide-expanded"] : ""}`}
               onClick={() =>
                 setExpandedGuide(expandedGuide === "local" ? null : "local")
               }
             >
-              <Terminal size={16} className={styles['guide-toggle-icon']} />
-              <div className={styles['guide-toggle-label']}>
-                <span className={styles['guide-toggle-title']}>Local (Node.js)</span>
-                <span className={styles['guide-toggle-hint']}>
+              <Terminal size={16} className={styles["guide-toggle-icon"]} />
+              <div className={styles["guide-toggle-label"]}>
+                <span className={styles["guide-toggle-title"]}>
+                  Local (Node.js)
+                </span>
+                <span className={styles["guide-toggle-hint"]}>
                   WSL2, Linux, macOS — native filesystem performance
                 </span>
               </div>
-              <ChevronRight size={14} className={styles['guide-chevron']} />
+              <ChevronRight size={14} className={styles["guide-chevron"]} />
             </button>
 
             {expandedGuide === "local" && (
-              <div className={styles['guide-content']}>
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>1</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+              <div className={styles["guide-content"]}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>1</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Clone and install dependencies
                     </span>
-                    <div className={styles['code-block']}>
+                    <div className={styles["code-block"]}>
                       <code>
                         git clone
                         https://github.com/rodrigo-barraza/workspace-service.git
                         {"\n"}cd workspace-service{"\n"}npm install
                       </code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
@@ -2163,17 +2400,17 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>2</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>2</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
                       Create your{" "}
-                      <code className={styles['inline-code']}>.env</code> file
+                      <code className={styles["inline-code"]}>.env</code> file
                     </span>
-                    <div className={styles['code-block']}>
+                    <div className={styles["code-block"]}>
                       <code>cp .env.example .env</code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText("cp .env.example .env");
@@ -2191,17 +2428,17 @@ export default function SettingsPageComponent() {
                         )}
                       </button>
                     </div>
-                    <span className={styles['step-hint']}>
+                    <span className={styles["step-hint"]}>
                       Fill in your values:
                     </span>
-                    <div className={styles['code-block']}>
+                    <div className={styles["code-block"]}>
                       <code>
                         WORKSPACE_BACKEND=ws://192.168.86.2:5590{"\n"}
                         WORKSPACE_ROOTS=/home/you/development{"\n"}
                         WORKSPACE_SERVICE_SECRET=your-agent-secret
                       </code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText(
@@ -2224,14 +2461,16 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>3</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>Start the service</span>
-                    <div className={styles['code-block']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>3</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
+                      Start the service
+                    </span>
+                    <div className={styles["code-block"]}>
                       <code>npm run dev:local</code>
                       <button
-                        className={styles['copy-button']}
+                        className={styles["copy-button"]}
                         title="Copy"
                         onClick={() => {
                           navigator.clipboard.writeText("npm run dev:local");
@@ -2249,8 +2488,9 @@ export default function SettingsPageComponent() {
                         )}
                       </button>
                     </div>
-                    <span className={styles['step-hint']}>
-                      This loads <code className={styles['inline-code']}>.env</code>{" "}
+                    <span className={styles["step-hint"]}>
+                      This loads{" "}
+                      <code className={styles["inline-code"]}>.env</code>{" "}
                       automatically and starts with file-watch reload. You can
                       also pass env vars inline or use CLI flags — see the
                       README for details.
@@ -2258,17 +2498,19 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-step']}>
-                  <span className={styles['step-number']}>4</span>
-                  <div className={styles['step-body']}>
-                    <span className={styles['step-title']}>Verify connection</span>
-                    <span className={styles['step-hint']}>
+                <div className={styles["guide-step"]}>
+                  <span className={styles["step-number"]}>4</span>
+                  <div className={styles["step-body"]}>
+                    <span className={styles["step-title"]}>
+                      Verify connection
+                    </span>
+                    <span className={styles["step-hint"]}>
                       Look for{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>
                         Connected to ws://…
                       </code>{" "}
                       and{" "}
-                      <code className={styles['inline-code']}>
+                      <code className={styles["inline-code"]}>
                         Server confirmed registration
                       </code>{" "}
                       in the output. The agent will appear in this settings
@@ -2277,37 +2519,43 @@ export default function SettingsPageComponent() {
                   </div>
                 </div>
 
-                <div className={styles['guide-compare-table']}>
-                  <span className={styles['environment-table-title']}>Docker vs. Local</span>
-                  <div className={styles['compare-row']}>
-                    <span className={styles['compare-label']}>Filesystem</span>
-                    <span className={styles['compare-docker']}>Volume-mounted</span>
-                    <span className={styles['compare-local']}>
+                <div className={styles["guide-compare-table"]}>
+                  <span className={styles["environment-table-title"]}>
+                    Docker vs. Local
+                  </span>
+                  <div className={styles["compare-row"]}>
+                    <span className={styles["compare-label"]}>Filesystem</span>
+                    <span className={styles["compare-docker"]}>
+                      Volume-mounted
+                    </span>
+                    <span className={styles["compare-local"]}>
                       Native — no mount overhead
                     </span>
                   </div>
-                  <div className={styles['compare-row']}>
-                    <span className={styles['compare-label']}>Performance</span>
-                    <span className={styles['compare-docker']}>
+                  <div className={styles["compare-row"]}>
+                    <span className={styles["compare-label"]}>Performance</span>
+                    <span className={styles["compare-docker"]}>
                       Container + I/O
                     </span>
-                    <span className={styles['compare-local']}>
+                    <span className={styles["compare-local"]}>
                       Faster grep, glob, git
                     </span>
                   </div>
-                  <div className={styles['compare-row']}>
-                    <span className={styles['compare-label']}>Git / Shell</span>
-                    <span className={styles['compare-docker']}>
+                  <div className={styles["compare-row"]}>
+                    <span className={styles["compare-label"]}>Git / Shell</span>
+                    <span className={styles["compare-docker"]}>
                       Inside container
                     </span>
-                    <span className={styles['compare-local']}>
+                    <span className={styles["compare-local"]}>
                       Host environment
                     </span>
                   </div>
-                  <div className={styles['compare-row']}>
-                    <span className={styles['compare-label']}>Use case</span>
-                    <span className={styles['compare-docker']}>Servers, NAS</span>
-                    <span className={styles['compare-local']}>
+                  <div className={styles["compare-row"]}>
+                    <span className={styles["compare-label"]}>Use case</span>
+                    <span className={styles["compare-docker"]}>
+                      Servers, NAS
+                    </span>
+                    <span className={styles["compare-local"]}>
                       Dev machines, WSL2
                     </span>
                   </div>
@@ -2315,7 +2563,7 @@ export default function SettingsPageComponent() {
               </div>
             )}
 
-            <div className={styles['guide-footnote']}>
+            <div className={styles["guide-footnote"]}>
               <span>
                 Multiple agents can run simultaneously — each registers with a
                 unique ID and routes automatically.
@@ -2326,7 +2574,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Security & Sandboxing Section ---------------------------- */}
-      <CardComponent className={styles['section']} data-settings-section="security-sandboxing">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="security-sandboxing"
+      >
         <CardComponent.Header
           icon={Lock}
           title="Security & Sandboxing"
@@ -2334,12 +2585,12 @@ export default function SettingsPageComponent() {
         />
 
         <CardComponent.Body>
-          <div className={styles['settings-row']}>
-            <div className={styles['row-label']}>
-              <span className={styles['row-title']}>
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>
                 Allow `.env` & Sensitive Files Access
               </span>
-              <span className={styles['row-description']}>
+              <span className={styles["row-description"]}>
                 Allow the agent to view, search, or edit `.env` environment
                 configurations, `.pem` certificates, `.key` private keys, and
                 SSH credentials inside the workspace. When disabled, these files
@@ -2347,7 +2598,7 @@ export default function SettingsPageComponent() {
                 credential leakage.
               </span>
             </div>
-            <div className={styles['row-control']}>
+            <div className={styles["row-control"]}>
               <ToggleComponent
                 checked={settings?.security?.allowEnvFiles ?? false}
                 onChange={(checked: boolean) =>
@@ -2373,7 +2624,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- MCP Servers Section ---------------------------------------- */}
-      <CardComponent className={styles['section']} data-settings-section="mcp-servers">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="mcp-servers"
+      >
         <CardComponent.Header
           icon={Plug}
           title="MCP Servers"
@@ -2387,7 +2641,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Custom Themes Section ------------------------------------ */}
-      <CardComponent className={styles['section']} data-settings-section="custom-themes">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="custom-themes"
+      >
         <CardComponent.Header
           icon={Palette}
           title="Custom Themes"
@@ -2400,7 +2657,10 @@ export default function SettingsPageComponent() {
       </CardComponent>
 
       {/* -- Avatar Selection Section --------------------------------- */}
-      <CardComponent className={styles['section']} data-settings-section="avatar-selection">
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="avatar-selection"
+      >
         <CardComponent.Header
           icon={Palette}
           title="Avatar Selection"

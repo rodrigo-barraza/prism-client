@@ -319,6 +319,15 @@ function buildGraphFromSession(
     for (let index = 1; index < subAgentNodeIds.length; index++) {
       addEdge(subAgentNodeIds[index - 1], subAgentNodeIds[index], 0.9);
     }
+  } else if (topology === TOPOLOGIES.HIERARCHICAL_AGGREGATION && subAgentNodeIds.length > 0) {
+    for (const subAgentId of subAgentNodeIds) {
+      addEdge(parentAgentNodeId, subAgentId, 0.9);
+    }
+    for (let index = 0; index < subAgentNodeIds.length; index++) {
+      for (let nextIndex = index + 1; nextIndex < subAgentNodeIds.length; nextIndex++) {
+        addEdge(subAgentNodeIds[index], subAgentNodeIds[nextIndex], 0.4);
+      }
+    }
   } else if ((topology === TOPOLOGIES.PEER_TO_PEER || topology === "p2p") && subAgentNodeIds.length > 0) {
     for (const subAgentId of subAgentNodeIds) {
       addEdge(parentAgentNodeId, subAgentId, 0.7);
@@ -500,6 +509,8 @@ function applyTopologyLayout(
     applySequentialLayout(graphData, canvasWidth, canvasHeight);
   } else if (resolvedTopology === TOPOLOGIES.PEER_TO_PEER || resolvedTopology === "p2p") {
     applyPeerToPeerLayout(graphData, canvasWidth, canvasHeight);
+  } else if (resolvedTopology === TOPOLOGIES.HIERARCHICAL_AGGREGATION) {
+    applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);
   } else {
     applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);
   }

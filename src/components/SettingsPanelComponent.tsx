@@ -119,10 +119,11 @@ export function formatHarnessLabel(harness: string): string {
 }
 
 const TOPOLOGY_LABELS: Record<string, string> = {
-  hierarchical: "Hierarchical",
-  sequential: "Sequential",
-  peer_to_peer: "Peer-to-Peer",
-  p2p: "Peer-to-Peer",
+  sequential: "Sequential (CoT)",
+  hierarchical: "Hierarchical (ToT)",
+  hierarchical_aggregation: "Aggregation (GoT)",
+  peer_to_peer: "Mesh (GoT DAG)",
+  p2p: "Mesh (GoT DAG)",
 };
 
 export function formatTopologyLabel(topology: string): string {

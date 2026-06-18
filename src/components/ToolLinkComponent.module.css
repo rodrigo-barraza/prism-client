@@ -1,0 +1,41 @@
+.tool-link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-family: var(--font-mono);
+  color: var(--color-info);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color var(--transition-fast) ease-in-out;
+}
+
+.tool-link-button:hover {
+  color: var(--color-info-strong);
+}
+
+.tool-link-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.loading-spinner-element {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--color-info);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin-animation-keyframe 0.6s linear infinite;
+  margin-inline-start: 4px;
+}
+
+@keyframes spin-animation-keyframe {
+  to {
+    transform: rotate(360deg);
+  }
+}
