@@ -120,7 +120,7 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: oklch(1 0 0);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   flex-shrink: 0;
   filter: drop-shadow(0 1px 3px oklch(0.0% 0.0 0.0 / 0.4));
 }
@@ -194,7 +194,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -203,7 +203,7 @@
   font-weight: 600;
   color: var(--color-danger);
   font-variant-numeric: tabular-nums;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 

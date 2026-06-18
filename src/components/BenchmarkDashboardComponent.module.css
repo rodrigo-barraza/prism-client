@@ -59,7 +59,7 @@
     color 0.2s ease,
     background 0.2s ease,
     box-shadow 0.2s ease;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .segmented-button:hover {
@@ -155,7 +155,7 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-primary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
@@ -170,7 +170,7 @@
   padding: 1px 5px;
   border-radius: 2px;
   flex-shrink: 0;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .detail-status-passed {

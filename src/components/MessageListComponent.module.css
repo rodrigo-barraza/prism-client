@@ -408,7 +408,7 @@
   line-height: 1.6;
   color: var(--text-primary);
   overflow-wrap: anywhere;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
 
   & h1,
   & h2,
@@ -536,7 +536,7 @@
   color: var(--accent-primary);
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   opacity: 0.7;
 }
 
@@ -567,7 +567,7 @@
   color: oklch(0.75 0.15 140);
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   opacity: 0.7;
 }
 
@@ -672,7 +672,7 @@
   opacity: 0.6;
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   min-width: 0;
   flex: 1;
 }
@@ -888,7 +888,7 @@
   color: var(--accent-primary);
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   transition:
     color 0.2s ease,
     opacity 0.2s ease;
@@ -904,7 +904,7 @@
   color: var(--accent-primary);
   border: 1px solid color-mix(in oklch, var(--accent-primary) 20%, transparent);
   letter-spacing: 0.02em;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .sticky-user-message-chevron {
@@ -929,7 +929,7 @@
   opacity: var(--raw-prefix-contrast-opacity, 0.4);
   font-size: var(--font-size-sm);
   line-height: 1.5;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   word-break: break-word;
   margin-block-end: 4px;
 }

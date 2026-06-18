@@ -159,7 +159,7 @@
 .conversation-link > span {
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .conversation-link:hover {

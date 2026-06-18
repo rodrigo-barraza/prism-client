@@ -64,13 +64,13 @@
   max-width: 360px;
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .path-full {
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   direction: rtl;
   text-align: left;
 }
@@ -90,7 +90,7 @@
   overflow-x: auto;
   max-height: 240px;
   overflow-y: auto;
-  oklch(1 0 0)-space: pre;
+  white-space: pre;
 }
 
 .code-block code {
@@ -123,7 +123,7 @@
   overflow-x: auto;
   max-height: 300px;
   overflow-y: auto;
-  oklch(1 0 0)-space: pre;
+  white-space: pre;
 }
 
 .diff-block code {
@@ -239,7 +239,7 @@
 
 .grep-line-content {
   color: var(--text-secondary);
-  oklch(1 0 0)-space: pre;
+  white-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -305,7 +305,7 @@
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .search-link:hover {
@@ -394,7 +394,7 @@
   display: flex;
   padding: 0 10px;
   gap: 0;
-  oklch(1 0 0)-space: pre;
+  white-space: pre;
   border-left: 2px solid transparent;
   transition: background 60ms ease;
 }
@@ -427,7 +427,7 @@
   flex: 1;
   color: var(--text-primary);
   word-break: break-all;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
 }
 
 /* ── Log Level Line Accents ────────────────────────────────── */
@@ -543,7 +543,7 @@
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   flex: 1;
 }
 
@@ -691,7 +691,7 @@
   line-height: 1;
   letter-spacing: 0.02em;
   color: oklch(87.0% 0.0258 250.0);
-  oklch(1 0 0)-space: pre;
+  white-space: pre;
   user-select: all;
 }
 
@@ -787,7 +787,7 @@
 .input-arg-value {
   color: var(--text-primary);
   word-break: break-word;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
 }
 
 .input-arg-value-long {
@@ -891,7 +891,7 @@
 .output-arg-value {
   color: var(--text-primary);
   word-break: break-word;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
 }
 
 .output-arg-value-long {
@@ -909,7 +909,7 @@
 .value-string {
   color: oklch(0.78 0.12 140);
   word-break: break-all;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
 }
 
 .value-string-long {
@@ -952,7 +952,7 @@
   font-size: var(--font-size-xs);
   font-family: var(--font-mono, monospace);
   color: var(--text-primary);
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.5;
 }
@@ -1005,7 +1005,7 @@
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .sub-agent-result-meta {

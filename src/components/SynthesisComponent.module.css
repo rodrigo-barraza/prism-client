@@ -97,7 +97,7 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -151,7 +151,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -349,7 +349,7 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 /* ── Output Panel ── */

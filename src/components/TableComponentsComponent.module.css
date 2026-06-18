@@ -179,7 +179,7 @@
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -231,7 +231,7 @@
 .dashboard-model-name {
   font-weight: 600;
   color: var(--text-primary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }

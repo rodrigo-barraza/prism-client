@@ -125,7 +125,7 @@
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
   color: var(--text-primary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .label {
@@ -135,7 +135,7 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   line-height: 1.2;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 /* ── Responsive ── */

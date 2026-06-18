@@ -130,7 +130,7 @@
   font-weight: 500;
   color: var(--text-primary);
   line-height: 1.4;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
@@ -150,7 +150,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .meta-item svg {
@@ -186,7 +186,7 @@
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 /* ── Empty State ──────────────────────────────────────────── */
@@ -288,7 +288,7 @@
 }
 
 .live-tool-name {
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 140px;
@@ -299,5 +299,5 @@
   font-size: 0.5625rem;
   color: var(--text-muted);
   font-weight: 400;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }

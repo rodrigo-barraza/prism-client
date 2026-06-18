@@ -134,7 +134,7 @@
   background: var(--calculated-accent-primary-subtle);
   padding: 2px 8px;
   border-radius: var(--border-radius-sm);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -174,7 +174,7 @@
   font-weight: 600;
   font-size: 0.8125rem;
   color: var(--text-primary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .table-param-cell {
@@ -250,7 +250,7 @@
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .statistic-cell {

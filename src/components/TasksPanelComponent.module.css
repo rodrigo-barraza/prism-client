@@ -467,7 +467,7 @@
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.5;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   padding: 8px;
   background: color-mix(in oklch, var(--background-elevated) 60%, transparent);
   border-radius: 6px;

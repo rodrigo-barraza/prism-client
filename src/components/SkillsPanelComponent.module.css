@@ -80,7 +80,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--text-primary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -88,7 +88,7 @@
 .skill-description {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 1px;
@@ -129,7 +129,7 @@
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
   line-height: 1.5;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   padding: 8px;
   background: color-mix(in oklch, var(--background-elevated) 60%, transparent);
   border-radius: 6px;
@@ -297,7 +297,7 @@
   font-size: var(--font-size-sm);
   line-height: 1.6;
   tab-size: 2;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
 }
 
 .hint {

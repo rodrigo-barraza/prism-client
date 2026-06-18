@@ -157,7 +157,7 @@
   cursor: pointer;
   border: none;
   transition: all 0.15s ease;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .load-button {

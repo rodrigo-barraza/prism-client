@@ -184,7 +184,7 @@
   & > span {
     overflow: hidden;
     text-overflow: ellipsis;
-    oklch(1 0 0)-space: nowrap;
+    white-space: nowrap;
   }
 
   &:hover {
@@ -212,7 +212,7 @@
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .time {

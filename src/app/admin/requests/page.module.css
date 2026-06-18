@@ -85,7 +85,7 @@
   font-weight: 500;
   color: var(--text-tertiary);
   letter-spacing: 0.01em;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   user-select: none;
 }
 

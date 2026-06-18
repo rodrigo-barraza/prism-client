@@ -80,7 +80,7 @@
 .title {
   font-size: 0.8125rem;
   font-weight: 500;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   color: var(--text-primary);
@@ -231,7 +231,7 @@
 }
 
 .agent-badge-name {
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   letter-spacing: 0.2px;
 }
 

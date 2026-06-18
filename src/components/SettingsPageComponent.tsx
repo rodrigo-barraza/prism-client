@@ -1114,8 +1114,10 @@ export default function SettingsPageComponent() {
             </div>
           </div>
           <div className={styles["harness-grid"]}>
-            {harnesses.map((h: AgenticHarness) => {
-              const isActive = (agentDefaults.harness || "standard") === h.id;
+            {harnesses
+              .filter((h: AgenticHarness) => h.id === "standard")
+              .map((h: AgenticHarness) => {
+                const isActive = (agentDefaults.harness || "standard") === h.id;
               return (
                 <button
                   key={h.id}

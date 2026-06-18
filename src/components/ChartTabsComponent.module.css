@@ -18,7 +18,7 @@
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.15s ease;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 
   &:hover {
     color: var(--text-primary);

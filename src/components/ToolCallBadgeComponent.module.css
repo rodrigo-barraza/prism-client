@@ -16,7 +16,7 @@
   letter-spacing: 0.15px;
   background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   line-height: 1;
   transition:
     border-color 0.2s,

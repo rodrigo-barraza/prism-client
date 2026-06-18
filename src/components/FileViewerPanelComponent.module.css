@@ -63,7 +63,7 @@
   font-weight: 600;
   color: oklch(100.0% 0.0001 263.3 / 0.85);
   letter-spacing: 0.02em;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   pointer-events: none;
 }
 
@@ -140,7 +140,7 @@
   color: var(--text-muted);
   font-size: var(--font-size-xs);
   font-family: "SF Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   cursor: pointer;
   user-select: none;
   transition:
@@ -234,7 +234,7 @@
   color: var(--text-tertiary, var(--text-muted));
   border-bottom: 1px solid var(--calculated-border-subtle);
   flex-shrink: 0;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-height: 24px;
@@ -259,13 +259,13 @@
 .code-scroll pre {
   background: var(--background-base) !important;
   word-wrap: break-word;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
 }
 
 /* No-wrap mode: horizontal scrolling instead of line wrapping */
 .code-scroll-no-wrap pre {
   word-wrap: normal;
-  oklch(1 0 0)-space: pre;
+  white-space: pre;
   overflow-x: auto;
 }
 

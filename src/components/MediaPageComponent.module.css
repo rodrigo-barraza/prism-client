@@ -144,7 +144,7 @@
   & > span {
     overflow: hidden;
     text-overflow: ellipsis;
-    oklch(1 0 0)-space: nowrap;
+    white-space: nowrap;
   }
 
   &:hover {
@@ -161,13 +161,13 @@
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .time {
   font-size: var(--font-size-xs);
   color: var(--text-muted);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .type-badge {

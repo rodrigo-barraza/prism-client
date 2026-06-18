@@ -50,7 +50,7 @@
   color: var(--text-secondary);
   background: var(--background-elevated);
   border: 1px solid var(--calculated-border-color);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   transition:
     border-color 0.2s,
     color 0.2s,
@@ -310,7 +310,7 @@
   padding: 10px 12px;
   max-height: 200px;
   overflow-y: auto;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 

@@ -48,7 +48,7 @@
   letter-spacing: 0.04em;
   padding: 2px 6px;
   border-radius: 2px;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -285,7 +285,7 @@
   align-items: center;
   gap: 4px;
   font-variant-numeric: tabular-nums;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 
   & svg {
     opacity: 0.5;
@@ -305,7 +305,7 @@
   background: color-mix(in oklch, var(--accent-primary) 10%, transparent);
   padding: 2px 6px;
   border-radius: 2px;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 
   & svg {
     flex-shrink: 0;
@@ -331,7 +331,7 @@
   background: oklch(70.9% 0.1592 293.5 / 0.1);
   padding: 2px 6px;
   border-radius: 2px;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 
   & svg {
     flex-shrink: 0;
@@ -348,7 +348,7 @@
   background: oklch(77.3% 0.1535 163.3 / 0.1);
   padding: 2px 6px;
   border-radius: 2px;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 
   & svg {
     flex-shrink: 0;

@@ -37,7 +37,7 @@
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   user-select: none;
 
   &:hover {
@@ -60,7 +60,7 @@
 }
 
 .trigger-text {
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -225,7 +225,7 @@
   background: var(--badge-background, var(--background-elevated));
   border: 1px solid var(--badge-border, var(--calculated-border-color));
   border-radius: var(--border-radius-sm, 4px);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   user-select: none;
   cursor: default;
   animation: badge-fade-in 0.2s ease-out;

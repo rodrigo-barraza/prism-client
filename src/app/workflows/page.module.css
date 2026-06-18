@@ -113,7 +113,7 @@
   border: 1px solid var(--calculated-border-subtle);
   border-radius: var(--border-radius-sm);
   transition: all var(--transition-fast);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 
   &:hover {
     border-color: var(--accent-primary);

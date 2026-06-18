@@ -62,7 +62,7 @@
   display: inline-flex;
   align-items: baseline;
   gap: 0;
-  oklch(1 0 0)-space: pre;
+  white-space: pre;
   padding: 0 0 0 2px;
   border-radius: 2px;
   transition: background 0.1s;

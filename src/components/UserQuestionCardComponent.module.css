@@ -68,7 +68,7 @@
   line-height: 1.45;
   color: var(--text-secondary);
   font-family: var(--font-mono, "JetBrains Mono", monospace);
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -103,7 +103,7 @@
   line-height: 1.5;
   color: var(--text-primary);
   margin-bottom: 10px;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
 }
 
 /* ─── Options + Preview layout ────────────────────────── */
@@ -219,7 +219,7 @@
   line-height: 1.5;
   color: var(--text-secondary);
   font-family: var(--font-mono, "JetBrains Mono", monospace);
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 

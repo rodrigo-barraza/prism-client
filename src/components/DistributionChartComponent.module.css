@@ -45,7 +45,7 @@
   padding: 3px 8px;
   background: var(--background-elevated);
   border-radius: var(--border-radius-sm);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 /* ── Body: chart + legend ── */
@@ -107,7 +107,7 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--text-secondary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
@@ -124,7 +124,7 @@
   font-weight: 600;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .legend-pct {

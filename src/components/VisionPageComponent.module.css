@@ -94,7 +94,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 
   &:hover {
     border-color: var(--accent-primary);
@@ -322,7 +322,7 @@
   font-size: 11px;
   font-weight: 500;
   color: var(--text-tertiary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .interval-input {
@@ -506,7 +506,7 @@
   font-size: 13px;
   color: var(--text-primary);
   line-height: 1.55;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -515,7 +515,7 @@
   font-size: 13px;
   color: var(--text-primary);
   line-height: 1.55;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -916,7 +916,7 @@
 .message-text {
   font-size: 13px;
   line-height: 1.55;
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 
@@ -976,7 +976,7 @@
   line-height: 1.5;
   color: var(--text-tertiary);
   background: var(--background-base);
-  oklch(1 0 0)-space: pre-wrap;
+  white-space: pre-wrap;
   font-family: var(--font-mono, monospace);
   font-style: italic;
   max-height: 160px;

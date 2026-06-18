@@ -400,7 +400,7 @@
   font-size: var(--font-size-xs);
   color: var(--text-tertiary);
   font-family: var(--font-mono, monospace);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -424,7 +424,7 @@
   background: color-mix(in oklch, var(--accent-primary) 6%, transparent);
   color: var(--text-muted);
   letter-spacing: 0.15px;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   transition: background var(--transition-fast);
 }
 
@@ -540,7 +540,7 @@
   color: var(--background-base);
   cursor: pointer;
   transition: all var(--transition-fast);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .add-button:hover:not(:disabled) {
@@ -911,7 +911,7 @@
   font-size: 11px;
   line-height: 1.6;
   color: var(--text-secondary);
-  oklch(1 0 0)-space: pre;
+  white-space: pre;
   overflow-x: auto;
 }
 

@@ -137,7 +137,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--accent-primary);
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   min-width: 120px;
 }
 

@@ -81,7 +81,7 @@
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
 }
 
 .tag {

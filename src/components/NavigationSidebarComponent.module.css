@@ -206,7 +206,7 @@
   font-weight: 500;
   transition: color var(--transition-fast);
   position: relative;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   cursor: pointer;
   background: transparent;
   border: none;
@@ -332,7 +332,7 @@
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: var(--sidebar-contrast-color-muted, oklch(100% 0.0001 263.3 / 0.55));
-    oklch(1 0 0)-space: nowrap;
+    white-space: nowrap;
   }
 
   &::after {
@@ -575,7 +575,7 @@
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
-  oklch(1 0 0)-space: nowrap;
+  white-space: nowrap;
   text-align: left;
 }
 
