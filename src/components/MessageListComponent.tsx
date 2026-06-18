@@ -38,7 +38,7 @@ import {
   CopyButtonComponent,
   IconButtonComponent,
 } from "@rodrigo-barraza/components-library";
-import WorkerNotificationComponent from "./WorkerNotificationComponent";
+import SubAgentNotificationComponent from "./SubAgentNotificationComponent";
 
 import PlanCardComponent from "./PlanCardComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
@@ -51,7 +51,7 @@ import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 import type { Message, ToolCallEvent, ContentSegment } from "../types/types";
 
-export interface WorkerToolActivityItem {
+export interface SubAgentToolActivityItem {
   toolNames?: string[] | Record<string, number> | Record<string, string>;
   currentTool?: string | null;
   description?: string;
@@ -66,7 +66,7 @@ export interface WorkerToolActivityItem {
 }
 
 /* -- Task notification detection (Claude Code pattern) -------
- * Worker results arrive as user-role messages containing
+ * Sub-agent results arrive as user-role messages containing
  * <task-notification> XML. Detect by content so it works for
  * both live messages and already-persisted history.            */
 
@@ -525,7 +525,7 @@ export interface MessageListProps {
   readOnly?: boolean;
   isGenerating?: boolean;
   streamingOutputs?: Map<string, string> | null;
-  workerToolActivity?: Record<string, WorkerToolActivityItem> | null;
+  subAgentToolActivity?: Record<string, SubAgentToolActivityItem> | null;
   headerContent?: React.ReactNode;
   systemPrompt?: string | null;
   onSystemPromptEdit?: (editedPromptValue: string) => void;
@@ -553,7 +553,7 @@ export default function MessageList({
   readOnly = false,
   isGenerating = false,
   streamingOutputs,
-  workerToolActivity,
+  subAgentToolActivity,
   headerContent,
   systemPrompt,
   onSystemPromptEdit,
@@ -1297,7 +1297,7 @@ export default function MessageList({
                                     groupMessage.toolCalls.length > 0 && (
                                       <ToolCallsBlockComponent
                                         toolCalls={groupMessage.toolCalls}
-                                        workerToolActivity={workerToolActivity}
+                                        subAgentToolActivity={subAgentToolActivity}
                                       />
                                     )}
                                   {groupMessage.images && groupMessage.images.length > 0 && (
@@ -1361,7 +1361,7 @@ export default function MessageList({
             {/* -- Normal (non-deleted) message -- */}
             {!message.deleted &&
               (() => {
-                // -- Task notification card (replaces user bubble for worker results) --
+                // -- Task notification card (replaces user bubble for sub-agent results) --
                 // Only renders for non-absorbed notifications (i.e. edge cases where
                 // the matching team_create tool call isn't in the visible window).
                 const taskNotif =
@@ -1370,7 +1370,7 @@ export default function MessageList({
                     : null;
                 if (taskNotif) {
                   return (
-                    <WorkerNotificationComponent
+                    <SubAgentNotificationComponent
                       taskNotif={taskNotif}
                       timestamp={message.timestamp}
                       readOnly={readOnly}

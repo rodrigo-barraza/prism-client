@@ -1,5 +1,5 @@
 /* ============================================================
-   Workers Panel — Coordinator Worker Instances
+   Sub-Agents Panel — Coordinator Sub-Agent Instances
    Styled to match HistoryItemComponent.is-active-state aesthetic
    ============================================================ */
 
@@ -7,10 +7,10 @@
   composes: container from "./PanelShared.module.css";
 }
 
-/* ── Worker Card ──────────────────────────────────────────── */
+/* ── Sub-Agent Card ────────────────────────────────────────── */
 /* Mirrors .item + .is-active-state from HistoryItemComponent           */
 
-.worker-card {
+.sub-agent-card {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -30,7 +30,7 @@
   }
 }
 
-.worker-card-running {
+.sub-agent-card-running {
   border-left-color: var(--color-info);
   background: oklch(71.4% 0.1435 254.6 / 0.06);
   box-shadow: 0 0 8px -2px
@@ -41,13 +41,13 @@
   }
 }
 
-.worker-card-complete {
+.sub-agent-card-complete {
   border-left-color: var(--accent-primary);
   background: oklch(58.5% 0.2041 277.1 / 0.1);
 }
 
-.worker-card-failed,
-.worker-card-stopped {
+.sub-agent-card-failed,
+.sub-agent-card-stopped {
   border-left-color: var(--color-rose);
   background: oklch(64.5% 0.2154 16.4 / 0.06);
 }
@@ -77,7 +77,7 @@
 
 /* ── Status Badge ────────────────────────────────────────── */
 
-.worker-status {
+.sub-agent-status {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -125,7 +125,7 @@
 
 /* ── Description ──────────────────────────────────────────── */
 
-.worker-description {
+.sub-agent-description {
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-primary);
@@ -170,13 +170,13 @@
 
 /* ── Files ────────────────────────────────────────────────── */
 
-.worker-files {
+.sub-agent-files {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.worker-file {
+.sub-agent-file {
   font-size: 0.625rem;
   font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
   color: var(--text-muted);

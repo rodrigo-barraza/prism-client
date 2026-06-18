@@ -4,15 +4,15 @@ import { Zap, Trash2 } from "lucide-react";
 import MarkdownContent from "./MarkdownContentComponent";
 
 import { formatLatency } from "@rodrigo-barraza/utilities-library";
-import styles from "./WorkerNotificationComponent.module.css";
+import styles from "./SubAgentNotificationComponent.module.css";
 import {
   IconButtonComponent,
   BadgeComponent,
 } from "@rodrigo-barraza/components-library";
 
 /**
- * WorkerNotificationComponent — renders a task-notification card
- * for worker agent results in the message list. The `result` body
+ * SubAgentNotificationComponent — renders a task-notification card
+ * for sub-agent results in the message list. The `result` body
  * is rendered through `MarkdownContent` to support full markdown
  * formatting (code blocks, lists, links, etc.).
  */
@@ -24,19 +24,19 @@ export interface TaskNotification {
   result?: string | null;
 }
 
-interface WorkerNotificationProps {
+interface SubAgentNotificationProps {
   taskNotif: TaskNotification;
   timestamp?: string | Date;
   readOnly?: boolean;
   onDelete?: () => void;
 }
 
-export default function WorkerNotificationComponent({
+export default function SubAgentNotificationComponent({
   taskNotif,
   timestamp,
   readOnly,
   onDelete,
-}: WorkerNotificationProps) {
+}: SubAgentNotificationProps) {
   const statusIcon =
     taskNotif.status === "completed"
       ? "✓"
@@ -56,7 +56,7 @@ export default function WorkerNotificationComponent({
     : null;
 
   return (
-    <div className={`worker-notification-component ${styles['root']}`}>
+    <div className={`sub-agent-notification-component ${styles['root']}`}>
       <div className={styles['avatar']} style={{ color: statusColor }}>
         <Zap size={16} />
       </div>
@@ -64,7 +64,7 @@ export default function WorkerNotificationComponent({
         <div className={styles['header']}>
           <div className={styles['role-label']} style={{ color: statusColor }}>
             <span className={styles['status-icon']}>{statusIcon}</span>
-            Worker
+            Sub-Agent
             {timestamp && <BadgeComponent type="dateTime" date={timestamp} />}
           </div>
           {!readOnly && onDelete && (

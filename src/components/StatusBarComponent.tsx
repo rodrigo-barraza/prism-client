@@ -11,7 +11,7 @@ const PHASE_LABELS = {
   generating: "Generating...",
   thinking: "Thinking...",
   executing: "Executing...",
-  delegating: "Awaiting Workers...",
+  delegating: "Awaiting Sub-Agents...",
   awaiting: "Awaiting For User Input...",
 };
 
@@ -103,7 +103,7 @@ const SYNTHETIC_TICK_MS = 200;
 const DECAY_STEP_FACTOR = 0.6;
 
 /**
- * Unified animated status bar shared by the main orchestrator and worker agents.
+ * Unified animated status bar shared by the main orchestrator and sub-agents.
  *
  * ### Orchestrator usage (ChatSessionComponent)
  * ```jsx
@@ -115,7 +115,7 @@ const DECAY_STEP_FACTOR = 0.6;
  * />
  * ```
  *
- * ### Worker usage (ToolResultRenderers → SpawnAgentRenderer)
+ * ### Sub-agent usage (ToolResultRenderers → SpawnAgentRenderer)
  * ```jsx
  * <StatusBarComponent
  *   active={isToolActive || hasPhase}
@@ -133,7 +133,7 @@ export type StatusBarPhase = "starting" | "loading" | "prefilling" | "generating
 
 interface StatusBarProps {
   active?: boolean;
-  variant?: "orchestrator" | "worker";
+  variant?: "orchestrator" | "subAgent";
   phase?: StatusBarPhase;
   label?: string;
   icon?: React.ReactNode;
@@ -158,7 +158,7 @@ export default function StatusBarComponent({
   idleIcon,
   idleLabel,
 }: StatusBarProps) {
-  const isWorker = variant === "worker";
+  const isSubAgent = variant === "subAgent";
   const [syntheticProgress, setSyntheticProgress] = useState(0);
   const syntheticStartRef = useRef<number | null>(null);
 
@@ -279,7 +279,7 @@ export default function StatusBarComponent({
 
   // Awaiting phase: greyscale + frozen (no animation)
   const isAwaitingPhase = phase === "awaiting";
-  // Delegating phase: orchestrator waiting on workers — animated color but subdued glow
+  // Delegating phase: orchestrator waiting on sub-agents — animated color but subdued glow
   const isDelegatingPhase = phase === "delegating";
 
   // Resolve per-phase gradient CSS custom properties
@@ -303,7 +303,7 @@ export default function StatusBarComponent({
 
   return (
     <div
-      className={`status-bar-component ${styles['status-bar']}${isWorker ? ` ${styles['status-bar-worker']}` : ""}${active ? ` ${styles['status-bar-active']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
+      className={`status-bar-component ${styles['status-bar']}${isSubAgent ? ` ${styles['status-bar-sub-agent']}` : ""}${active ? ` ${styles['status-bar-active']}` : ""}${isAwaitingPhase ? ` ${styles['status-bar-awaiting']}` : ""}${isDelegatingPhase ? ` ${styles['status-bar-delegating']}` : ""}`}
       style={gradientCustomProperties}
     >
       {/* Multiplicative step decay bar — steps down per phase change */}

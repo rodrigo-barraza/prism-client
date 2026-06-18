@@ -45,7 +45,7 @@ import {
   Conversation,
   AgentPersona,
   ToolSchema,
-  WorkerGenerationProgress,
+  SubAgentGenerationProgress,
   BackgroundUsage,
   SessionStats,
   ModelOption,
@@ -68,7 +68,7 @@ import RulesPanel from "./RulesPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
 
-import WorkersPanel from "./WorkersPanelComponent";
+import SubAgentsPanel from "./SubAgentsPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
 import RequestsTableComponent from "./RequestsTableComponent";
 import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent";
@@ -98,7 +98,7 @@ import {
 import useSessionStats from "../hooks/useSessionStats";
 import { generateUUID, renderToolName } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES, SERVER_SENT_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
-import { mergeUsedToolsWithWorkers, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams } from "../utils/utilities";
+import { mergeUsedToolsWithSubAgents, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams } from "../utils/utilities";
 import {
   PROJECT_AGENT,
   SETTINGS_DEFAULTS,
@@ -114,7 +114,7 @@ import {
   LS_CRITIC_GATE_ENABLED,
   LOCAL_STORAGE_AUTO_APPROVE_ENABLED,
   LS_AGENT_MAX_ITERATIONS,
-  LS_AGENT_MAX_WORKER_ITERATIONS,
+  LS_AGENT_MAX_SUB_AGENT_ITERATIONS,
   EV_SIDEBAR_TAB_CHANGE,
   EV_SIDEBAR_TAB_BOTTOM_CHANGE,
   EV_VIEW_MODE_CHANGE,
@@ -322,11 +322,11 @@ interface ViewerOpenFile {
   path: string;
 }
 
-interface WorkerActivityEntry {
+interface SubAgentActivityEntry {
   phase?: string;
   currentTool?: string | null;
   iteration?: number;
-  workerId?: string;
+  subAgentId?: string;
   toolName?: string;
   error?: string;
   phaseProgress?: number;
@@ -359,7 +359,7 @@ interface SessionSnapshot {
   messages: ClientMessage[];
   title: string;
   toolActivity: ToolCallEvent[];
-  workerToolActivity: Record<string, WorkerActivityEntry>;
+  subAgentToolActivity: Record<string, SubAgentActivityEntry>;
   streamingOutputs: Map<string, string>;
   pendingApprovals: PendingApproval[];
   pendingUserQuestion: {
@@ -387,8 +387,8 @@ interface ClientMessage extends Message {
   _processingStartTime?: number;
   _ttftSamples?: number[];
   _statusProgress?: number | Record<string, unknown>;
-  _workerGenerationProgress?: Record<string, WorkerGenerationProgress>;
-  _workerTokens?: {
+  _subAgentGenerationProgress?: Record<string, SubAgentGenerationProgress>;
+  _subAgentTokens?: {
     input?: number;
     output?: number;
     requests?: number;
@@ -627,8 +627,8 @@ export default function ChatSessionComponent({
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
   const [memoriesHeaderActions, setMemoriesHeaderActions] =
     useState<ReactNode>(null);
-  const [workersCount, setWorkersCount] = useState(0);
-  const [workersHeaderActions, setWorkersHeaderActions] =
+  const [subAgentsCount, setSubAgentsCount] = useState(0);
+  const [subAgentsHeaderActions, setSubAgentsHeaderActions] =
     useState<ReactNode>(null);
   const [skillsHeaderActions, setSkillsHeaderActions] =
     useState<ReactNode>(null);
@@ -638,8 +638,8 @@ export default function ChatSessionComponent({
     totalEntries: number;
     truncated: boolean;
   } | null>(null);
-  const [workerToolActivity, setWorkerToolActivity] = useState<
-    Record<string, WorkerActivityEntry>
+  const [subAgentToolActivity, setSubAgentToolActivity] = useState<
+    Record<string, SubAgentActivityEntry>
   >({});
 
   // Track which tabs have received new data the user hasn't viewed yet
@@ -739,14 +739,14 @@ export default function ChatSessionComponent({
     [],
   );
 
-  // Count concurrent API calls: main generation + active worker agents
+  // Count concurrent API calls: main generation + active sub-agents
   const activeApiCount = useMemo(() => {
-    const activeWorkers = Object.values(workerToolActivity).filter(
-      (worker: WorkerActivityEntry) =>
-        worker.currentTool || worker.phase === "generating" || worker.phase === "thinking",
+    const activeSubAgents = Object.values(subAgentToolActivity).filter(
+      (subAgent: SubAgentActivityEntry) =>
+        subAgent.currentTool || subAgent.phase === "generating" || subAgent.phase === "thinking",
     ).length;
-    return (isGenerating ? 1 : 0) + activeWorkers;
-  }, [isGenerating, workerToolActivity]);
+    return (isGenerating ? 1 : 0) + activeSubAgents;
+  }, [isGenerating, subAgentToolActivity]);
   const [tasksCount, setTasksCount] = useState(0);
   const [memoryConfigured, setMemoryConfigured] = useState(false);
   const [hasAnyMemoryModelSet, setHasAnyMemoryModelSet] = useState(false);
@@ -964,30 +964,30 @@ export default function ChatSessionComponent({
       return previousMessages;
     });
 
-    // Force all active workers to terminal state so their StatusBarComponent
+    // Force all active sub-agents to terminal state so their StatusBarComponent
     // bars stop animating — the SSE stream was aborted before "complete" events
     // could arrive, leaving activity entries stuck in active phases.
-    setWorkerToolActivity((previousWorkerToolActivity) => {
-      const hasActive = Object.values(previousWorkerToolActivity).some(
-        (worker: WorkerActivityEntry) =>
-          worker.phase && worker.phase !== "complete" && worker.phase !== "failed",
+    setSubAgentToolActivity((previousSubAgentToolActivity) => {
+      const hasActive = Object.values(previousSubAgentToolActivity).some(
+        (subAgent: SubAgentActivityEntry) =>
+          subAgent.phase && subAgent.phase !== "complete" && subAgent.phase !== "failed",
       );
-      if (!hasActive) return previousWorkerToolActivity;
-      const next: Record<string, WorkerActivityEntry> = {};
-      for (const [id, worker] of Object.entries(previousWorkerToolActivity)) {
+      if (!hasActive) return previousSubAgentToolActivity;
+      const next: Record<string, SubAgentActivityEntry> = {};
+      for (const [id, subAgent] of Object.entries(previousSubAgentToolActivity)) {
         next[id] =
-          worker.phase && worker.phase !== "complete" && worker.phase !== "failed"
-            ? { ...worker, phase: "complete", currentTool: null }
-            : worker;
+          subAgent.phase && subAgent.phase !== "complete" && subAgent.phase !== "failed"
+            ? { ...subAgent, phase: "complete", currentTool: null }
+            : subAgent;
       }
       return next;
     });
 
-    // Explicitly abort any running workers for this session — belt-and-suspenders
+    // Explicitly abort any running sub-agents for this session — belt-and-suspenders
     // alongside the backend SSE disconnect handler
-    // Direct Chat (NONE) has no workers — skip.
+    // Direct Chat (NONE) has no sub-agents — skip.
     if (!isNoAgent) {
-      PrismService.stopCoordinatorWorkers(conversationIdRef.current).catch(
+      PrismService.stopCoordinatorSubAgents(conversationIdRef.current).catch(
         () => {},
       );
     }
@@ -1924,13 +1924,13 @@ export default function ChatSessionComponent({
         .then((result) => setTasksCount(result.summary?.total || (result.tasks || []).length))
         .catch(() => setTasksCount(0));
 
-      PrismService.getCoordinatorWorkers(activeId)
-        .then((result) => setWorkersCount((result.workers || []).length))
-        .catch(() => setWorkersCount(0));
+      PrismService.getCoordinatorSubAgents(activeId)
+        .then((result) => setSubAgentsCount((result.subAgents || []).length))
+        .catch(() => setSubAgentsCount(0));
     } else {
       setBackendSessionStats(null);
       setTasksCount(0);
-      setWorkersCount(0);
+      setSubAgentsCount(0);
     }
   }, [isAdmin, activeId, adminSelectedSource]);
 
@@ -2261,8 +2261,8 @@ export default function ChatSessionComponent({
 
   useEffect(() => {
     if (isAdmin) return;
-    PrismService.getCoordinatorWorkers(conversationId)
-      .then((r) => setWorkersCount((r.workers || []).length))
+    PrismService.getCoordinatorSubAgents(conversationId)
+      .then((r) => setSubAgentsCount((r.subAgents || []).length))
       .catch(() => {});
   }, [conversationId, tasksRefreshKey, isAdmin]);
 
@@ -2540,7 +2540,7 @@ export default function ChatSessionComponent({
   }, [leftTab, isWorkspaceTabVisible]);
 
   useEffect(() => {
-    if (leftTab === "workers" && !hasOrchestratorTools) {
+    if (leftTab === "subAgents" && !hasOrchestratorTools) {
       setLeftTab("settings");
     }
   }, [leftTab, hasOrchestratorTools]);
@@ -3819,10 +3819,10 @@ export default function ChatSessionComponent({
               switchTabTemporarily("tasks");
               setTasksRefreshKey((k) => k + 1);
               markTabNew("tasks");
-            } else if (statusData?.message === STATUS_MESSAGES.WORKERS_UPDATED) {
-              // Refresh workers data without switching the active tab
+            } else if (statusData?.message === STATUS_MESSAGES.SUB_AGENTS_UPDATED) {
+              // Refresh sub-agents data without switching the active tab
               setTasksRefreshKey((k) => k + 1);
-              markTabNew("workers");
+              markTabNew("subAgents");
             } else if (statusData?.message === STATUS_MESSAGES.MEMORIES_UPDATED) {
               if (hasAnyMemoryModelSet) {
                 // Ephemeral tab switch — show memories panel then revert after 5s
@@ -5615,16 +5615,16 @@ export default function ChatSessionComponent({
           ...(hasOrchestratorTools
             ? [
                 {
-                  key: "workers",
+                  key: "subAgents",
                   icon: <span className={tabBarStyles['tab-emoji-icon']}>🤖</span>,
-                  ...badgeProps(workersCount, "workers"),
-                  badgeRainbow: Object.values(workerToolActivity).some(
-                    (worker: WorkerActivityEntry) =>
-                      worker.currentTool ||
-                      worker.phase === "generating" ||
-                      worker.phase === "thinking",
+                  ...badgeProps(subAgentsCount, "subAgents"),
+                  badgeRainbow: Object.values(subAgentToolActivity).some(
+                    (subAgent: SubAgentActivityEntry) =>
+                      subAgent.currentTool ||
+                      subAgent.phase === "generating" ||
+                      subAgent.phase === "thinking",
                   ),
-                  tooltip: "Workers",
+                  tooltip: "Sub-Agents",
                 },
               ]
             : []),
@@ -5889,11 +5889,11 @@ export default function ChatSessionComponent({
                           activeMessageCost,
                         originalTotalCost: 0,
                         // Merge backend toolCounts, client capabilities, and live
-                        // worker tool counts into a single usedTools array
-                        usedTools: mergeUsedToolsWithWorkers(
+                        // sub-agent tool counts into a single usedTools array
+                        usedTools: mergeUsedToolsWithSubAgents(
                           usedTools,
                           backendSessionStats.toolCounts,
-                          workerToolActivity,
+                          subAgentToolActivity,
                         ),
                         modalities: (() => {
                           const raw =
@@ -5914,7 +5914,7 @@ export default function ChatSessionComponent({
                         liveStreamingLastChunkTime,
                         liveStreamingBurstTokens,
                         liveStreamingBurstElapsed,
-                        workerGenerationProgress,
+                        subAgentGenerationProgress,
                         lastTimeToGeneration,
                         liveProcessingStartTime,
                         liveProcessingPhase,
@@ -5927,7 +5927,7 @@ export default function ChatSessionComponent({
                         orchestrator: mapSubStats(
                           backendSessionStats.orchestrator,
                         ),
-                        workers: mapSubStats(backendSessionStats.workers),
+                        subAgents: mapSubStats(backendSessionStats.subAgents),
                       } as DisplaySessionStats;
                     })()
                   : (() => {
@@ -6088,15 +6088,15 @@ export default function ChatSessionComponent({
         </>
       )}
 
-      {leftTab === "workers" && (
+      {leftTab === "subAgents" && (
         <>
-          <SidebarTabHeaderComponent icon="🤖" title="Workers" count={workersCount} actions={workersHeaderActions} />
-          <WorkersPanel
+          <SidebarTabHeaderComponent icon="🤖" title="Sub-Agents" count={subAgentsCount} actions={subAgentsHeaderActions} />
+          <SubAgentsPanel
             conversationId={conversationId}
             refreshKey={tasksRefreshKey}
-            onCountChange={setWorkersCount}
-            onActionsChange={setWorkersHeaderActions}
-            workerToolActivity={workerToolActivity}
+            onCountChange={setSubAgentsCount}
+            onActionsChange={setSubAgentsHeaderActions}
+            subAgentToolActivity={subAgentToolActivity}
           />
         </>
       )}
@@ -6555,6 +6555,12 @@ export default function ChatSessionComponent({
         let derivedPhase = null;
         let derivedLabel = null;
 
+        // Check if there are active chunks flowing for this generation burst
+        const CHUNK_FRESH_MS = 2000;
+        const isChunksFlowing =
+          liveStreamingLastChunkTime &&
+          performance.now() - liveStreamingLastChunkTime < CHUNK_FRESH_MS;
+
         // Only derive phase from the last message's content/thinking when
         // it's the actively streaming message (no toolCalls). Finalized
         // messages from prior agentic iterations carry stale thinking/content
@@ -6563,16 +6569,30 @@ export default function ChatSessionComponent({
           lastMessage?.role === "assistant" &&
           (!lastMessage.toolCalls || lastMessage.toolCalls.length === 0);
 
-        if (isGenerating && isActiveStreamingMessage) {
-          if (lastMessage.content && lastMessage.content.trim().length > 0) {
-            derivedPhase = "generating";
-            derivedLabel = "Generating...";
-          } else if (
-            lastMessage.thinking &&
-            lastMessage.thinking.trim().length > 0
-          ) {
-            derivedPhase = "thinking";
-            derivedLabel = "Thinking...";
+        if (isGenerating && lastMessage?.role === "assistant") {
+          if (isChunksFlowing) {
+            const segments = lastMessage.contentSegments || [];
+            const lastSegment = segments[segments.length - 1];
+            if (lastSegment?.type === "thinking") {
+              derivedPhase = "thinking";
+              derivedLabel = "Thinking...";
+            } else if (lastSegment?.type === "text") {
+              derivedPhase = "generating";
+              derivedLabel = "Generating...";
+            }
+          }
+
+          if (!derivedPhase && isActiveStreamingMessage) {
+            if (lastMessage.content && lastMessage.content.trim().length > 0) {
+              derivedPhase = "generating";
+              derivedLabel = "Generating...";
+            } else if (
+              lastMessage.thinking &&
+              lastMessage.thinking.trim().length > 0
+            ) {
+              derivedPhase = "thinking";
+              derivedLabel = "Thinking...";
+            }
           }
         }
 
@@ -6673,10 +6693,6 @@ export default function ChatSessionComponent({
         // chunks are still flowing). We check chunk freshness rather than
         // phase labels to avoid going stale while the model streams FC args.
         let orchestratorTokPerSec = null;
-        const CHUNK_FRESH_MS = 2000;
-        const isChunksFlowing =
-          liveStreamingLastChunkTime &&
-          performance.now() - liveStreamingLastChunkTime < CHUNK_FRESH_MS;
         const isOrchestratorGenerating =
           ((phase === "generating" || phase === "thinking") &&
             !workerDerivedPhase) ||

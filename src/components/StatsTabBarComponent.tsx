@@ -4,9 +4,9 @@ import styles from "./StatsTabBarComponent.module.css";
 
 /**
  * StatsTabBarComponent — segmented control for switching between
- * "All", "Orchestrator" and "Workers" stats views.
+ * "All", "Orchestrator" and "Sub-Agents" stats views.
  *
- * Only rendered when the active agent can spawn worker sub-agents;
+ * Only rendered when the active agent can spawn sub-agents;
  * the parent is responsible for gating visibility via the `visible` prop
  * (or simply not rendering the component).
  */
@@ -14,7 +14,7 @@ import styles from "./StatsTabBarComponent.module.css";
 const TABS = [
   { key: "all", label: "All", icon: <Layers size={10} /> },
   { key: "orchestrator", label: "Orchestrator", icon: <Bot size={10} /> },
-  { key: "workers", label: "Workers", icon: <Users size={10} /> },
+  { key: "subAgents", label: "Sub-Agents", icon: <Users size={10} /> },
 ];
 
 export interface StatsTabBarProps {

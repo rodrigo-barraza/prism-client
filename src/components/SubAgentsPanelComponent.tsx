@@ -18,9 +18,9 @@ import { renderToolName, formatDuration } from "@rodrigo-barraza/utilities-libra
 import ModalityIconComponent from "./ModalityIconComponent";
 import BadgeComponent from "./BadgeComponent";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
-import type { WorkerToolActivityItem } from "./MessageListComponent";
-import type { CoordinatorWorker } from "../types/types";
-import styles from "./WorkersPanelComponent.module.css";
+import type { SubAgentToolActivityItem } from "./MessageListComponent";
+import type { CoordinatorSubAgent } from "../types/types";
+import styles from "./SubAgentsPanelComponent.module.css";
 
 const STATUS_LABEL: Record<string, string> = {
   running: "Running",
@@ -31,18 +31,18 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_CLASS: Record<string, string> = {
-  running: "statusRunning",
-  complete: "statusComplete",
-  failed: "statusFailed",
-  stopped: "statusStopped",
-  pending: "statusPending",
+  running: "status-running",
+  complete: "status-complete",
+  failed: "status-failed",
+  stopped: "status-stopped",
+  pending: "status-pending",
 };
 
 const CARD_CLASS: Record<string, string> = {
-  running: "workerCardRunning",
-  complete: "workerCardComplete",
-  failed: "workerCardFailed",
-  stopped: "workerCardStopped",
+  running: "sub-agent-card-running",
+  complete: "sub-agent-card-complete",
+  failed: "sub-agent-card-failed",
+  stopped: "sub-agent-card-stopped",
 };
 
 function getAgentNumber(agentId: string | undefined) {
@@ -51,20 +51,20 @@ function getAgentNumber(agentId: string | undefined) {
   return match ? match[1].toUpperCase() : agentId;
 }
 
-export default function WorkersPanel({
+export default function SubAgentsPanel({
   conversationId,
   refreshKey,
   onCountChange,
   onActionsChange,
-  workerToolActivity = {},
+  subAgentToolActivity = {},
 }: {
   conversationId: string;
   refreshKey?: number;
   onCountChange?: (count: number) => void;
   onActionsChange?: (actions: ReactNode) => void;
-  workerToolActivity?: Record<string, WorkerToolActivityItem>;
+  subAgentToolActivity?: Record<string, SubAgentToolActivityItem>;
 }) {
-  const [workers, setWorkers] = useState<CoordinatorWorker[]>([]);
+  const [subAgents, setSubAgents] = useState<CoordinatorSubAgent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const hasData = useRef<boolean>(false);
@@ -72,17 +72,17 @@ export default function WorkersPanel({
 
   // -- Load --------------------------------------------------
 
-  const loadWorkers = useCallback(async () => {
+  const loadSubAgents = useCallback(async () => {
     if (!hasData.current) setLoading(true);
     setError(null);
     try {
-      const result = await PrismService.getCoordinatorWorkers(conversationId);
-      const list = result.workers || [];
-      setWorkers(list);
+      const result = await PrismService.getCoordinatorSubAgents(conversationId);
+      const list = result.subAgents || [];
+      setSubAgents(list);
       onCountChange?.(list.length);
       hasData.current = true;
     } catch (error: unknown) {
-      console.error("Failed to load workers:", error);
+      console.error("Failed to load sub-agents:", error);
       if (!hasData.current) setError(getErrorMessage(error));
     } finally {
       setLoading(false);
@@ -92,20 +92,20 @@ export default function WorkersPanel({
   // Reset on session change
   useEffect(() => {
     hasData.current = false;
-    setWorkers([]);
+    setSubAgents([]);
   }, [conversationId]);
 
   // Initial load + external refresh
   useEffect(() => {
-    loadWorkers();
-  }, [loadWorkers, refreshKey]);
+    loadSubAgents();
+  }, [loadSubAgents, refreshKey]);
 
-  // Auto-poll while any worker is running (every 3s)
+  // Auto-poll while any sub-agent is running (every 3s)
   useEffect(() => {
-    const hasRunning = workers.some((workerItem) => workerItem.status === "running");
+    const hasRunning = subAgents.some((subAgentItem) => subAgentItem.status === "running");
 
     if (hasRunning) {
-      pollRef.current = setInterval(loadWorkers, POLL_FAST);
+      pollRef.current = setInterval(loadSubAgents, POLL_FAST);
     } else {
       if (pollRef.current) clearInterval(pollRef.current);
     }
@@ -113,7 +113,7 @@ export default function WorkersPanel({
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
-  }, [workers, loadWorkers]);
+  }, [subAgents, loadSubAgents]);
 
   // -- Push header action buttons to parent SidebarTabHeader ---
   useEffect(() => {
@@ -123,12 +123,12 @@ export default function WorkersPanel({
         size="small"
         icon={RefreshCw}
         iconSize={11}
-        onClick={loadWorkers}
+        onClick={loadSubAgents}
         disabled={loading}
-        title="Refresh workers"
+        title="Refresh sub-agents"
       />,
     );
-  }, [onActionsChange, loadWorkers, loading]);
+  }, [onActionsChange, loadSubAgents, loading]);
 
   // Clear actions on unmount
   useEffect(() => {
@@ -150,7 +150,7 @@ export default function WorkersPanel({
   if (error) {
     return (
       <div className={styles['container']}>
-        <div className={styles['error']}>Failed to load workers: {error}</div>
+        <div className={styles['error']}>Failed to load sub-agents: {error}</div>
       </div>
     );
   }
@@ -158,78 +158,78 @@ export default function WorkersPanel({
   // ═══ Render ═══════════════════════════════════════════════
 
   return (
-    <div className={`workers-panel-component ${styles['container']}`}>
+    <div className={`sub-agents-panel-component ${styles['container']}`}>
       {/* -- Empty ------------------------------------------- */}
-      {workers.length === 0 && (
+      {subAgents.length === 0 && (
         <div className={styles['empty-state']}>
           <div className={styles['empty-icon']}>
             <Users size={24} />
           </div>
-          <div className={styles['empty-title']}>No workers</div>
+          <div className={styles['empty-title']}>No sub-agents</div>
           <div className={styles['empty-subtitle']}>
-            Workers are spawned by the coordinator when it decomposes tasks into
+            Sub-agents are spawned by the coordinator when it decomposes tasks into
             parallel sub-agents. Use the
-            <strong> team_create</strong> tool to create workers.
+            <strong> team_create</strong> tool to create sub-agents.
           </div>
         </div>
       )}
 
-      {/* -- Worker list --------------------------------------- */}
-      {workers.map((worker) => {
-        const statusLabel = STATUS_LABEL[worker.status] || worker.status;
-        const statusClass = STATUS_CLASS[worker.status] || "statusPending";
-        const cardClass = CARD_CLASS[worker.status] || "";
-        const isLive = worker.status === "running";
-        const isComplete = worker.status === "complete";
+      {/* -- Sub-agent list ------------------------------------ */}
+      {subAgents.map((subAgent) => {
+        const statusLabel = STATUS_LABEL[subAgent.status] || subAgent.status;
+        const statusClass = STATUS_CLASS[subAgent.status] || "status-pending";
+        const cardClass = CARD_CLASS[subAgent.status] || "";
+        const isLive = subAgent.status === "running";
+        const isComplete = subAgent.status === "complete";
 
-        // Workers are text-in → text-out agents
-        const workerModalities = { textIn: true, textOut: true };
+        // Sub-agents are text-in → text-out agents
+        const subAgentModalities = { textIn: true, textOut: true };
 
         return (
           <div
-            key={worker.agentId}
-            className={`${styles['worker-card']} ${cardClass ? styles[cardClass] : ""}`}
+            key={subAgent.agentId}
+            className={`${styles['sub-agent-card']} ${cardClass ? styles[cardClass] : ""}`}
           >
             {/* -- Title row (HistoryItem-style) --------------- */}
             <div className={styles['title-row']}>
               <span className={styles['agent-badge']}>
-                Agent {getAgentNumber(worker.agentId)}
+                Agent {getAgentNumber(subAgent.agentId)}
               </span>
-              <span className={`${styles['worker-status']} ${styles[statusClass]}`}>
+              <span className={`${styles['sub-agent-status']} ${styles[statusClass]}`}>
                 {statusLabel}
               </span>
             </div>
 
             {/* Description */}
-            {worker.description && (
-              <div className={styles['worker-description']}>
-                {worker.description}
+            {subAgent.description && (
+              <div className={styles['sub-agent-description']}>
+                {subAgent.description}
               </div>
             )}
 
             {/* -- Meta row (time, cost — HistoryItem-style) -- */}
             <div className={styles['meta']}>
-              {(worker.durationMs ?? 0) > 0 && (
+              {(subAgent.durationMs ?? 0) > 0 && (
                 <span
                   className={`${styles['meta-item']} ${isLive ? styles['duration-live'] : ""}`}
                 >
                   <Clock size={10} />
-                  {formatDuration(worker.durationMs ?? 0)}
+                  {formatDuration(subAgent.durationMs ?? 0)}
                 </span>
               )}
               <BadgeComponent
                 type="cost"
-                cost={worker.totalCost}
+                cost={subAgent.totalCost}
                 mini
                 showIcon={false}
               />
               {/* Live tool count from SSE (or fallback to API count) */}
               {(() => {
-                const workerAgentId = worker.agentId ?? worker.id;
-                const liveActivity = workerToolActivity[workerAgentId];
+                const subAgentAgentId = subAgent.agentId ?? subAgent.id;
+                const liveActivity = subAgentToolActivity[subAgentAgentId];
                 const toolCount = Math.max(
                   liveActivity?.toolCount || 0,
-                  worker.toolCallCount || 0,
+                  subAgent.toolCallCount || 0,
                 );
                 return toolCount > 0 ? (
                   <span className={styles['meta-item']}>
@@ -238,20 +238,20 @@ export default function WorkersPanel({
                   </span>
                 ) : null;
               })()}
-              {worker.branchName && (
+              {subAgent.branchName && (
                 <span className={styles['meta-item']}>
                   <GitBranch size={10} />
-                  {worker.branchName}
+                  {subAgent.branchName}
                 </span>
               )}
             </div>
 
             {/* -- Model badge ---------------------------------- */}
-            {worker.resolvedModel && (
+            {subAgent.resolvedModel && (
               <BadgeComponent
                 type="model"
-                models={[worker.resolvedModel.replace(/-\d{8}$/, "")]}
-                provider={worker.provider}
+                models={[subAgent.resolvedModel.replace(/-\d{8}$/, "")]}
+                provider={subAgent.provider}
                 mini
                 className={styles['model-badge']}
               />
@@ -259,35 +259,35 @@ export default function WorkersPanel({
 
             {/* -- Modality icons ------------------------------- */}
             {isComplete && (
-              <ModalityIconComponent modalities={workerModalities} size={10} />
+              <ModalityIconComponent modalities={subAgentModalities} size={10} />
             )}
 
             {/* -- Live tool activity (SSE-driven) -------------- */}
             {isLive && (() => {
-              const workerAgentId = worker.agentId ?? worker.id;
-              const activity = workerToolActivity[workerAgentId];
+              const subAgentAgentId = subAgent.agentId ?? subAgent.id;
+              const activity = subAgentToolActivity[subAgentAgentId];
               if (!activity?.currentTool) return null;
               return (
-              <div className={styles['live-activity']}>
-                <span className={styles['live-dot']} />
-                <Wrench size={9} />
-                <span className={styles['live-tool-name']}>
-                  {renderToolName(activity.currentTool)}
-                </span>
-                {(activity.iteration ?? 0) > 0 && (
-                  <span className={styles['live-iteration']}>
-                    iter {activity.iteration}
+                <div className={styles['live-activity']}>
+                  <span className={styles['live-dot']} />
+                  <Wrench size={9} />
+                  <span className={styles['live-tool-name']}>
+                    {renderToolName(activity.currentTool)}
                   </span>
-                )}
-              </div>
+                  {(activity.iteration ?? 0) > 0 && (
+                    <span className={styles['live-iteration']}>
+                      iter {activity.iteration}
+                    </span>
+                  )}
+                </div>
               );
             })()}
 
             {/* Files */}
-            {(worker.files?.length ?? 0) > 0 && (
-              <div className={styles['worker-files']}>
-                {worker.files!.map((filePath: string, fileIndex: number) => (
-                  <span key={fileIndex} className={styles['worker-file']} title={filePath}>
+            {(subAgent.files?.length ?? 0) > 0 && (
+              <div className={styles['sub-agent-files']}>
+                {subAgent.files!.map((filePath: string, fileIndex: number) => (
+                  <span key={fileIndex} className={styles['sub-agent-file']} title={filePath}>
                     <FileCode
                       size={9}
                       style={{

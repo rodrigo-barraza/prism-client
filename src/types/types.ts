@@ -217,9 +217,9 @@ export interface GenerationSettings {
   logprobs?: number;
 }
 
-// --- Worker Generation Progress -----------------------------
+// --- Sub-Agent Generation Progress --------------------------
 
-export interface WorkerGenerationProgress {
+export interface SubAgentGenerationProgress {
   outputTokens?: number;
   totalOutputTokens?: number;
   tokensPerSecond?: number;
@@ -246,7 +246,7 @@ export interface SessionStats {
   totalReasoningOutputTokens?: number;
   requestErrorCount?: number;
   orchestrator?: SessionStats;
-  workers?: SessionStats;
+  subAgents?: SessionStats;
   providers?: string[];
 }
 
@@ -324,10 +324,10 @@ export interface Message {
   statusPhase?: string;
   /** Server-computed TTFT samples (seconds[]) from generation_started events */
   _ttftSamples?: number[];
-  /** Worker live generation progress (keyed by workerId) */
-  _workerGenerationProgress?: Record<string, WorkerGenerationProgress>;
-  /** Accumulated worker tokens (from worker_status complete events) */
-  _workerTokens?: {
+  /** Sub-agent live generation progress (keyed by subAgentId) */
+  _subAgentGenerationProgress?: Record<string, SubAgentGenerationProgress>;
+  /** Accumulated sub-agent tokens (from sub_agent_status complete events) */
+  _subAgentTokens?: {
     input?: number;
     output?: number;
     requests?: number;
@@ -507,9 +507,9 @@ export interface SSEUserQuestionEvent {
   }>;
 }
 
-export interface SSEWorkerStatusEvent {
-  type: "worker_status";
-  workerId: string;
+export interface SSESubAgentStatusEvent {
+  type: "sub_agent_status";
+  subAgentId: string;
   status: string;
 }
 
@@ -541,7 +541,7 @@ export type SSEEvent =
   | SSEApprovalRequiredEvent
   | SSEPlanProposalEvent
   | SSEUserQuestionEvent
-  | SSEWorkerStatusEvent
+  | SSESubAgentStatusEvent
   | SSEUsageUpdateEvent
   | SSEDoneEvent
   | SSEErrorEvent;
@@ -577,7 +577,7 @@ export interface TransformedSSEData {
     options?: string[];
     annotations?: string;
   }>;
-  workerId?: string;
+  subAgentId?: string;
   inputTokens?: number;
   outputTokens?: number;
   estimatedCost?: number;
@@ -694,9 +694,9 @@ export interface SSECallbacks {
   onToolCall?: (event: ToolCallEvent) => void;
   onToolExecution?: (event: SSEData) => void;
   onToolOutput?: (event: SSEData) => void;
-  onWorkerToolExecution?: (event: SSEData) => void;
-  onWorkerToolOutput?: (event: SSEData) => void;
-  onWorkerStatus?: (event: SSEData) => void;
+  onSubAgentToolExecution?: (event: SSEData) => void;
+  onSubAgentToolOutput?: (event: SSEData) => void;
+  onSubAgentStatus?: (event: SSEData) => void;
   onApprovalRequired?: (event: SSEData) => void;
   onPlanProposal?: (event: SSEData) => void;
   onUserQuestion?: (event: SSEData) => void;
@@ -810,7 +810,7 @@ export interface AgentPersona {
   enabledToolNames: string[];
   enabledByDefaultToolNames: string[];
   coreToolsLocked: boolean;
-  canSpawnWorkers: boolean;
+  canSpawnSubAgents: boolean;
   usesDirectoryTree: boolean;
   usesCodingGuidelines: boolean;
 }
@@ -1003,9 +1003,9 @@ export interface MCPServer {
   updatedAt?: string;
 }
 
-// --- Coordinator Workers ------------------------------------
+// --- Coordinator Sub-Agents ---------------------------------
 
-export interface CoordinatorWorker {
+export interface CoordinatorSubAgent {
   id: string;
   agentId?: string;
   agentSessionId: string;

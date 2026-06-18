@@ -70,7 +70,7 @@ export const LS_USERNAME = "prism:username";
 export const LS_CRITIC_GATE_ENABLED = "agent:criticGateEnabled";
 export const LOCAL_STORAGE_AUTO_APPROVE_ENABLED = "agent:autoApproveEnabled";
 export const LS_AGENT_MAX_ITERATIONS = "agent:maxIterations";
-export const LS_AGENT_MAX_WORKER_ITERATIONS = "agent:maxWorkerIterations";
+export const LS_AGENT_MAX_SUB_AGENT_ITERATIONS = "agent:maxSubAgentIterations";
 export const LS_CRON_JOB_NOTIFICATIONS_COUNT = "cron-job-notifications-count";
 export const SK_TOOL_MEMORY_AGENT_PREFIX = "toolMemory:agent:";
 export const LS_ACTIVE_AGENT = "prism:activeAgent";
@@ -124,7 +124,7 @@ export const PROVIDER_COLORS = [
 
 // -- Polling intervals (re-exported from utilities-library) -------
 export {
-  POLL_FAST, // 3s  — benchmarks, workers
+  POLL_FAST, // 3s  — benchmarks, sub-agents
   POLL_STANDARD, // 5s  — conversations, requests, traces
   POLL_MODERATE, // 15s — model lists, analytics
   POLL_SLOW, // 30s — health checks

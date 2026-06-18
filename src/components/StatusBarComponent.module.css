@@ -104,8 +104,8 @@
   opacity: 0.5;
 }
 
-/* Worker variant: never collapse — maintain full height + visible overlay when idle */
-.status-bar-worker {
+/* Sub-agent variant: never collapse — maintain full height + visible overlay when idle */
+.status-bar-sub-agent {
   height: 28px;
   min-height: 28px;
   opacity: 0.6;

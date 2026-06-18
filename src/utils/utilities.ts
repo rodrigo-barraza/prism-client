@@ -150,7 +150,7 @@ export function getSessionCost(messages: Message[]): number {
  * Aggregate input/output tokens and request count from assistant messages.
  * Returns { totalTokens: { input, output, total }, requestCount }.
  */
-export interface WorkerProgress {
+export interface SubAgentProgress {
   tokPerSec?: number;
   outputTokens?: number;
   totalOutputTokens?: number;
@@ -174,7 +174,7 @@ export interface SessionTokenStats {
   liveStreamingBurstTokens: number;
   liveStreamingBurstElapsed: number;
   liveOutputCharacters: number;
-  workerGenerationProgress: Record<string, WorkerProgress> | null;
+  subAgentGenerationProgress: Record<string, SubAgentProgress> | null;
   lastTimeToGeneration: number | null;
   liveProcessingStartTime: number | null;
   liveProcessingPhase: string | null;
@@ -191,7 +191,7 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
   let liveStreamingLastChunkTime = null;
   let liveStreamingBurstTokens = 0;
   let liveStreamingBurstElapsed = 0;
-  let workerGenerationProgress = null;
+  let subAgentGenerationProgress = null;
   let lastTimeToGeneration = null; // retroactive TTFT from completed messages (seconds)
   let liveProcessingStartTime = null; // performance.now() when processing phase started
   let liveProcessingPhase = null; // current phase of in-flight message (processing/loading/generating)
@@ -272,20 +272,20 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
     if (message.statusPhase) {
       liveProcessingPhase = message.statusPhase;
     }
-    // Server-computed TTFT samples from generation_started events (per-iteration, per-worker)
+    // Server-computed TTFT samples from generation_started events (per-iteration, per-sub-agent)
     if (message._ttftSamples?.length) {
       liveTtftSamples = message._ttftSamples;
     }
-    // Worker live generation progress (keyed by workerId)
-    if (message._workerGenerationProgress) {
-      workerGenerationProgress = message._workerGenerationProgress;
-      // Sum live worker output tokens so the token badge increments
-      // in real-time during worker generation (before completion).
+    // Sub-agent live generation progress (keyed by subAgentId)
+    if (message._subAgentGenerationProgress) {
+      subAgentGenerationProgress = message._subAgentGenerationProgress;
+      // Sum live sub-agent output tokens so the token badge increments
+      // in real-time during sub-agent generation (before completion).
       // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
-      // so the count doesn't reset when workers transition between phases.
+      // so the count doesn't reset when sub-agents transition between phases.
       for (const wp of Object.values(
-        message._workerGenerationProgress,
-      ) as WorkerProgress[]) {
+        message._subAgentGenerationProgress,
+      ) as SubAgentProgress[]) {
         const count = wp.totalOutputTokens || wp.outputTokens || 0;
         if (count > 0) {
           output += count;
@@ -296,14 +296,14 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
     if (message._liveGenProgress) {
       liveGenProgress = message._liveGenProgress;
     }
-    // Accumulated worker tokens (from worker_status complete events)
+    // Accumulated sub-agent tokens (from sub_agent_status complete events)
     // These arrive independently of the coordinator's own usage.
-    // Only add completed worker tokens that aren't already counted
-    // from _workerGenerationProgress (which is removed on completion).
-    if (message._workerTokens) {
-      input += message._workerTokens.input || 0;
-      output += message._workerTokens.output || 0;
-      requests += message._workerTokens.requests || 0;
+    // Only add completed sub-agent tokens that aren't already counted
+    // from _subAgentGenerationProgress (which is removed on completion).
+    if (message._subAgentTokens) {
+      input += message._subAgentTokens.input || 0;
+      output += message._subAgentTokens.output || 0;
+      requests += message._subAgentTokens.requests || 0;
     }
   }
   return {
@@ -316,7 +316,7 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
     liveStreamingBurstTokens,
     liveStreamingBurstElapsed,
     liveOutputCharacters,
-    workerGenerationProgress,
+    subAgentGenerationProgress,
     // TTFT tracking
     lastTimeToGeneration,
     liveProcessingStartTime,
@@ -389,17 +389,17 @@ export function toolCountsToUsedTools(
  *    coordinator function-level entries (read_file, etc.)
  * 2. **backendToolCounts** — optional { name: count } map from
  *    backend session stats (authoritative post-completion)
- * 3. **workerToolActivity** — optional { [workerId]: { toolNames: { name: count } } }
+ * 3. **subAgentToolActivity** — optional { [subAgentId]: { toolNames: { name: count } } }
  *    from live SSE events (real-time during generation)
  *
- * When both backend and live worker counts exist for the same tool,
+ * When both backend and live sub-agent counts exist for the same tool,
  * the higher count wins (prevents badges from appearing to decrease
  * as backend catches up).
  */
-export function mergeUsedToolsWithWorkers(
+export function mergeUsedToolsWithSubAgents(
   clientTools: Array<{ name: string; count: number }>,
   backendToolCounts: Record<string, number> | null | undefined,
-  workerToolActivity:
+  subAgentToolActivity:
     | Record<string, { toolNames?: Record<string, number> }>
     | null
     | undefined,
@@ -422,11 +422,11 @@ export function mergeUsedToolsWithWorkers(
     }
   }
 
-  // Overlay live worker tool counts (real-time during generation)
-  if (workerToolActivity) {
-    for (const worker of Object.values(workerToolActivity)) {
-      if (!worker.toolNames) continue;
-      for (const [name, count] of Object.entries(worker.toolNames)) {
+  // Overlay live sub-agent tool counts (real-time during generation)
+  if (subAgentToolActivity) {
+    for (const subAgent of Object.values(subAgentToolActivity)) {
+      if (!subAgent.toolNames) continue;
+      for (const [name, count] of Object.entries(subAgent.toolNames)) {
         if (CAPABILITY_TOOL_NAMES.has(name)) continue;
         merged.set(name, Math.max(merged.get(name) || 0, count));
       }

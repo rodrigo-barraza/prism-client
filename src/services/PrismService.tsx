@@ -22,7 +22,7 @@ import type {
   AgentMemoryListResponse,
   PrismSettings,
   MCPServer,
-  CoordinatorWorker,
+  CoordinatorSubAgent,
   Favorite,
   ToolSchema,
   Benchmark,
@@ -855,12 +855,12 @@ export default class PrismService {
   }
 
   // ---------------------------------------------------------------------------
-  // Coordinator Workers
+  // Coordinator Sub-Agents
   // ---------------------------------------------------------------------------
 
-  static async getCoordinatorWorkers(
+  static async getCoordinatorSubAgents(
     conversationId?: string,
-  ): Promise<{ workers: CoordinatorWorker[] }> {
+  ): Promise<{ subAgents: CoordinatorSubAgent[] }> {
     const queryString = conversationId
       ? `?conversationId=${encodeURIComponent(conversationId)}`
       : "";
@@ -887,7 +887,7 @@ export default class PrismService {
       },
     );
     const subAgentsList = response.subAgents || [];
-    const mappedWorkersList = subAgentsList.map((subAgent) => ({
+    const mappedSubAgentsList = subAgentsList.map((subAgent) => ({
       id: subAgent.agentId,
       agentId: subAgent.agentId,
       agentSessionId: conversationId || "",
@@ -901,13 +901,11 @@ export default class PrismService {
       branchName: subAgent.branchName ?? undefined,
       files: subAgent.files,
     }));
-    return { workers: mappedWorkersList };
+    return { subAgents: mappedSubAgentsList };
   }
 
-  /**
-   * Abort all running workers for a given agent session.
-   */
-  static async stopCoordinatorWorkers(
+  // Abort all running sub-agents for a given agent session.
+  static async stopCoordinatorSubAgents(
     conversationId: string,
   ): Promise<{ stopped: string[]; alreadyStopped: string[] }> {
     return PrismService._request<{
@@ -1203,9 +1201,9 @@ export default class PrismService {
       onToolCall,
       onToolExecution,
       onToolOutput,
-      onWorkerToolExecution,
-      onWorkerToolOutput,
-      onWorkerStatus,
+      onSubAgentToolExecution,
+      onSubAgentToolOutput,
+      onSubAgentStatus,
       onApprovalRequired,
       onPlanProposal,
       onUserQuestion,
@@ -1280,16 +1278,13 @@ export default class PrismService {
         break;
       // Sub-agent events — forwarded from spawned sub-agents
       case SERVER_SENT_EVENT_TYPES.SUB_AGENT_TOOL_EXECUTION:
-      case SERVER_SENT_EVENT_TYPES.WORKER_TOOL_EXECUTION:
-        onWorkerToolExecution?.(data);
+        onSubAgentToolExecution?.(data);
         break;
       case SERVER_SENT_EVENT_TYPES.SUB_AGENT_TOOL_OUTPUT:
-      case SERVER_SENT_EVENT_TYPES.WORKER_TOOL_OUTPUT:
-        onWorkerToolOutput?.(data);
+        onSubAgentToolOutput?.(data);
         break;
       case SERVER_SENT_EVENT_TYPES.SUB_AGENT_STATUS:
-      case SERVER_SENT_EVENT_TYPES.WORKER_STATUS:
-        onWorkerStatus?.(data);
+        onSubAgentStatus?.(data);
         break;
       // Prism-local agentic events
       case SERVER_SENT_EVENT_TYPES.USER_QUESTION:
