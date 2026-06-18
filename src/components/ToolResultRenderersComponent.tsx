@@ -2464,9 +2464,9 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
       ? `${toolCount} tools used`
       : "Sub-agent idle";
 
-  // Per-worker tok/s from the backend's burst-scoped generation progress.
+  // Per-sub-agent tok/s from the backend's burst-scoped generation progress.
   // Use the pre-computed value directly — it's authoritative from the
-  // CoordinatorService which tracks per-worker burst counters independently.
+  // CoordinatorService which tracks per-sub-agent burst counters independently.
   let tokPerSec = null;
   if (!isToolActive && (phase === "generating" || phase === "thinking")) {
     tokPerSec = activity.tokPerSec ?? null;

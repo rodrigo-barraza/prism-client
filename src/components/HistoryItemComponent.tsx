@@ -238,7 +238,7 @@ export default function HistoryItemComponent({
                 );
               })()}
             {item.parentAgentSessionId && (
-              <span className={styles['worker-hat-emoji']} title="Worker/Sub Agent">
+              <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
                 👷
               </span>
             )}

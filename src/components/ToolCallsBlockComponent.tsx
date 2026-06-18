@@ -145,7 +145,7 @@ export default function ToolCallsBlockComponent({
                   </span>
                 )}
 
-                {/* Worker tool badges — show which tools a spawned agent used */}
+                {/* Sub-agent tool badges — show which tools a spawned agent used */}
                 {(toolCall.name === TOOL_NAMES.CREATE_TEAM) &&
                   (() => {
                     const parsed = toolCall.result

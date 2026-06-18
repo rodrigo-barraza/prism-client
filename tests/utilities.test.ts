@@ -295,7 +295,7 @@ describe("mergeUsedToolsWithSubAgents", () => {
     const clientTools = [{ name: "Thinking", count: 1 }];
     const backendCounts = { read_file: 3 };
     const subAgentActivity = {
-      worker1: { toolNames: { read_file: 5 } },
+      subAgent1: { toolNames: { read_file: 5 } },
     };
     const result = mergeUsedToolsWithSubAgents(clientTools, backendCounts, subAgentActivity);
     const readFile = result.find((entry) => entry.name === "read_file");

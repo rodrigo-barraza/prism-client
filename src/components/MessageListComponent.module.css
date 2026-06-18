@@ -90,7 +90,7 @@
   border: 1px solid oklch(0.3 0 0);
 }
 
-/* ── Task notification card (worker results) ── */
+/* ── Task notification card (sub-agent results) ── */
 .notification-node {
   border-left: 3px solid var(--accent-primary, var(--color-indigo));
   padding: 8px 0;

@@ -1,6 +1,6 @@
 /* ============================================================
    PanelShared — Common layout and typography for sidebar panels
-   (Coordinator, MCP, Memories, Skills, Tasks, Workers)
+   (Coordinator, MCP, Memories, Skills, Tasks, Sub-Agents)
 
    Each panel composes from these classes and sets --panel-accent
    on .container to customize the emptyIcon color.

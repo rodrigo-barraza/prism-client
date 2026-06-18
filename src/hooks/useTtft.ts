@@ -21,7 +21,7 @@ interface TtftAction {
 /**
  * TTFT reducer — running-average pattern for Time-To-First-Token.
  *
- * Each agentic loop iteration and each worker emits a `generation_started`
+ * Each agentic loop iteration and each sub-agent emits a `generation_started`
  * event with a server-computed TTFT sample. This reducer tracks the number
  * of samples seen so far and computes a running average. When a new sample
  * arrives (samples.length > prev.seenCount), it folds the new value in.
@@ -100,7 +100,7 @@ const TTFT_INITIAL: TtftState = {
  *
  * Accumulates TTFT samples from:
  * - Coordinator per-iteration `generation_started` events
- * - Worker `generation_started` events (forwarded via worker_status)
+ * - Sub-agent `generation_started` events (forwarded via sub_agent_status)
  *
  * Displays a running average across all samples, same pattern as tok/s
  * burst averaging. Falls back to client-side phase tracking for LM Studio

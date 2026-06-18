@@ -312,7 +312,7 @@ export default function NavigationSidebarComponent({
     miniCatsRef.current = miniCats;
   }, [miniCats]);
 
-  // Add cats when workers spawn, retire cats when workers finish
+  // Add cats when sub-agents spawn, retire cats when sub-agents finish
   useEffect(() => {
     const needed = Math.max(0, (activeApiCount || 0) - 1);
     setMiniCats((previousMiniCats) => {
@@ -412,7 +412,7 @@ export default function NavigationSidebarComponent({
         const element = catElsRef.current.get(cat.id);
         if (!element) continue;
 
-        // Phase transition: worker finished → start winding down
+        // Phase transition: sub-agent finished → start winding down
         if (cat.retired && catState.phase === "active") {
           catState.phase = "windingDown";
         }

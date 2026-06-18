@@ -123,7 +123,7 @@ const NONE_AGENT: AgentPersona = {
   enabledToolNames: [],
   enabledByDefaultToolNames: [],
   coreToolsLocked: false,
-  canSpawnWorkers: false,
+  canSpawnSubAgents: false,
   usesDirectoryTree: false,
   usesCodingGuidelines: false,
 };

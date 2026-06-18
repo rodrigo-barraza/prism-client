@@ -126,7 +126,7 @@ export interface ToolBadgeRowProps {
 
 /**
  * ToolBadgeRow — renders a row of tool badges from a { toolName: count } map.
- * Used in MessageList for worker tool activity.
+ * Used in MessageList for sub-agent tool activity.
  */
 export function ToolBadgeRow({
   tools,

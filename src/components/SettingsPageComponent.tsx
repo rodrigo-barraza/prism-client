@@ -96,7 +96,7 @@ interface LocalAgent {
  * Exposes:
  *   - "Workspaces" section with agent connection status + workspace management
  *   - "Memory Models" section for extraction, consolidation, and embedding
- *   - "Agent Defaults" section for subagent/worker model configuration
+ *   - "Harness Models" section for sub-agent and critic model configuration
  */
 export default function SettingsPageComponent() {
   const [config, setConfig] = useState<PrismConfig | null>(null);
@@ -913,17 +913,17 @@ export default function SettingsPageComponent() {
         <CardComponent.Header
           icon={Workflow}
           title="Harness Models"
-          subtitle="Models used by the agentic harness for subagent workers and critic safety gates"
+          subtitle="Models used by the agentic harness for sub-agents and critic safety gates"
         />
 
         <CardComponent.Body>
-          {/* Subagent Model */}
+          {/* Sub-Agent Model */}
           <div className={styles['settings-row']}>
             <div className={styles['row-label']}>
-              <span className={styles['row-title']}>Subagent Model</span>
+              <span className={styles['row-title']}>Sub-Agent Model</span>
               <span className={styles['row-description']}>
-                Pick a default subagent model for Prism to use when it spawns
-                subagents. If not set, it will use the current active model.
+                Pick a default sub-agent model for Prism to use when it spawns
+                sub-agents. If not set, it will use the current active model.
               </span>
             </div>
             <div className={styles['row-control']}>

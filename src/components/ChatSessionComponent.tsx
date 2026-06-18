@@ -3852,7 +3852,7 @@ export default function ChatSessionComponent({
               });
             } else if (statusData?.message === STATUS_MESSAGES.GENERATION_PROGRESS) {
               // Backend-computed metrics from SessionGenerationTracker —
-              // authoritative aggregate across orchestrator, workers,
+              // authoritative aggregate across orchestrator, sub-agents,
               // and tool sub-requests.
               setMessages((previousMessages) => {
                 const updated = [...previousMessages];
@@ -4391,7 +4391,7 @@ export default function ChatSessionComponent({
       autoApprove,
       planFirst,
       maxIterations,
-      maxWorkerIterations,
+      maxSubAgentIterations,
       agentId,
       isNoAgent,
       agentProject,
@@ -5744,18 +5744,18 @@ export default function ChatSessionComponent({
                       },
                     },
                     {
-                      key: "workerIterations",
+                      key: "subAgentIterations",
                       type: "cycle",
                       icon: <Repeat size={12} />,
-                      label: "Max Worker Tool Iterations",
-                      value: maxWorkerIterations,
+                      label: "Max Sub-Agent Tool Iterations",
+                      value: maxSubAgentIterations,
                       isActive: true,
                       title: "Click to cycle: 10 → 25 → 50 → 100 → ∞",
                       onChange: () => {
                         const steps = [10, 25, 50, 100, Infinity];
-                        const index = steps.indexOf(maxWorkerIterations);
+                        const index = steps.indexOf(maxSubAgentIterations);
                         const next = steps[(index + 1) % steps.length];
-                        setMaxWorkerIterations(next);
+                        setMaxSubAgentIterations(next);
                         localStorage.setItem(
                           LS_AGENT_MAX_SUB_AGENT_ITERATIONS,
                           String(next),
@@ -6003,7 +6003,7 @@ export default function ChatSessionComponent({
                           (totalCost as number) +
                           ((bgUsage?.cost || 0) as number),
                         originalTotalCost: 0,
-                        // Merge client-side usedTools with live worker tool counts
+                        // Merge client-side usedTools with live sub-agent tool counts
                         usedTools: mergeUsedToolsWithSubAgents(
                           usedTools,
                           null,
