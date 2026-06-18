@@ -856,6 +856,93 @@ export default function SettingsPanel({
           </div>
         )}
 
+        {/* -- Strategy Overrides (Harness / Topology / Reasoning) ----- */}
+        {sessionType === "agent" && !readOnly && (
+          <div className={styles['section']}>
+            <div className={styles['section-header']}>Strategy</div>
+
+            {/* Harness */}
+            <div
+              className={`${styles['modality-row']} ${styles['tool-toggle-row']}`}
+            >
+              <span className={styles['modality-icon']}>
+                <Brain size={12} />
+              </span>
+              <span className={styles['modality-name']}>Harness</span>
+              <SelectComponent
+                value={settings.agents?.harness || "standard"}
+                options={[
+                  { value: "standard", label: "Standard (ReAct)" },
+                  { value: "vision_language", label: "Vision Language" },
+                ]}
+                onChange={(value: string) =>
+                  onChange({
+                    agents: { ...settings.agents, harness: value },
+                  })
+                }
+                compact
+              />
+            </div>
+
+            {/* Topology */}
+            <div
+              className={`${styles['modality-row']} ${styles['tool-toggle-row']}`}
+            >
+              <span className={styles['modality-icon']}>
+                <Network size={12} />
+              </span>
+              <span className={styles['modality-name']}>Topology</span>
+              <SelectComponent
+                value={settings.agents?.topology || "hierarchical"}
+                options={[
+                  { value: "sequential", label: "Sequential (CoT)" },
+                  { value: "hierarchical", label: "Hierarchical (ToT)" },
+                  {
+                    value: "hierarchical_aggregation",
+                    label: "Aggregation (GoT)",
+                  },
+                  { value: "peer_to_peer", label: "Mesh (GoT DAG)" },
+                ]}
+                onChange={(value: string) =>
+                  onChange({
+                    agents: { ...settings.agents, topology: value },
+                  })
+                }
+                compact
+              />
+            </div>
+
+            {/* Reasoning Strategy */}
+            <div
+              className={`${styles['modality-row']} ${styles['tool-toggle-row']}`}
+            >
+              <span className={styles['modality-icon']}>
+                <Layers size={12} />
+              </span>
+              <span className={styles['modality-name']}>Reasoning</span>
+              <SelectComponent
+                value={
+                  (settings.agents?.reasoningStrategy as string) ||
+                  "chain_of_thought"
+                }
+                options={[
+                  { value: "chain_of_thought", label: "Chain of Thought" },
+                  { value: "tree_of_thoughts", label: "Tree of Thoughts" },
+                ]}
+                onChange={(value: string) =>
+                  onChange({
+                    agents: {
+                      ...settings.agents,
+                      reasoningStrategy: value,
+                    },
+                  })
+                }
+                compact
+              />
+            </div>
+          </div>
+        )}
+
         {/* -- Tools ------------------------------------------------- */}
         {selectedModelDef?.tools &&
           selectedModelDef.tools.length > 0 &&

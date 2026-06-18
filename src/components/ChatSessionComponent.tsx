@@ -3085,6 +3085,8 @@ export default function ChatSessionComponent({
               agent: agentId,
               harness: settings?.agents?.harness || "standard",
               topology: settings?.agents?.topology || DEFAULT_TOPOLOGY,
+              reasoningStrategy:
+                (settings?.agents?.reasoningStrategy as string) || undefined,
               // Phase 1: Agentic controls
               autoApprove,
               planFirst,
@@ -5210,11 +5212,13 @@ export default function ChatSessionComponent({
           }
           const sessionHarness = (sessionSettings as Record<string, unknown>)?.harness as string | undefined;
           const sessionTopology = (sessionSettings as Record<string, unknown>)?.topology as string | undefined;
-          if (sessionHarness || sessionTopology) {
+          const sessionReasoningStrategy = (sessionSettings as Record<string, unknown>)?.reasoningStrategy as string | undefined;
+          if (sessionHarness || sessionTopology || sessionReasoningStrategy) {
             nextSettings.agents = {
               ...nextSettings.agents,
               ...(sessionHarness && { harness: sessionHarness }),
               ...(sessionTopology && { topology: sessionTopology }),
+              ...(sessionReasoningStrategy && { reasoningStrategy: sessionReasoningStrategy }),
             };
           }
           return nextSettings;
