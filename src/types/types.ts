@@ -1757,5 +1757,6 @@ export interface Prompt {
   username?: string;
   createdAt?: string;
   updatedAt?: string;
+  color?: string;
 }
 

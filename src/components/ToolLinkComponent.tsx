@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import PrismService from "../services/PrismService";
 import ToolsApiService from "../services/ToolsApiService";
 import ToolDetailModalComponent, {
@@ -155,15 +156,18 @@ export default function ToolLinkComponent({
         {isLoading && <span className={styles["loading-spinner-element"]} />}
       </button>
 
-      {isModalOpen && modalData && (
-        <ToolDetailModalComponent
-          tool={modalData.tool}
-          agents={modalData.agents}
-          stats={modalData.stats}
-          allTools={modalData.allTools}
-          onClose={handleClose}
-        />
-      )}
+      {isModalOpen &&
+        modalData &&
+        createPortal(
+          <ToolDetailModalComponent
+            tool={modalData.tool}
+            agents={modalData.agents}
+            stats={modalData.stats}
+            allTools={modalData.allTools}
+            onClose={handleClose}
+          />,
+          document.body,
+        )}
     </>
   );
 }

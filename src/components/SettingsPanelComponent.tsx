@@ -133,6 +133,18 @@ export function formatTopologyLabel(topology: string): string {
     .join(" ");
 }
 
+const REASONING_STRATEGY_LABELS: Record<string, string> = {
+  chain_of_thought: "CoT",
+  tree_of_thoughts: "ToT",
+};
+
+export function formatReasoningStrategyLabel(strategy: string): string {
+  return REASONING_STRATEGY_LABELS[strategy] || strategy
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export default function SettingsPanel({
   config,
   settings,
@@ -277,6 +289,15 @@ export default function SettingsPanel({
             {formatTopologyLabel(settings.agents.topology)}
           </span>
         )}
+        {(() => {
+          const activeStrategy = settings.agents?.reasoningStrategy as string | undefined;
+          return sessionType === "agent" && activeStrategy && activeStrategy !== "chain_of_thought" ? (
+            <span className={styles['stat-badge']}>
+              <Brain size={10} />
+              {formatReasoningStrategyLabel(activeStrategy)}
+            </span>
+          ) : null;
+        })()}
         {stats.uniqueModels && stats.uniqueModels.length > 0 && (
           <BadgeComponent
             type="model"

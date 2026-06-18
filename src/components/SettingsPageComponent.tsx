@@ -323,6 +323,24 @@ export default function SettingsPageComponent() {
     [settings, persistSettings],
   );
 
+  // -- Reasoning strategy change handler --------------------------------
+  const handleReasoningStrategySelect = useCallback(
+    (strategyId: string) => {
+      const updated = {
+        agents: {
+          ...settings?.agents,
+          reasoningStrategy: strategyId,
+        },
+      };
+      setSettings((previousSettings: PrismSettings | null) => ({
+        ...previousSettings,
+        ...updated,
+      }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
   // -- Reset to defaults ----------------------------------------------
   const handleResetMemory = useCallback(async () => {
     if (!defaults?.memory) return;
@@ -1192,6 +1210,89 @@ export default function SettingsPageComponent() {
                   },
                 ]}
                 onChange={handleTopologySelect}
+              />
+            </div>
+          </div>
+
+          <div className={styles["harness-divider"]} />
+
+          {/* Reasoning Strategy */}
+          <div className={styles["settings-row"]}>
+            <div className={styles["row-label"]}>
+              <span className={styles["row-title"]}>Reasoning Strategy</span>
+              <span className={styles["row-description"]}>
+                Controls how the agent reasons within each iteration. Chain of
+                Thought uses sequential single-pass reasoning. Tree of Thoughts
+                generates parallel branches, scores them, and backtracks on
+                failure.
+              </span>
+            </div>
+            <div className={styles["row-control"]}>
+              <SelectComponent
+                value={(agentDefaults.reasoningStrategy as string) || "chain_of_thought"}
+                options={[
+                  {
+                    value: "chain_of_thought",
+                    label: "Chain of Thought (CoT)",
+                    tooltipRich: true,
+                    tooltip: (
+                      <div>
+                        <span className={styles["topology-tooltip-title"]}>Chain of Thought (CoT)</span>
+                        <p className={styles["topology-tooltip-description"]}>
+                          Single-pass sequential reasoning. The agent reasons,
+                          acts, observes results, and iterates — one step at a
+                          time. Default and most efficient strategy.
+                        </p>
+                        <pre className={styles["topology-tooltip-diagram"]}>
+{`  [Prompt]
+     │
+  [Reason]
+     │
+   [Act]
+     │
+  [Observe]
+     │
+  [Reason] → ...
+     │
+  [Answer]`}
+                        </pre>
+                      </div>
+                    ),
+                  },
+                  {
+                    value: "tree_of_thoughts",
+                    label: "Tree of Thoughts (ToT)",
+                    tooltipRich: true,
+                    tooltip: (
+                      <div>
+                        <span className={styles["topology-tooltip-title"]}>Tree of Thoughts (ToT)</span>
+                        <p className={styles["topology-tooltip-description"]}>
+                          Generates N parallel reasoning branches per iteration,
+                          scores each on correctness/risk/efficiency/completeness,
+                          selects the best, and backtracks with reflexion on
+                          validation failure.
+                        </p>
+                        <pre className={styles["topology-tooltip-diagram"]}>
+{`  [Prompt]
+   / | \\
+ [A] [B] [C]  ← branches
+  |   |   |
+ (score & rank)
+      │
+  [Best Branch]
+      │
+   [Act]
+      │
+  [Observe]
+      │
+  (validate or
+   backtrack)`}
+                        </pre>
+                      </div>
+                    ),
+                  },
+                ]}
+                onChange={handleReasoningStrategySelect}
               />
             </div>
           </div>
