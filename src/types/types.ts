@@ -661,6 +661,8 @@ export interface TransformedRequestItem {
   generationTime?: number;
   agent?: string;
   agentSessionId?: string;
+  parentAgentSessionId?: string | null;
+  username?: string;
   inputCharacters?: number;
   outputCharacters?: number;
   messageCount?: number;

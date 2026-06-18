@@ -44,7 +44,7 @@ export default function RequestsPage() {
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState("timestamp");
   const [order, setOrder] = useState("desc");
@@ -59,7 +59,7 @@ export default function RequestsPage() {
   const [hoveredConversationId, setHoveredConversationId] = useState<
     string | null
   >(null);
-  const initialLoadDone = useRef<boolean>(false);
+  const isInitialLoadDone = useRef<boolean>(false);
   const fetchGenRef = useRef<number>(0);
   const searchParams = useSearchParams();
 
@@ -146,16 +146,16 @@ export default function RequestsPage() {
 
       const data = await IrisService.getRequests(params);
       if (fetchGeneration !== fetchGenRef.current) return;
-      setRequests((data.data || []) as RequestItem[]);
+      setRequests(data.data || []);
       setTotal(data.total || 0);
     } catch (error: unknown) {
       if (fetchGeneration !== fetchGenRef.current) return;
       setError(getErrorMessage(error));
     } finally {
       if (fetchGeneration !== fetchGenRef.current) return;
-      if (!initialLoadDone.current) {
-        initialLoadDone.current = true;
-        setLoading(false);
+      if (!isInitialLoadDone.current) {
+        isInitialLoadDone.current = true;
+        setIsLoading(false);
       }
     }
   }, [page, sort, order, filters, dateRange, projectFilter, agentFilter]);
@@ -163,8 +163,8 @@ export default function RequestsPage() {
   useEffect(() => {
     // Bump generation to invalidate any in-flight requests from previous effect
     fetchGenRef.current += 1;
-    initialLoadDone.current = false;
-    setLoading(true);
+    isInitialLoadDone.current = false;
+    setIsLoading(true);
     setError(null);
 
     loadRequests();
@@ -461,7 +461,7 @@ export default function RequestsPage() {
             else if (fadingIds.has(id)) classes.push(styles['new-row-fade-out']);
             return classes.join(" ");
           }}
-          emptyText={loading ? "Loading..." : "No requests found"}
+          emptyText={isLoading ? "Loading..." : "No requests found"}
         />
 
         {/* Pagination */}

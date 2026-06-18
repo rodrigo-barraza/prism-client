@@ -5000,7 +5000,7 @@ export default function ChatSessionComponent({
         _snapshot?: SessionSnapshot;
         isGenerating?: boolean;
         pendingApproval?: {
-          pending?: boolean;
+          isPending?: boolean;
           type?: string;
           toolCalls?: Array<{
             id?: string;
@@ -5011,7 +5011,7 @@ export default function ChatSessionComponent({
           tools?: string[];
         };
         pendingQuestion?: {
-          pending?: boolean;
+          isPending?: boolean;
           question?: string;
           questions?: unknown[];
           choices?: string[];
@@ -5095,7 +5095,7 @@ export default function ChatSessionComponent({
 
         // Load pending approvals from the enriched session response
         const pendingApprovalData = full.pendingApproval;
-        if (pendingApprovalData && pendingApprovalData.pending) {
+        if (pendingApprovalData && pendingApprovalData.isPending) {
           if (pendingApprovalData.type === "plan") {
             const lastAssistantMessage = [...(full.messages || [])]
               .reverse()
@@ -5141,7 +5141,7 @@ export default function ChatSessionComponent({
 
         // Load pending questions from the enriched session response
         const pendingQuestionData = full.pendingQuestion;
-        if (pendingQuestionData && pendingQuestionData.pending) {
+        if (pendingQuestionData && pendingQuestionData.isPending) {
           setPendingUserQuestion({
             questions: pendingQuestionData.questions || [],
           });

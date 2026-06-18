@@ -18,6 +18,7 @@ import type {
   IrisUserStat,
   IrisTimelineEntry,
   JsonValue,
+  TransformedRequestItem,
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
@@ -28,35 +29,7 @@ function getAdminHeaders(): Record<string, string> {
 
 // --- Response Interfaces ------------------------------------
 
-export interface IrisRequestEntry {
-  _id: string;
-  model?: string;
-  provider?: string;
-  operation?: string;
-  endpoint?: string;
-  status?: number;
-  duration?: number;
-  estimatedCost?: number;
-  timestamp?: string;
-  inputTokens?: number;
-  outputTokens?: number;
-  conversationId?: string;
-  project?: string;
-  requestId?: string;
-  error?: string;
-  totalTime?: number;
-  tokensPerSec?: number;
-  toolsUsed?: boolean;
-  toolDisplayNames?: string[];
-  toolApiNames?: string[];
-  modalities?: Record<string, number>;
-  requestPayload?: Record<string, JsonValue>;
-  responsePayload?: Record<string, JsonValue>;
-  agent?: string;
-  username?: string;
-  agentSessionId?: string;
-  parentAgentSessionId?: string | null;
-}
+export type IrisRequestEntry = TransformedRequestItem;
 
 export interface IrisRequestListResponse {
   data: IrisRequestEntry[];
