@@ -857,7 +857,10 @@ export default function SettingsPanel({
         )}
 
         {/* -- Strategy Overrides (Harness / Topology / Reasoning) ----- */}
-        {sessionType === "agent" && !readOnly && (
+        {sessionType === "agent" && (() => {
+          const isExistingSession = (sessionStats?.messageCount ?? 0) > 0;
+          const isStrategyLocked = readOnly || isExistingSession;
+          return (
           <div className={styles['section']}>
             <div className={styles['section-header']}>Strategy</div>
 
@@ -881,6 +884,7 @@ export default function SettingsPanel({
                   })
                 }
                 compact
+                disabled={isStrategyLocked}
               />
             </div>
 
@@ -909,6 +913,7 @@ export default function SettingsPanel({
                   })
                 }
                 compact
+                disabled={isStrategyLocked}
               />
             </div>
 
@@ -938,10 +943,12 @@ export default function SettingsPanel({
                   })
                 }
                 compact
+                disabled={isStrategyLocked}
               />
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* -- Tools ------------------------------------------------- */}
         {selectedModelDef?.tools &&
