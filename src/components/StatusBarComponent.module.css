@@ -1,4 +1,4 @@
-/* ── StatusBarComponent — shared animated status bar ─────────── */
+/* ── StatusBarComponent — animated status bar ─────────── */
 
 .status-bar {
   position: relative;
@@ -17,32 +17,18 @@
     box-shadow 0.3s ease;
 }
 
-/* ── Animated gradient shimmer keyframe ── */
-
-@keyframes status-bar-gradient-flow {
-  0% {
-    translate: 0 0;
-  }
-  100% {
-    translate: -66.67% 0;
-  }
-}
-
-/* ── Unified asymptotic progress fill bar ──
-   Single bar that grows from left (0%) toward right (100%)
-   following an exponential approach curve. Contains a flowing
-   gradient shimmer for visual life. */
+/* ── Progress fill: width 0% → 100%, left to right ── */
 
 .status-bar-fill {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
   border-radius: 4px;
-  transform-origin: left center;
-  transform: scaleX(0);
-  will-change: transform;
   pointer-events: none;
   z-index: 1;
-  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
 
   background: linear-gradient(
     90deg,
@@ -58,7 +44,16 @@
   animation: status-bar-gradient-flow 6s linear infinite;
 }
 
-/* Hide fill bar when inactive */
+@keyframes status-bar-gradient-flow {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 0%;
+  }
+}
+
+/* Hide fill when inactive */
 .status-bar:not(.status-bar-active) .status-bar-fill {
   opacity: 0;
 }
@@ -70,7 +65,7 @@
   opacity: 0.5;
 }
 
-/* Sub-agent variant: never collapse — maintain full height + visible overlay when idle */
+/* Sub-agent variant */
 .status-bar-sub-agent {
   height: 28px;
   min-height: 28px;
@@ -206,18 +201,17 @@
   flex-shrink: 0;
   margin-inline-start: auto;
   animation: status-bar-pulse-dot 1.4s ease-in-out infinite;
-  will-change: opacity, transform;
 }
 
 @keyframes status-bar-pulse-dot {
   0%,
   100% {
     opacity: 1;
-    transform: scale(1);
+    scale: 1;
   }
   50% {
     opacity: 0.3;
-    transform: scale(0.6);
+    scale: 0.6;
   }
 }
 
