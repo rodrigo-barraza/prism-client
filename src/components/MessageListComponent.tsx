@@ -238,7 +238,15 @@ function ThinkingBlock({
       </button>
       {!collapsed && (
         <div className={styles['thinking-content']} ref={contentRef}>
-          {thinking && <MarkdownContent content={thinking} />}
+          {thinking?.trim() ? (
+            <MarkdownContent content={thinking}>
+              {isStreaming && (
+                <StreamingCursorComponent active={isStreaming} text={thinking} />
+              )}
+            </MarkdownContent>
+          ) : (
+            isStreaming && <StreamingCursorComponent active standalone />
+          )}
           {children}
         </div>
       )}

@@ -3184,15 +3184,18 @@ export default function ChatSessionComponent({
               const updated = [...previousMessages];
               const lastMessage = updated[updated.length - 1];
               if (lastMessage?.role === "assistant") {
-                lastMessage.content = cleanText;
-                lastMessage.contentSegments = snapshotSegments();
-                lastMessage.textFragments = [...textFragments];
-                lastMessage.thinkingFragments = [...thinkingFragments];
-                lastMessage._streamingOutputCharacters = outputCharacters || 0;
-                lastMessage._streamingStartTime = firstChunkTime;
-                lastMessage._streamingLastChunkTime = now;
-                lastMessage._streamingBurstTokens = burstTokens;
-                lastMessage._streamingBurstElapsed = burstElapsed;
+                updated[updated.length - 1] = {
+                  ...lastMessage,
+                  content: cleanText,
+                  contentSegments: snapshotSegments(),
+                  textFragments: [...textFragments],
+                  thinkingFragments: [...thinkingFragments],
+                  _streamingOutputCharacters: outputCharacters || 0,
+                  _streamingStartTime: firstChunkTime,
+                  _streamingLastChunkTime: now,
+                  _streamingBurstTokens: burstTokens,
+                  _streamingBurstElapsed: burstElapsed,
+                };
               } else {
                 updated.push({
                   role: "assistant",
@@ -3254,14 +3257,17 @@ export default function ChatSessionComponent({
               const updated = [...previousMessages];
               const lastMessage = updated[updated.length - 1];
               if (lastMessage?.role === "assistant") {
-                lastMessage.thinking = streamedThinking;
-                lastMessage.contentSegments = snapshotSegments();
-                lastMessage.thinkingFragments = [...thinkingFragments];
-                lastMessage._streamingOutputCharacters = outputCharacters || 0;
-                lastMessage._streamingStartTime = firstChunkTime;
-                lastMessage._streamingLastChunkTime = now;
-                lastMessage._streamingBurstTokens = burstTokens;
-                lastMessage._streamingBurstElapsed = burstElapsed;
+                updated[updated.length - 1] = {
+                  ...lastMessage,
+                  thinking: streamedThinking,
+                  contentSegments: snapshotSegments(),
+                  thinkingFragments: [...thinkingFragments],
+                  _streamingOutputCharacters: outputCharacters || 0,
+                  _streamingStartTime: firstChunkTime,
+                  _streamingLastChunkTime: now,
+                  _streamingBurstTokens: burstTokens,
+                  _streamingBurstElapsed: burstElapsed,
+                };
               } else {
                 updated.push({
                   role: "assistant",
