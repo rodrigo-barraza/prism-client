@@ -123,32 +123,35 @@ export default function StatusBarComponent({
   const [displayPercentage, setDisplayPercentage] = useState(0);
   const syntheticStartRef = useRef<number | null>(null);
   const highWaterMarkRef = useRef(0);
+  const previousPhaseRef = useRef<StatusBarPhase | undefined>(undefined);
 
   useEffect(() => {
     if (!active) {
       setDisplayPercentage(0);
       syntheticStartRef.current = null;
       highWaterMarkRef.current = 0;
+      previousPhaseRef.current = undefined;
       return;
     }
 
-    if (!syntheticStartRef.current) {
+    // Reset on phase change — bar restarts from 0
+    if (phase !== previousPhaseRef.current) {
+      previousPhaseRef.current = phase;
       syntheticStartRef.current = performance.now();
+      highWaterMarkRef.current = 0;
+      setDisplayPercentage(0);
     }
 
     const intervalId = setInterval(() => {
-      const elapsed = performance.now() - (syntheticStartRef.current ?? 0);
+      const elapsed = performance.now() - (syntheticStartRef.current ?? performance.now());
 
-      // Synthetic asymptotic: fast at first, exponentially slower
       const synthetic = Math.min(
         MAX_SYNTHETIC,
         1 - Math.exp(-elapsed / ASYMPTOTIC_TIME_CONSTANT_MS),
       );
 
-      // Real backend progress if available
       const real = progress != null && progress > 0 ? progress : 0;
 
-      // Take the highest of synthetic, real, and previous peak
       const candidate = Math.max(synthetic, real, highWaterMarkRef.current);
       highWaterMarkRef.current = candidate;
 
@@ -156,7 +159,7 @@ export default function StatusBarComponent({
     }, SYNTHETIC_TICK_MS);
 
     return () => clearInterval(intervalId);
-  }, [active, progress]);
+  }, [active, progress, phase]);
 
   const rawLabel =
     label || (PHASE_LABELS as Record<string, string>)[phase ?? ""] || "Starting...";
