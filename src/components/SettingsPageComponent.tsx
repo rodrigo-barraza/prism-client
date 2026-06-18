@@ -56,6 +56,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import ToolLinkComponent from "./ToolLinkComponent";
+import TopologyGraphComponent from "./TopologyGraphComponent";
 import styles from "./SettingsPageComponent.module.css";
 
 import type {
@@ -1167,17 +1168,7 @@ export default function SettingsPageComponent() {
                           Sub-agents execute one at a time. Each receives the
                           previous agent&apos;s output as context, forming a chain.
                         </p>
-                        <pre className={styles["topology-tooltip-diagram"]}>
-{`  [Orchestrator]
-        │
-     [Agent A]
-        │ output
-     [Agent B]
-        │ output
-     [Agent C]
-        │
-    [Results]`}
-                        </pre>
+                        <TopologyGraphComponent topologyId="sequential" />
                       </div>
                     ),
                   },
@@ -1192,15 +1183,7 @@ export default function SettingsPageComponent() {
                           Sub-agents execute in parallel. The orchestrator
                           selects the best result. Branches never merge.
                         </p>
-                        <pre className={styles["topology-tooltip-diagram"]}>
-{`  [Orchestrator]
-     /   |   \\
-  [A]   [B]  [C]
-   |     |    |
-  (pick winner)
-        │
-    [Results]`}
-                        </pre>
+                        <TopologyGraphComponent topologyId="hierarchical" />
                       </div>
                     ),
                   },
@@ -1215,15 +1198,7 @@ export default function SettingsPageComponent() {
                           Sub-agents execute in parallel, then a synthesis pass
                           merges all outputs into a unified result.
                         </p>
-                        <pre className={styles["topology-tooltip-diagram"]}>
-{`  [Orchestrator]
-     /   |   \\
-  [A]   [B]  [C]
-     \\   |   /
-     [Merge]
-        │
-    [Results]`}
-                        </pre>
+                        <TopologyGraphComponent topologyId="hierarchical_aggregation" />
                       </div>
                     ),
                   },
@@ -1239,15 +1214,7 @@ export default function SettingsPageComponent() {
                           discussion. Each agent sees all prior messages from
                           every other agent.
                         </p>
-                        <pre className={styles["topology-tooltip-diagram"]}>
-{`  [Orchestrator]
-     /       \\
-  [A] ←————→ [B]
-    \\   ↗   /
-     [C]
-      │
-  [Results]`}
-                        </pre>
+                        <TopologyGraphComponent topologyId="peer_to_peer" />
                       </div>
                     ),
                   },
@@ -1286,19 +1253,7 @@ export default function SettingsPageComponent() {
                           acts, observes results, and iterates — one step at a
                           time. Default and most efficient strategy.
                         </p>
-                        <pre className={styles["topology-tooltip-diagram"]}>
-{`  [Prompt]
-     │
-  [Reason]
-     │
-   [Act]
-     │
-  [Observe]
-     │
-  [Reason] → ...
-     │
-  [Answer]`}
-                        </pre>
+                        <TopologyGraphComponent topologyId="chain_of_thought" />
                       </div>
                     ),
                   },
@@ -1315,22 +1270,7 @@ export default function SettingsPageComponent() {
                           selects the best, and backtracks with reflexion on
                           validation failure.
                         </p>
-                        <pre className={styles["topology-tooltip-diagram"]}>
-{`  [Prompt]
-   / | \\
- [A] [B] [C]  ← branches
-  |   |   |
- (score & rank)
-      │
-  [Best Branch]
-      │
-   [Act]
-      │
-  [Observe]
-      │
-  (validate or
-   backtrack)`}
-                        </pre>
+                        <TopologyGraphComponent topologyId="tree_of_thoughts" />
                       </div>
                     ),
                   },

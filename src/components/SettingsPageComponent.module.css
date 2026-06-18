@@ -1196,12 +1196,6 @@
   opacity: 0.7;
 }
 
-.topology-tooltip-diagram {
-  font-size: 11px;
-  line-height: 1.4;
-  margin: 0;
-  font-family: var(--font-mono, monospace);
-}
 
 /* ── Responsive ────────────────────────────────────────────── */
 

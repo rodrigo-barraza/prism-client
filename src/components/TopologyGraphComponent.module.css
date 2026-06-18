@@ -1,0 +1,91 @@
+/* ═══════════════════════════════════════════════════════════════════
+   TopologyGraphComponent — Mini SVG topology diagrams for tooltips
+   Renders static node-and-edge graphs illustrating multi-agent
+   coordination patterns (sequential, hierarchical, aggregation, mesh).
+   ═══════════════════════════════════════════════════════════════════ */
+
+.topology-graph-container {
+  display: flex;
+  justify-content: center;
+  padding-block: 4px;
+}
+
+.topology-graph-canvas {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+}
+
+/* ── Node labels ─────────────────────────────────────────── */
+
+.topology-node-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  fill: oklch(0.95 0 0);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Entrance animation for nodes ────────────────────────── */
+
+@keyframes topology-node-scale-in {
+  0% {
+    scale: 0;
+    opacity: 0;
+  }
+  60% {
+    scale: 1.1;
+    opacity: 1;
+  }
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+.topology-node-group {
+  transform-origin: center;
+  animation: topology-node-scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.topology-node-group:nth-child(1) { animation-delay: 0ms; }
+.topology-node-group:nth-child(2) { animation-delay: 50ms; }
+.topology-node-group:nth-child(3) { animation-delay: 100ms; }
+.topology-node-group:nth-child(4) { animation-delay: 150ms; }
+.topology-node-group:nth-child(5) { animation-delay: 200ms; }
+.topology-node-group:nth-child(6) { animation-delay: 250ms; }
+
+/* ── Edge entrance animation ─────────────────────────────── */
+
+@keyframes topology-edge-draw {
+  from {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.topology-edge-line {
+  animation: topology-edge-draw 0.5s ease-out 0.15s both;
+  stroke-dasharray: 100;
+}
+
+/* ── Edge flow animation (directional pulse) ─────────────── */
+
+@keyframes topology-edge-flow {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+
+.topology-edge-flow-line {
+  stroke-dasharray: 4 4;
+  animation: topology-edge-flow 1.2s linear infinite;
+}

@@ -1,0 +1,329 @@
+"use client";
+
+import styles from "./TopologyGraphComponent.module.css";
+
+/* ═══════════════════════════════════════════════════════════════════
+   TopologyGraphComponent — Static SVG mini-graph for topology tooltips
+
+   Renders a small, animated node-and-edge diagram illustrating how
+   sub-agents coordinate under each multi-agent topology. Designed to
+   fit inside the rich tooltip (max-width: 320px) used by the
+   SelectComponent in Settings → Agent Defaults → Subagent Topology.
+   ═══════════════════════════════════════════════════════════════════ */
+
+interface TopologyNode {
+  id: string;
+  label: string;
+  positionX: number;
+  positionY: number;
+  radius: number;
+  fillColor: string;
+}
+
+interface TopologyEdge {
+  sourceId: string;
+  targetId: string;
+  isBidirectional?: boolean;
+}
+
+interface TopologyDefinition {
+  viewBoxWidth: number;
+  viewBoxHeight: number;
+  nodes: TopologyNode[];
+  edges: TopologyEdge[];
+}
+
+const ORCHESTRATOR_COLOR = "oklch(0.60 0.18 280)";
+const AGENT_COLOR = "oklch(0.60 0.16 160)";
+const RESULT_COLOR = "oklch(0.55 0.14 45)";
+const MERGE_COLOR = "oklch(0.58 0.16 330)";
+
+function buildSequentialTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 160,
+    nodes: [
+      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "agent-a", label: "A", positionX: 140, positionY: 52, radius: 14, fillColor: AGENT_COLOR },
+      { id: "agent-b", label: "B", positionX: 140, positionY: 84, radius: 14, fillColor: AGENT_COLOR },
+      { id: "agent-c", label: "C", positionX: 140, positionY: 116, radius: 14, fillColor: AGENT_COLOR },
+      { id: "results", label: "Result", positionX: 140, positionY: 148, radius: 14, fillColor: RESULT_COLOR },
+    ],
+    edges: [
+      { sourceId: "orchestrator", targetId: "agent-a" },
+      { sourceId: "agent-a", targetId: "agent-b" },
+      { sourceId: "agent-b", targetId: "agent-c" },
+      { sourceId: "agent-c", targetId: "results" },
+    ],
+  };
+}
+
+function buildHierarchicalTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 140,
+    nodes: [
+      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "agent-a", label: "A", positionX: 60, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
+      { id: "agent-b", label: "B", positionX: 140, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
+      { id: "agent-c", label: "C", positionX: 220, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
+      { id: "results", label: "Winner", positionX: 140, positionY: 122, radius: 14, fillColor: RESULT_COLOR },
+    ],
+    edges: [
+      { sourceId: "orchestrator", targetId: "agent-a" },
+      { sourceId: "orchestrator", targetId: "agent-b" },
+      { sourceId: "orchestrator", targetId: "agent-c" },
+      { sourceId: "agent-a", targetId: "results" },
+      { sourceId: "agent-b", targetId: "results" },
+      { sourceId: "agent-c", targetId: "results" },
+    ],
+  };
+}
+
+function buildAggregationTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 160,
+    nodes: [
+      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "agent-a", label: "A", positionX: 60, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
+      { id: "agent-b", label: "B", positionX: 140, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
+      { id: "agent-c", label: "C", positionX: 220, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
+      { id: "merge", label: "Merge", positionX: 140, positionY: 118, radius: 15, fillColor: MERGE_COLOR },
+      { id: "results", label: "Result", positionX: 140, positionY: 148, radius: 14, fillColor: RESULT_COLOR },
+    ],
+    edges: [
+      { sourceId: "orchestrator", targetId: "agent-a" },
+      { sourceId: "orchestrator", targetId: "agent-b" },
+      { sourceId: "orchestrator", targetId: "agent-c" },
+      { sourceId: "agent-a", targetId: "merge" },
+      { sourceId: "agent-b", targetId: "merge" },
+      { sourceId: "agent-c", targetId: "merge" },
+      { sourceId: "merge", targetId: "results" },
+    ],
+  };
+}
+
+function buildPeerToPeerTopology(): TopologyDefinition {
+  const centerX = 140;
+  const centerY = 80;
+  const agentRadius = 55;
+
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 160,
+    nodes: [
+      { id: "orchestrator", label: "Orch", positionX: centerX, positionY: 16, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      {
+        id: "agent-a",
+        label: "A",
+        positionX: centerX + Math.cos(-Math.PI / 6) * agentRadius,
+        positionY: centerY + Math.sin(-Math.PI / 6) * agentRadius,
+        radius: 14,
+        fillColor: AGENT_COLOR,
+      },
+      {
+        id: "agent-b",
+        label: "B",
+        positionX: centerX + Math.cos((7 * Math.PI) / 6) * agentRadius,
+        positionY: centerY + Math.sin((7 * Math.PI) / 6) * agentRadius,
+        radius: 14,
+        fillColor: AGENT_COLOR,
+      },
+      {
+        id: "agent-c",
+        label: "C",
+        positionX: centerX + Math.cos(Math.PI / 2) * agentRadius,
+        positionY: centerY + Math.sin(Math.PI / 2) * agentRadius,
+        radius: 14,
+        fillColor: AGENT_COLOR,
+      },
+      { id: "results", label: "Result", positionX: centerX, positionY: 148, radius: 14, fillColor: RESULT_COLOR },
+    ],
+    edges: [
+      { sourceId: "orchestrator", targetId: "agent-a" },
+      { sourceId: "orchestrator", targetId: "agent-b" },
+      { sourceId: "agent-a", targetId: "agent-b", isBidirectional: true },
+      { sourceId: "agent-b", targetId: "agent-c", isBidirectional: true },
+      { sourceId: "agent-a", targetId: "agent-c", isBidirectional: true },
+      { sourceId: "agent-c", targetId: "results" },
+    ],
+  };
+}
+
+function buildChainOfThoughtTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 180,
+    nodes: [
+      { id: "prompt", label: "Prompt", positionX: 140, positionY: 16, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "reason-1", label: "Reason", positionX: 140, positionY: 50, radius: 14, fillColor: AGENT_COLOR },
+      { id: "act", label: "Act", positionX: 140, positionY: 84, radius: 14, fillColor: "oklch(0.58 0.15 200)" },
+      { id: "observe", label: "Observe", positionX: 140, positionY: 118, radius: 14, fillColor: MERGE_COLOR },
+      { id: "reason-2", label: "Reason", positionX: 140, positionY: 148, radius: 12, fillColor: AGENT_COLOR },
+      { id: "answer", label: "Answer", positionX: 140, positionY: 172, radius: 14, fillColor: RESULT_COLOR },
+    ],
+    edges: [
+      { sourceId: "prompt", targetId: "reason-1" },
+      { sourceId: "reason-1", targetId: "act" },
+      { sourceId: "act", targetId: "observe" },
+      { sourceId: "observe", targetId: "reason-2" },
+      { sourceId: "reason-2", targetId: "answer" },
+    ],
+  };
+}
+
+function buildTreeOfThoughtsTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 200,
+    nodes: [
+      { id: "prompt", label: "Prompt", positionX: 140, positionY: 16, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "branch-a", label: "A", positionX: 60, positionY: 55, radius: 13, fillColor: AGENT_COLOR },
+      { id: "branch-b", label: "B", positionX: 140, positionY: 55, radius: 13, fillColor: AGENT_COLOR },
+      { id: "branch-c", label: "C", positionX: 220, positionY: 55, radius: 13, fillColor: AGENT_COLOR },
+      { id: "score", label: "Score", positionX: 140, positionY: 92, radius: 14, fillColor: MERGE_COLOR },
+      { id: "best", label: "Best", positionX: 140, positionY: 122, radius: 13, fillColor: RESULT_COLOR },
+      { id: "act", label: "Act", positionX: 140, positionY: 150, radius: 13, fillColor: "oklch(0.58 0.15 200)" },
+      { id: "validate", label: "Valid?", positionX: 140, positionY: 180, radius: 14, fillColor: "oklch(0.55 0.14 90)" },
+    ],
+    edges: [
+      { sourceId: "prompt", targetId: "branch-a" },
+      { sourceId: "prompt", targetId: "branch-b" },
+      { sourceId: "prompt", targetId: "branch-c" },
+      { sourceId: "branch-a", targetId: "score" },
+      { sourceId: "branch-b", targetId: "score" },
+      { sourceId: "branch-c", targetId: "score" },
+      { sourceId: "score", targetId: "best" },
+      { sourceId: "best", targetId: "act" },
+      { sourceId: "act", targetId: "validate" },
+    ],
+  };
+}
+
+const TOPOLOGY_BUILDERS: Record<string, () => TopologyDefinition> = {
+  sequential: buildSequentialTopology,
+  hierarchical: buildHierarchicalTopology,
+  hierarchical_aggregation: buildAggregationTopology,
+  peer_to_peer: buildPeerToPeerTopology,
+  chain_of_thought: buildChainOfThoughtTopology,
+  tree_of_thoughts: buildTreeOfThoughtsTopology,
+};
+
+function computeEdgePath(
+  sourceNode: TopologyNode,
+  targetNode: TopologyNode,
+): string {
+  const deltaX = targetNode.positionX - sourceNode.positionX;
+  const deltaY = targetNode.positionY - sourceNode.positionY;
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+
+  const unitX = deltaX / distance;
+  const unitY = deltaY / distance;
+
+  const startX = sourceNode.positionX + unitX * sourceNode.radius;
+  const startY = sourceNode.positionY + unitY * sourceNode.radius;
+  const endX = targetNode.positionX - unitX * targetNode.radius;
+  const endY = targetNode.positionY - unitY * targetNode.radius;
+
+  return `M ${startX} ${startY} L ${endX} ${endY}`;
+}
+
+export interface TopologyGraphComponentProps {
+  topologyId: string;
+}
+
+export default function TopologyGraphComponent({ topologyId }: TopologyGraphComponentProps) {
+  const builder = TOPOLOGY_BUILDERS[topologyId];
+  if (!builder) return null;
+
+  const topology = builder();
+  const nodeMap = new Map(topology.nodes.map((node) => [node.id, node]));
+
+  return (
+    <div className={styles["topology-graph-container"]}>
+      <svg
+        className={styles["topology-graph-canvas"]}
+        viewBox={`0 0 ${topology.viewBoxWidth} ${topology.viewBoxHeight}`}
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <marker
+            id={`topology-arrowhead-${topologyId}`}
+            markerWidth="6"
+            markerHeight="5"
+            refX="5"
+            refY="2.5"
+            orient="auto"
+          >
+            <polygon
+              points="0 0, 6 2.5, 0 5"
+              fill="oklch(0.7 0 0 / 0.6)"
+            />
+          </marker>
+        </defs>
+
+        {topology.edges.map((edge) => {
+          const sourceNode = nodeMap.get(edge.sourceId);
+          const targetNode = nodeMap.get(edge.targetId);
+          if (!sourceNode || !targetNode) return null;
+
+          const edgePath = computeEdgePath(sourceNode, targetNode);
+          const edgeKey = `${edge.sourceId}-${edge.targetId}`;
+
+          return (
+            <g key={edgeKey}>
+              <path
+                d={edgePath}
+                stroke="oklch(0.7 0 0 / 0.25)"
+                strokeWidth={1.5}
+                fill="none"
+                className={styles["topology-edge-line"]}
+                markerEnd={`url(#topology-arrowhead-${topologyId})`}
+              />
+              {edge.isBidirectional && (
+                <path
+                  d={edgePath}
+                  stroke="oklch(0.7 0 0 / 0.15)"
+                  strokeWidth={1}
+                  fill="none"
+                  className={styles["topology-edge-flow-line"]}
+                />
+              )}
+            </g>
+          );
+        })}
+
+        {topology.nodes.map((node) => (
+          <g
+            key={node.id}
+            className={styles["topology-node-group"]}
+          >
+            <circle
+              cx={node.positionX}
+              cy={node.positionY}
+              r={node.radius}
+              fill={node.fillColor}
+              opacity={0.9}
+            />
+            <circle
+              cx={node.positionX}
+              cy={node.positionY}
+              r={node.radius}
+              fill="none"
+              stroke="oklch(1 0 0 / 0.12)"
+              strokeWidth={1}
+            />
+            <text
+              x={node.positionX}
+              y={node.positionY}
+              className={styles["topology-node-label"]}
+            >
+              {node.label}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
