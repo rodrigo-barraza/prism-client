@@ -856,7 +856,6 @@ export default function SettingsPanel({
                   <ToggleSwitch
                     checked={toggle.checked}
                     onChange={(value: boolean) => toggle.onChange?.(value)}
-                    size="mini"
                   />
                 )}
               </div>
@@ -1097,24 +1096,42 @@ export default function SettingsPanel({
                   }
                 };
 
+                const filteredTools = selectedModelDef.tools
+                  .filter((tool) => !(sessionType === "agent" && tool === "Tool Calling"))
+                  .sort((firstTool, secondTool) => {
+                    if (firstTool === "Thinking") return -1;
+                    if (secondTool === "Thinking") return 1;
+                    return 0;
+                  });
+
                 return (
                   <>
-                    {selectedModelDef.tools
-                      .filter((tool) => !(sessionType === "agent" && tool === "Tool Calling"))
-                      .map((tool) => {
+                    {filteredTools.map((tool) => {
                       const toggle = TOGGLEABLE_TOOLS.has(tool)
                         ? getToolToggle(tool)
                         : null;
+                      const isThinking = tool === "Thinking";
                       return (
                         <div
                           key={tool}
                           className={`${styles['modality-layout-row']} ${toggle ? styles['tool-toggle-layout-row'] : ""}`}
                         >
-                          <ToolBadgeComponent
-                            name={getToolLabel(tool)}
-                            tooltip={tool}
-                          />
-                          <span style={{ flex: 1 }} />
+                          {isThinking ? (
+                            <>
+                              <span className={styles['modality-icon']}>
+                                <Brain size={12} />
+                              </span>
+                              <span className={styles['modality-name']}>Thinking</span>
+                            </>
+                          ) : (
+                            <>
+                              <ToolBadgeComponent
+                                name={getToolLabel(tool)}
+                                tooltip={tool}
+                              />
+                              <span style={{ flex: 1 }} />
+                            </>
+                          )}
                           {readOnly ? (
                             toggle ? (
                               <span
@@ -1140,7 +1157,6 @@ export default function SettingsPanel({
                               checked={toggle.checked}
                               onChange={toggle.onChange}
                               disabled={toggle.disabled}
-                              size="mini"
                             />
                           ) : (
                             <span
