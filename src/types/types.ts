@@ -395,6 +395,8 @@ export interface Conversation {
   toolCounts?: Record<string, number>;
   /** Backend-enriched: parent agent session ID if spawned as sub-agent */
   parentAgentSessionId?: string | null;
+  /** Backend-enriched: true if this session has spawned sub-agents */
+  hasSubAgents?: boolean;
   /** Backend-enriched: count of requests with errors (success === false) */
   requestErrorCount?: number;
 }
@@ -424,6 +426,7 @@ export interface AgentSession {
   createdAt: string;
   updatedAt: string;
   parentAgentSessionId?: string | null;
+  hasSubAgents?: boolean;
 }
 
 export interface AgentSessionListResponse {

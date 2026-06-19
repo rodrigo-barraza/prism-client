@@ -925,6 +925,14 @@ export default function ChatSessionComponent({
   const [generatingSessionIds, setGeneratingSessionIds] = useState(
     () => new Set(),
   );
+
+  const knownParentSessionIds = useMemo(() => {
+    const parentIds = new Set<string>();
+    if (activeId && subAgentsCount > 0) {
+      parentIds.add(activeId);
+    }
+    return parentIds;
+  }, [activeId, subAgentsCount]);
   // Snapshot cache: stores UI state for sessions that are generating in the background
   // so the user can switch back without waiting for backend persistence.
   const backgroundSessionsRef = useRef<Map<string, SessionSnapshot>>(new Map());
@@ -7130,6 +7138,7 @@ export default function ChatSessionComponent({
               onDateChange={adminHeaderContext.setDateRange}
               initialProviders={adminProviderFilter ? [adminProviderFilter] : undefined}
               initialSearch={adminSessionFilter || undefined}
+              knownParentSessionIds={knownParentSessionIds}
             />
           ) : (
             <HistoryPanel
@@ -7144,6 +7153,7 @@ export default function ChatSessionComponent({
               searchText="Search sessions..."
               countLabel="sessions"
               generatingSessionIds={generatingSessionIds as Set<string>}
+              knownParentSessionIds={knownParentSessionIds}
               hasMore={sessionsHasMore}
               loadingMore={sessionsLoading}
               onLoadMore={loadMoreSessions}

@@ -35,6 +35,7 @@ interface HistoryListItem {
   username?: string;
   agent?: string | { id: string; name?: string };
   parentAgentSessionId?: string | null;
+  hasSubAgents?: boolean;
   requestErrorCount?: number;
 }
 
@@ -86,6 +87,7 @@ interface HistoryListProps {
   countLabel?: string;
   onOpenInNewTab?: (item: HistoryListItem) => void;
   generatingSessionIds?: Set<string>;
+  knownParentSessionIds?: Set<string>;
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => void;
@@ -137,6 +139,7 @@ export default function HistoryList({
   countLabel,
   onOpenInNewTab,
   generatingSessionIds,
+  knownParentSessionIds,
   // Pagination
   hasMore = false,
   loadingMore = false,
@@ -316,14 +319,17 @@ export default function HistoryList({
   }, [items]);
 
   const parentAgentSessionIds = useMemo(() => {
-    const parentIds = new Set<string>();
+    const parentIds = new Set<string>(knownParentSessionIds);
     for (const item of items || []) {
       if (item.parentAgentSessionId) {
         parentIds.add(item.parentAgentSessionId);
       }
+      if (item.hasSubAgents) {
+        parentIds.add(item.id);
+      }
     }
     return parentIds;
-  }, [items]);
+  }, [items, knownParentSessionIds]);
 
   const filtered = useMemo(() => {
     return (items || []).filter((item: HistoryListItem) => {

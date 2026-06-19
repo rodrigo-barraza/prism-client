@@ -38,6 +38,7 @@ interface HistoryItem {
   username?: string;
   agent?: string | AgentRef;
   parentAgentSessionId?: string | null;
+  hasSubAgents?: boolean;
 }
 
 interface HistoryItemProps {
@@ -248,7 +249,7 @@ export default function HistoryItemComponent({
                 )}
               </span>
             )}
-            {hasSpawnedSubAgents && !item.parentAgentSessionId && (
+            {(item.hasSubAgents || hasSpawnedSubAgents) && !item.parentAgentSessionId && (
               <span className={styles['parent-agent-emoji']} title="Parent Agent (spawned sub-agents)">
                 🧬
               </span>

@@ -24,6 +24,7 @@ export interface MappedHistoryItem {
   modelName: string | null;
   agent?: string | AgentRef;
   parentAgentSessionId?: string | null;
+  hasSubAgents?: boolean;
   searchText?: string;
   requestErrorCount?: number;
 }
@@ -101,6 +102,7 @@ export function mapConversationToHistoryItem(
     modelName: conversation.model || conversation.settings?.model || null,
     agent: conversation.agent,
     parentAgentSessionId: conversation.parentAgentSessionId || null,
+    hasSubAgents: conversation.hasSubAgents || false,
     searchText: searchTextParts.join(" "),
     requestErrorCount: conversation.requestErrorCount || 0,
   };
@@ -162,6 +164,7 @@ export function mapAgentSessionToHistoryItem(
     modalities,
     agent: session.agent,
     parentAgentSessionId: session.parentAgentSessionId || null,
+    hasSubAgents: session.hasSubAgents || false,
     tags,
     requestErrorCount: sessionStats?.requestErrorCount || 0,
   };
