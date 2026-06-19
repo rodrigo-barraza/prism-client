@@ -267,6 +267,12 @@
 
 .tool-toggle-layout-row {
   padding: 6px 10px;
+
+  & :global(.toggle-component) {
+    width: auto;
+    padding: 0;
+    flex-shrink: 0;
+  }
 }
 
 .pricing-value {
