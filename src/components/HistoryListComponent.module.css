@@ -74,7 +74,7 @@
   border: 1px solid oklch(0.65 0.18 277 / 0.25);
   border-inline-start: 3px solid oklch(0.65 0.18 277 / 0.5);
   background: oklch(0.65 0.18 277 / 0.03);
-  overflow: hidden;
+  overflow: clip;
   transition:
     border-color 0.2s ease,
     background-color 0.2s ease,
