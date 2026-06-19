@@ -192,6 +192,7 @@ interface AgentsDetailPanelComponentProps {
   isConfirmingDelete: boolean;
   errorMessage: string | null;
   availableTools: ToolSchema[];
+  builtInAgentTools?: ToolSchema[] | null;
   onUpdateField: <K extends keyof EditableAgent>(field: K, value: EditableAgent[K]) => void;
   onSave: () => void;
   onCancelEdit: () => void;
@@ -209,6 +210,7 @@ export default function AgentsDetailPanelComponent({
   isConfirmingDelete,
   errorMessage,
   availableTools,
+  builtInAgentTools,
   onUpdateField,
   onSave,
   onCancelEdit,
@@ -911,10 +913,10 @@ export default function AgentsDetailPanelComponent({
 
           {/* Allowed tools list */}
           <ToolSelectionComponent
-            availableTools={availableTools}
+            availableTools={builtInAgentTools || availableTools}
             enabledTools={
               selectedBuiltInAgent.enabledToolNames?.includes("*")
-                ? availableTools.map((tool) => tool.name)
+                ? (builtInAgentTools || availableTools).map((tool) => tool.name)
                 : selectedBuiltInAgent.enabledToolNames || []
             }
             coreToolsLocked={true}

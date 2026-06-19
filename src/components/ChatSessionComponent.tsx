@@ -4891,6 +4891,7 @@ export default function ChatSessionComponent({
         ...SETTINGS_DEFAULTS,
         provider: currentSettings.provider,
         model: currentSettings.model,
+        agents: currentSettings.agents,
         temperature: defaultTemperature,
         maxTokens: 64000,
         functionCallingEnabled: !isNoAgent,

@@ -74,6 +74,7 @@ export default function AgentsPageComponent() {
   const [builtInAgents, setBuiltInAgents] = useState<AgentPersona[]>([]);
   const [customAgents, setCustomAgents] = useState<EditableAgent[]>([]);
   const [availableTools, setAvailableTools] = useState<ToolSchema[]>([]);
+  const [selectedBuiltInAgentTools, setSelectedBuiltInAgentTools] = useState<ToolSchema[] | null>(null);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [isCreateMode, setIsCreateMode] = useState(false);
   const [editingAgent, setEditingAgent] = useState<EditableAgent | null>(null);
@@ -141,6 +142,9 @@ export default function AgentsPageComponent() {
         const firstAgentId = allBuiltIn[0].id;
         setSelectedAgentId(firstAgentId);
         updateUrlAgentParameter(allBuiltIn[0].name);
+        PrismService.getBuiltInToolSchemas(firstAgentId)
+          .then((agentTools) => setSelectedBuiltInAgentTools(agentTools))
+          .catch(() => setSelectedBuiltInAgentTools(null));
       }
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
@@ -169,6 +173,7 @@ export default function AgentsPageComponent() {
       setErrorMessage(null);
 
       if (isCustom) {
+        setSelectedBuiltInAgentTools(null);
         const foundCustomAgent = customAgents.find((agent) => String(agent._id) === agentId);
         if (foundCustomAgent) {
           setEditingAgent({
@@ -183,6 +188,9 @@ export default function AgentsPageComponent() {
         setEditingAgent(null);
         const agentDisplayName = resolveAgentDisplayName(agentId, builtInAgents, customAgents);
         updateUrlAgentParameter(agentDisplayName);
+        PrismService.getBuiltInToolSchemas(agentId)
+          .then((agentTools) => setSelectedBuiltInAgentTools(agentTools))
+          .catch(() => setSelectedBuiltInAgentTools(null));
       }
     },
     [customAgents, builtInAgents, updateUrlAgentParameter],
@@ -359,6 +367,7 @@ export default function AgentsPageComponent() {
         isConfirmingDelete={isConfirmingDelete}
         errorMessage={errorMessage}
         availableTools={availableTools}
+        builtInAgentTools={selectedBuiltInAgentTools}
         onUpdateField={updateField}
         onSave={handleSave}
         onCancelEdit={handleCancelEdit}
