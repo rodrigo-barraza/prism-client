@@ -280,7 +280,7 @@ export default function BenchmarkDetailPageComponent({
 
   // Smart row click: running rows switch the live preview, completed rows set selectedResult
   const handleStreamingRowClick = useCallback(
-    (row: BenchmarkRunResult & { _running?: boolean; _pending?: boolean }) => {
+    (row: BenchmarkRunResult & { _running?: boolean; _pending?: boolean; _progress?: number; _phase?: string }) => {
       if (row._running) {
         // Switch live preview to this model
         const key = `${row.provider}:${row.model}`;
@@ -465,7 +465,7 @@ export default function BenchmarkDetailPageComponent({
         setActiveModels((prev) => {
           const next = new Map(prev);
           next.set(modelKey, {
-            model: data as any,
+            model: data as unknown as { provider: string; model: string; label?: string },
             progress: 0,
             phase: initialPhase,
           });
@@ -1549,8 +1549,8 @@ export default function BenchmarkDetailPageComponent({
                     <BenchmarksTableComponent
                       results={streamingResults}
                       expectedValue={benchmark.expectedValue}
-                      modelConfigMap={modelConfigMap}
-                      onRowClick={handleStreamingRowClick}
+                      modelConfigMap={modelConfigMap as unknown as Record<string, Record<string, unknown>>}
+                      onRowClick={handleStreamingRowClick as unknown as (row: BenchmarkRunResult | Partial<BenchmarkRunResult>) => void}
                       activeRowKey={getActiveKey(streamingResults)}
                       activeModels={activeModels}
                       pendingTargets={pendingTargets}
@@ -1656,8 +1656,8 @@ export default function BenchmarkDetailPageComponent({
               <BenchmarksTableComponent
                 results={latestRun.models}
                 expectedValue={benchmark.expectedValue}
-                modelConfigMap={modelConfigMap}
-                onRowClick={setSelectedResult}
+                modelConfigMap={modelConfigMap as unknown as Record<string, Record<string, unknown>>}
+                onRowClick={setSelectedResult as unknown as (row: BenchmarkRunResult | Partial<BenchmarkRunResult>) => void}
                 activeRowKey={getActiveKey(latestRun.models || [])}
               />
             </div>

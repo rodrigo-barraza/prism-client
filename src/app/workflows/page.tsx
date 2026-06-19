@@ -44,6 +44,7 @@ import type {
   Workflow as IWorkflow,
   WorkflowNode,
   WorkflowEdge,
+  WorkflowConnection,
   PrismConfig,
   Message,
   ModelOption,
@@ -69,7 +70,7 @@ function flattenConfigModels(config: PrismConfig): ModelOption[] {
   const modelsMap = new Map<string, ModelOption>();
 
   for (const section of MODEL_SECTIONS) {
-    const providers = (config as any)[section]?.models || {};
+    const providers = (config as unknown as Record<string, { models?: Record<string, ModelOption[]> }>)[section]?.models || {};
     for (const [provider, models] of Object.entries(providers) as [
       string,
       ModelOption[],
@@ -1252,7 +1253,7 @@ export default function WorkflowsPage({
             <div className={styles['inspector-container']}>
               <WorkflowInspector
                 node={selectedNode}
-                connections={edges as any}
+                connections={edges as unknown as WorkflowConnection[]}
                 nodes={nodes}
                 allModels={modelsWithModalities}
                 nodeResults={nodeResults}
@@ -1431,10 +1432,10 @@ export default function WorkflowsPage({
         )}
         <WorkflowCanvas
           nodes={nodes}
-          connections={edges as any}
+          connections={edges as unknown as WorkflowConnection[]}
           onUpdateNodePosition={handleUpdateNodePosition}
           onDeleteNode={handleDeleteNode}
-          onAddConnection={handleAddEdge as any}
+          onAddConnection={handleAddEdge as unknown as (conn: { sourceNodeId: string; sourceModality: string; targetNodeId: string; targetModality: string }) => void}
           onDeleteConnection={handleDeleteEdge}
           onUpdateNodeContent={handleUpdateNodeContent}
           onUpdateNodeConfig={handleUpdateNodeConfig}

@@ -325,7 +325,7 @@ export default function WorkflowCanvas({
       const currentNodes = nodesRef.current;
       const dragId =
         (draggingRef.current as { nodeId?: string })?.nodeId || null;
-      const updates: Record<string, any> = {};
+      const updates: Record<string, { x: number; y: number }> = {};
 
       for (let a = 0; a < currentNodes.length; a++) {
         for (let b = a + 1; b < currentNodes.length; b++) {
@@ -822,7 +822,7 @@ export default function WorkflowCanvas({
       targetOffset,
     );
     const color =
-      (MODALITY_COLORS as Record<string, any>)[conn.sourceModality] || "#888";
+      (MODALITY_COLORS as Record<string, string>)[conn.sourceModality] || "#888";
 
     const sourceStatus = nodeStatuses[conn.sourceNodeId];
     const isRunning = sourceStatus === "running";
@@ -891,7 +891,7 @@ export default function WorkflowCanvas({
   // Render the "in-progress" edge line
   const renderConnectingLine = () => {
     if (!connecting || !connectingMouse) return null;
-    const sourceNode = nodes.find((n: any) => n.id === connecting.sourceNodeId);
+    const sourceNode = nodes.find((n: IWorkflowNode) => n.id === connecting.sourceNodeId);
     if (!sourceNode) return null;
 
     const sourceIndex = (sourceNode.outputTypes || []).indexOf(
@@ -907,7 +907,7 @@ export default function WorkflowCanvas({
       srcOffset,
     );
     const color =
-      (MODALITY_COLORS as Record<string, any>)[connecting.sourceModality] ||
+      (MODALITY_COLORS as Record<string, string>)[connecting.sourceModality] ||
       "#888";
 
     return (
@@ -915,8 +915,8 @@ export default function WorkflowCanvas({
         d={edgePath(
           sourcePos.x,
           sourcePos.y,
-          (connectingMouse as any).x,
-          (connectingMouse as any).y,
+          (connectingMouse as { x: number; y: number }).x,
+          (connectingMouse as { x: number; y: number }).y,
         )}
         stroke={color}
         strokeWidth={2}
@@ -1001,7 +1001,7 @@ export default function WorkflowCanvas({
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
           {connections.map(renderConnection)}
           {renderConnectingLine()}
-          {nodes.map((node: any) => (
+          {nodes.map((node: IWorkflowNode) => (
             <WorkflowNode
               key={node.id}
               node={node}

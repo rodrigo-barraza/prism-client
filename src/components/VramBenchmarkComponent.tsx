@@ -53,6 +53,7 @@ import {
   StatsCardComponent as StatsCard,
   TabBarComponent,
 } from "@rodrigo-barraza/components-library";
+import type { SelectOption as SelectOptionType } from "@rodrigo-barraza/components-library";
 import { LoadingMessage, ErrorMessage } from "./StateMessageComponent";
 import styles from "./VramBenchmarkComponent.module.css";
 
@@ -2373,24 +2374,23 @@ export default function VramBenchmarkComponent() {
                 if (m.loadTimeMs)
                   lines.push(`Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
 
-                const sys: any = m.system;
-                const anyM: any = m;
+                const systemInfo = m.system;
 
-                if (sys?.cpuRam?.deltaMiB)
+                if (systemInfo?.cpuRam?.deltaMiB)
                   lines.push(
-                    `CPU RAM Δ: ${(sys.cpuRam.deltaMiB / 1024).toFixed(2)} GiB`,
+                    `CPU RAM Δ: ${(systemInfo.cpuRam.deltaMiB / 1024).toFixed(2)} GiB`,
                   );
-                if (sys?.gpu?.temp)
+                if (systemInfo?.gpu?.temp)
                   lines.push(
-                    `GPU: ${sys.gpu.temp}°C · ${sys.gpu.power || "?"}W`,
+                    `GPU: ${systemInfo.gpu.temp}°C · ${systemInfo.gpu.power || "?"}W`,
                   );
-                if (anyM.hysteresis?.leakedMiB > 0)
-                  lines.push(`⚠ VRAM leak: ${anyM.hysteresis.leakedMiB} MiB`);
+                if ((m.hysteresis?.leakedMiB ?? 0) > 0)
+                  lines.push(`⚠ VRAM leak: ${m.hysteresis!.leakedMiB} MiB`);
                 if (m.fitsInVram === false)
                   lines.push(`⚠ Does NOT fit in VRAM`);
-                if (anyM.generation?.outputTokens)
+                if (m.generation?.outputTokens)
                   lines.push(
-                    `Gen: ${anyM.generation.outputTokens} tokens in ${(anyM.generation.totalTimeMs / 1000).toFixed(1)}s`,
+                    `Gen: ${m.generation.outputTokens} tokens in ${((m.generation.totalTimeMs ?? 0) / 1000).toFixed(1)}s`,
                   );
                 if (m.settings?.label && m.settings.label !== "default")
                   lines.push(`Settings: ${m.settings.label}`);
@@ -2633,10 +2633,10 @@ export default function VramBenchmarkComponent() {
                 if (m.ttft?.ms) lines.push(` TTFT: ${m.ttft.ms.toFixed(0)} ms`);
                 if (m.loadTimeMs)
                   lines.push(` Load: ${(m.loadTimeMs / 1000).toFixed(1)}s`);
-                const sys: any = m.system;
-                if (sys?.gpu?.temp)
+                const systemInfo = m.system;
+                if (systemInfo?.gpu?.temp)
                   lines.push(
-                    ` GPU: ${sys.gpu.temp}°C · ${sys.gpu.power || "?"}W`,
+                    ` GPU: ${systemInfo.gpu.temp}°C · ${systemInfo.gpu.power || "?"}W`,
                   );
                 if (m.settings?.label && m.settings.label !== "default")
                   lines.push(` Settings: ${m.settings.label}`);
@@ -3991,7 +3991,7 @@ export default function VramBenchmarkComponent() {
                 setSettingsFilter(value);
                 setLoading(true);
               }}
-              triggerTooltip={(<SettingsMatrixTooltip />) as any}
+              triggerTooltipContent={<SettingsMatrixTooltip />}
               options={
                 [
                   {
@@ -4005,7 +4005,7 @@ export default function VramBenchmarkComponent() {
                     icon: <span>{SETTINGS_EMOJI[s] || "🛠️"}</span>,
                     tooltip: <SettingsTooltipContent settingsKey={s} />,
                   })),
-                ] as any
+                ] as SelectOptionType[]
               }
             />
             {activeView !== "context" && (

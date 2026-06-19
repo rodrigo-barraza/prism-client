@@ -1243,6 +1243,9 @@ export interface VramBenchmarkTtft {
 export interface VramBenchmarkSystem {
   hostname: string;
   gpu?: VramBenchmarkGpuTelemetry;
+  cpuRam?: {
+    deltaMiB?: number;
+  };
 }
 
 export interface VramBenchmarkSettings {
@@ -1276,6 +1279,13 @@ export interface VramBenchmarkEntry {
   system?: VramBenchmarkSystem;
   settings?: VramBenchmarkSettings;
   vramDuringGen?: VramBenchmarkVramDuringGen;
+  hysteresis?: {
+    leakedMiB?: number;
+  };
+  generation?: {
+    outputTokens?: number;
+    totalTimeMs?: number;
+  };
   createdAt?: string;
 }
 

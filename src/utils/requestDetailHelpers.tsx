@@ -500,16 +500,19 @@ export function reconstructChatMessages(
         ? responsePayload.choices?.[0]?.message?.tool_calls || responsePayload.toolCalls
         : undefined;
     if (Array.isArray(toolCalls) && toolCalls.length) {
-      assistantMessage.toolCalls = toolCalls.map(
-        (toolCall: any) => ({
-          id: toolCall.id,
-          name: toolCall.function?.name || toolCall.name || "",
+      assistantMessage.toolCalls = (toolCalls as Array<Record<string, unknown>>).map(
+        (toolCall) => ({
+          id: String(toolCall.id || ""),
+          name: String(
+            (toolCall.function as Record<string, unknown> | undefined)?.name ||
+            toolCall.name || ""
+          ),
           args:
-            typeof toolCall.function?.arguments === "string"
-              ? JSON.parse(toolCall.function.arguments)
-              : toolCall.function?.arguments || toolCall.args || {},
+            typeof (toolCall.function as Record<string, unknown> | undefined)?.arguments === "string"
+              ? JSON.parse((toolCall.function as Record<string, string>).arguments)
+              : (toolCall.function as Record<string, unknown> | undefined)?.arguments || toolCall.args || {},
           result: toolCall.result,
-          status: toolCall.status,
+          status: toolCall.status as string | undefined,
         }),
       );
     }

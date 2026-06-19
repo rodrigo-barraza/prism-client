@@ -100,9 +100,9 @@ export default function ModelsPageComponent({
 
   // Helper: merge config + LM data + stats into the allModels array
   const buildMergedModels = useCallback(
-    (config: PrismConfig | null, lmData: { models?: any[]; data?: any[] }, modelStats: any[]) => {
+    (config: PrismConfig | null, lmData: Record<string, unknown>, modelStats: Record<string, unknown>[]) => {
       const flat = flattenConfigModels(config);
-      const rawModelsList = lmData?.models || lmData?.data || [];
+      const rawModelsList = (lmData?.models || lmData?.data || []) as LmStudioApiModel[];
       const lmApiModels = rawModelsList.filter(
         (modelEntry: LmStudioApiModel) => modelEntry.type === "llm",
       );
@@ -111,20 +111,20 @@ export default function ModelsPageComponent({
       // Build usage map: "provider:model" → stats object
       const usageMap = new Map();
       let grandTotal = 0;
-      for (const s of modelStats) {
-        const key = `${s.provider}:${s.model}`;
+      for (const statRecord of modelStats) {
+        const key = `${statRecord.provider}:${statRecord.model}`;
         const existing = usageMap.get(key);
-        const totalRequests = typeof s.totalRequests === "number" ? s.totalRequests : 0;
-        const totalInputTokens = typeof s.totalInputTokens === "number" ? s.totalInputTokens : 0;
-        const totalOutputTokens = typeof s.totalOutputTokens === "number" ? s.totalOutputTokens : 0;
-        const totalTokens = typeof s.totalTokens === "number" ? s.totalTokens : 0;
-        const totalCost = typeof s.totalCost === "number" ? s.totalCost : 0;
-        const successCount = typeof s.successCount === "number" ? s.successCount : 0;
-        const errorCount = typeof s.errorCount === "number" ? s.errorCount : 0;
-        const avgLatency = typeof s.avgLatency === "number" ? s.avgLatency : 0;
-        const avgTokensPerSec = typeof s.avgTokensPerSec === "number" ? s.avgTokensPerSec : 0;
-        const firstUsed = s.firstUsed;
-        const lastUsed = s.lastUsed;
+        const totalRequests = typeof statRecord.totalRequests === "number" ? statRecord.totalRequests : 0;
+        const totalInputTokens = typeof statRecord.totalInputTokens === "number" ? statRecord.totalInputTokens : 0;
+        const totalOutputTokens = typeof statRecord.totalOutputTokens === "number" ? statRecord.totalOutputTokens : 0;
+        const totalTokens = typeof statRecord.totalTokens === "number" ? statRecord.totalTokens : 0;
+        const totalCost = typeof statRecord.totalCost === "number" ? statRecord.totalCost : 0;
+        const successCount = typeof statRecord.successCount === "number" ? statRecord.successCount : 0;
+        const errorCount = typeof statRecord.errorCount === "number" ? statRecord.errorCount : 0;
+        const avgLatency = typeof statRecord.avgLatency === "number" ? statRecord.avgLatency : 0;
+        const avgTokensPerSec = typeof statRecord.avgTokensPerSec === "number" ? statRecord.avgTokensPerSec : 0;
+        const firstUsed = statRecord.firstUsed;
+        const lastUsed = statRecord.lastUsed;
 
         if (existing) {
           existing.totalRequests += totalRequests;
@@ -252,7 +252,7 @@ export default function ModelsPageComponent({
         const cloudModels = buildMergedModels(
           baseConfig,
           { models: [] },
-          modelStats,
+          modelStats as Record<string, unknown>[],
         );
         setAllModels(cloudModels);
         setLoading(false);
@@ -265,7 +265,7 @@ export default function ModelsPageComponent({
       ]);
 
       // Rebuild with local models + LM Studio API data
-      const fullModels = buildMergedModels(mergedConfig, lmData, modelStats);
+      const fullModels = buildMergedModels(mergedConfig, lmData as Record<string, unknown>, modelStats as Record<string, unknown>[]);
       setAllModels(fullModels);
       hasLoadedRef.current = true;
     } catch (error: unknown) {
@@ -520,7 +520,7 @@ export default function ModelsPageComponent({
 
       {selectedModel && (
         <ModelDetailPanelComponent
-          model={selectedModel as any}
+          model={selectedModel as unknown as { provider: string; name: string; [key: string]: unknown }}
           onClose={() => setSelectedModel(null)}
         />
       )}

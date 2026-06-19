@@ -16,7 +16,44 @@ import {
   benchmarkDateColumn,
   benchmarkMatchModeColumn,
 } from "../utils/tableColumns";
+import type { BenchmarkRunResult } from "../types/types";
 import styles from "./BenchmarksTableComponent.module.css";
+
+interface ActiveModelEntry {
+  model: { provider: string; model: string; label?: string };
+  progress: number;
+  phase: string;
+}
+
+interface PendingTarget {
+  provider: string;
+  model: string;
+  display_name?: string;
+}
+
+interface BenchmarkDisplayRow extends Partial<BenchmarkRunResult> {
+  _running?: boolean;
+  _pending?: boolean;
+  _progress?: number;
+  _phase?: string;
+}
+
+interface BenchmarksTableComponentProps {
+  results?: BenchmarkRunResult[];
+  expectedValue?: string;
+  modelConfigMap?: Record<string, Record<string, unknown>>;
+  emptyText?: string;
+  mini?: boolean;
+  title?: React.ReactNode;
+  maxHeight?: number;
+  sortKey?: string;
+  sortDir?: string;
+  onSort?: (key: string, direction: string) => void;
+  onRowClick?: (row: BenchmarkRunResult | BenchmarkDisplayRow) => void;
+  activeRowKey?: string;
+  activeModels?: Map<string, ActiveModelEntry>;
+  pendingTargets?: PendingTarget[];
+}
 
 /**
  * BenchmarksTableComponent — reusable table for displaying benchmark run
@@ -47,7 +84,7 @@ export default function BenchmarksTableComponent({
   activeRowKey,
   activeModels = new Map(),
   pendingTargets = [],
-}: any) {
+}: BenchmarksTableComponentProps) {
   const columns = useMemo(
     () => [
       benchmarkStatusColumn(),
@@ -74,7 +111,7 @@ export default function BenchmarksTableComponent({
     if (!pendingTargets.length) {
       if (activeModels.size === 0) return results;
       // Append synthetic running rows for all active models
-      const runningRows = [...activeModels.values()].map((entry) => ({
+      const runningRows: BenchmarkDisplayRow[] = [...activeModels.values()].map((entry) => ({
         _running: true,
         _progress: entry.progress,
         _phase: entry.phase,
@@ -87,40 +124,40 @@ export default function BenchmarksTableComponent({
 
     // Eager population: build a row for every target
     // Track which targets have completed results by index (order-preserving)
-    const rows = [];
-    const completedByIndex = new Map();
+    const rows: BenchmarkDisplayRow[] = [];
+    const completedByIndex = new Map<number, BenchmarkRunResult>();
 
     // Map completed results back to their target index by matching provider + model/display_name
     // Results arrive in order, so the i-th result of a given provider:model corresponds
     // to the i-th target with that same provider:model.
-    const targetCounters = new Map(); // "provider:model" → indices among targets
-    const resultCounters = new Map(); // "provider:model" → next result index
+    const targetCounters = new Map<string, number[]>();
+    const resultCounters = new Map<string, number>();
 
     // First pass: count how many times each target key appears
-    for (let i = 0; i < pendingTargets.length; i++) {
-      const benchmarkTarget = pendingTargets[i];
-      const tKey = `${benchmarkTarget.provider}:${benchmarkTarget.model}`;
-      if (!targetCounters.has(tKey)) targetCounters.set(tKey, []);
-      targetCounters.get(tKey).push(i);
+    for (let targetIndex = 0; targetIndex < pendingTargets.length; targetIndex++) {
+      const benchmarkTarget = pendingTargets[targetIndex];
+      const targetKey = `${benchmarkTarget.provider}:${benchmarkTarget.model}`;
+      if (!targetCounters.has(targetKey)) targetCounters.set(targetKey, []);
+      targetCounters.get(targetKey)!.push(targetIndex);
     }
 
     // Map each result to its target index
-    for (const r of results) {
-      const rKey = `${r.provider}:${r.model}`;
-      const count = resultCounters.get(rKey) || 0;
-      const indices = targetCounters.get(rKey);
+    for (const result of results) {
+      const resultKey = `${result.provider}:${result.model}`;
+      const count = resultCounters.get(resultKey) || 0;
+      const indices = targetCounters.get(resultKey);
       if (indices && count < indices.length) {
-        completedByIndex.set(indices[count], r);
+        completedByIndex.set(indices[count], result);
       }
-      resultCounters.set(rKey, count + 1);
+      resultCounters.set(resultKey, count + 1);
     }
 
-    for (let i = 0; i < pendingTargets.length; i++) {
-      const target = pendingTargets[i];
+    for (let targetIndex = 0; targetIndex < pendingTargets.length; targetIndex++) {
+      const target = pendingTargets[targetIndex];
 
       // Check if this target has a completed result
-      if (completedByIndex.has(i)) {
-        rows.push(completedByIndex.get(i));
+      if (completedByIndex.has(targetIndex)) {
+        rows.push(completedByIndex.get(targetIndex)!);
         continue;
       }
 
@@ -130,11 +167,10 @@ export default function BenchmarksTableComponent({
 
       if (activeEntry) {
         // Verify it's the right instance (first unfinished one for this key)
-        const rKey = modelKey;
-        const completedCount = resultCounters.get(rKey) || 0;
-        const indices = targetCounters.get(rKey);
+        const completedCount = resultCounters.get(modelKey) || 0;
+        const indices = targetCounters.get(modelKey);
         const isActiveInstance =
-          indices && indices.indexOf(i) === completedCount;
+          indices && indices.indexOf(targetIndex) === completedCount;
 
         if (isActiveInstance) {
           rows.push({
@@ -162,14 +198,14 @@ export default function BenchmarksTableComponent({
   }, [results, activeModels, pendingTargets]);
 
   // Assign a CSS class for running/pending rows
-  const getRowClassName = useCallback((row: any) => {
+  const getRowClassName = useCallback((row: BenchmarkDisplayRow) => {
     if (row._running) return styles['running-layout-row'];
     if (row._pending) return styles['pending-layout-row'];
     return "";
   }, []);
 
   // Build a custom style variable for progress width on running rows
-  const getRowStyle = useCallback((row: any) => {
+  const getRowStyle = useCallback((row: BenchmarkDisplayRow) => {
     if (!row._running) return {};
     return {
       "--progress": `${(row._progress || 0) * 100}%`,
@@ -188,7 +224,7 @@ export default function BenchmarksTableComponent({
       onSort={onSort}
       onRowClick={onRowClick}
       activeRowKey={activeRowKey}
-      getRowKey={(r: any, i: number) => `${r.provider}:${r.label}:${i}`}
+      getRowKey={(row: BenchmarkDisplayRow, index: number) => `${row.provider}:${row.label}:${index}`}
       getRowClassName={getRowClassName}
       getRowStyle={getRowStyle}
       emptyText={emptyText}
