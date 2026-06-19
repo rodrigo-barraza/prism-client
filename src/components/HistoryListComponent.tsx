@@ -294,6 +294,19 @@ export default function HistoryList({
     return (items || []).some((item) => (item.requestErrorCount || 0) > 0);
   }, [items]);
 
+  const subAgentNumberMap = useMemo(() => {
+    const numberMap = new Map<string, number>();
+    const counterByParent = new Map<string, number>();
+    for (const item of items || []) {
+      if (item.parentAgentSessionId) {
+        const currentCount = (counterByParent.get(item.parentAgentSessionId) || 0) + 1;
+        counterByParent.set(item.parentAgentSessionId, currentCount);
+        numberMap.set(item.id, currentCount);
+      }
+    }
+    return numberMap;
+  }, [items]);
+
   const filtered = useMemo(() => {
     return (items || []).filter((item: HistoryListItem) => {
       if (shouldHideSubAgents && item.parentAgentSessionId) {
@@ -578,6 +591,7 @@ export default function HistoryList({
             }
             isGenerating={generatingSessionIds?.has?.(item.id)}
             isCondensed={true}
+            subAgentNumber={subAgentNumberMap.get(item.id) ?? null}
           />
         ))}
         {filtered.length === 0 && !loadingMore && (

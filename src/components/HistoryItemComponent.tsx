@@ -59,6 +59,7 @@ interface HistoryItemProps {
   isGenerating?: boolean;
   isCondensed?: boolean;
   children?: React.ReactNode;
+  subAgentNumber?: number | null;
 }
 
 /**
@@ -102,6 +103,7 @@ export default function HistoryItemComponent({
   isGenerating = false,
   isCondensed = false,
   children,
+  subAgentNumber,
 }: HistoryItemProps) {
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
@@ -239,7 +241,9 @@ export default function HistoryItemComponent({
               })()}
             {item.parentAgentSessionId && (
               <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
-                👷
+                👷{subAgentNumber != null && (
+                  <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
+                )}
               </span>
             )}
           </div>
