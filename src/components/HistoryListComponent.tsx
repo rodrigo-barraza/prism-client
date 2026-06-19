@@ -389,6 +389,59 @@ export default function HistoryList({
     showErrorsOnly,
   ]);
 
+  type SessionGroup = {
+    type: "standalone";
+    item: HistoryListItem;
+  } | {
+    type: "agent-cluster";
+    parent: HistoryListItem;
+    children: HistoryListItem[];
+  };
+
+  const groupedSessions = useMemo<SessionGroup[]>(() => {
+    const childrenByParent = new Map<string, HistoryListItem[]>();
+    const parentItemsInList = new Map<string, HistoryListItem>();
+
+    for (const item of filtered) {
+      if (item.parentAgentSessionId) {
+        const siblings = childrenByParent.get(item.parentAgentSessionId) || [];
+        siblings.push(item);
+        childrenByParent.set(item.parentAgentSessionId, siblings);
+      } else if (parentAgentSessionIds.has(item.id)) {
+        parentItemsInList.set(item.id, item);
+      }
+    }
+
+    const groups: SessionGroup[] = [];
+    const processedParentIds = new Set<string>();
+
+    for (const item of filtered) {
+      if (item.parentAgentSessionId) continue;
+
+      if (parentItemsInList.has(item.id)) {
+        processedParentIds.add(item.id);
+        const children = childrenByParent.get(item.id) || [];
+        if (children.length > 0) {
+          groups.push({ type: "agent-cluster", parent: item, children });
+        } else {
+          groups.push({ type: "standalone", item });
+        }
+      } else {
+        groups.push({ type: "standalone", item });
+      }
+    }
+
+    for (const [parentId, children] of childrenByParent) {
+      if (!processedParentIds.has(parentId)) {
+        for (const child of children) {
+          groups.push({ type: "standalone", item: child });
+        }
+      }
+    }
+
+    return groups;
+  }, [filtered, parentAgentSessionIds]);
+
   // -- Infinite scroll via IntersectionObserver -----------------
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -578,33 +631,94 @@ export default function HistoryList({
       )}
 
       <div className={styles['list']} ref={listRef}>
-        {filtered.map((item: HistoryListItem) => (
-          <HistoryItemComponent
-            key={item.id}
-            item={item}
-            isActive={item.id === activeId}
-            onClick={onSelect}
-            onDelete={onDelete}
-            onDownload={onDownload}
-            onCopy={onCopy}
-            icon={ItemIcon}
-            readOnly={readOnly}
-            admin={admin}
-            isNew={newIds?.has?.(item.id)}
-            isFavorite={(favorites || []).includes(item.id)}
-            onToggleFavorite={onToggleFavorite}
-            dataPanelClose
-            onOpenInNewTab={
-              onOpenInNewTab
-                ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
-                : undefined
-            }
-            isGenerating={generatingSessionIds?.has?.(item.id)}
-            isCondensed={true}
-            subAgentNumber={subAgentNumberMap.get(item.id) ?? null}
-            hasSpawnedSubAgents={parentAgentSessionIds.has(item.id)}
-          />
-        ))}
+        {groupedSessions.map((group) => {
+          if (group.type === "standalone") {
+            const item = group.item;
+            return (
+              <HistoryItemComponent
+                key={item.id}
+                item={item}
+                isActive={item.id === activeId}
+                onClick={onSelect}
+                onDelete={onDelete}
+                onDownload={onDownload}
+                onCopy={onCopy}
+                icon={ItemIcon}
+                readOnly={readOnly}
+                admin={admin}
+                isNew={newIds?.has?.(item.id)}
+                isFavorite={(favorites || []).includes(item.id)}
+                onToggleFavorite={onToggleFavorite}
+                dataPanelClose
+                onOpenInNewTab={
+                  onOpenInNewTab
+                    ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
+                    : undefined
+                }
+                isGenerating={generatingSessionIds?.has?.(item.id)}
+                isCondensed={true}
+                subAgentNumber={subAgentNumberMap.get(item.id) ?? null}
+                hasSpawnedSubAgents={parentAgentSessionIds.has(item.id)}
+              />
+            );
+          }
+
+          return (
+            <div key={group.parent.id} className={styles['agent-cluster-group']}>
+              <HistoryItemComponent
+                item={group.parent}
+                isActive={group.parent.id === activeId}
+                onClick={onSelect}
+                onDelete={onDelete}
+                onDownload={onDownload}
+                onCopy={onCopy}
+                icon={ItemIcon}
+                readOnly={readOnly}
+                admin={admin}
+                isNew={newIds?.has?.(group.parent.id)}
+                isFavorite={(favorites || []).includes(group.parent.id)}
+                onToggleFavorite={onToggleFavorite}
+                dataPanelClose
+                onOpenInNewTab={
+                  onOpenInNewTab
+                    ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
+                    : undefined
+                }
+                isGenerating={generatingSessionIds?.has?.(group.parent.id)}
+                isCondensed={true}
+                subAgentNumber={subAgentNumberMap.get(group.parent.id) ?? null}
+                hasSpawnedSubAgents={true}
+              />
+              {group.children.map((child) => (
+                <HistoryItemComponent
+                  key={child.id}
+                  item={child}
+                  isActive={child.id === activeId}
+                  onClick={onSelect}
+                  onDelete={onDelete}
+                  onDownload={onDownload}
+                  onCopy={onCopy}
+                  icon={ItemIcon}
+                  readOnly={readOnly}
+                  admin={admin}
+                  isNew={newIds?.has?.(child.id)}
+                  isFavorite={(favorites || []).includes(child.id)}
+                  onToggleFavorite={onToggleFavorite}
+                  dataPanelClose
+                  onOpenInNewTab={
+                    onOpenInNewTab
+                      ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
+                      : undefined
+                  }
+                  isGenerating={generatingSessionIds?.has?.(child.id)}
+                  isCondensed={true}
+                  subAgentNumber={subAgentNumberMap.get(child.id) ?? null}
+                  hasSpawnedSubAgents={parentAgentSessionIds.has(child.id)}
+                />
+              ))}
+            </div>
+          );
+        })}
         {filtered.length === 0 && !loadingMore && (
           <div className={styles['empty']}>
             {searchQuery.trim() ? "No matches" : emptyLabel}

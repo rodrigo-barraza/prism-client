@@ -62,3 +62,43 @@
   padding: 16px 0;
   flex-shrink: 0;
 }
+
+/* ── Agent Cluster Group (parent + sub-agents) ── */
+.agent-cluster-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-block: 4px;
+  margin-inline-end: 6px;
+  border-radius: 8px;
+  border: 1px solid oklch(0.65 0.18 277 / 0.25);
+  border-inline-start: 3px solid oklch(0.65 0.18 277 / 0.5);
+  background: oklch(0.65 0.18 277 / 0.03);
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: oklch(0.65 0.18 277 / 0.35);
+    background: oklch(0.65 0.18 277 / 0.05);
+    box-shadow: 0 1px 8px oklch(0.65 0.18 277 / 0.08);
+  }
+
+  & > :global(.history-item-component) {
+    border-inline-start: none;
+    border-radius: 0;
+  }
+
+  & > :global(.history-item-component):first-child {
+    border-start-start-radius: 6px;
+    border-start-end-radius: 6px;
+  }
+
+  & > :global(.history-item-component):last-child {
+    border-end-start-radius: 6px;
+    border-end-end-radius: 6px;
+    border-bottom: none;
+  }
+}
