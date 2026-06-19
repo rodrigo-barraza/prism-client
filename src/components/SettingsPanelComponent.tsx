@@ -837,149 +837,32 @@ export default function SettingsPanel({
           <div className={styles['section']}>
             <div className={styles['section-header']}>Agent Settings</div>
 
-            {/* Agent Toggles (Plan, Auto, Iterations) */}
-            {agentToggles?.map((toggle) => (
-              <div
-                key={toggle.key}
-                className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-              >
-                <span className={styles['modality-icon']}>{toggle.icon}</span>
-                <span className={styles['modality-name']}>{toggle.label}</span>
-                {toggle.type === "cycle" ? (
-                  <CycleButton
-                    value={toggle.value ?? 0}
-                    isActive={toggle.isActive}
-                    onClick={() => toggle.onChange?.(toggle.value ?? 0)}
-                    title={toggle.title}
-                  />
-                ) : (
-                  <ToggleSwitch
-                    checked={toggle.checked}
-                    onChange={(value: boolean) => toggle.onChange?.(value)}
-                  />
-                )}
-              </div>
-            ))}
-
-            {/* Strategy Overrides (Harness / Topology / Reasoning) */}
+            {/* 1. Workspace */}
             {sessionType === "agent" && (() => {
               const isExistingSession = (sessionStats?.messageCount ?? 0) > 0;
               const isStrategyLocked = readOnly || isExistingSession;
-
-              const reasoningOptions = buildReasoningStrategyOptions();
-              const topologyOptions = buildTopologyOptions();
-
-              const selectedReasoningValue =
-                (settings.agents?.reasoningStrategy as string) || "chain_of_thought";
-              const selectedReasoningTooltip =
-                reasoningOptions.find(
-                  (option) => option.value === selectedReasoningValue,
-                )?.tooltip ?? null;
-
-              const selectedTopologyValue =
-                settings.agents?.topology || "hierarchical";
-              const selectedTopologyTooltip =
-                topologyOptions.find(
-                  (option) => option.value === selectedTopologyValue,
-                )?.tooltip ?? null;
-
               return (
-                <>
-                  {/* Harness */}
-                  <div
-                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-                  >
-                    <span className={styles['modality-icon']}>
-                      <Brain size={12} />
-                    </span>
-                    <span className={styles['modality-name']}>Harness</span>
-                    <SelectComponent
-                      value={settings.agents?.harness || "standard"}
-                      options={[
-                        { value: "standard", label: "Standard (ReAct)" },
-                      ]}
-                      onChange={(value: string) =>
-                        onChange({
-                          agents: { ...settings.agents, harness: value },
-                        })
-                      }
-                      compact
-                      disabled={isStrategyLocked}
-                    />
-                  </div>
-
-                  {/* Reasoning Strategy */}
-                  <div
-                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-                  >
-                    <span className={styles['modality-icon']}>
-                      <Layers size={12} />
-                    </span>
-                    <span className={styles['modality-name']}>Reasoning</span>
-                    <SelectComponent
-                      value={selectedReasoningValue}
-                      options={reasoningOptions}
-                      onChange={(value: string) =>
-                        onChange({
-                          agents: {
-                            ...settings.agents,
-                            reasoningStrategy: value,
-                          },
-                        })
-                      }
-                      compact
-                      disabled={isStrategyLocked}
-                      triggerTooltipContent={selectedReasoningTooltip}
-                      triggerTooltipRich
-                    />
-                  </div>
-
-                  {/* Topology */}
-                  <div
-                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-                  >
-                    <span className={styles['modality-icon']}>
-                      <Network size={12} />
-                    </span>
-                    <span className={styles['modality-name']}>Topology</span>
-                    <SelectComponent
-                      value={selectedTopologyValue}
-                      options={topologyOptions}
-                      onChange={(value: string) =>
-                        onChange({
-                          agents: { ...settings.agents, topology: value },
-                        })
-                      }
-                      compact
-                      disabled={isStrategyLocked}
-                      triggerTooltipContent={selectedTopologyTooltip}
-                      triggerTooltipRich
-                    />
-                  </div>
-
-                  {/* Workspace */}
-                  <div
-                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-                  >
-                    <span className={styles['modality-icon']}>
-                      <FolderOpen size={12} />
-                    </span>
-                    <span className={styles['modality-name']}>Workspace</span>
-                    <ToggleSwitch
-                      checked={settings.agents?.workspaceEnabled !== false}
-                      onChange={(checked: boolean) =>
-                        onChange({
-                          agents: { ...settings.agents, workspaceEnabled: checked },
-                        })
-                      }
-                      disabled={isStrategyLocked}
-                    />
-                  </div>
-                </>
+                <div
+                  className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+                >
+                  <span className={styles['modality-icon']}>
+                    <FolderOpen size={12} />
+                  </span>
+                  <span className={styles['modality-name']}>Workspace</span>
+                  <ToggleSwitch
+                    checked={settings.agents?.workspaceEnabled !== false}
+                    onChange={(checked: boolean) =>
+                      onChange({
+                        agents: { ...settings.agents, workspaceEnabled: checked },
+                      })
+                    }
+                    disabled={isStrategyLocked}
+                  />
+                </div>
               );
             })()}
 
-            {/* Native Tools */}
+            {/* 2. Native Tools (Thinking first, then others) */}
             {selectedModelDef?.tools &&
               selectedModelDef.tools.length > 0 &&
               (() => {
@@ -1171,6 +1054,157 @@ export default function SettingsPanel({
                   </>
                 );
               })()}
+
+            {/* 3–5. Auto Approve, Max Iterations, Sub-Agent Iterations */}
+            {agentToggles?.filter((toggle) =>
+              ["auto", "iterations", "subAgentIterations"].includes(toggle.key),
+            ).map((toggle) => (
+              <div
+                key={toggle.key}
+                className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+              >
+                <span className={styles['modality-icon']}>{toggle.icon}</span>
+                <span className={styles['modality-name']}>{toggle.label}</span>
+                {toggle.type === "cycle" ? (
+                  <CycleButton
+                    value={toggle.value ?? 0}
+                    isActive={toggle.isActive}
+                    onClick={() => toggle.onChange?.(toggle.value ?? 0)}
+                    title={toggle.title}
+                  />
+                ) : (
+                  <ToggleSwitch
+                    checked={toggle.checked}
+                    onChange={(value: boolean) => toggle.onChange?.(value)}
+                  />
+                )}
+              </div>
+            ))}
+
+            {/* 6–8. Reasoning, Topology, Harness */}
+            {sessionType === "agent" && (() => {
+              const isExistingSession = (sessionStats?.messageCount ?? 0) > 0;
+              const isStrategyLocked = readOnly || isExistingSession;
+
+              const reasoningOptions = buildReasoningStrategyOptions();
+              const topologyOptions = buildTopologyOptions();
+
+              const selectedReasoningValue =
+                (settings.agents?.reasoningStrategy as string) || "chain_of_thought";
+              const selectedReasoningTooltip =
+                reasoningOptions.find(
+                  (option) => option.value === selectedReasoningValue,
+                )?.tooltip ?? null;
+
+              const selectedTopologyValue =
+                settings.agents?.topology || "hierarchical";
+              const selectedTopologyTooltip =
+                topologyOptions.find(
+                  (option) => option.value === selectedTopologyValue,
+                )?.tooltip ?? null;
+
+              return (
+                <>
+                  {/* 6. Agent Reasoning */}
+                  <div
+                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+                  >
+                    <span className={styles['modality-icon']}>
+                      <Layers size={12} />
+                    </span>
+                    <span className={styles['modality-name']}>Reasoning</span>
+                    <SelectComponent
+                      value={selectedReasoningValue}
+                      options={reasoningOptions}
+                      onChange={(value: string) =>
+                        onChange({
+                          agents: {
+                            ...settings.agents,
+                            reasoningStrategy: value,
+                          },
+                        })
+                      }
+                      compact
+                      disabled={isStrategyLocked}
+                      triggerTooltipContent={selectedReasoningTooltip}
+                      triggerTooltipRich
+                    />
+                  </div>
+
+                  {/* 7. Sub-agent Topology */}
+                  <div
+                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+                  >
+                    <span className={styles['modality-icon']}>
+                      <Network size={12} />
+                    </span>
+                    <span className={styles['modality-name']}>Topology</span>
+                    <SelectComponent
+                      value={selectedTopologyValue}
+                      options={topologyOptions}
+                      onChange={(value: string) =>
+                        onChange({
+                          agents: { ...settings.agents, topology: value },
+                        })
+                      }
+                      compact
+                      disabled={isStrategyLocked}
+                      triggerTooltipContent={selectedTopologyTooltip}
+                      triggerTooltipRich
+                    />
+                  </div>
+
+                  {/* 8. Harness */}
+                  <div
+                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+                  >
+                    <span className={styles['modality-icon']}>
+                      <Brain size={12} />
+                    </span>
+                    <span className={styles['modality-name']}>Harness</span>
+                    <SelectComponent
+                      value={settings.agents?.harness || "standard"}
+                      options={[
+                        { value: "standard", label: "Standard (ReAct)" },
+                      ]}
+                      onChange={(value: string) =>
+                        onChange({
+                          agents: { ...settings.agents, harness: value },
+                        })
+                      }
+                      compact
+                      disabled={isStrategyLocked}
+                    />
+                  </div>
+                </>
+              );
+            })()}
+
+            {/* 9–10. Critic Gate, Plan Mode */}
+            {agentToggles?.filter((toggle) =>
+              ["criticGate", "plan"].includes(toggle.key),
+            ).map((toggle) => (
+              <div
+                key={toggle.key}
+                className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+              >
+                <span className={styles['modality-icon']}>{toggle.icon}</span>
+                <span className={styles['modality-name']}>{toggle.label}</span>
+                {toggle.type === "cycle" ? (
+                  <CycleButton
+                    value={toggle.value ?? 0}
+                    isActive={toggle.isActive}
+                    onClick={() => toggle.onChange?.(toggle.value ?? 0)}
+                    title={toggle.title}
+                  />
+                ) : (
+                  <ToggleSwitch
+                    checked={toggle.checked}
+                    onChange={(value: boolean) => toggle.onChange?.(value)}
+                  />
+                )}
+              </div>
+            ))}
           </div>
         )}
 
