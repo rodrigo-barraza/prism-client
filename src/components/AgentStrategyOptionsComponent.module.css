@@ -1,0 +1,14 @@
+/* ═══════════════════════════════════════════════════════════════════
+   AgentStrategyOptionsComponent — Tooltip styles for topology and
+   reasoning strategy rich tooltips used in SelectComponent options.
+   Shared between SettingsPageComponent and SettingsPanelComponent.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.strategy-tooltip-title {
+  font-weight: 600;
+}
+
+.strategy-tooltip-description {
+  margin-block: 6px 8px;
+  opacity: 0.7;
+}

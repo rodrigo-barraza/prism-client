@@ -30,6 +30,7 @@ import { CAPABILITY_TOOL_NAMES } from "../utils/utilities";
 import { TOGGLEABLE_TOOLS } from "./WorkflowNodeConstantsComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
+import { buildTopologyOptions, buildReasoningStrategyOptions } from "./AgentStrategyOptionsComponent";
 import useTokenRate from "../hooks/useTokenRate";
 import useTtft from "../hooks/useTtft";
 import type {
@@ -876,7 +877,6 @@ export default function SettingsPanel({
                 value={settings.agents?.harness || "standard"}
                 options={[
                   { value: "standard", label: "Standard (ReAct)" },
-                  { value: "vision_language", label: "Vision Language" },
                 ]}
                 onChange={(value: string) =>
                   onChange({
@@ -901,10 +901,7 @@ export default function SettingsPanel({
                   (settings.agents?.reasoningStrategy as string) ||
                   "chain_of_thought"
                 }
-                options={[
-                  { value: "chain_of_thought", label: "Chain of Thought" },
-                  { value: "tree_of_thoughts", label: "Tree of Thoughts" },
-                ]}
+                options={buildReasoningStrategyOptions()}
                 onChange={(value: string) =>
                   onChange({
                     agents: {
@@ -928,15 +925,7 @@ export default function SettingsPanel({
               <span className={styles['modality-name']}>Topology</span>
               <SelectComponent
                 value={settings.agents?.topology || "hierarchical"}
-                options={[
-                  { value: "sequential", label: "Sequential (CoT)" },
-                  { value: "hierarchical", label: "Hierarchical (ToT)" },
-                  {
-                    value: "hierarchical_aggregation",
-                    label: "Aggregation (GoT)",
-                  },
-                  { value: "peer_to_peer", label: "Mesh (GoT DAG)" },
-                ]}
+                options={buildTopologyOptions()}
                 onChange={(value: string) =>
                   onChange({
                     agents: { ...settings.agents, topology: value },
