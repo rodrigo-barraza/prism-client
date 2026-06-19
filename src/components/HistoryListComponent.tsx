@@ -400,41 +400,36 @@ export default function HistoryList({
 
   const groupedSessions = useMemo<SessionGroup[]>(() => {
     const childrenByParent = new Map<string, HistoryListItem[]>();
-    const parentItemsInList = new Map<string, HistoryListItem>();
+    const parentIdsInFiltered = new Set<string>();
 
     for (const item of filtered) {
       if (item.parentAgentSessionId) {
-        const siblings = childrenByParent.get(item.parentAgentSessionId) || [];
-        siblings.push(item);
-        childrenByParent.set(item.parentAgentSessionId, siblings);
+        const siblingSessions = childrenByParent.get(item.parentAgentSessionId) || [];
+        siblingSessions.push(item);
+        childrenByParent.set(item.parentAgentSessionId, siblingSessions);
       } else if (parentAgentSessionIds.has(item.id)) {
-        parentItemsInList.set(item.id, item);
+        parentIdsInFiltered.add(item.id);
       }
     }
 
     const groups: SessionGroup[] = [];
-    const processedParentIds = new Set<string>();
 
     for (const item of filtered) {
-      if (item.parentAgentSessionId) continue;
-
-      if (parentItemsInList.has(item.id)) {
-        processedParentIds.add(item.id);
-        const children = childrenByParent.get(item.id) || [];
-        if (children.length > 0) {
-          groups.push({ type: "agent-cluster", parent: item, children });
+      if (item.parentAgentSessionId) {
+        if (parentIdsInFiltered.has(item.parentAgentSessionId)) {
+          continue;
+        }
+        groups.push({ type: "standalone", item });
+      } else {
+        if (parentIdsInFiltered.has(item.id)) {
+          const children = childrenByParent.get(item.id) || [];
+          if (children.length > 0) {
+            groups.push({ type: "agent-cluster", parent: item, children });
+          } else {
+            groups.push({ type: "standalone", item });
+          }
         } else {
           groups.push({ type: "standalone", item });
-        }
-      } else {
-        groups.push({ type: "standalone", item });
-      }
-    }
-
-    for (const [parentId, children] of childrenByParent) {
-      if (!processedParentIds.has(parentId)) {
-        for (const child of children) {
-          groups.push({ type: "standalone", item: child });
         }
       }
     }
@@ -442,14 +437,6 @@ export default function HistoryList({
     return groups;
   }, [filtered, parentAgentSessionIds]);
 
-  // DEBUG: trace grouping output
-  console.log('[HistoryList] groupedSessions:', {
-    filteredCount: filtered.length,
-    groupCount: groupedSessions.length,
-    clusters: groupedSessions.filter((g) => g.type === 'agent-cluster').map((g) => g.type === 'agent-cluster' ? { parentId: g.parent.id, parentTitle: g.parent.title, childCount: g.children.length } : null),
-    subAgentsInFiltered: filtered.filter((i) => !!i.parentAgentSessionId).length,
-    shouldHideSubAgents,
-  });
 
   // -- Infinite scroll via IntersectionObserver -----------------
   const sentinelRef = useRef<HTMLDivElement | null>(null);

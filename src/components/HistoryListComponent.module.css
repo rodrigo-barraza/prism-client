@@ -65,29 +65,35 @@
 
 /* ── Agent Cluster Group (parent + sub-agents) ── */
 .agent-cluster-group {
+  --cluster-accent-color: oklch(0.65 0.18 277);
+
   position: relative;
   display: flex;
   flex-direction: column;
   margin-block: 4px;
   margin-inline-end: 6px;
   border-radius: 8px;
-  border: 1px solid oklch(0.65 0.18 277 / 0.25);
-  border-inline-start: 3px solid oklch(0.65 0.18 277 / 0.5);
-  background: oklch(0.65 0.18 277 / 0.03);
-  overflow: clip;
+  border: 1px solid color-mix(in oklch, var(--cluster-accent-color) 25%, transparent);
+  border-inline-start: 3px solid color-mix(in oklch, var(--cluster-accent-color) 50%, transparent);
+  background: color-mix(in oklch, var(--cluster-accent-color) 3%, transparent);
+  overflow: visible;
+  animation: agent-cluster-entrance 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   transition:
     border-color 0.2s ease,
     background-color 0.2s ease,
     box-shadow 0.2s ease;
 
   &:hover {
-    border-color: oklch(0.65 0.18 277 / 0.35);
-    background: oklch(0.65 0.18 277 / 0.05);
-    box-shadow: 0 1px 8px oklch(0.65 0.18 277 / 0.08);
+    border-color: color-mix(in oklch, var(--cluster-accent-color) 35%, transparent);
+    background: color-mix(in oklch, var(--cluster-accent-color) 5%, transparent);
+    box-shadow: 0 1px 8px color-mix(in oklch, var(--cluster-accent-color) 8%, transparent);
+  }
+
+  & > :global(.history-item-component):not(:global(.is-active-state)) {
+    border-inline-start: none;
   }
 
   & > :global(.history-item-component) {
-    border-inline-start: none;
     border-radius: 0;
   }
 
@@ -102,3 +108,15 @@
     border-bottom: none;
   }
 }
+
+@keyframes agent-cluster-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(2px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
