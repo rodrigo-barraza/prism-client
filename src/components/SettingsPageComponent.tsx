@@ -1289,11 +1289,14 @@ export default function SettingsPageComponent() {
                 Dynamic Tool Activation
               </span>
               <span className={styles["layout-row-description"]}>
-                Allow the agent to dynamically enable or disable tools
-                mid-session using <ToolLinkComponent toolName="enable_tools" />{" "}
-                / <ToolLinkComponent toolName="disable_tools" />. This reduces
-                token usage and tool interference by loading only the tools the
-                agent needs for the current task.
+                Allow the agent to discover, enable, and disable tools
+                mid-session using{" "}
+                <ToolLinkComponent toolName="search_tools" />,{" "}
+                <ToolLinkComponent toolName="enable_tools" />,{" "}
+                <ToolLinkComponent toolName="disable_tools" />, and{" "}
+                <ToolLinkComponent toolName="discover_and_enable_tools" />.
+                This reduces token usage and tool interference by loading only
+                the tools the agent needs for the current task.
               </span>
             </div>
             <div className={styles["layout-row-control"]}>
