@@ -7107,6 +7107,7 @@ export default function ChatSessionComponent({
               onLoadMore={adminLoadMoreEntries}
               filterStorageKey={LS_ADMIN_CHAT_FILTERS}
               dateRange={adminDateRange}
+              onDateChange={adminHeaderContext.setDateRange}
               initialProviders={adminProviderFilter ? [adminProviderFilter] : undefined}
               initialSearch={adminSessionFilter || undefined}
             />
