@@ -436,6 +436,15 @@ export default function HistoryList({
       }
     }
 
+    // Sort children within each cluster by creation time ascending (spawn order)
+    for (const children of childrenByParent.values()) {
+      children.sort((childA, childB) => {
+        const timestampA = new Date(childA.createdAt || childA.updatedAt || "").getTime();
+        const timestampB = new Date(childB.createdAt || childB.updatedAt || "").getTime();
+        return timestampA - timestampB;
+      });
+    }
+
     const groups: SessionGroup[] = [];
 
     for (const item of filtered) {
