@@ -55,6 +55,14 @@ const COST_TIERS = [
 
 const COST_FILTER_COLOR = "#22c55e";
 
+function deriveClusterHue(sessionId: string): number {
+  let hash = 5381;
+  for (let index = 0; index < sessionId.length; index++) {
+    hash = ((hash << 5) + hash + sessionId.charCodeAt(index)) | 0;
+  }
+  return ((hash % 360) + 360) % 360;
+}
+
 interface HistoryListProps {
   items?: HistoryListItem[];
   activeId?: string | null;
@@ -659,8 +667,14 @@ export default function HistoryList({
             );
           }
 
+          const clusterAccentColor = `oklch(0.65 0.18 ${deriveClusterHue(group.parent.id)})`;
+
           return (
-            <div key={group.parent.id} className={styles['agent-cluster-group']}>
+            <div
+              key={group.parent.id}
+              className={styles['agent-cluster-group']}
+              style={{ '--cluster-accent-color': clusterAccentColor } as React.CSSProperties}
+            >
               <HistoryItemComponent
                 item={group.parent}
                 isActive={group.parent.id === activeId}
