@@ -3095,6 +3095,9 @@ export default function ChatSessionComponent({
                 ? maxSubAgentIterations
                 : 0,
               ...(criticGateEnabled && { enableCriticGate: true }),
+              ...(settings.agents?.workspaceEnabled === false && {
+                workspaceEnabled: false,
+              }),
             };
 
         let streamedText = "";

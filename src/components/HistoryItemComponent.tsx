@@ -60,6 +60,7 @@ interface HistoryItemProps {
   isCondensed?: boolean;
   children?: React.ReactNode;
   subAgentNumber?: number | null;
+  hasSpawnedSubAgents?: boolean;
 }
 
 /**
@@ -104,6 +105,7 @@ export default function HistoryItemComponent({
   isCondensed = false,
   children,
   subAgentNumber,
+  hasSpawnedSubAgents = false,
 }: HistoryItemProps) {
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
@@ -244,6 +246,11 @@ export default function HistoryItemComponent({
                 👷{subAgentNumber != null && (
                   <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
                 )}
+              </span>
+            )}
+            {hasSpawnedSubAgents && !item.parentAgentSessionId && (
+              <span className={styles['parent-agent-emoji']} title="Parent Agent (spawned sub-agents)">
+                🧬
               </span>
             )}
           </div>

@@ -12,6 +12,7 @@ import {
   AudioLines,
   Layers,
   Network,
+  FolderOpen,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import {
@@ -295,6 +296,12 @@ export default function SettingsPanel({
           <span className={styles['stat-badge']}>
             <Brain size={10} />
             {formatReasoningStrategyLabel(settings.agents.reasoningStrategy as string)}
+          </span>
+        )}
+        {sessionType === "agent" && settings.agents?.workspaceEnabled === false && (
+          <span className={styles['stat-badge']}>
+            <FolderOpen size={10} />
+            No Workspace
           </span>
         )}
         {stats.uniqueModels && stats.uniqueModels.length > 0 && (
@@ -933,6 +940,25 @@ export default function SettingsPanel({
                 disabled={isStrategyLocked}
               />
             </div>
+
+            {/* Workspace */}
+            <div
+              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+            >
+              <span className={styles['modality-icon']}>
+                <FolderOpen size={12} />
+              </span>
+              <span className={styles['modality-name']}>Workspace</span>
+              <ToggleSwitch
+                checked={settings.agents?.workspaceEnabled !== false}
+                onChange={(checked: boolean) =>
+                  onChange({
+                    agents: { ...settings.agents, workspaceEnabled: checked },
+                  })
+                }
+                disabled={isStrategyLocked}
+              />
+            </div>
           </div>
           );
         })()}
@@ -1057,7 +1083,9 @@ export default function SettingsPanel({
             return (
               <div className={styles['section']}>
                 <div className={styles['section-header']}>Native Tools</div>
-                {selectedModelDef.tools.map((tool) => {
+                {selectedModelDef.tools
+                  .filter((tool) => !(sessionType === "agent" && tool === "Tool Calling"))
+                  .map((tool) => {
                   const toggle = TOGGLEABLE_TOOLS.has(tool)
                     ? getToolToggle(tool)
                     : null;

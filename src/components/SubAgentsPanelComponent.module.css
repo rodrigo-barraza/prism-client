@@ -5,6 +5,8 @@
 
 .container {
   composes: container from "./PanelShared.module.css";
+  padding: 0;
+  gap: 0;
 }
 
 /* ── Sub-Agent Card ────────────────────────────────────────── */
@@ -14,11 +16,10 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 10px 12px;
+  padding: 10px 12px 10px 9px;
   background: oklch(58.5% 0.2041 277.1 / 0.06);
   border-bottom: 1px solid var(--calculated-border-color);
-  border-left: 3px solid transparent;
-  border-radius: 6px;
+  border-radius: 0;
   cursor: default;
   transition:
     background 0.2s ease,
@@ -31,7 +32,6 @@
 }
 
 .sub-agent-card-running {
-  border-left-color: var(--color-info);
   background: oklch(71.4% 0.1435 254.6 / 0.06);
   box-shadow: 0 0 8px -2px
     color-mix(in oklch, var(--color-info) 15%, transparent);
@@ -42,13 +42,11 @@
 }
 
 .sub-agent-card-complete {
-  border-left-color: var(--accent-primary);
   background: oklch(58.5% 0.2041 277.1 / 0.1);
 }
 
 .sub-agent-card-failed,
 .sub-agent-card-stopped {
-  border-left-color: var(--color-rose);
   background: oklch(64.5% 0.2154 16.4 / 0.06);
 }
 

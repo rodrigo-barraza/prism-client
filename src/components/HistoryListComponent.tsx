@@ -307,6 +307,16 @@ export default function HistoryList({
     return numberMap;
   }, [items]);
 
+  const parentAgentSessionIds = useMemo(() => {
+    const parentIds = new Set<string>();
+    for (const item of items || []) {
+      if (item.parentAgentSessionId) {
+        parentIds.add(item.parentAgentSessionId);
+      }
+    }
+    return parentIds;
+  }, [items]);
+
   const filtered = useMemo(() => {
     return (items || []).filter((item: HistoryListItem) => {
       if (shouldHideSubAgents && item.parentAgentSessionId) {
@@ -592,6 +602,7 @@ export default function HistoryList({
             isGenerating={generatingSessionIds?.has?.(item.id)}
             isCondensed={true}
             subAgentNumber={subAgentNumberMap.get(item.id) ?? null}
+            hasSpawnedSubAgents={parentAgentSessionIds.has(item.id)}
           />
         ))}
         {filtered.length === 0 && !loadingMore && (

@@ -918,6 +918,7 @@ export interface AgentDefaultsConfig {
   topology?: string;
   dynamicToolActivation?: boolean;
   reasoningStrategy?: string;
+  workspaceEnabled?: boolean;
 }
 
 export interface SecurityConfig {
