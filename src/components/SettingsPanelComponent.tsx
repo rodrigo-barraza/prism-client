@@ -137,6 +137,7 @@ export function formatTopologyLabel(topology: string): string {
 const REASONING_STRATEGY_LABELS: Record<string, string> = {
   chain_of_thought: "CoT",
   tree_of_thoughts: "ToT",
+  graph_of_thoughts: "GoT",
 };
 
 export function formatReasoningStrategyLabel(strategy: string): string {

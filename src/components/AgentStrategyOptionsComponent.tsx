@@ -119,5 +119,22 @@ export function buildReasoningStrategyOptions(): StrategySelectOption[] {
         </div>
       ),
     },
+    {
+      value: "graph_of_thoughts",
+      label: "Graph of Thoughts (GoT)",
+      tooltipRich: true,
+      tooltip: (
+        <div>
+          <span className={styles["strategy-tooltip-title"]}>Graph of Thoughts (GoT)</span>
+          <p className={styles["strategy-tooltip-description"]}>
+            Generates N parallel branches, scores them, then
+            SYNTHESIZES the best aspects of all branches into a
+            single merged response — combining complementary tool
+            calls, defensive measures, and complete coverage.
+          </p>
+          <TopologyGraphComponent topologyId="graph_of_thoughts" />
+        </div>
+      ),
+    },
   ];
 }

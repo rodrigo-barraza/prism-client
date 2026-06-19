@@ -190,6 +190,34 @@ function buildTreeOfThoughtsTopology(): TopologyDefinition {
   };
 }
 
+function buildGraphOfThoughtsTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 224,
+    nodes: [
+      { id: "prompt", label: "Prompt", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "branch-a", label: "A", positionX: 60, positionY: 60, radius: 13, fillColor: AGENT_COLOR },
+      { id: "branch-b", label: "B", positionX: 140, positionY: 60, radius: 13, fillColor: AGENT_COLOR },
+      { id: "branch-c", label: "C", positionX: 220, positionY: 60, radius: 13, fillColor: AGENT_COLOR },
+      { id: "score", label: "Score", positionX: 140, positionY: 98, radius: 14, fillColor: MERGE_COLOR },
+      { id: "merge", label: "Merge", positionX: 140, positionY: 130, radius: 14, fillColor: "oklch(0.58 0.16 330)" },
+      { id: "synth", label: "Synth", positionX: 140, positionY: 162, radius: 13, fillColor: RESULT_COLOR },
+      { id: "act", label: "Act", positionX: 140, positionY: 194, radius: 13, fillColor: "oklch(0.58 0.15 200)" },
+    ],
+    edges: [
+      { sourceId: "prompt", targetId: "branch-a" },
+      { sourceId: "prompt", targetId: "branch-b" },
+      { sourceId: "prompt", targetId: "branch-c" },
+      { sourceId: "branch-a", targetId: "score" },
+      { sourceId: "branch-b", targetId: "score" },
+      { sourceId: "branch-c", targetId: "score" },
+      { sourceId: "score", targetId: "merge" },
+      { sourceId: "merge", targetId: "synth" },
+      { sourceId: "synth", targetId: "act" },
+    ],
+  };
+}
+
 const TOPOLOGY_BUILDERS: Record<string, () => TopologyDefinition> = {
   sequential: buildSequentialTopology,
   hierarchical: buildHierarchicalTopology,
@@ -197,6 +225,7 @@ const TOPOLOGY_BUILDERS: Record<string, () => TopologyDefinition> = {
   peer_to_peer: buildPeerToPeerTopology,
   chain_of_thought: buildChainOfThoughtTopology,
   tree_of_thoughts: buildTreeOfThoughtsTopology,
+  graph_of_thoughts: buildGraphOfThoughtsTopology,
 };
 
 function computeEdgePath(
