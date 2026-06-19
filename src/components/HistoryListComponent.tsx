@@ -715,33 +715,41 @@ export default function HistoryList({
                 subAgentNumber={subAgentNumberMap.get(group.parent.id) ?? null}
                 hasSpawnedSubAgents={true}
               />
-              {group.children.map((child) => (
-                <HistoryItemComponent
-                  key={child.id}
-                  item={child}
-                  isActive={child.id === activeId}
-                  onClick={onSelect}
-                  onDelete={onDelete}
-                  onDownload={onDownload}
-                  onCopy={onCopy}
-                  icon={ItemIcon}
-                  readOnly={readOnly}
-                  admin={admin}
-                  isNew={newIds?.has?.(child.id)}
-                  isFavorite={(favorites || []).includes(child.id)}
-                  onToggleFavorite={onToggleFavorite}
-                  dataPanelClose
-                  onOpenInNewTab={
-                    onOpenInNewTab
-                      ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
-                      : undefined
-                  }
-                  isGenerating={generatingSessionIds?.has?.(child.id)}
-                  isCondensed={true}
-                  subAgentNumber={subAgentNumberMap.get(child.id) ?? null}
-                  hasSpawnedSubAgents={parentAgentSessionIds.has(child.id)}
-                />
-              ))}
+              <div className={styles['sub-agent-tree-container']}>
+                <div className={styles['sub-agent-tree-rail']} />
+                {group.children.map((child, childIndex) => (
+                  <div
+                    key={child.id}
+                    className={`${styles['sub-agent-tree-node']} ${childIndex === group.children.length - 1 ? styles['sub-agent-tree-node-is-last'] : ''}`}
+                  >
+                    <div className={styles['sub-agent-tree-branch']} />
+                    <HistoryItemComponent
+                      item={child}
+                      isActive={child.id === activeId}
+                      onClick={onSelect}
+                      onDelete={onDelete}
+                      onDownload={onDownload}
+                      onCopy={onCopy}
+                      icon={ItemIcon}
+                      readOnly={readOnly}
+                      admin={admin}
+                      isNew={newIds?.has?.(child.id)}
+                      isFavorite={(favorites || []).includes(child.id)}
+                      onToggleFavorite={onToggleFavorite}
+                      dataPanelClose
+                      onOpenInNewTab={
+                        onOpenInNewTab
+                          ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
+                          : undefined
+                      }
+                      isGenerating={generatingSessionIds?.has?.(child.id)}
+                      isCondensed={true}
+                      subAgentNumber={subAgentNumberMap.get(child.id) ?? null}
+                      hasSpawnedSubAgents={parentAgentSessionIds.has(child.id)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           );
         })}

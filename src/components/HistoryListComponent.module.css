@@ -63,50 +63,109 @@
   flex-shrink: 0;
 }
 
-/* ── Agent Cluster Group (parent + sub-agents) ── */
+/* ── Agent Cluster Group (parent + sub-agents tree) ── */
 .agent-cluster-group {
   --cluster-accent-color: oklch(0.65 0.18 277);
+  --tree-rail-inset: 18px;
+  --tree-branch-length: 14px;
+  --tree-line-thickness: 2px;
+  --tree-line-color: color-mix(in oklch, var(--cluster-accent-color) 40%, transparent);
 
   position: relative;
   display: flex;
   flex-direction: column;
-  margin-block: 4px;
-  margin-inline-end: 6px;
-  border-radius: 8px;
-  border: 1px solid color-mix(in oklch, var(--cluster-accent-color) 25%, transparent);
+  animation: agent-cluster-entrance 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Parent item within the cluster — no special nesting treatment */
+.agent-cluster-group > :global(.history-item-component) {
   border-inline-start: 3px solid color-mix(in oklch, var(--cluster-accent-color) 50%, transparent);
   background: color-mix(in oklch, var(--cluster-accent-color) 3%, transparent);
-  overflow: visible;
-  animation: agent-cluster-entrance 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border-radius: 6px 6px 0 0;
   transition:
     border-color 0.2s ease,
-    background-color 0.2s ease,
-    box-shadow 0.2s ease;
+    background-color 0.2s ease;
 
   &:hover {
-    border-color: color-mix(in oklch, var(--cluster-accent-color) 35%, transparent);
-    background: color-mix(in oklch, var(--cluster-accent-color) 5%, transparent);
-    box-shadow: 0 1px 8px color-mix(in oklch, var(--cluster-accent-color) 8%, transparent);
+    background: color-mix(in oklch, var(--cluster-accent-color) 6%, transparent);
   }
+}
 
-  & > :global(.history-item-component):not(:global(.is-active-state)) {
-    border-inline-start: none;
-  }
+/* ── Sub-agent tree container ── */
+.sub-agent-tree-container {
+  position: relative;
+  padding-inline-start: var(--tree-rail-inset);
+}
 
-  & > :global(.history-item-component) {
-    border-radius: 0;
-  }
+/* Vertical rail line running down the left side of the tree */
+.sub-agent-tree-rail {
+  position: absolute;
+  inset-inline-start: var(--tree-rail-inset);
+  inset-block-start: 0;
+  inset-block-end: 0;
+  width: var(--tree-line-thickness);
+  background: var(--tree-line-color);
+  border-radius: 1px;
+  transition: background-color 0.2s ease;
+}
 
-  & > :global(.history-item-component):first-child {
-    border-start-start-radius: 6px;
-    border-start-end-radius: 6px;
-  }
+/* Clip the rail at the last child's midpoint */
+.agent-cluster-group:has(.sub-agent-tree-node-is-last) .sub-agent-tree-rail {
+  inset-block-end: calc(50% + 4px);
+}
 
-  & > :global(.history-item-component):last-child {
-    border-end-start-radius: 6px;
-    border-end-end-radius: 6px;
-    border-bottom: none;
-  }
+/* ── Individual tree node (branch + child item) ── */
+.sub-agent-tree-node {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Horizontal branch connector from the vertical rail to the child item */
+.sub-agent-tree-branch {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  width: var(--tree-branch-length);
+  height: var(--tree-line-thickness);
+  background: var(--tree-line-color);
+  border-radius: 0 1px 1px 0;
+  transition: background-color 0.2s ease;
+}
+
+/* Push the child item to the right of the branch */
+.sub-agent-tree-node > :global(.history-item-component) {
+  flex: 1;
+  margin-inline-start: var(--tree-branch-length);
+  border-radius: 0;
+  border-inline-start: 2px solid color-mix(in oklch, var(--cluster-accent-color) 25%, transparent);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.sub-agent-tree-node > :global(.history-item-component):hover {
+  background: color-mix(in oklch, var(--cluster-accent-color) 5%, transparent);
+  border-inline-start-color: color-mix(in oklch, var(--cluster-accent-color) 50%, transparent);
+}
+
+.sub-agent-tree-node > :global(.history-item-component):global(.is-active-state) {
+  border-inline-start-color: var(--accent-primary);
+}
+
+/* Last child gets rounded bottom corners */
+.sub-agent-tree-node-is-last > :global(.history-item-component) {
+  border-end-start-radius: 6px;
+  border-end-end-radius: 6px;
+}
+
+/* Subtle hover glow on the whole cluster */
+.agent-cluster-group:hover .sub-agent-tree-rail {
+  background: color-mix(in oklch, var(--cluster-accent-color) 55%, transparent);
+}
+
+.agent-cluster-group:hover .sub-agent-tree-branch {
+  background: color-mix(in oklch, var(--cluster-accent-color) 55%, transparent);
 }
 
 @keyframes agent-cluster-entrance {
