@@ -291,15 +291,12 @@ export default function SettingsPanel({
             {formatTopologyLabel(settings.agents.topology)}
           </span>
         )}
-        {(() => {
-          const activeStrategy = settings.agents?.reasoningStrategy as string | undefined;
-          return sessionType === "agent" && activeStrategy && activeStrategy !== "chain_of_thought" ? (
-            <span className={styles['stat-badge']}>
-              <Brain size={10} />
-              {formatReasoningStrategyLabel(activeStrategy)}
-            </span>
-          ) : null;
-        })()}
+        {sessionType === "agent" && settings.agents?.reasoningStrategy && (
+          <span className={styles['stat-badge']}>
+            <Brain size={10} />
+            {formatReasoningStrategyLabel(settings.agents.reasoningStrategy as string)}
+          </span>
+        )}
         {stats.uniqueModels && stats.uniqueModels.length > 0 && (
           <BadgeComponent
             type="model"
