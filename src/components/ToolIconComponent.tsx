@@ -5,17 +5,6 @@ import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { TOOL_ICON_MAP, TOOL_COLORS } from "./WorkflowNodeConstantsComponent";
 import styles from "./ToolIconComponent.module.css";
 
-/**
- * ToolIconComponent — renders a row of compact tool-icon pills from an
- * array of tool name strings.  Unknown names are grouped under the
- * canonical "Tool Calling" icon.
- *
- * Props:
- *   toolDisplayNames      — string[] of canonical tool names (e.g. "Web Search", "Thinking")
- *   toolApiNames  — string[] of raw tool function names (e.g. "get_web_content", "generate_image")
- *   size           — icon size in px (default 12)
- *   className      — extra root class name
- */
 interface ToolIconProps {
   toolDisplayNames?: string[];
   toolApiNames?: string[];
@@ -33,45 +22,40 @@ export default function ToolIconComponent({
     return <span style={{ color: "var(--text-muted)" }}>—</span>;
   }
 
-  // Collect raw names that don't map to known canonical icons → shown in FC tooltip
-  const functionCallRawNames = [];
-  for (const raw of toolDisplayNames) {
-    if (!(TOOL_ICON_MAP as Record<string, any>)[raw]) {
-      functionCallRawNames.push(raw);
+  const functionCallRawNames: string[] = [];
+  for (const rawName of toolDisplayNames) {
+    if (!(rawName in TOOL_ICON_MAP)) {
+      functionCallRawNames.push(rawName);
     }
   }
 
-  // If toolApiNames provided, use those for the Tool Calling tooltip
-  // (they're the actual function names like get_web_content, generate_image)
-  const fcRawDisplay = toolApiNames?.length
+  const functionCallDisplayNames = toolApiNames?.length
     ? toolApiNames
     : functionCallRawNames;
 
-  // De-duplicate and resolve unknown tools → "Tool Calling"
-  const resolved = new Map();
-  for (const raw of toolDisplayNames) {
-    if ((TOOL_ICON_MAP as Record<string, any>)[raw]) {
-      if (!resolved.has(raw))
-        resolved.set(raw, (TOOL_ICON_MAP as Record<string, any>)[raw]);
+  const resolvedIcons = new Map<string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>>();
+  for (const rawName of toolDisplayNames) {
+    if (rawName in TOOL_ICON_MAP) {
+      if (!resolvedIcons.has(rawName))
+        resolvedIcons.set(rawName, TOOL_ICON_MAP[rawName]);
     } else {
       const fallbackIcon = TOOL_ICON_MAP["Tool Calling"] || Wrench;
-      if (!resolved.has("Tool Calling")) {
-        resolved.set("Tool Calling", fallbackIcon);
+      if (!resolvedIcons.has("Tool Calling")) {
+        resolvedIcons.set("Tool Calling", fallbackIcon);
       }
     }
   }
 
   return (
     <span className={`tool-icon-component ${styles['tool-pills']} ${className || ""}`}>
-      {[...resolved.entries()].map(
+      {[...resolvedIcons.entries()].map(
         ([label, Icon]: [
           string,
           React.ComponentType<{ size?: number; style?: React.CSSProperties }>,
         ]) => {
-          // Build rich tooltip for "Tool Calling" showing actual tool names
           const tooltipLabel =
-            label === "Tool Calling" && fcRawDisplay.length > 0
-              ? `Tool Calling: ${fcRawDisplay.join(", ")}`
+            label === "Tool Calling" && functionCallDisplayNames.length > 0
+              ? `Tool Calling: ${functionCallDisplayNames.join(", ")}`
               : label;
 
           return (
@@ -80,8 +64,7 @@ export default function ToolIconComponent({
                 <Icon
                   size={size}
                   style={{
-                    color:
-                      (TOOL_COLORS as Record<string, any>)[label] || "#f97316",
+                    color: TOOL_COLORS[label] || "#f97316",
                   }}
                 />
               </span>

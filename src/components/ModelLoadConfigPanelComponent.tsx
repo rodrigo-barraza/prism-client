@@ -14,6 +14,50 @@ import { formatFileSize, formatContextTokens } from "@rodrigo-barraza/utilities-
 import styles from "./ModelLoadConfigPanelComponent.module.css";
 import { LS_LM_STUDIO_LOAD_CONFIG_PREFIX as LS_KEY_PREFIX } from "../constants";
 
+interface ModelLoadConfig {
+  contextLength: number;
+  gpuLayers?: number;
+  flashAttention: boolean;
+  offloadKvCache: boolean;
+}
+
+interface ArchParams {
+  layers: number;
+  kvHeads: number;
+  headDim: number;
+  attnRatio: number;
+  isKnown: boolean;
+}
+
+interface MemoryEstimate {
+  gpuGiB: number;
+  totalGiB: number;
+}
+
+interface ModelLoadConfigService {
+  estimateLmStudioMemory: (modelKey: string, config: ModelLoadConfig) => Promise<MemoryEstimate>;
+}
+
+interface ModelLoadConfigPanelProps {
+  model: {
+    key?: string;
+    name?: string;
+    display_name?: string;
+    max_context_length?: number;
+    contextLength?: number;
+    size_bytes?: number;
+    architecture?: string | null;
+    params_string?: string | null;
+    modelParameters?: string | null;
+    quantization?: string | { name: string } | null;
+    archParams?: ArchParams;
+  };
+  onLoad: (modelKey: string, config: Omit<ModelLoadConfig, 'gpuLayers'>) => void;
+  onClose: () => void;
+  service?: ModelLoadConfigService | null;
+  loading?: boolean;
+}
+
 // Architecture modelParameters are resolved server-side by Prism (gguf-arch.js).
 // This fallback is used only if the API response doesn't include archParams.
 const DEFAULT_ARCH_PARAMS = {
@@ -27,7 +71,7 @@ const DEFAULT_ARCH_PARAMS = {
 /**
  * Load persisted config for a model key from localStorage.
  */
-function loadPersistedConfig(modelKey: any) {
+function loadPersistedConfig(modelKey: string): ModelLoadConfig | null {
   try {
     const raw = localStorage.getItem(`${LS_KEY_PREFIX}${modelKey}`);
     return raw ? JSON.parse(raw) : null;
@@ -39,7 +83,7 @@ function loadPersistedConfig(modelKey: any) {
 /**
  * Save config for a model key to localStorage.
  */
-function savePersistedConfig(modelKey: string, config: any) {
+function savePersistedConfig(modelKey: string, config: ModelLoadConfig) {
   try {
     localStorage.setItem(`${LS_KEY_PREFIX}${modelKey}`, JSON.stringify(config));
   } catch {
@@ -59,8 +103,8 @@ export default function ModelLoadConfigPanel({
   onClose,
   service,
   loading = false,
-}: any) {
-  const modelKey = model.key || model.name;
+}: ModelLoadConfigPanelProps) {
+  const modelKey = model.key || model.name || "";
   const maxContext = model.max_context_length || model.contextLength || 131072;
   const sizeBytes = model.size_bytes || 0;
   const architecture = model.architecture || null;
@@ -197,7 +241,7 @@ export default function ModelLoadConfigPanel({
     }
   };
 
-  const formatGiB = (gib: any) => {
+  const formatGiB = (gib: number) => {
     if (gib < 0.01) return "0 GB";
     if (gib < 10) return `${gib.toFixed(2)} GB`;
     return `${gib.toFixed(1)} GB`;
@@ -335,7 +379,7 @@ export default function ModelLoadConfigPanel({
           max={maxContext}
           step={1024}
           value={contextLength}
-          onChange={(v: any) => setContextLength(v)}
+          onChange={(value: number) => setContextLength(value)}
         />
       </div>
 
@@ -367,7 +411,7 @@ export default function ModelLoadConfigPanel({
           max={totalLayers}
           step={1}
           value={gpuLayers}
-          onChange={(v: any) => setGpuLayers(v)}
+          onChange={(value: number) => setGpuLayers(value)}
         />
       </div>
 

@@ -16,7 +16,13 @@ import {
   durationColumn,
   createdAtColumn,
 } from "../utils/tableColumns";
+import type { TableRow } from "../utils/tableColumns";
+import type { TransformedRequestItem } from "../types/types";
 import styles from "./TracesTableComponent.module.css";
+
+interface TraceRow extends TableRow {
+  requests?: TransformedRequestItem[];
+}
 
 /**
  * TracesTableComponent — reusable traces table with expandable rows
@@ -33,7 +39,7 @@ export default function TracesTableComponent({
   sortDir,
   onSort,
 }: {
-  traces?: Record<string, any>[];
+  traces?: TraceRow[];
   emptyText?: string;
   compact?: boolean;
   mini?: boolean;
@@ -61,8 +67,7 @@ export default function TracesTableComponent({
     createdAtColumn(),
   ];
 
-  // Remove costShare for traces — not useful without a global total
-  const allColumns = SESSION_COLUMNS.filter((c: any) => c.key !== "costShare");
+  const allColumns = SESSION_COLUMNS.filter((column) => column.key !== "costShare");
 
   const COMPACT_KEYS = [
     "id",
@@ -74,18 +79,18 @@ export default function TracesTableComponent({
     "duration",
   ];
   const columns = compact
-    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((column) => COMPACT_KEYS.includes(column.key))
     : allColumns;
 
   return (
     <TableComponent
       columns={columns}
       data={traces}
-      getRowKey={(s: any, i: number) => s.id || `trace-${i}`}
+      getRowKey={(trace: TraceRow, index: number) => trace.id || `trace-${index}`}
       sortKey={sortKey}
       sortDir={sortDir}
       onSort={onSort}
-      renderExpandedContent={(trace: any) => (
+      renderExpandedContent={(trace: TraceRow) => (
         <div className={`traces-table-component ${styles['expanded-panels']}`}>
           <RequestsTableComponent
             requests={trace.requests || []}

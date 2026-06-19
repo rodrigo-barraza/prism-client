@@ -5,21 +5,18 @@ import { Bot, X, Brain } from "lucide-react";
 import ToggleButtonComponent from "./ToggleButtonComponent";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import styles from "./AgentCardComponent.module.css";
+import type { AgentInstance, PrismConfig, ModelsMap, ModelOption } from "../types/types";
 
-/**
- * AgentCardComponent — a card for a single agent instance in the benchmark sidebar.
- *
- * Uses ModelPickerPopoverComponent for model selection instead of a native <select>.
- *
- * Props:
- *   agent            — { instanceId, agentId, name, description, provider, modelName }
- *   isThinking       — boolean — whether thinking is enabled for this agent
- *   supportsThinking — boolean — whether the current backing model supports thinking
- *   config           — Prism config object (used by ModelPickerPopoverComponent)
- *   onRemove         — callback(instanceId)
- *   onChangeModel    — callback(instanceId, provider, modelName)
- *   onToggleThinking — callback(instanceId)
- */
+interface AgentCardComponentProps {
+  agent: AgentInstance;
+  isThinking?: boolean;
+  supportsThinking?: boolean;
+  config: PrismConfig | null;
+  onRemove?: (instanceId: string) => void;
+  onChangeModel?: (instanceId: string, provider: string, modelName: string) => void;
+  onToggleThinking?: (instanceId: string) => void;
+}
+
 export default function AgentCardComponent({
   agent,
   isThinking = false,
@@ -28,26 +25,22 @@ export default function AgentCardComponent({
   onRemove,
   onChangeModel,
   onToggleThinking,
-}: any) {
-  // Filter config to only FC-capable models for the picker
-  const fcConfig = useMemo(() => {
+}: AgentCardComponentProps) {
+  const functionCallingConfig = useMemo(() => {
     if (!config) return null;
-    const textModelsMap = config.textToText?.models || {};
-    const filteredTextModels = {};
+    const textModelsMap: ModelsMap = config.textToText?.models || {};
+    const filteredTextModels: ModelsMap = {};
 
-    for (const [provider, models] of Object.entries(textModelsMap) as [
-      string,
-      any,
-    ][]) {
-      const fcModels = models.filter((m: any) =>
-        m.tools?.includes("Tool Calling"),
+    for (const [provider, models] of Object.entries(textModelsMap)) {
+      const functionCallingModels = models.filter((model: ModelOption) =>
+        model.tools?.includes("Tool Calling"),
       );
-      if (fcModels.length > 0)
-        (filteredTextModels as Record<string, any>)[provider] = fcModels;
+      if (functionCallingModels.length > 0)
+        filteredTextModels[provider] = functionCallingModels;
     }
 
     const filteredProviderList = (config.providerList || []).filter(
-      (p: any) => (filteredTextModels as Record<string, any>)[p],
+      (provider: string) => filteredTextModels[provider],
     );
 
     return {
@@ -57,15 +50,13 @@ export default function AgentCardComponent({
         ...config.textToText,
         models: filteredTextModels,
       },
-      // Suppress non-text sections in the picker
-      textToImage: { models: {} },
-      textToSpeech: { models: {}, voices: {}, defaultVoices: {} },
-      audioToText: { models: {} },
-      embedding: { models: {} },
+      textToImage: { ...config.textToImage, models: {} },
+      textToSpeech: { ...config.textToSpeech, models: {}, voices: {}, defaultVoices: {} },
+      audioToText: { ...config.audioToText, models: {} },
+      embedding: { ...config.embedding, models: {} },
     };
   }, [config]);
 
-  // Build settings-like object for the trigger display
   const pickerSettings = useMemo(
     () => ({
       provider: agent.provider || "",
@@ -74,7 +65,7 @@ export default function AgentCardComponent({
     [agent.provider, agent.modelName],
   );
 
-  const handlePickerSelect = (provider: any, name: any) => {
+  const handlePickerSelect = (provider: string, name: string) => {
     onChangeModel?.(agent.instanceId, provider, name);
   };
 
@@ -88,8 +79,8 @@ export default function AgentCardComponent({
         <span className={styles['badge']}>Agent</span>
         <button
           className={styles['remove-button']}
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
+          onClick={(event: React.MouseEvent) => {
+            event.stopPropagation();
             onRemove?.(agent.instanceId);
           }}
           title="Remove"
@@ -98,9 +89,8 @@ export default function AgentCardComponent({
         </button>
       </div>
 
-      {/* Model selector — uses ModelPickerPopoverComponent trigger */}
       <ModelPickerPopoverComponent
-        config={fcConfig}
+        config={functionCallingConfig}
         settings={pickerSettings}
         onSelectModel={handlePickerSelect}
       />
@@ -114,8 +104,8 @@ export default function AgentCardComponent({
               label="Think"
               active={isThinking}
               title={isThinking ? "Disable thinking" : "Enable thinking"}
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
+              onClick={(event: React.MouseEvent) => {
+                event.stopPropagation();
                 onToggleThinking?.(agent.instanceId);
               }}
             />

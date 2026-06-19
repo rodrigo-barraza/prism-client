@@ -35,6 +35,7 @@ import {
   TooltipComponent,
   SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
+
 import ToolIconComponent from "./ToolIconComponent";
 import FilterDropdownComponent from "./FilterDropdownComponent";
 
@@ -392,7 +393,7 @@ interface BuildStatsColumnsParams {
   compact?: boolean;
 }
 
-export interface TableColumn<T = any> {
+export interface TableColumn<T = RowData> {
   key: string;
   label: React.ReactNode;
   description?: string;
@@ -554,7 +555,7 @@ export default function ModelsTableComponent({
       <TableComponent
         title={title || "Models"}
         maxHeight={maxHeight ?? 420}
-        columns={columns as any}
+        columns={columns as unknown as { key: string; label: string }[]}
         data={models}
         getRowKey={(model: RawModel, index: number) => `${model.provider}-${model.model}-${index}`}
         emptyText={emptyText || "No data yet"}
@@ -1596,7 +1597,7 @@ function ModelsTableInner({
                       return modalityEntry
                         ? {
                             key: modality,
-                            icon: modalityEntry.icon as React.ComponentType<any>,
+                            icon: modalityEntry.icon as React.ComponentType<{ size?: number; className?: string }>,
                             color: (
                               MODALITY_COLORS as Record<string, string>
                             )[modality],
@@ -1632,7 +1633,7 @@ function ModelsTableInner({
                       return Icon
                         ? {
                             key: toolName,
-                            icon: Icon as React.ComponentType<any>,
+                            icon: Icon as React.ComponentType<{ size?: number; className?: string }>,
                             color: (TOOL_COLORS as Record<string, string>)[toolName],
                             title: toolName,
                           }
@@ -1681,7 +1682,7 @@ function ModelsTableInner({
       <TableComponent
         title={title}
         maxHeight={maxHeight}
-        columns={columns as any}
+        columns={columns as unknown as { key: string; label: string }[]}
         data={tableData}
         getRowKey={(row: RowData) => {
           if (isBenchmark) {
@@ -1697,7 +1698,7 @@ function ModelsTableInner({
           onSelect
             ? (row: RowData) =>
                 onSelect(
-                  (isBenchmark ? row._raw._benchStat : row._raw) as RawModel,
+                  (isBenchmark ? (row._raw._benchStat as RawModel) : row._raw),
                 )
             : undefined
         }
@@ -1707,13 +1708,13 @@ function ModelsTableInner({
         }
         activeRowKey={activeRowKey}
         highlightedRowKey={highlightedRowKey}
-        highlightedRowRef={highlightedRowRef as any}
+        highlightedRowRef={highlightedRowRef as React.RefObject<HTMLTableRowElement | null>}
         storageKey={isBenchmark ? "models-benchmark" : "models"}
         getRowClassName={
           getRowClassNameProp
             ? (row: RowData) =>
                 getRowClassNameProp(
-                  isBenchmark ? (row._raw._benchStat as any) : row,
+                  isBenchmark ? (row._raw._benchStat as RowData) : row,
                 )
             : hasSelection && selectedKeys
               ? (row: RowData) => {

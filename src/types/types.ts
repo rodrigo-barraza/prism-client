@@ -907,7 +907,7 @@ export interface MemoryConfig {
   embeddingModel?: string;
 }
 
-export type AgentDefaultsConfig = Record<string, unknown> & {
+export interface AgentDefaultsConfig {
   subAgentProvider?: string;
   subAgentModel?: string;
   criticProvider?: string;
@@ -917,6 +917,7 @@ export type AgentDefaultsConfig = Record<string, unknown> & {
   harness?: string;
   topology?: string;
   dynamicToolActivation?: boolean;
+  reasoningStrategy?: string;
 }
 
 export interface SecurityConfig {
@@ -1041,7 +1042,27 @@ export interface Favorite {
 // --- Tool Schemas -------------------------------------------
 
 /** JSON Schema parameter definition */
-export type JsonSchemaObject = Record<string, unknown>;
+export interface JsonSchemaObject {
+  type?: string;
+  properties?: Record<string, JsonSchemaObject>;
+  items?: JsonSchemaObject;
+  required?: string[];
+  description?: string;
+  enum?: Array<string | number | boolean | null>;
+  default?: JsonValue;
+  format?: string;
+  minItems?: number;
+  maxItems?: number;
+  minimum?: number;
+  maximum?: number;
+  pattern?: string;
+  additionalProperties?: boolean | JsonSchemaObject;
+  oneOf?: JsonSchemaObject[];
+  anyOf?: JsonSchemaObject[];
+  allOf?: JsonSchemaObject[];
+  $ref?: string;
+  [key: string]: unknown;
+}
 
 export interface ToolSchema {
   name: string;
@@ -1288,6 +1309,12 @@ export interface WorkflowConnection {
   targetModality: string;
 }
 
+export interface BuiltInToolReference {
+  name: string;
+  description?: string;
+  enabled?: boolean;
+}
+
 export interface WorkflowNode {
   id: string;
   type?: string;
@@ -1297,7 +1324,7 @@ export interface WorkflowNode {
   inputTypes?: string[];
   outputTypes?: string[];
   supportedModalities?: string[];
-  builtInTools?: Array<string | { name: string; [key: string]: unknown }>;
+  builtInTools?: Array<string | BuiltInToolReference>;
   disabledTools?: string[];
   receivedOutputs?: Record<string, unknown>;
   nodeType?: string;
@@ -1313,11 +1340,11 @@ export interface WorkflowNode {
   messages?: Message[];
 
   // Dynamic/UI Fields
-  displayName?: string | null | unknown;
+  displayName?: string | null;
   systemPrompt?: string;
   staticInputs?: Record<string, unknown>;
   customName?: string;
-  content?: string | null | unknown;
+  content?: string | null;
 }
 
 export interface WorkflowEdge {

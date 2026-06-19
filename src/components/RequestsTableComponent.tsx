@@ -93,7 +93,7 @@ export default function RequestsTableComponent({
   getRowClassName,
   storageKey = "requests",
 }: {
-  requests?: any[];
+  requests?: TransformedRequestItem[];
   conversationId?: string | null;
   refreshKey?: number;
   emptyText?: string;
@@ -104,10 +104,10 @@ export default function RequestsTableComponent({
   sortKey?: string;
   sortDir?: string;
   onSort?: (key: string, dir: string) => void;
-  onRowClick?: (row: any) => void;
-  onRowMouseEnter?: (row: any, event: any) => void;
+  onRowClick?: (row: TransformedRequestItem) => void;
+  onRowMouseEnter?: (row: TransformedRequestItem, index: number) => void;
   onRowMouseLeave?: () => void;
-  getRowClassName?: (row: any) => string;
+  getRowClassName?: (row: TransformedRequestItem) => string;
   storageKey?: string;
 }) {
   const router = useRouter();
@@ -200,7 +200,7 @@ export default function RequestsTableComponent({
 
   // -- Row click: open drawer (+ allow external handler) --
   const handleRowClick = useCallback(
-    async (row: any) => {
+    async (row: TransformedRequestItem) => {
       externalOnRowClick?.(row);
       setSelectedRequest(row as TransformedRequestItem);
       const requestId = row.requestId || row._id;
@@ -218,7 +218,7 @@ export default function RequestsTableComponent({
   const totalCost = useMemo(
     () =>
       requests.reduce(
-        (sum: number, request: any) => sum + (request.estimatedCost || 0),
+        (sum: number, request: TransformedRequestItem) => sum + (request.estimatedCost || 0),
         0,
       ) || 1,
     [requests],
@@ -226,13 +226,13 @@ export default function RequestsTableComponent({
 
   const totalDuration = useMemo(
     () =>
-      requests.reduce((sum: number, request: any) => sum + (request.totalTime || 0), 0) ||
+      requests.reduce((sum: number, request: TransformedRequestItem) => sum + (request.totalTime || 0), 0) ||
       1,
     [requests],
   );
 
   const allColumns = useMemo(
-    () => getRequestsColumns({ totalCost, totalDuration, mini }) as any[],
+    () => getRequestsColumns({ totalCost, totalDuration, mini }),
     [totalCost, totalDuration, mini],
   );
 
@@ -246,7 +246,7 @@ export default function RequestsTableComponent({
     "success",
   ];
   const columns = compact
-    ? allColumns.filter((column: any) => COMPACT_KEYS.includes(column.key))
+    ? allColumns.filter((column) => COMPACT_KEYS.includes(column.key))
     : allColumns;
 
   const resolvedEmptyText = isLoading
@@ -270,7 +270,7 @@ export default function RequestsTableComponent({
         onRowMouseEnter={onRowMouseEnter}
         onRowMouseLeave={onRowMouseLeave}
         getRowClassName={getRowClassName}
-        getRowKey={(request: any, index: number) => `${request.requestId || request._id || "request"}-${index}`}
+        getRowKey={(request: TransformedRequestItem, index: number) => `${request.requestId || request._id || "request"}-${index}`}
         emptyText={resolvedEmptyText}
         mini={mini}
         storageKey={storageKey}
