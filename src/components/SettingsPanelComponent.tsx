@@ -519,7 +519,7 @@ export default function SettingsPanel({
         {sessionStats && (
           <div className={styles['session-stats']}>
             <div className={styles['stats-header']}>
-              <Layers size={12} style={{ marginRight: 4 }} /> {sessionLabel}
+              <Layers size={12} style={{ marginRight: 4 }} /> {sessionLabel} Details
               {showStatsTabBar && (
                 <StatsTabBarComponent
                   activeTab={statsTab}
