@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSwipeToDismiss } from "../hooks/useSwipeToDismiss";
+import { useSwipeToReveal } from "../hooks/useSwipeToReveal";
 import {
   PanelLeftClose,
   PanelLeft,
@@ -224,6 +225,27 @@ export default function ThreePanelLayout({
     isEnabled: isMobile && showRight,
   });
 
+  /* -- Mobile: swipe-to-reveal gestures on main content -- */
+  const openLeftSidebar = useCallback(() => {
+    setShowLeft(true);
+    localStorage.setItem(LS_PANEL_LEFT, "true");
+    setShowRight(false);
+    localStorage.setItem(LS_PANEL_RIGHT, "false");
+  }, []);
+
+  const openRightSidebar = useCallback(() => {
+    setShowRight(true);
+    localStorage.setItem(LS_PANEL_RIGHT, "true");
+    setShowLeft(false);
+    localStorage.setItem(LS_PANEL_LEFT, "false");
+  }, []);
+
+  const mainContentSwipeReference = useSwipeToReveal({
+    onSwipeRight: openLeftSidebar,
+    onSwipeLeft: rightPanel ? openRightSidebar : undefined,
+    isEnabled: isMobile && !showLeft && !showRight,
+  });
+
   /* Backdrop dismiss — tap main area to close any open sidebar */
   const handleMainClick = dismissSidebars;
 
@@ -400,6 +422,7 @@ export default function ThreePanelLayout({
             className={`${styles["main-content-section"]} ${isMobile && (showLeft || showRight) ? styles["is-scrim-active-state"] : ""}`}
             data-chat-area-region
             onClick={handleMainClick}
+            ref={mainContentSwipeReference}
           >
             {children}
           </section>

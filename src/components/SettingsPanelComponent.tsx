@@ -866,6 +866,24 @@ export default function SettingsPanel({
             {sessionType === "agent" && (() => {
               const isExistingSession = (sessionStats?.messageCount ?? 0) > 0;
               const isStrategyLocked = readOnly || isExistingSession;
+
+              const reasoningOptions = buildReasoningStrategyOptions();
+              const topologyOptions = buildTopologyOptions();
+
+              const selectedReasoningValue =
+                (settings.agents?.reasoningStrategy as string) || "chain_of_thought";
+              const selectedReasoningTooltip =
+                reasoningOptions.find(
+                  (option) => option.value === selectedReasoningValue,
+                )?.tooltip ?? null;
+
+              const selectedTopologyValue =
+                settings.agents?.topology || "hierarchical";
+              const selectedTopologyTooltip =
+                topologyOptions.find(
+                  (option) => option.value === selectedTopologyValue,
+                )?.tooltip ?? null;
+
               return (
                 <>
                   {/* Harness */}
@@ -900,11 +918,8 @@ export default function SettingsPanel({
                     </span>
                     <span className={styles['modality-name']}>Reasoning</span>
                     <SelectComponent
-                      value={
-                        (settings.agents?.reasoningStrategy as string) ||
-                        "chain_of_thought"
-                      }
-                      options={buildReasoningStrategyOptions()}
+                      value={selectedReasoningValue}
+                      options={reasoningOptions}
                       onChange={(value: string) =>
                         onChange({
                           agents: {
@@ -915,6 +930,8 @@ export default function SettingsPanel({
                       }
                       compact
                       disabled={isStrategyLocked}
+                      triggerTooltipContent={selectedReasoningTooltip}
+                      triggerTooltipRich
                     />
                   </div>
 
@@ -927,8 +944,8 @@ export default function SettingsPanel({
                     </span>
                     <span className={styles['modality-name']}>Topology</span>
                     <SelectComponent
-                      value={settings.agents?.topology || "hierarchical"}
-                      options={buildTopologyOptions()}
+                      value={selectedTopologyValue}
+                      options={topologyOptions}
                       onChange={(value: string) =>
                         onChange({
                           agents: { ...settings.agents, topology: value },
@@ -936,6 +953,8 @@ export default function SettingsPanel({
                       }
                       compact
                       disabled={isStrategyLocked}
+                      triggerTooltipContent={selectedTopologyTooltip}
+                      triggerTooltipRich
                     />
                   </div>
 
