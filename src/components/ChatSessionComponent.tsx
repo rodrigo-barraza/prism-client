@@ -2226,6 +2226,21 @@ export default function ChatSessionComponent({
       }
     }
 
+    // Lock off workspace tools when the workspace capability is explicitly disabled via Strategy toggle
+    if (settings.agents?.workspaceEnabled === false) {
+      const workspaceDisabledReason = "Workspace capability disabled — enable it in Strategy settings to unlock";
+      for (const tool of builtInTools || []) {
+        const isWorkspaceTool =
+          tool.domainKey === DOMAINS.CORE_WORKSPACE.key ||
+          tool.domain === DOMAINS.CORE_WORKSPACE.displayName ||
+          tool.name === TOOL_NAMES.ENTER_WORKTREE ||
+          tool.name === TOOL_NAMES.EXIT_WORKTREE;
+        if (isWorkspaceTool && !lockedToolsMap.has(tool.name)) {
+          lockedToolsMap.set(tool.name, workspaceDisabledReason);
+        }
+      }
+    }
+
     return lockedToolsMap;
   }, [
     memoryConfigured,
@@ -2241,6 +2256,7 @@ export default function ChatSessionComponent({
     settings.model,
     currentWorkspace,
     builtInTools,
+    settings.agents?.workspaceEnabled,
   ]);
 
   // -- Eager-fetch tab badge counts (fires on mount / session change) --
