@@ -273,6 +273,12 @@
     padding: 0;
     flex-shrink: 0;
   }
+
+  & :global(.cycle-button-component) {
+    height: 24px;
+    min-width: 42px;
+    font-size: 0.6875rem;
+  }
 }
 
 .pricing-value {
