@@ -134,14 +134,14 @@ export default function RunHistorySidebarComponent({
         tabs={[
           {
             key: "general",
-            icon: <span className={(tabBarStyles as any)['tab-emoji-icon']}>🛠︎</span>,
+            icon: <span className={(tabBarStyles as Record<string, string>)['tab-emoji-icon']}>🛠︎</span>,
             tooltip: "General",
             badge: (selectedModels?.length || 0) + (agentInstances?.length || 0),
             badgeDisabled: (selectedModels?.length || 0) + (agentInstances?.length || 0) === 0,
           },
           {
             key: "history",
-            icon: <span className={(tabBarStyles as any)['tab-emoji-icon']}>📜</span>,
+            icon: <span className={(tabBarStyles as Record<string, string>)['tab-emoji-icon']}>📜</span>,
             tooltip: "Run History",
             badge: runHistory?.length || 0,
             badgeDisabled: (runHistory?.length || 0) === 0,
@@ -164,7 +164,7 @@ export default function RunHistorySidebarComponent({
                 Assertions
               </div>
               <div className={styles['assertions-list']}>
-                {assertions.map((assertion: any, assertionIndex: number) => (
+                {assertions.map((assertion: BenchmarkAssertion, assertionIndex: number) => (
                   <div key={assertionIndex} className={styles['assertion-layout-row']}>
                     {assertionIndex > 0 ? (
                       <BadgeComponent
@@ -262,7 +262,7 @@ export default function RunHistorySidebarComponent({
                           agent={agentInstance}
                           isThinking={isThinking}
                           supportsThinking={supportsThinking}
-                          config={config}
+                          config={config ?? null}
                           onRemove={onRemoveAgent}
                           onChangeModel={onChangeAgentModel}
                           onToggleThinking={onToggleThinking}

@@ -58,7 +58,7 @@ export interface TableRow {
   providerCount?: number;
   totalRequests?: number;
   requestCount?: number;
-  modalities?: Record<string, boolean | number>;
+  modalities?: Record<string, boolean | number> | null;
   toolDisplayNames?: string[];
   toolApiNames?: string[];
   totalInputTokens?: number;

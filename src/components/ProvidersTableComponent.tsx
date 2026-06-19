@@ -36,10 +36,10 @@ export default function ProvidersTableComponent({
   maxHeight = 420,
 }: ProvidersTableProps) {
   const totalRequests =
-    (totalRequestsProp ?? providers.reduce((s, p) => s + p.totalRequests, 0)) ||
+    (totalRequestsProp ?? providers.reduce((sum, provider) => sum + provider.totalRequests, 0)) ||
     1;
   const totalCost =
-    (totalCostProp ?? providers.reduce((s, p) => s + (p.totalCost || 0), 0)) ||
+    (totalCostProp ?? providers.reduce((sum, provider) => sum + (provider.totalCost || 0), 0)) ||
     1;
 
   const allColumns = [
@@ -48,12 +48,12 @@ export default function ProvidersTableComponent({
     {
       key: "usage",
       label: "Usage",
-      sortValue: (p: any) => p.totalRequests,
-      render: (p: any, i: number) => (
+      sortValue: (providerStat: IrisProviderStat) => providerStat.totalRequests,
+      render: (providerStat: IrisProviderStat, index: number) => (
         <ProportionBarComponent
-          value={p.totalRequests}
+          value={providerStat.totalRequests}
           total={totalRequests}
-          color={PROVIDER_COLORS[i % PROVIDER_COLORS.length]}
+          color={PROVIDER_COLORS[index % PROVIDER_COLORS.length]}
         />
       ),
     },
@@ -61,7 +61,7 @@ export default function ProvidersTableComponent({
     ...tokenColumns(),
     ...costColumns(totalCost),
     latencyColumn(),
-    ...countLinkColumns("provider", (row: any) => String(row.provider || "")),
+    ...countLinkColumns("provider", (row) => String(row.provider || "")),
   ];
 
   const COMPACT_KEYS = [
@@ -72,7 +72,7 @@ export default function ProvidersTableComponent({
     "avgLatency",
   ];
   const columns = compact
-    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((column) => COMPACT_KEYS.includes(column.key))
     : allColumns;
 
   return (
@@ -82,7 +82,7 @@ export default function ProvidersTableComponent({
       maxHeight={maxHeight}
       columns={columns}
       data={providers}
-      getRowKey={(p: any, i: number) => `${p.provider}-${i}`}
+      getRowKey={(providerStat: IrisProviderStat, index: number) => `${providerStat.provider}-${index}`}
       emptyText={emptyText}
       storageKey="providers"
     />

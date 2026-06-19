@@ -1344,7 +1344,8 @@ export interface WorkflowNode {
   systemPrompt?: string;
   staticInputs?: Record<string, unknown>;
   customName?: string;
-  content?: string | null;
+  content?: string | ArrayBuffer | Record<string, unknown> | null;
+  contentType?: string | null;
 }
 
 export interface WorkflowEdge {

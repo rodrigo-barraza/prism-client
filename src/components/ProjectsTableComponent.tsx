@@ -36,10 +36,10 @@ export default function ProjectsTableComponent({
   maxHeight = 420,
 }: ProjectsTableProps) {
   const totalRequests =
-    (totalRequestsProp ?? projects.reduce((s, x) => s + x.totalRequests, 0)) ||
+    (totalRequestsProp ?? projects.reduce((sum, project) => sum + project.totalRequests, 0)) ||
     1;
   const totalCost =
-    (totalCostProp ?? projects.reduce((s, x) => s + (x.totalCost || 0), 0)) ||
+    (totalCostProp ?? projects.reduce((sum, project) => sum + (project.totalCost || 0), 0)) ||
     1;
 
   const allColumns = [
@@ -51,7 +51,7 @@ export default function ProjectsTableComponent({
     ...tokenColumns(),
     ...costColumns(totalCost),
     latencyColumn(),
-    ...countLinkColumns("project", (row: any) => String(row.project || "")),
+    ...countLinkColumns("project", (row) => String(row.project || "")),
   ];
 
   const COMPACT_KEYS = [
@@ -63,7 +63,7 @@ export default function ProjectsTableComponent({
     "conversationCount",
   ];
   const columns = compact
-    ? allColumns.filter((c: any) => COMPACT_KEYS.includes(c.key))
+    ? allColumns.filter((column) => COMPACT_KEYS.includes(column.key))
     : allColumns;
 
   return (
@@ -73,7 +73,7 @@ export default function ProjectsTableComponent({
       maxHeight={maxHeight}
       columns={columns}
       data={projects}
-      getRowKey={(p: any, i: number) => `${p.project || "none"}-${i}`}
+      getRowKey={(project: IrisProjectStat, index: number) => `${project.project || "none"}-${index}`}
       emptyText={emptyText}
       storageKey="projects"
     />

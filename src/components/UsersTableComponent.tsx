@@ -99,7 +99,7 @@ export default function UsersTableComponent({
   ];
 
   const columns = compact
-    ? allColumns.filter((column: any) => COMPACT_KEYS.includes(column.key))
+    ? allColumns.filter((column) => COMPACT_KEYS.includes(column.key))
     : allColumns;
 
   return (
@@ -107,9 +107,9 @@ export default function UsersTableComponent({
       className="users-table-component"
       title={title}
       maxHeight={maxHeight}
-      columns={columns as any}
+      columns={columns as unknown as { key: string; label: string }[]}
       data={users}
-      getRowKey={(user: any, index: number) =>
+      getRowKey={(user: IrisUserStat, index: number) =>
         `${user.username || "unknown"}-${index}`
       }
       emptyText={emptyText}

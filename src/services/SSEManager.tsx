@@ -61,11 +61,11 @@ export function subscribe(
 
   return {
     unsubscribe() {
-      const e = pools.get(url);
-      if (!e) return;
-      e.listeners.delete(onMessage);
-      if (e.listeners.size === 0) {
-        e.es.close();
+      const existingPool = pools.get(url);
+      if (!existingPool) return;
+      existingPool.listeners.delete(onMessage);
+      if (existingPool.listeners.size === 0) {
+        existingPool.es.close();
         pools.delete(url);
       }
     },

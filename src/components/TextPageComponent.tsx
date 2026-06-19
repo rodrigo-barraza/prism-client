@@ -358,7 +358,7 @@ export default function TextPageComponent({
         <div className={styles['admin-page']}>
           <SearchInputComponent
             value={searchInput}
-            onChange={(value: any) => {
+            onChange={(value: string) => {
               setSearchInput(value);
               setSearch(value);
               setPage(1);

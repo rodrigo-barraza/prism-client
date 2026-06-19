@@ -131,7 +131,7 @@ export default function AgentsTableComponent({
     "conversationCount",
   ];
   const columns = compact
-    ? allColumns.filter((column: any) => COMPACT_KEYS.includes(column.key))
+    ? allColumns.filter((column) => COMPACT_KEYS.includes(column.key))
     : allColumns;
 
   return (
@@ -139,9 +139,9 @@ export default function AgentsTableComponent({
       className="agents-table-component"
       title={title}
       maxHeight={maxHeight}
-      columns={columns as any}
+      columns={columns as unknown as { key: string; label: string }[]}
       data={agents}
-      getRowKey={(agent: any, index: number) =>
+      getRowKey={(agent: IrisAgentStat, index: number) =>
         `${agent.agent || "unknown"}-${index}`
       }
       emptyText={emptyText}

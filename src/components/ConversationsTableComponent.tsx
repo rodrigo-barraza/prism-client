@@ -55,12 +55,12 @@ export default function ConversationsTableComponent({
 
   const totalCost = useMemo(
     () =>
-      conversations.reduce((sum, c: any) => sum + (c.totalCost || 0), 0) || 1,
+      conversations.reduce((sum, conversation) => sum + (conversation.totalCost || 0), 0) || 1,
     [conversations],
   );
 
   const totalDuration = useMemo(
-    () => conversations.reduce((sum, c: any) => sum + getDurationMs(c), 0) || 1,
+    () => conversations.reduce((sum, conversation) => sum + getDurationMs(conversation), 0) || 1,
     [conversations],
   );
 
@@ -96,10 +96,10 @@ export default function ConversationsTableComponent({
       sortKey={sortKey}
       sortDir={sortDir ?? undefined}
       onSort={onSort}
-      getRowKey={(c: any, i: number) => c.id || c._id || `conv-${i}`}
-      onRowClick={(c: any) => {
+      getRowKey={(conversation: Conversation, index: number) => conversation.id || `conv-${index}`}
+      onRowClick={(conversation: Conversation) => {
         const traceQs = traceId ? `?trace=${traceId}` : "";
-        router.push(`/admin/chat/${c.id}${traceQs}`);
+        router.push(`/admin/chat/${conversation.id}${traceQs}`);
       }}
       emptyText={emptyText}
       maxHeight={maxHeight || (compact ? "300px" : undefined)}

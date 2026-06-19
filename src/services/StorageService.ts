@@ -63,11 +63,11 @@ const StorageService = {
     if (!isAvailable()) return;
     const prefix = `${NAMESPACE}:`;
     const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k?.startsWith(prefix)) keysToRemove.push(k);
+    for (let index = 0; index < localStorage.length; index++) {
+      const storageKey = localStorage.key(index);
+      if (storageKey?.startsWith(prefix)) keysToRemove.push(storageKey);
     }
-    keysToRemove.forEach((k) => localStorage.removeItem(k));
+    keysToRemove.forEach((storageKey) => localStorage.removeItem(storageKey));
   },
 };
 

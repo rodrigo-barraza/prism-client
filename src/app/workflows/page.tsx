@@ -667,10 +667,10 @@ export default function WorkflowsPage({
                 }
                 return {
                   ...n,
-                  content: firstContent,
+                  content: firstContent as WorkflowNode['content'],
                   contentType: firstType,
                   receivedOutputs,
-                };
+                } satisfies WorkflowNode;
               }),
             );
           },
@@ -708,10 +708,10 @@ export default function WorkflowsPage({
                 );
                 return {
                   ...n,
-                  content: firstEntry ? firstEntry[1] : null,
+                  content: (firstEntry ? firstEntry[1] : null) as WorkflowNode['content'],
                   contentType: firstEntry ? firstEntry[0] : null,
                   receivedOutputs,
-                };
+                } satisfies WorkflowNode;
               }),
             );
           },
@@ -719,7 +719,7 @@ export default function WorkflowsPage({
             setNodes((prev) =>
               prev.map((n) => {
                 if (n.id !== nodeId) return n;
-                return { ...n, content: newContent };
+                return { ...n, content: newContent as WorkflowNode['content'] } satisfies WorkflowNode;
               }),
             );
           },
@@ -802,10 +802,10 @@ export default function WorkflowsPage({
               };
               return {
                 ...n,
-                content: data,
+                content: data as WorkflowNode['content'],
                 contentType: conn.targetModality,
                 receivedOutputs,
-              };
+              } satisfies WorkflowNode;
             });
           }
         }
@@ -879,11 +879,11 @@ export default function WorkflowsPage({
               n.id === deleted.targetNodeId
                 ? {
                     ...n,
-                    content: firstEntry ? firstEntry[1] : null,
+                    content: (firstEntry ? firstEntry[1] : null) as WorkflowNode['content'],
                     contentType: firstEntry ? firstEntry[0] : null,
                     receivedOutputs:
                       viewerStillConnected.length > 0 ? receivedOutputs : {},
-                  }
+                  } satisfies WorkflowNode
                 : n,
             );
           }
