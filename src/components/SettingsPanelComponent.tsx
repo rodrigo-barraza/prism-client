@@ -836,31 +836,32 @@ export default function SettingsPanel({
         {((agentToggles?.length ?? 0) > 0 || sessionType === "agent" || (selectedModelDef?.tools && selectedModelDef.tools.length > 0)) && (
           <div className={styles['section']}>
             <div className={styles['section-header']}>Agent Settings</div>
+            {(() => {
+              const isExistingAgentSession = (sessionStats?.messageCount ?? 0) > 0;
+              const isAgentSettingsLocked = readOnly || isExistingAgentSession;
+              return (
+                <>
 
             {/* 1. Workspace */}
-            {sessionType === "agent" && (() => {
-              const isExistingSession = (sessionStats?.messageCount ?? 0) > 0;
-              const isStrategyLocked = readOnly || isExistingSession;
-              return (
-                <div
-                  className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-                >
-                  <span className={styles['modality-icon']}>
-                    <FolderOpen size={12} />
-                  </span>
-                  <span className={styles['modality-name']}>Workspace</span>
-                  <ToggleSwitch
-                    checked={settings.agents?.workspaceEnabled !== false}
-                    onChange={(checked: boolean) =>
-                      onChange({
-                        agents: { ...settings.agents, workspaceEnabled: checked },
-                      })
-                    }
-                    disabled={isStrategyLocked}
-                  />
-                </div>
-              );
-            })()}
+            {sessionType === "agent" && (
+              <div
+                className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+              >
+                <span className={styles['modality-icon']}>
+                  <FolderOpen size={12} />
+                </span>
+                <span className={styles['modality-name']}>Workspace</span>
+                <ToggleSwitch
+                  checked={settings.agents?.workspaceEnabled !== false}
+                  onChange={(checked: boolean) =>
+                    onChange({
+                      agents: { ...settings.agents, workspaceEnabled: checked },
+                    })
+                  }
+                  disabled={isAgentSettingsLocked}
+                />
+              </div>
+            )}
 
             {/* 2. Native Tools (Thinking first, then others) */}
             {selectedModelDef?.tools &&
@@ -1071,11 +1072,13 @@ export default function SettingsPanel({
                     isActive={toggle.isActive}
                     onClick={() => toggle.onChange?.(toggle.value ?? 0)}
                     title={toggle.title}
+                    disabled={isAgentSettingsLocked}
                   />
                 ) : (
                   <ToggleSwitch
                     checked={toggle.checked}
                     onChange={(value: boolean) => toggle.onChange?.(value)}
+                    disabled={isAgentSettingsLocked}
                   />
                 )}
               </div>
@@ -1083,9 +1086,6 @@ export default function SettingsPanel({
 
             {/* 6–8. Reasoning, Topology, Harness */}
             {sessionType === "agent" && (() => {
-              const isExistingSession = (sessionStats?.messageCount ?? 0) > 0;
-              const isStrategyLocked = readOnly || isExistingSession;
-
               const reasoningOptions = buildReasoningStrategyOptions();
               const topologyOptions = buildTopologyOptions();
 
@@ -1125,7 +1125,7 @@ export default function SettingsPanel({
                         })
                       }
                       compact
-                      disabled={isStrategyLocked}
+                      disabled={isAgentSettingsLocked}
                       triggerTooltipContent={selectedReasoningTooltip}
                       triggerTooltipRich
                     />
@@ -1148,7 +1148,7 @@ export default function SettingsPanel({
                         })
                       }
                       compact
-                      disabled={isStrategyLocked}
+                      disabled={isAgentSettingsLocked}
                       triggerTooltipContent={selectedTopologyTooltip}
                       triggerTooltipRich
                     />
@@ -1173,7 +1173,7 @@ export default function SettingsPanel({
                         })
                       }
                       compact
-                      disabled={isStrategyLocked}
+                      disabled={isAgentSettingsLocked}
                     />
                   </div>
                 </>
@@ -1196,15 +1196,20 @@ export default function SettingsPanel({
                     isActive={toggle.isActive}
                     onClick={() => toggle.onChange?.(toggle.value ?? 0)}
                     title={toggle.title}
+                    disabled={isAgentSettingsLocked}
                   />
                 ) : (
                   <ToggleSwitch
                     checked={toggle.checked}
                     onChange={(value: boolean) => toggle.onChange?.(value)}
+                    disabled={isAgentSettingsLocked}
                   />
                 )}
               </div>
             ))}
+                </>
+              );
+            })()}
           </div>
         )}
 

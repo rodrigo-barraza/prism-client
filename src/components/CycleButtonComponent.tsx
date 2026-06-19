@@ -143,6 +143,7 @@ export interface CycleButtonProps {
   isActive?: boolean;
   onClick?: () => void;
   title?: string;
+  disabled?: boolean;
 }
 
 /**
@@ -167,6 +168,7 @@ export default function CycleButton({
   isActive = false,
   onClick,
   title,
+  disabled = false,
 }: CycleButtonProps) {
   const prevValueRef = useRef<number>(value);
   const rafRef = useRef<number | null>(null);
@@ -343,15 +345,17 @@ export default function CycleButton({
   return (
     <button
       type="button"
-      className={`cycle-button-component ${styles['cycle-button']} ${isActive ? styles['cycle-button-is-active-state'] : ""} ${tweening ? styles['tweening'] : ""} ${showInfinity ? styles['infinity'] : ""} ${glitching ? styles['glitching'] : ""}`}
+      className={`cycle-button-component ${styles['cycle-button']} ${isActive ? styles['cycle-button-is-active-state'] : ""} ${tweening ? styles['tweening'] : ""} ${showInfinity ? styles['infinity'] : ""} ${glitching ? styles['glitching'] : ""} ${disabled ? styles['is-disabled-state'] : ""}`}
       onClick={(e: React.MouseEvent) => {
+        if (disabled) return;
         SoundService.playClickButton({ event: e.nativeEvent });
         onClick?.();
       }}
-      onMouseEnter={(e: React.MouseEvent) =>
-        SoundService.playHoverButton({ event: e.nativeEvent })
-      }
+      onMouseEnter={(e: React.MouseEvent) => {
+        if (!disabled) SoundService.playHoverButton({ event: e.nativeEvent });
+      }}
       title={title}
+      aria-disabled={disabled}
     >
       {label}
     </button>

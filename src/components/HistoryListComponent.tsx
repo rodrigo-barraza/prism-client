@@ -307,13 +307,23 @@ export default function HistoryList({
 
   const subAgentNumberMap = useMemo(() => {
     const numberMap = new Map<string, number>();
-    const counterByParent = new Map<string, number>();
+    const childrenByParent = new Map<string, HistoryListItem[]>();
     for (const item of items || []) {
       if (item.parentAgentSessionId) {
-        const currentCount = (counterByParent.get(item.parentAgentSessionId) || 0) + 1;
-        counterByParent.set(item.parentAgentSessionId, currentCount);
-        numberMap.set(item.id, currentCount);
+        const siblings = childrenByParent.get(item.parentAgentSessionId) || [];
+        siblings.push(item);
+        childrenByParent.set(item.parentAgentSessionId, siblings);
       }
+    }
+    for (const siblings of childrenByParent.values()) {
+      siblings.sort((itemA, itemB) => {
+        const timestampA = new Date(itemA.createdAt || itemA.updatedAt || "").getTime();
+        const timestampB = new Date(itemB.createdAt || itemB.updatedAt || "").getTime();
+        return timestampA - timestampB;
+      });
+      siblings.forEach((child, spawnIndex) => {
+        numberMap.set(child.id, spawnIndex + 1);
+      });
     }
     return numberMap;
   }, [items]);

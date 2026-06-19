@@ -153,3 +153,17 @@
     transform: translate(-1px, 0) scale(0.98);
   }
 }
+
+/* ── Disabled / locked state ───────────────────────────── */
+.is-disabled-state {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
+  animation: none;
+  filter: none;
+}
+
+.is-disabled-state.cycle-button-is-active-state {
+  animation: none;
+  filter: grayscale(0.6);
+}
