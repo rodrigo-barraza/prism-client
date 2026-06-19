@@ -832,10 +832,12 @@ export default function SettingsPanel({
           </div>
         )}
 
-        {/* -- Agent Toggles (Plan, Auto, Iterations) ---------------- */}
-        {(agentToggles?.length ?? 0) > 0 && (
+        {/* -- Agent Settings (Toggles + Strategy + Native Tools) ------ */}
+        {((agentToggles?.length ?? 0) > 0 || sessionType === "agent" || (selectedModelDef?.tools && selectedModelDef.tools.length > 0)) && (
           <div className={styles['section']}>
-            <div className={styles['section-header']}>Agent</div>
+            <div className={styles['section-header']}>Agent Settings</div>
+
+            {/* Agent Toggles (Plan, Auto, Iterations) */}
             {agentToggles?.map((toggle) => (
               <div
                 key={toggle.key}
@@ -859,286 +861,283 @@ export default function SettingsPanel({
                 )}
               </div>
             ))}
+
+            {/* Strategy Overrides (Harness / Topology / Reasoning) */}
+            {sessionType === "agent" && (() => {
+              const isExistingSession = (sessionStats?.messageCount ?? 0) > 0;
+              const isStrategyLocked = readOnly || isExistingSession;
+              return (
+                <>
+                  {/* Harness */}
+                  <div
+                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+                  >
+                    <span className={styles['modality-icon']}>
+                      <Brain size={12} />
+                    </span>
+                    <span className={styles['modality-name']}>Harness</span>
+                    <SelectComponent
+                      value={settings.agents?.harness || "standard"}
+                      options={[
+                        { value: "standard", label: "Standard (ReAct)" },
+                      ]}
+                      onChange={(value: string) =>
+                        onChange({
+                          agents: { ...settings.agents, harness: value },
+                        })
+                      }
+                      compact
+                      disabled={isStrategyLocked}
+                    />
+                  </div>
+
+                  {/* Reasoning Strategy */}
+                  <div
+                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+                  >
+                    <span className={styles['modality-icon']}>
+                      <Layers size={12} />
+                    </span>
+                    <span className={styles['modality-name']}>Reasoning</span>
+                    <SelectComponent
+                      value={
+                        (settings.agents?.reasoningStrategy as string) ||
+                        "chain_of_thought"
+                      }
+                      options={buildReasoningStrategyOptions()}
+                      onChange={(value: string) =>
+                        onChange({
+                          agents: {
+                            ...settings.agents,
+                            reasoningStrategy: value,
+                          },
+                        })
+                      }
+                      compact
+                      disabled={isStrategyLocked}
+                    />
+                  </div>
+
+                  {/* Topology */}
+                  <div
+                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+                  >
+                    <span className={styles['modality-icon']}>
+                      <Network size={12} />
+                    </span>
+                    <span className={styles['modality-name']}>Topology</span>
+                    <SelectComponent
+                      value={settings.agents?.topology || "hierarchical"}
+                      options={buildTopologyOptions()}
+                      onChange={(value: string) =>
+                        onChange({
+                          agents: { ...settings.agents, topology: value },
+                        })
+                      }
+                      compact
+                      disabled={isStrategyLocked}
+                    />
+                  </div>
+
+                  {/* Workspace */}
+                  <div
+                    className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+                  >
+                    <span className={styles['modality-icon']}>
+                      <FolderOpen size={12} />
+                    </span>
+                    <span className={styles['modality-name']}>Workspace</span>
+                    <ToggleSwitch
+                      checked={settings.agents?.workspaceEnabled !== false}
+                      onChange={(checked: boolean) =>
+                        onChange({
+                          agents: { ...settings.agents, workspaceEnabled: checked },
+                        })
+                      }
+                      disabled={isStrategyLocked}
+                    />
+                  </div>
+                </>
+              );
+            })()}
+
+            {/* Native Tools */}
+            {selectedModelDef?.tools &&
+              selectedModelDef.tools.length > 0 &&
+              (() => {
+                const TOOL_LABELS = {
+                  google: { "Web Search": "Google Search" },
+                  anthropic: selectedModelDef?.webFetch
+                    ? { "Web Search": "Web Fetch" }
+                    : {},
+                };
+                const providerToolLabels =
+                  (settings.provider &&
+                    (TOOL_LABELS as Record<string, Record<string, string>>)[
+                      settings.provider
+                    ]) ||
+                  {};
+                const getToolLabel = (tool: string) =>
+                  (providerToolLabels as Record<string, string>)[tool] || tool;
+
+                const getToolToggle = (tool: string) => {
+                  switch (tool) {
+                    case "Thinking": {
+                      const isLmStudio = settings.provider === "lm-studio";
+                      const isLive = selectedModelDef?.liveAPI;
+                      const canDisable =
+                        !selectedModelDef?.thinkingLevels ||
+                        selectedModelDef.thinkingLevels.includes("minimal");
+                      const alwaysOn =
+                        !canDisable && !!selectedModelDef?.thinkingLevels;
+                      const modelName = (settings.model || "").toLowerCase();
+                      const nameBasedThinking = (config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS)
+                        .some((pattern) => modelName.includes(pattern));
+                      const lmCanToggle =
+                        isLmStudio &&
+                        (selectedModelDef?.thinking || nameBasedThinking);
+                      const lmLocked = isLmStudio && !lmCanToggle;
+                      return {
+                        checked: isLive
+                          ? (settings.liveThinkingLevel || "none") !== "none"
+                          : lmLocked || alwaysOn
+                            ? true
+                            : isLmStudio
+                              ? settings.thinkingEnabled !== false
+                              : settings.thinkingEnabled || false,
+                        onChange: isLive
+                          ? (value: boolean) => {
+                              onChange({
+                                liveThinkingLevel: value ? "low" : "none",
+                              });
+                            }
+                          : lmLocked || alwaysOn
+                            ? () => {}
+                            : (value: boolean) => {
+                                onChange({ thinkingEnabled: value });
+                              },
+                        disabled: lmLocked || alwaysOn,
+                      };
+                    }
+                    case "Web Search":
+                    case "Google Search":
+                    case "Web Fetch":
+                      return {
+                        checked: settings.webSearchEnabled || false,
+                        onChange: (value: boolean) => {
+                          onChange({ webSearchEnabled: value });
+                        },
+                        disabled: settings.codeExecutionEnabled,
+                      };
+                    case "Code Execution":
+                      return {
+                        checked: settings.codeExecutionEnabled || false,
+                        onChange: (value: boolean) => {
+                          const updates: Partial<PrismSettings> = {
+                            codeExecutionEnabled: value,
+                          };
+                          if (value) {
+                            updates.webSearchEnabled = false;
+                            updates.urlContextEnabled = false;
+                          }
+                          onChange(updates);
+                        },
+                        disabled: false,
+                      };
+                    case "URL Context":
+                      return {
+                        checked: settings.urlContextEnabled || false,
+                        onChange: (value: boolean) => {
+                          onChange({ urlContextEnabled: value });
+                        },
+                        disabled: settings.codeExecutionEnabled,
+                      };
+                    case "Tool Calling":
+                      return {
+                        checked:
+                          lockedTools?.has("Tool Calling") ||
+                          settings.functionCallingEnabled ||
+                          false,
+                        onChange: lockedTools?.has("Tool Calling")
+                          ? () => {}
+                          : (value: boolean) => {
+                              onChange({ functionCallingEnabled: value });
+                            },
+                        disabled: !!lockedTools?.has("Tool Calling"),
+                      };
+                    case "Image Generation":
+                      return {
+                        checked: settings.forceImageGeneration || false,
+                        onChange: (value: boolean) => {
+                          onChange({ forceImageGeneration: value });
+                        },
+                        disabled: false,
+                      };
+                    default:
+                      return null;
+                  }
+                };
+
+                return (
+                  <>
+                    {selectedModelDef.tools
+                      .filter((tool) => !(sessionType === "agent" && tool === "Tool Calling"))
+                      .map((tool) => {
+                      const toggle = TOGGLEABLE_TOOLS.has(tool)
+                        ? getToolToggle(tool)
+                        : null;
+                      return (
+                        <div
+                          key={tool}
+                          className={`${styles['modality-layout-row']} ${toggle ? styles['tool-toggle-layout-row'] : ""}`}
+                        >
+                          <ToolBadgeComponent
+                            name={getToolLabel(tool)}
+                            tooltip={tool}
+                          />
+                          <span style={{ flex: 1 }} />
+                          {readOnly ? (
+                            toggle ? (
+                              <span
+                                className={`${styles['modality-status']} ${toggle.checked ? styles['modality-active'] : ""}`}
+                              >
+                                {tool === "Image Generation"
+                                  ? toggle.checked
+                                    ? "Forced"
+                                    : "Default"
+                                  : toggle.checked
+                                    ? "On"
+                                    : "Off"}
+                              </span>
+                            ) : (
+                              <span
+                                className={`${styles['modality-status']} ${styles['modality-active']}`}
+                              >
+                                Supported
+                              </span>
+                            )
+                          ) : toggle ? (
+                            <ToggleSwitch
+                              checked={toggle.checked}
+                              onChange={toggle.onChange}
+                              disabled={toggle.disabled}
+                              size="mini"
+                            />
+                          ) : (
+                            <span
+                              className={`${styles['modality-status']} ${styles['modality-active']}`}
+                            >
+                              Supported
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </>
+                );
+              })()}
           </div>
         )}
-
-        {/* -- Strategy Overrides (Harness / Topology / Reasoning) ----- */}
-        {sessionType === "agent" && (() => {
-          const isExistingSession = (sessionStats?.messageCount ?? 0) > 0;
-          const isStrategyLocked = readOnly || isExistingSession;
-          return (
-          <div className={styles['section']}>
-            <div className={styles['section-header']}>Strategy</div>
-
-            {/* Harness */}
-            <div
-              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-            >
-              <span className={styles['modality-icon']}>
-                <Brain size={12} />
-              </span>
-              <span className={styles['modality-name']}>Harness</span>
-              <SelectComponent
-                value={settings.agents?.harness || "standard"}
-                options={[
-                  { value: "standard", label: "Standard (ReAct)" },
-                ]}
-                onChange={(value: string) =>
-                  onChange({
-                    agents: { ...settings.agents, harness: value },
-                  })
-                }
-                compact
-                disabled={isStrategyLocked}
-              />
-            </div>
-
-            {/* Reasoning Strategy */}
-            <div
-              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-            >
-              <span className={styles['modality-icon']}>
-                <Layers size={12} />
-              </span>
-              <span className={styles['modality-name']}>Reasoning</span>
-              <SelectComponent
-                value={
-                  (settings.agents?.reasoningStrategy as string) ||
-                  "chain_of_thought"
-                }
-                options={buildReasoningStrategyOptions()}
-                onChange={(value: string) =>
-                  onChange({
-                    agents: {
-                      ...settings.agents,
-                      reasoningStrategy: value,
-                    },
-                  })
-                }
-                compact
-                disabled={isStrategyLocked}
-              />
-            </div>
-
-            {/* Topology */}
-            <div
-              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-            >
-              <span className={styles['modality-icon']}>
-                <Network size={12} />
-              </span>
-              <span className={styles['modality-name']}>Topology</span>
-              <SelectComponent
-                value={settings.agents?.topology || "hierarchical"}
-                options={buildTopologyOptions()}
-                onChange={(value: string) =>
-                  onChange({
-                    agents: { ...settings.agents, topology: value },
-                  })
-                }
-                compact
-                disabled={isStrategyLocked}
-              />
-            </div>
-
-            {/* Workspace */}
-            <div
-              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-            >
-              <span className={styles['modality-icon']}>
-                <FolderOpen size={12} />
-              </span>
-              <span className={styles['modality-name']}>Workspace</span>
-              <ToggleSwitch
-                checked={settings.agents?.workspaceEnabled !== false}
-                onChange={(checked: boolean) =>
-                  onChange({
-                    agents: { ...settings.agents, workspaceEnabled: checked },
-                  })
-                }
-                disabled={isStrategyLocked}
-              />
-            </div>
-          </div>
-          );
-        })()}
-
-        {/* -- Tools ------------------------------------------------- */}
-        {selectedModelDef?.tools &&
-          selectedModelDef.tools.length > 0 &&
-          (() => {
-            const TOOL_LABELS = {
-              google: { "Web Search": "Google Search" },
-              anthropic: selectedModelDef?.webFetch
-                ? { "Web Search": "Web Fetch" }
-                : {},
-            };
-            const providerToolLabels =
-              (settings.provider &&
-                (TOOL_LABELS as Record<string, Record<string, string>>)[
-                  settings.provider
-                ]) ||
-              {};
-            const getToolLabel = (tool: string) =>
-              (providerToolLabels as Record<string, string>)[tool] || tool;
-
-            const getToolToggle = (tool: string) => {
-              switch (tool) {
-                case "Thinking": {
-                  const isLmStudio = settings.provider === "lm-studio";
-                  const isLive = selectedModelDef?.liveAPI;
-                  const canDisable =
-                    !selectedModelDef?.thinkingLevels ||
-                    selectedModelDef.thinkingLevels.includes("minimal");
-                  const alwaysOn =
-                    !canDisable && !!selectedModelDef?.thinkingLevels;
-                  const modelName = (settings.model || "").toLowerCase();
-                  const nameBasedThinking = (config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS)
-                    .some((pattern) => modelName.includes(pattern));
-                  const lmCanToggle =
-                    isLmStudio &&
-                    (selectedModelDef?.thinking || nameBasedThinking);
-                  const lmLocked = isLmStudio && !lmCanToggle;
-                  return {
-                    checked: isLive
-                      ? (settings.liveThinkingLevel || "none") !== "none"
-                      : lmLocked || alwaysOn
-                        ? true
-                        : isLmStudio
-                          ? settings.thinkingEnabled !== false
-                          : settings.thinkingEnabled || false,
-                    onChange: isLive
-                      ? (value: boolean) => {
-                          onChange({
-                            liveThinkingLevel: value ? "low" : "none",
-                          });
-                        }
-                      : lmLocked || alwaysOn
-                        ? () => {}
-                        : (value: boolean) => {
-                            onChange({ thinkingEnabled: value });
-                          },
-                    disabled: lmLocked || alwaysOn,
-                  };
-                }
-                case "Web Search":
-                case "Google Search":
-                case "Web Fetch":
-                  return {
-                    checked: settings.webSearchEnabled || false,
-                    onChange: (value: boolean) => {
-                      onChange({ webSearchEnabled: value });
-                    },
-                    disabled: settings.codeExecutionEnabled,
-                  };
-                case "Code Execution":
-                  return {
-                    checked: settings.codeExecutionEnabled || false,
-                    onChange: (value: boolean) => {
-                      const updates: Partial<PrismSettings> = {
-                        codeExecutionEnabled: value,
-                      };
-                      if (value) {
-                        updates.webSearchEnabled = false;
-                        updates.urlContextEnabled = false;
-                      }
-                      onChange(updates);
-                    },
-                    disabled: false,
-                  };
-                case "URL Context":
-                  return {
-                    checked: settings.urlContextEnabled || false,
-                    onChange: (value: boolean) => {
-                      onChange({ urlContextEnabled: value });
-                    },
-                    disabled: settings.codeExecutionEnabled,
-                  };
-                case "Tool Calling":
-                  return {
-                    checked:
-                      lockedTools?.has("Tool Calling") ||
-                      settings.functionCallingEnabled ||
-                      false,
-                    onChange: lockedTools?.has("Tool Calling")
-                      ? () => {}
-                      : (value: boolean) => {
-                          onChange({ functionCallingEnabled: value });
-                        },
-                    disabled: !!lockedTools?.has("Tool Calling"),
-                  };
-                case "Image Generation":
-                  return {
-                    checked: settings.forceImageGeneration || false,
-                    onChange: (value: boolean) => {
-                      onChange({ forceImageGeneration: value });
-                    },
-                    disabled: false,
-                  };
-                default:
-                  return null;
-              }
-            };
-
-            return (
-              <div className={styles['section']}>
-                <div className={styles['section-header']}>Native Tools</div>
-                {selectedModelDef.tools
-                  .filter((tool) => !(sessionType === "agent" && tool === "Tool Calling"))
-                  .map((tool) => {
-                  const toggle = TOGGLEABLE_TOOLS.has(tool)
-                    ? getToolToggle(tool)
-                    : null;
-                  return (
-                    <div
-                      key={tool}
-                      className={`${styles['modality-layout-row']} ${toggle ? styles['tool-toggle-layout-row'] : ""}`}
-                    >
-                      <ToolBadgeComponent
-                        name={getToolLabel(tool)}
-                        tooltip={tool}
-                      />
-                      <span style={{ flex: 1 }} />
-                      {readOnly ? (
-                        toggle ? (
-                          <span
-                            className={`${styles['modality-status']} ${toggle.checked ? styles['modality-active'] : ""}`}
-                          >
-                            {tool === "Image Generation"
-                              ? toggle.checked
-                                ? "Forced"
-                                : "Default"
-                              : toggle.checked
-                                ? "On"
-                                : "Off"}
-                          </span>
-                        ) : (
-                          <span
-                            className={`${styles['modality-status']} ${styles['modality-active']}`}
-                          >
-                            Supported
-                          </span>
-                        )
-                      ) : toggle ? (
-                        <ToggleSwitch
-                          checked={toggle.checked}
-                          onChange={toggle.onChange}
-                          disabled={toggle.disabled}
-                          size="mini"
-                        />
-                      ) : (
-                        <span
-                          className={`${styles['modality-status']} ${styles['modality-active']}`}
-                        >
-                          Supported
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
 
         {!isSpecialModel && !readOnly && !hideSystemPrompt && (
           <div

@@ -442,6 +442,15 @@ export default function HistoryList({
     return groups;
   }, [filtered, parentAgentSessionIds]);
 
+  // DEBUG: trace grouping output
+  console.log('[HistoryList] groupedSessions:', {
+    filteredCount: filtered.length,
+    groupCount: groupedSessions.length,
+    clusters: groupedSessions.filter((g) => g.type === 'agent-cluster').map((g) => g.type === 'agent-cluster' ? { parentId: g.parent.id, parentTitle: g.parent.title, childCount: g.children.length } : null),
+    subAgentsInFiltered: filtered.filter((i) => !!i.parentAgentSessionId).length,
+    shouldHideSubAgents,
+  });
+
   // -- Infinite scroll via IntersectionObserver -----------------
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
