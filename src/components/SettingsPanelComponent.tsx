@@ -888,35 +888,6 @@ export default function SettingsPanel({
               />
             </div>
 
-            {/* Topology */}
-            <div
-              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
-            >
-              <span className={styles['modality-icon']}>
-                <Network size={12} />
-              </span>
-              <span className={styles['modality-name']}>Topology</span>
-              <SelectComponent
-                value={settings.agents?.topology || "hierarchical"}
-                options={[
-                  { value: "sequential", label: "Sequential (CoT)" },
-                  { value: "hierarchical", label: "Hierarchical (ToT)" },
-                  {
-                    value: "hierarchical_aggregation",
-                    label: "Aggregation (GoT)",
-                  },
-                  { value: "peer_to_peer", label: "Mesh (GoT DAG)" },
-                ]}
-                onChange={(value: string) =>
-                  onChange({
-                    agents: { ...settings.agents, topology: value },
-                  })
-                }
-                compact
-                disabled={isStrategyLocked}
-              />
-            </div>
-
             {/* Reasoning Strategy */}
             <div
               className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
@@ -940,6 +911,35 @@ export default function SettingsPanel({
                       ...settings.agents,
                       reasoningStrategy: value,
                     },
+                  })
+                }
+                compact
+                disabled={isStrategyLocked}
+              />
+            </div>
+
+            {/* Topology */}
+            <div
+              className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+            >
+              <span className={styles['modality-icon']}>
+                <Network size={12} />
+              </span>
+              <span className={styles['modality-name']}>Topology</span>
+              <SelectComponent
+                value={settings.agents?.topology || "hierarchical"}
+                options={[
+                  { value: "sequential", label: "Sequential (CoT)" },
+                  { value: "hierarchical", label: "Hierarchical (ToT)" },
+                  {
+                    value: "hierarchical_aggregation",
+                    label: "Aggregation (GoT)",
+                  },
+                  { value: "peer_to_peer", label: "Mesh (GoT DAG)" },
+                ]}
+                onChange={(value: string) =>
+                  onChange({
+                    agents: { ...settings.agents, topology: value },
                   })
                 }
                 compact
