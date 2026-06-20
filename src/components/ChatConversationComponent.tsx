@@ -2548,6 +2548,7 @@ export default function ChatConversationComponent({
   const isWorkspaceTabVisible = useMemo(() => {
     return (
       !isNoAgent &&
+      settings.agents?.workspaceEnabled !== false &&
       ((currentWorkspace &&
         hasFileOperations &&
         (currentWorkspace.path !== "/workspace" ||
@@ -2555,7 +2556,7 @@ export default function ChatConversationComponent({
           workspaces.some((workspace) => workspace.path !== "/workspace"))) ||
         !!unavailableWorkspace)
     );
-  }, [isNoAgent, currentWorkspace, hasFileOperations, workspaces, unavailableWorkspace]);
+  }, [isNoAgent, currentWorkspace, hasFileOperations, workspaces, unavailableWorkspace, settings.agents?.workspaceEnabled]);
 
   useEffect(() => {
     if (leftTab === "workspace" && !isWorkspaceTabVisible) {
