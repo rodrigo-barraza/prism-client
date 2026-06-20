@@ -104,7 +104,7 @@ function AgentsPageInner() {
 
   // -- Deep-link params: model + conversation ------------------
   const initialModel = searchParams.get("model") || null;
-  const initialConversationId = searchParams.get("conversation") || searchParams.get("session") || null;
+  const initialConversationId = searchParams.get("conversation") || null;
   const initialTabKey = searchParams.get("tab") || null;
   const initialTabBottomKey = searchParams.get("tabBottom") || null;
   const initialViewMode = searchParams.get("view") || null;
@@ -120,16 +120,10 @@ function AgentsPageInner() {
   // If the URL arrives with ?conversation=...&model=..., remove
   // model immediately — the conversation data owns those values.
   useEffect(() => {
-    const conversationId = searchParams.get("conversation") || searchParams.get("session");
+    const conversationId = searchParams.get("conversation");
     if (!conversationId) return;
-    const hasModel = searchParams.has("model");
-    const hasLegacySession = searchParams.has("session");
-    if (hasModel || hasLegacySession) {
-      router.replace(buildUrl(searchParams, {
-        model: null,
-        session: null,
-        ...(hasLegacySession ? { conversation: conversationId } : {}),
-      }), {
+    if (searchParams.has("model")) {
+      router.replace(buildUrl(searchParams, { model: null }), {
         scroll: false,
       });
     }
@@ -143,7 +137,7 @@ function AgentsPageInner() {
       if (newId) {
         setLocalAgentId(newId);
         localStorage.setItem(LS_ACTIVE_AGENT, newId);
-        if (searchParams.has("conversation") || searchParams.has("session")) {
+        if (searchParams.has("conversation")) {
           router.push(`/chat?agent=${encodeURIComponent(newId)}`);
         } else if (newId !== activeAgentId) {
           router.replace(
@@ -179,14 +173,13 @@ function AgentsPageInner() {
     (e: Event) => {
       const customEvent = e as CustomEvent;
       const { conversationId } = customEvent.detail || {};
-      const current = searchParams.get("conversation") || searchParams.get("session");
+      const current = searchParams.get("conversation");
       if (current === (conversationId || null)) return;
       if (conversationId) {
         // Conversation active — keep conversation and agent params
         router.replace(
           buildUrl(searchParams, {
             conversation: conversationId,
-            session: null,
             model: null,
             agent: activeAgentId,
           }),
@@ -194,7 +187,7 @@ function AgentsPageInner() {
         );
       } else {
         // New chat — clear conversation param, keep everything else
-        router.replace(buildUrl(searchParams, { conversation: null, session: null }), {
+        router.replace(buildUrl(searchParams, { conversation: null }), {
           scroll: false,
         });
       }

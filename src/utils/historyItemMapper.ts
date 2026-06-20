@@ -1,4 +1,4 @@
-import type { Conversation, AgentConversation } from "../types/types";
+import type { Conversation } from "../types/types";
 
 interface HistoryItemTag {
   label: string;
@@ -108,67 +108,6 @@ export function mapConversationToHistoryItem(
   };
 }
 
-export function mapAgentConversationToHistoryItem(
-  conversation: AgentConversation,
-): MappedHistoryItem {
-  const conversationId = conversation.id || conversation._id;
-  const conversationStats = conversation.stats;
-
-  const totalCost = conversationStats?.totalCost ?? 0;
-
-  const modelNames =
-    (conversationStats?.models?.length ?? 0) > 0
-      ? conversationStats!.models!
-      : conversation.model
-        ? [conversation.model]
-        : [];
-
-  const derivedProviders =
-    (conversationStats?.providers?.length ?? 0) > 0
-      ? conversationStats!.providers!
-      : conversation.provider
-        ? [conversation.provider]
-        : [];
-
-  const baseModalities = conversationStats?.modalities ?? {};
-  const modalities = conversationStats?.toolCounts
-    ? {
-        ...baseModalities,
-        functionCalling: Object.values(conversationStats.toolCounts).reduce(
-          (sum: number, count: number) => sum + count,
-          0,
-        ),
-      }
-    : baseModalities;
-
-  const tags: HistoryItemTag[] = [];
-  if (conversation.project) {
-    tags.push({
-      label: conversation.project,
-      style: {
-        background: "var(--accent-primary-subtle)",
-        color: "var(--accent-primary)",
-      },
-    });
-  }
-
-  return {
-    id: conversationId,
-    title: conversation.title || "Untitled Conversation",
-    updatedAt: conversation.updatedAt,
-    createdAt: conversation.createdAt,
-    totalCost,
-    providers: derivedProviders,
-    modelNames,
-    modelName: conversation.model || null,
-    modalities,
-    agent: conversation.agent,
-    parentConversationId: conversation.parentConversationId || null,
-    hasSubAgents: conversation.hasSubAgents || false,
-    tags,
-    requestErrorCount: conversationStats?.requestErrorCount || 0,
-  };
-}
 
 function deriveModelNames(conversation: Conversation): string[] {
   if ((conversation._liveModelNames?.length ?? 0) > 0) {
