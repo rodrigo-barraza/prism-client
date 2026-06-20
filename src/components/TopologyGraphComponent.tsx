@@ -218,11 +218,55 @@ function buildGraphOfThoughtsTopology(): TopologyDefinition {
   };
 }
 
+function buildTournamentTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 194,
+    nodes: [
+      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "agent-a", label: "A", positionX: 60, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
+      { id: "agent-b", label: "B", positionX: 140, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
+      { id: "agent-c", label: "C", positionX: 220, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
+      { id: "judge", label: "Judge", positionX: 140, positionY: 126, radius: 15, fillColor: MERGE_COLOR },
+      { id: "winner", label: "Winner", positionX: 140, positionY: 168, radius: 14, fillColor: RESULT_COLOR },
+    ],
+    edges: [
+      { sourceId: "orchestrator", targetId: "agent-a" },
+      { sourceId: "orchestrator", targetId: "agent-b" },
+      { sourceId: "orchestrator", targetId: "agent-c" },
+      { sourceId: "agent-a", targetId: "judge" },
+      { sourceId: "agent-b", targetId: "judge" },
+      { sourceId: "agent-c", targetId: "judge" },
+      { sourceId: "judge", targetId: "winner" },
+    ],
+  };
+}
+
+function buildCriticLoopTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 194,
+    nodes: [
+      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "actor", label: "Actor", positionX: 140, positionY: 68, radius: 15, fillColor: AGENT_COLOR },
+      { id: "critic", label: "Critic", positionX: 140, positionY: 118, radius: 15, fillColor: MERGE_COLOR },
+      { id: "result", label: "Pass", positionX: 140, positionY: 168, radius: 14, fillColor: RESULT_COLOR },
+    ],
+    edges: [
+      { sourceId: "orchestrator", targetId: "actor" },
+      { sourceId: "actor", targetId: "critic" },
+      { sourceId: "critic", targetId: "result" },
+    ],
+  };
+}
+
 const TOPOLOGY_BUILDERS: Record<string, () => TopologyDefinition> = {
   sequential: buildSequentialTopology,
   hierarchical: buildHierarchicalTopology,
   hierarchical_aggregation: buildAggregationTopology,
   peer_to_peer: buildPeerToPeerTopology,
+  tournament: buildTournamentTopology,
+  critic_loop: buildCriticLoopTopology,
   chain_of_thought: buildChainOfThoughtTopology,
   tree_of_thoughts: buildTreeOfThoughtsTopology,
   graph_of_thoughts: buildGraphOfThoughtsTopology,

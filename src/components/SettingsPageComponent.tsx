@@ -1171,8 +1171,9 @@ export default function SettingsPageComponent() {
               <span className={styles["layout-row-description"]}>
                 Defines how sub-agents coordinate. Each topology maps to a
                 reasoning strategy: Chain of Thought (sequential), Tree of
-                Thoughts (parallel), Graph of Thoughts (aggregation), or DAG
-                mesh (peer-to-peer).
+                Thoughts (parallel), Graph of Thoughts (aggregation), DAG
+                mesh (peer-to-peer), Best-of-N (tournament), or
+                Actor-Critic (critic loop).
               </span>
             </div>
             <div className={styles["layout-row-control"]}>

@@ -130,6 +130,8 @@ const TOPOLOGY_LABELS: Record<string, string> = {
   hierarchical_aggregation: "Aggregation (GoT)",
   peer_to_peer: "Mesh (GoT DAG)",
   p2p: "Mesh (GoT DAG)",
+  tournament: "Tournament (BoN)",
+  critic_loop: "Critic Loop (MAR)",
 };
 
 export function formatTopologyLabel(topology: string): string {

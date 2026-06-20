@@ -31,6 +31,9 @@ export function buildTopologyOptions(): StrategySelectOption[] {
             Sub-agents execute one at a time. Each receives the
             previous agent&apos;s output as context, forming a chain.
           </p>
+          <code className={styles["strategy-tooltip-structure"]}>
+            [A] → [B] → [C] serial accumulation
+          </code>
           <TopologyGraphComponent topologyId="sequential" />
         </div>
       ),
@@ -46,6 +49,9 @@ export function buildTopologyOptions(): StrategySelectOption[] {
             Sub-agents execute in parallel. The orchestrator
             selects the best result. Branches never merge.
           </p>
+          <code className={styles["strategy-tooltip-structure"]}>
+            [A] [B] [C] → return all
+          </code>
           <TopologyGraphComponent topologyId="hierarchical" />
         </div>
       ),
@@ -61,6 +67,9 @@ export function buildTopologyOptions(): StrategySelectOption[] {
             Sub-agents execute in parallel, then a synthesis pass
             merges all outputs into a unified result.
           </p>
+          <code className={styles["strategy-tooltip-structure"]}>
+            [A] [B] [C] → [Σ] merge
+          </code>
           <TopologyGraphComponent topologyId="hierarchical_aggregation" />
         </div>
       ),
@@ -77,7 +86,47 @@ export function buildTopologyOptions(): StrategySelectOption[] {
             discussion. Each agent sees all prior messages from
             every other agent.
           </p>
+          <code className={styles["strategy-tooltip-structure"]}>
+            [A] ↔ [B] ↔ [C] round-robin shared board
+          </code>
           <TopologyGraphComponent topologyId="peer_to_peer" />
+        </div>
+      ),
+    },
+    {
+      value: "tournament",
+      label: "Tournament (BoN)",
+      tooltipRich: true,
+      tooltip: (
+        <div>
+          <span className={styles["strategy-tooltip-title"]}>Tournament (BoN)</span>
+          <p className={styles["strategy-tooltip-description"]}>
+            Sub-agents execute in parallel, then a judge evaluates
+            all outputs and selects the single best result.
+          </p>
+          <code className={styles["strategy-tooltip-structure"]}>
+            [A] [B] [C] → [Judge] pick best
+          </code>
+          <TopologyGraphComponent topologyId="tournament" />
+        </div>
+      ),
+    },
+    {
+      value: "critic_loop",
+      label: "Critic Loop (MAR)",
+      tooltipRich: true,
+      tooltip: (
+        <div>
+          <span className={styles["strategy-tooltip-title"]}>Critic Loop (MAR)</span>
+          <p className={styles["strategy-tooltip-description"]}>
+            Actor produces output, critic evaluates and provides
+            feedback. Iterates until the critic approves or max
+            rounds reached.
+          </p>
+          <code className={styles["strategy-tooltip-structure"]}>
+            [Actor] → [Critic] → [Actor] → … until pass
+          </code>
+          <TopologyGraphComponent topologyId="critic_loop" />
         </div>
       ),
     },
