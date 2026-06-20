@@ -56,10 +56,10 @@ const COST_TIERS = [
 
 const COST_FILTER_COLOR = "#22c55e";
 
-function deriveClusterHue(sessionId: string): number {
+function deriveClusterHue(conversationId: string): number {
   let hash = 5381;
-  for (let index = 0; index < sessionId.length; index++) {
-    hash = ((hash << 5) + hash + sessionId.charCodeAt(index)) | 0;
+  for (let index = 0; index < conversationId.length; index++) {
+    hash = ((hash << 5) + hash + conversationId.charCodeAt(index)) | 0;
   }
   return ((hash % 360) + 360) % 360;
 }
@@ -87,7 +87,7 @@ interface HistoryListProps {
   countLabel?: string;
   onOpenInNewTab?: (item: HistoryListItem) => void;
   generatingSessionIds?: Set<string>;
-  knownParentSessionIds?: Set<string>;
+  knownParentConversationIds?: Set<string>;
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => void;
@@ -139,7 +139,7 @@ export default function HistoryList({
   countLabel,
   onOpenInNewTab,
   generatingSessionIds,
-  knownParentSessionIds,
+  knownParentConversationIds,
   // Pagination
   hasMore = false,
   loadingMore = false,
@@ -329,7 +329,7 @@ export default function HistoryList({
   }, [items]);
 
   const parentConversationIds = useMemo(() => {
-    const parentIds = new Set<string>(knownParentSessionIds);
+    const parentIds = new Set<string>(knownParentConversationIds);
     for (const item of items || []) {
       if (item.parentConversationId) {
         parentIds.add(item.parentConversationId);
@@ -339,7 +339,7 @@ export default function HistoryList({
       }
     }
     return parentIds;
-  }, [items, knownParentSessionIds]);
+  }, [items, knownParentConversationIds]);
 
   const filtered = useMemo(() => {
     return (items || []).filter((item: HistoryListItem) => {
@@ -413,7 +413,7 @@ export default function HistoryList({
     showErrorsOnly,
   ]);
 
-  type SessionGroup = {
+  type ConversationGroup = {
     type: "standalone";
     item: HistoryListItem;
   } | {
@@ -422,15 +422,15 @@ export default function HistoryList({
     children: HistoryListItem[];
   };
 
-  const groupedSessions = useMemo<SessionGroup[]>(() => {
+  const groupedConversations = useMemo<ConversationGroup[]>(() => {
     const childrenByParent = new Map<string, HistoryListItem[]>();
     const parentIdsInFiltered = new Set<string>();
 
     for (const item of filtered) {
       if (item.parentConversationId) {
-        const siblingSessions = childrenByParent.get(item.parentConversationId) || [];
-        siblingSessions.push(item);
-        childrenByParent.set(item.parentConversationId, siblingSessions);
+        const siblingConversations = childrenByParent.get(item.parentConversationId) || [];
+        siblingConversations.push(item);
+        childrenByParent.set(item.parentConversationId, siblingConversations);
       } else if (parentConversationIds.has(item.id)) {
         parentIdsInFiltered.add(item.id);
       }
@@ -445,7 +445,7 @@ export default function HistoryList({
       });
     }
 
-    const groups: SessionGroup[] = [];
+    const groups: ConversationGroup[] = [];
 
     for (const item of filtered) {
       if (item.parentConversationId) {
@@ -660,7 +660,7 @@ export default function HistoryList({
       )}
 
       <div className={styles['list']} ref={listRef}>
-        {groupedSessions.map((group) => {
+        {groupedConversations.map((group) => {
           if (group.type === "standalone") {
             const item = group.item;
             return (

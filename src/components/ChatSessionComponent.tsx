@@ -926,7 +926,7 @@ export default function ChatSessionComponent({
     () => new Set(),
   );
 
-  const knownParentSessionIds = useMemo(() => {
+  const knownParentConversationIds = useMemo(() => {
     const parentIds = new Set<string>();
     if (activeId && subAgentsCount > 0) {
       parentIds.add(activeId);
@@ -7138,7 +7138,7 @@ export default function ChatSessionComponent({
               onDateChange={adminHeaderContext.setDateRange}
               initialProviders={adminProviderFilter ? [adminProviderFilter] : undefined}
               initialSearch={adminSessionFilter || undefined}
-              knownParentSessionIds={knownParentSessionIds}
+              knownParentConversationIds={knownParentConversationIds}
             />
           ) : (
             <HistoryPanel
@@ -7153,7 +7153,7 @@ export default function ChatSessionComponent({
               searchText="Search sessions..."
               countLabel="sessions"
               generatingSessionIds={generatingSessionIds as Set<string>}
-              knownParentSessionIds={knownParentSessionIds}
+              knownParentConversationIds={knownParentConversationIds}
               hasMore={sessionsHasMore}
               loadingMore={sessionsLoading}
               onLoadMore={loadMoreSessions}

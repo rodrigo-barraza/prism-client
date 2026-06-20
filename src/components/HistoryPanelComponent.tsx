@@ -33,7 +33,7 @@ export interface HistoryPanelProps {
   countLabel?: string;
   onOpenInNewTab?: (id: string) => void;
   generatingSessionIds?: Set<string>;
-  knownParentSessionIds?: Set<string>;
+  knownParentConversationIds?: Set<string>;
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => Promise<void> | void;
@@ -65,7 +65,7 @@ export default function HistoryPanel({
   countLabel,
   onOpenInNewTab,
   generatingSessionIds,
-  knownParentSessionIds,
+  knownParentConversationIds,
   hasMore,
   loadingMore,
   onLoadMore,
@@ -115,7 +115,7 @@ export default function HistoryPanel({
         dateRange={dateRange}
         onDateChange={onDateChange}
         filterStorageKey={filterStorageKey}
-        knownParentSessionIds={knownParentSessionIds}
+        knownParentConversationIds={knownParentConversationIds}
       />
     </div>
   );

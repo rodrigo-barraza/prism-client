@@ -109,32 +109,32 @@ export function mapConversationToHistoryItem(
 }
 
 export function mapAgentSessionToHistoryItem(
-  session: AgentSession,
+  conversation: AgentSession,
 ): MappedHistoryItem {
-  const sessionId = session.id || session._id;
-  const sessionStats = session.stats;
+  const conversationId = conversation.id || conversation._id;
+  const conversationStats = conversation.stats;
 
-  const totalCost = sessionStats?.totalCost ?? 0;
+  const totalCost = conversationStats?.totalCost ?? 0;
 
   const modelNames =
-    (sessionStats?.models?.length ?? 0) > 0
-      ? sessionStats!.models!
-      : session.model
-        ? [session.model]
+    (conversationStats?.models?.length ?? 0) > 0
+      ? conversationStats!.models!
+      : conversation.model
+        ? [conversation.model]
         : [];
 
   const derivedProviders =
-    (sessionStats?.providers?.length ?? 0) > 0
-      ? sessionStats!.providers!
-      : session.provider
-        ? [session.provider]
+    (conversationStats?.providers?.length ?? 0) > 0
+      ? conversationStats!.providers!
+      : conversation.provider
+        ? [conversation.provider]
         : [];
 
-  const baseModalities = sessionStats?.modalities ?? {};
-  const modalities = sessionStats?.toolCounts
+  const baseModalities = conversationStats?.modalities ?? {};
+  const modalities = conversationStats?.toolCounts
     ? {
         ...baseModalities,
-        functionCalling: Object.values(sessionStats.toolCounts).reduce(
+        functionCalling: Object.values(conversationStats.toolCounts).reduce(
           (sum: number, count: number) => sum + count,
           0,
         ),
@@ -142,9 +142,9 @@ export function mapAgentSessionToHistoryItem(
     : baseModalities;
 
   const tags: HistoryItemTag[] = [];
-  if (session.project) {
+  if (conversation.project) {
     tags.push({
-      label: session.project,
+      label: conversation.project,
       style: {
         background: "var(--accent-primary-subtle)",
         color: "var(--accent-primary)",
@@ -153,20 +153,20 @@ export function mapAgentSessionToHistoryItem(
   }
 
   return {
-    id: sessionId,
-    title: session.title || "Untitled Session",
-    updatedAt: session.updatedAt,
-    createdAt: session.createdAt,
+    id: conversationId,
+    title: conversation.title || "Untitled Conversation",
+    updatedAt: conversation.updatedAt,
+    createdAt: conversation.createdAt,
     totalCost,
     providers: derivedProviders,
     modelNames,
-    modelName: session.model || null,
+    modelName: conversation.model || null,
     modalities,
-    agent: session.agent,
-    parentConversationId: session.parentConversationId || null,
-    hasSubAgents: session.hasSubAgents || false,
+    agent: conversation.agent,
+    parentConversationId: conversation.parentConversationId || null,
+    hasSubAgents: conversation.hasSubAgents || false,
     tags,
-    requestErrorCount: sessionStats?.requestErrorCount || 0,
+    requestErrorCount: conversationStats?.requestErrorCount || 0,
   };
 }
 
