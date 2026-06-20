@@ -261,7 +261,7 @@ export default function RequestsPage() {
       { value: "live", label: "Live" },
       { value: "memory:extract", label: "Memory: Extract" },
       { value: "memory:consolidate", label: "Memory: Consolidate" },
-      { value: "session:summarize", label: "Conversation: Summarize" },
+      { value: "conversation:summarize", label: "Conversation: Summarize" },
       { value: "coordinator:decompose", label: "Coordinator: Decompose" },
       { value: "embed:memory", label: "Embed: Memory" },
       { value: "embed:api", label: "Embed: API" },

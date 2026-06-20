@@ -59,7 +59,7 @@ import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import HistoryPanel from "./HistoryPanelComponent";
 import SettingsPanel, {
-  ConversationStats as DisplaySessionStats,
+  ConversationStats as DisplayConversationStats,
 } from "./SettingsPanelComponent";
 import ModelInfoPanel from "./ModelInfoPanelComponent";
 import SkillsPanel from "./SkillsPanelComponent";
@@ -1376,17 +1376,17 @@ export default function ChatConversationComponent({
           string,
           Record<string, unknown>
         >();
-        for (const previousSession of previousConversations) {
-          const enrichedSession = previousSession as unknown as Record<string, unknown>;
+        for (const previousConversation of previousConversations) {
+          const enrichedConversation = previousConversation as unknown as Record<string, unknown>;
           if (
-            enrichedSession._liveModelNames ||
-            enrichedSession._liveModalities
+            enrichedConversation._liveModelNames ||
+            enrichedConversation._liveModalities
           ) {
             liveEnrichmentsByConversationId.set(
-              previousSession.id || String(previousSession._id),
+              previousConversation.id || String(previousConversation._id),
               {
-                _liveModelNames: enrichedSession._liveModelNames,
-                _liveModalities: enrichedSession._liveModalities,
+                _liveModelNames: enrichedConversation._liveModelNames,
+                _liveModalities: enrichedConversation._liveModalities,
               },
             );
           }
@@ -2293,7 +2293,7 @@ export default function ChatConversationComponent({
   // System prompt is fully assembled server-side by SystemPromptAssembler.
   // The client sends a placeholder system message that gets replaced.
 
-  // -- Session stats for SettingsPanel ------------------
+  // -- Conversation stats for SettingsPanel ------------------
   const {
     uniqueModels,
     uniqueProviders,
@@ -4361,7 +4361,7 @@ export default function ChatConversationComponent({
               setPendingUserQuestion(null);
               fetchConversationStats(conversationId);
             }
-            // SessionSummarizer runs async after SSE stream closes —
+            // ConversationSummarizer runs async after SSE stream closes —
             // poll every 2s for up to 20s until new memories are detected
             (async () => {
               const baselineCount = await PrismService.getAgentMemories(
@@ -4494,8 +4494,8 @@ export default function ChatConversationComponent({
       console.debug(
         `[handleSend] starting generation, conversationId=${genId}, currentMessages=${messagesRef.current.length}`,
       );
-      setGeneratingConversationIds((previousGeneratingSessionIds) =>
-        new Set(previousGeneratingSessionIds).add(genId),
+      setGeneratingConversationIds((previousGeneratingConversationIds) =>
+        new Set(previousGeneratingConversationIds).add(genId),
       );
       setToolActivity([]);
       setSubAgentToolActivity({});
@@ -4716,8 +4716,8 @@ export default function ChatConversationComponent({
           `[handleSend finally] genId=${genId}, currentConversationId=${conversationIdRef.current}, match=${conversationIdRef.current === genId}`,
         );
         // Remove this conversation from the generating set
-        setGeneratingConversationIds((previousGeneratingSessionIds) => {
-          const next = new Set(previousGeneratingSessionIds);
+        setGeneratingConversationIds((previousGeneratingConversationIds) => {
+          const next = new Set(previousGeneratingConversationIds);
           next.delete(genId);
           return next;
         });
@@ -4749,7 +4749,7 @@ export default function ChatConversationComponent({
           console.debug(
             `[handleSend finally] conversation switched away, skipping UI updates`,
           );
-          // Session was switched away — just clear the abort ref
+          // Conversation was switched away — just clear the abort ref
           abortRef.current = null;
         }
         // Reload conversations list regardless (title/metadata may have changed)
@@ -4854,9 +4854,9 @@ export default function ChatConversationComponent({
     }
   }, [isGenerating, queuedNextTurn, handleSend]);
 
-  // -- Session management ----------------------------------
-  const resetSessionState = useCallback(() => {
-    console.debug(`[resetSessionState] clearing all messages and state`);
+  // -- Conversation management ----------------------------------
+  const resetConversationState = useCallback(() => {
+    console.debug(`[resetConversationState] clearing all messages and state`);
     setMessages([]);
     setToolActivity([]);
     setSubAgentToolActivity({});
@@ -4970,11 +4970,11 @@ export default function ChatConversationComponent({
     }
     // If already on a blank conversation, just reset directly (no pixelation needed)
     if (messages.length === 0 && !activeId) {
-      resetSessionState();
+      resetConversationState();
       return;
     }
     // New conversation — instant reset, no pixelation transition needed
-    resetSessionState();
+    resetConversationState();
   }, [
     isGenerating,
     messages,
@@ -4989,7 +4989,7 @@ export default function ChatConversationComponent({
     settings,
     backendConversationStats,
     activeId,
-    resetSessionState,
+    resetConversationState,
     currentWorkspace?.path,
     disabledTools,
   ]);
@@ -5117,7 +5117,7 @@ export default function ChatConversationComponent({
         // Normal backend-loaded conversation
         const displayMessages = prepareDisplayMessages(full.messages || []);
         console.debug(
-          `[Session switch] id=${full.id}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`,
+          `[Conversation switch] id=${full.id}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`,
         );
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
@@ -5338,7 +5338,7 @@ export default function ChatConversationComponent({
           errorMessage.includes("404") || errorMessage.includes("not found");
         if (is404) {
           console.warn(
-            `Session ${conversation.id} not yet persisted (still generating?) — skipping switch`,
+            `Conversation ${conversation.id} not yet persisted (still generating?) — skipping switch`,
           );
         } else {
           console.error("Failed to load conversation:", error);
@@ -5960,12 +5960,12 @@ export default function ChatConversationComponent({
                           backendConversationStats.orchestrator,
                         ),
                         subAgents: mapSubStats(backendConversationStats.subAgents),
-                      } as DisplaySessionStats;
+                      } as DisplayConversationStats;
                     })()
                   : (() => {
                       // -- Client-side fallback (live generation, no backend data yet) --
                       // When _liveGenProgress exists, use backend-authoritative token
-                      // counts instead of the client-side computeSessionStats math.
+                      // counts instead of the client-side computeConversationStats math.
                       // Include _backgroundUsage from fire-and-forget LLM calls.
                       const lastMessage = messages[messages.length - 1];
                       const gp =
@@ -6063,9 +6063,9 @@ export default function ChatConversationComponent({
                         liveProcessingPhase,
                         liveTtftSamples,
                         liveGenProgress,
-                      } as DisplaySessionStats;
+                      } as DisplayConversationStats;
                     })()
-                : null) as DisplaySessionStats | null
+                : null) as DisplayConversationStats | null
             }
           />
         </>
@@ -7047,7 +7047,7 @@ export default function ChatConversationComponent({
   return (
     <>
       <ThreePanelLayout
-        className="chat-session-component"
+        className="chat-conversation-component"
         navSidebar={
           isAdmin ? null : (
             <NavigationSidebarComponent

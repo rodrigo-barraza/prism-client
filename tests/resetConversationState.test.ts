@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { SETTINGS_DEFAULTS } from "../src/constants";
 import type { ModelOption } from "../src/types/types";
 
-describe("resetSessionState model parameter resetting", () => {
+describe("resetConversationState model parameter resetting", () => {
   it("should reset all model parameters to their defaults while keeping the current provider and model", () => {
     const currentSettings = {
       provider: "anthropic",
