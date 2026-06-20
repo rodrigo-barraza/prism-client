@@ -1222,10 +1222,6 @@ export default function SettingsPanel({
                   <div
                     className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
                   >
-                    <span className={styles['modality-icon']}>
-                      <Layers size={12} />
-                    </span>
-                    <span className={styles['modality-name']}>Reasoning</span>
                     <SelectComponent
                       value={selectedReasoningValue}
                       options={reasoningOptions}
@@ -1237,6 +1233,8 @@ export default function SettingsPanel({
                           },
                         })
                       }
+                      label="Reasoning"
+                      labelIcon={<Layers size={12} />}
                       compact
                       disabled={isAgentSettingsLocked}
                       triggerTooltipContent={selectedReasoningTooltip}
@@ -1248,10 +1246,6 @@ export default function SettingsPanel({
                   <div
                     className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
                   >
-                    <span className={styles['modality-icon']}>
-                      <Network size={12} />
-                    </span>
-                    <span className={styles['modality-name']}>Topology</span>
                     <SelectComponent
                       value={selectedTopologyValue}
                       options={topologyOptions}
@@ -1260,6 +1254,8 @@ export default function SettingsPanel({
                           agents: { ...settings.agents, topology: value },
                         })
                       }
+                      label="Topology"
+                      labelIcon={<Network size={12} />}
                       compact
                       disabled={isAgentSettingsLocked}
                       triggerTooltipContent={selectedTopologyTooltip}
@@ -1271,10 +1267,6 @@ export default function SettingsPanel({
                   <div
                     className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
                   >
-                    <span className={styles['modality-icon']}>
-                      <Brain size={12} />
-                    </span>
-                    <span className={styles['modality-name']}>Harness</span>
                     <SelectComponent
                       value={settings.agents?.harness || "standard"}
                       options={[
@@ -1285,6 +1277,8 @@ export default function SettingsPanel({
                           agents: { ...settings.agents, harness: value },
                         })
                       }
+                      label="Harness"
+                      labelIcon={<Brain size={12} />}
                       compact
                       disabled={isAgentSettingsLocked}
                     />
