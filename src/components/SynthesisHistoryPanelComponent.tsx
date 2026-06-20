@@ -7,7 +7,7 @@ import type { SynthesisRun, Conversation } from "../types/types";
 interface SynthesisHistoryPanelProps {
   conversations?: SynthesisRun[];
   activeId?: string | null;
-  onSelect?: (session: SynthesisRun) => void | Promise<void>;
+  onSelect?: (conversation: SynthesisRun) => void | Promise<void>;
   onDelete?: (id: string) => void;
 }
 
@@ -20,9 +20,9 @@ export default function SynthesisHistoryPanel({
   return (
     <HistoryPanel
       className="synthesis-history-panel-component"
-      sessions={conversations as unknown as Conversation[]}
+      conversations={conversations as unknown as Conversation[]}
       activeId={activeId}
-      onSelect={onSelect as ((session: Conversation) => void | Promise<void>) | undefined}
+      onSelect={onSelect as ((conversation: Conversation) => void | Promise<void>) | undefined}
       onDelete={onDelete}
       readOnly={false}
       newLabel="New Synthesis"

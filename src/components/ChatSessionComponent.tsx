@@ -274,7 +274,7 @@ const ADMIN_POLL_INTERVAL = 5000;
 const ADMIN_ALL_AGENT = {
   id: "ALL",
   name: "All",
-  description: "View all conversations and agent sessions.",
+  description: "View all conversations.",
   project: "",
   toolCount: -1,
   custom: false,
@@ -545,7 +545,7 @@ export default function ChatSessionComponent({
   );
   const [conversationId, setConversationId] = useState(() => generateUUID());
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
-  const [sessions, setSessions] = useState<Array<AgentSession | Conversation>>(
+  const [conversations, setConversations] = useState<Array<AgentSession | Conversation>>(
     [],
   );
   const sessionsCursorRef = useRef<string | null>(null);
@@ -1365,7 +1365,7 @@ export default function ChatSessionComponent({
         : await PrismService.getAgentSessions(agentProject!, {
             agent: agentId,
           });
-      setSessions((previousSessions) => {
+      setConversations((previousSessions) => {
         // Preserve client-side live enrichments (_liveModelNames,
         // _liveModalities, providers) that the live-patch effect wrote
         // during active generation. The backend listing response may
@@ -1431,7 +1431,7 @@ export default function ChatSessionComponent({
       const result = isNoAgent
         ? await PrismService.getConversations(fetchOptions)
         : await PrismService.getAgentSessions(agentProject!, fetchOptions);
-      setSessions((previousSessions) => [
+      setConversations((previousSessions) => [
         ...previousSessions,
         ...result.items,
       ]);
@@ -1539,25 +1539,25 @@ export default function ChatSessionComponent({
   // Admin: determine if the selected entry is an agent session
   const adminIsSelectedAgent = adminSelectedSource === "agent_session";
   const adminTargetAgentId = adminIsSelectedAgent
-    ? (sessions.find((session) => session.id === activeId) as UnifiedEntry)?.agent
+    ? (conversations.find((session) => session.id === activeId) as UnifiedEntry)?.agent
     : (adminIsAgentMode ? adminActiveAgentId : null);
   const adminTargetProject = adminIsSelectedAgent
-    ? ((sessions.find((session) => session.id === activeId) as UnifiedEntry)?.project || 
-       (sessions.find((session) => session.id === activeId) as UnifiedEntry)?.agent || 
+    ? ((conversations.find((session) => session.id === activeId) as UnifiedEntry)?.project || 
+       (conversations.find((session) => session.id === activeId) as UnifiedEntry)?.agent || 
        PROJECT_AGENT)
     : (adminIsAgentMode ? PROJECT_AGENT : null);
 
   // Admin: extract session-time tool snapshot from conversation settings
   const adminSessionToolConfig = useMemo(() => {
     if (!isAdmin || !activeId) return null;
-    const selectedEntry = sessions.find((session) => session.id === activeId) as UnifiedEntry | undefined;
+    const selectedEntry = conversations.find((session) => session.id === activeId) as UnifiedEntry | undefined;
     if (!selectedEntry) return null;
     const sessionSettings = (selectedEntry as Conversation)?.settings as Record<string, unknown> | undefined;
     return sessionSettings?.toolConfig as
       | { availableTools?: string[]; enabledTools?: string[]; disabledTools?: string[] }
       | undefined
       ?? null;
-  }, [isAdmin, activeId, sessions]);
+  }, [isAdmin, activeId, conversations]);
 
   // Admin: load agent-specific data (tools, skills, memories, rules) for selected session
   useEffect(() => {
@@ -1822,7 +1822,7 @@ export default function ChatSessionComponent({
         });
 
         // Update sidebar sessions with the full entry
-        setSessions((previousSessions) => {
+        setConversations((previousSessions) => {
           const exists = previousSessions.some((session) => session.id === id);
           if (exists) return previousSessions;
           return [fullEntry as AgentSession | Conversation, ...previousSessions];
@@ -1870,7 +1870,7 @@ export default function ChatSessionComponent({
         const displayMessages = prepareDisplayMessages(conversationEntry.messages || []);
         setMessages(displayMessages);
         setBackendSessionStats(conversationEntry.stats || null);
-        setSessions((previousSessions) => [conversationEntry as AgentSession | Conversation, ...previousSessions]);
+        setConversations((previousSessions) => [conversationEntry as AgentSession | Conversation, ...previousSessions]);
       })
       .catch(() => {
         setMessages([]);
@@ -2323,7 +2323,7 @@ export default function ChatSessionComponent({
   // generation — no full loadSessions() round-trip needed.
   useEffect(() => {
     if (!activeId || messages.length === 0) return;
-    setSessions((previousSessions) => {
+    setConversations((previousSessions) => {
       const index = previousSessions.findIndex((s) => s.id === activeId);
       if (index === -1) return previousSessions;
       const existing = previousSessions[index] as unknown as Record<
@@ -2420,7 +2420,7 @@ export default function ChatSessionComponent({
           PrismService.getConversation(sessionId)
             .then((conversation) => {
               if (conversation?.totalCost != null) {
-                setSessions((previousSessions) => {
+                setConversations((previousSessions) => {
                   const index = previousSessions.findIndex(
                     (session) => session.id === sessionId,
                   );
@@ -4511,7 +4511,7 @@ export default function ChatSessionComponent({
       let resolvedTitle = titleRef.current;
       if (currentMessages.length === 0) {
         const titleText =
-          text || (isNoAgent ? "New conversation" : "Agent session");
+          text || "New conversation";
         resolvedTitle =
           titleText.length > 60 ? titleText.slice(0, 57) + "..." : titleText;
         setTitle(resolvedTitle);
@@ -4523,7 +4523,7 @@ export default function ChatSessionComponent({
             detail: { conversationId: conversationId },
           }),
         );
-        setSessions((previousSessions) => [
+        setConversations((previousSessions) => [
           {
             id: conversationId,
             title: resolvedTitle,
@@ -4994,7 +4994,7 @@ export default function ChatSessionComponent({
     disabledTools,
   ]);
 
-  /* -- Chat header "New Session" glitch effect ------------------ */
+  /* -- Chat header "New Conversation" glitch effect ------------------ */
   const chatNewBtnRef = useRef<HTMLButtonElement | null>(null);
   const chatRainbowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const chatGlitchInterval = useRef<ReturnType<typeof setInterval> | null>(
@@ -5459,7 +5459,7 @@ export default function ChatSessionComponent({
         pendingDeletionsRef.current.delete(conversationId);
 
         // Restore the session to sessions state
-        setSessions((previousSessions) => {
+        setConversations((previousSessions) => {
           if (previousSessions.some((sessionItem) => sessionItem.id === conversationId))
             return previousSessions;
           const updated = [...previousSessions, pending.session];
@@ -5485,13 +5485,13 @@ export default function ChatSessionComponent({
   const handleDeleteSession = useCallback(
     async (conversationId: string) => {
       try {
-        const session = sessions.find((sessionItem) => sessionItem.id === conversationId);
+        const session = conversations.find((sessionItem) => sessionItem.id === conversationId);
         if (!session) return;
 
         const wasActive = activeId === conversationId;
 
         // Optimistically remove from state
-        setSessions((previousSessions) =>
+        setConversations((previousSessions) =>
           previousSessions.filter((sessionItem) => sessionItem.id !== conversationId),
         );
         if (wasActive) {
@@ -5574,7 +5574,7 @@ export default function ChatSessionComponent({
       handleNewChat,
       agentProject,
       isNoAgent,
-      sessions,
+      conversations,
       addToast,
       handleUndoDelete,
     ],
@@ -6313,7 +6313,7 @@ export default function ChatSessionComponent({
   // -- Center: chat area ---------------------------------------
   const chatContent = (
     <div className={chatStyles['container']}>
-      {/* -- Chat header bar (always visible "New Session") -- */}
+      {/* -- Chat header bar (always visible "New Conversation") -- */}
       <div className={chatStyles['chat-header']}>
         <div className={chatStyles['chat-header-title']}>
           <span className={chatStyles['chat-header-title-text']}>{title || ""}</span>
@@ -6370,9 +6370,9 @@ export default function ChatSessionComponent({
                 onClick={handleNewChatGlitch}
                 disabled={messages.length === 0 && !activeId}
                 className={`${chatStyles['chat-header-new-button']} ${chatGlitchLabel ? chatStyles['chat-header-new-button-element-glitch'] : ""}`}
-                title="Start a new session"
+                title="Start a new conversation"
               >
-                {chatGlitchLabel || "New Session"}
+                {chatGlitchLabel || "New Conversation"}
               </ButtonComponent>
             </>
           )}
@@ -7112,7 +7112,7 @@ export default function ChatSessionComponent({
         rightPanel={
           isAdmin ? (
             <HistoryPanel
-              sessions={adminEntries as (AgentSession | Conversation)[]}
+              conversations={adminEntries as (AgentSession | Conversation)[]}
               activeId={activeId}
               onSelect={(entry: AgentSession | Conversation) => {
                 const unifiedEntry = entry as UnifiedEntry;
@@ -7126,9 +7126,9 @@ export default function ChatSessionComponent({
               showUsername
               newIds={adminNewIds}
               disableNew
-              newLabel="New Session"
+              newLabel="New Conversation"
               emptyText="No conversations found"
-              searchText="Search sessions..."
+              searchText="Search conversations..."
               countLabel="conversations"
               hasMore={adminEntriesHasMore}
               loadingMore={adminEntriesLoading}
@@ -7142,16 +7142,16 @@ export default function ChatSessionComponent({
             />
           ) : (
             <HistoryPanel
-              sessions={sessions}
+              conversations={conversations}
               activeId={activeId}
               onSelect={handleSelectSession}
               onNew={handleNewChat}
               onDelete={handleDeleteSession}
               disableNew={messages.length === 0 && !activeId}
-              newLabel="New Session"
-              emptyText="No recent sessions"
-              searchText="Search sessions..."
-              countLabel="sessions"
+              newLabel="New Conversation"
+              emptyText="No recent conversations"
+              searchText="Search conversations..."
+              countLabel="conversations"
               generatingSessionIds={generatingSessionIds as Set<string>}
               knownParentConversationIds={knownParentConversationIds}
               hasMore={sessionsHasMore}
@@ -7164,7 +7164,7 @@ export default function ChatSessionComponent({
         rightTitle={
           isAdmin
             ? `${adminEntries.length}${adminEntriesHasMore ? "+" : ""} Conversations`
-            : `${sessions.length}${sessionsHasMore ? "+" : ""} Sessions`
+            : `${conversations.length}${sessionsHasMore ? "+" : ""} Conversations`
         }
         sessionType="agent"
         headerCenter={

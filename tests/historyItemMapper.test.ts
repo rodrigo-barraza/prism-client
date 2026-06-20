@@ -202,12 +202,12 @@ describe("mapConversationToHistoryItem", () => {
     expect(result.searchText).toContain("search result");
   });
 
-  it("should pass through parentAgentSessionId, defaulting to null", () => {
-    const withParent = createMinimalConversation({ parentAgentSessionId: "parent-123" });
+  it("should pass through parentConversationId, defaulting to null", () => {
+    const withParent = createMinimalConversation({ parentConversationId: "parent-123" });
     const withoutParent = createMinimalConversation({});
 
-    expect(mapConversationToHistoryItem(withParent).parentAgentSessionId).toBe("parent-123");
-    expect(mapConversationToHistoryItem(withoutParent).parentAgentSessionId).toBeNull();
+    expect(mapConversationToHistoryItem(withParent).parentConversationId).toBe("parent-123");
+    expect(mapConversationToHistoryItem(withoutParent).parentConversationId).toBeNull();
   });
 });
 
@@ -224,12 +224,12 @@ describe("mapAgentSessionToHistoryItem", () => {
     expect(mapAgentSessionToHistoryItem(withoutExplicitId).id).toBe("fallback-session");
   });
 
-  it("should use session.title when present, defaulting to 'Untitled Session'", () => {
+  it("should use conversation title when present, defaulting to 'Untitled Conversation'", () => {
     const withTitle = createMinimalAgentSession({ title: "Build Feature" });
     const withoutTitle = createMinimalAgentSession({ title: undefined });
 
     expect(mapAgentSessionToHistoryItem(withTitle).title).toBe("Build Feature");
-    expect(mapAgentSessionToHistoryItem(withoutTitle).title).toBe("Untitled Session");
+    expect(mapAgentSessionToHistoryItem(withoutTitle).title).toBe("Untitled Conversation");
   });
 
   it("should derive totalCost from stats when available, defaulting to 0", () => {
@@ -291,11 +291,11 @@ describe("mapAgentSessionToHistoryItem", () => {
     expect(result.tags[0].label).toBe("prism-service");
   });
 
-  it("should pass through parentAgentSessionId, defaulting to null", () => {
-    const withParent = createMinimalAgentSession({ parentAgentSessionId: "parent-abc" });
+  it("should pass through parentConversationId, defaulting to null", () => {
+    const withParent = createMinimalAgentSession({ parentConversationId: "parent-abc" });
     const withoutParent = createMinimalAgentSession({});
 
-    expect(mapAgentSessionToHistoryItem(withParent).parentAgentSessionId).toBe("parent-abc");
-    expect(mapAgentSessionToHistoryItem(withoutParent).parentAgentSessionId).toBeNull();
+    expect(mapAgentSessionToHistoryItem(withParent).parentConversationId).toBe("parent-abc");
+    expect(mapAgentSessionToHistoryItem(withoutParent).parentConversationId).toBeNull();
   });
 });

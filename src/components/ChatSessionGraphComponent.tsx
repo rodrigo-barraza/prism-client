@@ -1209,7 +1209,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
 
                 {selectedNode.category === "session" && (
                   <div className={graphStyles['node-detail-popover-section']}>
-                    <div className={graphStyles['node-detail-popover-section-title']}>Session Details</div>
+                    <div className={graphStyles['node-detail-popover-section-title']}>Conversation Details</div>
                     <InlineDetailRow label="Session ID" value={String(selectedNode.metadata?.sessionId || "—").slice(0, 12) + "…"} />
                     <InlineDetailRow label="Status" value={String(selectedNode.metadata?.status || "—")} />
                     <InlineDetailRow label="Requests" value={formatNumber(Number(selectedNode.metadata?.requestCount || 0))} />

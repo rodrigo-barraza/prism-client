@@ -12,9 +12,9 @@ import type { Conversation } from "../types/types";
 import type { LucideIcon } from "lucide-react";
 
 export interface HistoryPanelProps {
-  sessions?: Conversation[];
+  conversations?: Conversation[];
   activeId?: string | null;
-  onSelect?: (session: Conversation) => void | Promise<void>;
+  onSelect?: (conversation: Conversation) => void | Promise<void>;
   onNew?: () => void;
   onDelete?: (id: string) => void;
   readOnly?: boolean;
@@ -44,7 +44,7 @@ export interface HistoryPanelProps {
 }
 
 export default function HistoryPanel({
-  sessions = [],
+  conversations = [],
   activeId,
   onSelect,
   onNew,
@@ -76,10 +76,10 @@ export default function HistoryPanel({
 }: HistoryPanelProps) {
   const items = useMemo(
     () =>
-      sessions.map((conversation) =>
+      conversations.map((conversation) =>
         mapConversationToHistoryItem(conversation, { showProject }),
       ),
-    [sessions, showProject],
+    [conversations, showProject],
   );
 
   return (
@@ -88,7 +88,7 @@ export default function HistoryPanel({
         items={items}
         activeId={activeId}
         onSelect={(item: { id: string }) => {
-          const conversation = sessions.find((c) => c.id === item.id);
+          const conversation = conversations.find((c) => c.id === item.id);
           if (conversation && onSelect) onSelect(conversation);
         }}
         onDelete={!readOnly && onDelete ? onDelete : undefined}
