@@ -42,7 +42,7 @@ import type {
   VoiceOption,
 } from "../types/types";
 
-export interface SessionStats {
+export interface ConversationStats {
   messageCount: number;
   deletedCount: number;
   requestCount: number;
@@ -65,8 +65,8 @@ export interface SessionStats {
   currentTurnStart?: string | number;
   conversationStartTime?: string | number | null;
   usedTools?: Array<{ name: string; count: number }>;
-  orchestrator?: SessionStats;
-  subAgents?: SessionStats;
+  orchestrator?: ConversationStats;
+  subAgents?: ConversationStats;
   modalities?: Record<string, boolean>;
 }
 
@@ -96,7 +96,7 @@ export interface SettingsPanelProps {
   showSystemPromptModal?: boolean;
   onCloseSystemPromptModal?: () => void;
   workflows?: Workflow[];
-  sessionStats?: SessionStats | null;
+  sessionStats?: ConversationStats | null;
   lockedTools?: Set<string>;
   sessionType?: string;
   canSpawnSubAgents?: boolean;
@@ -266,7 +266,7 @@ export default function SettingsPanel({
       ? totalElapsedTime
       : activeStats?.completedElapsedTime || 0;
 
-  const renderStatsBadges = (stats: SessionStats, showFull: boolean) => {
+  const renderStatsBadges = (stats: ConversationStats, showFull: boolean) => {
     const timeToFirstTokenValue =
       stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration;
 

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   mapConversationToHistoryItem,
-  mapAgentSessionToHistoryItem,
+  mapAgentConversationToHistoryItem,
 } from "../src/utils/historyItemMapper";
-import type { Conversation, AgentSession, Message } from "../src/types/types";
+import type { Conversation, AgentConversation, Message } from "../src/types/types";
 
 function createMinimalConversation(
   overrides: Partial<Conversation> = {},
@@ -18,8 +18,8 @@ function createMinimalConversation(
 }
 
 function createMinimalAgentSession(
-  overrides: Partial<AgentSession> = {},
-): AgentSession {
+  overrides: Partial<AgentConversation> = {},
+): AgentConversation {
   return {
     _id: "session-default-id",
     project: "test-project",
@@ -27,7 +27,7 @@ function createMinimalAgentSession(
     createdAt: "2026-06-10T12:00:00Z",
     updatedAt: "2026-06-10T12:01:00Z",
     ...overrides,
-  } as AgentSession;
+  } as AgentConversation;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -212,24 +212,24 @@ describe("mapConversationToHistoryItem", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// mapAgentSessionToHistoryItem
+// mapAgentConversationToHistoryItem
 // ═══════════════════════════════════════════════════════════════
 
-describe("mapAgentSessionToHistoryItem", () => {
+describe("mapAgentConversationToHistoryItem", () => {
   it("should use session.id when present, falling back to _id", () => {
     const withExplicitId = createMinimalAgentSession({ id: "explicit-session" });
     const withoutExplicitId = createMinimalAgentSession({ _id: "fallback-session" });
 
-    expect(mapAgentSessionToHistoryItem(withExplicitId).id).toBe("explicit-session");
-    expect(mapAgentSessionToHistoryItem(withoutExplicitId).id).toBe("fallback-session");
+    expect(mapAgentConversationToHistoryItem(withExplicitId).id).toBe("explicit-session");
+    expect(mapAgentConversationToHistoryItem(withoutExplicitId).id).toBe("fallback-session");
   });
 
   it("should use conversation title when present, defaulting to 'Untitled Conversation'", () => {
     const withTitle = createMinimalAgentSession({ title: "Build Feature" });
     const withoutTitle = createMinimalAgentSession({ title: undefined });
 
-    expect(mapAgentSessionToHistoryItem(withTitle).title).toBe("Build Feature");
-    expect(mapAgentSessionToHistoryItem(withoutTitle).title).toBe("Untitled Conversation");
+    expect(mapAgentConversationToHistoryItem(withTitle).title).toBe("Build Feature");
+    expect(mapAgentConversationToHistoryItem(withoutTitle).title).toBe("Untitled Conversation");
   });
 
   it("should derive totalCost from stats when available, defaulting to 0", () => {
@@ -238,8 +238,8 @@ describe("mapAgentSessionToHistoryItem", () => {
     });
     const withoutStats = createMinimalAgentSession({});
 
-    expect(mapAgentSessionToHistoryItem(withStats).totalCost).toBeCloseTo(1.23, 6);
-    expect(mapAgentSessionToHistoryItem(withoutStats).totalCost).toBe(0);
+    expect(mapAgentConversationToHistoryItem(withStats).totalCost).toBeCloseTo(1.23, 6);
+    expect(mapAgentConversationToHistoryItem(withoutStats).totalCost).toBe(0);
   });
 
   it("should derive modelNames from stats.models, falling back to session.model", () => {
@@ -253,9 +253,9 @@ describe("mapAgentSessionToHistoryItem", () => {
     });
     const noModel = createMinimalAgentSession({ stats: {} });
 
-    expect(mapAgentSessionToHistoryItem(fromStats).modelNames).toEqual(["gpt-5.4", "claude-sonnet-4"]);
-    expect(mapAgentSessionToHistoryItem(fromSession).modelNames).toEqual(["fallback-model"]);
-    expect(mapAgentSessionToHistoryItem(noModel).modelNames).toEqual([]);
+    expect(mapAgentConversationToHistoryItem(fromStats).modelNames).toEqual(["gpt-5.4", "claude-sonnet-4"]);
+    expect(mapAgentConversationToHistoryItem(fromSession).modelNames).toEqual(["fallback-model"]);
+    expect(mapAgentConversationToHistoryItem(noModel).modelNames).toEqual([]);
   });
 
   it("should derive providers from stats.providers, falling back to session.provider", () => {
@@ -268,8 +268,8 @@ describe("mapAgentSessionToHistoryItem", () => {
       provider: "openai",
     });
 
-    expect(mapAgentSessionToHistoryItem(fromStats).providers).toEqual(["google", "anthropic"]);
-    expect(mapAgentSessionToHistoryItem(fromSession).providers).toEqual(["openai"]);
+    expect(mapAgentConversationToHistoryItem(fromStats).providers).toEqual(["google", "anthropic"]);
+    expect(mapAgentConversationToHistoryItem(fromSession).providers).toEqual(["openai"]);
   });
 
   it("should merge functionCalling from stats.toolCounts into modalities", () => {
@@ -279,14 +279,14 @@ describe("mapAgentSessionToHistoryItem", () => {
         toolCounts: { search_web: 2, write_file: 4 },
       },
     });
-    const result = mapAgentSessionToHistoryItem(session);
+    const result = mapAgentConversationToHistoryItem(session);
     expect(result.modalities).toHaveProperty("functionCalling", 6);
     expect(result.modalities).toHaveProperty("textIn", 10);
   });
 
   it("should add project tag when session has a project", () => {
     const session = createMinimalAgentSession({ project: "prism-service" });
-    const result = mapAgentSessionToHistoryItem(session);
+    const result = mapAgentConversationToHistoryItem(session);
     expect(result.tags).toHaveLength(1);
     expect(result.tags[0].label).toBe("prism-service");
   });
@@ -295,7 +295,7 @@ describe("mapAgentSessionToHistoryItem", () => {
     const withParent = createMinimalAgentSession({ parentConversationId: "parent-abc" });
     const withoutParent = createMinimalAgentSession({});
 
-    expect(mapAgentSessionToHistoryItem(withParent).parentConversationId).toBe("parent-abc");
-    expect(mapAgentSessionToHistoryItem(withoutParent).parentConversationId).toBeNull();
+    expect(mapAgentConversationToHistoryItem(withParent).parentConversationId).toBe("parent-abc");
+    expect(mapAgentConversationToHistoryItem(withoutParent).parentConversationId).toBeNull();
   });
 });

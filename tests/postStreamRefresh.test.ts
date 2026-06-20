@@ -5,7 +5,7 @@ vi.mock("@rodrigo-barraza/components-library", () => ({
   IconButtonComponent: () => null,
 }));
 
-import type { Message, AgentSession } from "../src/types/types";
+import type { Message, AgentConversation } from "../src/types/types";
 import { prepareDisplayMessages } from "../src/components/MessageListComponent";
 
 describe("Post-Stream Refresh Guard", () => {
@@ -25,7 +25,7 @@ describe("Post-Stream Refresh Guard", () => {
     const databaseSession = {
       id: "session-123",
       messages: [],
-    } as unknown as AgentSession;
+    } as unknown as AgentConversation;
 
     let fetchAttemptsCount = 0;
     const mockGetAgentSession = vi.fn().mockImplementation(async () => {
@@ -106,7 +106,7 @@ describe("Post-Stream Refresh Guard", () => {
         { role: "user", content: "hey" },
         { role: "assistant", content: "hello" },
       ],
-    } as unknown as AgentSession;
+    } as unknown as AgentConversation;
 
     let fetchAttemptsCount = 0;
     const mockGetAgentSession = vi.fn().mockImplementation(async () => {
@@ -187,7 +187,7 @@ describe("Post-Stream Refresh Guard", () => {
         { role: "user", content: "different query" },
         { role: "assistant", content: "hello" },
       ],
-    } as unknown as AgentSession;
+    } as unknown as AgentConversation;
 
     let fetchAttemptsCount = 0;
     const mockGetAgentSession = vi.fn().mockImplementation(async () => {

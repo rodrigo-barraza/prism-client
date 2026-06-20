@@ -130,7 +130,7 @@ export default function RequestsTableComponent({
     setIsLoading(true);
     setFetchError(null);
     try {
-      const result = await IrisService.getSessionRequests(conversationId);
+      const result = await IrisService.getConversationRequests(conversationId);
       setFetchedRequests(result?.requests || []);
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);

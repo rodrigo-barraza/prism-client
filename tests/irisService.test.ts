@@ -531,14 +531,14 @@ describe("IrisService", () => {
         json: async () => mockRequests,
       });
 
-    const statsResult = await IrisService.getSessionStats("sess-1");
+    const statsResult = await IrisService.getConversationRunStats("sess-1");
     expect(mockFetch).toHaveBeenCalledWith(
       `${PRISM_SERVICE_URL}/admin/sessions/sess-1/stats`,
       expect.any(Object),
     );
     expect(statsResult).toEqual(mockStats);
 
-    const requestsResult = await IrisService.getSessionRequests("sess-1");
+    const requestsResult = await IrisService.getConversationRequests("sess-1");
     expect(mockFetch).toHaveBeenCalledWith(
       `${PRISM_SERVICE_URL}/admin/sessions/sess-1/requests`,
       expect.any(Object),

@@ -12,8 +12,8 @@ import type {
   ConversationListResponse,
   ConversationMeta,
   Message,
-  AgentSession,
-  AgentSessionListResponse,
+  AgentConversation,
+  AgentConversationListResponse,
   CustomAgent,
   AgentPersona,
   Skill,
@@ -325,47 +325,47 @@ export default class PrismService {
 
 
    */
-  static async getAgentSessions(
+  static async getAgentConversations(
     project: string,
     {
       limit,
       cursor,
       agent,
     }: { limit?: number; cursor?: string; agent?: string } = {},
-  ): Promise<AgentSessionListResponse> {
+  ): Promise<AgentConversationListResponse> {
     const queryString = new URLSearchParams();
     queryString.set("type", "agent");
     queryString.set("project", project);
     if (agent) queryString.set("agent", agent);
     if (limit) queryString.set("limit", String(limit));
     if (cursor) queryString.set("cursor", cursor);
-    return PrismService._request<AgentSessionListResponse>(
+    return PrismService._request<AgentConversationListResponse>(
       `/conversations?${queryString}`,
       { method: "GET" },
     );
   }
 
   /**
-   * Get a single agent session by ID.
+   * Get a single agent conversation by ID.
 
 
    */
-  static async getAgentSession(
+  static async getAgentConversation(
     id: string,
     project: string,
-  ): Promise<AgentSession> {
-    return PrismService._request<AgentSession>(
+  ): Promise<AgentConversation> {
+    return PrismService._request<AgentConversation>(
       `/conversations/${id}?project=${encodeURIComponent(project)}`,
       { method: "GET" },
     );
   }
 
   /**
-   * Delete an agent session.
+   * Delete an agent conversation.
 
 
    */
-  static async deleteAgentSession(
+  static async deleteAgentConversation(
     id: string,
     project: string,
   ): Promise<{ success: boolean }> {
@@ -936,13 +936,13 @@ export default class PrismService {
     project: string,
     taskId: string,
     limit = 50,
-  ): Promise<AgentSessionListResponse> {
+  ): Promise<AgentConversationListResponse> {
     const queryString = new URLSearchParams();
     queryString.set("type", "agent");
     queryString.set("project", project);
     queryString.set("taskId", taskId);
     queryString.set("limit", String(limit));
-    return PrismService._request<AgentSessionListResponse>(
+    return PrismService._request<AgentConversationListResponse>(
       `/conversations?${queryString}`,
       { method: "GET" },
     );

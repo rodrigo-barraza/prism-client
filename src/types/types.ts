@@ -229,7 +229,7 @@ export interface SubAgentGenerationProgress {
 
 // --- Session / Conversation Stats ---------------------------
 
-export interface SessionStats {
+export interface ConversationStats {
   totalCost?: number;
   totalInputTokens?: number;
   totalOutputTokens?: number;
@@ -245,8 +245,8 @@ export interface SessionStats {
   totalCacheCreationInputTokens?: number;
   totalReasoningOutputTokens?: number;
   requestErrorCount?: number;
-  orchestrator?: SessionStats;
-  subAgents?: SessionStats;
+  orchestrator?: ConversationStats;
+  subAgents?: ConversationStats;
   providers?: string[];
 }
 
@@ -373,7 +373,7 @@ export interface Conversation {
   provider?: string;
   traceId?: string;
   systemPrompt?: string;
-  stats?: SessionStats;
+  stats?: ConversationStats;
   settings?: PrismSettings;
   createdAt: string;
   updatedAt: string;
@@ -409,9 +409,9 @@ export interface ConversationListResponse {
   hasMore: boolean;
 }
 
-// --- Agent Sessions -----------------------------------------
+// --- Agent Conversations -----------------------------------------
 
-export interface AgentSession {
+export interface AgentConversation {
   _id: ObjectId;
   id?: string;
   project: string;
@@ -423,7 +423,7 @@ export interface AgentSession {
   title?: string;
   traceId?: string;
   systemPrompt?: string;
-  stats?: SessionStats;
+  stats?: ConversationStats;
   settings?: PrismSettings;
   createdAt: string;
   updatedAt: string;
@@ -432,8 +432,8 @@ export interface AgentSession {
   hasSubAgents?: boolean;
 }
 
-export interface AgentSessionListResponse {
-  items: AgentSession[];
+export interface AgentConversationListResponse {
+  items: AgentConversation[];
   nextCursor: string | null;
   hasMore: boolean;
 }

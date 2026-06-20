@@ -13,7 +13,7 @@
  * for client-driven generation.
  */
 import { describe, it, expect, vi } from "vitest";
-import type { AgentSession } from "../src/types/types";
+import type { AgentConversation } from "../src/types/types";
 
 // Minimal simulated state to test the refreshActiveSession guard logic
 // without importing the full React component.
@@ -31,8 +31,8 @@ interface RefreshGuardContext {
 async function refreshActiveSession(
   sessionId: string,
   context: RefreshGuardContext,
-  fetchSession: () => Promise<AgentSession | null>,
-  applySessionData: (session: AgentSession) => void,
+  fetchSession: () => Promise<AgentConversation | null>,
+  applySessionData: (session: AgentConversation) => void,
 ): Promise<boolean> {
   if (!sessionId || sessionId !== context.currentSessionId) return false;
 
@@ -60,13 +60,13 @@ describe("refreshActiveSession guard — generation source distinction", () => {
       { role: "user", content: "⏰ Reminder fired: check build" },
       { role: "assistant", content: "Build completed successfully." },
     ],
-  } as unknown as AgentSession;
+  } as unknown as AgentConversation;
 
   const GENERATING_SESSION = {
     id: SESSION_ID,
     isGenerating: true,
     messages: [{ role: "user", content: "⏰ Reminder fired: check build" }],
-  } as unknown as AgentSession;
+  } as unknown as AgentConversation;
 
   it("should SKIP refresh when generation is client-driven (active SSE)", async () => {
     const context: RefreshGuardContext = {
@@ -144,7 +144,7 @@ describe("refreshActiveSession guard — generation source distinction", () => {
       id: "different-session",
       isGenerating: false,
       messages: [],
-    } as unknown as AgentSession;
+    } as unknown as AgentConversation;
 
     const fetchSession = vi.fn().mockResolvedValue(differentSession);
     const applySessionData = vi.fn();

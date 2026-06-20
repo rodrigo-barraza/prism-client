@@ -19,7 +19,7 @@ import IrisService, {
   type IrisRequestEntry,
   type IrisCollectionChangeEvent,
 } from "../services/IrisService";
-import type { AgentSession, SessionStats } from "../types/types";
+import type { AgentConversation, ConversationStats } from "../types/types";
 import { cleanModelName } from "./BadgeComponent";
 import { resolveProviderLabel } from "./ProviderLogosComponent";
 import StarfieldComponent from "./StarfieldComponent";
@@ -134,8 +134,8 @@ function straightEdgePath(
 }
 
 function buildGraphFromSession(
-  session: AgentSession,
-  sessionStats: SessionStats | null,
+  session: AgentConversation,
+  sessionStats: ConversationStats | null,
   sessionRequests: IrisRequestEntry[],
 ): GraphData {
   const nodes: GraphNode[] = [];
@@ -529,8 +529,8 @@ export interface ChatSessionGraphComponentProps {
    ═══════════════════════════════════════════════════════════════════ */
 
 export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGraphComponentProps) {
-  const [session, setSession] = useState<AgentSession | null>(null);
-  const [sessionStats, setSessionStats] = useState<SessionStats | null>(null);
+  const [session, setSession] = useState<AgentConversation | null>(null);
+  const [sessionStats, setSessionStats] = useState<ConversationStats | null>(null);
   const [sessionRequests, setSessionRequests] = useState<IrisRequestEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [graphData, setGraphData] = useState<GraphData | null>(null);
@@ -553,9 +553,9 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
   const [draggedNode, setDraggedNode] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
 
-  const sessionRef = useRef<AgentSession | null>(null);
+  const sessionRef = useRef<AgentConversation | null>(null);
   const sessionRequestsRef = useRef<IrisRequestEntry[]>([]);
-  const sessionStatsRef = useRef<SessionStats | null>(null);
+  const sessionStatsRef = useRef<ConversationStats | null>(null);
 
   // Keep refs in sync
   useEffect(() => { sessionRef.current = session; }, [session]);
@@ -677,8 +677,8 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
 
   // -- Incremental rebuild ---------------------------------------
   const incrementalGraphRebuild = useCallback((
-    activeSession: AgentSession,
-    updatedStats: SessionStats | null,
+    activeSession: AgentConversation,
+    updatedStats: ConversationStats | null,
     updatedRequests: IrisRequestEntry[],
   ) => {
     const existingPositions = new Map<string, { x: number; y: number }>();
@@ -736,12 +736,12 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
 
     const loadGraph = async () => {
       try {
-        const fetchedSession = await IrisService.getAgentSession(sessionId);
+        const fetchedSession = await IrisService.getAgentConversation(sessionId);
         if (isCancelled) return;
 
         const [statsResponse, requestsResponse] = await Promise.all([
-          IrisService.getSessionStats(sessionId).catch(() => null),
-          IrisService.getSessionRequests(sessionId).catch(() => ({ requests: [] })),
+          IrisService.getConversationRunStats(sessionId).catch(() => null),
+          IrisService.getConversationRequests(sessionId).catch(() => ({ requests: [] })),
         ]);
 
         if (isCancelled) return;
@@ -783,10 +783,10 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
       if (isBootstrapping) return;
       isBootstrapping = true;
       try {
-        const fetchedSession = await IrisService.getAgentSession(sessionId);
+        const fetchedSession = await IrisService.getAgentConversation(sessionId);
         const [bootstrapStats, bootstrapRequestsResponse] = await Promise.all([
-          IrisService.getSessionStats(sessionId).catch(() => null),
-          IrisService.getSessionRequests(sessionId).catch(() => ({ requests: [] as IrisRequestEntry[] })),
+          IrisService.getConversationRunStats(sessionId).catch(() => null),
+          IrisService.getConversationRequests(sessionId).catch(() => ({ requests: [] as IrisRequestEntry[] })),
         ]);
 
         const bootstrapRequests = bootstrapRequestsResponse.requests || [];
@@ -821,8 +821,8 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
 
       try {
         const [updatedStats, updatedRequestsResponse] = await Promise.all([
-          IrisService.getSessionStats(activeSessionId).catch(() => sessionStatsRef.current),
-          IrisService.getSessionRequests(activeSessionId).catch(() => ({ requests: sessionRequestsRef.current })),
+          IrisService.getConversationRunStats(activeSessionId).catch(() => sessionStatsRef.current),
+          IrisService.getConversationRequests(activeSessionId).catch(() => ({ requests: sessionRequestsRef.current })),
         ]);
 
         const updatedRequests = updatedRequestsResponse.requests || [];

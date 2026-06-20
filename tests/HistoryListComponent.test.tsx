@@ -35,7 +35,7 @@ vi.mock(
       <div
         data-testid="history-item"
         data-id={item.id}
-        data-parent-id={item.parentAgentSessionId || ""}
+        data-parent-id={item.parentConversationId || ""}
         data-subagent-number={subAgentNumber || ""}
         data-has-spawned={hasSpawnedSubAgents ? "true" : "false"}
       >
@@ -79,34 +79,34 @@ import HistoryListComponent from "../src/components/HistoryListComponent";
 const mockItems = [
   {
     id: "parent-1",
-    title: "Parent Session 1",
+    title: "Parent Conversation 1",
     createdAt: "2026-06-19T10:00:00Z",
     updatedAt: "2026-06-19T10:05:00Z",
   },
   {
     id: "sub-1-1",
     title: "Sub-agent 1 for Parent 1",
-    parentAgentSessionId: "parent-1",
+    parentConversationId: "parent-1",
     createdAt: "2026-06-19T10:01:00Z",
     updatedAt: "2026-06-19T10:02:00Z",
   },
   {
     id: "sub-1-2",
     title: "Sub-agent 2 for Parent 1",
-    parentAgentSessionId: "parent-1",
+    parentConversationId: "parent-1",
     createdAt: "2026-06-19T10:03:00Z",
     updatedAt: "2026-06-19T10:04:00Z",
   },
   {
     id: "orphan-sub",
     title: "Orphaned Sub-agent",
-    parentAgentSessionId: "non-existent-parent",
+    parentConversationId: "non-existent-parent",
     createdAt: "2026-06-19T09:00:00Z",
     updatedAt: "2026-06-19T09:05:00Z",
   },
   {
     id: "standalone-1",
-    title: "Standalone Session 1",
+    title: "Standalone Conversation 1",
     createdAt: "2026-06-19T08:00:00Z",
     updatedAt: "2026-06-19T08:05:00Z",
   },

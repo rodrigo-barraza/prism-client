@@ -12,13 +12,13 @@ import {
 import type { Message } from "../types/types";
 
 /**
- * useSessionStats — memoised session statistics from a messages array.
+ * useConversationStats — memoised session statistics from a messages array.
  *
  * Replaces the 5–6 line `useMemo` block that was copy-pasted across
  * ChatSessionComponent, AdminAgentViewerComponent, and
  * admin/conversations/page.
  */
-export default function useSessionStats(messages: Message[]) {
+export default function useConversationStats(messages: Message[]) {
   const uniqueModels = useMemo(() => getUniqueModels(messages), [messages]);
   const uniqueProviders = useMemo(
     () => getUniqueProviders(messages),

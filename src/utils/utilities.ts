@@ -118,7 +118,7 @@ export function getUniqueModels(messages: Message[]): string[] {
 
 /**
  * Get unique provider keys from assistant messages.
- * Shared between useSessionStats and SettingsPanel.
+ * Shared between useConversationStats and SettingsPanel.
  */
 export function getUniqueProviders(messages: Message[]): string[] {
   return [

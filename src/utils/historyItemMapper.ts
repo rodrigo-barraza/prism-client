@@ -1,4 +1,4 @@
-import type { Conversation, AgentSession } from "../types/types";
+import type { Conversation, AgentConversation } from "../types/types";
 
 interface HistoryItemTag {
   label: string;
@@ -108,8 +108,8 @@ export function mapConversationToHistoryItem(
   };
 }
 
-export function mapAgentSessionToHistoryItem(
-  conversation: AgentSession,
+export function mapAgentConversationToHistoryItem(
+  conversation: AgentConversation,
 ): MappedHistoryItem {
   const conversationId = conversation.id || conversation._id;
   const conversationStats = conversation.stats;

@@ -9,8 +9,8 @@ import type {
   LmStudioVramEstimate,
   Conversation,
   Workflow,
-  AgentSession,
-  SessionStats,
+  AgentConversation,
+  ConversationStats,
   IrisDashboardStats,
   IrisProjectStat,
   IrisModelStat,
@@ -166,11 +166,11 @@ export default class IrisService {
     id: string,
   ): Promise<{
     conversation?: Conversation;
-    agentSession?: AgentSession;
+    agentSession?: AgentConversation;
   }> {
     return fetchJSON<{
       conversation?: Conversation;
-      agentSession?: AgentSession;
+      agentSession?: AgentConversation;
     }>(`/requests/${id}/associations`);
   }
 
@@ -430,11 +430,11 @@ export default class IrisService {
     return fetchJSON<IrisRequestEntry>(`/traces/${id}`);
   }
 
-  static async getSessionStats(agentSessionId: string): Promise<SessionStats> {
-    return fetchJSON<SessionStats>(`/sessions/${agentSessionId}/stats`);
+  static async getConversationRunStats(agentSessionId: string): Promise<ConversationStats> {
+    return fetchJSON<ConversationStats>(`/sessions/${agentSessionId}/stats`);
   }
 
-  static async getSessionRequests(
+  static async getConversationRequests(
     agentSessionId: string,
   ): Promise<{ requests: IrisRequestEntry[] }> {
     return fetchJSON<{ requests: IrisRequestEntry[] }>(
@@ -442,18 +442,18 @@ export default class IrisService {
     );
   }
 
-  // -- Agent Sessions (admin) --------------------------------
-  static async getAgentSessions(
+  // -- Agent Conversations (admin) --------------------------------
+  static async getAgentConversations(
     params: QueryParams = {},
-  ): Promise<IrisPaginatedResponse<AgentSession>> {
+  ): Promise<IrisPaginatedResponse<AgentConversation>> {
     const query = toSearchParams(params);
-    return fetchJSON<IrisPaginatedResponse<AgentSession>>(
-      `/agent-sessions${query ? `?${query}` : ""}`,
+    return fetchJSON<IrisPaginatedResponse<AgentConversation>>(
+      `/agent-conversations${query ? `?${query}` : ""}`,
     );
   }
 
-  static async getAgentSession(id: string): Promise<AgentSession> {
-    return fetchJSON<AgentSession>(`/agent-sessions/${id}`);
+  static async getAgentConversation(id: string): Promise<AgentConversation> {
+    return fetchJSON<AgentConversation>(`/agent-conversations/${id}`);
   }
 
   // -- Media -------------------------------------------------

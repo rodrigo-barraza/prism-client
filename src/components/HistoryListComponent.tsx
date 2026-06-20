@@ -86,7 +86,7 @@ interface HistoryListProps {
   initialSearch?: string;
   countLabel?: string;
   onOpenInNewTab?: (item: HistoryListItem) => void;
-  generatingSessionIds?: Set<string>;
+  generatingConversationIds?: Set<string>;
   knownParentConversationIds?: Set<string>;
   hasMore?: boolean;
   loadingMore?: boolean;
@@ -138,7 +138,7 @@ export default function HistoryList({
   initialSearch = "",
   countLabel,
   onOpenInNewTab,
-  generatingSessionIds,
+  generatingConversationIds,
   knownParentConversationIds,
   // Pagination
   hasMore = false,
@@ -684,7 +684,7 @@ export default function HistoryList({
                     ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
                     : undefined
                 }
-                isGenerating={generatingSessionIds?.has?.(item.id)}
+                isGenerating={generatingConversationIds?.has?.(item.id)}
                 isCondensed={true}
                 subAgentNumber={subAgentNumberMap.get(item.id) ?? null}
                 hasSpawnedSubAgents={parentConversationIds.has(item.id)}
@@ -719,7 +719,7 @@ export default function HistoryList({
                     ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
                     : undefined
                 }
-                isGenerating={generatingSessionIds?.has?.(group.parent.id)}
+                isGenerating={generatingConversationIds?.has?.(group.parent.id)}
                 isCondensed={true}
                 subAgentNumber={subAgentNumberMap.get(group.parent.id) ?? null}
                 hasSpawnedSubAgents={true}
@@ -751,7 +751,7 @@ export default function HistoryList({
                           ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
                           : undefined
                       }
-                      isGenerating={generatingSessionIds?.has?.(child.id)}
+                      isGenerating={generatingConversationIds?.has?.(child.id)}
                       isCondensed={true}
                       subAgentNumber={subAgentNumberMap.get(child.id) ?? null}
                       hasSpawnedSubAgents={parentConversationIds.has(child.id)}

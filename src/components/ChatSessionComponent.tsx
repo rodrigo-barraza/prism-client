@@ -36,7 +36,7 @@ import ToolsApiService from "../services/ToolsApiService";
 import {
   Message,
   PrismConfig,
-  AgentSession,
+  AgentConversation,
   Skill,
   Rule,
   ToolCallEvent,
@@ -47,7 +47,7 @@ import {
   ToolSchema,
   SubAgentGenerationProgress,
   BackgroundUsage,
-  SessionStats,
+  ConversationStats,
   ModelOption,
   SSEData,
   ContentSegment,
@@ -59,7 +59,7 @@ import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import HistoryPanel from "./HistoryPanelComponent";
 import SettingsPanel, {
-  SessionStats as DisplaySessionStats,
+  ConversationStats as DisplaySessionStats,
 } from "./SettingsPanelComponent";
 import ModelInfoPanel from "./ModelInfoPanelComponent";
 import SkillsPanel from "./SkillsPanelComponent";
@@ -95,7 +95,7 @@ import {
   applyToolCallToMessages,
 } from "../utils/toolCallStateUpdaters";
 
-import useSessionStats from "../hooks/useSessionStats";
+import useConversationStats from "../hooks/useConversationStats";
 import { generateUUID, renderToolName } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES, SERVER_SENT_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { mergeUsedToolsWithSubAgents, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams } from "../utils/utilities";
@@ -294,7 +294,7 @@ const ADMIN_NONE_AGENT = {
   color: "",
 };
 
-type UnifiedEntry = (Conversation | AgentSession) & {
+type UnifiedEntry = (Conversation | AgentConversation) & {
   _source?: "conversation" | "agent_session";
 };
 
@@ -355,7 +355,7 @@ interface PendingApproval {
 }
 
 /** Snapshot of UI state stored when a background-generating session is paused. */
-interface SessionSnapshot {
+interface ConversationSnapshot {
   messages: ClientMessage[];
   title: string;
   toolActivity: ToolCallEvent[];
@@ -369,7 +369,7 @@ interface SessionSnapshot {
   planProposal: { plan: string; steps?: string[]; status?: "pending" | "approved" | "rejected" | "executing" } | null;
   agenticProgress: { iteration: number; maxIterations: number } | null;
   settings: Record<string, unknown>;
-  backendSessionStats: SessionStats | null;
+  backendSessionStats: ConversationStats | null;
   isBackendStatsStale?: boolean;
   workspaceRoot: string | null;
   disabledTools: string[];
@@ -545,12 +545,12 @@ export default function ChatSessionComponent({
   );
   const [conversationId, setConversationId] = useState(() => generateUUID());
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
-  const [conversations, setConversations] = useState<Array<AgentSession | Conversation>>(
+  const [conversations, setConversations] = useState<Array<AgentConversation | Conversation>>(
     [],
   );
-  const sessionsCursorRef = useRef<string | null>(null);
-  const [sessionsHasMore, setSessionsHasMore] = useState(false);
-  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const conversationsCursorRef = useRef<string | null>(null);
+  const [conversationsHasMore, setConversationsHasMore] = useState(false);
+  const [conversationsLoading, setConversationsLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState(isNoAgent ? "Agentless Chat" : "Agent");
@@ -596,7 +596,7 @@ export default function ChatSessionComponent({
       string,
       {
         timeoutId: NodeJS.Timeout;
-        session: AgentSession | Conversation;
+        session: AgentConversation | Conversation;
         wasActive: boolean;
       }
     >
@@ -853,7 +853,7 @@ export default function ChatSessionComponent({
   } | null>(null); // { strategy, estimatedTokens }
   const [currentTurnStart, setCurrentTurnStart] = useState<number | null>(null); // Date.now() when user sends
   const [backendSessionStats, setBackendSessionStats] =
-    useState<SessionStats | null>(null);
+    useState<ConversationStats | null>(null);
   const [isBackendStatsStale, setIsBackendStatsStale] = useState(false);
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
 
@@ -922,7 +922,7 @@ export default function ChatSessionComponent({
   const isClientDrivenGenerationRef = useRef<boolean>(false);
   const previousModelRef = useRef<string | null>(null);
   // Track which sessions have active background generation (for history indicator)
-  const [generatingSessionIds, setGeneratingSessionIds] = useState(
+  const [generatingConversationIds, setGeneratingConversationIds] = useState(
     () => new Set(),
   );
 
@@ -935,7 +935,7 @@ export default function ChatSessionComponent({
   }, [activeId, subAgentsCount]);
   // Snapshot cache: stores UI state for sessions that are generating in the background
   // so the user can switch back without waiting for backend persistence.
-  const backgroundSessionsRef = useRef<Map<string, SessionSnapshot>>(new Map());
+  const backgroundConversationsRef = useRef<Map<string, ConversationSnapshot>>(new Map());
 
   const handleStop = useCallback(() => {
     if (abortRef.current) {
@@ -1359,10 +1359,10 @@ export default function ChatSessionComponent({
   // Load session history — Direct Chat reads from conversations collection
   const loadSessions = useCallback(async () => {
     try {
-      setSessionsLoading(true);
+      setConversationsLoading(true);
       const result = isNoAgent
         ? await PrismService.getConversations()
-        : await PrismService.getAgentSessions(agentProject!, {
+        : await PrismService.getAgentConversations(agentProject!, {
             agent: agentId,
           });
       setConversations((previousSessions) => {
@@ -1411,38 +1411,38 @@ export default function ChatSessionComponent({
           return { ...session, ...enrichment } as typeof session;
         });
       });
-      sessionsCursorRef.current = result.nextCursor;
-      setSessionsHasMore(result.hasMore);
+      conversationsCursorRef.current = result.nextCursor;
+      setConversationsHasMore(result.hasMore);
     } catch (error: unknown) {
       console.error("Failed to load sessions:", error);
     } finally {
-      setSessionsLoading(false);
+      setConversationsLoading(false);
     }
   }, [agentProject, agentId, isNoAgent]);
 
-  const loadMoreSessions = useCallback(async () => {
-    if (!sessionsCursorRef.current || sessionsLoading) return;
+  const loadMoreConversations = useCallback(async () => {
+    if (!conversationsCursorRef.current || conversationsLoading) return;
     try {
-      setSessionsLoading(true);
+      setConversationsLoading(true);
       const fetchOptions = {
-        cursor: sessionsCursorRef.current,
+        cursor: conversationsCursorRef.current,
         agent: agentId,
       };
       const result = isNoAgent
         ? await PrismService.getConversations(fetchOptions)
-        : await PrismService.getAgentSessions(agentProject!, fetchOptions);
+        : await PrismService.getAgentConversations(agentProject!, fetchOptions);
       setConversations((previousSessions) => [
         ...previousSessions,
         ...result.items,
       ]);
-      sessionsCursorRef.current = result.nextCursor;
-      setSessionsHasMore(result.hasMore);
+      conversationsCursorRef.current = result.nextCursor;
+      setConversationsHasMore(result.hasMore);
     } catch (error: unknown) {
       console.error("Failed to load more sessions:", error);
     } finally {
-      setSessionsLoading(false);
+      setConversationsLoading(false);
     }
-  }, [agentProject, isNoAgent, sessionsLoading]);
+  }, [agentProject, isNoAgent, conversationsLoading]);
 
   useEffect(() => {
     if (!isAdmin) loadSessions();
@@ -1459,7 +1459,7 @@ export default function ChatSessionComponent({
       try {
         const full = isNoAgent
           ? await PrismService.getConversation(initialSessionId)
-          : await PrismService.getAgentSession(initialSessionId, agentProject!);
+          : await PrismService.getAgentConversation(initialSessionId, agentProject!);
         if (!full) return;
 
         const displayMessages = prepareDisplayMessages(full.messages || []);
@@ -1791,7 +1791,7 @@ export default function ChatSessionComponent({
       try {
         const detail =
           source === "agent_session"
-            ? await IrisService.getAgentSession(id)
+            ? await IrisService.getAgentConversation(id)
             : await IrisService.getConversation(id);
         const fullEntry = detail as UnifiedEntry;
         const displayMessages = prepareDisplayMessages(fullEntry.messages || []);
@@ -1825,7 +1825,7 @@ export default function ChatSessionComponent({
         setConversations((previousSessions) => {
           const exists = previousSessions.some((session) => session.id === id);
           if (exists) return previousSessions;
-          return [fullEntry as AgentSession | Conversation, ...previousSessions];
+          return [fullEntry as AgentConversation | Conversation, ...previousSessions];
         });
       } catch {
         setMessages([]);
@@ -1843,7 +1843,7 @@ export default function ChatSessionComponent({
       try {
         const full =
           source === "agent_session"
-            ? ((await IrisService.getAgentSession(id)) as UnifiedEntry)
+            ? ((await IrisService.getAgentConversation(id)) as UnifiedEntry)
             : ((await IrisService.getConversation(id)) as UnifiedEntry);
         const displayMessages = prepareDisplayMessages(full.messages || []);
         setMessages(displayMessages);
@@ -1870,7 +1870,7 @@ export default function ChatSessionComponent({
         const displayMessages = prepareDisplayMessages(conversationEntry.messages || []);
         setMessages(displayMessages);
         setBackendSessionStats(conversationEntry.stats || null);
-        setConversations((previousSessions) => [conversationEntry as AgentSession | Conversation, ...previousSessions]);
+        setConversations((previousSessions) => [conversationEntry as AgentConversation | Conversation, ...previousSessions]);
       })
       .catch(() => {
         setMessages([]);
@@ -1924,7 +1924,7 @@ export default function ChatSessionComponent({
       return;
     }
     if (adminSelectedSource === "agent_session") {
-      IrisService.getSessionStats(activeId)
+      IrisService.getConversationRunStats(activeId)
         .then((stats) => setBackendSessionStats(stats))
         .catch(() => setBackendSessionStats(null));
 
@@ -2314,7 +2314,7 @@ export default function ChatSessionComponent({
     liveProcessingPhase,
     liveTtftSamples,
     liveGenProgress,
-  } = useSessionStats(messages);
+  } = useConversationStats(messages);
 
   // -- Live-patch sidebar session metadata ------------------
   // Keep the active session's entry in `sessions[]` in sync with the
@@ -2393,7 +2393,7 @@ export default function ChatSessionComponent({
         // Preserve the original server-side updatedAt — overwriting it with
         // Date.now() causes the DateTimeBadge to flash "just now" on click.
       };
-      return updated as unknown as Array<AgentSession | Conversation>;
+      return updated as unknown as Array<AgentConversation | Conversation>;
     });
   }, [
     activeId,
@@ -2457,7 +2457,7 @@ export default function ChatSessionComponent({
       // second at 8s catches background requests (memory extraction,
       // embedding) that take longer to flush to the DB.
       const refetch = () =>
-        PrismService.getAgentSession(sessionId, agentProject!)
+        PrismService.getAgentConversation(sessionId, agentProject!)
           .then((session) => {
             if (session?.stats) {
               setBackendSessionStats(session.stats);
@@ -4494,7 +4494,7 @@ export default function ChatSessionComponent({
       console.debug(
         `[handleSend] starting generation, sessionId=${genId}, currentMessages=${messagesRef.current.length}`,
       );
-      setGeneratingSessionIds((previousGeneratingSessionIds) =>
+      setGeneratingConversationIds((previousGeneratingSessionIds) =>
         new Set(previousGeneratingSessionIds).add(genId),
       );
       setToolActivity([]);
@@ -4529,7 +4529,7 @@ export default function ChatSessionComponent({
             title: resolvedTitle,
             updatedAt: now,
             createdAt: now,
-          } as AgentSession,
+          } as AgentConversation,
           ...previousSessions,
         ]);
       }
@@ -4619,7 +4619,7 @@ export default function ChatSessionComponent({
           try {
             const full = isNoAgent
               ? await PrismService.getConversation(conversationId)
-              : await PrismService.getAgentSession(
+              : await PrismService.getAgentConversation(
                   conversationId,
                   agentProject!,
                 );
@@ -4716,13 +4716,13 @@ export default function ChatSessionComponent({
           `[handleSend finally] genId=${genId}, currentSessionId=${conversationIdRef.current}, match=${conversationIdRef.current === genId}`,
         );
         // Remove this session from the generating set
-        setGeneratingSessionIds((previousGeneratingSessionIds) => {
+        setGeneratingConversationIds((previousGeneratingSessionIds) => {
           const next = new Set(previousGeneratingSessionIds);
           next.delete(genId);
           return next;
         });
         // Clean up the background snapshot — session is now persisted to backend
-        backgroundSessionsRef.current.delete(genId);
+        backgroundConversationsRef.current.delete(genId);
         // Only update local UI state if this session is still displayed
         if (conversationIdRef.current === genId) {
           setIsGenerating(false);
@@ -4951,7 +4951,7 @@ export default function ChatSessionComponent({
     // If generating, snapshot the current session so user can switch back to it
     if (isGenerating) {
       const currentId = conversationIdRef.current;
-      backgroundSessionsRef.current.set(currentId, {
+      backgroundConversationsRef.current.set(currentId, {
         messages,
         title,
         toolActivity,
@@ -5030,10 +5030,10 @@ export default function ChatSessionComponent({
   /** Apply fetched/snapshot session data to component state immediately. */
   const applySessionData = useCallback(
     (
-      full: (AgentSession | Conversation) & {
+      full: (AgentConversation | Conversation) & {
         workspaceRoot?: string;
         _fromSnapshot?: boolean;
-        _snapshot?: SessionSnapshot;
+        _snapshot?: ConversationSnapshot;
         isGenerating?: boolean;
         pendingApproval?: {
           isPending?: boolean;
@@ -5112,7 +5112,7 @@ export default function ChatSessionComponent({
         setIsGenerating(true);
         // Remove the snapshot — the SSE callbacks will resume updating React state
         // now that conversationIdRef matches again (isStale() → false)
-        backgroundSessionsRef.current.delete(full.id || "");
+        backgroundConversationsRef.current.delete(full.id || "");
       } else {
         // Normal backend-loaded session
         const displayMessages = prepareDisplayMessages(full.messages || []);
@@ -5271,11 +5271,11 @@ export default function ChatSessionComponent({
   );
 
   const handleSelectSession = useCallback(
-    async (conversation: AgentSession | Conversation) => {
+    async (conversation: AgentConversation | Conversation) => {
       // If generating, snapshot the current session so user can switch back to it
       if (isGenerating) {
         const currentId = conversationIdRef.current;
-        backgroundSessionsRef.current.set(currentId, {
+        backgroundConversationsRef.current.set(currentId, {
           messages,
           title,
           toolActivity,
@@ -5290,7 +5290,7 @@ export default function ChatSessionComponent({
           isBackendStatsStale,
           workspaceRoot: currentWorkspace?.path || null,
           disabledTools: [...disabledTools],
-        } as SessionSnapshot);
+        } as ConversationSnapshot);
         setIsGenerating(false);
       }
       // Already viewing this session — just scroll to bottom instantly
@@ -5308,8 +5308,8 @@ export default function ChatSessionComponent({
       // If the target session is still generating in the background,
       // restore from the in-memory snapshot instead of hitting the backend
       // (which would 404 because the session hasn't been persisted yet).
-      const snapshot = backgroundSessionsRef.current.get(conversation.id!);
-      if (snapshot && generatingSessionIds.has(conversation.id)) {
+      const snapshot = backgroundConversationsRef.current.get(conversation.id!);
+      if (snapshot && generatingConversationIds.has(conversation.id)) {
         applySessionData({
           id: conversation.id,
           title: snapshot.title,
@@ -5327,7 +5327,7 @@ export default function ChatSessionComponent({
       try {
         const full = isNoAgent
           ? await PrismService.getConversation(conversation.id!)
-          : await PrismService.getAgentSession(conversation.id!, agentProject!);
+          : await PrismService.getAgentConversation(conversation.id!, agentProject!);
         applySessionData(full);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
@@ -5362,7 +5362,7 @@ export default function ChatSessionComponent({
       agenticProgress,
       settings,
       backendSessionStats,
-      generatingSessionIds,
+      generatingConversationIds,
       applySessionData,
       recordPixelLoadTime,
       currentWorkspace?.path,
@@ -5391,7 +5391,7 @@ export default function ChatSessionComponent({
       try {
         const full = isNoAgent
           ? await PrismService.getConversation(sessionId)
-          : await PrismService.getAgentSession(sessionId, agentProject!);
+          : await PrismService.getAgentConversation(sessionId, agentProject!);
         if (full && full.id === conversationIdRef.current) {
           applySessionData(full);
         }
@@ -5505,7 +5505,7 @@ export default function ChatSessionComponent({
             if (isNoAgent) {
               await PrismService.deleteConversation(conversationId);
             } else {
-              await PrismService.deleteAgentSession(conversationId, agentProject!);
+              await PrismService.deleteAgentConversation(conversationId, agentProject!);
             }
           } catch (error) {
             console.error("Failed to delete session:", error);
@@ -5800,7 +5800,7 @@ export default function ChatSessionComponent({
               (messages.length > 0
                 ? backendSessionStats
                   ? (() => {
-                      const mapSubStats = (sub: SessionStats | undefined) => {
+                      const mapSubStats = (sub: ConversationStats | undefined) => {
                         if (!sub) return undefined;
                         return {
                           messageCount: sub.requestCount || 0,
@@ -7112,9 +7112,9 @@ export default function ChatSessionComponent({
         rightPanel={
           isAdmin ? (
             <HistoryPanel
-              conversations={adminEntries as (AgentSession | Conversation)[]}
+              conversations={adminEntries as (AgentConversation | Conversation)[]}
               activeId={activeId}
-              onSelect={(entry: AgentSession | Conversation) => {
+              onSelect={(entry: AgentConversation | Conversation) => {
                 const unifiedEntry = entry as UnifiedEntry;
                 adminSelectEntry(
                   unifiedEntry.id || "",
@@ -7152,11 +7152,11 @@ export default function ChatSessionComponent({
               emptyText="No recent conversations"
               searchText="Search conversations..."
               countLabel="conversations"
-              generatingSessionIds={generatingSessionIds as Set<string>}
+              generatingConversationIds={generatingConversationIds as Set<string>}
               knownParentConversationIds={knownParentConversationIds}
-              hasMore={sessionsHasMore}
-              loadingMore={sessionsLoading}
-              onLoadMore={loadMoreSessions}
+              hasMore={conversationsHasMore}
+              loadingMore={conversationsLoading}
+              onLoadMore={loadMoreConversations}
               filterStorageKey={LS_CHAT_FILTERS}
             />
           )
@@ -7164,7 +7164,7 @@ export default function ChatSessionComponent({
         rightTitle={
           isAdmin
             ? `${adminEntries.length}${adminEntriesHasMore ? "+" : ""} Conversations`
-            : `${conversations.length}${sessionsHasMore ? "+" : ""} Conversations`
+            : `${conversations.length}${conversationsHasMore ? "+" : ""} Conversations`
         }
         sessionType="agent"
         headerCenter={

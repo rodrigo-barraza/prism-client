@@ -32,7 +32,7 @@ export interface HistoryPanelProps {
   itemIcon?: LucideIcon;
   countLabel?: string;
   onOpenInNewTab?: (id: string) => void;
-  generatingSessionIds?: Set<string>;
+  generatingConversationIds?: Set<string>;
   knownParentConversationIds?: Set<string>;
   hasMore?: boolean;
   loadingMore?: boolean;
@@ -64,7 +64,7 @@ export default function HistoryPanel({
   itemIcon,
   countLabel,
   onOpenInNewTab,
-  generatingSessionIds,
+  generatingConversationIds,
   knownParentConversationIds,
   hasMore,
   loadingMore,
@@ -108,7 +108,7 @@ export default function HistoryPanel({
             ? (item: { id: string }) => onOpenInNewTab(item.id)
             : undefined
         }
-        generatingSessionIds={generatingSessionIds}
+        generatingConversationIds={generatingConversationIds}
         hasMore={hasMore}
         loadingMore={loadingMore}
         onLoadMore={onLoadMore}
