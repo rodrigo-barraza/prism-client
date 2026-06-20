@@ -260,6 +260,63 @@ function buildCriticLoopTopology(): TopologyDefinition {
   };
 }
 
+function buildDivideAndConquerTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 214,
+    nodes: [
+      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "planner", label: "Plan", positionX: 140, positionY: 60, radius: 14, fillColor: "oklch(0.58 0.15 200)" },
+      { id: "task-a", label: "T₁", positionX: 60, positionY: 108, radius: 13, fillColor: AGENT_COLOR },
+      { id: "task-b", label: "T₂", positionX: 140, positionY: 108, radius: 13, fillColor: AGENT_COLOR },
+      { id: "task-c", label: "T₃", positionX: 220, positionY: 108, radius: 13, fillColor: AGENT_COLOR },
+      { id: "synth", label: "Synth", positionX: 140, positionY: 154, radius: 15, fillColor: MERGE_COLOR },
+      { id: "result", label: "Result", positionX: 140, positionY: 192, radius: 14, fillColor: RESULT_COLOR },
+    ],
+    edges: [
+      { sourceId: "orchestrator", targetId: "planner" },
+      { sourceId: "planner", targetId: "task-a" },
+      { sourceId: "planner", targetId: "task-b" },
+      { sourceId: "planner", targetId: "task-c" },
+      { sourceId: "task-a", targetId: "synth" },
+      { sourceId: "task-b", targetId: "synth" },
+      { sourceId: "task-c", targetId: "synth" },
+      { sourceId: "synth", targetId: "result" },
+    ],
+  };
+}
+
+function buildMCTSTopology(): TopologyDefinition {
+  return {
+    viewBoxWidth: 280,
+    viewBoxHeight: 234,
+    nodes: [
+      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
+      { id: "branch-a1", label: "B₁", positionX: 60, positionY: 62, radius: 12, fillColor: AGENT_COLOR },
+      { id: "branch-b1", label: "B₂", positionX: 140, positionY: 62, radius: 12, fillColor: AGENT_COLOR },
+      { id: "branch-c1", label: "B₃", positionX: 220, positionY: 62, radius: 12, fillColor: AGENT_COLOR },
+      { id: "eval-1", label: "Eval", positionX: 140, positionY: 102, radius: 13, fillColor: MERGE_COLOR },
+      { id: "best-1", label: "Best", positionX: 140, positionY: 138, radius: 12, fillColor: RESULT_COLOR },
+      { id: "branch-a2", label: "B₁'", positionX: 80, positionY: 172, radius: 11, fillColor: AGENT_COLOR },
+      { id: "branch-b2", label: "B₂'", positionX: 200, positionY: 172, radius: 11, fillColor: AGENT_COLOR },
+      { id: "eval-2", label: "Eval", positionX: 140, positionY: 204, radius: 13, fillColor: MERGE_COLOR },
+    ],
+    edges: [
+      { sourceId: "orchestrator", targetId: "branch-a1" },
+      { sourceId: "orchestrator", targetId: "branch-b1" },
+      { sourceId: "orchestrator", targetId: "branch-c1" },
+      { sourceId: "branch-a1", targetId: "eval-1" },
+      { sourceId: "branch-b1", targetId: "eval-1" },
+      { sourceId: "branch-c1", targetId: "eval-1" },
+      { sourceId: "eval-1", targetId: "best-1" },
+      { sourceId: "best-1", targetId: "branch-a2" },
+      { sourceId: "best-1", targetId: "branch-b2" },
+      { sourceId: "branch-a2", targetId: "eval-2" },
+      { sourceId: "branch-b2", targetId: "eval-2" },
+    ],
+  };
+}
+
 const TOPOLOGY_BUILDERS: Record<string, () => TopologyDefinition> = {
   sequential: buildSequentialTopology,
   hierarchical: buildHierarchicalTopology,
@@ -267,6 +324,8 @@ const TOPOLOGY_BUILDERS: Record<string, () => TopologyDefinition> = {
   peer_to_peer: buildPeerToPeerTopology,
   tournament: buildTournamentTopology,
   critic_loop: buildCriticLoopTopology,
+  divide_and_conquer: buildDivideAndConquerTopology,
+  mcts: buildMCTSTopology,
   chain_of_thought: buildChainOfThoughtTopology,
   tree_of_thoughts: buildTreeOfThoughtsTopology,
   graph_of_thoughts: buildGraphOfThoughtsTopology,

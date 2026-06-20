@@ -1170,10 +1170,11 @@ export default function SettingsPageComponent() {
               <span className={styles["layout-row-title"]}>Subagent Topology</span>
               <span className={styles["layout-row-description"]}>
                 Defines how sub-agents coordinate. Each topology maps to a
-                reasoning strategy: Chain of Thought (sequential), Tree of
-                Thoughts (parallel), Graph of Thoughts (aggregation), DAG
-                mesh (peer-to-peer), Best-of-N (tournament), or
-                Actor-Critic (critic loop).
+                reasoning strategy: Chain of Thought (sequential, hierarchical),
+                Graph of Thoughts (aggregation), DAG mesh (peer-to-peer),
+                Best-of-N (tournament), Actor-Critic (critic loop),
+                task decomposition (divide &amp; conquer), or iterative
+                tree search (MCTS).
               </span>
             </div>
             <div className={styles["layout-row-control"]}>

@@ -40,11 +40,11 @@ export function buildTopologyOptions(): StrategySelectOption[] {
     },
     {
       value: "hierarchical",
-      label: "Hierarchical Parallel (ToT)",
+      label: "Hierarchical Parallel (CoT)",
       tooltipRich: true,
       tooltip: (
         <div>
-          <span className={styles["strategy-tooltip-title"]}>Hierarchical Parallel (ToT)</span>
+          <span className={styles["strategy-tooltip-title"]}>Hierarchical Parallel (CoT)</span>
           <p className={styles["strategy-tooltip-description"]}>
             Sub-agents execute in parallel. The orchestrator
             selects the best result. Branches never merge.
@@ -127,6 +127,44 @@ export function buildTopologyOptions(): StrategySelectOption[] {
             [Actor] → [Critic] → [Actor] → … until pass
           </code>
           <TopologyGraphComponent topologyId="critic_loop" />
+        </div>
+      ),
+    },
+    {
+      value: "divide_and_conquer",
+      label: "Divide & Conquer (ToT)",
+      tooltipRich: true,
+      tooltip: (
+        <div>
+          <span className={styles["strategy-tooltip-title"]}>Divide & Conquer (ToT)</span>
+          <p className={styles["strategy-tooltip-description"]}>
+            A planner decomposes the task into independent subtasks,
+            each dispatched to a sub-agent in parallel, then
+            synthesized into a unified result.
+          </p>
+          <code className={styles["strategy-tooltip-structure"]}>
+            [Planner] → [T₁] [T₂] [T₃] → [Synth] → Result
+          </code>
+          <TopologyGraphComponent topologyId="divide_and_conquer" />
+        </div>
+      ),
+    },
+    {
+      value: "mcts",
+      label: "MCTS Search (LATS)",
+      tooltipRich: true,
+      tooltip: (
+        <div>
+          <span className={styles["strategy-tooltip-title"]}>MCTS-Guided Search (LATS)</span>
+          <p className={styles["strategy-tooltip-description"]}>
+            Monte Carlo Tree Search. Expands N branches in parallel,
+            evaluates and scores each, selects the best, and refines
+            iteratively until the solution is complete.
+          </p>
+          <code className={styles["strategy-tooltip-structure"]}>
+            [B₁ B₂ B₃] → [Eval] → [Best] → [B₁&apos; B₂&apos;] → [Eval] → …
+          </code>
+          <TopologyGraphComponent topologyId="mcts" />
         </div>
       ),
     },
