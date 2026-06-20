@@ -40,13 +40,13 @@ describe("SSEManager", () => {
   it("should create a single EventSource connection for a unique URL", () => {
     const firstCallback = vi.fn();
     const subscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       firstCallback,
     );
 
     expect(MockEventSource.instancesList).toHaveLength(1);
     expect(MockEventSource.instancesList[0].url).toBe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
     );
 
     subscription.unsubscribe();
@@ -57,11 +57,11 @@ describe("SSEManager", () => {
     const secondCallback = vi.fn();
 
     const firstSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       firstCallback,
     );
     const secondSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       secondCallback,
     );
 
@@ -76,11 +76,11 @@ describe("SSEManager", () => {
     const secondCallback = vi.fn();
 
     const firstSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       firstCallback,
     );
     const secondSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       secondCallback,
     );
 
@@ -101,11 +101,11 @@ describe("SSEManager", () => {
     const succeedingCallback = vi.fn();
 
     const firstSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       failingCallback,
     );
     const secondSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       succeedingCallback,
     );
 
@@ -122,7 +122,7 @@ describe("SSEManager", () => {
   it("should ignore invalid JSON payloads without throwing errors", () => {
     const successCallback = vi.fn();
     const subscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       successCallback,
     );
 
@@ -144,11 +144,11 @@ describe("SSEManager", () => {
     const secondCallback = vi.fn();
 
     const firstSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       firstCallback,
     );
     const secondSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       secondCallback,
     );
 
@@ -165,11 +165,11 @@ describe("SSEManager", () => {
     const secondCallback = vi.fn();
 
     const firstSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       firstCallback,
     );
     const secondSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       secondCallback,
     );
 
@@ -182,7 +182,7 @@ describe("SSEManager", () => {
 
     // Subscribing again to the same URL should create a new EventSource
     const thirdSubscription = SSEManager.subscribe(
-      "http://localhost/stream",
+      "https://api.prism.rod.dev/stream",
       vi.fn(),
     );
     expect(MockEventSource.instancesList).toHaveLength(2);
@@ -195,17 +195,17 @@ describe("SSEManager", () => {
     const secondCallback = vi.fn();
 
     const firstSubscription = SSEManager.subscribe(
-      "http://localhost/stream-a",
+      "https://api.prism.rod.dev/stream-a",
       firstCallback,
     );
     const secondSubscription = SSEManager.subscribe(
-      "http://localhost/stream-b",
+      "https://api.prism.rod.dev/stream-b",
       secondCallback,
     );
 
     expect(MockEventSource.instancesList).toHaveLength(2);
-    expect(MockEventSource.instancesList[0].url).toBe("http://localhost/stream-a");
-    expect(MockEventSource.instancesList[1].url).toBe("http://localhost/stream-b");
+    expect(MockEventSource.instancesList[0].url).toBe("https://api.prism.rod.dev/stream-a");
+    expect(MockEventSource.instancesList[1].url).toBe("https://api.prism.rod.dev/stream-b");
 
     MockEventSource.instancesList[0].simulateIncomingMessage({ source: "a" });
     expect(firstCallback).toHaveBeenCalledWith({ source: "a" });

@@ -14,7 +14,7 @@ function TestToolTogglesComponent({
   coreToolsLocked?: boolean;
 }) {
   const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn, resetToAllDisabled, restoreDisabledTools } =
-    useToolToggles(builtInTools as any, coreToolsLocked);
+    useToolToggles(builtInTools, coreToolsLocked);
 
   return (
     <div>

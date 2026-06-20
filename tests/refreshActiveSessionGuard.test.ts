@@ -1,7 +1,7 @@
 /**
- * refreshActiveSession guard — client-driven vs server-driven generation tests.
+ * refreshActiveConversation guard — client-driven vs server-driven generation tests.
  *
- * Root cause: refreshActiveSession() blocked ALL change-stream updates when
+ * Root cause: refreshActiveConversation() blocked ALL change-stream updates when
  * isGenerating was true. But when isGenerating was set passively from a DB
  * document load (e.g. timer-triggered background execution), there was no
  * active SSE connection — so the client could never learn when the backend
@@ -25,10 +25,10 @@ interface RefreshGuardContext {
 }
 
 /**
- * Extracted refreshActiveSession guard logic matching AgentComponent.tsx.
+ * Extracted refreshActiveConversation guard logic matching ChatConversationComponent.tsx.
  * Returns true if the refresh was performed, false if it was skipped.
  */
-async function refreshActiveSession(
+async function refreshActiveConversation(
   sessionId: string,
   context: RefreshGuardContext,
   fetchSession: () => Promise<AgentConversation | null>,
@@ -50,7 +50,7 @@ async function refreshActiveSession(
 }
 
 // ═══════════════════════════════════════════════════════════════
-describe("refreshActiveSession guard — generation source distinction", () => {
+describe("refreshActiveConversation guard — generation source distinction", () => {
   const SESSION_ID = "session-timer-test";
 
   const COMPLETED_SESSION = {
@@ -78,7 +78,7 @@ describe("refreshActiveSession guard — generation source distinction", () => {
     const fetchSession = vi.fn().mockResolvedValue(COMPLETED_SESSION);
     const applySessionData = vi.fn();
 
-    const wasRefreshed = await refreshActiveSession(
+    const wasRefreshed = await refreshActiveConversation(
       SESSION_ID,
       context,
       fetchSession,
@@ -100,7 +100,7 @@ describe("refreshActiveSession guard — generation source distinction", () => {
     const fetchSession = vi.fn().mockResolvedValue(COMPLETED_SESSION);
     const applySessionData = vi.fn();
 
-    const wasRefreshed = await refreshActiveSession(
+    const wasRefreshed = await refreshActiveConversation(
       SESSION_ID,
       context,
       fetchSession,
@@ -122,7 +122,7 @@ describe("refreshActiveSession guard — generation source distinction", () => {
     const fetchSession = vi.fn().mockResolvedValue(COMPLETED_SESSION);
     const applySessionData = vi.fn();
 
-    const wasRefreshed = await refreshActiveSession(
+    const wasRefreshed = await refreshActiveConversation(
       SESSION_ID,
       context,
       fetchSession,
@@ -149,7 +149,7 @@ describe("refreshActiveSession guard — generation source distinction", () => {
     const fetchSession = vi.fn().mockResolvedValue(differentSession);
     const applySessionData = vi.fn();
 
-    const wasRefreshed = await refreshActiveSession(
+    const wasRefreshed = await refreshActiveConversation(
       SESSION_ID,
       context,
       fetchSession,
@@ -170,7 +170,7 @@ describe("refreshActiveSession guard — generation source distinction", () => {
     const fetchSession = vi.fn().mockResolvedValue(COMPLETED_SESSION);
     const applySessionData = vi.fn();
 
-    const wasRefreshed = await refreshActiveSession(
+    const wasRefreshed = await refreshActiveConversation(
       SESSION_ID,
       context,
       fetchSession,
@@ -185,7 +185,7 @@ describe("refreshActiveSession guard — generation source distinction", () => {
 // ═══════════════════════════════════════════════════════════════
 describe("isClientDrivenGeneration ref lifecycle", () => {
   it("should track client-driven generation state correctly through send → complete flow", () => {
-    // Simulates the ref lifecycle in AgentComponent
+    // Simulates the ref lifecycle in ChatConversationComponent
     let isClientDrivenGeneration = false;
     let isGenerating = false;
 
@@ -235,7 +235,7 @@ describe("isClientDrivenGeneration ref lifecycle", () => {
     isClientDrivenGeneration = false; // Passive load
 
     // Step 3-4: Backend finishes, another change stream event arrives
-    // refreshActiveSession guard should NOT block because !isClientDrivenGeneration
+    // refreshActiveConversation guard should NOT block because !isClientDrivenGeneration
     const shouldSkipRefresh = isGenerating && isClientDrivenGeneration;
     expect(shouldSkipRefresh).toBe(false); // Should NOT skip
 

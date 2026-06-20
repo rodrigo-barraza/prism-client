@@ -649,7 +649,7 @@ describe("regression: large tool results", () => {
           width: 100,
           height: 55,
           asciiEmbedUrl:
-            "http://localhost:5590/compute/image/ascii/embed?id=abc",
+            "https://api.prism.rod.dev/compute/image/ascii/embed?id=abc",
         },
       },
       snapshot,
