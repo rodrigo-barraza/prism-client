@@ -74,6 +74,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   margin-block: 4px;
   border-radius: 8px;
   background: color-mix(in oklch, var(--cluster-accent-color) 2.5%, var(--background-base));
