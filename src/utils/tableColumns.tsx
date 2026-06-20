@@ -632,12 +632,12 @@ export const traceIdColumn = () => ({
   render: (row: TableRow) => (
     <a
       href={`/admin/chat?trace=${row.id as string}`}
-      className={styles['session-id-cell']}
+      className={styles['conversation-id-cell']}
       title={`View conversations for trace ${row.id as string}`}
       onClick={(event: React.MouseEvent) => event.stopPropagation()}
     >
-      <FolderOpen size={12} className={styles['session-icon']} />
-      <span className={styles['session-id-text']}>
+      <FolderOpen size={12} className={styles['conversation-icon']} />
+      <span className={styles['conversation-id-text']}>
         {(row.id as string).slice(0, 8)}
       </span>
     </a>
@@ -731,7 +731,7 @@ export const agentColumn = () => ({
     "The originating agent that made this request (e.g. CODING, LUPOS)",
   sortable: false,
   render: (row: TableRow) => {
-    // Normalize: sessions expose `agents` (array), requests expose `agent` (string)
+    // Normalize: conversations expose `agents` (array), requests expose `agent` (string)
     const agents =
       (row.agents as string[] | undefined) ??
       (row.agent ? [row.agent as string] : []);

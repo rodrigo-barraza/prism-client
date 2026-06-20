@@ -3,7 +3,7 @@ import {
   getUniqueModels,
   getUniqueProviders,
   getSessionCost,
-  getSessionTokenStats,
+  getConversationTokenStats,
   getUsedTools,
   getModalities,
   getSessionElapsedTime,
@@ -39,7 +39,7 @@ export default function useConversationStats(messages: Message[]) {
     liveProcessingPhase,
     liveTtftSamples,
     liveGenProgress,
-  } = useMemo(() => getSessionTokenStats(messages), [messages]);
+  } = useMemo(() => getConversationTokenStats(messages), [messages]);
   const usedTools = useMemo(() => getUsedTools(messages), [messages]);
   const modalities = useMemo(() => getModalities(messages), [messages]);
   const elapsedTime = useMemo(

@@ -3,8 +3,8 @@ import type { ToolSchema } from "../types/types";
 
 /**
  * useToolToggles — manages the disabled built-in tools state and toggle handlers.
- * State is ephemeral (per-session) — resets on page reload so stale corruption
- * from previous sessions cannot persist.
+ * State is ephemeral (per-conversation) — resets on page reload so stale corruption
+ * from previous conversations cannot persist.
  */
 export default function useToolToggles(
   builtInTools: ToolSchema[],

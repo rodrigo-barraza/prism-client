@@ -215,7 +215,7 @@
   color: var(--color-violet);
 }
 
-.trigger-session-threshold {
+.trigger-conversation-threshold {
   background: color-mix(in srgb, var(--color-warning) 12%, transparent);
   color: var(--color-warning);
 }

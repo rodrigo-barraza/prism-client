@@ -73,7 +73,7 @@ interface ProviderAggregation {
   models: string[];
   conversationCount: number;
   workflowCount: number;
-  sessionCount: number;
+  agentConversationCount: number;
 }
 
 interface ProviderAggregationComputed extends ProviderAggregation {
@@ -276,7 +276,7 @@ export default function DashboardPage() {
         models: [] as string[],
         conversationCount: 0,
         workflowCount: 0,
-        sessionCount: 0,
+        agentConversationCount: 0,
       };
     }
     const providerData = providerAgg[modelStat.provider];
@@ -289,7 +289,7 @@ export default function DashboardPage() {
     if (modelStat.model) providerData.models.push(modelStat.model);
     providerData.conversationCount += modelStat.conversationCount || 0;
     providerData.workflowCount += modelStat.workflowCount || 0;
-    providerData.sessionCount += modelStat.sessionCount || 0;
+    providerData.agentConversationCount += modelStat.agentConversationCount || 0;
     if (modelStat.avgTokensPerSec) {
       providerData.tpsSum += modelStat.avgTokensPerSec * modelStat.totalRequests;
       providerData.tpsCount += modelStat.totalRequests;
@@ -439,7 +439,7 @@ export default function DashboardPage() {
         <ResourceCardComponent
           href="/admin/traces"
           icon={FolderOpen}
-          count={loading ? "—" : formatNumber(stats?.sessionCount || 0)}
+          count={loading ? "—" : formatNumber(stats?.agentConversationCount || 0)}
           label="Sessions"
         />
         <ResourceCardComponent

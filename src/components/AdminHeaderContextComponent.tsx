@@ -24,8 +24,8 @@ export interface AdminHeaderContextType {
   setTitleBadge: (value: string | number | null) => void;
   dateRange: DateRange;
   setDateRange: (value: DateRange) => void;
-  sessionFilter: string | null;
-  setSessionFilter: (value: string | null) => void;
+  traceFilter: string | null;
+  setTraceFilter: (value: string | null) => void;
   agentFilter: string | null;
 }
 
@@ -36,8 +36,8 @@ const AdminHeaderContext = createContext<AdminHeaderContextType>({
   setTitleBadge: () => {},
   dateRange: { from: "", to: "" },
   setDateRange: () => {},
-  sessionFilter: null,
-  setSessionFilter: () => {},
+  traceFilter: null,
+  setTraceFilter: () => {},
   agentFilter: null,
 });
 
@@ -62,7 +62,7 @@ export function AdminHeaderProvider({
     from: "",
     to: "",
   });
-  const [sessionFilter, setSessionFilterState] = useState<string | null>(null);
+  const [traceFilter, setTraceFilterState] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -91,7 +91,7 @@ export function AdminHeaderProvider({
     setPreviousPathname(pathname);
     if (controls !== null) setControlsState(null);
     if (titleBadge !== null) setTitleBadgeState(null);
-    if (sessionFilter !== null) setSessionFilterState(null);
+    if (traceFilter !== null) setTraceFilterState(null);
   } else if (previousPathname !== pathname) {
     setPreviousPathname(pathname);
   }
@@ -116,8 +116,8 @@ export function AdminHeaderProvider({
     setDateRangeState(value);
   }, []);
 
-  const setSessionFilter = useCallback((value: string | null) => {
-    setSessionFilterState(value);
+  const setTraceFilter = useCallback((value: string | null) => {
+    setTraceFilterState(value);
   }, []);
 
   return (
@@ -129,8 +129,8 @@ export function AdminHeaderProvider({
         setTitleBadge,
         dateRange,
         setDateRange,
-        sessionFilter,
-        setSessionFilter,
+        traceFilter,
+        setTraceFilter,
         agentFilter,
       }}
     >

@@ -124,7 +124,7 @@ export default function TasksPanel({
     setSummary(null);
   }, [conversationId]);
 
-  // Single effect — fires on mount, refreshKey changes, and statusFilter/session changes
+  // Single effect — fires on mount, refreshKey changes, and statusFilter/conversation changes
   useEffect(() => {
     loadTasks();
   }, [loadTasks, refreshKey]);
@@ -371,7 +371,7 @@ export default function TasksPanel({
           <div className={styles['empty-subtitle']}>
             {statusFilter
               ? `No ${STATUS_CONFIG[statusFilter]?.label.toLowerCase()} tasks. Try clearing the filter.`
-              : "Tasks are created by the agent during coding sessions, or you can create them manually."}
+              : "Tasks are created by the agent during coding conversations, or you can create them manually."}
           </div>
         </div>
       )}

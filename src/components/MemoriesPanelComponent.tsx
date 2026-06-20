@@ -78,7 +78,7 @@ const TRIGGER_LABELS: Record<string, string> = {
 /**
  * MemoriesPanel — view and manage agent memories.
  *
- * Displays memories extracted from past coding sessions, organized by type
+ * Displays memories extracted from past coding conversations, organized by type
  * (user, feedback, project, reference). These are extracted automatically
  * by the SessionSummarizer and stored via AgentMemoryService.
  */

@@ -357,7 +357,7 @@ export default function WorkspaceTreePanelComponent({
               {unavailableWorkspace}
             </span>
             <span className={styles['unavailable-hint']}>
-              This session&apos;s workspace is not currently connected. Connect
+              This conversation&apos;s workspace is not currently connected. Connect
               the workspace or switch to an available one to browse files.
             </span>
           </div>

@@ -52,7 +52,7 @@
 
 /* ── Session ID cell ─────────────────────────────────── */
 
-.session-id-cell {
+.conversation-id-cell {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -64,18 +64,18 @@
     opacity: 0.8;
   }
 
-  &:hover .session-id-text {
+  &:hover .conversation-id-text {
     color: var(--accent-primary);
   }
 }
 
-.session-icon {
+.conversation-icon {
   flex-shrink: 0;
   color: var(--accent-primary);
   opacity: 0.7;
 }
 
-.session-id-text {
+.conversation-id-text {
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-xs);
   color: var(--text-muted);

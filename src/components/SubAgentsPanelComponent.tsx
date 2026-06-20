@@ -89,7 +89,7 @@ export default function SubAgentsPanel({
     }
   }, [conversationId, onCountChange]);
 
-  // Reset on session change
+  // Reset on conversation change
   useEffect(() => {
     hasData.current = false;
     setSubAgents([]);

@@ -40,7 +40,7 @@ export interface ThreePanelLayoutProps {
   leftTitle?: string;
   rightPanel?: React.ReactNode;
   rightTitle?: string;
-  sessionType?: string;
+  conversationType?: string;
   title?: string;
   hideHeader?: boolean;
 
@@ -63,7 +63,7 @@ export default function ThreePanelLayout({
   leftTitle = "Settings",
   rightPanel,
   rightTitle,
-  sessionType = "conversation",
+  conversationType = "conversation",
   title,
 
   headerMeta = null,
@@ -75,7 +75,7 @@ export default function ThreePanelLayout({
   className,
 }: ThreePanelLayoutProps) {
   const resolvedRightTitle =
-    rightTitle ?? (sessionType === "agent" ? "Sessions" : "Conversations");
+    rightTitle ?? (conversationType === "agent" ? "Conversations" : "Conversations");
   // Start with panels hidden to prevent FOUC on mobile; mount effect opens them on desktop
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(false);

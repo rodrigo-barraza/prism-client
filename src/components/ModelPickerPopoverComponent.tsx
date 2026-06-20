@@ -695,7 +695,7 @@ export default function ModelPickerPopoverComponent({
           icon={triggerIconElement}
           placeholder={displayLabel}
           disabled
-          triggerTooltip="Start a new session to switch models"
+          triggerTooltip="Start a new conversation to switch models"
         />
       </div>
     );

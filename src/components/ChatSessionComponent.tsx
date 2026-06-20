@@ -295,7 +295,7 @@ const ADMIN_NONE_AGENT = {
 };
 
 type UnifiedEntry = (Conversation | AgentConversation) & {
-  _source?: "conversation" | "agent_session";
+  _source?: "conversation" | "agent_conversation";
 };
 
 interface EmptyStateConfig {
@@ -354,7 +354,7 @@ interface PendingApproval {
   status: "pending" | "approved" | "rejected";
 }
 
-/** Snapshot of UI state stored when a background-generating session is paused. */
+/** Snapshot of UI state stored when a background-generating conversation is paused. */
 interface ConversationSnapshot {
   messages: ClientMessage[];
   title: string;
@@ -369,7 +369,7 @@ interface ConversationSnapshot {
   planProposal: { plan: string; steps?: string[]; status?: "pending" | "approved" | "rejected" | "executing" } | null;
   agenticProgress: { iteration: number; maxIterations: number } | null;
   settings: Record<string, unknown>;
-  backendSessionStats: ConversationStats | null;
+  backendConversationStats: ConversationStats | null;
   isBackendStatsStale?: boolean;
   workspaceRoot: string | null;
   disabledTools: string[];
@@ -413,7 +413,7 @@ interface ClientMessage extends Message {
   status?: string;
 }
 
-export interface ChatSessionComponentProps {
+export interface ChatConversationComponentProps {
   agentId?: string;
   agents?: Array<
     AgentPersona | (Partial<AgentPersona> & { id: string; name: string })
@@ -421,7 +421,7 @@ export interface ChatSessionComponentProps {
   initialFcEnabled?: boolean;
   initialThinkingEnabled?: boolean;
   initialModel?: string | null;
-  initialSessionId?: string | null;
+  initialConversationId?: string | null;
   initialTabKey?: string | null;
   initialTabBottomKey?: string | null;
   initialViewMode?: string | null;
@@ -435,17 +435,17 @@ export default function ChatSessionComponent({
   initialFcEnabled = false,
   initialThinkingEnabled = false,
   initialModel = null,
-  initialSessionId = null,
+  initialConversationId = null,
   initialTabKey = null,
   initialTabBottomKey = null,
   initialViewMode = null,
   isAdmin = false,
   initialId = null,
-}: ChatSessionComponentProps) {
+}: ChatConversationComponentProps) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef<boolean>(false);
-  // Track whether the URL session param has been consumed
-  const urlSessionAppliedRef = useRef<boolean>(false);
+  // Track whether the URL conversation param has been consumed
+  const urlConversationAppliedRef = useRef<boolean>(false);
 
   // -- Admin mode hooks (called unconditionally per Rules of Hooks) --
   const adminHeaderContext = useAdminHeader();
@@ -475,13 +475,13 @@ export default function ChatSessionComponent({
   const adminEntriesTotalRef = useRef<number>(0);
   const [adminError, setAdminError] = useState<string | null>(null);
   const [adminSelectedSource, setAdminSelectedSource] = useState<
-    "conversation" | "agent_session" | null
+    "conversation" | "agent_conversation" | null
   >(null);
   const [adminLoadingDetail, setAdminLoadingDetail] = useState(false);
   const [adminNewIds, setAdminNewIds] = useState<Set<string>>(new Set());
   const [adminGeneratingCount, setAdminGeneratingCount] = useState(0);
   const [adminChangeStreamsActive, setAdminChangeStreamsActive] = useState(false);
-  const [adminSessionSystemPrompt, setAdminSessionSystemPrompt] = useState<string | null>(null);
+  const [adminConversationSystemPrompt, setAdminConversationSystemPrompt] = useState<string | null>(null);
   const adminKnownIdsRef = useRef<Set<string> | null>(null);
   const adminLastFingerprintRef = useRef<string>("");
   const adminAutoSelectedRef = useRef<boolean>(!!initialId);
@@ -497,7 +497,7 @@ export default function ChatSessionComponent({
   const adminModelFilter = isAdmin ? (adminSearchParams.get("model") || null) : null;
   const adminAgentParam = isAdmin ? (adminSearchParams.get("agent") || null) : null;
   const adminDateRange = isAdmin ? adminHeaderContext.dateRange : { from: "", to: "" };
-  const adminSessionFilter = isAdmin ? adminHeaderContext.sessionFilter : null;
+  const adminTraceFilter = isAdmin ? adminHeaderContext.traceFilter : null;
   const adminActiveAgentId = adminAgentParam || "ALL";
   const adminIsAllMode = adminActiveAgentId === "ALL";
   const adminIsNoAgent = adminActiveAgentId === AGENT_IDS.NONE;
@@ -578,7 +578,7 @@ export default function ChatSessionComponent({
   const [memoriesRefreshKey, setMemoriesRefreshKey] = useState(0);
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0);
   const [workspaceTreeRefreshKey, setWorkspaceTreeRefreshKey] = useState(0);
-  // When a loaded session references a workspace that isn't currently connected,
+  // When a loaded conversation references a workspace that isn't currently connected,
   // store the path so the UI can show "workspace not available" instead of looping errors.
   const [unavailableWorkspace, setUnavailableWorkspace] = useState<
     string | null
@@ -596,7 +596,7 @@ export default function ChatSessionComponent({
       string,
       {
         timeoutId: NodeJS.Timeout;
-        session: AgentConversation | Conversation;
+        conversationEntry: AgentConversation | Conversation;
         wasActive: boolean;
       }
     >
@@ -852,7 +852,7 @@ export default function ChatSessionComponent({
     estimatedTokens?: number;
   } | null>(null); // { strategy, estimatedTokens }
   const [currentTurnStart, setCurrentTurnStart] = useState<number | null>(null); // Date.now() when user sends
-  const [backendSessionStats, setBackendSessionStats] =
+  const [backendConversationStats, setBackendConversationStats] =
     useState<ConversationStats | null>(null);
   const [isBackendStatsStale, setIsBackendStatsStale] = useState(false);
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
@@ -872,7 +872,7 @@ export default function ChatSessionComponent({
   ); // 'out' | 'in' | null
 
   // -- Adaptive pixel transition timing -----------------------
-  // Track session load durations via EMA to predict the "out" duration.
+  // Track conversation load durations via EMA to predict the "out" duration.
   // The "in" (reveal) phase is always a fixed 1000ms.
   const PIXEL_IN_DURATION = 1000;
   const PIXEL_DEFAULT_OUT = 3000;
@@ -886,7 +886,7 @@ export default function ChatSessionComponent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pixelTransition]); // intentional: re-read localStorage when a new transition starts
 
-  /** Record a completed session load and update the EMA in localStorage. */
+  /** Record a completed conversation load and update the EMA in localStorage. */
   const recordPixelLoadTime = useCallback((elapsed: number) => {
     const stored = localStorage.getItem(PIXEL_LS_KEY);
     const alpha = 0.3; // EMA smoothing — higher = more reactive to recent loads
@@ -908,7 +908,7 @@ export default function ChatSessionComponent({
 
   // -- Sticky auto-scroll -------------------------------------
   // Only auto-scroll when the user is near the bottom of the messages container.
-  // Re-engaged on send, session load, and new chat.
+  // Re-engaged on send, conversation load, and new chat.
   const isUserNearBottomRef = useRef<boolean>(true);
   const SCROLL_BOTTOM_THRESHOLD = 150;
 
@@ -921,7 +921,7 @@ export default function ChatSessionComponent({
   // Change-stream refresh is safe to skip only for client-driven generation.
   const isClientDrivenGenerationRef = useRef<boolean>(false);
   const previousModelRef = useRef<string | null>(null);
-  // Track which sessions have active background generation (for history indicator)
+  // Track which conversations have active background generation (for history indicator)
   const [generatingConversationIds, setGeneratingConversationIds] = useState(
     () => new Set(),
   );
@@ -933,7 +933,7 @@ export default function ChatSessionComponent({
     }
     return parentIds;
   }, [activeId, subAgentsCount]);
-  // Snapshot cache: stores UI state for sessions that are generating in the background
+  // Snapshot cache: stores UI state for conversations that are generating in the background
   // so the user can switch back without waiting for backend persistence.
   const backgroundConversationsRef = useRef<Map<string, ConversationSnapshot>>(new Map());
 
@@ -991,7 +991,7 @@ export default function ChatSessionComponent({
       return next;
     });
 
-    // Explicitly abort any running sub-agents for this session — belt-and-suspenders
+    // Explicitly abort any running sub-agents for this conversation — belt-and-suspenders
     // alongside the backend SSE disconnect handler
     // Direct Chat (NONE) has no sub-agents — skip.
     if (!isNoAgent) {
@@ -1099,8 +1099,8 @@ export default function ChatSessionComponent({
   }, [supportedInputModalities]);
 
   // -- Session binding: lock model/agent when a conversation is active --
-  // Once a session has messages, the user should not switch model or agent
-  // mid-conversation — the session data owns those values.
+  // Once a conversation has messages, the user should not switch model or agent
+  // mid-conversation — the conversation data owns those values.
   const isSessionLocked = useMemo(
     () => Boolean(activeId && messages.length > 0),
     [activeId, messages.length],
@@ -1356,8 +1356,8 @@ export default function ChatSessionComponent({
     }
   }, [config, settings.provider, settings.model, settings.thinkingEnabled]);
 
-  // Load session history — Direct Chat reads from conversations collection
-  const loadSessions = useCallback(async () => {
+  // Load conversation history — Direct Chat reads from conversations collection
+  const loadConversations = useCallback(async () => {
     try {
       setConversationsLoading(true);
       const result = isNoAgent
@@ -1365,24 +1365,24 @@ export default function ChatSessionComponent({
         : await PrismService.getAgentConversations(agentProject!, {
             agent: agentId,
           });
-      setConversations((previousSessions) => {
+      setConversations((previousConversations) => {
         // Preserve client-side live enrichments (_liveModelNames,
         // _liveModalities, providers) that the live-patch effect wrote
         // during active generation. The backend listing response may
         // not yet reflect these fields — without this merge, model
-        // badges vanish from history items after a session switch
+        // badges vanish from history items after a conversation switch
         // triggers a change-stream list refresh.
-        const liveEnrichmentsBySessionId = new Map<
+        const liveEnrichmentsByConversationId = new Map<
           string,
           Record<string, unknown>
         >();
-        for (const previousSession of previousSessions) {
+        for (const previousSession of previousConversations) {
           const enrichedSession = previousSession as unknown as Record<string, unknown>;
           if (
             enrichedSession._liveModelNames ||
             enrichedSession._liveModalities
           ) {
-            liveEnrichmentsBySessionId.set(
+            liveEnrichmentsByConversationId.set(
               previousSession.id || String(previousSession._id),
               {
                 _liveModelNames: enrichedSession._liveModelNames,
@@ -1392,29 +1392,29 @@ export default function ChatSessionComponent({
           }
         }
 
-        if (liveEnrichmentsBySessionId.size === 0) return result.items;
+        if (liveEnrichmentsByConversationId.size === 0) return result.items;
 
-        return result.items.map((session) => {
-          const sessionId = session.id || String(session._id);
-          const enrichment = liveEnrichmentsBySessionId.get(sessionId);
-          if (!enrichment) return session;
+        return result.items.map((entry) => {
+          const entryId = entry.id || String(entry._id);
+          const enrichment = liveEnrichmentsByConversationId.get(entryId);
+          if (!enrichment) return entry;
 
-          const backendSession = session as unknown as Record<string, unknown>;
+          const backendEntry = entry as unknown as Record<string, unknown>;
           const backendHasModelNames =
-            Array.isArray(backendSession.modelNames) &&
-            (backendSession.modelNames as string[]).length > 0;
+            Array.isArray(backendEntry.modelNames) &&
+            (backendEntry.modelNames as string[]).length > 0;
 
           // If the backend already has authoritative modelNames,
           // the client-side enrichment is no longer needed.
-          if (backendHasModelNames) return session;
+          if (backendHasModelNames) return entry;
 
-          return { ...session, ...enrichment } as typeof session;
+          return { ...entry, ...enrichment } as typeof entry;
         });
       });
       conversationsCursorRef.current = result.nextCursor;
       setConversationsHasMore(result.hasMore);
     } catch (error: unknown) {
-      console.error("Failed to load sessions:", error);
+      console.error("Failed to load conversations:", error);
     } finally {
       setConversationsLoading(false);
     }
@@ -1431,40 +1431,40 @@ export default function ChatSessionComponent({
       const result = isNoAgent
         ? await PrismService.getConversations(fetchOptions)
         : await PrismService.getAgentConversations(agentProject!, fetchOptions);
-      setConversations((previousSessions) => [
-        ...previousSessions,
+      setConversations((previousConversations) => [
+        ...previousConversations,
         ...result.items,
       ]);
       conversationsCursorRef.current = result.nextCursor;
       setConversationsHasMore(result.hasMore);
     } catch (error: unknown) {
-      console.error("Failed to load more sessions:", error);
+      console.error("Failed to load more conversations:", error);
     } finally {
       setConversationsLoading(false);
     }
   }, [agentProject, isNoAgent, conversationsLoading]);
 
   useEffect(() => {
-    if (!isAdmin) loadSessions();
-  }, [loadSessions, isAdmin]);
+    if (!isAdmin) loadConversations();
+  }, [loadConversations, isAdmin]);
 
-  // -- Auto-load session from URL ?session= param ----------------
-  // Runs once on mount. Fetches the full session and applies it.
+  // -- Auto-load conversation from URL ?conversation= param ----------------
+  // Runs once on mount. Fetches the full conversation and applies it.
   // Uses a ref guard to prevent double-loading on StrictMode re-mounts.
   useEffect(() => {
-    if (isAdmin || !initialSessionId || urlSessionAppliedRef.current) return;
-    urlSessionAppliedRef.current = true;
+    if (isAdmin || !initialConversationId || urlConversationAppliedRef.current) return;
+    urlConversationAppliedRef.current = true;
 
     (async () => {
       try {
         const full = isNoAgent
-          ? await PrismService.getConversation(initialSessionId)
-          : await PrismService.getAgentConversation(initialSessionId, agentProject!);
+          ? await PrismService.getConversation(initialConversationId)
+          : await PrismService.getAgentConversation(initialConversationId, agentProject!);
         if (!full) return;
 
         const displayMessages = prepareDisplayMessages(full.messages || []);
         console.debug(
-          `[URL session load] id=${initialSessionId}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`,
+          `[URL conversation load] id=${initialConversationId}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`,
         );
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
@@ -1513,11 +1513,11 @@ export default function ChatSessionComponent({
           }
           return nextSettings;
         });
-        setBackendSessionStats(full.stats || null);
+        setBackendConversationStats(full.stats || null);
         setIsBackendStatsStale(false);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
       } catch (error: unknown) {
-        console.error("Failed to preload session from URL:", error);
+        console.error("Failed to preload conversation from URL:", error);
       }
     })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1536,30 +1536,30 @@ export default function ChatSessionComponent({
       .catch(console.error);
   }, [isAdmin]);
 
-  // Admin: determine if the selected entry is an agent session
-  const adminIsSelectedAgent = adminSelectedSource === "agent_session";
-  const adminTargetAgentId = adminIsSelectedAgent
-    ? (conversations.find((session) => session.id === activeId) as UnifiedEntry)?.agent
+  // Admin: determine if the selected entry is an agent conversation
+  const adminIsSelectedAgentConversation = adminSelectedSource === "agent_conversation";
+  const adminTargetAgentId = adminIsSelectedAgentConversation
+    ? (conversations.find((entry) => entry.id === activeId) as UnifiedEntry)?.agent
     : (adminIsAgentMode ? adminActiveAgentId : null);
-  const adminTargetProject = adminIsSelectedAgent
-    ? ((conversations.find((session) => session.id === activeId) as UnifiedEntry)?.project || 
-       (conversations.find((session) => session.id === activeId) as UnifiedEntry)?.agent || 
+  const adminTargetProject = adminIsSelectedAgentConversation
+    ? ((conversations.find((entry) => entry.id === activeId) as UnifiedEntry)?.project || 
+       (conversations.find((entry) => entry.id === activeId) as UnifiedEntry)?.agent || 
        PROJECT_AGENT)
     : (adminIsAgentMode ? PROJECT_AGENT : null);
 
-  // Admin: extract session-time tool snapshot from conversation settings
-  const adminSessionToolConfig = useMemo(() => {
+  // Admin: extract conversation-time tool snapshot from conversation settings
+  const adminConversationToolConfig = useMemo(() => {
     if (!isAdmin || !activeId) return null;
-    const selectedEntry = conversations.find((session) => session.id === activeId) as UnifiedEntry | undefined;
+    const selectedEntry = conversations.find((entry) => entry.id === activeId) as UnifiedEntry | undefined;
     if (!selectedEntry) return null;
-    const sessionSettings = (selectedEntry as Conversation)?.settings as Record<string, unknown> | undefined;
-    return sessionSettings?.toolConfig as
+    const conversationSettings = (selectedEntry as Conversation)?.settings as Record<string, unknown> | undefined;
+    return conversationSettings?.toolConfig as
       | { availableTools?: string[]; enabledTools?: string[]; disabledTools?: string[] }
       | undefined
       ?? null;
   }, [isAdmin, activeId, conversations]);
 
-  // Admin: load agent-specific data (tools, skills, memories, rules) for selected session
+  // Admin: load agent-specific data (tools, skills, memories, rules) for selected conversation
   useEffect(() => {
     if (!isAdmin) return;
     if (!adminTargetAgentId) {
@@ -1576,15 +1576,15 @@ export default function ChatSessionComponent({
       .then((loadedSkills: Skill[]) => setSkills(loadedSkills))
       .catch(() => {});
 
-    const sessionAvailableToolNames = adminSessionToolConfig?.availableTools;
-    if (sessionAvailableToolNames && sessionAvailableToolNames.length > 0) {
-      const availableToolNameSet = new Set(sessionAvailableToolNames);
+    const conversationAvailableToolNames = adminConversationToolConfig?.availableTools;
+    if (conversationAvailableToolNames && conversationAvailableToolNames.length > 0) {
+      const availableToolNameSet = new Set(conversationAvailableToolNames);
       PrismService.getBuiltInToolSchemas()
         .then((allSchemas: ToolSchema[]) => {
-          const sessionFilteredTools = allSchemas.filter(
+          const conversationFilteredTools = allSchemas.filter(
             (tool) => availableToolNameSet.has(tool.name),
           );
-          setBuiltInTools(sessionFilteredTools);
+          setBuiltInTools(conversationFilteredTools);
         })
         .catch(() => {});
     } else {
@@ -1599,9 +1599,9 @@ export default function ChatSessionComponent({
     PrismService.getRules(adminTargetAgentId)
       .then((rulesList: Rule[]) => setRules(rulesList))
       .catch(() => {});
-  }, [isAdmin, adminTargetAgentId, adminTargetProject, adminSessionToolConfig]);
+  }, [isAdmin, adminTargetAgentId, adminTargetProject, adminConversationToolConfig]);
 
-  // Admin: load entries (conversations / agent sessions / both)
+  // Admin: load entries (conversations / agent conversations / both)
   const adminLoadEntries = useCallback(async () => {
     if (!isAdmin) return;
     try {
@@ -1611,8 +1611,8 @@ export default function ChatSessionComponent({
         sort: "updatedAt",
         order: "desc",
       };
-      if (adminSessionFilter) {
-        params.trace = adminSessionFilter;
+      if (adminTraceFilter) {
+        params.trace = adminTraceFilter;
       } else {
         Object.assign(params, buildDateRangeParams(adminDateRange));
         if (adminProjectFilter) params.project = adminProjectFilter;
@@ -1632,7 +1632,7 @@ export default function ChatSessionComponent({
           ...conversation,
           _source:
             conversation.type === "agent"
-              ? ("agent_session" as const)
+              ? ("agent_conversation" as const)
               : ("conversation" as const),
         }),
       );
@@ -1689,7 +1689,7 @@ export default function ChatSessionComponent({
     adminProviderFilter,
     adminModelFilter,
     adminDateRange,
-    adminSessionFilter,
+    adminTraceFilter,
     adminActiveAgentId,
     adminIsNoAgent,
     adminIsAgentMode,
@@ -1707,8 +1707,8 @@ export default function ChatSessionComponent({
         sort: "updatedAt",
         order: "desc",
       };
-      if (adminSessionFilter) {
-        params.trace = adminSessionFilter;
+      if (adminTraceFilter) {
+        params.trace = adminTraceFilter;
       } else {
         Object.assign(params, buildDateRangeParams(adminDateRange));
         if (adminProjectFilter) params.project = adminProjectFilter;
@@ -1728,7 +1728,7 @@ export default function ChatSessionComponent({
           ...conversation,
           _source:
             conversation.type === "agent"
-              ? ("agent_session" as const)
+              ? ("agent_conversation" as const)
               : ("conversation" as const),
         }),
       );
@@ -1747,7 +1747,7 @@ export default function ChatSessionComponent({
     isAdmin,
     adminEntriesLoading,
     adminEntriesHasMore,
-    adminSessionFilter,
+    adminTraceFilter,
     adminDateRange,
     adminProjectFilter,
     adminProviderFilter,
@@ -1760,7 +1760,7 @@ export default function ChatSessionComponent({
 
   // Admin: select an entry
   const adminSelectEntry = useCallback(
-    async (id: string, source: "conversation" | "agent_session" = "conversation") => {
+    async (id: string, source: "conversation" | "agent_conversation" = "conversation") => {
       if (!isAdmin || id === activeId) return;
       setActiveId(id);
       setAdminSelectedSource(source);
@@ -1768,7 +1768,7 @@ export default function ChatSessionComponent({
       // Update URL for deep-linking
       const params = new URLSearchParams();
       if (adminAgentParam) params.set("agent", adminAgentParam);
-      if (adminSessionFilter) params.set("trace", adminSessionFilter);
+      if (adminTraceFilter) params.set("trace", adminTraceFilter);
       if (adminProjectFilter) params.set("project", adminProjectFilter);
       if (adminProviderFilter) params.set("provider", adminProviderFilter);
       if (adminModelFilter) params.set("model", adminModelFilter);
@@ -1790,7 +1790,7 @@ export default function ChatSessionComponent({
       setAdminLoadingDetail(true);
       try {
         const detail =
-          source === "agent_session"
+          source === "agent_conversation"
             ? await IrisService.getAgentConversation(id)
             : await IrisService.getConversation(id);
         const fullEntry = detail as UnifiedEntry;
@@ -1798,12 +1798,12 @@ export default function ChatSessionComponent({
         setMessages(displayMessages);
         setConversationId(fullEntry.id || generateUUID());
         setTitle(fullEntry.title || "Untitled");
-        setBackendSessionStats(fullEntry.stats || null);
+        setBackendConversationStats(fullEntry.stats || null);
         setSettings((previousSettings) => {
           const nextSettings = { ...previousSettings };
-          const sessionSettings = (fullEntry as Conversation)?.settings as Partial<PrismSettings> | undefined;
-          if (sessionSettings?.provider) nextSettings.provider = sessionSettings.provider;
-          if (sessionSettings?.model) nextSettings.model = sessionSettings.model;
+          const conversationSettings = (fullEntry as Conversation)?.settings as Partial<PrismSettings> | undefined;
+          if (conversationSettings?.provider) nextSettings.provider = conversationSettings.provider;
+          if (conversationSettings?.model) nextSettings.model = conversationSettings.model;
           if (fullEntry.systemPrompt != null) nextSettings.systemPrompt = fullEntry.systemPrompt;
 
           // Fallback: extract from last assistant message
@@ -1821,11 +1821,11 @@ export default function ChatSessionComponent({
           return nextSettings;
         });
 
-        // Update sidebar sessions with the full entry
-        setConversations((previousSessions) => {
-          const exists = previousSessions.some((session) => session.id === id);
-          if (exists) return previousSessions;
-          return [fullEntry as AgentConversation | Conversation, ...previousSessions];
+        // Update sidebar conversations with the full entry
+        setConversations((previousConversations) => {
+          const exists = previousConversations.some((entry) => entry.id === id);
+          if (exists) return previousConversations;
+          return [fullEntry as AgentConversation | Conversation, ...previousConversations];
         });
       } catch {
         setMessages([]);
@@ -1833,21 +1833,21 @@ export default function ChatSessionComponent({
         setAdminLoadingDetail(false);
       }
     },
-    [isAdmin, activeId, adminAgentParam, adminSessionFilter, adminProjectFilter, adminProviderFilter, adminModelFilter],
+    [isAdmin, activeId, adminAgentParam, adminTraceFilter, adminProjectFilter, adminProviderFilter, adminModelFilter],
   );
 
   // Admin: refresh selected entry
   const adminRefreshSelectedEntry = useCallback(
-    async (id: string, source: "conversation" | "agent_session" | null) => {
+    async (id: string, source: "conversation" | "agent_conversation" | null) => {
       if (!isAdmin || !id) return;
       try {
         const full =
-          source === "agent_session"
+          source === "agent_conversation"
             ? ((await IrisService.getAgentConversation(id)) as UnifiedEntry)
             : ((await IrisService.getConversation(id)) as UnifiedEntry);
         const displayMessages = prepareDisplayMessages(full.messages || []);
         setMessages(displayMessages);
-        setBackendSessionStats(full.stats || null);
+        setBackendConversationStats(full.stats || null);
       } catch (error: unknown) {
         console.error("Failed to refresh selected entry:", error);
       }
@@ -1862,15 +1862,15 @@ export default function ChatSessionComponent({
     IrisService.getConversation(initialId)
       .then((conversation: unknown) => {
         const conversationEntry = conversation as UnifiedEntry & { type?: string };
-        const source = conversationEntry.type === "agent" ? "agent_session" : "conversation";
+        const source = conversationEntry.type === "agent" ? "agent_conversation" : "conversation";
         setAdminSelectedSource(source);
         setActiveId(conversationEntry.id || initialId);
         setConversationId(conversationEntry.id || generateUUID());
         setTitle(conversationEntry.title || "Untitled");
         const displayMessages = prepareDisplayMessages(conversationEntry.messages || []);
         setMessages(displayMessages);
-        setBackendSessionStats(conversationEntry.stats || null);
-        setConversations((previousSessions) => [conversationEntry as AgentConversation | Conversation, ...previousSessions]);
+        setBackendConversationStats(conversationEntry.stats || null);
+        setConversations((previousConversations) => [conversationEntry as AgentConversation | Conversation, ...previousConversations]);
       })
       .catch(() => {
         setMessages([]);
@@ -1878,11 +1878,11 @@ export default function ChatSessionComponent({
       .finally(() => setAdminLoadingDetail(false));
   }, [isAdmin, initialId]);
 
-  // Admin: lazy load system prompt for agent sessions
+  // Admin: lazy load system prompt for agent conversations
   useEffect(() => {
     if (!isAdmin) return;
-    setAdminSessionSystemPrompt(null);
-    if (!activeId || adminSelectedSource !== "agent_session") return;
+    setAdminConversationSystemPrompt(null);
+    if (!activeId || adminSelectedSource !== "agent_conversation") return;
 
     let cancelled = false;
     IrisService.getRequests({ conversationId: activeId, limit: 1 })
@@ -1896,7 +1896,7 @@ export default function ChatSessionComponent({
           (message: Message) => message.role === "system",
         );
         if (systemMessage?.content) {
-          setAdminSessionSystemPrompt(systemMessage.content as string);
+          setAdminConversationSystemPrompt(systemMessage.content as string);
         }
       })
       .catch(console.error);
@@ -1916,17 +1916,17 @@ export default function ChatSessionComponent({
 
 
 
-  // Admin: backend session stats for agent sessions
+  // Admin: backend conversation stats for agent conversations
   useEffect(() => {
     if (!isAdmin) return;
     if (!activeId) {
-      setBackendSessionStats(null);
+      setBackendConversationStats(null);
       return;
     }
-    if (adminSelectedSource === "agent_session") {
+    if (adminSelectedSource === "agent_conversation") {
       IrisService.getConversationRunStats(activeId)
-        .then((stats) => setBackendSessionStats(stats))
-        .catch(() => setBackendSessionStats(null));
+        .then((stats) => setBackendConversationStats(stats))
+        .catch(() => setBackendConversationStats(null));
 
       ToolsApiService.getAllAgenticTasks({ conversationId: activeId })
         .then((result) => setTasksCount(result.summary?.total || (result.tasks || []).length))
@@ -1936,7 +1936,7 @@ export default function ChatSessionComponent({
         .then((result) => setSubAgentsCount((result.subAgents || []).length))
         .catch(() => setSubAgentsCount(0));
     } else {
-      setBackendSessionStats(null);
+      setBackendConversationStats(null);
       setTasksCount(0);
       setSubAgentsCount(0);
     }
@@ -2034,7 +2034,7 @@ export default function ChatSessionComponent({
           options={adminProjectOptions}
           onChange={adminHandleProjectChange}
           placeholder="All Projects"
-          disabled={!!adminSessionFilter}
+          disabled={!!adminTraceFilter}
         />
         {adminGeneratingCount > 0 && (
           <span className={`${adminPageStyles['stat-pill']} ${adminPageStyles['stat-pill-generating']}`}>
@@ -2052,7 +2052,7 @@ export default function ChatSessionComponent({
     adminHandleProjectChange,
     adminGeneratingCount,
     adminError,
-    adminSessionFilter,
+    adminTraceFilter,
   ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Admin: title badge and cleanup
@@ -2267,7 +2267,7 @@ export default function ChatSessionComponent({
     settings.agents?.workspaceEnabled,
   ]);
 
-  // -- Eager-fetch tab badge counts (fires on mount / session change) --
+  // -- Eager-fetch tab badge counts (fires on mount / conversation change) --
 
   useEffect(() => {
     if (isAdmin) return;
@@ -2316,17 +2316,17 @@ export default function ChatSessionComponent({
     liveGenProgress,
   } = useConversationStats(messages);
 
-  // -- Live-patch sidebar session metadata ------------------
-  // Keep the active session's entry in `sessions[]` in sync with the
+  // -- Live-patch sidebar conversation metadata ------------------
+  // Keep the active conversation's entry in `conversations[]` in sync with the
   // live stats derived from messages so the HistoryPanel badges
   // (model, provider, modalities, cost) update in real-time during
-  // generation — no full loadSessions() round-trip needed.
+  // generation — no full loadConversations() round-trip needed.
   useEffect(() => {
     if (!activeId || messages.length === 0) return;
-    setConversations((previousSessions) => {
-      const index = previousSessions.findIndex((s) => s.id === activeId);
-      if (index === -1) return previousSessions;
-      const existing = previousSessions[index] as unknown as Record<
+    setConversations((previousConversations) => {
+      const index = previousConversations.findIndex((s) => s.id === activeId);
+      if (index === -1) return previousConversations;
+      const existing = previousConversations[index] as unknown as Record<
         string,
         unknown
       >;
@@ -2341,19 +2341,19 @@ export default function ChatSessionComponent({
             lastMessage._intermediateEstimatedCost ||
             0
           : 0;
-      const resolvedCost = backendSessionStats
-        ? (backendSessionStats.totalCost || 0) +
+      const resolvedCost = backendConversationStats
+        ? (backendConversationStats.totalCost || 0) +
           (bgUsage?.cost || 0) +
           activeMessageCost
         : isNoAgent
           ? Math.max((existing.totalCost as number) || 0, totalCost)
           : totalCost;
       const resolvedModalities: Record<string, number> =
-        (backendSessionStats?.modalities ?? modalities) as Record<
+        (backendConversationStats?.modalities ?? modalities) as Record<
           string,
           number
         >;
-      const resolvedToolCounts = backendSessionStats?.toolCounts ?? undefined;
+      const resolvedToolCounts = backendConversationStats?.toolCounts ?? undefined;
       const resolvedProviders =
         uniqueProviders.length > 0 ? uniqueProviders : existing.providers;
       const resolvedModels =
@@ -2375,9 +2375,9 @@ export default function ChatSessionComponent({
           JSON.stringify(resolvedModels) &&
         JSON.stringify(existing.providers) === JSON.stringify(resolvedProviders)
       ) {
-        return previousSessions;
+        return previousConversations;
       }
-      const updated = [...previousSessions] as unknown as Record<
+      const updated = [...previousConversations] as unknown as Record<
         string,
         unknown
       >[];
@@ -2402,46 +2402,46 @@ export default function ChatSessionComponent({
     uniqueModels,
     uniqueProviders,
     totalCost,
-    backendSessionStats,
+    backendConversationStats,
     messages.length,
     isBackendStatsStale,
   ]);
 
-  // -- Fetch backend-aggregate session stats ----------------
-  const fetchSessionStats = useCallback(
-    (sessionId: string) => {
-      if (!sessionId) return;
+  // -- Fetch backend-aggregate conversation stats ----------------
+  const fetchConversationStats = useCallback(
+    (targetConversationId: string) => {
+      if (!targetConversationId) return;
       // Direct Chat: re-fetch the conversation to get the enriched totalCost
       // from the requests collection (background ops like memory extraction,
       // embedding log costs there but don't update the conversation doc).
       if (isNoAgent) {
         setRequestsRefreshKey((previousKey) => previousKey + 1);
         const refetchDirectCost = () =>
-          PrismService.getConversation(sessionId)
+          PrismService.getConversation(targetConversationId)
             .then((conversation) => {
               if (conversation?.totalCost != null) {
-                setConversations((previousSessions) => {
-                  const index = previousSessions.findIndex(
-                    (session) => session.id === sessionId,
+                setConversations((previousConversations) => {
+                  const index = previousConversations.findIndex(
+                    (entry) => entry.id === targetConversationId,
                   );
-                  if (index === -1) return previousSessions;
-                  const existing = previousSessions[index] as unknown as Record<
+                  if (index === -1) return previousConversations;
+                  const existing = previousConversations[index] as unknown as Record<
                     string,
                     unknown
                   >;
                   if (
                     existing.totalCost === conversation.totalCost
                   ) {
-                    return previousSessions;
+                    return previousConversations;
                   }
                   const updated = [
-                    ...previousSessions,
+                    ...previousConversations,
                   ] as unknown as Record<string, unknown>[];
                   updated[index] = {
                     ...existing,
                     totalCost: conversation.totalCost,
                   };
-                  return updated as unknown as typeof previousSessions;
+                  return updated as unknown as typeof previousConversations;
                 });
               }
             })
@@ -2457,10 +2457,10 @@ export default function ChatSessionComponent({
       // second at 8s catches background requests (memory extraction,
       // embedding) that take longer to flush to the DB.
       const refetch = () =>
-        PrismService.getAgentConversation(sessionId, agentProject!)
-          .then((session) => {
-            if (session?.stats) {
-              setBackendSessionStats(session.stats);
+        PrismService.getAgentConversation(targetConversationId, agentProject!)
+          .then((fetchedConversation) => {
+            if (fetchedConversation?.stats) {
+              setBackendConversationStats(fetchedConversation.stats);
               setIsBackendStatsStale(false);
               setRequestsRefreshKey((k) => k + 1);
               // Clear incremental background usage from the message —
@@ -3017,10 +3017,10 @@ export default function ChatSessionComponent({
 
   // -- Orchestration loop ---------------------------------------
   const runOrchestrationLoop = useCallback(
-    async (sessionMessages: ClientMessage[], resolvedTitle: string) => {
-      const currentMessages = [...sessionMessages];
-      // Capture which session this generation belongs to — if the user
-      // switches sessions, streaming callbacks will skip UI updates.
+    async (conversationMessages: ClientMessage[], resolvedTitle: string) => {
+      const currentMessages = [...conversationMessages];
+      // Capture which conversation this generation belongs to — if the user
+      // switches conversations, streaming callbacks will skip UI updates.
       const genSessionId = conversationIdRef.current;
 
       await new Promise<void>((resolve, reject) => {
@@ -3100,7 +3100,7 @@ export default function ChatSessionComponent({
               ...(settings.thinkingLevel && {
                 thinkingLevel: settings.thinkingLevel,
               }),
-              // Local models need enough context for MCP tool schemas + session
+              // Local models need enough context for MCP tool schemas + conversation
               minContextLength: 120_000,
               project: agentProject,
               conversationId,
@@ -3150,7 +3150,7 @@ export default function ChatSessionComponent({
             ...(segment.toolIds ? { toolIds: [...segment.toolIds] } : {}),
           }));
 
-        // Guard: returns true when the user switched sessions — skip all UI updates
+        // Guard: returns true when the user switched conversations — skip all UI updates
         // but let the stream continue (the backend saves independently).
         const isStale = () => conversationIdRef.current !== genSessionId;
 
@@ -3167,7 +3167,7 @@ export default function ChatSessionComponent({
             streamedText += content;
             // Backend sends authoritative running token count on each chunk
             burstTokens++;
-            // Skip UI updates if user switched sessions
+            // Skip UI updates if user switched conversations
             if (isStale()) return;
             const now = performance.now();
             if (!firstChunkTime)
@@ -3880,7 +3880,7 @@ export default function ChatSessionComponent({
                 return updated;
               });
             } else if (statusData?.message === STATUS_MESSAGES.GENERATION_PROGRESS) {
-              // Backend-computed metrics from SessionGenerationTracker —
+              // Backend-computed metrics from ConversationGenerationTracker —
               // authoritative aggregate across orchestrator, sub-agents,
               // and tool sub-requests.
               setMessages((previousMessages) => {
@@ -4275,7 +4275,7 @@ export default function ChatSessionComponent({
               // Background operations (memory extraction, consolidation, embeddings,
               // compaction) emit incremental usage_update events. Accumulate them
               // separately so the token badge grows smoothly instead of jumping
-              // when fetchSessionStats discovers them all at once.
+              // when fetchConversationStats discovers them all at once.
               const op = (data.operation as string) || "";
               const isBackground =
                 op.startsWith("memory:") ||
@@ -4305,7 +4305,7 @@ export default function ChatSessionComponent({
                 };
               } else if (!last.usage) {
                 // Authoritative per-iteration usage from the backend —
-                // stored on the message so getSessionTokenStats can use it
+                // stored on the message so getConversationTokenStats can use it
                 // as a middle priority between streaming estimate and final done.
                 updated[updated.length - 1] = {
                   ...last,
@@ -4359,7 +4359,7 @@ export default function ChatSessionComponent({
               });
               setCurrentTurnStart(null);
               setPendingUserQuestion(null);
-              fetchSessionStats(conversationId);
+              fetchConversationStats(conversationId);
             }
             // SessionSummarizer runs async after SSE stream closes —
             // poll every 2s for up to 20s until new memories are detected
@@ -4424,7 +4424,7 @@ export default function ChatSessionComponent({
       agentId,
       isNoAgent,
       agentProject,
-      fetchSessionStats,
+      fetchConversationStats,
       markTabNew,
       switchTabTemporarily,
       rules,
@@ -4489,10 +4489,10 @@ export default function ChatSessionComponent({
       isClientDrivenGenerationRef.current = true;
       // Re-engage sticky scroll when the user sends a message
       isUserNearBottomRef.current = true;
-      // Track this session as generating (for history indicator even after switching away)
+      // Track this conversation as generating (for history indicator even after switching away)
       const genId = conversationIdRef.current;
       console.debug(
-        `[handleSend] starting generation, sessionId=${genId}, currentMessages=${messagesRef.current.length}`,
+        `[handleSend] starting generation, conversationId=${genId}, currentMessages=${messagesRef.current.length}`,
       );
       setGeneratingConversationIds((previousGeneratingSessionIds) =>
         new Set(previousGeneratingSessionIds).add(genId),
@@ -4515,7 +4515,7 @@ export default function ChatSessionComponent({
         resolvedTitle =
           titleText.length > 60 ? titleText.slice(0, 57) + "..." : titleText;
         setTitle(resolvedTitle);
-        // Optimistic: add the session to the history list immediately
+        // Optimistic: add the conversation to the history list immediately
         const now = new Date().toISOString();
         setActiveId(conversationId);
         window.dispatchEvent(
@@ -4523,14 +4523,14 @@ export default function ChatSessionComponent({
             detail: { conversationId: conversationId },
           }),
         );
-        setConversations((previousSessions) => [
+        setConversations((previousConversations) => [
           {
             id: conversationId,
             title: resolvedTitle,
             updatedAt: now,
             createdAt: now,
           } as AgentConversation,
-          ...previousSessions,
+          ...previousConversations,
         ]);
       }
 
@@ -4606,7 +4606,7 @@ export default function ChatSessionComponent({
         console.debug(
           `[handleSend] runOrchestrationLoop resolved, proceeding to post-stream refresh`,
         );
-        loadSessions();
+        loadConversations();
 
         // Refresh conversation messages from database to sync the user's message
         // with the server-side injected system context, enabling Clean/Raw View toggles.
@@ -4625,7 +4625,7 @@ export default function ChatSessionComponent({
                 );
             console.debug(
               `[PostStream refresh] attempt=${attempt} full?.messages?.length=${full?.messages?.length},`,
-              `sessionMatch=${conversationIdRef.current === genId}`,
+              `conversationMatch=${conversationIdRef.current === genId}`,
             );
             if (full && full.messages && conversationIdRef.current === genId) {
               const displayMessages = prepareDisplayMessages(full.messages);
@@ -4695,7 +4695,7 @@ export default function ChatSessionComponent({
             }
           } catch (error) {
             console.error(
-              "Failed to refresh session messages after done:",
+              "Failed to refresh conversation messages after done:",
               error,
             );
           }
@@ -4715,15 +4715,15 @@ export default function ChatSessionComponent({
         console.debug(
           `[handleSend finally] genId=${genId}, currentSessionId=${conversationIdRef.current}, match=${conversationIdRef.current === genId}`,
         );
-        // Remove this session from the generating set
+        // Remove this conversation from the generating set
         setGeneratingConversationIds((previousGeneratingSessionIds) => {
           const next = new Set(previousGeneratingSessionIds);
           next.delete(genId);
           return next;
         });
-        // Clean up the background snapshot — session is now persisted to backend
+        // Clean up the background snapshot — conversation is now persisted to backend
         backgroundConversationsRef.current.delete(genId);
-        // Only update local UI state if this session is still displayed
+        // Only update local UI state if this conversation is still displayed
         if (conversationIdRef.current === genId) {
           setIsGenerating(false);
           SoundService.playGenerationEnd();
@@ -4747,13 +4747,13 @@ export default function ChatSessionComponent({
           });
         } else {
           console.debug(
-            `[handleSend finally] session switched away, skipping UI updates`,
+            `[handleSend finally] conversation switched away, skipping UI updates`,
           );
           // Session was switched away — just clear the abort ref
           abortRef.current = null;
         }
-        // Reload sessions list regardless (title/metadata may have changed)
-        loadSessions();
+        // Reload conversations list regardless (title/metadata may have changed)
+        loadConversations();
       }
     },
     [
@@ -4762,7 +4762,7 @@ export default function ChatSessionComponent({
       isNoAgent,
       setTextareaValue,
       runOrchestrationLoop,
-      loadSessions,
+      loadConversations,
     ],
   );
 
@@ -4873,14 +4873,14 @@ export default function ChatSessionComponent({
     setTraceId(null);
     setActiveId(null);
     setTitle(isNoAgent ? "Agentless Chat" : "Agent");
-    setBackendSessionStats(null);
+    setBackendConversationStats(null);
     setIsBackendStatsStale(false);
     setUnavailableWorkspace(null);
     tokenHwmRef.current = { input: 0, output: 0, total: 0 };
     isUserNearBottomRef.current = true;
     textareaRef.current?.focus();
 
-    // New sessions start with all configurable tools disabled;
+    // New conversations start with all configurable tools disabled;
     // core tools respect coreToolsLocked (locked on = stay enabled).
     resetToAllDisabled();
 
@@ -4939,7 +4939,7 @@ export default function ChatSessionComponent({
       };
     });
 
-    // Clear session from URL
+    // Clear conversation from URL
     window.dispatchEvent(
       new CustomEvent(EV_CONVERSATION_CHANGE, {
         detail: { conversationId: null },
@@ -4948,7 +4948,7 @@ export default function ChatSessionComponent({
   }, [isNoAgent, config, resetToAllDisabled]);
 
   const handleNewChat = useCallback(() => {
-    // If generating, snapshot the current session so user can switch back to it
+    // If generating, snapshot the current conversation so user can switch back to it
     if (isGenerating) {
       const currentId = conversationIdRef.current;
       backgroundConversationsRef.current.set(currentId, {
@@ -4962,18 +4962,18 @@ export default function ChatSessionComponent({
         planProposal,
         agenticProgress,
         settings: { ...settings },
-        backendSessionStats,
+        backendConversationStats,
         workspaceRoot: currentWorkspace?.path || null,
         disabledTools: [...disabledTools],
       });
       setIsGenerating(false);
     }
-    // If already on a blank session, just reset directly (no pixelation needed)
+    // If already on a blank conversation, just reset directly (no pixelation needed)
     if (messages.length === 0 && !activeId) {
       resetSessionState();
       return;
     }
-    // New session — instant reset, no pixelation transition needed
+    // New conversation — instant reset, no pixelation transition needed
     resetSessionState();
   }, [
     isGenerating,
@@ -4987,7 +4987,7 @@ export default function ChatSessionComponent({
     planProposal,
     agenticProgress,
     settings,
-    backendSessionStats,
+    backendConversationStats,
     activeId,
     resetSessionState,
     currentWorkspace?.path,
@@ -5027,8 +5027,8 @@ export default function ChatSessionComponent({
     handleNewChat();
   }, [handleNewChat]);
 
-  /** Apply fetched/snapshot session data to component state immediately. */
-  const applySessionData = useCallback(
+  /** Apply fetched/snapshot conversation data to component state immediately. */
+  const applyConversationData = useCallback(
     (
       full: (AgentConversation | Conversation) & {
         workspaceRoot?: string;
@@ -5056,8 +5056,8 @@ export default function ChatSessionComponent({
     ) => {
       if (!full) return;
 
-      // -- Restore workspace selection from the session document --
-      // Agent sessions record which workspace they were started with;
+      // -- Restore workspace selection from the conversation document --
+      // Agent conversations record which workspace they were started with;
       // switch to it so the workspace tree and tool routing match.
       if (full.workspaceRoot) {
         const match = workspaces.find((workspace) => workspace.path === full.workspaceRoot);
@@ -5076,7 +5076,7 @@ export default function ChatSessionComponent({
       }
 
       if (full._fromSnapshot && full._snapshot) {
-        // Restoring a background generating session from snapshot
+        // Restoring a background generating conversation from snapshot
         const snap = full._snapshot;
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
@@ -5100,7 +5100,7 @@ export default function ChatSessionComponent({
           ...previousSettings,
           ...(snap.settings as Partial<typeof previousSettings>),
         }));
-        setBackendSessionStats(snap.backendSessionStats || null);
+        setBackendConversationStats(snap.backendConversationStats || null);
         setIsBackendStatsStale(snap.isBackendStatsStale || false);
         // Restore tool toggle state from snapshot
         if (snap.disabledTools !== undefined) {
@@ -5114,7 +5114,7 @@ export default function ChatSessionComponent({
         // now that conversationIdRef matches again (isStale() → false)
         backgroundConversationsRef.current.delete(full.id || "");
       } else {
-        // Normal backend-loaded session
+        // Normal backend-loaded conversation
         const displayMessages = prepareDisplayMessages(full.messages || []);
         console.debug(
           `[Session switch] id=${full.id}, raw=${full.messages?.length || 0} → display=${displayMessages.length}`,
@@ -5129,7 +5129,7 @@ export default function ChatSessionComponent({
         // Passive DB load — no active SSE connection for this generation
         isClientDrivenGenerationRef.current = false;
 
-        // Load pending approvals from the enriched session response
+        // Load pending approvals from the enriched conversation response
         const pendingApprovalData = full.pendingApproval;
         if (pendingApprovalData && pendingApprovalData.isPending) {
           if (pendingApprovalData.type === "plan") {
@@ -5175,7 +5175,7 @@ export default function ChatSessionComponent({
           setPlanProposal(null);
         }
 
-        // Load pending questions from the enriched session response
+        // Load pending questions from the enriched conversation response
         const pendingQuestionData = full.pendingQuestion;
         if (pendingQuestionData && pendingQuestionData.isPending) {
           setPendingUserQuestion({
@@ -5197,7 +5197,7 @@ export default function ChatSessionComponent({
         const lastAssistant = [...(full.messages || [])]
           .reverse()
           .find((message) => message.role === "assistant" && message.provider);
-        const sessionSettings = full.settings as
+        const conversationSettings = full.settings as
           | Partial<PrismSettings>
           | undefined;
         setSettings((previousSettings) => {
@@ -5229,39 +5229,39 @@ export default function ChatSessionComponent({
           if (full.systemPrompt != null) {
             nextSettings.systemPrompt = full.systemPrompt;
           }
-          if (sessionSettings?.provider) {
-            nextSettings.provider = sessionSettings.provider;
+          if (conversationSettings?.provider) {
+            nextSettings.provider = conversationSettings.provider;
           }
-          if (sessionSettings?.model) {
-            nextSettings.model = sessionSettings.model;
+          if (conversationSettings?.model) {
+            nextSettings.model = conversationSettings.model;
           }
-          if (sessionSettings?.temperature !== undefined) {
-            nextSettings.temperature = sessionSettings.temperature;
+          if (conversationSettings?.temperature !== undefined) {
+            nextSettings.temperature = conversationSettings.temperature;
           }
-          const sessionHarness = (sessionSettings as Record<string, unknown>)?.harness as string | undefined;
-          const sessionTopology = (sessionSettings as Record<string, unknown>)?.topology as string | undefined;
-          const sessionReasoningStrategy = (sessionSettings as Record<string, unknown>)?.reasoningStrategy as string | undefined;
-          if (sessionHarness || sessionTopology || sessionReasoningStrategy) {
+          const conversationHarness = (conversationSettings as Record<string, unknown>)?.harness as string | undefined;
+          const conversationTopology = (conversationSettings as Record<string, unknown>)?.topology as string | undefined;
+          const conversationReasoningStrategy = (conversationSettings as Record<string, unknown>)?.reasoningStrategy as string | undefined;
+          if (conversationHarness || conversationTopology || conversationReasoningStrategy) {
             nextSettings.agents = {
               ...nextSettings.agents,
-              ...(sessionHarness && { harness: sessionHarness }),
-              ...(sessionTopology && { topology: sessionTopology }),
-              ...(sessionReasoningStrategy && { reasoningStrategy: sessionReasoningStrategy }),
+              ...(conversationHarness && { harness: conversationHarness }),
+              ...(conversationTopology && { topology: conversationTopology }),
+              ...(conversationReasoningStrategy && { reasoningStrategy: conversationReasoningStrategy }),
             };
           }
           return nextSettings;
         });
-        setBackendSessionStats(full.stats || null);
+        setBackendConversationStats(full.stats || null);
         setIsBackendStatsStale(false);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
 
-        // Restore tool toggle state from the session's persisted toolConfig.
-        // Legacy sessions without toolConfig default to all tools disabled.
-        const sessionToolConfig = (sessionSettings as Record<string, unknown>)?.toolConfig as
+        // Restore tool toggle state from the conversation's persisted toolConfig.
+        // Legacy conversations without toolConfig default to all tools disabled.
+        const conversationToolConfig = (conversationSettings as Record<string, unknown>)?.toolConfig as
           | { disabledTools?: string[] }
           | undefined;
-        if (sessionToolConfig && sessionToolConfig.disabledTools !== undefined) {
-          restoreDisabledTools(sessionToolConfig.disabledTools);
+        if (conversationToolConfig && conversationToolConfig.disabledTools !== undefined) {
+          restoreDisabledTools(conversationToolConfig.disabledTools);
         } else {
           resetToAllDisabled();
         }
@@ -5270,9 +5270,9 @@ export default function ChatSessionComponent({
     [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools, resetToAllDisabled],
   );
 
-  const handleSelectSession = useCallback(
+  const handleSelectConversation = useCallback(
     async (conversation: AgentConversation | Conversation) => {
-      // If generating, snapshot the current session so user can switch back to it
+      // If generating, snapshot the current conversation so user can switch back to it
       if (isGenerating) {
         const currentId = conversationIdRef.current;
         backgroundConversationsRef.current.set(currentId, {
@@ -5286,14 +5286,14 @@ export default function ChatSessionComponent({
           planProposal,
           agenticProgress,
           settings: { ...settings },
-          backendSessionStats,
+          backendConversationStats,
           isBackendStatsStale,
           workspaceRoot: currentWorkspace?.path || null,
           disabledTools: [...disabledTools],
         } as ConversationSnapshot);
         setIsGenerating(false);
       }
-      // Already viewing this session — just scroll to bottom instantly
+      // Already viewing this conversation — just scroll to bottom instantly
       if (conversation.id === activeId) {
         endRef.current?.scrollIntoView({ behavior: "instant" });
         return;
@@ -5305,20 +5305,20 @@ export default function ChatSessionComponent({
       setPixelTransition("out");
       const loadStart = performance.now();
 
-      // If the target session is still generating in the background,
+      // If the target conversation is still generating in the background,
       // restore from the in-memory snapshot instead of hitting the backend
-      // (which would 404 because the session hasn't been persisted yet).
+      // (which would 404 because the conversation has not been persisted yet).
       const snapshot = backgroundConversationsRef.current.get(conversation.id!);
       if (snapshot && generatingConversationIds.has(conversation.id)) {
-        applySessionData({
+        applyConversationData({
           id: conversation.id,
           title: snapshot.title,
           messages: snapshot.messages,
-          stats: snapshot.backendSessionStats ?? undefined,
+          stats: snapshot.backendConversationStats ?? undefined,
           workspaceRoot: snapshot.workspaceRoot || undefined,
           _fromSnapshot: true,
           _snapshot: snapshot,
-        } as Parameters<typeof applySessionData>[0]);
+        } as Parameters<typeof applyConversationData>[0]);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
         return;
@@ -5328,7 +5328,7 @@ export default function ChatSessionComponent({
         const full = isNoAgent
           ? await PrismService.getConversation(conversation.id!)
           : await PrismService.getAgentConversation(conversation.id!, agentProject!);
-        applySessionData(full);
+        applyConversationData(full);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
       } catch (error: unknown) {
@@ -5341,7 +5341,7 @@ export default function ChatSessionComponent({
             `Session ${conversation.id} not yet persisted (still generating?) — skipping switch`,
           );
         } else {
-          console.error("Failed to load session:", error);
+          console.error("Failed to load conversation:", error);
         }
         setPixelTransition(null);
       }
@@ -5361,18 +5361,18 @@ export default function ChatSessionComponent({
       planProposal,
       agenticProgress,
       settings,
-      backendSessionStats,
+      backendConversationStats,
       generatingConversationIds,
-      applySessionData,
+      applyConversationData,
       recordPixelLoadTime,
       currentWorkspace?.path,
     ],
   );
 
   // -- Real-Time Background Synchronization (Change Streams) -----
-  const refreshActiveSession = useCallback(
-    async (sessionId: string) => {
-      if (!sessionId || sessionId !== conversationIdRef.current) return;
+  const refreshActiveConversation = useCallback(
+    async (targetConversationId: string) => {
+      if (!targetConversationId || targetConversationId !== conversationIdRef.current) return;
       // Skip change-stream refresh while actively generating — the SSE
       // streaming callbacks are the source of truth for message state.
       // Without this guard, a MongoDB change event (triggered when the
@@ -5384,25 +5384,25 @@ export default function ChatSessionComponent({
         // Server-initiated generation (timers, scheduled tasks) has no SSE
         // connection, so change-stream refresh is the only way to update.
         console.debug(
-          `[refreshActiveSession] skipping — session ${sessionId} is currently generating (client-driven)`,
+          `[refreshActiveConversation] skipping — conversation ${targetConversationId} is currently generating (client-driven)`,
         );
         return;
       }
       try {
         const full = isNoAgent
-          ? await PrismService.getConversation(sessionId)
-          : await PrismService.getAgentConversation(sessionId, agentProject!);
+          ? await PrismService.getConversation(targetConversationId)
+          : await PrismService.getAgentConversation(targetConversationId, agentProject!);
         if (full && full.id === conversationIdRef.current) {
-          applySessionData(full);
+          applyConversationData(full);
         }
       } catch (error) {
         console.error(
-          "Failed to refresh active session via change stream:",
+          "Failed to refresh active conversation via change stream:",
           error,
         );
       }
     },
-    [isNoAgent, agentProject, applySessionData],
+    [isNoAgent, agentProject, applyConversationData],
   );
 
   useEffect(() => {
@@ -5412,7 +5412,7 @@ export default function ChatSessionComponent({
     const debouncedListRefresh = () => {
       if (listRefreshTimer) clearTimeout(listRefreshTimer);
       listRefreshTimer = setTimeout(() => {
-        loadSessions();
+        loadConversations();
       }, 500);
     };
 
@@ -5424,14 +5424,14 @@ export default function ChatSessionComponent({
         return;
       }
 
-      // Active session update → refresh its messages in-place
+      // Active conversation update → refresh its messages in-place
       if (event.id && event.id === conversationIdRef.current) {
-        refreshActiveSession(event.id);
+        refreshActiveConversation(event.id);
       }
 
-      // New or externally modified session → refresh the sidebar list.
+      // New or externally modified conversation → refresh the sidebar list.
       // Inserts always warrant a list refresh; updates for non-active
-      // sessions (e.g., title changes from background summarization)
+      // conversations (e.g., title changes from background summarization)
       // also need to propagate to the sidebar.
       if (
         event.operationType === "insert" ||
@@ -5449,7 +5449,7 @@ export default function ChatSessionComponent({
       sseSubscription.close();
       if (listRefreshTimer) clearTimeout(listRefreshTimer);
     };
-  }, [refreshActiveSession, loadSessions]);
+  }, [refreshActiveConversation, loadConversations]);
 
   const handleUndoDelete = useCallback(
     (conversationId: string, toastId: number) => {
@@ -5458,41 +5458,41 @@ export default function ChatSessionComponent({
         clearTimeout(pending.timeoutId);
         pendingDeletionsRef.current.delete(conversationId);
 
-        // Restore the session to sessions state
-        setConversations((previousSessions) => {
-          if (previousSessions.some((sessionItem) => sessionItem.id === conversationId))
-            return previousSessions;
-          const updated = [...previousSessions, pending.session];
+        // Restore the conversation to conversations state
+        setConversations((previousConversations) => {
+          if (previousConversations.some((conversationItem) => conversationItem.id === conversationId))
+            return previousConversations;
+          const updated = [...previousConversations, pending.conversationEntry];
           // Sort by updatedAt or createdAt descending
-          return updated.sort((sessionA, sessionB) => {
-            const dateA = new Date(sessionA.updatedAt || sessionA.createdAt || 0).getTime();
-            const dateB = new Date(sessionB.updatedAt || sessionB.createdAt || 0).getTime();
+          return updated.sort((conversationA, conversationB) => {
+            const dateA = new Date(conversationA.updatedAt || conversationA.createdAt || 0).getTime();
+            const dateB = new Date(conversationB.updatedAt || conversationB.createdAt || 0).getTime();
             return dateB - dateA;
           });
         });
 
         if (pending.wasActive) {
-          handleSelectSession(pending.session);
+          handleSelectConversation(pending.conversationEntry);
         }
 
         // Dismiss the toast
         removeToast(toastId);
       }
     },
-    [removeToast, handleSelectSession],
+    [removeToast, handleSelectConversation],
   );
 
-  const handleDeleteSession = useCallback(
+  const handleDeleteConversation = useCallback(
     async (conversationId: string) => {
       try {
-        const session = conversations.find((sessionItem) => sessionItem.id === conversationId);
-        if (!session) return;
+        const targetConversation = conversations.find((conversationItem) => conversationItem.id === conversationId);
+        if (!targetConversation) return;
 
         const wasActive = activeId === conversationId;
 
         // Optimistically remove from state
-        setConversations((previousSessions) =>
-          previousSessions.filter((sessionItem) => sessionItem.id !== conversationId),
+        setConversations((previousConversations) =>
+          previousConversations.filter((conversationItem) => conversationItem.id !== conversationId),
         );
         if (wasActive) {
           handleNewChat();
@@ -5508,14 +5508,14 @@ export default function ChatSessionComponent({
               await PrismService.deleteAgentConversation(conversationId, agentProject!);
             }
           } catch (error) {
-            console.error("Failed to delete session:", error);
+            console.error("Failed to delete conversation:", error);
           }
         }, 10000);
 
         // Store in pending deletions
         pendingDeletionsRef.current.set(conversationId, {
           timeoutId,
-          session,
+          conversationEntry: targetConversation,
           wasActive,
         });
 
@@ -5566,7 +5566,7 @@ export default function ChatSessionComponent({
           10000,
         );
       } catch (error: unknown) {
-        console.error("Failed to delete session:", error);
+        console.error("Failed to delete conversation:", error);
       }
     },
     [
@@ -5664,7 +5664,7 @@ export default function ChatSessionComponent({
             key: "requests",
             icon: <span className={tabBarStyles['tab-emoji-icon']}>📊</span>,
             ...badgeProps(
-              backendSessionStats?.requestCount || 0,
+              backendConversationStats?.requestCount || 0,
               "requests",
             ),
             tooltip: "Requests",
@@ -5709,7 +5709,7 @@ export default function ChatSessionComponent({
             _hasAssistantImages={false}
             lockedTools={isNoAgent ? new Set() : AGENT_LOCKED_TOOLS}
             hideSystemPrompt={!isNoAgent}
-            sessionType={isNoAgent ? "chat" : "agent"}
+            conversationType={isNoAgent ? "chat" : "agent"}
             canSpawnSubAgents={
               !isNoAgent && (activeAgentData?.canSpawnSubAgents || false)
             }
@@ -5796,9 +5796,9 @@ export default function ChatSessionComponent({
                     },
                   ]
             }
-            sessionStats={
+            conversationStats={
               (messages.length > 0
-                ? backendSessionStats
+                ? backendConversationStats
                   ? (() => {
                       const mapSubStats = (sub: ConversationStats | undefined) => {
                         if (!sub) return undefined;
@@ -5828,10 +5828,10 @@ export default function ChatSessionComponent({
                       };
                       // -- Token counts come exclusively from the backend --
                       // _liveGenProgress (from generation_progress SSE) carries
-                      // authoritative, monotonic token counts from SessionGenerationTracker.
+                      // authoritative, monotonic token counts from ConversationGenerationTracker.
                       // _backgroundUsage accumulates tokens from fire-and-forget LLM calls
                       // (memory extraction, consolidation) as they complete.
-                      // When done, use backendSessionStats which includes everything.
+                      // When done, use backendConversationStats which includes everything.
                       const lastMessage = messages[messages.length - 1];
                       const activeMessageCost =
                         lastMessage?.role === "assistant" && isBackendStatsStale
@@ -5856,15 +5856,15 @@ export default function ChatSessionComponent({
                       // Use the larger of backend stats or live progress to prevent
                       // dips during the gap between stream end and backend refresh.
                       const tokenOutput = Math.max(
-                        backendSessionStats.totalOutputTokens || 0,
+                        backendConversationStats.totalOutputTokens || 0,
                         liveOutput,
                       );
                       const tokenInput = Math.max(
-                        backendSessionStats.totalInputTokens || 0,
+                        backendConversationStats.totalInputTokens || 0,
                         liveInput,
                       );
                       const tokenTotal = Math.max(
-                        backendSessionStats.totalTokens || 0,
+                        backendConversationStats.totalTokens || 0,
                         liveTotal,
                       );
 
@@ -5882,12 +5882,12 @@ export default function ChatSessionComponent({
                         messageCount: messages.length,
                         deletedCount: 0,
                         requestCount:
-                          (backendSessionStats.requestCount || 0) +
+                          (backendConversationStats.requestCount || 0) +
                           (bgUsage?.requests || 0) +
                           (hasActiveUncountedRequest ? 1 : 0),
                         uniqueModels: [
                           ...new Set([
-                            ...(backendSessionStats.models || []),
+                            ...(backendConversationStats.models || []),
                             ...(activeModel ? [activeModel] : []),
                           ]),
                         ],
@@ -5899,13 +5899,13 @@ export default function ChatSessionComponent({
                             output: Math.max(hwm.output, tokenOutput),
                             total: Math.max(hwm.total, tokenTotal),
                             cacheRead:
-                              backendSessionStats.totalCacheReadInputTokens ||
+                              backendConversationStats.totalCacheReadInputTokens ||
                               0,
                             cacheWrite:
-                              backendSessionStats.totalCacheCreationInputTokens ||
+                              backendConversationStats.totalCacheCreationInputTokens ||
                               0,
                             reasoning:
-                              backendSessionStats.totalReasoningOutputTokens ||
+                              backendConversationStats.totalReasoningOutputTokens ||
                               0,
                           };
                           tokenHwmRef.current = {
@@ -5916,7 +5916,7 @@ export default function ChatSessionComponent({
                           return threadMessage;
                         })(),
                         totalCost:
-                          (backendSessionStats.totalCost || 0) +
+                          (backendConversationStats.totalCost || 0) +
                           (bgUsage?.cost || 0) +
                           activeMessageCost,
                         originalTotalCost: 0,
@@ -5924,12 +5924,12 @@ export default function ChatSessionComponent({
                         // sub-agent tool counts into a single usedTools array
                         usedTools: mergeUsedToolsWithSubAgents(
                           usedTools,
-                          backendSessionStats.toolCounts,
+                          backendConversationStats.toolCounts,
                           subAgentToolActivity,
                         ),
                         modalities: (() => {
                           const raw =
-                            backendSessionStats.modalities || modalities || {};
+                            backendConversationStats.modalities || modalities || {};
                           const mapped: Record<string, boolean> = {};
                           for (const [key, value] of Object.entries(raw)) {
                             mapped[key] = !!value;
@@ -5937,7 +5937,7 @@ export default function ChatSessionComponent({
                           return mapped;
                         })(),
                         completedElapsedTime:
-                          backendSessionStats.totalElapsedTime ||
+                          backendConversationStats.totalElapsedTime ||
                           completedElapsedTime,
                         currentTurnStart,
                         conversationStartTime: messages.length > 0 ? messages[0]?.timestamp : null,
@@ -5953,13 +5953,13 @@ export default function ChatSessionComponent({
                         liveTtftSamples,
                         liveGenProgress,
                         avgTokensPerSec:
-                          backendSessionStats.avgTokensPerSec || null,
+                          backendConversationStats.avgTokensPerSec || null,
                         avgTimeToGeneration:
-                          backendSessionStats.avgTimeToGeneration || null,
+                          backendConversationStats.avgTimeToGeneration || null,
                         orchestrator: mapSubStats(
-                          backendSessionStats.orchestrator,
+                          backendConversationStats.orchestrator,
                         ),
-                        subAgents: mapSubStats(backendSessionStats.subAgents),
+                        subAgents: mapSubStats(backendConversationStats.subAgents),
                       } as DisplaySessionStats;
                     })()
                   : (() => {
@@ -6135,14 +6135,14 @@ export default function ChatSessionComponent({
 
       {leftTab === "requests" && (
         <>
-          <SidebarTabHeaderComponent icon="📊" title="Requests" count={backendSessionStats?.requestCount || 0} />
+          <SidebarTabHeaderComponent icon="📊" title="Requests" count={backendConversationStats?.requestCount || 0} />
           <RequestsTableComponent
             conversationId={conversationId}
             refreshKey={requestsRefreshKey}
             compact
             mini
             maxHeight={null}
-            storageKey="session-requests"
+            storageKey="conversation-requests"
           />
         </>
       )}
@@ -6378,9 +6378,9 @@ export default function ChatSessionComponent({
           )}
         </div>
       </div>
-      {/* Nodes tab — inline session graph */}
+      {/* Nodes tab — inline conversation graph */}
       {chatAreaTab === "nodes" && (
-        <ChatSessionGraphComponent sessionId={activeId} />
+        <ChatSessionGraphComponent conversationId={activeId} />
       )}
       {chatAreaTab !== "nodes" && !isAdmin && (
         <PixelTransitionComponent
@@ -6420,7 +6420,7 @@ export default function ChatSessionComponent({
               systemPrompt={
                 showRaw
                   ? settings.systemPrompt ||
-                    adminSessionSystemPrompt ||
+                    adminConversationSystemPrompt ||
                     messages.find(
                       (message) => message.role === "system" && !message.deleted,
                     )?.content
@@ -7137,16 +7137,16 @@ export default function ChatSessionComponent({
               dateRange={adminDateRange}
               onDateChange={adminHeaderContext.setDateRange}
               initialProviders={adminProviderFilter ? [adminProviderFilter] : undefined}
-              initialSearch={adminSessionFilter || undefined}
+              initialSearch={adminTraceFilter || undefined}
               knownParentConversationIds={knownParentConversationIds}
             />
           ) : (
             <HistoryPanel
               conversations={conversations}
               activeId={activeId}
-              onSelect={handleSelectSession}
+              onSelect={handleSelectConversation}
               onNew={handleNewChat}
-              onDelete={handleDeleteSession}
+              onDelete={handleDeleteConversation}
               disableNew={messages.length === 0 && !activeId}
               newLabel="New Conversation"
               emptyText="No recent conversations"
@@ -7166,7 +7166,7 @@ export default function ChatSessionComponent({
             ? `${adminEntries.length}${adminEntriesHasMore ? "+" : ""} Conversations`
             : `${conversations.length}${conversationsHasMore ? "+" : ""} Conversations`
         }
-        sessionType="agent"
+        conversationType="agent"
         headerCenter={
           <div className={layoutHeaderStyles["header-center-group"]}>
             {isAdmin ? (

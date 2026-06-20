@@ -114,11 +114,11 @@ export default function AgentsTableComponent({
       render: (row: IrisAgentStat) => row.conversationCount ?? 0,
     },
     {
-      key: "sessionCount",
-      label: "Sessions",
-      description: "Number of distinct sessions (traces) this agent participated in",
+      key: "agentConversationCount",
+      label: "Agent Conversations",
+      description: "Number of distinct agent conversations (traces) this agent participated in",
       align: "right" as const,
-      render: (row: IrisAgentStat) => row.sessionCount ?? 0,
+      render: (row: IrisAgentStat) => row.agentConversationCount ?? 0,
     },
   ];
 

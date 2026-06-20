@@ -1,5 +1,5 @@
 import { useReducer, useMemo } from "react";
-import type { SessionTokenStats } from "../utils/utilities";
+import type { ConversationTokenStats } from "../utils/utilities";
 
 // --- Types --------------------------------------------------
 
@@ -107,16 +107,16 @@ const TTFT_INITIAL: TtftState = {
  * native path which provides real processing progress events.
  *
  * After the turn completes, the consumer falls back to the static
- * `avgTimeToGeneration` from backend session stats.
+ * `avgTimeToGeneration` from backend conversation stats.
  */
 export default function useTtft(
-  sessionStats: Partial<SessionTokenStats> | null,
+  conversationStats: Partial<ConversationTokenStats> | null,
   perfNow: number,
   needsTicker: boolean,
 ): { liveTtft: number | null; isLiveTtft: boolean } {
-  const phase = sessionStats?.liveProcessingPhase || null;
-  const startTime = sessionStats?.liveProcessingStartTime || null;
-  const samples = sessionStats?.liveTtftSamples || null;
+  const phase = conversationStats?.liveProcessingPhase || null;
+  const startTime = conversationStats?.liveProcessingStartTime || null;
+  const samples = conversationStats?.liveTtftSamples || null;
 
   const [state, dispatch] = useReducer(ttftReducer, TTFT_INITIAL);
 

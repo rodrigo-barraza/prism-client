@@ -164,11 +164,11 @@ function buildGraphFromSession(
     edges.push({ source, target, strength });
   };
 
-  const sessionId = session.id || session._id;
-  const sessionNodeId = `session:${sessionId}`;
+  const conversationId = session.id || session._id;
+  const conversationNodeId = `session:${conversationId}`;
 
-  addNode(sessionNodeId, session.title || "Session", "session", 32, {
-    sessionId,
+  addNode(conversationNodeId, session.title || "Session", "session", 32, {
+    conversationId,
     status: session.status,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt,
@@ -181,26 +181,26 @@ function buildGraphFromSession(
   if (session.project) {
     const projectNodeId = `project:${session.project}`;
     addNode(projectNodeId, session.project, "project", 22, { project: session.project });
-    addEdge(projectNodeId, sessionNodeId, 0.8);
+    addEdge(projectNodeId, conversationNodeId, 0.8);
   }
 
-  let mainAgentSessionId = sessionId;
+  let mainAgentConversationId = conversationId;
   for (const request of sessionRequests) {
     if (!request.parentAgentSessionId && request.agentSessionId) {
-      mainAgentSessionId = request.agentSessionId;
+      mainAgentConversationId = request.agentSessionId;
       break;
     }
   }
 
   const parentAgentNodeId = session.agent
-    ? `agent:${mainAgentSessionId}:${session.agent}`
-    : `agent:${mainAgentSessionId}:default`;
+    ? `agent:${mainAgentConversationId}:${session.agent}`
+    : `agent:${mainAgentConversationId}:default`;
   if (session.agent) {
     addNode(parentAgentNodeId, session.agent, "agent", 24, { agent: session.agent });
   } else {
     addNode(parentAgentNodeId, "Default Agent", "agent", 24, { agent: "default" });
   }
-  addEdge(sessionNodeId, parentAgentNodeId, 0.9);
+  addEdge(conversationNodeId, parentAgentNodeId, 0.9);
 
   const providerNodeIds = new Set<string>();
   const modelNodeIds = new Set<string>();
@@ -231,8 +231,8 @@ function buildGraphFromSession(
       requestId: request.requestId || request._id,
     }, sequenceNumber);
 
-    const reqAgentSessionId = request.agentSessionId || mainAgentSessionId;
-    const isSubAgent = reqAgentSessionId !== mainAgentSessionId;
+    const reqAgentSessionId = request.agentSessionId || mainAgentConversationId;
+    const isSubAgent = reqAgentSessionId !== mainAgentConversationId;
     const currentAgentNodeId = isSubAgent
       ? `agent:${reqAgentSessionId}:${request.agent || AGENT_IDS.OMNI}`
       : parentAgentNodeId;
@@ -242,7 +242,7 @@ function buildGraphFromSession(
       addNode(currentAgentNodeId, subAgentLabel, "agent", 22, {
         agent: subAgentLabel,
         isSubagent: true,
-        parentAgentSessionId: request.parentAgentSessionId || mainAgentSessionId,
+        parentAgentSessionId: request.parentAgentSessionId || mainAgentConversationId,
         agentSessionId: reqAgentSessionId,
       });
       if (!subAgentNodeIds.includes(currentAgentNodeId)) {
@@ -254,7 +254,7 @@ function buildGraphFromSession(
 
     if (requestIndex > 0) {
       const previousRequest = sortedRequests[requestIndex - 1];
-      const previousAgentSessionId = previousRequest.agentSessionId || mainAgentSessionId;
+      const previousAgentSessionId = previousRequest.agentSessionId || mainAgentConversationId;
       if (previousAgentSessionId === reqAgentSessionId) {
         const previousRequestNodeId = `request:${previousRequest._id || (requestIndex - 1)}`;
         addEdge(previousRequestNodeId, requestNodeId, 0.6);
@@ -310,7 +310,7 @@ function buildGraphFromSession(
   for (const userName of userSet) {
     const userNodeId = `user:${userName}`;
     addNode(userNodeId, userName, "user", 18, { username: userName });
-    addEdge(userNodeId, sessionNodeId, 0.5);
+    addEdge(userNodeId, conversationNodeId, 0.5);
   }
 
   const topology = session.settings?.agents?.topology || DEFAULT_TOPOLOGY;
@@ -521,14 +521,14 @@ function applyTopologyLayout(
    ═══════════════════════════════════════════════════════════════════ */
 
 export interface ChatSessionGraphComponentProps {
-  sessionId: string | null;
+  conversationId: string | null;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════════════════════ */
 
-export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGraphComponentProps) {
+export default function ChatSessionGraphComponent({ conversationId }: ChatSessionGraphComponentProps) {
   const [session, setSession] = useState<AgentConversation | null>(null);
   const [sessionStats, setSessionStats] = useState<ConversationStats | null>(null);
   const [sessionRequests, setSessionRequests] = useState<IrisRequestEntry[]>([]);
@@ -720,7 +720,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
 
   // -- Load session graph ----------------------------------------
   useEffect(() => {
-    if (!sessionId) {
+    if (!conversationId) {
       setSession(null);
       setSessionStats(null);
       setSessionRequests([]);
@@ -736,23 +736,23 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
 
     const loadGraph = async () => {
       try {
-        const fetchedSession = await IrisService.getAgentConversation(sessionId);
+        const fetchedConversation = await IrisService.getAgentConversation(conversationId);
         if (isCancelled) return;
 
         const [statsResponse, requestsResponse] = await Promise.all([
-          IrisService.getConversationRunStats(sessionId).catch(() => null),
-          IrisService.getConversationRequests(sessionId).catch(() => ({ requests: [] })),
+          IrisService.getConversationRunStats(conversationId).catch(() => null),
+          IrisService.getConversationRequests(conversationId).catch(() => ({ requests: [] })),
         ]);
 
         if (isCancelled) return;
 
-        setSession(fetchedSession);
+        setSession(fetchedConversation);
         setSessionStats(statsResponse);
         const requestsList = requestsResponse.requests || [];
         setSessionRequests(requestsList);
 
-        const graph = buildGraphFromSession(fetchedSession, statsResponse, requestsList);
-        const topology = fetchedSession.settings?.agents?.topology || "hierarchical";
+        const graph = buildGraphFromSession(fetchedConversation, statsResponse, requestsList);
+        const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
         applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
         setGraphData(graph);
         setZoom(1);
@@ -768,11 +768,11 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
 
     loadGraph();
     return () => { isCancelled = true; };
-  }, [sessionId, dimensions.width, dimensions.height]);
+  }, [conversationId, dimensions.width, dimensions.height]);
 
   // -- SSE live updates ------------------------------------------
   useEffect(() => {
-    if (!sessionId) return;
+    if (!conversationId) return;
 
     let pollInterval: ReturnType<typeof setInterval> | null = null;
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -783,21 +783,21 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
       if (isBootstrapping) return;
       isBootstrapping = true;
       try {
-        const fetchedSession = await IrisService.getAgentConversation(sessionId);
+        const fetchedConversation = await IrisService.getAgentConversation(conversationId);
         const [bootstrapStats, bootstrapRequestsResponse] = await Promise.all([
-          IrisService.getConversationRunStats(sessionId).catch(() => null),
-          IrisService.getConversationRequests(sessionId).catch(() => ({ requests: [] as IrisRequestEntry[] })),
+          IrisService.getConversationRunStats(conversationId).catch(() => null),
+          IrisService.getConversationRequests(conversationId).catch(() => ({ requests: [] as IrisRequestEntry[] })),
         ]);
 
         const bootstrapRequests = bootstrapRequestsResponse.requests || [];
         previousRequestCount = bootstrapRequests.length;
 
-        setSession(fetchedSession);
+        setSession(fetchedConversation);
         setSessionStats(bootstrapStats);
         setSessionRequests(bootstrapRequests);
 
-        const graph = buildGraphFromSession(fetchedSession, bootstrapStats, bootstrapRequests);
-        const topology = fetchedSession.settings?.agents?.topology || "hierarchical";
+        const graph = buildGraphFromSession(fetchedConversation, bootstrapStats, bootstrapRequests);
+        const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
         applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
         setGraphData(graph);
         setIsLoading(false);
@@ -853,7 +853,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
         }
       },
       onChange: (changeEvent: IrisCollectionChangeEvent) => {
-        if (changeEvent.collection === "requests" && changeEvent.conversationId === sessionId) {
+        if (changeEvent.collection === "requests" && changeEvent.conversationId === conversationId) {
           debouncedRefresh();
         }
       },
@@ -864,7 +864,7 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
       if (pollInterval) clearInterval(pollInterval);
       if (debounceTimer) clearTimeout(debounceTimer);
     };
-  }, [sessionId, dimensions.width, dimensions.height, incrementalGraphRebuild, startCollisionLoop]);
+  }, [conversationId, dimensions.width, dimensions.height, incrementalGraphRebuild, startCollisionLoop]);
 
   // -- Screen ↔ SVG coordinate helper ---------------------------
   const screenToSvg = useCallback(
@@ -1006,8 +1006,8 @@ export default function ChatSessionGraphComponent({ sessionId }: ChatSessionGrap
     return `${originX} ${originY} ${scaledWidth} ${scaledHeight}`;
   }, [canvasWidth, canvasHeight, zoom, panOffset]);
 
-  // -- Empty state when no sessionId -----------------------------
-  if (!sessionId) {
+  // -- Empty state when no conversationId -----------------------------
+  if (!conversationId) {
     return (
       <div className={styles['graph-embed-wrapper']}>
         <div className={graphStyles['graph-canvas-wrapper']}>

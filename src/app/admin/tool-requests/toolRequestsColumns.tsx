@@ -84,7 +84,7 @@ export const getToolRequestsColumns = ({
   {
     key: "callerUsername",
     label: "User",
-    description: "The user whose session triggered the tool call",
+    description: "The user whose conversation triggered the tool call",
     sortable: true,
     render: (record: ToolCallRecord) =>
       record.callerUsername ? (

@@ -34,7 +34,7 @@ export default function AdminFiltersCardComponent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { dateRange, setDateRange, sessionFilter } = useAdminHeader();
+  const { dateRange, setDateRange, traceFilter } = useAdminHeader();
 
   const [filtersData, setFiltersData] = useState<FiltersData>({
     projects: [],
@@ -164,7 +164,7 @@ export default function AdminFiltersCardComponent() {
     [filtersData.workspaces],
   );
 
-  const hasSessionFilter = !!sessionFilter;
+  const hasTraceFilter = !!traceFilter;
 
   return (
     <div className={`admin-filters-card-component ${styles["filters-card"]}`}>
@@ -220,7 +220,7 @@ export default function AdminFiltersCardComponent() {
           from={dateRange.from}
           to={dateRange.to}
           onChange={setDateRange}
-          disabled={hasSessionFilter}
+          disabled={hasTraceFilter}
         />
       </div>
     </div>

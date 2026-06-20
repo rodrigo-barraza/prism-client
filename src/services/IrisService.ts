@@ -57,7 +57,7 @@ export interface IrisTimelineResponse {
 }
 
 /**
- * Generic paginated list response — shared by traces, media, text, agent-sessions, workflows.
+ * Generic paginated list response — shared by traces, media, text, agent-conversations, workflows.
  */
 export interface IrisPaginatedResponse<T = Record<string, JsonValue>> {
   data: T[];
@@ -166,11 +166,11 @@ export default class IrisService {
     id: string,
   ): Promise<{
     conversation?: Conversation;
-    agentSession?: AgentConversation;
+    agentConversation?: AgentConversation;
   }> {
     return fetchJSON<{
       conversation?: Conversation;
-      agentSession?: AgentConversation;
+      agentConversation?: AgentConversation;
     }>(`/requests/${id}/associations`);
   }
 
@@ -430,15 +430,15 @@ export default class IrisService {
     return fetchJSON<IrisRequestEntry>(`/traces/${id}`);
   }
 
-  static async getConversationRunStats(agentSessionId: string): Promise<ConversationStats> {
-    return fetchJSON<ConversationStats>(`/sessions/${agentSessionId}/stats`);
+  static async getConversationRunStats(agentConversationId: string): Promise<ConversationStats> {
+    return fetchJSON<ConversationStats>(`/agent-sessions/${agentConversationId}/stats`);
   }
 
   static async getConversationRequests(
-    agentSessionId: string,
+    agentConversationId: string,
   ): Promise<{ requests: IrisRequestEntry[] }> {
     return fetchJSON<{ requests: IrisRequestEntry[] }>(
-      `/sessions/${agentSessionId}/requests`,
+      `/agent-sessions/${agentConversationId}/requests`,
     );
   }
 

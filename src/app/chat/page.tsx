@@ -102,9 +102,9 @@ function AgentsPageInner() {
   const forceFc = searchParams.get("fc") === "true";
   const forceThinking = searchParams.get("thinking") === "true";
 
-  // -- Deep-link params: model + session ------------------------
+  // -- Deep-link params: model + conversation ------------------
   const initialModel = searchParams.get("model") || null;
-  const initialSessionId = searchParams.get("session") || null;
+  const initialConversationId = searchParams.get("conversation") || searchParams.get("session") || null;
   const initialTabKey = searchParams.get("tab") || null;
   const initialTabBottomKey = searchParams.get("tabBottom") || null;
   const initialViewMode = searchParams.get("view") || null;
@@ -116,15 +116,20 @@ function AgentsPageInner() {
       .catch(console.error);
   }, []);
 
-  // -- Strip stale URL params on mount when session is present ----
-  // If the URL arrives with ?session=...&model=..., remove
-  // model immediately — the session data owns those values.
+  // -- Strip stale URL params on mount when conversation is present
+  // If the URL arrives with ?conversation=...&model=..., remove
+  // model immediately — the conversation data owns those values.
   useEffect(() => {
-    const sessionId = searchParams.get("session");
-    if (!sessionId) return;
+    const conversationId = searchParams.get("conversation") || searchParams.get("session");
+    if (!conversationId) return;
     const hasModel = searchParams.has("model");
-    if (hasModel) {
-      router.replace(buildUrl(searchParams, { model: null }), {
+    const hasLegacySession = searchParams.has("session");
+    if (hasModel || hasLegacySession) {
+      router.replace(buildUrl(searchParams, {
+        model: null,
+        session: null,
+        ...(hasLegacySession ? { conversation: conversationId } : {}),
+      }), {
         scroll: false,
       });
     }
@@ -138,7 +143,7 @@ function AgentsPageInner() {
       if (newId) {
         setLocalAgentId(newId);
         localStorage.setItem(LS_ACTIVE_AGENT, newId);
-        if (searchParams.has("session")) {
+        if (searchParams.has("conversation") || searchParams.has("session")) {
           router.push(`/chat?agent=${encodeURIComponent(newId)}`);
         } else if (newId !== activeAgentId) {
           router.replace(
@@ -167,29 +172,29 @@ function AgentsPageInner() {
     [router, searchParams],
   );
 
-  // Listen for conversation:change events from ChatSessionComponent — sync URL
-  // When a session is active, strip model from URL but keep agent — the
-  // session data is the source of truth for the model, and we keep agent
+  // When a conversation is active, strip model from URL but keep agent — the
+  // conversation data is the source of truth for the model, and we keep agent
   // in the URL to prevent ChatSessionComponent remounting.
   const handleConversationChange = useCallback(
     (e: Event) => {
       const customEvent = e as CustomEvent;
       const { conversationId } = customEvent.detail || {};
-      const current = searchParams.get("session");
+      const current = searchParams.get("conversation") || searchParams.get("session");
       if (current === (conversationId || null)) return;
       if (conversationId) {
-        // Session active → keep session and agent params
+        // Conversation active — keep conversation and agent params
         router.replace(
           buildUrl(searchParams, {
-            session: conversationId,
+            conversation: conversationId,
+            session: null,
             model: null,
             agent: activeAgentId,
           }),
           { scroll: false },
         );
       } else {
-        // New chat → clear session param, keep everything else
-        router.replace(buildUrl(searchParams, { session: null }), {
+        // New chat — clear conversation param, keep everything else
+        router.replace(buildUrl(searchParams, { conversation: null, session: null }), {
           scroll: false,
         });
       }
@@ -298,7 +303,7 @@ function AgentsPageInner() {
         initialFcEnabled={forceFc}
         initialThinkingEnabled={forceThinking}
         initialModel={initialModel}
-        initialSessionId={initialSessionId}
+        initialConversationId={initialConversationId}
         initialTabKey={initialTabKey}
         initialTabBottomKey={initialTabBottomKey}
         initialViewMode={initialViewMode}

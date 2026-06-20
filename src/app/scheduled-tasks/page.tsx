@@ -337,7 +337,7 @@ function CronJobDetailPanel({
                     key={conv.id}
                     className={styles["history-item"]}
                     onClick={() => {
-                      router.push(`/chat?session=${conv.id}&agent=${conv.agent || AGENT_IDS.NONE}`);
+                      router.push(`/chat?conversation=${conv.id}&agent=${conv.agent || AGENT_IDS.NONE}`);
                       onClose();
                     }}
                   >

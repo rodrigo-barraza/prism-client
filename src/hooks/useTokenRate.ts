@@ -1,6 +1,6 @@
 import { useState, useEffect, useReducer, useMemo } from "react";
 import type {
-  SessionTokenStats,
+  ConversationTokenStats,
   SubAgentProgress,
   GenProgress,
 } from "../utils/utilities";
@@ -14,7 +14,7 @@ const PROGRESS_STALE_MS = 3000;
 
 /**
  * Staleness threshold for frontend chunk-counting fallback
- * (used by non-agentic sessions that lack backend progress events).
+ * (used by non-agentic conversations that lack backend progress events).
  */
 const CHUNK_STALE_MS = 2000;
 
@@ -43,12 +43,12 @@ export interface TokenRateResult {
 }
 
 /**
- * Extended session stats that may include client-side turn tracking.
- * The base SessionTokenStats from utilities covers server-derived fields,
+ * Extended conversation stats that may include client-side turn tracking.
+ * The base ConversationTokenStats from utilities covers server-derived fields,
  * but the hook may also receive currentTurnStart and completedElapsedTime
  * from the component layer.
  */
-interface ExtendedSessionStats extends Partial<SessionTokenStats> {
+interface ExtendedConversationStats extends Partial<ConversationTokenStats> {
   currentTurnStart?: string | number | null;
   completedElapsedTime?: number;
 }
@@ -113,18 +113,18 @@ function sumSubAgentThroughput(
 
 /**
  * useTokenRate — live token throughput and elapsed-time computation
- * derived from a sessionStats object.
+ * derived from a conversationStats object.
  *
  * Three data sources (in priority order):
  *
- *   1. **Sub-agent aggregation** (coordinator sessions): Sum of per-sub-agent
+ *   1. **Sub-agent aggregation** (coordinator conversations): Sum of per-sub-agent
  *      `tokPerSec` values from `subAgentGenerationProgress`. These are
  *      computed by CoordinatorService's `buildProgress()` using accurate
  *      burst-scoped chunk counters. Plus the orchestrator's own rate if
  *      it's also generating.
  *
  *   2. **Backend-sourced** (`liveGenProgress`): tok/s from Prism's
- *      SessionGenerationTracker. Used for solo agentic sessions without
+ *      ConversationGenerationTracker. Used for solo agentic conversations without
  *      sub-agents (orchestrator-only), where the tracker has accurate data.
  *
  *   3. **Frontend chunk-counting** (fallback): For non-agentic
@@ -133,7 +133,7 @@ function sumSubAgentThroughput(
  *      inter-arrival timing.
  */
 export default function useTokenRate(
-  sessionStats: ExtendedSessionStats | null,
+  conversationStats: ExtendedConversationStats | null,
 ): TokenRateResult {
   // -- Live ticker -----------------------------------------------
   // Stores current wall-clock and performance timestamps so render
@@ -141,8 +141,8 @@ export default function useTokenRate(
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [perfNow, setPerfNow] = useState(() => performance.now());
 
-  const isStreaming = !!sessionStats?.liveStreamingStartTime;
-  const turnActive = !!sessionStats?.currentTurnStart;
+  const isStreaming = !!conversationStats?.liveStreamingStartTime;
+  const turnActive = !!conversationStats?.currentTurnStart;
   const needsTicker = turnActive || isStreaming;
 
   useEffect(() => {
@@ -164,11 +164,11 @@ export default function useTokenRate(
   }, [needsTicker]);
 
   // -- Elapsed time ----------------------------------------------
-  const completedTime = sessionStats?.completedElapsedTime || 0;
-  const turnStartVal = sessionStats?.currentTurnStart
-    ? typeof sessionStats.currentTurnStart === "number"
-      ? sessionStats.currentTurnStart
-      : new Date(sessionStats.currentTurnStart).getTime()
+  const completedTime = conversationStats?.completedElapsedTime || 0;
+  const turnStartVal = conversationStats?.currentTurnStart
+    ? typeof conversationStats.currentTurnStart === "number"
+      ? conversationStats.currentTurnStart
+      : new Date(conversationStats.currentTurnStart).getTime()
     : null;
   const liveExtra = turnStartVal
     ? Math.max(0, (nowMs - turnStartVal) / 1000)
@@ -183,7 +183,7 @@ export default function useTokenRate(
   // These come from CoordinatorService's buildProgress() which uses
   // burst-scoped chunk counters — accurate and independent per sub-agent.
   const { sum: subAgentSum, count: activeSubAgentCount } = sumSubAgentThroughput(
-    sessionStats?.subAgentGenerationProgress ?? null,
+    conversationStats?.subAgentGenerationProgress ?? null,
   );
 
   if (activeSubAgentCount > 0) {
@@ -194,11 +194,11 @@ export default function useTokenRate(
     // (the orchestrator streams chunks independently via its own SSE path)
     const coordActive =
       isStreaming &&
-      sessionStats?.liveStreamingLastChunkTime &&
-      perfNow - sessionStats.liveStreamingLastChunkTime < CHUNK_STALE_MS;
+      conversationStats?.liveStreamingLastChunkTime &&
+      perfNow - conversationStats.liveStreamingLastChunkTime < CHUNK_STALE_MS;
     if (coordActive) {
-      const burstElapsed = (sessionStats.liveStreamingBurstElapsed || 0) / 1000;
-      const burstTokens = sessionStats.liveStreamingBurstTokens || 0;
+      const burstElapsed = (conversationStats.liveStreamingBurstElapsed || 0) / 1000;
+      const burstTokens = conversationStats.liveStreamingBurstTokens || 0;
       if (burstElapsed > 0 && burstTokens > 0) {
         totalRate += burstTokens / burstElapsed;
       }
@@ -207,8 +207,8 @@ export default function useTokenRate(
     computedTokPerSec = totalRate;
   } else {
     // Priority 2: Backend-sourced generation_progress from
-    // SessionGenerationTracker (for solo orchestrator sessions).
-    const genProgress = sessionStats?.liveGenProgress as GenProgress | null;
+    // ConversationGenerationTracker (for solo orchestrator conversations).
+    const genProgress = conversationStats?.liveGenProgress as GenProgress | null;
     const genProgressFresh =
       genProgress &&
       genProgress.timestamp &&
@@ -219,15 +219,15 @@ export default function useTokenRate(
       hasActiveSubAgents = (genProgress.activeRequests || 0) > 1;
     } else {
       // Priority 3: Frontend chunk-counting fallback for non-agentic
-      // sessions (Direct Chat) that don't go through the agentic loop.
+      // conversations (Direct Chat) that don't go through the agentic loop.
       const coordActive =
         isStreaming &&
-        sessionStats?.liveStreamingLastChunkTime &&
-        perfNow - sessionStats.liveStreamingLastChunkTime < CHUNK_STALE_MS;
+        conversationStats?.liveStreamingLastChunkTime &&
+        perfNow - conversationStats.liveStreamingLastChunkTime < CHUNK_STALE_MS;
       if (coordActive) {
         const burstElapsed =
-          (sessionStats.liveStreamingBurstElapsed || 0) / 1000;
-        const burstTokens = sessionStats.liveStreamingBurstTokens || 0;
+          (conversationStats.liveStreamingBurstElapsed || 0) / 1000;
+        const burstTokens = conversationStats.liveStreamingBurstTokens || 0;
         if (burstElapsed > 0 && burstTokens > 0) {
           computedTokPerSec = burstTokens / burstElapsed;
         }

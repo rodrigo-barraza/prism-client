@@ -194,7 +194,7 @@ export interface ParsedToolResult {
   turtleEmbedUrl?: string;
 
   embedUrl?: string;
-  sessionId?: string;
+  conversationId?: string;
   turtleId?: string;
   executionTimeMs?: number;
   width?: number;

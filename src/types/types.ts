@@ -308,7 +308,7 @@ export interface Message {
   _intermediateUsage?: TokenUsage;
   /** Backend-computed estimatedCost from per-iteration usage_update events */
   _intermediateEstimatedCost?: number | null;
-  /** Backend-computed tok/s from SessionGenerationTracker */
+  /** Backend-computed tok/s from ConversationGenerationTracker */
   _liveGenProgress?: {
     outputTokens?: number;
     tokensPerSecond?: number;
@@ -381,7 +381,7 @@ export interface Conversation {
   totalCost?: number;
   isGenerating?: boolean;
   username?: string;
-  /** Marker for synthetic / test sessions */
+  /** Marker for synthetic / test conversations */
   synthetic?: boolean;
   /** Backend-enriched: unique model names from request logs */
   modelNames?: string[];
@@ -393,11 +393,11 @@ export interface Conversation {
   modalities?: Record<string, number>;
   /** Backend-enriched: tool call counts by tool name */
   toolCounts?: Record<string, number>;
-  /** Backend-enriched: parent agent session ID if spawned as sub-agent */
-  parentAgentSessionId?: string | null;
+  /** Backend-enriched: parent agent conversation ID if spawned as sub-agent */
+  parentAgentConversationId?: string | null;
   /** Backend-enriched: parent conversation document ID for tree grouping */
   parentConversationId?: string | null;
-  /** Backend-enriched: true if this session has spawned sub-agents */
+  /** Backend-enriched: true if this conversation has spawned sub-agents */
   hasSubAgents?: boolean;
   /** Backend-enriched: count of requests with errors (success === false) */
   requestErrorCount?: number;
@@ -427,7 +427,7 @@ export interface AgentConversation {
   settings?: PrismSettings;
   createdAt: string;
   updatedAt: string;
-  parentAgentSessionId?: string | null;
+  parentAgentConversationId?: string | null;
   parentConversationId?: string | null;
   hasSubAgents?: boolean;
 }
@@ -568,7 +568,7 @@ export interface TransformedSSEData {
   toolCallId?: string;
   iteration?: number;
   maxIterations?: number;
-  agentSessionId?: string;
+  agentConversationId?: string;
   toolCalls?: Array<{
     id: string;
     name: string;
@@ -666,8 +666,8 @@ export interface TransformedRequestItem {
   timeToGeneration?: number;
   generationTime?: number;
   agent?: string;
-  agentSessionId?: string;
-  parentAgentSessionId?: string | null;
+  agentConversationId?: string;
+  parentAgentConversationId?: string | null;
   username?: string;
   inputCharacters?: number;
   outputCharacters?: number;
@@ -1659,7 +1659,7 @@ export interface IrisDashboardStats {
   successCount: number;
   errorCount: number;
   conversationCount: number;
-  sessionCount: number;
+  agentConversationCount: number;
   agentCount: number;
   workspaceCount: number;
 }
@@ -1681,7 +1681,7 @@ export interface IrisModelStat {
   avgTokensPerSec?: number;
   conversationCount?: number;
   workflowCount?: number;
-  sessionCount?: number;
+  agentConversationCount?: number;
 }
 
 export interface IrisTimelineEntry {
@@ -1702,7 +1702,7 @@ export interface IrisProviderStat {
   modelCount?: number;
   conversationCount?: number;
   workflowCount?: number;
-  sessionCount?: number;
+  agentConversationCount?: number;
 }
 
 export interface IrisAgentStat {
@@ -1721,7 +1721,7 @@ export interface IrisAgentStat {
   providers?: string[];
   providerCount?: number;
   conversationCount?: number;
-  sessionCount?: number;
+  agentConversationCount?: number;
   lastRequest?: string;
   successCount?: number;
   errorCount?: number;

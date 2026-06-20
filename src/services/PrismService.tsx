@@ -318,10 +318,10 @@ export default class PrismService {
   /**
 
 
-  // -- Agent Sessions -----------------------------------------
+  // -- Agent Conversations ------------------------------------
 
   /**
-   * List agent sessions for a specific project with cursor-based pagination.
+   * List agent conversations for a specific project with cursor-based pagination.
 
 
    */
@@ -402,7 +402,7 @@ export default class PrismService {
   }
 
   /**
-   * Patch conversation or agent session.
+   * Patch conversation or agent conversation.
    */
   static async patchConversation(
     id: string,
@@ -904,7 +904,7 @@ export default class PrismService {
     return { subAgents: mappedSubAgentsList };
   }
 
-  // Abort all running sub-agents for a given agent session.
+  // Abort all running sub-agents for a given agent conversation.
   static async stopCoordinatorSubAgents(
     conversationId: string,
   ): Promise<{ stopped: string[]; alreadyStopped: string[] }> {
@@ -1074,14 +1074,14 @@ export default class PrismService {
   }
 
   /**
-   * Upload a video/webcam frame for the active agentic session.
+   * Upload a video/webcam frame for the active agentic conversation.
    */
   static async uploadVisionFrame(
     conversationId: string,
     frameDataUrl: string,
   ): Promise<{ ok: boolean }> {
     return PrismService._request<{ ok: boolean }>(
-      `/agent/session/${conversationId}/frame`,
+      `/agent/conversation/${conversationId}/frame`,
       {
         method: "POST",
         body: { frameDataUrl },

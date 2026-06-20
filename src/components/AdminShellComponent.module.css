@@ -20,7 +20,7 @@
 
 
 
-.session-badge {
+.trace-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -47,7 +47,7 @@
   }
 }
 
-.session-badge-label {
+.trace-badge-label {
   font-weight: 500;
   opacity: 0.7;
   text-transform: uppercase;
@@ -55,19 +55,19 @@
   letter-spacing: 0.05em;
 }
 
-.session-badge-id {
+.trace-badge-id {
   font-family: var(--font-mono, "SF Mono", "Fira Code", monospace);
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
 
-.session-badge-x {
+.trace-badge-x {
   opacity: 0.5;
   transition: opacity 0.15s;
   flex-shrink: 0;
 }
 
-.session-badge:hover .session-badge-x {
+.trace-badge:hover .trace-badge-x {
   opacity: 1;
 }
 

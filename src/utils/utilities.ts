@@ -165,7 +165,7 @@ export interface GenProgress {
   outputTokens?: number;
 }
 
-export interface SessionTokenStats {
+export interface ConversationTokenStats {
   totalTokens: { input: number; output: number; total: number };
   requestCount: number;
   liveStreamingTokens: number;
@@ -182,7 +182,7 @@ export interface SessionTokenStats {
   liveGenProgress: GenProgress | null;
 }
 
-export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
+export function getConversationTokenStats(messages: Message[]): ConversationTokenStats {
   let input = 0;
   let output = 0;
   let requests = 0;
@@ -197,7 +197,7 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
   let liveProcessingPhase = null; // current phase of in-flight message (processing/loading/generating)
   let liveTtftSamples = null; // server-computed TTFT samples (seconds[]) from generation_started events
   let liveOutputCharacters = 0; // real character count from streaming chunks
-  let liveGenProgress = null; // backend-computed tok/s from SessionGenerationTracker
+  let liveGenProgress = null; // backend-computed tok/s from ConversationGenerationTracker
   for (const message of messages) {
     if (message.role !== "assistant") continue;
     // Finalized messages have usage from the provider
@@ -292,7 +292,7 @@ export function getSessionTokenStats(messages: Message[]): SessionTokenStats {
         }
       }
     }
-    // Backend-computed tok/s from SessionGenerationTracker
+    // Backend-computed tok/s from ConversationGenerationTracker
     if (message._liveGenProgress) {
       liveGenProgress = message._liveGenProgress;
     }
@@ -388,7 +388,7 @@ export function toolCountsToUsedTools(
  *    capability-level entries (Thinking, Tool Calling) and
  *    coordinator function-level entries (read_file, etc.)
  * 2. **backendToolCounts** — optional { name: count } map from
- *    backend session stats (authoritative post-completion)
+ *    backend conversation stats (authoritative post-completion)
  * 3. **subAgentToolActivity** — optional { [subAgentId]: { toolNames: { name: count } } }
  *    from live SSE events (real-time during generation)
  *
@@ -441,7 +441,7 @@ export function mergeUsedToolsWithSubAgents(
 }
 
 /**
- * Derive modality flags from a session's messages array.
+ * Derive modality flags from a conversation's messages array.
  * Returns an object with boolean flags for each modality
  * (textIn, textOut, imageIn, imageOut, audioIn, audioOut,
  * videoIn, docIn, webSearch, codeExecution, functionCalling, thinking).
@@ -562,8 +562,8 @@ export function getModalities(messages: Message[]) {
  * Compute cumulative wall-clock elapsed time across all user→assistant turns.
  * Each user message with a `timestamp` paired with a subsequent assistant
  * message's `completedAt` (or `timestamp`) constitutes one turn.
- * Works for both live sessions (client-side `completedAt`) and restored
- * sessions from the DB (server-side `timestamp` on assistant messages).
+ * Works for both live conversations (client-side `completedAt`) and restored
+ * conversations from the DB (server-side `timestamp` on assistant messages).
  * Returns total elapsed seconds.
  */
 export function getSessionElapsedTime(messages: Message[]): number {
@@ -587,7 +587,7 @@ export function getSessionElapsedTime(messages: Message[]): number {
 }
 
 /**
- * Resolve the best default model for new sessions.
+ * Resolve the best default model for new conversations.
  *
  * Prefers the server-provided `recommendedDefault` / `recommendedAgenticDefault`
  * from the /config response (authoritative, centralized priority ladder).

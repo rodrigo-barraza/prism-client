@@ -1059,7 +1059,7 @@ export default function SettingsPageComponent() {
               <span className={styles["layout-row-description"]}>
                 Distills the system prompt into key behavioral constraints and
                 re-injects them periodically to counteract instruction fade-out
-                on long sessions. When set, runs a one-time extraction on the
+                on long conversations. When set, runs a one-time extraction on the
                 first reminder interval. Leave empty to disable.
               </span>
             </div>
@@ -1194,7 +1194,7 @@ export default function SettingsPageComponent() {
               </span>
               <span className={styles["layout-row-description"]}>
                 Allow the agent to discover, enable, and disable tools
-                mid-session using{" "}
+                mid-conversation using{" "}
                 <ToolLinkComponent toolName="search_tools" />,{" "}
                 <ToolLinkComponent toolName="enable_tools" />,{" "}
                 <ToolLinkComponent toolName="disable_tools" />, and{" "}

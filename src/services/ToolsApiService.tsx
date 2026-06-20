@@ -147,7 +147,7 @@ export default class ToolsApiService {
   }
 
   /**
-   * List all tasks, optionally scoped to an agent session.
+   * List all tasks, optionally scoped to an agent conversation.
    */
   static async getAllAgenticTasks({
     status,

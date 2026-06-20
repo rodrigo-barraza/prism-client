@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    ToolCallBadgeComponent — Individual tool call badge style.
    For function-level invocations (read_file, search_file_contents, etc.)
-   rendered in session stats. Visually subtler than the
+   rendered in conversation stats. Visually subtler than the
    capability-level ToolBadgeComponent.
    ═══════════════════════════════════════════════════════════════ */
 

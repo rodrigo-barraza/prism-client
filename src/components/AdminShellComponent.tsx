@@ -99,14 +99,14 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   // -- Change Stream SSE: detect new conversations in real time ----
   // Falls back to polling if Change Streams aren't available.
   useEffect(() => {
-    let sessionsAbortController: AbortController | null = null;
+    let tracesAbortController: AbortController | null = null;
     let requestsAbortController: AbortController | null = null;
 
     async function fetchSessions() {
-      if (sessionsAbortController) sessionsAbortController.abort();
-      sessionsAbortController = new AbortController();
+      if (tracesAbortController) tracesAbortController.abort();
+      tracesAbortController = new AbortController();
       try {
-        const data = await IrisService.getTraces({ page: 1, limit: 50 }, sessionsAbortController.signal);
+        const data = await IrisService.getTraces({ page: 1, limit: 50 }, tracesAbortController.signal);
         const list = data.data || [];
         const currentIds = new Set(
           list.map(
@@ -286,7 +286,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       es.close();
       clearInterval(healthInterval);
       if (pollInterval) clearInterval(pollInterval);
-      if (sessionsAbortController) sessionsAbortController.abort();
+      if (tracesAbortController) tracesAbortController.abort();
       if (requestsAbortController) requestsAbortController.abort();
     };
   }, []);
@@ -302,16 +302,16 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   const {
     controls,
     titleBadge,
-    sessionFilter,
-    setSessionFilter,
+    traceFilter,
+    setTraceFilter,
   } = useAdminHeader();
 
-  const hasSessionFilter = !!sessionFilter;
+  const hasTraceFilter = !!traceFilter;
 
-  const handleClearSession = useCallback(() => {
-    setSessionFilter(null);
+  const handleClearTrace = useCallback(() => {
+    setTraceFilter(null);
     router.push("/admin/chat");
-  }, [setSessionFilter, router]);
+  }, [setTraceFilter, router]);
 
   // Derive page title from pathname (first segment only)
   const pageTitle = (() => {
@@ -346,18 +346,18 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           titleIcon={resolvedTitleIcon ?? undefined}
           controls={controls}
         >
-          {hasSessionFilter && (
+          {hasTraceFilter && (
             <button
               type="button"
-              className={styles['session-badge']}
-              onClick={handleClearSession}
-              title="Clear session filter and show all conversations"
+              className={styles['trace-badge']}
+              onClick={handleClearTrace}
+              title="Clear trace filter and show all conversations"
             >
-              <span className={styles['session-badge-label']}>Trace</span>
-              <span className={styles['session-badge-id']}>
-                {(sessionFilter as string).slice(0, 8)}
+              <span className={styles['trace-badge-label']}>Trace</span>
+              <span className={styles['trace-badge-id']}>
+                {(traceFilter as string).slice(0, 8)}
               </span>
-              <X size={12} className={styles['session-badge-x']} />
+              <X size={12} className={styles['trace-badge-x']} />
             </button>
           )}
         </LayoutHeaderComponent>

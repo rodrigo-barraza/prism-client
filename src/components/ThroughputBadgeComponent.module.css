@@ -47,7 +47,7 @@
   opacity: 0.5;
 }
 
-/* ── Average tok/s — static from completed session ── */
+/* ── Average tok/s — static from completed conversation ── */
 .average {
   color: oklch(0.778 0.1761 160.8);
   background: oklch(77.3% 0.1535 163.3 / 0.06);

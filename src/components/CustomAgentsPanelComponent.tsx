@@ -423,7 +423,7 @@ export default function CustomAgentsPanel({
                 ) => updateField("project", e.target.value)}
                 placeholder="coding"
               />
-              <span className={styles['hint']}>Project scope for sessions</span>
+              <span className={styles['hint']}>Project scope for conversations</span>
             </div>
           </div>
 

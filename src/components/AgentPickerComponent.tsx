@@ -407,7 +407,7 @@ export default function AgentPickerComponent({
           icon={triggerIcon}
           placeholder={triggerLabel}
           disabled
-          triggerTooltip="Start a new session to switch agents"
+          triggerTooltip="Start a new conversation to switch agents"
         />
       </div>
     );

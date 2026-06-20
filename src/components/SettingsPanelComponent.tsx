@@ -13,12 +13,16 @@ import {
   Layers,
   Network,
   FolderOpen,
+  Terminal,
+  Copy,
+  Check,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import {
   SelectComponent,
   ToggleComponent as ToggleSwitch,
   TextAreaComponent,
+  useClipboard,
 } from "@rodrigo-barraza/components-library";
 import CycleButton from "./CycleButtonComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
@@ -96,9 +100,9 @@ export interface SettingsPanelProps {
   showSystemPromptModal?: boolean;
   onCloseSystemPromptModal?: () => void;
   workflows?: Workflow[];
-  sessionStats?: ConversationStats | null;
+  conversationStats?: ConversationStats | null;
   lockedTools?: Set<string>;
-  sessionType?: string;
+  conversationType?: string;
   canSpawnSubAgents?: boolean;
   agentToggles?: AgentToggleOption[];
 }
@@ -159,16 +163,125 @@ export default function SettingsPanel({
   showSystemPromptModal = false,
   onCloseSystemPromptModal,
   workflows = [],
-  sessionStats = null,
+  conversationStats = null,
   lockedTools,
-  sessionType = "conversation",
+  conversationType = "conversation",
   canSpawnSubAgents = false,
   agentToggles,
 }: SettingsPanelProps) {
-  const sessionLabel = sessionType === "agent" ? "Session" : "Conversation";
+  const conversationLabel = conversationType === "agent" ? "Conversation" : "Conversation";
   const [isSystemPromptOpen, setIsSystemPromptOpen] = useState(
     () => !!settings.systemPrompt,
   );
+
+  const { copy: copyToClipboard, copied: isCopied } = useClipboard(2000);
+
+  const generateCurlCommand = () => {
+    const isDirectChatWithoutAgent = conversationType !== "agent";
+    const apiEndpointPath = isDirectChatWithoutAgent ? "/chat" : "/agent";
+
+    const urlSearchParameters = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const agentIdentifier = urlSearchParameters?.get("agent") || "OMNI";
+    const projectIdentifier = urlSearchParameters?.get("project") || (agentIdentifier.toLowerCase() === "coding" ? "coding" : "prism-chat");
+
+    const planToggleOption = agentToggles?.find((toggleOption) => toggleOption.key === "plan");
+    const autoApproveToggleOption = agentToggles?.find((toggleOption) => toggleOption.key === "auto");
+    const criticGateToggleOption = agentToggles?.find((toggleOption) => toggleOption.key === "criticGate");
+    const maxIterationsToggleOption = agentToggles?.find((toggleOption) => toggleOption.key === "iterations");
+    const maxSubAgentIterationsToggleOption = agentToggles?.find((toggleOption) => toggleOption.key === "subAgentIterations");
+
+    const isPlanFirst = planToggleOption ? !!planToggleOption.checked : false;
+    const isAutoApprove = autoApproveToggleOption ? !!autoApproveToggleOption.checked : false;
+    const isCriticGateEnabled = criticGateToggleOption ? !!criticGateToggleOption.checked : false;
+    const maxIterationsCount = maxIterationsToggleOption ? (typeof maxIterationsToggleOption.value === "number" ? maxIterationsToggleOption.value : 10) : 10;
+    const maxSubAgentIterationsCount = maxSubAgentIterationsToggleOption ? (typeof maxSubAgentIterationsToggleOption.value === "number" ? maxSubAgentIterationsToggleOption.value : 10) : 10;
+
+    let requestPayload: Record<string, any> = {};
+
+    if (isDirectChatWithoutAgent) {
+      requestPayload = {
+        provider: settings.provider ?? "",
+        model: settings.model ?? "",
+        messages: [
+          ...(settings.systemPrompt
+            ? [
+                {
+                  role: "system",
+                  content: settings.systemPrompt,
+                },
+              ]
+            : []),
+          {
+            role: "user",
+            content: "Hello",
+          },
+        ],
+        maxTokens: settings.maxTokens,
+        temperature: settings.temperature,
+        ...(settings.thinkingEnabled !== undefined && {
+          thinkingEnabled: settings.thinkingEnabled,
+        }),
+        ...(settings.reasoningEffort && {
+          reasoningEffort: settings.reasoningEffort,
+        }),
+        ...(settings.thinkingBudget && {
+          thinkingBudget: settings.thinkingBudget,
+        }),
+        ...(settings.thinkingLevel && {
+          thinkingLevel: settings.thinkingLevel,
+        }),
+        functionCallingEnabled: settings.functionCallingEnabled ?? false,
+        ...(settings.webSearchEnabled ? { webSearch: true } : {}),
+        ...(settings.codeExecutionEnabled ? { codeExecution: true } : {}),
+        ...(settings.urlContextEnabled ? { urlContext: true } : {}),
+      };
+    } else {
+      requestPayload = {
+        provider: settings.provider ?? "",
+        model: settings.model ?? "",
+        messages: [
+          { role: "system", content: settings.systemPrompt || "" },
+          {
+            role: "user",
+            content: "Hello",
+          },
+        ],
+        functionCallingEnabled: true,
+        maxTokens: settings.maxTokens,
+        temperature: settings.temperature,
+        ...(settings.thinkingEnabled !== undefined && {
+          thinkingEnabled: settings.thinkingEnabled,
+        }),
+        ...(settings.reasoningEffort && {
+          reasoningEffort: settings.reasoningEffort,
+        }),
+        ...(settings.thinkingBudget && {
+          thinkingBudget: settings.thinkingBudget,
+        }),
+        ...(settings.thinkingLevel && {
+          thinkingLevel: settings.thinkingLevel,
+        }),
+        minContextLength: 120000,
+        project: projectIdentifier,
+        agent: agentIdentifier,
+        harness: settings?.agents?.harness || "standard",
+        topology: settings?.agents?.topology || "hierarchical",
+        reasoningStrategy: settings?.agents?.reasoningStrategy || undefined,
+        autoApprove: isAutoApprove,
+        planFirst: isPlanFirst,
+        maxIterations: maxIterationsCount === Infinity ? 0 : maxIterationsCount,
+        maxSubAgentIterations: maxSubAgentIterationsCount === Infinity ? 0 : maxSubAgentIterationsCount,
+        ...(isCriticGateEnabled && { enableCriticGate: true }),
+        ...(settings.agents?.workspaceEnabled === false && {
+          workspaceEnabled: false,
+        }),
+      };
+    }
+
+    return `curl -X POST "https://api.prism.rod.dev${apiEndpointPath}" \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify(requestPayload, null, 2).replace(/'/g, "'\\''")}'`;
+  };
 
   const textModelsMap = config?.textToText?.models || {};
   const audioToTextModelsMap = config?.audioToText?.models || {};
@@ -240,24 +353,24 @@ export default function SettingsPanel({
     liveTokensPerSec,
     computedTokPerSec,
     hasActiveSubAgents,
-  } = useTokenRate(sessionStats);
+  } = useTokenRate(conversationStats);
 
   // -- Live TTFT (Time To First Token) ---------------------------
-  const { liveTtft, isLiveTtft } = useTtft(sessionStats, perfNow, needsTicker);
+  const { liveTtft, isLiveTtft } = useTtft(conversationStats, perfNow, needsTicker);
 
   // -- Stats tab (All / Orchestrator / Sub-Agents) --------------
   const [statsTab, setStatsTab] = useState("all");
 
   const showStatsTabBar =
-    canSpawnSubAgents && !!(sessionStats?.orchestrator || sessionStats?.subAgents);
+    canSpawnSubAgents && !!(conversationStats?.orchestrator || conversationStats?.subAgents);
 
   // Resolve which stats object to render based on active tab
-  const activeStats = sessionStats
+  const activeStats = conversationStats
     ? statsTab === "orchestrator"
-      ? sessionStats.orchestrator
+      ? conversationStats.orchestrator
       : statsTab === "subAgents"
-        ? sessionStats.subAgents
-        : sessionStats
+        ? conversationStats.subAgents
+        : conversationStats
     : null;
 
   // Compute displayed elapsed for the active tab
@@ -268,7 +381,7 @@ export default function SettingsPanel({
 
   const renderStatsBadges = (stats: ConversationStats, showFull: boolean) => {
     const timeToFirstTokenValue =
-      stats.avgTimeToGeneration ?? sessionStats?.lastTimeToGeneration;
+      stats.avgTimeToGeneration ?? conversationStats?.lastTimeToGeneration;
 
     const estimatedLiveCost = stats.totalCost;
 
@@ -280,25 +393,25 @@ export default function SettingsPanel({
           deletedCount={stats.deletedCount}
         />
         <BadgeComponent type="requests" count={stats.requestCount} />
-        {sessionType === "agent" && settings.agents?.harness && (
+        {conversationType === "agent" && settings.agents?.harness && (
           <span className={styles['stat-badge']}>
             <Brain size={10} />
             {formatHarnessLabel(settings.agents.harness)}
           </span>
         )}
-        {sessionType === "agent" && settings.agents?.topology && (
+        {conversationType === "agent" && settings.agents?.topology && (
           <span className={styles['stat-badge']}>
             <Network size={10} />
             {formatTopologyLabel(settings.agents.topology)}
           </span>
         )}
-        {sessionType === "agent" && settings.agents?.reasoningStrategy && (
+        {conversationType === "agent" && settings.agents?.reasoningStrategy && (
           <span className={styles['stat-badge']}>
             <Brain size={10} />
             {formatReasoningStrategyLabel(settings.agents.reasoningStrategy as string)}
           </span>
         )}
-        {sessionType === "agent" && settings.agents?.workspaceEnabled === false && (
+        {conversationType === "agent" && settings.agents?.workspaceEnabled === false && (
           <span className={styles['stat-badge']}>
             <FolderOpen size={10} />
             No Workspace
@@ -444,8 +557,8 @@ export default function SettingsPanel({
           const displayTools: Array<{ name: string; count: number }> = (() => {
             if (
               statsTab !== "all" ||
-              !sessionStats?.subAgents ||
-              !sessionStats?.orchestrator
+              !conversationStats?.subAgents ||
+              !conversationStats?.orchestrator
             ) {
               return stats.usedTools || [];
             }
@@ -454,8 +567,8 @@ export default function SettingsPanel({
             const toolMap = new Map<string, number>();
 
             // Add orchestrator tools
-            if (sessionStats.orchestrator?.usedTools) {
-              for (const tool of sessionStats.orchestrator.usedTools) {
+            if (conversationStats.orchestrator?.usedTools) {
+              for (const tool of conversationStats.orchestrator.usedTools) {
                 toolMap.set(
                   tool.name,
                   (toolMap.get(tool.name) || 0) + (tool.count || 1),
@@ -464,8 +577,8 @@ export default function SettingsPanel({
             }
 
             // Add sub-agent tools
-            if (sessionStats.subAgents?.usedTools) {
-              for (const tool of sessionStats.subAgents.usedTools) {
+            if (conversationStats.subAgents?.usedTools) {
+              for (const tool of conversationStats.subAgents.usedTools) {
                 toolMap.set(
                   tool.name,
                   (toolMap.get(tool.name) || 0) + (tool.count || 1),
@@ -516,10 +629,10 @@ export default function SettingsPanel({
   return (
     <>
       <div className={`settings-panel-component ${styles['container']}`}>
-        {sessionStats && (
-          <div className={styles['session-stats']}>
+        {conversationStats && (
+          <div className={styles['conversation-stats']}>
             <div className={styles['stats-header']}>
-              <Layers size={12} style={{ marginRight: 4 }} /> {sessionLabel} Details
+              <Layers size={12} style={{ marginRight: 4 }} /> {conversationLabel} Details
               {showStatsTabBar && (
                 <StatsTabBarComponent
                   activeTab={statsTab}
@@ -833,17 +946,17 @@ export default function SettingsPanel({
         )}
 
         {/* -- Agent Settings (Toggles + Strategy + Native Tools) ------ */}
-        {((agentToggles?.length ?? 0) > 0 || sessionType === "agent" || (selectedModelDef?.tools && selectedModelDef.tools.length > 0)) && (
+        {((agentToggles?.length ?? 0) > 0 || conversationType === "agent" || (selectedModelDef?.tools && selectedModelDef.tools.length > 0)) && (
           <div className={styles['section']}>
             <div className={styles['section-header']}>Agent Settings</div>
             {(() => {
-              const isExistingAgentSession = (sessionStats?.messageCount ?? 0) > 0;
-              const isAgentSettingsLocked = readOnly || isExistingAgentSession;
+              const isExistingAgentConversation = (conversationStats?.messageCount ?? 0) > 0;
+              const isAgentSettingsLocked = readOnly || isExistingAgentConversation;
               return (
                 <>
 
             {/* 1. Workspace */}
-            {sessionType === "agent" && (
+            {conversationType === "agent" && (
               <div
                 className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
               >
@@ -981,7 +1094,7 @@ export default function SettingsPanel({
                 };
 
                 const filteredTools = selectedModelDef.tools
-                  .filter((tool) => !(sessionType === "agent" && tool === "Tool Calling"))
+                  .filter((tool) => !(conversationType === "agent" && tool === "Tool Calling"))
                   .sort((firstTool, secondTool) => {
                     if (firstTool === "Thinking") return -1;
                     if (secondTool === "Thinking") return 1;
@@ -1085,7 +1198,7 @@ export default function SettingsPanel({
             ))}
 
             {/* 6–8. Reasoning, Topology, Harness */}
-            {sessionType === "agent" && (() => {
+            {conversationType === "agent" && (() => {
               const reasoningOptions = buildReasoningStrategyOptions();
               const topologyOptions = buildTopologyOptions();
 
@@ -1257,6 +1370,31 @@ export default function SettingsPanel({
             </div>
           </div>
         )}
+
+        {/* Copy curl button */}
+        <div className={styles['copy-curl-container-section']}>
+          <button
+            type="button"
+            className={`${styles['copy-curl-action-button']} ${isCopied ? styles['copy-curl-button-copied-state'] : ""}`}
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+              event.stopPropagation();
+              const generatedCurlCommand = generateCurlCommand();
+              copyToClipboard(generatedCurlCommand);
+            }}
+          >
+            {isCopied ? (
+              <>
+                <Check size={14} />
+                <span>cURL Copied!</span>
+              </>
+            ) : (
+              <>
+                <Terminal size={14} />
+                <span>Copy cURL</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {!readOnly && showSystemPromptModal && (
