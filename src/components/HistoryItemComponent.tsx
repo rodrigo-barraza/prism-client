@@ -37,7 +37,7 @@ interface HistoryItem {
   tags?: HistoryItemTag[];
   username?: string;
   agent?: string | AgentRef;
-  parentAgentSessionId?: string | null;
+  parentConversationId?: string | null;
   hasSubAgents?: boolean;
 }
 
@@ -242,14 +242,14 @@ export default function HistoryItemComponent({
                   </span>
                 );
               })()}
-            {item.parentAgentSessionId && (
+            {item.parentConversationId && (
               <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
                 👷{subAgentNumber != null && (
                   <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
                 )}
               </span>
             )}
-            {(item.hasSubAgents || hasSpawnedSubAgents) && !item.parentAgentSessionId && (
+            {(item.hasSubAgents || hasSpawnedSubAgents) && !item.parentConversationId && (
               <span className={styles['parent-agent-emoji']} title="Parent Agent (spawned sub-agents)">
                 🧬
               </span>

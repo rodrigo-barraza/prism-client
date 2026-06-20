@@ -34,7 +34,7 @@ interface HistoryListItem {
   modelNames?: string[];
   username?: string;
   agent?: string | { id: string; name?: string };
-  parentAgentSessionId?: string | null;
+  parentConversationId?: string | null;
   hasSubAgents?: boolean;
   requestErrorCount?: number;
 }
@@ -298,7 +298,7 @@ export default function HistoryList({
   }, [items]);
 
   const hasSubAgents = useMemo(() => {
-    return (items || []).some((item) => !!item.parentAgentSessionId);
+    return (items || []).some((item) => !!item.parentConversationId);
   }, [items]);
 
   const hasItemsWithErrors = useMemo(() => {
@@ -309,10 +309,10 @@ export default function HistoryList({
     const numberMap = new Map<string, number>();
     const childrenByParent = new Map<string, HistoryListItem[]>();
     for (const item of items || []) {
-      if (item.parentAgentSessionId) {
-        const siblings = childrenByParent.get(item.parentAgentSessionId) || [];
+      if (item.parentConversationId) {
+        const siblings = childrenByParent.get(item.parentConversationId) || [];
         siblings.push(item);
-        childrenByParent.set(item.parentAgentSessionId, siblings);
+        childrenByParent.set(item.parentConversationId, siblings);
       }
     }
     for (const siblings of childrenByParent.values()) {
@@ -328,11 +328,11 @@ export default function HistoryList({
     return numberMap;
   }, [items]);
 
-  const parentAgentSessionIds = useMemo(() => {
+  const parentConversationIds = useMemo(() => {
     const parentIds = new Set<string>(knownParentSessionIds);
     for (const item of items || []) {
-      if (item.parentAgentSessionId) {
-        parentIds.add(item.parentAgentSessionId);
+      if (item.parentConversationId) {
+        parentIds.add(item.parentConversationId);
       }
       if (item.hasSubAgents) {
         parentIds.add(item.id);
@@ -343,7 +343,7 @@ export default function HistoryList({
 
   const filtered = useMemo(() => {
     return (items || []).filter((item: HistoryListItem) => {
-      if (shouldHideSubAgents && item.parentAgentSessionId) {
+      if (shouldHideSubAgents && item.parentConversationId) {
         return false;
       }
       if (showErrorsOnly && (item.requestErrorCount || 0) === 0) {
@@ -427,11 +427,11 @@ export default function HistoryList({
     const parentIdsInFiltered = new Set<string>();
 
     for (const item of filtered) {
-      if (item.parentAgentSessionId) {
-        const siblingSessions = childrenByParent.get(item.parentAgentSessionId) || [];
+      if (item.parentConversationId) {
+        const siblingSessions = childrenByParent.get(item.parentConversationId) || [];
         siblingSessions.push(item);
-        childrenByParent.set(item.parentAgentSessionId, siblingSessions);
-      } else if (parentAgentSessionIds.has(item.id)) {
+        childrenByParent.set(item.parentConversationId, siblingSessions);
+      } else if (parentConversationIds.has(item.id)) {
         parentIdsInFiltered.add(item.id);
       }
     }
@@ -448,8 +448,8 @@ export default function HistoryList({
     const groups: SessionGroup[] = [];
 
     for (const item of filtered) {
-      if (item.parentAgentSessionId) {
-        if (parentIdsInFiltered.has(item.parentAgentSessionId)) {
+      if (item.parentConversationId) {
+        if (parentIdsInFiltered.has(item.parentConversationId)) {
           continue;
         }
         groups.push({ type: "standalone", item });
@@ -468,7 +468,7 @@ export default function HistoryList({
     }
 
     return groups;
-  }, [filtered, parentAgentSessionIds]);
+  }, [filtered, parentConversationIds]);
 
 
   // -- Infinite scroll via IntersectionObserver -----------------
@@ -687,7 +687,7 @@ export default function HistoryList({
                 isGenerating={generatingSessionIds?.has?.(item.id)}
                 isCondensed={true}
                 subAgentNumber={subAgentNumberMap.get(item.id) ?? null}
-                hasSpawnedSubAgents={parentAgentSessionIds.has(item.id)}
+                hasSpawnedSubAgents={parentConversationIds.has(item.id)}
               />
             );
           }
@@ -754,7 +754,7 @@ export default function HistoryList({
                       isGenerating={generatingSessionIds?.has?.(child.id)}
                       isCondensed={true}
                       subAgentNumber={subAgentNumberMap.get(child.id) ?? null}
-                      hasSpawnedSubAgents={parentAgentSessionIds.has(child.id)}
+                      hasSpawnedSubAgents={parentConversationIds.has(child.id)}
                     />
                   </div>
                 ))}
