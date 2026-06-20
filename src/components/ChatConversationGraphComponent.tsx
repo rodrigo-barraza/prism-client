@@ -516,6 +516,51 @@ function applyTopologyLayout(
   }
 }
 
+const MINIMUM_ZOOM = 0.02;
+const MAXIMUM_ZOOM = 5;
+
+function computeFitToGraphTransform(
+  graphNodes: GraphNode[],
+  viewportWidth: number,
+  viewportHeight: number,
+): { zoom: number; panOffset: { x: number; y: number } } {
+  if (graphNodes.length === 0) return { zoom: 1, panOffset: { x: 0, y: 0 } };
+
+  const maxNodeRadius = Math.max(...graphNodes.map((node) => node.radius));
+  const boundingPadding = maxNodeRadius + 60;
+
+  let minimumX = Infinity;
+  let minimumY = Infinity;
+  let maximumX = -Infinity;
+  let maximumY = -Infinity;
+
+  for (const node of graphNodes) {
+    minimumX = Math.min(minimumX, node.x - node.radius);
+    minimumY = Math.min(minimumY, node.y - node.radius);
+    maximumX = Math.max(maximumX, node.x + node.radius);
+    maximumY = Math.max(maximumY, node.y + node.radius);
+  }
+
+  const graphWidth = maximumX - minimumX + boundingPadding * 2;
+  const graphHeight = maximumY - minimumY + boundingPadding * 2;
+
+  const horizontalZoom = viewportWidth / graphWidth;
+  const verticalZoom = viewportHeight / graphHeight;
+  const fittedZoom = Math.max(MINIMUM_ZOOM, Math.min(MAXIMUM_ZOOM, Math.min(horizontalZoom, verticalZoom)));
+
+  const graphCenterX = (minimumX + maximumX) / 2;
+  const graphCenterY = (minimumY + maximumY) / 2;
+  const viewportCenterX = viewportWidth / 2;
+  const viewportCenterY = viewportHeight / 2;
+
+  const fittedPanOffset = {
+    x: viewportCenterX / fittedZoom - graphCenterX,
+    y: viewportCenterY / fittedZoom - graphCenterY,
+  };
+
+  return { zoom: fittedZoom, panOffset: fittedPanOffset };
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    Props Interface
    ═══════════════════════════════════════════════════════════════════ */
@@ -755,8 +800,10 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
         const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
         applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
         setGraphData(graph);
-        setZoom(1);
-        setPanOffset({ x: 0, y: 0 });
+
+        const fitTransform = computeFitToGraphTransform(graph.nodes, dimensions.width, dimensions.height);
+        setZoom(fitTransform.zoom);
+        setPanOffset(fitTransform.panOffset);
         setIsLoading(false);
       } catch {
         // Conversation may not exist yet for a new conversation —
@@ -947,12 +994,21 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
   const handleCanvasWheel = useCallback((event: React.WheelEvent<SVGSVGElement>) => {
     event.preventDefault();
     const zoomFactor = event.deltaY > 0 ? 0.92 : 1.08;
-    setZoom((previousZoom) => Math.max(0.3, Math.min(3, previousZoom * zoomFactor)));
+    setZoom((previousZoom) => Math.max(MINIMUM_ZOOM, Math.min(MAXIMUM_ZOOM, previousZoom * zoomFactor)));
   }, []);
 
-  const handleZoomIn = useCallback(() => setZoom((currentZoom) => Math.min(3, currentZoom * 1.2)), []);
-  const handleZoomOut = useCallback(() => setZoom((currentZoom) => Math.max(0.3, currentZoom * 0.8)), []);
-  const handleZoomFit = useCallback(() => { setZoom(1); setPanOffset({ x: 0, y: 0 }); }, []);
+  const handleZoomIn = useCallback(() => setZoom((currentZoom) => Math.min(MAXIMUM_ZOOM, currentZoom * 1.2)), []);
+  const handleZoomOut = useCallback(() => setZoom((currentZoom) => Math.max(MINIMUM_ZOOM, currentZoom * 0.8)), []);
+  const handleZoomFit = useCallback(() => {
+    if (!graphData || graphData.nodes.length === 0) {
+      setZoom(1);
+      setPanOffset({ x: 0, y: 0 });
+      return;
+    }
+    const fitTransform = computeFitToGraphTransform(graphData.nodes, dimensions.width, dimensions.height);
+    setZoom(fitTransform.zoom);
+    setPanOffset(fitTransform.panOffset);
+  }, [graphData, dimensions.width, dimensions.height]);
 
   const handleNodeClick = useCallback((nodeId: string) => {
     if (!hasDraggedRef.current) {

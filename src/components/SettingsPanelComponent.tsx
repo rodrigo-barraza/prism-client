@@ -1233,7 +1233,7 @@ export default function SettingsPanel({
                           },
                         })
                       }
-                      label="Reasoning"
+                      label="Agent Reasoning Strategy"
                       labelIcon={<Layers size={12} />}
                       compact
                       disabled={isAgentSettingsLocked}
@@ -1254,7 +1254,7 @@ export default function SettingsPanel({
                           agents: { ...settings.agents, topology: value },
                         })
                       }
-                      label="Topology"
+                      label="Sub-Agent Topology"
                       labelIcon={<Network size={12} />}
                       compact
                       disabled={isAgentSettingsLocked}
@@ -1277,7 +1277,7 @@ export default function SettingsPanel({
                           agents: { ...settings.agents, harness: value },
                         })
                       }
-                      label="Harness"
+                      label="Agent Harness"
                       labelIcon={<Brain size={12} />}
                       compact
                       disabled={isAgentSettingsLocked}
