@@ -1457,10 +1457,17 @@ export default function ChatConversationComponent({
 
     (async () => {
       try {
+        const conversationIdAtLoadStart = conversationIdRef.current;
         const full = isNoAgent
           ? await PrismService.getConversation(initialConversationId)
           : await PrismService.getAgentConversation(initialConversationId, agentProject!);
         if (!full) return;
+
+        // Guard: if the user navigated away (e.g. clicked "New Conversation")
+        // while the API call was in flight, conversationIdRef.current will have
+        // changed to a new UUID. Applying stale data would restore the old
+        // selection highlight in the sidebar.
+        if (conversationIdRef.current !== conversationIdAtLoadStart) return;
 
         const displayMessages = prepareDisplayMessages(full.messages || []);
         console.debug(
@@ -5330,10 +5337,19 @@ export default function ChatConversationComponent({
         return;
       }
 
+      const conversationIdAtLoadStart = conversationIdRef.current;
       try {
         const full = isNoAgent
           ? await PrismService.getConversation(conversation.id!)
           : await PrismService.getAgentConversation(conversation.id!, agentProject!);
+        // Guard: if the user navigated away (e.g. clicked "New Conversation")
+        // while this API call was in flight, conversationIdRef.current will
+        // have changed to a new UUID. Applying stale data here would restore
+        // the previously-selected sidebar item's highlight on the new blank slate.
+        if (conversationIdRef.current !== conversationIdAtLoadStart) {
+          setPixelTransition(null);
+          return;
+        }
         applyConversationData(full);
         recordPixelLoadTime(performance.now() - loadStart);
         setPixelTransition("in");
