@@ -53,6 +53,11 @@
   }
 }
 
+/* Completing flash: snap to 100% quickly before phase reset */
+.status-bar-fill-is-completing-state {
+  transition: width 180ms ease-out;
+}
+
 /* Hide fill when inactive */
 .status-bar:not(.status-bar-is-active-state) .status-bar-fill {
   opacity: 0;

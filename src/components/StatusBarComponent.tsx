@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./StatusBarComponent.module.css";
 
 const PHASE_LABELS = {
@@ -87,6 +87,7 @@ const PHASE_GRADIENT_STOPS: Record<string, string[]> = {
 const ASYMPTOTIC_TIME_CONSTANT_MS = 15_000;
 const SYNTHETIC_TICK_MS = 150;
 const MAX_SYNTHETIC = 0.99;
+const PHASE_COMPLETION_FLASH_DURATION_MS = 280;
 
 export type StatusBarPhase = "starting" | "loading" | "prefilling" | "generating" | "thinking" | "executing" | "delegating" | "awaiting";
 
@@ -119,28 +120,57 @@ export default function StatusBarComponent({
 }: StatusBarProps) {
   const isSubAgent = variant === "subAgent";
 
-  // The one number that matters: 0 → 99, left to right.
   const [displayPercentage, setDisplayPercentage] = useState(0);
+  const [isCompletingPhase, setIsCompletingPhase] = useState(false);
   const syntheticStartRef = useRef<number | null>(null);
   const highWaterMarkRef = useRef(0);
   const previousPhaseRef = useRef<StatusBarPhase | undefined>(undefined);
+  const completionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCompletionTimer = useCallback(() => {
+    if (completionTimerRef.current !== null) {
+      clearTimeout(completionTimerRef.current);
+      completionTimerRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     if (!active) {
+      clearCompletionTimer();
       setDisplayPercentage(0);
+      setIsCompletingPhase(false);
       syntheticStartRef.current = null;
       highWaterMarkRef.current = 0;
       previousPhaseRef.current = undefined;
       return;
     }
 
-    // Reset on phase change — bar restarts from 0
     if (phase !== previousPhaseRef.current) {
+      const hadPreviousPhase = previousPhaseRef.current !== undefined;
       previousPhaseRef.current = phase;
+
+      if (hadPreviousPhase) {
+        // Flash to 100% to signify the previous phase completed
+        clearCompletionTimer();
+        setIsCompletingPhase(true);
+        setDisplayPercentage(100);
+
+        completionTimerRef.current = setTimeout(() => {
+          setIsCompletingPhase(false);
+          syntheticStartRef.current = performance.now();
+          highWaterMarkRef.current = 0;
+          setDisplayPercentage(0);
+          completionTimerRef.current = null;
+        }, PHASE_COMPLETION_FLASH_DURATION_MS);
+        return;
+      }
+
       syntheticStartRef.current = performance.now();
       highWaterMarkRef.current = 0;
       setDisplayPercentage(0);
     }
+
+    if (isCompletingPhase) return;
 
     const intervalId = setInterval(() => {
       const elapsed = performance.now() - (syntheticStartRef.current ?? performance.now());
@@ -159,7 +189,11 @@ export default function StatusBarComponent({
     }, SYNTHETIC_TICK_MS);
 
     return () => clearInterval(intervalId);
-  }, [active, progress, phase]);
+  }, [active, progress, phase, isCompletingPhase, clearCompletionTimer]);
+
+  useEffect(() => {
+    return () => clearCompletionTimer();
+  }, [clearCompletionTimer]);
 
   const rawLabel =
     label || (PHASE_LABELS as Record<string, string>)[phase ?? ""] || "Starting...";
@@ -193,7 +227,7 @@ export default function StatusBarComponent({
       style={gradientCustomProperties}
     >
       <div
-        className={styles['status-bar-fill']}
+        className={`${styles['status-bar-fill']}${isCompletingPhase ? ` ${styles['status-bar-fill-is-completing-state']}` : ''}`}
         style={{ width: `${displayPercentage}%` }}
       />
       <div
