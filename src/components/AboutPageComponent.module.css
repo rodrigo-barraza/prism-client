@@ -1,0 +1,385 @@
+/* ════════════════════════════════════════════════════════════
+   AboutPageComponent — Research Paper Implementation Showcase
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Hero Section ──────────────────────────────────────────── */
+
+.about-page-container {
+  padding-block: 48px 80px;
+  padding-inline: 48px;
+  max-inline-size: 1200px;
+  margin-inline: auto;
+}
+
+.hero-section {
+  text-align: center;
+  margin-block-end: 64px;
+}
+
+.hero-title {
+  font-size: 2.75rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-block-end: 16px;
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-secondary),
+    var(--accent-tertiary)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-inline-size: 680px;
+  margin-inline: auto;
+}
+
+/* ── Section Separator ─────────────────────────────────────── */
+
+.category-section {
+  margin-block-end: 56px;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-block-end: 28px;
+}
+
+.category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  font-size: 1.375rem;
+  flex-shrink: 0;
+  background: var(--calculated-accent-primary-subtle);
+  border: 1px solid oklch(0 0 0 / 0.06);
+}
+
+[data-theme="dark"] .category-icon,
+[data-theme="midnight"] .category-icon {
+  border-color: oklch(1 0 0 / 0.06);
+}
+
+.category-title {
+  font-size: 1.375rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.category-divider {
+  block-size: 1px;
+  margin-block-end: 24px;
+  background: linear-gradient(
+    to right,
+    var(--accent-primary),
+    var(--accent-secondary),
+    transparent
+  );
+  opacity: 0.3;
+}
+
+/* ── Paper Card Grid ───────────────────────────────────────── */
+
+.paper-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+/* ── Individual Paper Card ─────────────────────────────────── */
+
+.paper-card {
+  --card-entrance-delay: 0ms;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--calculated-border-color);
+  background: var(--background-surface);
+  transition:
+    translate 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: card-entrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) var(--card-entrance-delay) both;
+}
+
+.paper-card:hover {
+  translate: 0 -3px;
+  box-shadow:
+    0 8px 24px oklch(0 0 0 / 0.08),
+    0 2px 8px oklch(0 0 0 / 0.04);
+  border-color: var(--accent-primary);
+}
+
+[data-theme="dark"] .paper-card:hover,
+[data-theme="midnight"] .paper-card:hover {
+  box-shadow:
+    0 8px 24px oklch(0 0 0 / 0.3),
+    0 2px 8px oklch(0 0 0 / 0.15);
+}
+
+@keyframes card-entrance {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* ── Card Header ───────────────────────────────────────────── */
+
+.card-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 12px;
+}
+
+.paper-title {
+  font-size: 1rem;
+  font-weight: 620;
+  line-height: 1.35;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.paper-title-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.paper-title-link:hover {
+  color: var(--accent-primary);
+}
+
+.paper-title-link:hover .external-link-icon {
+  opacity: 1;
+  translate: 1px -1px;
+}
+
+.external-link-icon {
+  display: inline-block;
+  margin-inline-start: 5px;
+  font-size: 0.75rem;
+  opacity: 0.4;
+  transition:
+    opacity 0.15s ease,
+    translate 0.15s ease;
+  vertical-align: super;
+}
+
+/* ── Category Badge ────────────────────────────────────────── */
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding-block: 3px;
+  padding-inline: 10px;
+  border-radius: 100px;
+  font-size: 0.6875rem;
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.4;
+  border: 1px solid oklch(0 0 0 / 0.06);
+}
+
+[data-theme="dark"] .category-badge,
+[data-theme="midnight"] .category-badge {
+  border-color: oklch(1 0 0 / 0.08);
+}
+
+.badge-core-harness {
+  background: oklch(58.5% 0.2041 277.1 / 0.12);
+  color: oklch(58.5% 0.2041 277.1);
+}
+
+.badge-reasoning-strategy {
+  background: oklch(70.9% 0.1592 293.5 / 0.12);
+  color: oklch(70.9% 0.1592 293.5);
+}
+
+.badge-self-correction {
+  background: oklch(76.9% 0.1646 70.1 / 0.12);
+  color: oklch(70.5% 0.1867 47.6);
+}
+
+.badge-tree-search {
+  background: oklch(77.3% 0.1535 163.3 / 0.12);
+  color: oklch(69.6% 0.1491 162.5);
+}
+
+.badge-task-decomposition {
+  background: oklch(75.3% 0.1391 232.7 / 0.12);
+  color: oklch(71.5% 0.1258 215.2);
+}
+
+.badge-iterative-refinement {
+  background: oklch(64.5% 0.2154 16.4 / 0.12);
+  color: oklch(64.5% 0.2154 16.4);
+}
+
+.badge-selection {
+  background: oklch(62.7% 0.2326 303.9 / 0.12);
+  color: oklch(62.7% 0.2326 303.9);
+}
+
+.badge-synthesis {
+  background: oklch(78.5% 0.1325 181.9 / 0.12);
+  color: oklch(69.6% 0.1491 162.5);
+}
+
+.badge-multi-agent-debate {
+  background: oklch(71.4% 0.1435 254.6 / 0.12);
+  color: oklch(62.3% 0.1881 259.8);
+}
+
+.badge-safety {
+  background: oklch(63.7% 0.2078 25.3 / 0.12);
+  color: oklch(63.7% 0.2078 25.3);
+}
+
+.badge-memory {
+  background: oklch(70.9% 0.1592 293.5 / 0.12);
+  color: oklch(62.7% 0.2326 303.9);
+}
+
+.badge-context-management {
+  background: oklch(71.5% 0.1258 215.2 / 0.12);
+  color: oklch(63.2% 0.2019 254.1);
+}
+
+.badge-workflow {
+  background: oklch(80.0% 0.182 151.7 / 0.12);
+  color: oklch(72.3% 0.192 149.6);
+}
+
+.badge-multimodal {
+  background: oklch(76.9% 0.1646 70.1 / 0.12);
+  color: oklch(66.6% 0.1574 58.3);
+}
+
+/* ── Card Metadata ─────────────────────────────────────────── */
+
+.paper-authors {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  margin-block-end: 10px;
+  line-height: 1.45;
+}
+
+.paper-year {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.paper-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-block-end: 16px;
+  flex: 1;
+}
+
+/* ── Implementation File Badge ─────────────────────────────── */
+
+.implementation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 6px;
+  padding-inline: 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-family: var(--font-mono, "SF Mono", "Cascadia Code", "Fira Code", monospace);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--background-base);
+  border: 1px solid var(--calculated-border-color);
+  margin-block-start: auto;
+  align-self: flex-start;
+}
+
+.implementation-icon {
+  font-size: 0.8125rem;
+  opacity: 0.7;
+}
+
+/* ── Footer Stats ──────────────────────────────────────────── */
+
+.footer-stats-section {
+  margin-block-start: 24px;
+  padding-block-start: 32px;
+  border-block-start: 1px solid var(--calculated-border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--accent-primary);
+}
+
+.stat-label {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .about-page-container {
+    padding-block: 32px 56px;
+    padding-inline: 20px;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .paper-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-stats-section {
+    gap: 24px;
+  }
+}
