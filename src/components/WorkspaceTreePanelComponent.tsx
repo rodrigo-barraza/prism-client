@@ -331,7 +331,7 @@ export default function WorkspaceTreePanelComponent({
 
   if (!currentWorkspace && !unavailableWorkspace) return null;
 
-  // -- Session workspace not currently connected --
+  // -- Conversation workspace not currently connected --
   if (unavailableWorkspace) {
     // Extract the last path segment for a friendlier label
     const label =

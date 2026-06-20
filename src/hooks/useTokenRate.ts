@@ -128,7 +128,7 @@ function sumSubAgentThroughput(
  *      sub-agents (orchestrator-only), where the tracker has accurate data.
  *
  *   3. **Frontend chunk-counting** (fallback): For non-agentic
- *      sessions (regular conversations) that don't emit
+ *      conversations (regular conversations) that don't emit
  *      generation_progress events. Computes rates from SSE chunk
  *      inter-arrival timing.
  */

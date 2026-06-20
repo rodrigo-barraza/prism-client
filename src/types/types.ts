@@ -227,7 +227,7 @@ export interface SubAgentGenerationProgress {
   toolNames?: Record<string, number>;
 }
 
-// --- Session / Conversation Stats ---------------------------
+// --- Conversation Stats ---------------------------
 
 export interface ConversationStats {
   totalCost?: number;
@@ -1018,7 +1018,7 @@ export interface MCPServer {
 export interface CoordinatorSubAgent {
   id: string;
   agentId?: string;
-  agentSessionId: string;
+  agentConversationId: string;
   status: string;
   task?: string;
   description?: string;

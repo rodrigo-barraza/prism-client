@@ -480,10 +480,10 @@ export const latencyColumn = (key = "avgLatency", label = "Avg Latency") => ({
   },
 });
 
-/* ·· Count link columns (Sessions / Conversations / Workflows) ·· */
+/* ·· Count link columns (Traces / Conversations / Workflows) ·· */
 
 /**
- * Returns 3 columns with CountLinkComponent: Sessions, Conversations, Workflows.
+ * Returns 3 columns with CountLinkComponent: Traces, Conversations, Workflows.
  */
 export const countLinkColumns = (
   entityKey: string,

@@ -719,7 +719,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
     try {
       const triggerResponse = await PrismService.triggerCronJob(task.id);
       showToast(
-        `Task successfully triggered. Session ID: ${triggerResponse.agentSessionId.slice(0, 8)}…`,
+        `Task successfully triggered. Conversation ID: ${triggerResponse.agentConversationId.slice(0, 8)}…`,
       );
     } catch (error: unknown) {
       console.error(error);

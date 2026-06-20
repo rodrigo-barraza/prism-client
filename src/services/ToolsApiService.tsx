@@ -38,7 +38,7 @@ export interface AgenticTask {
   status?: string;
   priority?: string;
   description?: string;
-  agentSessionId?: string;
+  agentConversationId?: string;
   createdAt?: string;
   updatedAt?: string;
   subtasks?: Array<{ title: string; status: string }>;

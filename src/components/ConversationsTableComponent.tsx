@@ -37,7 +37,7 @@ interface ConversationsTableProps {
 
 /**
  * ConversationsTableComponent — reusable admin table for displaying
- * conversation lists (used in sessions, request associations, etc.).
+ * conversation lists (used in traces, request associations, etc.).
  */
 export default function ConversationsTableComponent({
   conversations = [],

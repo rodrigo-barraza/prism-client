@@ -84,7 +84,7 @@ import UserQuestionCardComponent from "./UserQuestionCardComponent";
 
 import StatusBarComponent, { type StatusBarPhase } from "./StatusBarComponent";
 import PixelTransitionComponent from "./PixelTransitionComponent";
-import ChatSessionGraphComponent from "./ChatSessionGraphComponent";
+import ChatConversationGraphComponent from "./ChatConversationGraphComponent";
 import ChatViewModeControlComponent from "./ChatViewModeControlComponent";
 import type { ChatViewMode } from "./ChatViewModeControlComponent";
 
@@ -429,7 +429,7 @@ export interface ChatConversationComponentProps {
   initialId?: string | null;
 }
 
-export default function ChatSessionComponent({
+export default function ChatConversationComponent({
   agentId: propAgentId = AGENT_IDS.CODING,
   agents: propAgents = [],
   initialFcEnabled = false,
@@ -3021,7 +3021,7 @@ export default function ChatSessionComponent({
       const currentMessages = [...conversationMessages];
       // Capture which conversation this generation belongs to — if the user
       // switches conversations, streaming callbacks will skip UI updates.
-      const genSessionId = conversationIdRef.current;
+      const generationConversationId = conversationIdRef.current;
 
       await new Promise<void>((resolve, reject) => {
         // -- Build payload: Direct Chat (/chat) vs Agent (/agent) --
@@ -3152,7 +3152,7 @@ export default function ChatSessionComponent({
 
         // Guard: returns true when the user switched conversations — skip all UI updates
         // but let the stream continue (the backend saves independently).
-        const isStale = () => conversationIdRef.current !== genSessionId;
+        const isStale = () => conversationIdRef.current !== generationConversationId;
 
         // Direct Chat → streamText (/chat); Agents → streamAgentText (/agent)
         const streamFn = isNoAgent
@@ -4713,7 +4713,7 @@ export default function ChatSessionComponent({
         ]);
       } finally {
         console.debug(
-          `[handleSend finally] genId=${genId}, currentSessionId=${conversationIdRef.current}, match=${conversationIdRef.current === genId}`,
+          `[handleSend finally] genId=${genId}, currentConversationId=${conversationIdRef.current}, match=${conversationIdRef.current === genId}`,
         );
         // Remove this conversation from the generating set
         setGeneratingConversationIds((previousGeneratingSessionIds) => {
@@ -6380,7 +6380,7 @@ export default function ChatSessionComponent({
       </div>
       {/* Nodes tab — inline conversation graph */}
       {chatAreaTab === "nodes" && (
-        <ChatSessionGraphComponent conversationId={activeId} />
+        <ChatConversationGraphComponent conversationId={activeId} />
       )}
       {chatAreaTab !== "nodes" && !isAdmin && (
         <PixelTransitionComponent

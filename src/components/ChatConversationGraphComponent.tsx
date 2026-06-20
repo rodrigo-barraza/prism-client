@@ -32,11 +32,11 @@ import {
 } from "@rodrigo-barraza/utilities-library";
 import { AGENT_IDS, TOPOLOGIES, DEFAULT_TOPOLOGY } from "@rodrigo-barraza/utilities-library/taxonomy";
 
-import graphStyles from "./SessionGraphPageComponent.module.css";
-import styles from "./ChatSessionGraphComponent.module.css";
+import graphStyles from "./ConversationGraphPageComponent.module.css";
+import styles from "./ChatConversationGraphComponent.module.css";
 
 /* ═══════════════════════════════════════════════════════════════════
-   Node Graph Data Structures (mirrored from SessionGraphPageComponent)
+   Node Graph Data Structures (mirrored from ConversationGraphPageComponent)
    ═══════════════════════════════════════════════════════════════════ */
 
 type NodeCategory =
@@ -87,7 +87,7 @@ const NODE_COLORS: Record<NodeCategory, string> = {
 };
 
 const NODE_LABELS: Record<NodeCategory, string> = {
-  session: "Session",
+  session: "Conversation",
   model: "Model",
   tool: "Tool",
   request: "Request",
@@ -133,10 +133,10 @@ function straightEdgePath(
   return `M ${startX} ${startY} L ${endX} ${endY}`;
 }
 
-function buildGraphFromSession(
-  session: AgentConversation,
-  sessionStats: ConversationStats | null,
-  sessionRequests: IrisRequestEntry[],
+function buildGraphFromConversation(
+  conversation: AgentConversation,
+  conversationStats: ConversationStats | null,
+  conversationRequests: IrisRequestEntry[],
 ): GraphData {
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
@@ -164,39 +164,39 @@ function buildGraphFromSession(
     edges.push({ source, target, strength });
   };
 
-  const conversationId = session.id || session._id;
+  const conversationId = conversation.id || conversation._id;
   const conversationNodeId = `session:${conversationId}`;
 
-  addNode(conversationNodeId, session.title || "Session", "session", 32, {
+  addNode(conversationNodeId, conversation.title || "Conversation", "session", 32, {
     conversationId,
-    status: session.status,
-    createdAt: session.createdAt,
-    updatedAt: session.updatedAt,
-    totalCost: sessionStats?.totalCost,
-    requestCount: sessionStats?.requestCount,
-    totalTokens: sessionStats?.totalTokens,
-    totalElapsedTime: sessionStats?.totalElapsedTime,
+    status: conversation.status,
+    createdAt: conversation.createdAt,
+    updatedAt: conversation.updatedAt,
+    totalCost: conversationStats?.totalCost,
+    requestCount: conversationStats?.requestCount,
+    totalTokens: conversationStats?.totalTokens,
+    totalElapsedTime: conversationStats?.totalElapsedTime,
   });
 
-  if (session.project) {
-    const projectNodeId = `project:${session.project}`;
-    addNode(projectNodeId, session.project, "project", 22, { project: session.project });
+  if (conversation.project) {
+    const projectNodeId = `project:${conversation.project}`;
+    addNode(projectNodeId, conversation.project, "project", 22, { project: conversation.project });
     addEdge(projectNodeId, conversationNodeId, 0.8);
   }
 
   let mainAgentConversationId = conversationId;
-  for (const request of sessionRequests) {
-    if (!request.parentAgentSessionId && request.agentSessionId) {
-      mainAgentConversationId = request.agentSessionId;
+  for (const request of conversationRequests) {
+    if (!request.parentAgentConversationId && request.agentConversationId) {
+      mainAgentConversationId = request.agentConversationId;
       break;
     }
   }
 
-  const parentAgentNodeId = session.agent
-    ? `agent:${mainAgentConversationId}:${session.agent}`
+  const parentAgentNodeId = conversation.agent
+    ? `agent:${mainAgentConversationId}:${conversation.agent}`
     : `agent:${mainAgentConversationId}:default`;
-  if (session.agent) {
-    addNode(parentAgentNodeId, session.agent, "agent", 24, { agent: session.agent });
+  if (conversation.agent) {
+    addNode(parentAgentNodeId, conversation.agent, "agent", 24, { agent: conversation.agent });
   } else {
     addNode(parentAgentNodeId, "Default Agent", "agent", 24, { agent: "default" });
   }
@@ -207,7 +207,7 @@ function buildGraphFromSession(
   const userSet = new Set<string>();
   const addedToolNames = new Set<string>();
 
-  const sortedRequests = [...sessionRequests].sort((requestA, requestB) => {
+  const sortedRequests = [...conversationRequests].sort((requestA, requestB) => {
     const timestampA = requestA.timestamp ? new Date(requestA.timestamp).getTime() : 0;
     const timestampB = requestB.timestamp ? new Date(requestB.timestamp).getTime() : 0;
     return timestampA - timestampB;
@@ -231,10 +231,10 @@ function buildGraphFromSession(
       requestId: request.requestId || request._id,
     }, sequenceNumber);
 
-    const reqAgentSessionId = request.agentSessionId || mainAgentConversationId;
-    const isSubAgent = reqAgentSessionId !== mainAgentConversationId;
+    const reqAgentConversationId = request.agentConversationId || mainAgentConversationId;
+    const isSubAgent = reqAgentConversationId !== mainAgentConversationId;
     const currentAgentNodeId = isSubAgent
-      ? `agent:${reqAgentSessionId}:${request.agent || AGENT_IDS.OMNI}`
+      ? `agent:${reqAgentConversationId}:${request.agent || AGENT_IDS.OMNI}`
       : parentAgentNodeId;
 
     if (isSubAgent) {
@@ -242,8 +242,8 @@ function buildGraphFromSession(
       addNode(currentAgentNodeId, subAgentLabel, "agent", 22, {
         agent: subAgentLabel,
         isSubagent: true,
-        parentAgentSessionId: request.parentAgentSessionId || mainAgentConversationId,
-        agentSessionId: reqAgentSessionId,
+        parentAgentConversationId: request.parentAgentConversationId || mainAgentConversationId,
+        agentConversationId: reqAgentConversationId,
       });
       if (!subAgentNodeIds.includes(currentAgentNodeId)) {
         subAgentNodeIds.push(currentAgentNodeId);
@@ -254,8 +254,8 @@ function buildGraphFromSession(
 
     if (requestIndex > 0) {
       const previousRequest = sortedRequests[requestIndex - 1];
-      const previousAgentSessionId = previousRequest.agentSessionId || mainAgentConversationId;
-      if (previousAgentSessionId === reqAgentSessionId) {
+      const previousAgentConversationId = previousRequest.agentConversationId || mainAgentConversationId;
+      if (previousAgentConversationId === reqAgentConversationId) {
         const previousRequestNodeId = `request:${previousRequest._id || (requestIndex - 1)}`;
         addEdge(previousRequestNodeId, requestNodeId, 0.6);
       }
@@ -296,8 +296,8 @@ function buildGraphFromSession(
     }
   }
 
-  if (sessionStats?.toolCounts) {
-    for (const [toolName, usageCount] of Object.entries(sessionStats.toolCounts)) {
+  if (conversationStats?.toolCounts) {
+    for (const [toolName, usageCount] of Object.entries(conversationStats.toolCounts)) {
       if (!addedToolNames.has(toolName)) {
         const fallbackToolNodeId = `tool:fallback:${toolName}`;
         const normalizedRadius = Math.min(22, 12 + Math.sqrt(usageCount) * 2);
@@ -313,7 +313,7 @@ function buildGraphFromSession(
     addEdge(userNodeId, conversationNodeId, 0.5);
   }
 
-  const topology = session.settings?.agents?.topology || DEFAULT_TOPOLOGY;
+  const topology = conversation.settings?.agents?.topology || DEFAULT_TOPOLOGY;
   if (topology === TOPOLOGIES.SEQUENTIAL && subAgentNodeIds.length > 0) {
     addEdge(parentAgentNodeId, subAgentNodeIds[0], 0.9);
     for (let index = 1; index < subAgentNodeIds.length; index++) {
@@ -520,7 +520,7 @@ function applyTopologyLayout(
    Props Interface
    ═══════════════════════════════════════════════════════════════════ */
 
-export interface ChatSessionGraphComponentProps {
+export interface ChatConversationGraphComponentProps {
   conversationId: string | null;
 }
 
@@ -528,10 +528,10 @@ export interface ChatSessionGraphComponentProps {
    Main Component
    ═══════════════════════════════════════════════════════════════════ */
 
-export default function ChatSessionGraphComponent({ conversationId }: ChatSessionGraphComponentProps) {
-  const [session, setSession] = useState<AgentConversation | null>(null);
-  const [sessionStats, setSessionStats] = useState<ConversationStats | null>(null);
-  const [sessionRequests, setSessionRequests] = useState<IrisRequestEntry[]>([]);
+export default function ChatConversationGraphComponent({ conversationId }: ChatConversationGraphComponentProps) {
+  const [conversation, setConversation] = useState<AgentConversation | null>(null);
+  const [conversationStats, setConversationStats] = useState<ConversationStats | null>(null);
+  const [conversationRequests, setConversationRequests] = useState<IrisRequestEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -553,14 +553,14 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
   const [draggedNode, setDraggedNode] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
 
-  const sessionRef = useRef<AgentConversation | null>(null);
-  const sessionRequestsRef = useRef<IrisRequestEntry[]>([]);
-  const sessionStatsRef = useRef<ConversationStats | null>(null);
+  const conversationRef = useRef<AgentConversation | null>(null);
+  const conversationRequestsRef = useRef<IrisRequestEntry[]>([]);
+  const conversationStatsRef = useRef<ConversationStats | null>(null);
 
   // Keep refs in sync
-  useEffect(() => { sessionRef.current = session; }, [session]);
-  useEffect(() => { sessionRequestsRef.current = sessionRequests; }, [sessionRequests]);
-  useEffect(() => { sessionStatsRef.current = sessionStats; }, [sessionStats]);
+  useEffect(() => { conversationRef.current = conversation; }, [conversation]);
+  useEffect(() => { conversationRequestsRef.current = conversationRequests; }, [conversationRequests]);
+  useEffect(() => { conversationStatsRef.current = conversationStats; }, [conversationStats]);
 
   // ResizeObserver for canvas dimensions
   useEffect(() => {
@@ -677,7 +677,7 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
 
   // -- Incremental rebuild ---------------------------------------
   const incrementalGraphRebuild = useCallback((
-    activeSession: AgentConversation,
+    activeConversation: AgentConversation,
     updatedStats: ConversationStats | null,
     updatedRequests: IrisRequestEntry[],
   ) => {
@@ -692,13 +692,13 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
         }
       }
 
-      const graph = buildGraphFromSession(activeSession, updatedStats, updatedRequests);
+      const graph = buildGraphFromConversation(activeConversation, updatedStats, updatedRequests);
       const newNodeIds = new Set<string>();
       for (const node of graph.nodes) {
         if (!existingNodeIds.has(node.id)) newNodeIds.add(node.id);
       }
 
-      const topology = activeSession.settings?.agents?.topology || "hierarchical";
+      const topology = activeConversation.settings?.agents?.topology || "hierarchical";
       applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
 
       for (const node of graph.nodes) {
@@ -721,9 +721,9 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
   // -- Load session graph ----------------------------------------
   useEffect(() => {
     if (!conversationId) {
-      setSession(null);
-      setSessionStats(null);
-      setSessionRequests([]);
+      setConversation(null);
+      setConversationStats(null);
+      setConversationRequests([]);
       setGraphData(null);
       setSelectedNodeId(null);
       return;
@@ -746,12 +746,12 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
 
         if (isCancelled) return;
 
-        setSession(fetchedConversation);
-        setSessionStats(statsResponse);
+        setConversation(fetchedConversation);
+        setConversationStats(statsResponse);
         const requestsList = requestsResponse.requests || [];
-        setSessionRequests(requestsList);
+        setConversationRequests(requestsList);
 
-        const graph = buildGraphFromSession(fetchedConversation, statsResponse, requestsList);
+        const graph = buildGraphFromConversation(fetchedConversation, statsResponse, requestsList);
         const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
         applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
         setGraphData(graph);
@@ -759,7 +759,7 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
         setPanOffset({ x: 0, y: 0 });
         setIsLoading(false);
       } catch {
-        // Session may not exist yet for a new conversation —
+        // Conversation may not exist yet for a new conversation —
         // keep isLoading true so the SSE cold-start bootstrap
         // can populate the graph when the first request lands.
         if (!isCancelled) setIsLoading(true);
@@ -776,7 +776,7 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
 
     let pollInterval: ReturnType<typeof setInterval> | null = null;
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    let previousRequestCount = sessionRequestsRef.current.length;
+    let previousRequestCount = conversationRequestsRef.current.length;
     let isBootstrapping = false;
 
     const performColdStartBootstrap = async () => {
@@ -792,48 +792,48 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
         const bootstrapRequests = bootstrapRequestsResponse.requests || [];
         previousRequestCount = bootstrapRequests.length;
 
-        setSession(fetchedConversation);
-        setSessionStats(bootstrapStats);
-        setSessionRequests(bootstrapRequests);
+        setConversation(fetchedConversation);
+        setConversationStats(bootstrapStats);
+        setConversationRequests(bootstrapRequests);
 
-        const graph = buildGraphFromSession(fetchedConversation, bootstrapStats, bootstrapRequests);
+        const graph = buildGraphFromConversation(fetchedConversation, bootstrapStats, bootstrapRequests);
         const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
         applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
         setGraphData(graph);
         setIsLoading(false);
         startCollisionLoop(40);
       } catch {
-        // Session not available yet — will retry on the next SSE event
+        // Conversation not available yet — will retry on the next SSE event
       } finally {
         isBootstrapping = false;
       }
     };
 
     const performIncrementalRefresh = async () => {
-      const activeSession = sessionRef.current;
+      const activeConversation = conversationRef.current;
 
-      if (!activeSession) {
+      if (!activeConversation) {
         await performColdStartBootstrap();
         return;
       }
 
-      const activeSessionId = activeSession.id || activeSession._id;
+      const activeConversationId = activeConversation.id || activeConversation._id;
 
       try {
         const [updatedStats, updatedRequestsResponse] = await Promise.all([
-          IrisService.getConversationRunStats(activeSessionId).catch(() => sessionStatsRef.current),
-          IrisService.getConversationRequests(activeSessionId).catch(() => ({ requests: sessionRequestsRef.current })),
+          IrisService.getConversationRunStats(activeConversationId).catch(() => conversationStatsRef.current),
+          IrisService.getConversationRequests(activeConversationId).catch(() => ({ requests: conversationRequestsRef.current })),
         ]);
 
         const updatedRequests = updatedRequestsResponse.requests || [];
         if (updatedRequests.length !== previousRequestCount) {
           previousRequestCount = updatedRequests.length;
-          setSessionStats(updatedStats);
-          setSessionRequests(updatedRequests);
-          incrementalGraphRebuild(activeSession, updatedStats, updatedRequests);
+          setConversationStats(updatedStats);
+          setConversationRequests(updatedRequests);
+          incrementalGraphRebuild(activeConversation, updatedStats, updatedRequests);
           startCollisionLoop(40);
         } else if (updatedStats) {
-          setSessionStats(updatedStats);
+          setConversationStats(updatedStats);
         }
       } catch {
         // Silently ignore
@@ -1014,7 +1014,7 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
           <StarfieldComponent className={graphStyles['starfield']} panX={0} panY={0} />
           <div className={graphStyles['graph-empty-prompt']}>
             <Network size={48} className={graphStyles['graph-empty-prompt-icon']} />
-            <div className={graphStyles['graph-empty-prompt-title']}>No active session</div>
+            <div className={graphStyles['graph-empty-prompt-title']}>No active conversation</div>
             <div className={graphStyles['graph-empty-prompt-subtitle']}>
               Start or load a conversation to view its node graph.
             </div>
@@ -1210,7 +1210,7 @@ export default function ChatSessionGraphComponent({ conversationId }: ChatSessio
                 {selectedNode.category === "session" && (
                   <div className={graphStyles['node-detail-popover-section']}>
                     <div className={graphStyles['node-detail-popover-section-title']}>Conversation Details</div>
-                    <InlineDetailRow label="Session ID" value={String(selectedNode.metadata?.sessionId || "—").slice(0, 12) + "…"} />
+                    <InlineDetailRow label="Conversation ID" value={String(selectedNode.metadata?.conversationId || "—").slice(0, 12) + "…"} />
                     <InlineDetailRow label="Status" value={String(selectedNode.metadata?.status || "—")} />
                     <InlineDetailRow label="Requests" value={formatNumber(Number(selectedNode.metadata?.requestCount || 0))} />
                     <InlineDetailRow label="Total Cost" value={formatCost(Number(selectedNode.metadata?.totalCost || 0))} />
@@ -1400,7 +1400,7 @@ function InlineRequestPayloadSection({
   if (!hasInput && !hasOutput && !hasAssets && !hasToolCalls) return null;
 
   return (
-    <div className={`chat-session-graph-component ${graphStyles['request-payload-container']}`}>
+    <div className={`chat-conversation-graph-component ${graphStyles['request-payload-container']}`}>
       {hasInput && (
         <div className={graphStyles['request-payload-section']}>
           <InlineCollapsibleSectionHeader

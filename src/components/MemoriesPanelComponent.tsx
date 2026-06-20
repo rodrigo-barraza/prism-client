@@ -72,7 +72,7 @@ const MEMORY_TYPE_FILTER_ITEMS = [
 const TRIGGER_LABELS: Record<string, string> = {
   manual: "Manual",
   scheduled: "Auto-Dream",
-  session_threshold: "Session",
+  session_threshold: "Conversation",
 };
 
 /**
@@ -80,7 +80,7 @@ const TRIGGER_LABELS: Record<string, string> = {
  *
  * Displays memories extracted from past coding conversations, organized by type
  * (user, feedback, project, reference). These are extracted automatically
- * by the SessionSummarizer and stored via AgentMemoryService.
+ * by the ConversationSummarizer and stored via AgentMemoryService.
  */
 interface ToastState {
   type: "success" | "error" | "info";

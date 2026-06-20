@@ -1,7 +1,7 @@
 /**
  * Pure state updater functions for tool call → messages integration.
  *
- * Extracted from ChatSessionComponent to enable isolated unit testing.
+ * Extracted from ChatConversationComponent to enable isolated unit testing.
  * These functions compute the next `messages` array given the current
  * messages and an incoming tool execution / tool call event.
  */
@@ -40,7 +40,7 @@ export interface SegmentSnapshot {
  *
  * This is a **pure function**: it does not mutate inputs and returns
  * a new array.  It mirrors the inline logic that was previously nested
- * inside `setToolActivity → setMessages` in ChatSessionComponent.
+ * inside `setToolActivity → setMessages` in ChatConversationComponent.
  */
 export function applyToolExecutionToMessages(
   messages: ToolMessageSlice[],

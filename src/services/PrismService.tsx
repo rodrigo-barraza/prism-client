@@ -890,7 +890,7 @@ export default class PrismService {
     const mappedSubAgentsList = subAgentsList.map((subAgent) => ({
       id: subAgent.agentId,
       agentId: subAgent.agentId,
-      agentSessionId: conversationId || "",
+      agentConversationId: conversationId || "",
       status: subAgent.status,
       description: subAgent.description,
       resolvedModel: subAgent.resolvedModel,
@@ -993,8 +993,8 @@ export default class PrismService {
    */
   static async triggerCronJob(
     id: string,
-  ): Promise<{ success: boolean; agentSessionId: string }> {
-    return PrismService._request<{ success: boolean; agentSessionId: string }>(
+  ): Promise<{ success: boolean; agentConversationId: string }> {
+    return PrismService._request<{ success: boolean; agentConversationId: string }>(
       `/scheduled-tasks/${id}/trigger`,
       {
         method: "POST",

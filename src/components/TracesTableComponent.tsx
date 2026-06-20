@@ -49,7 +49,7 @@ export default function TracesTableComponent({
   sortDir?: string;
   onSort?: (key: string, dir: string) => void;
 }) {
-  const SESSION_COLUMNS = [
+  const CONVERSATION_COLUMNS = [
     traceIdColumn(),
     projectColumn(),
     userColumn(),
@@ -67,7 +67,7 @@ export default function TracesTableComponent({
     createdAtColumn(),
   ];
 
-  const allColumns = SESSION_COLUMNS.filter((column) => column.key !== "costShare");
+  const allColumns = CONVERSATION_COLUMNS.filter((column) => column.key !== "costShare");
 
   const COMPACT_KEYS = [
     "id",

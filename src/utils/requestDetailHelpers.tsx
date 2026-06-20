@@ -261,8 +261,8 @@ export function buildRequestDetailSections(
               },
             ]
           : []),
-        ...(request.agentSessionId
-          ? [{ label: "Agent Session", value: request.agentSessionId, mono: true }]
+        ...(request.agentConversationId
+          ? [{ label: "Agent Conversation", value: request.agentConversationId, mono: true }]
           : []),
         ...(request.conversationId
           ? [{ label: "Conversation", value: request.conversationId, mono: true }]

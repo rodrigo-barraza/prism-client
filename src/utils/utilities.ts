@@ -104,7 +104,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 
 /**
  * Get unique model names from assistant messages.
- * Shared between ChatSessionComponent and admin/conversations.
+ * Shared between ChatConversationComponent and admin/conversations.
  */
 export function getUniqueModels(messages: Message[]): string[] {
   return [
@@ -133,7 +133,7 @@ export function getUniqueProviders(messages: Message[]): string[] {
 /**
  * Sum estimatedCost across all messages.
  */
-export function getSessionCost(messages: Message[]): number {
+export function getConversationCost(messages: Message[]): number {
   return messages.reduce(
     (sum, message) => {
       // Finalized cost from the done event (authoritative)
@@ -566,7 +566,7 @@ export function getModalities(messages: Message[]) {
  * conversations from the DB (server-side `timestamp` on assistant messages).
  * Returns total elapsed seconds.
  */
-export function getSessionElapsedTime(messages: Message[]): number {
+export function getConversationElapsedTime(messages: Message[]): number {
   let total = 0;
   for (let i = 0; i < messages.length; i++) {
     const userMessage = messages[i];

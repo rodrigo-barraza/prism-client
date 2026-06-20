@@ -1,7 +1,7 @@
 /**
  * Mention Utilities — Pure functions for the @-mention system.
  *
- * Extracted from ChatSessionComponent so they can be unit-tested without
+ * Extracted from ChatConversationComponent so they can be unit-tested without
  * rendering the full component tree.
  */
 

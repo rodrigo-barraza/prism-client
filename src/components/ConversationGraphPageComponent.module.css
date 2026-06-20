@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   SessionGraphPageComponent — Node Graph Visualization
-   Premium admin analytics page for visualizing agent session relationships
+   ConversationGraphPageComponent — Node Graph Visualization
+   Premium admin analytics page for visualizing agent conversation relationships
    ═══════════════════════════════════════════════════════════════════════ */
 
 .page-container {
@@ -44,9 +44,9 @@
   flex: 1;
 }
 
-/* ── Session List Panel (Left) ───────────────────────────── */
+/* ── Conversation List Panel (Left) ───────────────────────────── */
 
-.session-list-panel {
+.conversation-list-panel {
   display: flex;
   flex-direction: column;
   background: var(--background-surface);

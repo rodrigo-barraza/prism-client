@@ -440,7 +440,7 @@ export default function DashboardPage() {
           href="/admin/traces"
           icon={FolderOpen}
           count={loading ? "—" : formatNumber(stats?.agentConversationCount || 0)}
-          label="Sessions"
+          label="Traces"
         />
         <ResourceCardComponent
           href="/admin/chat"

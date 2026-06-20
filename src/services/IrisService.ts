@@ -431,14 +431,14 @@ export default class IrisService {
   }
 
   static async getConversationRunStats(agentConversationId: string): Promise<ConversationStats> {
-    return fetchJSON<ConversationStats>(`/agent-sessions/${agentConversationId}/stats`);
+    return fetchJSON<ConversationStats>(`/agent-conversations/${agentConversationId}/stats`);
   }
 
   static async getConversationRequests(
     agentConversationId: string,
   ): Promise<{ requests: IrisRequestEntry[] }> {
     return fetchJSON<{ requests: IrisRequestEntry[] }>(
-      `/agent-sessions/${agentConversationId}/requests`,
+      `/agent-conversations/${agentConversationId}/requests`,
     );
   }
 

@@ -4,7 +4,7 @@ import {
   buildDateRangeParams,
   getUniqueModels,
   getUniqueProviders,
-  getSessionCost,
+  getConversationCost,
   getTotalInputTokens,
   buildLmStudioLoadBody,
   getUsedTools,
@@ -183,12 +183,12 @@ describe("getUniqueProviders", () => {
 });
 
 // ═════════════════════════════════════════════════════════════════
-// getSessionCost
+// getConversationCost
 // ═════════════════════════════════════════════════════════════════
 
-describe("getSessionCost", () => {
+describe("getConversationCost", () => {
   it("returns 0 for empty messages", () => {
-    expect(getSessionCost([])).toBe(0);
+    expect(getConversationCost([])).toBe(0);
   });
 
   it("sums estimatedCost across all messages", () => {
@@ -197,7 +197,7 @@ describe("getSessionCost", () => {
       { role: "assistant", content: "hi", estimatedCost: 0.005 },
       { role: "assistant", content: "ok", estimatedCost: 0.003 },
     ] as Message[];
-    expect(getSessionCost(messages)).toBeCloseTo(0.009);
+    expect(getConversationCost(messages)).toBeCloseTo(0.009);
   });
 
   it("handles messages without estimatedCost", () => {
@@ -205,7 +205,7 @@ describe("getSessionCost", () => {
       { role: "user", content: "hello" },
       { role: "assistant", content: "hi", estimatedCost: 0.01 },
     ] as Message[];
-    expect(getSessionCost(messages)).toBeCloseTo(0.01);
+    expect(getConversationCost(messages)).toBeCloseTo(0.01);
   });
 });
 

@@ -515,7 +515,7 @@ describe("IrisService", () => {
     expect(result).toEqual(mockTrace);
   });
 
-  it("should query session statistics and requests", async () => {
+  it("should query conversation statistics and requests", async () => {
     const mockStats = { totalTokens: 100 };
     const mockRequests = { requests: [] };
 
@@ -533,14 +533,14 @@ describe("IrisService", () => {
 
     const statsResult = await IrisService.getConversationRunStats("sess-1");
     expect(mockFetch).toHaveBeenCalledWith(
-      `${PRISM_SERVICE_URL}/admin/sessions/sess-1/stats`,
+      `${PRISM_SERVICE_URL}/admin/agent-conversations/sess-1/stats`,
       expect.any(Object),
     );
     expect(statsResult).toEqual(mockStats);
 
     const requestsResult = await IrisService.getConversationRequests("sess-1");
     expect(mockFetch).toHaveBeenCalledWith(
-      `${PRISM_SERVICE_URL}/admin/sessions/sess-1/requests`,
+      `${PRISM_SERVICE_URL}/admin/agent-conversations/sess-1/requests`,
       expect.any(Object),
     );
     expect(requestsResult).toEqual(mockRequests);

@@ -67,7 +67,7 @@ interface RequestAssociations {
  *
  * Supports three usage modes:
  *   1. **External data** — pass `requests` directly (admin global view, paginated).
- *   2. **Session-scoped** — pass `conversationId` to auto-fetch session requests.
+ *   2. **Conversation-scoped** — pass `conversationId` to auto-fetch conversation requests.
  *   3. **User-scoped** — pass `requests` filtered by the caller (user dashboard).
  *
  * Clicking a row opens a built-in DrawerComponent showing the full request
@@ -125,7 +125,7 @@ export default function RequestsTableComponent({
   const [associations, setAssociations] = useState<RequestAssociations | null>(null);
   const [isLoadingAssociations, setIsLoadingAssociations] = useState(false);
 
-  const fetchSessionRequests = useCallback(async () => {
+  const fetchConversationRequests = useCallback(async () => {
     if (!conversationId) return;
     setIsLoading(true);
     setFetchError(null);
@@ -145,9 +145,9 @@ export default function RequestsTableComponent({
 
   useEffect(() => {
     if (isSelfFetching) {
-      fetchSessionRequests();
+      fetchConversationRequests();
     }
-  }, [isSelfFetching, fetchSessionRequests, refreshKey]);
+  }, [isSelfFetching, fetchConversationRequests, refreshKey]);
 
   // -- Fetch associations + tool calls when a request is selected --
   useEffect(() => {
@@ -371,7 +371,7 @@ export default function RequestsTableComponent({
                   </div>
                   <div className={styles['association-group']}>
                     <span className={styles['association-group-label']}>
-                      <FolderOpen size={12} /> Sessions
+                      <FolderOpen size={12} /> Traces
                     </span>
                     {associations?.sessions &&
                     associations.sessions.length > 0 ? (
