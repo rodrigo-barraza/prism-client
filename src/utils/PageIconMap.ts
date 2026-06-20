@@ -22,6 +22,7 @@ import {
   MessageSquare,
   LayoutDashboard,
   BookText,
+  BookOpen,
   Bot,
   ScrollText,
   FolderOpen,
@@ -60,6 +61,7 @@ const PAGE_ICON_ENTRIES: PageIconEntry[] = [
   { icon: FolderOpen, aliases: ["traces"] },
   { icon: Users, aliases: ["users"] },
   { icon: Layers, aliases: ["providers"] },
+  { icon: BookOpen, aliases: ["about", "research"] },
 ];
 
 const ICON_BY_ALIAS = new Map<string, LucideIcon>();
@@ -132,6 +134,7 @@ export const USER_NAV_SECTIONS: NavigationSection[] = [
       },
       { href: "/models", label: "Models", icon: Server },
       { href: "/tools", label: "Tools", icon: Wrench },
+      { href: "/about", label: "About", icon: BookOpen },
     ],
   },
   {
