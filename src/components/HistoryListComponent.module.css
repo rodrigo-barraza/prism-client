@@ -111,6 +111,7 @@
 .sub-agent-tree-container {
   position: relative;
   padding-inline-start: var(--tree-rail-inset);
+  min-width: 0;
 }
 
 /* Vertical rail line running down the left side of the tree */
@@ -135,6 +136,7 @@
   position: relative;
   display: flex;
   align-items: stretch;
+  min-width: 0;
 }
 
 /* Horizontal branch connector from the vertical rail to the child item */
