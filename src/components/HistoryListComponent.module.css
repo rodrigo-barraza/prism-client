@@ -125,8 +125,10 @@
   transition: background-color 0.2s ease;
 }
 
-/* Mask the rail below the last child's midpoint using a cover-up pseudo-element */
-.sub-agent-tree-node-is-last {
+/* Mask the rail below the last child's midpoint using a cover-up pseudo-element.
+   Only apply when this is the terminal leaf-level last node — nested sub-trees
+   below this node need the rail to keep running through them. */
+.sub-agent-tree-node-is-last:not(:has(.sub-agent-tree-container)) {
   position: relative;
   z-index: 1;
 
@@ -154,7 +156,7 @@
 .sub-agent-tree-branch {
   position: absolute;
   inset-inline-start: 0;
-  inset-block-start: 50%;
+  inset-block-start: 20px;
   width: var(--tree-branch-length);
   height: var(--tree-line-thickness);
   background: var(--tree-line-color);
@@ -162,10 +164,17 @@
   transition: background-color 0.2s ease;
 }
 
-/* Push the child item to the right of the branch */
-.sub-agent-tree-node > :global(.history-item-component) {
+/* ── Node content wrapper (item + nested sub-tree) ── */
+.sub-agent-tree-node-content {
   flex: 1;
   margin-inline-start: var(--tree-branch-length);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Push the child item to the right of the branch */
+.sub-agent-tree-node-content > :global(.history-item-component) {
   border-radius: 0;
   border-inline-start: 2px solid color-mix(in oklch, var(--cluster-accent-color) 25%, transparent);
   border-bottom: 1px solid color-mix(in oklch, var(--cluster-accent-color) 8%, transparent);
@@ -174,18 +183,29 @@
     background-color 0.2s ease;
 }
 
-.sub-agent-tree-node > :global(.history-item-component):hover {
+.sub-agent-tree-node-content > :global(.history-item-component):hover {
   background: color-mix(in oklch, var(--cluster-accent-color) 5%, transparent);
   border-inline-start-color: color-mix(in oklch, var(--cluster-accent-color) 50%, transparent);
 }
 
-.sub-agent-tree-node > :global(.history-item-component):global(.is-active-state) {
+.sub-agent-tree-node-content > :global(.history-item-component):global(.is-active-state) {
   border-inline-start-color: var(--accent-primary);
 }
 
 /* Last child — no bottom border (container border handles it) */
-.sub-agent-tree-node-is-last > :global(.history-item-component) {
+.sub-agent-tree-node-is-last > .sub-agent-tree-node-content > :global(.history-item-component) {
   border-bottom: none;
+}
+
+/* ── Nested sub-trees (depth > 0) — progressive depth styling ── */
+.sub-agent-tree-node-content > .sub-agent-tree-container {
+  border-inline-start: 1px solid color-mix(in oklch, var(--cluster-accent-color) 15%, transparent);
+}
+
+/* Reduce horizontal padding at deeper levels to prevent excessive indentation */
+.sub-agent-tree-container .sub-agent-tree-container {
+  --tree-rail-inset: 8px;
+  --tree-branch-length: 10px;
 }
 
 /* Subtle hover glow on the whole cluster */
@@ -207,4 +227,5 @@
     transform: translateY(0) scale(1);
   }
 }
+
 

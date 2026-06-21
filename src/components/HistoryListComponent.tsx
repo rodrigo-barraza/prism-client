@@ -413,26 +413,30 @@ export default function HistoryList({
     showErrorsOnly,
   ]);
 
+  interface SubAgentTreeNode {
+    item: HistoryListItem;
+    children: SubAgentTreeNode[];
+  }
+
   type ConversationGroup = {
     type: "standalone";
     item: HistoryListItem;
   } | {
     type: "agent-cluster";
     parent: HistoryListItem;
-    children: HistoryListItem[];
+    tree: SubAgentTreeNode[];
   };
 
   const groupedConversations = useMemo<ConversationGroup[]>(() => {
     const childrenByParent = new Map<string, HistoryListItem[]>();
-    const parentIdsInFiltered = new Set<string>();
+    const childItemIds = new Set<string>();
 
     for (const item of filtered) {
       if (item.parentConversationId) {
         const siblingConversations = childrenByParent.get(item.parentConversationId) || [];
         siblingConversations.push(item);
         childrenByParent.set(item.parentConversationId, siblingConversations);
-      } else if (parentConversationIds.has(item.id)) {
-        parentIdsInFiltered.add(item.id);
+        childItemIds.add(item.id);
       }
     }
 
@@ -445,25 +449,37 @@ export default function HistoryList({
       });
     }
 
+    // Recursively build tree nodes for a given parent
+    const buildSubTree = (parentId: string, visitedIds: Set<string>): SubAgentTreeNode[] => {
+      const directChildren = childrenByParent.get(parentId) || [];
+      return directChildren.map((child) => {
+        // Guard against circular references
+        if (visitedIds.has(child.id)) {
+          return { item: child, children: [] };
+        }
+        const nextVisited = new Set(visitedIds);
+        nextVisited.add(child.id);
+        return {
+          item: child,
+          children: buildSubTree(child.id, nextVisited),
+        };
+      });
+    };
+
     const groups: ConversationGroup[] = [];
 
     for (const item of filtered) {
-      if (item.parentConversationId) {
-        if (parentIdsInFiltered.has(item.parentConversationId)) {
-          continue;
-        }
-        groups.push({ type: "standalone", item });
+      // Skip items that are children — they'll be rendered inside their parent's tree
+      if (childItemIds.has(item.id) && childrenByParent.has(item.parentConversationId!)) {
+        continue;
+      }
+
+      const hasChildren = childrenByParent.has(item.id);
+      if (hasChildren) {
+        const tree = buildSubTree(item.id, new Set([item.id]));
+        groups.push({ type: "agent-cluster", parent: item, tree });
       } else {
-        if (parentIdsInFiltered.has(item.id)) {
-          const children = childrenByParent.get(item.id) || [];
-          if (children.length > 0) {
-            groups.push({ type: "agent-cluster", parent: item, children });
-          } else {
-            groups.push({ type: "standalone", item });
-          }
-        } else {
-          groups.push({ type: "standalone", item });
-        }
+        groups.push({ type: "standalone", item });
       }
     }
 
@@ -694,6 +710,47 @@ export default function HistoryList({
 
           const clusterAccentColor = `oklch(0.65 0.18 ${deriveClusterHue(group.parent.id)})`;
 
+          const renderSubAgentTree = (nodes: SubAgentTreeNode[], depth: number) => (
+            <div className={styles['sub-agent-tree-container']} data-tree-depth={depth}>
+              <div className={styles['sub-agent-tree-rail']} />
+              {nodes.map((treeNode, nodeIndex) => (
+                <div
+                  key={treeNode.item.id}
+                  className={`${styles['sub-agent-tree-node']} ${nodeIndex === nodes.length - 1 ? styles['sub-agent-tree-node-is-last'] : ''}`}
+                >
+                  <div className={styles['sub-agent-tree-branch']} />
+                  <div className={styles['sub-agent-tree-node-content']}>
+                    <HistoryItemComponent
+                      item={treeNode.item}
+                      isActive={treeNode.item.id === activeId}
+                      onClick={onSelect}
+                      onDelete={onDelete}
+                      onDownload={onDownload}
+                      onCopy={onCopy}
+                      icon={ItemIcon}
+                      readOnly={readOnly}
+                      admin={admin}
+                      isNew={newIds?.has?.(treeNode.item.id)}
+                      isFavorite={(favorites || []).includes(treeNode.item.id)}
+                      onToggleFavorite={onToggleFavorite}
+                      dataPanelClose
+                      onOpenInNewTab={
+                        onOpenInNewTab
+                          ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
+                          : undefined
+                      }
+                      isGenerating={generatingConversationIds?.has?.(treeNode.item.id)}
+                      isCondensed={true}
+                      subAgentNumber={subAgentNumberMap.get(treeNode.item.id) ?? null}
+                      hasSpawnedSubAgents={treeNode.children.length > 0}
+                    />
+                    {treeNode.children.length > 0 && renderSubAgentTree(treeNode.children, depth + 1)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+
           return (
             <div
               key={group.parent.id}
@@ -724,41 +781,7 @@ export default function HistoryList({
                 subAgentNumber={subAgentNumberMap.get(group.parent.id) ?? null}
                 hasSpawnedSubAgents={true}
               />
-              <div className={styles['sub-agent-tree-container']}>
-                <div className={styles['sub-agent-tree-rail']} />
-                {group.children.map((child, childIndex) => (
-                  <div
-                    key={child.id}
-                    className={`${styles['sub-agent-tree-node']} ${childIndex === group.children.length - 1 ? styles['sub-agent-tree-node-is-last'] : ''}`}
-                  >
-                    <div className={styles['sub-agent-tree-branch']} />
-                    <HistoryItemComponent
-                      item={child}
-                      isActive={child.id === activeId}
-                      onClick={onSelect}
-                      onDelete={onDelete}
-                      onDownload={onDownload}
-                      onCopy={onCopy}
-                      icon={ItemIcon}
-                      readOnly={readOnly}
-                      admin={admin}
-                      isNew={newIds?.has?.(child.id)}
-                      isFavorite={(favorites || []).includes(child.id)}
-                      onToggleFavorite={onToggleFavorite}
-                      dataPanelClose
-                      onOpenInNewTab={
-                        onOpenInNewTab
-                          ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
-                          : undefined
-                      }
-                      isGenerating={generatingConversationIds?.has?.(child.id)}
-                      isCondensed={true}
-                      subAgentNumber={subAgentNumberMap.get(child.id) ?? null}
-                      hasSpawnedSubAgents={parentConversationIds.has(child.id)}
-                    />
-                  </div>
-                ))}
-              </div>
+              {renderSubAgentTree(group.tree, 0)}
             </div>
           );
         })}
