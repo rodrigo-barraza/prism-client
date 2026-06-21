@@ -35,7 +35,7 @@ import { CAPABILITY_TOOL_NAMES } from "../utils/utilities";
 import { TOGGLEABLE_TOOLS } from "./WorkflowNodeConstantsComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
-import { buildTopologyOptions, buildReasoningStrategyOptions } from "./AgentStrategyOptionsComponent";
+import { buildTopologyOptions, buildThoughtStructureOptions } from "./AgentStrategyOptionsComponent";
 import useTokenRate from "../hooks/useTokenRate";
 import useTtft from "../hooks/useTtft";
 import type {
@@ -143,14 +143,14 @@ export function formatTopologyLabel(topology: string): string {
     .join(" ");
 }
 
-const REASONING_STRATEGY_LABELS: Record<string, string> = {
-  chain_of_thought: "CoT",
-  tree_of_thoughts: "ToT",
-  graph_of_thoughts: "GoT",
+const THOUGHT_STRUCTURE_LABELS: Record<string, string> = {
+  chain_of_thought: "Chain of Thought",
+  tree_of_thoughts: "Tree of Thoughts",
+  graph_of_thoughts: "Graph of Thoughts",
 };
 
-export function formatReasoningStrategyLabel(strategy: string): string {
-  return REASONING_STRATEGY_LABELS[strategy] || strategy
+export function formatThoughtStructureLabel(structure: string): string {
+  return THOUGHT_STRUCTURE_LABELS[structure] || structure
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
@@ -270,7 +270,7 @@ export default function SettingsPanel({
         agent: agentIdentifier,
         harness: settings?.agents?.harness || "standard",
         topology: settings?.agents?.topology || "hierarchical",
-        reasoningStrategy: settings?.agents?.reasoningStrategy || undefined,
+        thoughtStructure: settings?.agents?.thoughtStructure || undefined,
         autoApprove: isAutoApprove,
         planFirst: isPlanFirst,
         maxIterations: maxIterationsCount === Infinity ? 0 : maxIterationsCount,
@@ -409,10 +409,9 @@ export default function SettingsPanel({
             {formatTopologyLabel(settings.agents.topology)}
           </span>
         )}
-        {conversationType === "agent" && settings.agents?.reasoningStrategy && (
-          <span className={styles['stat-badge']}>
-            <Brain size={10} />
-            {formatReasoningStrategyLabel(settings.agents.reasoningStrategy as string)}
+        {conversationType === "agent" && settings.agents?.thoughtStructure && (
+          <span className={styles['settings-badge']}>
+            {formatThoughtStructureLabel(settings.agents.thoughtStructure as string)}
           </span>
         )}
         {conversationType === "agent" && settings.agents?.workspaceEnabled === false && (
@@ -1201,47 +1200,47 @@ export default function SettingsPanel({
               </div>
             ))}
 
-            {/* 6–8. Reasoning, Topology, Harness */}
+            {/* 6–8. Thought Structure, Topology, Harness */}
             {conversationType === "agent" && (() => {
-              const reasoningOptions = buildReasoningStrategyOptions();
+              const thoughtStructureOptions = buildThoughtStructureOptions();
               const topologyOptions = buildTopologyOptions();
 
-              const selectedReasoningValue =
-                (settings.agents?.reasoningStrategy as string) || "chain_of_thought";
-              const selectedReasoningTooltip =
-                reasoningOptions.find(
-                  (option) => option.value === selectedReasoningValue,
+              const selectedThoughtStructureValue =
+                (settings.agents?.thoughtStructure as string) || "chain_of_thought";
+              const selectedThoughtStructureTooltip =
+                thoughtStructureOptions.find(
+                  (option: { value: string; tooltip?: React.ReactNode }) => option.value === selectedThoughtStructureValue,
                 )?.tooltip ?? null;
 
               const selectedTopologyValue =
                 settings.agents?.topology || "hierarchical";
               const selectedTopologyTooltip =
                 topologyOptions.find(
-                  (option) => option.value === selectedTopologyValue,
+                  (option: { value: string; tooltip?: React.ReactNode }) => option.value === selectedTopologyValue,
                 )?.tooltip ?? null;
 
               return (
                 <>
-                  {/* 6. Agent Reasoning */}
+                  {/* 6. Agent Thought Structure */}
                   <div
                     className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
                   >
                     <SelectComponent
-                      value={selectedReasoningValue}
-                      options={reasoningOptions}
+                      value={selectedThoughtStructureValue}
+                      options={thoughtStructureOptions}
                       onChange={(value: string) =>
                         onChange({
                           agents: {
                             ...settings.agents,
-                            reasoningStrategy: value,
+                            thoughtStructure: value,
                           },
                         })
                       }
-                      label="Agent Reasoning Strategy"
+                      label="Thought Structure"
                       labelIcon={<Layers size={12} />}
                       compact
                       disabled={isAgentSettingsLocked}
-                      triggerTooltipContent={selectedReasoningTooltip}
+                      triggerTooltipContent={selectedThoughtStructureTooltip}
                       triggerTooltipRich
                     />
                   </div>

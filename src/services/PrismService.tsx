@@ -59,7 +59,7 @@ import type {
   ScheduledTask,
   ConversationTimer,
   TopologyDefinition,
-  ReasoningStrategyDefinition,
+  ThoughtStructureDefinition,
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
@@ -762,11 +762,11 @@ export default class PrismService {
   }
 
   // ---------------------------------------------------------------------------
-  // Reasoning Strategies
+  // Thought Structures
   // ---------------------------------------------------------------------------
 
-  static async getReasoningStrategies(): Promise<ReasoningStrategyDefinition[]> {
-    return PrismService._request<ReasoningStrategyDefinition[]>("/reasoning-strategies", {
+  static async getThoughtStructures(): Promise<ThoughtStructureDefinition[]> {
+    return PrismService._request<ThoughtStructureDefinition[]>("/thought-structures", {
       method: "GET",
     });
   }

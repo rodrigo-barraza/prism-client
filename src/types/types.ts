@@ -923,7 +923,7 @@ export interface AgentDefaultsConfig {
   harness?: string;
   topology?: string;
   dynamicToolActivation?: boolean;
-  reasoningStrategy?: string;
+  thoughtStructure?: string;
   workspaceEnabled?: boolean;
 }
 
@@ -1665,9 +1665,9 @@ export interface TopologyDefinition {
   flowDescription: string;
 }
 
-// --- Reasoning Strategy Definitions -------------------------
+// --- Thought Structure Definitions --------------------------
 
-export interface ReasoningStrategyDefinition {
+export interface ThoughtStructureDefinition {
   id: string;
   displayName: string;
   abbreviation: string;

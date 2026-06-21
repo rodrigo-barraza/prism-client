@@ -171,7 +171,7 @@ export function buildTopologyOptions(): StrategySelectOption[] {
   ];
 }
 
-export function buildReasoningStrategyOptions(): StrategySelectOption[] {
+export function buildThoughtStructureOptions(): StrategySelectOption[] {
   return [
     {
       value: "chain_of_thought",

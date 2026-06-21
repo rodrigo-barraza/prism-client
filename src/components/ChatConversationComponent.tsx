@@ -3117,8 +3117,8 @@ export default function ChatConversationComponent({
               agent: agentId,
               harness: settings?.agents?.harness || "standard",
               topology: settings?.agents?.topology || DEFAULT_TOPOLOGY,
-              reasoningStrategy:
-                (settings?.agents?.reasoningStrategy as string) || undefined,
+              thoughtStructure:
+                (settings?.agents?.thoughtStructure as string) || undefined,
               // Phase 1: Agentic controls
               autoApprove,
               planFirst,
@@ -4424,7 +4424,7 @@ export default function ChatConversationComponent({
       settings.urlContextEnabled,
       settings.agents?.harness,
       settings.agents?.topology,
-      settings.agents?.reasoningStrategy,
+      settings.agents?.thoughtStructure,
       settings.agents?.workspaceEnabled,
       criticGateEnabled,
       conversationId,
@@ -5253,13 +5253,13 @@ export default function ChatConversationComponent({
           }
           const conversationHarness = (conversationSettings as Record<string, unknown>)?.harness as string | undefined;
           const conversationTopology = (conversationSettings as Record<string, unknown>)?.topology as string | undefined;
-          const conversationReasoningStrategy = (conversationSettings as Record<string, unknown>)?.reasoningStrategy as string | undefined;
-          if (conversationHarness || conversationTopology || conversationReasoningStrategy) {
+          const conversationThoughtStructure = (conversationSettings as Record<string, unknown>)?.thoughtStructure as string | undefined;
+          if (conversationHarness || conversationTopology || conversationThoughtStructure) {
             nextSettings.agents = {
               ...nextSettings.agents,
               ...(conversationHarness && { harness: conversationHarness }),
               ...(conversationTopology && { topology: conversationTopology }),
-              ...(conversationReasoningStrategy && { reasoningStrategy: conversationReasoningStrategy }),
+              ...(conversationThoughtStructure && { thoughtStructure: conversationThoughtStructure }),
             };
           }
           return nextSettings;

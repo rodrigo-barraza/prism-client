@@ -56,7 +56,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import ToolLinkComponent from "./ToolLinkComponent";
-import { buildTopologyOptions, buildReasoningStrategyOptions } from "./AgentStrategyOptionsComponent";
+import { buildTopologyOptions, buildThoughtStructureOptions } from "./AgentStrategyOptionsComponent";
 import styles from "./SettingsPageComponent.module.css";
 
 import type {
@@ -340,12 +340,12 @@ export default function SettingsPageComponent() {
   );
 
   // -- Reasoning strategy change handler --------------------------------
-  const handleReasoningStrategySelect = useCallback(
-    (strategyId: string) => {
+  const handleThoughtStructureSelect = useCallback(
+    (structureId: string) => {
       const updated = {
         agents: {
           ...settings?.agents,
-          reasoningStrategy: strategyId,
+          thoughtStructure: structureId,
         },
       };
       setSettings((previousSettings: PrismSettings | null) => ({
@@ -1155,9 +1155,9 @@ export default function SettingsPageComponent() {
             </div>
             <div className={styles["layout-row-control"]}>
               <SelectComponent
-                value={(agentDefaults.reasoningStrategy as string) || "chain_of_thought"}
-                options={buildReasoningStrategyOptions()}
-                onChange={handleReasoningStrategySelect}
+                value={(agentDefaults.thoughtStructure as string) || "chain_of_thought"}
+                options={buildThoughtStructureOptions()}
+                onChange={handleThoughtStructureSelect}
               />
             </div>
           </div>
