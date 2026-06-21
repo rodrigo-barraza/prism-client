@@ -945,6 +945,13 @@ export default function ChatConversationComponent({
     setIsGenerating(false);
     setPlanProposal(null);
 
+    // Explicitly stop the backend agentic session — decoupled from
+    // SSE connection lifecycle so mobile browser disconnections don't
+    // abort background processing. Only this explicit call does.
+    if (!isNoAgent) {
+      PrismService.stopGeneration(conversationIdRef.current).catch(() => {});
+    }
+
     // Immediately stop the elapsed-time ticker (StopwatchBadgeComponent)
     // so the badge freezes on abort instead of continuing until the
     // finally block in handleSend runs.
@@ -4716,14 +4723,98 @@ export default function ChatConversationComponent({
         await attemptPostStreamRefresh();
       } catch (error: unknown) {
         console.error(`[handleSend] orchestration error:`, error);
-        setMessages((previousMessages) => [
-          ...previousMessages,
-          {
-            role: "assistant",
-            content: `⚠️ Error: ${error instanceof Error ? error.message : String(error)}`,
-            isError: true,
-          },
-        ]);
+
+        // Detect network/fetch errors caused by mobile screen lock, tab
+        // suspension, or TCP connection drops. These are NOT real failures —
+        // the backend agentic loop continues processing in the background.
+        // Instead of showing "⚠️ Error", enter recovery polling mode to
+        // re-fetch the conversation when the backend finishes.
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const isNetworkDisconnection =
+          error instanceof TypeError ||
+          errorMessage.includes("fetch") ||
+          errorMessage.includes("network") ||
+          errorMessage.includes("aborted") ||
+          errorMessage.includes("Failed to fetch") ||
+          errorMessage.includes("NetworkError") ||
+          errorMessage.includes("ERR_NETWORK");
+
+        if (isNetworkDisconnection && !isNoAgent && genId) {
+          console.info(
+            `[handleSend] Network disconnection detected — entering recovery polling for ${genId}`,
+          );
+
+          // Remove the in-flight error-like assistant message if present
+          setMessages((previousMessages) => {
+            const lastMessage = previousMessages[previousMessages.length - 1];
+            if (lastMessage?.role === "assistant" && !lastMessage.content && !lastMessage.completedAt) {
+              return previousMessages.slice(0, -1);
+            }
+            return previousMessages;
+          });
+
+          // Poll the backend for conversation state until the agent finishes
+          const RECOVERY_POLL_INTERVAL_MILLISECONDS = 3_000;
+          const RECOVERY_POLL_MAX_DURATION_MILLISECONDS = 5 * 60 * 1_000;
+          const recoveryStartTimestamp = Date.now();
+
+          const recoveryPoll = async () => {
+            while (
+              Date.now() - recoveryStartTimestamp < RECOVERY_POLL_MAX_DURATION_MILLISECONDS &&
+              conversationIdRef.current === genId
+            ) {
+              try {
+                const recoveredConversation = await PrismService.getAgentConversation(
+                  genId,
+                  agentProject!,
+                );
+
+                if (
+                  recoveredConversation &&
+                  recoveredConversation.messages &&
+                  conversationIdRef.current === genId
+                ) {
+                  const displayMessages = prepareDisplayMessages(
+                    recoveredConversation.messages,
+                  );
+                  setMessages(displayMessages);
+
+                  // Check if generation completed (last message is assistant with content)
+                  const lastRecoveredMessage =
+                    recoveredConversation.messages[recoveredConversation.messages.length - 1];
+                  const isGenerationComplete =
+                    lastRecoveredMessage?.role === "assistant" &&
+                    lastRecoveredMessage.content;
+
+                  if (isGenerationComplete) {
+                    console.info(
+                      `[handleSend] Recovery polling: generation completed for ${genId}`,
+                    );
+                    return;
+                  }
+                }
+              } catch {
+                // Non-critical — keep polling
+              }
+
+              await new Promise((resolve) =>
+                setTimeout(resolve, RECOVERY_POLL_INTERVAL_MILLISECONDS),
+              );
+            }
+          };
+
+          // Fire-and-forget — the finally block handles UI cleanup
+          await recoveryPoll();
+        } else {
+          setMessages((previousMessages) => [
+            ...previousMessages,
+            {
+              role: "assistant",
+              content: `⚠️ Error: ${errorMessage}`,
+              isError: true,
+            },
+          ]);
+        }
       } finally {
         console.debug(
           `[handleSend finally] genId=${genId}, currentConversationId=${conversationIdRef.current}, match=${conversationIdRef.current === genId}`,
@@ -5472,6 +5563,35 @@ export default function ChatConversationComponent({
       if (listRefreshTimer) clearTimeout(listRefreshTimer);
     };
   }, [refreshActiveConversation, loadConversations]);
+
+  // -- Visibility Recovery (Mobile Screen Lock) -------------------
+  // When the user returns to the tab after the browser suspended it
+  // (mobile screen lock, tab backgrounding), immediately re-fetch the
+  // active conversation from the database. The backend continues
+  // processing agentic loops after SSE disconnect, so the DB will
+  // have the latest state including any completed assistant messages.
+  useEffect(() => {
+    const handleVisibilityRecovery = () => {
+      if (document.visibilityState !== "visible") return;
+
+      const activeConversationId = conversationIdRef.current;
+      if (!activeConversationId) return;
+
+      // Only run recovery for agentic conversations
+      if (isNoAgent) return;
+
+      console.debug(
+        `[visibilityRecovery] Tab became visible — refreshing conversation ${activeConversationId}`,
+      );
+
+      refreshActiveConversation(activeConversationId);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityRecovery);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityRecovery);
+    };
+  }, [refreshActiveConversation, isNoAgent]);
 
   const handleUndoDelete = useCallback(
     (conversationId: string, toastId: number) => {

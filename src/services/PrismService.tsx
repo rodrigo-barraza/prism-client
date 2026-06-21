@@ -939,6 +939,23 @@ export default class PrismService {
     });
   }
 
+  /**
+   * Explicitly stop a running agentic session on the backend.
+   * Decoupled from SSE connection lifecycle so mobile browser disconnections
+   * don't abort background processing — only this explicit call does.
+   */
+  static async stopGeneration(
+    conversationId: string,
+  ): Promise<{ ok: boolean; stopped: boolean }> {
+    return PrismService._request<{ ok: boolean; stopped: boolean }>(
+      "/agent/stop",
+      {
+        method: "POST",
+        body: { conversationId },
+      },
+    );
+  }
+
   // ---------------------------------------------------------------------------
   // Cron Jobs
   // ---------------------------------------------------------------------------
