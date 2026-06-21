@@ -80,7 +80,7 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         year: 2023,
         arxivUrl: "https://arxiv.org/abs/2310.04406",
         description:
-          "Iterative expand-evaluate-refine search inspired by MCTS. At each depth level, N branches are explored in parallel, scored by an LLM evaluator, and the best branch is refined with evaluator feedback for the next depth — unlike single-depth Tournament.",
+          "Iterative expand-evaluate-refine search inspired by MCTS. Uses UCB1 selection to balance exploration vs exploitation, LLM evaluation with backpropagation, and evaluator feedback to refine the best branch at each depth level.",
         implementationFile: "MCTSRouter.ts",
         categoryLabel: "Tree Search",
         badgeClass: "badge-tree-search",
@@ -91,7 +91,7 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         year: 2025,
         arxivUrl: "https://arxiv.org/abs/2505.02576",
         description:
-          "A recursive decompose→solve→merge framework where the LLM planner breaks complex tasks into independent subtasks. Each subtask is dispatched to a sub-agent in parallel, then a synthesis pass merges the results.",
+          "A recursive decompose→solve→merge framework where the LLM planner breaks complex tasks into subtasks with optional dependency ordering. Subtasks are grouped into execution tiers via topological sort — each tier runs in parallel, with dependent subtasks receiving prerequisite outputs as context.",
         implementationFile: "DivideAndConquerRouter.ts",
         categoryLabel: "Task Decomposition",
         badgeClass: "badge-task-decomposition",
@@ -124,7 +124,7 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         year: 2024,
         arxivUrl: "https://arxiv.org/abs/2406.04692",
         description:
-          "A layered multi-agent architecture where each agent takes all outputs from the previous layer as auxiliary information. The final aggregator synthesizes diverse responses into a single unified result — leveraging model diversity over individual capability.",
+          "A multi-layer architecture where each agent takes all outputs from the previous layer as auxiliary information. Supports configurable layer stacking (layerCount) for iterative refinement. Warns when all proposers share the same model, per the paper's diversity findings.",
         implementationFile: "HierarchicalAggregationRouter.ts",
         categoryLabel: "Synthesis",
         badgeClass: "badge-synthesis",
