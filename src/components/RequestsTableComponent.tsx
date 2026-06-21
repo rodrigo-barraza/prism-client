@@ -257,24 +257,26 @@ export default function RequestsTableComponent({
 
   return (
     <>
-      <TableComponent
-        className="requests-table-component"
-        title={title}
-        maxHeight={maxHeight ?? undefined}
-        columns={columns}
-        data={requests}
-        sortKey={sortKey}
-        sortDir={sortDir}
-        onSort={handleSort}
-        onRowClick={handleRowClick}
-        onRowMouseEnter={onRowMouseEnter}
-        onRowMouseLeave={onRowMouseLeave}
-        getRowClassName={getRowClassName}
-        getRowKey={(request: TransformedRequestItem, index: number) => `${request.requestId || request._id || "request"}-${index}`}
-        emptyText={resolvedEmptyText}
-        mini={mini}
-        storageKey={storageKey}
-      />
+      <div data-drawer-ignore-click-outside>
+        <TableComponent
+          className="requests-table-component"
+          title={title}
+          maxHeight={maxHeight ?? undefined}
+          columns={columns}
+          data={requests}
+          sortKey={sortKey}
+          sortDir={sortDir}
+          onSort={handleSort}
+          onRowClick={handleRowClick}
+          onRowMouseEnter={onRowMouseEnter}
+          onRowMouseLeave={onRowMouseLeave}
+          getRowClassName={getRowClassName}
+          getRowKey={(request: TransformedRequestItem, index: number) => `${request.requestId || request._id || "request"}-${index}`}
+          emptyText={resolvedEmptyText}
+          mini={mini}
+          storageKey={storageKey}
+        />
+      </div>
 
       {/* Built-in request detail drawer */}
       <RequestDetailsComponent
@@ -282,6 +284,7 @@ export default function RequestsTableComponent({
         onClose={() => setSelectedRequest(null)}
         title="Request Detail"
         sections={buildRequestDetailSections(selectedRequest)}
+        contentKey={selectedRequest?.requestId || selectedRequest?._id}
       >
         {selectedRequest && (
           <>

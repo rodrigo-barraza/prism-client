@@ -19,6 +19,7 @@ export interface RequestDetailsProps {
   onClose: () => void;
   title?: string;
   sections?: DrawerSection[];
+  contentKey?: string | number | null;
   children?: ReactNode;
 }
 
@@ -27,6 +28,7 @@ export default function RequestDetailsComponent({
   onClose,
   title = "Detail",
   sections = [],
+  contentKey,
   children,
 }: RequestDetailsProps) {
   return (
@@ -36,6 +38,7 @@ export default function RequestDetailsComponent({
       onClose={onClose}
       title={title}
       sections={sections}
+      contentKey={contentKey}
     >
       {children}
     </DrawerComponent>

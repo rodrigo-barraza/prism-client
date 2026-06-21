@@ -384,7 +384,7 @@ export default function ToolRequestsPage() {
       </FilterBarComponent>
 
       {/* Table */}
-      <div className={styles['table-wrapper']}>
+      <div className={styles['table-wrapper']} data-drawer-ignore-click-outside>
         <TableComponent
           columns={columns}
           data={toolCalls}
@@ -414,6 +414,7 @@ export default function ToolRequestsPage() {
         onClose={() => setSelectedCall(null)}
         title="Tool Call Detail"
         sections={buildDetailSections(selectedCall)}
+        contentKey={selectedCall?._id}
       >
         {selectedCall && (
           <>
