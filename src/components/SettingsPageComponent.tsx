@@ -339,7 +339,7 @@ export default function SettingsPageComponent() {
     [settings, persistSettings],
   );
 
-  // -- Reasoning strategy change handler --------------------------------
+  // -- Thought structure change handler --------------------------------
   const handleThoughtStructureSelect = useCallback(
     (structureId: string) => {
       const updated = {
@@ -1142,10 +1142,10 @@ export default function SettingsPageComponent() {
 
           <div className={styles["harness-divider"]} />
 
-          {/* Reasoning Strategy */}
+          {/* Thought Structure */}
           <div className={styles["settings-layout-row"]}>
             <div className={styles["layout-row-label"]}>
-              <span className={styles["layout-row-title"]}>Reasoning Strategy</span>
+              <span className={styles["layout-row-title"]}>Thought Structure</span>
               <span className={styles["layout-row-description"]}>
                 Controls how the agent reasons within each iteration. Chain of
                 Thought uses sequential single-pass reasoning. Tree of Thoughts
@@ -1170,7 +1170,7 @@ export default function SettingsPageComponent() {
               <span className={styles["layout-row-title"]}>Subagent Topology</span>
               <span className={styles["layout-row-description"]}>
                 Defines how sub-agents coordinate. Each topology maps to a
-                reasoning strategy: Chain of Thought (sequential, hierarchical),
+                thought structure: Chain of Thought (sequential, hierarchical),
                 Graph of Thoughts (aggregation), DAG mesh (peer-to-peer),
                 Best-of-N (tournament), Actor-Critic (critic loop),
                 task decomposition (divide &amp; conquer), or iterative

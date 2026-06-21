@@ -5,7 +5,7 @@ import styles from "./AgentStrategyOptionsComponent.module.css";
 
 /* ═══════════════════════════════════════════════════════════════════
    AgentStrategyOptionsComponent — Shared select options for topology
-   and reasoning strategy, with rich tooltips and topology graphs.
+   and thought structure, with rich tooltips and topology graphs.
 
    Used by both SettingsPageComponent (full settings) and
    SettingsPanelComponent (sidebar/panel overlay).

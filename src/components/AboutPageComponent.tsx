@@ -30,7 +30,7 @@ interface PaperCategory {
 
 const PAPER_CATEGORIES: PaperCategory[] = [
   {
-    title: "Reasoning Strategies",
+    title: "Thought Structures",
     icon: "🧠",
     papers: [
       {
@@ -52,8 +52,8 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         description:
           "Parallel branching strategy that explores multiple reasoning paths simultaneously, scores each branch against evaluation criteria, then selects the highest-scoring trajectory to continue.",
         implementationFile: "TreeOfThoughtsStrategy.ts",
-        categoryLabel: "Reasoning Strategy",
-        badgeClass: "badge-reasoning-strategy",
+        categoryLabel: "Thought Structure",
+        badgeClass: "badge-thought-structure",
       },
       {
         title: "Graph of Thoughts: Solving Elaborate Problems with Large Language Models",
@@ -63,8 +63,8 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         description:
           "Extends Tree of Thoughts into a directed acyclic graph where branches can merge, aggregate, and synthesize — enabling complex multi-path reasoning with GoT-style aggregation passes.",
         implementationFile: "GraphOfThoughtsStrategy.ts",
-        categoryLabel: "Reasoning Strategy",
-        badgeClass: "badge-reasoning-strategy",
+        categoryLabel: "Thought Structure",
+        badgeClass: "badge-thought-structure",
       },
       {
         title: "Reflexion: Language Agents with Verbal Reinforcement Learning",
@@ -232,7 +232,7 @@ export default function AboutPageComponent() {
         <h1 className={styles["hero-title"]}>Research Implementations</h1>
         <p className={styles["hero-subtitle"]}>
           Prism implements state-of-the-art research from agentic AI, multi-agent systems,
-          and reasoning strategies — from single-agent ReAct loops to multi-agent
+          and thought structures — from single-agent ReAct loops to multi-agent
           coordination patterns. For detailed sub-agent topology documentation, see the{" "}
           <Link href="/topologies" className={styles["hero-cross-reference-link"]}>Topologies</Link> page.
         </p>
