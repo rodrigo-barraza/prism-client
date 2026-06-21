@@ -2432,23 +2432,43 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
   } = activity;
   const isTerminal = phase === "complete" || phase === "failed";
   const isToolActive = !!currentTool;
+
+  // Detect sub-sub-agent delegation: the sub-agent's LLM is "complete" but it
+  // spawned a nested team whose create_team tool call is still in-flight.
+  const hasActiveSubSubAgents =
+    isTerminal &&
+    phase !== "failed" &&
+    Array.isArray(activity.toolCalls) &&
+    activity.toolCalls.some(
+      (toolCall) =>
+        toolCall.name === "create_team" &&
+        (toolCall.status === "calling" || toolCall.status === "streaming"),
+    );
+
   const hasPhase = !!phase && !isTerminal;
-  const isActive = isToolActive || hasPhase;
+  const isActive = isToolActive || hasPhase || hasActiveSubSubAgents;
   const toolLabel = currentTool ? renderToolName(currentTool) : null;
 
   // Derive the effective phase for StatusBarComponent:
+  // - Sub-sub-agents still running → "delegating" (teal — awaiting nested team)
   // - Tool executing → "executing" (orange — actively running a tool)
   // - Terminal → null (idle)
   // - Otherwise → actual model phase (generating, thinking, prefilling, etc.)
-  const effectivePhase = isToolActive
-    ? "executing"
-    : isTerminal
-      ? null
-      : phase;
-  // Show tool name when executing tools, phase progress label for processing/loading
-  const label = isToolActive ? toolLabel : activity.phaseLabel || undefined;
-  // Tool calls show a wrench emoji, phase uses default icons
-  const icon = isToolActive ? "🔧" : undefined;
+  const effectivePhase = hasActiveSubSubAgents
+    ? "delegating"
+    : isToolActive
+      ? "executing"
+      : isTerminal
+        ? null
+        : phase;
+  // Show delegation label, tool name, or phase progress label
+  const label = hasActiveSubSubAgents
+    ? "Awaiting Sub-Agents…"
+    : isToolActive
+      ? toolLabel
+      : activity.phaseLabel || undefined;
+  // Delegation shows the team icon, tool calls show a wrench emoji, phase uses default icons
+  const icon = hasActiveSubSubAgents ? "👥" : isToolActive ? "🔧" : undefined;
   // Progress (0-1) from LM Studio prompt processing / model loading
   const progress =
     effectivePhase === "prefilling" || effectivePhase === "loading"
@@ -2640,6 +2660,17 @@ function TeamCreateRenderer({
           ? (activity?.iteration ?? 0)
           : (member.iterations ?? 0);
 
+        // Detect when this sub-agent is "completed" but still has
+        // in-flight create_team tool calls (sub-sub-agents still running)
+        const memberHasActiveSubSubAgents =
+          isCompleted &&
+          Array.isArray(activity?.toolCalls) &&
+          activity!.toolCalls.some(
+            (toolCall) =>
+              toolCall.name === "create_team" &&
+              (toolCall.status === "calling" || toolCall.status === "streaming"),
+          );
+
         return (
           <div
             key={index}
@@ -2656,11 +2687,13 @@ function TeamCreateRenderer({
                 </span>
               )}
               <StatusBadge
-                success={!isTerminal ? true : isCompleted}
+                success={!isTerminal ? true : memberHasActiveSubSubAgents ? true : isCompleted}
                 label={
-                  !isTerminal
-                    ? activity?.phase || member.status || "running"
-                    : member.status || "unknown"
+                  memberHasActiveSubSubAgents
+                    ? "delegating"
+                    : !isTerminal
+                      ? activity?.phase || member.status || "running"
+                      : member.status || "unknown"
                 }
               />
             </div>
@@ -2677,7 +2710,15 @@ function TeamCreateRenderer({
               <div className={styles['error-text']}>{member.error}</div>
             )}
 
-            {activity && !isTerminal && <SubAgentStatusBar activity={activity} />}
+            {activity && (!isTerminal || (
+              isTerminal && !isFailed &&
+              Array.isArray(activity.toolCalls) &&
+              activity.toolCalls.some(
+                (toolCall) =>
+                  toolCall.name === "create_team" &&
+                  (toolCall.status === "calling" || toolCall.status === "streaming"),
+              )
+            )) && <SubAgentStatusBar activity={activity} />}
 
             <div className={styles['sub-agent-result-card']}>
               <button
