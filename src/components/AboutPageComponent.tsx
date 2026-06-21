@@ -1,6 +1,13 @@
 "use client";
 
+import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./AboutPageComponent.module.css";
+
+interface AlignmentEntry {
+  component: string;
+  status: "aligned" | "simplified" | "extended";
+  detail: string;
+}
 
 interface ResearchPaper {
   title: string;
@@ -11,6 +18,7 @@ interface ResearchPaper {
   implementationFile: string;
   categoryLabel: string;
   badgeClass: string;
+  alignment?: AlignmentEntry[];
 }
 
 interface PaperCategory {
@@ -84,6 +92,15 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         implementationFile: "MCTSRouter.ts",
         categoryLabel: "Tree Search",
         badgeClass: "badge-tree-search",
+        alignment: [
+          { component: "Selection (UCB1)", status: "aligned", detail: "UCT formula with configurable exploration weight" },
+          { component: "Expansion", status: "aligned", detail: "Spawns branchFactor sub-agents in parallel" },
+          { component: "Evaluation", status: "aligned", detail: "LLM judge scores branches on correctness/completeness/quality" },
+          { component: "Simulation (rollout)", status: "simplified", detail: "Not implemented — evaluates immediately after expansion" },
+          { component: "Backpropagation", status: "aligned", detail: "Running-average V(s) update along parent chain" },
+          { component: "Reflection", status: "aligned", detail: "Evaluator feedback fed into next depth's refinement prompt" },
+          { component: "Tree structure", status: "simplified", detail: "Linear depth chain, not a branching tree with UCT traversal" },
+        ],
       },
       {
         title: "Recursive Decomposition with Dependencies for Generic Divide-and-Conquer Reasoning",
@@ -95,6 +112,13 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         implementationFile: "DivideAndConquerRouter.ts",
         categoryLabel: "Task Decomposition",
         badgeClass: "badge-task-decomposition",
+        alignment: [
+          { component: "Recursive decomposition", status: "aligned", detail: "LLM planner decomposes task into subtasks" },
+          { component: "Dependency DAG", status: "aligned", detail: "Planner outputs dependsOn indices; topological sort groups into tiers" },
+          { component: "Sub-task execution", status: "aligned", detail: "Each subtask dispatched to a sub-agent (tier-parallel)" },
+          { component: "Recomposition", status: "aligned", detail: "Synthesis pass merges all subtask results" },
+          { component: "Recursive depth", status: "simplified", detail: "Single-level decomposition only — no recursive sub-decomposition" },
+        ],
       },
       {
         title: "Self-Refine: Iterative Refinement with Self-Feedback",
@@ -106,6 +130,14 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         implementationFile: "CriticLoopRouter.ts",
         categoryLabel: "Iterative Refinement",
         badgeClass: "badge-iterative-refinement",
+        alignment: [
+          { component: "Generate (initial output)", status: "aligned", detail: "Actor agent produces initial output" },
+          { component: "Feedback (critic)", status: "extended", detail: "Separate critic agent(s), not same-LLM self-critique" },
+          { component: "Refine (incorporate)", status: "aligned", detail: "Actor continues with aggregated critic feedback" },
+          { component: "Iterative loop", status: "aligned", detail: "Loops until unanimous PASS or maxRounds" },
+          { component: "Single-LLM (paper)", status: "extended", detail: "Extended to multi-agent: separate actor + critic roles/models" },
+          { component: "Council / Jury modes", status: "extended", detail: "Original extensions beyond paper scope" },
+        ],
       },
       {
         title: "Large Language Monkeys: Scaling Inference Compute with Repeated Sampling",
@@ -117,6 +149,12 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         implementationFile: "TournamentRouter.ts",
         categoryLabel: "Selection",
         badgeClass: "badge-selection",
+        alignment: [
+          { component: "Repeated sampling", status: "aligned", detail: "Fan-out N sub-agents in parallel" },
+          { component: "Verification", status: "simplified", detail: "LLM judge instead of automatic verifiers (unit tests, proofs)" },
+          { component: "Coverage scaling", status: "aligned", detail: "Theoretical finding — N/A for implementation" },
+          { component: "Selection", status: "aligned", detail: "Judge selects best result verbatim" },
+        ],
       },
       {
         title: "Mixture-of-Agents Enhances Large Language Model Capabilities",
@@ -128,6 +166,13 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         implementationFile: "HierarchicalAggregationRouter.ts",
         categoryLabel: "Synthesis",
         badgeClass: "badge-synthesis",
+        alignment: [
+          { component: "Layered architecture", status: "aligned", detail: "Multi-layer stacking via layerCount config" },
+          { component: "Proposer/Aggregator roles", status: "aligned", detail: "Members are proposers, synthesis LLM is the aggregator" },
+          { component: "Collaborativeness", status: "aligned", detail: "Aggregator sees all proposer outputs as auxiliary information" },
+          { component: "Model diversity", status: "aligned", detail: "Warning logged when all proposers share same model" },
+          { component: "Iterative refinement", status: "aligned", detail: "Each layer's synthesis feeds into next layer as context" },
+        ],
       },
       {
         title: "Improving Factuality and Reasoning through Multi-Agent Debate",
@@ -139,6 +184,14 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         implementationFile: "PeerToPeerRouter.ts",
         categoryLabel: "Multi-Agent Debate",
         badgeClass: "badge-multi-agent-debate",
+        alignment: [
+          { component: "Multiple agents", status: "aligned", detail: "Multiple agents with configurable models/prompts" },
+          { component: "Multi-round debate", status: "aligned", detail: "Turn-based mesh with shared discussion thread" },
+          { component: "Convergence", status: "aligned", detail: "Stall detection terminates early when agents stop contributing" },
+          { component: "Symmetric design", status: "aligned", detail: "All agents are equal participants in the mesh" },
+          { component: "Stateless agents", status: "extended", detail: "Stateful session reuse via continueSubAgent" },
+          { component: "Worktree merging", status: "extended", detail: "Agents can edit files and see each other's edits" },
+        ],
       },
     ],
   },
@@ -229,6 +282,62 @@ const ACADEMIC_PAPER_COUNT = PAPER_CATEGORIES.reduce(
 
 const CATEGORY_COUNT = PAPER_CATEGORIES.length;
 
+const STATUS_INDICATORS: Record<AlignmentEntry["status"], { icon: string; label: string }> = {
+  aligned: { icon: "✅", label: "Aligned" },
+  simplified: { icon: "⚠️", label: "Simplified" },
+  extended: { icon: "🔧", label: "Extended" },
+};
+
+function AlignmentTooltipContent({ alignment }: { alignment: AlignmentEntry[] }) {
+  const alignedCount = alignment.filter((entry) => entry.status === "aligned").length;
+  const simplifiedCount = alignment.filter((entry) => entry.status === "simplified").length;
+  const extendedCount = alignment.filter((entry) => entry.status === "extended").length;
+
+  return (
+    <span className={styles["alignment-tooltip-container"]}>
+      <span className={styles["alignment-tooltip-summary"]}>
+        <span className={styles["alignment-summary-stat"]}>
+          <span className={styles["alignment-stat-count"]} data-status="aligned">{alignedCount}</span>
+          <span className={styles["alignment-stat-label"]}>Aligned</span>
+        </span>
+        {simplifiedCount > 0 && (
+          <span className={styles["alignment-summary-stat"]}>
+            <span className={styles["alignment-stat-count"]} data-status="simplified">{simplifiedCount}</span>
+            <span className={styles["alignment-stat-label"]}>Simplified</span>
+          </span>
+        )}
+        {extendedCount > 0 && (
+          <span className={styles["alignment-summary-stat"]}>
+            <span className={styles["alignment-stat-count"]} data-status="extended">{extendedCount}</span>
+            <span className={styles["alignment-stat-label"]}>Extended</span>
+          </span>
+        )}
+      </span>
+      <span className={styles["alignment-tooltip-divider"]} />
+      <span className={styles["alignment-tooltip-list"]}>
+        {alignment.map((entry) => (
+          <span
+            key={entry.component}
+            className={styles["alignment-tooltip-entry"]}
+          >
+            <span className={styles["alignment-entry-indicator"]}>
+              {STATUS_INDICATORS[entry.status].icon}
+            </span>
+            <span className={styles["alignment-entry-body"]}>
+              <span className={styles["alignment-entry-component"]}>
+                {entry.component}
+              </span>
+              <span className={styles["alignment-entry-detail"]}>
+                {entry.detail}
+              </span>
+            </span>
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
 export default function AboutPageComponent() {
   let globalCardIndex = 0;
 
@@ -293,9 +402,11 @@ function PaperCard({
   paper: ResearchPaper;
   entranceDelayMilliseconds: number;
 }) {
-  return (
+  const hasAlignment = paper.alignment && paper.alignment.length > 0;
+
+  const cardContent = (
     <article
-      className={styles["paper-card"]}
+      className={`${styles["paper-card"]} ${hasAlignment ? styles["paper-card-has-alignment"] : ""}`}
       style={
         { "--card-entrance-delay": `${entranceDelayMilliseconds}ms` } as React.CSSProperties
       }
@@ -332,10 +443,33 @@ function PaperCard({
         )}
       </p>
       <p className={styles["paper-description"]}>{paper.description}</p>
-      <div className={styles["implementation-badge"]}>
-        <span className={styles["implementation-icon"]}>📄</span>
-        {paper.implementationFile}
+      <div className={styles["implementation-badge-row"]}>
+        <div className={styles["implementation-badge"]}>
+          <span className={styles["implementation-icon"]}>📄</span>
+          {paper.implementationFile}
+        </div>
+        {hasAlignment && (
+          <span className={styles["alignment-hint-badge"]}>
+            Paper Alignment
+          </span>
+        )}
       </div>
     </article>
+  );
+
+  if (!hasAlignment) {
+    return cardContent;
+  }
+
+  return (
+    <TooltipComponent
+      rich
+      position="top"
+      enterDelay={200}
+      title="Paper ↔ Implementation Alignment"
+      content={<AlignmentTooltipContent alignment={paper.alignment!} />}
+    >
+      {cardContent}
+    </TooltipComponent>
   );
 }
