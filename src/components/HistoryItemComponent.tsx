@@ -244,7 +244,7 @@ export default function HistoryItemComponent({
               })()}
             {item.parentConversationId && (
               <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
-                👷{subAgentNumber != null && (
+                👶{subAgentNumber != null && (
                   <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
                 )}
               </span>
