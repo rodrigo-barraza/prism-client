@@ -410,7 +410,8 @@ export default function SettingsPanel({
           </span>
         )}
         {conversationType === "agent" && settings.agents?.thoughtStructure && (
-          <span className={styles['settings-badge']}>
+          <span className={styles['stat-badge']}>
+            <GitBranch size={10} />
             {formatThoughtStructureLabel(settings.agents.thoughtStructure as string)}
           </span>
         )}

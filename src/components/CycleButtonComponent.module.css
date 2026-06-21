@@ -63,7 +63,7 @@
 
 /* ── Infinity glyph — big, bold, expressive ────────────── */
 .infinity {
-  font-size: 2rem;
+  font-size: 24px;
   font-weight: 700;
   min-width: 38px;
   line-height: 0.5;

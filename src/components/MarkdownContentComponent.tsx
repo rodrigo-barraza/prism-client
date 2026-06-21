@@ -222,7 +222,7 @@ export default function MarkdownContent({
   return (
     <div className={`markdown-content-component ${styles['text']} ${className || ""}`}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
+        remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: false }]]}
         rehypePlugins={[rehypeKatex]}
         components={{ code: CodeBlock, img: ImageOrEmbed }}
       >
