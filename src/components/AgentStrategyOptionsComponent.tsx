@@ -40,11 +40,11 @@ export function buildTopologyOptions(): StrategySelectOption[] {
     },
     {
       value: "hierarchical",
-      label: "Hierarchical Parallel (CoT)",
+      label: "Hierarchical Parallel (ToT)",
       tooltipRich: true,
       tooltip: (
         <div>
-          <span className={styles["strategy-tooltip-title"]}>Hierarchical Parallel (CoT)</span>
+          <span className={styles["strategy-tooltip-title"]}>Hierarchical Parallel (ToT)</span>
           <p className={styles["strategy-tooltip-description"]}>
             Sub-agents execute in parallel. The orchestrator
             selects the best result. Branches never merge.
@@ -58,11 +58,11 @@ export function buildTopologyOptions(): StrategySelectOption[] {
     },
     {
       value: "hierarchical_aggregation",
-      label: "Hierarchical Aggregation (GoT)",
+      label: "Hierarchical Aggregation (MoA)",
       tooltipRich: true,
       tooltip: (
         <div>
-          <span className={styles["strategy-tooltip-title"]}>Hierarchical Aggregation (GoT)</span>
+          <span className={styles["strategy-tooltip-title"]}>Hierarchical Aggregation (MoA)</span>
           <p className={styles["strategy-tooltip-description"]}>
             Sub-agents execute in parallel, then a synthesis pass
             merges all outputs into a unified result.
@@ -76,11 +76,11 @@ export function buildTopologyOptions(): StrategySelectOption[] {
     },
     {
       value: "peer_to_peer",
-      label: "Peer-to-Peer Mesh (GoT DAG)",
+      label: "Peer-to-Peer Mesh (MAD)",
       tooltipRich: true,
       tooltip: (
         <div>
-          <span className={styles["strategy-tooltip-title"]}>Peer-to-Peer Mesh (GoT DAG)</span>
+          <span className={styles["strategy-tooltip-title"]}>Peer-to-Peer Mesh (MAD)</span>
           <p className={styles["strategy-tooltip-description"]}>
             Agents communicate laterally in a turn-based
             discussion. Each agent sees all prior messages from
@@ -132,11 +132,11 @@ export function buildTopologyOptions(): StrategySelectOption[] {
     },
     {
       value: "divide_and_conquer",
-      label: "Divide & Conquer (ToT)",
+      label: "Divide & Conquer (GoT)",
       tooltipRich: true,
       tooltip: (
         <div>
-          <span className={styles["strategy-tooltip-title"]}>Divide & Conquer (ToT)</span>
+          <span className={styles["strategy-tooltip-title"]}>Divide & Conquer (GoT)</span>
           <p className={styles["strategy-tooltip-description"]}>
             A planner decomposes the task into independent subtasks,
             each dispatched to a sub-agent in parallel, then

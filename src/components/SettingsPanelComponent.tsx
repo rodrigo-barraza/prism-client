@@ -126,13 +126,13 @@ export function formatHarnessLabel(harness: string): string {
 
 const TOPOLOGY_LABELS: Record<string, string> = {
   sequential: "Sequential (CoT)",
-  hierarchical: "Hierarchical (CoT)",
-  hierarchical_aggregation: "Aggregation (GoT)",
-  peer_to_peer: "Mesh (GoT DAG)",
-  p2p: "Mesh (GoT DAG)",
+  hierarchical: "Hierarchical (ToT)",
+  hierarchical_aggregation: "Aggregation (MoA)",
+  peer_to_peer: "Mesh (MAD)",
+  p2p: "Mesh (MAD)",
   tournament: "Tournament (BoN)",
   critic_loop: "Critic Loop (MAR)",
-  divide_and_conquer: "D&C (ToT)",
+  divide_and_conquer: "D&C (GoT)",
   mcts: "MCTS (LATS)",
 };
 
