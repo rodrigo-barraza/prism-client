@@ -1665,6 +1665,25 @@ export interface TopologyDefinition {
   flowDescription: string;
 }
 
+// --- Reasoning Strategy Definitions -------------------------
+
+export interface ReasoningStrategyDefinition {
+  id: string;
+  displayName: string;
+  abbreviation: string;
+  description: string;
+  paperTitle: string;
+  paperAuthors: string;
+  paperYear: number;
+  paperUrl: string;
+  implementationFile: string;
+  categoryLabel: string;
+  phases: string[];
+  configOptions: TopologyConfigOption[];
+  alignment: TopologyAlignmentEntry[];
+  flowDescription: string;
+}
+
 // --- Approval -----------------------------------------------
 
 export interface ApprovalResponse {

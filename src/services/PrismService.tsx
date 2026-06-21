@@ -59,6 +59,7 @@ import type {
   ScheduledTask,
   ConversationTimer,
   TopologyDefinition,
+  ReasoningStrategyDefinition,
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
@@ -756,6 +757,16 @@ export default class PrismService {
 
   static async getTopologies(): Promise<TopologyDefinition[]> {
     return PrismService._request<TopologyDefinition[]>("/topologies", {
+      method: "GET",
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reasoning Strategies
+  // ---------------------------------------------------------------------------
+
+  static async getReasoningStrategies(): Promise<ReasoningStrategyDefinition[]> {
+    return PrismService._request<ReasoningStrategyDefinition[]>("/reasoning-strategies", {
       method: "GET",
     });
   }
