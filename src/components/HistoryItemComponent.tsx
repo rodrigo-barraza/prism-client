@@ -249,7 +249,7 @@ export default function HistoryItemComponent({
                 )}
               </span>
             )}
-            {(item.hasSubAgents || hasSpawnedSubAgents) && !item.parentConversationId && (
+            {(item.hasSubAgents || hasSpawnedSubAgents) && (
               <span className={styles['parent-agent-emoji']} title="Parent Agent (spawned sub-agents)">
                 🧬
               </span>
