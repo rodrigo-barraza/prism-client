@@ -314,16 +314,16 @@ export default function ImagePreviewComponent({
           {/* Colors */}
           <div className={styles['tool-group']}>
             <span className={styles['tool-label']}>Color</span>
-            {COLORS.map((c) => (
+            {COLORS.map((config) => (
               <button
-                key={c.value}
-                className={`${styles['swatch']} ${color === c.value && !isEraser ? styles['swatch-is-active-state'] : ""}`}
-                style={{ background: c.value }}
+                key={config.value}
+                className={`${styles['swatch']} ${color === config.value && !isEraser ? styles['swatch-is-active-state'] : ""}`}
+                style={{ background: config.value }}
                 onClick={() => {
-                  setColor(c.value);
+                  setColor(config.value);
                   setIsEraser(false);
                 }}
-                title={c.label}
+                title={config.label}
               />
             ))}
           </div>
@@ -331,16 +331,16 @@ export default function ImagePreviewComponent({
           {/* Sizes */}
           <div className={styles['tool-group']}>
             <span className={styles['tool-label']}>Size</span>
-            {SIZES.map((s, i) => (
+            {SIZES.map((state, i) => (
               <button
-                key={s.label}
+                key={state.label}
                 className={`${styles['size-button']} ${sizeIdx === i ? styles['size-button-element-is-active-state'] : ""}`}
                 onClick={() => setSizeIdx(i)}
-                title={s.label}
+                title={state.label}
               >
                 <span
                   className={styles['size-dot']}
-                  style={{ width: s.dot, height: s.dot }}
+                  style={{ width: state.dot, height: state.dot }}
                 />
               </button>
             ))}

@@ -121,8 +121,8 @@ export default function ToolRequestsPage() {
         limit: LIMIT,
         skip: (page - 1) * LIMIT,
       };
-      Object.entries(filters).forEach(([k, v]) => {
-        if (v) params[k] = v;
+      Object.entries(filters).forEach(([k, value]) => {
+        if (value) params[k] = value;
       });
       // Date range
       const dateParams = buildDateRangeParams(dateRange) as Record<
@@ -180,7 +180,7 @@ export default function ToolRequestsPage() {
   const totalDuration = useMemo(
     () =>
       toolCalls.reduce(
-        (sum: number, tc: ToolCallRecord) => sum + (tc.elapsedMs || 0),
+        (sum: number, toolCall: ToolCallRecord) => sum + (toolCall.elapsedMs || 0),
         0,
       ) || 1,
     [toolCalls],
@@ -204,17 +204,17 @@ export default function ToolRequestsPage() {
       "Status",
       "Error",
     ].join(",");
-    const rows = toolCalls.map((tc: ToolCallRecord) =>
+    const rows = toolCalls.map((toolCall: ToolCallRecord) =>
       [
-        tc.timestamp || "",
-        tc.toolName || "",
-        tc.domain || "",
-        tc.method || "",
-        tc.callerAgent || "",
-        tc.callerUsername || "",
-        tc.elapsedMs || 0,
-        tc.success ? "OK" : "ERR",
-        tc.errorMessage || "",
+        toolCall.timestamp || "",
+        toolCall.toolName || "",
+        toolCall.domain || "",
+        toolCall.method || "",
+        toolCall.callerAgent || "",
+        toolCall.callerUsername || "",
+        toolCall.elapsedMs || 0,
+        toolCall.success ? "OK" : "ERR",
+        toolCall.errorMessage || "",
       ].join(","),
     );
     const csv = [headers, ...rows].join("\n");
@@ -230,23 +230,23 @@ export default function ToolRequestsPage() {
   const totalPages = Math.ceil(total / LIMIT);
 
   // -- Build detail sections for the drawer ----------------------
-  function buildDetailSections(tc: ToolCallRecord | null) {
-    if (!tc) return [];
+  function buildDetailSections(toolCall: ToolCallRecord | null) {
+    if (!toolCall) return [];
     return [
       {
         title: "Overview",
         items: [
-          { label: "Tool", value: tc.toolName },
-          { label: "Domain", value: tc.domain },
-          { label: "Method", value: tc.method },
-          { label: "Path", value: tc.path, mono: true },
-          { label: "Status Code", value: tc.status },
+          { label: "Tool", value: toolCall.toolName },
+          { label: "Domain", value: toolCall.domain },
+          { label: "Method", value: toolCall.method },
+          { label: "Path", value: toolCall.path, mono: true },
+          { label: "Status Code", value: toolCall.status },
           {
             label: "Success",
-            value: tc.success ? "✓ OK" : "✗ Error",
+            value: toolCall.success ? "✓ OK" : "✗ Error",
           },
-          ...(tc.errorMessage
-            ? [{ label: "Error", value: tc.errorMessage }]
+          ...(toolCall.errorMessage
+            ? [{ label: "Error", value: toolCall.errorMessage }]
             : []),
         ],
       },
@@ -255,42 +255,42 @@ export default function ToolRequestsPage() {
         items: [
           {
             label: "Latency",
-            value: tc.elapsedMs ? formatLatencyMilliseconds(tc.elapsedMs) : "—",
+            value: toolCall.elapsedMs ? formatLatencyMilliseconds(toolCall.elapsedMs) : "—",
           },
           {
             label: "Latency (raw)",
-            value: tc.elapsedMs ? `${tc.elapsedMs.toFixed(2)} ms` : "—",
+            value: toolCall.elapsedMs ? `${toolCall.elapsedMs.toFixed(2)} ms` : "—",
             mono: true,
           },
           {
             label: "Request Size",
             value:
-              (tc.inBytes || 0) > 0 ? formatFileSize(tc.inBytes || 0) : "—",
+              (toolCall.inBytes || 0) > 0 ? formatFileSize(toolCall.inBytes || 0) : "—",
           },
           {
             label: "Response Size",
             value:
-              (tc.outBytes || 0) > 0 ? formatFileSize(tc.outBytes || 0) : "—",
+              (toolCall.outBytes || 0) > 0 ? formatFileSize(toolCall.outBytes || 0) : "—",
           },
         ],
       },
       {
         title: "Caller Context",
         items: [
-          { label: "Project", value: tc.callerProject || "—" },
-          { label: "Username", value: tc.callerUsername || "—" },
-          { label: "Agent", value: tc.callerAgent || "—" },
-          { label: "Request ID", value: tc.callerRequestId || "—", mono: true },
+          { label: "Project", value: toolCall.callerProject || "—" },
+          { label: "Username", value: toolCall.callerUsername || "—" },
+          { label: "Agent", value: toolCall.callerAgent || "—" },
+          { label: "Request ID", value: toolCall.callerRequestId || "—", mono: true },
           {
             label: "Conversation ID",
-            value: tc.callerConversationId || "—",
+            value: toolCall.callerConversationId || "—",
             mono: true,
           },
           {
             label: "Iteration",
-            value: tc.callerIteration != null ? `#${tc.callerIteration}` : "—",
+            value: toolCall.callerIteration != null ? `#${toolCall.callerIteration}` : "—",
           },
-          { label: "Client IP", value: tc.clientIp || "—", mono: true },
+          { label: "Client IP", value: toolCall.clientIp || "—", mono: true },
         ],
       },
       {
@@ -298,7 +298,7 @@ export default function ToolRequestsPage() {
         items: [
           {
             label: "Timestamp",
-            value: tc.timestamp ? formatDateTime(tc.timestamp) : "—",
+            value: toolCall.timestamp ? formatDateTime(toolCall.timestamp) : "—",
           },
         ],
       },
@@ -391,8 +391,8 @@ export default function ToolRequestsPage() {
           sortKey={sort}
           sortDir={order}
           onSort={handleSort}
-          onRowClick={(tc: ToolCallRecord) => setSelectedCall(tc)}
-          getRowKey={(tc: ToolCallRecord, i: number) => tc._id || `tc-${i}`}
+          onRowClick={(toolCall: ToolCallRecord) => setSelectedCall(toolCall)}
+          getRowKey={(toolCall: ToolCallRecord, i: number) => toolCall._id || `tc-${i}`}
           emptyText={loading ? "Loading..." : "No tool calls found"}
           maxHeight={undefined}
           storageKey="tool-requests"

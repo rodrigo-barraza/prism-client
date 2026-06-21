@@ -162,7 +162,7 @@ export default function SpinningCatComponent({
           }),
         );
         if (cancelled) {
-          bitmaps.forEach((b) => b.close());
+          bitmaps.forEach((current) => current.close());
           return;
         }
 
@@ -183,7 +183,7 @@ export default function SpinningCatComponent({
     return () => {
       cancelled = true;
       // Release ImageBitmap GPU resources on unmount
-      bitmapsRef.current?.forEach((b) => b.close());
+      bitmapsRef.current?.forEach((current) => current.close());
       bitmapsRef.current = null;
     };
   }, []);

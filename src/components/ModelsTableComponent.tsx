@@ -136,7 +136,7 @@ export interface RowData {
   params: number;
   modelType: string;
   quant: string;
-  bpw: number;
+  bitsPerWeight: number;
   arch: string;
   publisher: string;
   input: number;
@@ -361,7 +361,7 @@ function buildRow(rawModel: RawModel, favorites: string[] = []): RowData {
     params: parseParams(model.params),
     modelType: (model.modelType || "").toLowerCase(),
     quant: (model.quantization || "").toLowerCase(),
-    bpw: model.bitsPerWeight ?? 0,
+    bitsPerWeight: model.bitsPerWeight ?? 0,
     arch: (model.architecture || "").toLowerCase(),
     publisher: (model.publisher || "").toLowerCase(),
     input: rawModel.pricing?.inputPerMillion ?? Infinity,
@@ -1390,7 +1390,7 @@ function ModelsTableInner({
 
     if (hasBitsPerWeight) {
       cols.push({
-        key: "bpw",
+        key: "bitsPerWeight",
         label: "BPW",
         description: "Bits per weight — lower means more compression",
         align: "right",

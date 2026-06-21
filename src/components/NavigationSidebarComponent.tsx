@@ -295,7 +295,7 @@ export default function NavigationSidebarComponent({
     fadeStart: number | null;
   }
 
-  const sidebarReference = useRef<HTMLElement>(null);
+  const sidebarReference = useRef<HTMLDivElement>(null);
   const bannerRef = useRef<HTMLDivElement>(null);
   const catStateRef = useRef<Map<string, CatState>>(new Map());
   const catElsRef = useRef<Map<string, HTMLImageElement>>(new Map());
@@ -812,11 +812,11 @@ export default function NavigationSidebarComponent({
   /* -- Desktop: standard collapsible sidebar -- */
 
   return (
-    <div
+    <aside
       className={`navigation-sidebar-component ${styles['wrapper']} ${!showNav ? styles['is-collapsed-state'] : ""} ${!navReady ? styles['no-transition'] : ""}`}
     >
       {/* Expanded sidebar */}
-      <aside ref={sidebarReference} className={styles['sidebar']}>
+      <div ref={sidebarReference} className={styles['sidebar']}>
         {/* Rainbow logo banner */}
         <div className={styles['logo-banner']} ref={bannerRef}>
           <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
@@ -1047,7 +1047,7 @@ export default function NavigationSidebarComponent({
             customThemeMeta={customThemeMeta}
           />
         </div>
-      </aside>
-    </div>
+      </div>
+    </aside>
   );
 }

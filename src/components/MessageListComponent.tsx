@@ -1532,7 +1532,7 @@ export default function MessageList({
                         (() => {
                           const segs = message.contentSegments;
                           const hasThinking = segs.some(
-                            (s) => s.type === "thinking",
+                            (state) => state.type === "thinking",
                           );
                           // Dedup guard: track tool IDs already rendered to prevent
                           // the same tool call from appearing in multiple segments
@@ -1649,13 +1649,13 @@ export default function MessageList({
                             editingIndex === i
                           ) {
                             const nonThinking = segs.filter(
-                              (s) => s.type !== "thinking",
+                              (state) => state.type !== "thinking",
                             );
                             return (
                               <>
                                 {hasThinking &&
                                   segs
-                                    .filter((s) => s.type === "thinking")
+                                    .filter((state) => state.type === "thinking")
                                     .map((seg, segmentIndex) => {
                                       const fragment =
                                         message.thinkingFragments?.[
@@ -1705,7 +1705,7 @@ export default function MessageList({
 
                             // Track whether any non-thinking content exists
                             const hasVisibleContent = segs.some(
-                              (s) => s.type !== "thinking",
+                              (state) => state.type !== "thinking",
                             );
 
                             // Find last tool segment for auto-collapse logic
@@ -2184,7 +2184,7 @@ export default function MessageList({
                           ? i === messages.length - 1
                           : message.toolCalls?.some((toolCall) => toolCall.name === TOOL_NAMES.EXIT_PLAN_MODE)) &&
                         !message.contentSegments?.some(
-                          (s) => s.type === "plan",
+                          (state) => state.type === "plan",
                         ) && (
                           <PlanCardComponent
                             planText={planProposal.plan}

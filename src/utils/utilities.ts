@@ -377,7 +377,7 @@ export function toolCountsToUsedTools(
   if (!toolCounts || Object.keys(toolCounts).length === 0) return [];
   return Object.entries(toolCounts)
     .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count);
+    .sort((agent, current) => current.count - agent.count);
 }
 
 /**
@@ -435,7 +435,7 @@ export function mergeUsedToolsWithSubAgents(
 
   const mergedTools = [...merged.entries()]
     .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count);
+    .sort((agent, current) => current.count - agent.count);
 
   return [...capabilities, ...mergedTools];
 }

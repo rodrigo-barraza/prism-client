@@ -11,8 +11,8 @@ const TWEEN_MS = 500;
 const INFINITY_TWEEN_MS = TWEEN_MS * 2;
 
 /** Ease-out cubic — fast start, gentle landing. */
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
+function easeOutCubic(tool: number): number {
+  return 1 - Math.pow(1 - tool, 3);
 }
 
 /* -- Glitch / scramble character pools ---------------------- */

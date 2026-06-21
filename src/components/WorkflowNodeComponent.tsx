@@ -1165,7 +1165,7 @@ function AssetNode(props: AssetNodeProps) {
                             dims] [
                             {(node.receivedOutputs.embedding as number[])
                               .slice(0, 4)
-                              .map((v: number) => v.toFixed(4))
+                              .map((value: number) => value.toFixed(4))
                               .join(", ")}
                             …]
                           </div>

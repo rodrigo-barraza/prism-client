@@ -272,9 +272,9 @@ export default function HistoryList({
       for (const provider of item.providers || []) set.add(provider);
     }
     const labelOrder = Object.keys(PROVIDER_LABELS);
-    return [...set].sort((a: string, b: string) => {
-      const indexA = labelOrder.indexOf(a);
-      const indexB = labelOrder.indexOf(b);
+    return [...set].sort((agent: string, current: string) => {
+      const indexA = labelOrder.indexOf(agent);
+      const indexB = labelOrder.indexOf(current);
       return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
     });
   }, [items]);

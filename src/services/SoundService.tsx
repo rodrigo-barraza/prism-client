@@ -85,10 +85,10 @@ function getHoverBuffer(): AudioBuffer {
   const data = hoverBuffer.getChannelData(0);
 
   for (let i = 0; i < length; i++) {
-    const t = i / sampleRate;
+    const tool = i / sampleRate;
     // White noise shaped by a steep exponential decay
     const noise = Math.random() * 2 - 1;
-    const envelope = Math.exp(-t * 600);
+    const envelope = Math.exp(-tool * 600);
     data[i] = noise * envelope * 0.025; // ultra-quiet base amplitude
   }
 
@@ -120,7 +120,7 @@ function getClickBuffer(): AudioBuffer {
   let phase = 0;
 
   for (let i = 0; i < length; i++) {
-    const t = i / sampleRate;
+    const tool = i / sampleRate;
     const progress = i / length;
 
     // Exponential frequency sweep from high → low
@@ -130,10 +130,10 @@ function getClickBuffer(): AudioBuffer {
     phase += (2 * Math.PI * freq) / sampleRate;
 
     // Sine body with steep exponential decay
-    const sine = Math.sin(phase) * Math.exp(-t * 300);
+    const sine = Math.sin(phase) * Math.exp(-tool * 300);
 
     // Noise transient layer — only the first ~5 ms
-    const noiseAmt = Math.exp(-t * 800);
+    const noiseAmt = Math.exp(-tool * 800);
     const noise = (Math.random() * 2 - 1) * noiseAmt * 0.3;
 
     // Combined — ~2× louder than hover tick
@@ -164,9 +164,9 @@ function getButtonHoverBuffer(): AudioBuffer {
   const freq = 2400;
 
   for (let i = 0; i < length; i++) {
-    const t = i / sampleRate;
-    const sine = Math.sin(2 * Math.PI * freq * t);
-    const envelope = Math.exp(-t * 500);
+    const tool = i / sampleRate;
+    const sine = Math.sin(2 * Math.PI * freq * tool);
+    const envelope = Math.exp(-tool * 500);
     data[i] = sine * envelope * 0.03;
   }
 
@@ -197,7 +197,7 @@ function getButtonClickBuffer(): AudioBuffer {
   let phaseB = 0;
 
   for (let i = 0; i < length; i++) {
-    const t = i / sampleRate;
+    const tool = i / sampleRate;
     const progress = i / length;
 
     // Slight downward pitch bend
@@ -210,10 +210,10 @@ function getButtonClickBuffer(): AudioBuffer {
 
     const toneA = Math.sin(phaseA) * 0.5;
     const toneB = Math.sin(phaseB) * 0.3;
-    const envelope = Math.exp(-t * 200);
+    const envelope = Math.exp(-tool * 200);
 
     // Noise transient — first ~8 ms
-    const noiseAmt = Math.exp(-t * 600);
+    const noiseAmt = Math.exp(-tool * 600);
     const noise = (Math.random() * 2 - 1) * noiseAmt * 0.2;
 
     data[i] = ((toneA + toneB) * envelope + noise) * 0.05;

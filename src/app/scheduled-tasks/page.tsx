@@ -760,10 +760,10 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
       formScheduleType === "once" ||
       formScheduleType === "custom"
     ) {
-      let h = parseInt(formTimeHour, 10);
-      if (formTimeAmpm === "PM" && h < 12) h += 12;
-      if (formTimeAmpm === "AM" && h === 12) h = 0;
-      scheduleTime = `${String(h).padStart(2, "0")}:${formTimeMinute}`;
+      let handler = parseInt(formTimeHour, 10);
+      if (formTimeAmpm === "PM" && handler < 12) handler += 12;
+      if (formTimeAmpm === "AM" && handler === 12) handler = 0;
+      scheduleTime = `${String(handler).padStart(2, "0")}:${formTimeMinute}`;
     }
 
     let recurrenceRule: Task["recurrenceRule"] = undefined;

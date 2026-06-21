@@ -1240,7 +1240,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     PrismService.getFavorites("model")
       .then((favs: Array<{ key: string }>) =>
-        setFavoriteKeys(favs.map((f) => f.key)),
+        setFavoriteKeys(favs.map((file) => file.key)),
       )
       .catch(() => {});
   }, []);
@@ -1259,8 +1259,8 @@ export default function ChatConversationComponent({
       if (!modelDef) return false; // model not (yet) in config — may arrive with local merge
       // FC gate for agent mode
       if (!isNoAgent && !modelDef.tools?.includes("Tool Calling")) return false;
-      setSettings((s) => ({
-        ...s,
+      setSettings((state) => ({
+        ...state,
         provider: urlProvider,
         model: urlModelName,
         temperature: modelDef.defaultTemperature ?? 1.0,
@@ -1275,8 +1275,8 @@ export default function ChatConversationComponent({
         !isNoAgent,
       );
       if (provider && model) {
-        setSettings((s) => ({
-          ...s,
+        setSettings((state) => ({
+          ...state,
           provider,
           model,
           temperature,
@@ -2143,9 +2143,9 @@ export default function ChatConversationComponent({
   // -- Fetch settings to determine which model-dependent tools are configured --
   useEffect(() => {
     PrismService.getSettings()
-      .then((s: PrismSettings) => {
-        const memorySection = s?.memory;
-        const creativeSection = s?.creative;
+      .then((state: PrismSettings) => {
+        const memorySection = state?.memory;
+        const creativeSection = state?.creative;
 
         const hasExtraction = Boolean(memorySection?.extractionProvider && memorySection?.extractionModel);
         const hasConsolidation = Boolean(memorySection?.consolidationProvider && memorySection?.consolidationModel);
@@ -2168,10 +2168,10 @@ export default function ChatConversationComponent({
         setTextToSpeechModelConfigured(Boolean(creativeSection?.textToSpeechProvider && creativeSection?.textToSpeechModel));
         setSpeechToTextModelConfigured(Boolean(creativeSection?.speechToTextProvider && creativeSection?.speechToTextModel));
 
-        if (s?.agents) {
+        if (state?.agents) {
           setSettings((previousSettings) => ({
             ...previousSettings,
-            agents: { ...previousSettings.agents, ...s.agents },
+            agents: { ...previousSettings.agents, ...state.agents },
           }));
         }
       })
@@ -2279,21 +2279,21 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (isAdmin) return;
     PrismService.getAgentMemories(agentProject, 1, agentId)
-      .then((r) => setTotalMemoriesCount(r.total || 0))
+      .then((result) => setTotalMemoriesCount(result.total || 0))
       .catch(() => {});
   }, [agentProject, agentId, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) return;
     ToolsApiService.getAllAgenticTasks({ conversationId })
-      .then((r) => setTasksCount(r.summary?.total || (r.tasks || []).length))
+      .then((result) => setTasksCount(result.summary?.total || (result.tasks || []).length))
       .catch(() => {});
   }, [conversationId, tasksRefreshKey, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) return;
     PrismService.getCoordinatorSubAgents(conversationId)
-      .then((r) => setSubAgentsCount((r.subAgents || []).length))
+      .then((result) => setSubAgentsCount((result.subAgents || []).length))
       .catch(() => {});
   }, [conversationId, tasksRefreshKey, isAdmin]);
 
@@ -2331,7 +2331,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (!activeId || messages.length === 0) return;
     setConversations((previousConversations) => {
-      const index = previousConversations.findIndex((s) => s.id === activeId);
+      const index = previousConversations.findIndex((state) => state.id === activeId);
       if (index === -1) return previousConversations;
       const existing = previousConversations[index] as unknown as Record<
         string,
@@ -3484,7 +3484,7 @@ export default function ChatConversationComponent({
               }
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
-                .then((r) => setTotalMemoriesCount(r.total || 0))
+                .then((result) => setTotalMemoriesCount(result.total || 0))
                 .catch(() => {
                   /* Non-critical background count refresh */
                 });
@@ -3510,17 +3510,17 @@ export default function ChatConversationComponent({
                   toolData.name === TOOL_NAMES.MOVE_FILE
                 ) {
                   const deleted = openFiles.find(
-                    (f: ViewerOpenFile) => f.path === mutatedPath,
+                    (file: ViewerOpenFile) => file.path === mutatedPath,
                   );
                   if (deleted) {
                     setViewerOpenFiles((previousViewerOpenFiles) => {
                       const next = previousViewerOpenFiles.filter(
-                        (f: ViewerOpenFile) => f.path !== mutatedPath,
+                        (file: ViewerOpenFile) => file.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
                         const closedTabIndex = previousViewerOpenFiles.findIndex(
-                          (f: ViewerOpenFile) => f.id === deleted.id,
+                          (file: ViewerOpenFile) => file.id === deleted.id,
                         );
                         const newActive =
                           next[Math.min(closedTabIndex, next.length - 1)];
@@ -3529,7 +3529,7 @@ export default function ChatConversationComponent({
                       return next;
                     });
                   }
-                } else if (openFiles.some((f) => f.path === mutatedPath)) {
+                } else if (openFiles.some((file) => file.path === mutatedPath)) {
                   // Bump refresh key to re-fetch modified file content
                   setViewerRefreshKey((k) => k + 1);
                 }
@@ -3619,7 +3619,7 @@ export default function ChatConversationComponent({
               }
               setMemoriesRefreshKey((k) => k + 1);
               PrismService.getAgentMemories(agentProject, 1, agentId)
-                .then((r) => setTotalMemoriesCount(r.total || 0))
+                .then((result) => setTotalMemoriesCount(result.total || 0))
                 .catch(() => {
                   /* Non-critical background count refresh */
                 });
@@ -3659,17 +3659,17 @@ export default function ChatConversationComponent({
                   toolData.name === TOOL_NAMES.MOVE_FILE
                 ) {
                   const deleted = openFiles.find(
-                    (f: ViewerOpenFile) => f.path === mutatedPath,
+                    (file: ViewerOpenFile) => file.path === mutatedPath,
                   );
                   if (deleted) {
                     setViewerOpenFiles((previousViewerOpenFiles) => {
                       const next = previousViewerOpenFiles.filter(
-                        (f: ViewerOpenFile) => f.path !== mutatedPath,
+                        (file: ViewerOpenFile) => file.path !== mutatedPath,
                       );
                       setViewerActiveFileId((activeId: string | null) => {
                         if (activeId !== deleted.id) return activeId;
                         const closedTabIndex = previousViewerOpenFiles.findIndex(
-                          (f: ViewerOpenFile) => f.id === deleted.id,
+                          (file: ViewerOpenFile) => file.id === deleted.id,
                         );
                         const newActive =
                           next[Math.min(closedTabIndex, next.length - 1)];
@@ -3678,7 +3678,7 @@ export default function ChatConversationComponent({
                       return next;
                     });
                   }
-                } else if (openFiles.some((f) => f.path === mutatedPath)) {
+                } else if (openFiles.some((file) => file.path === mutatedPath)) {
                   setViewerRefreshKey((k) => k + 1);
                 }
               }
@@ -3869,7 +3869,7 @@ export default function ChatConversationComponent({
               setMemoriesRefreshKey((k) => k + 1);
               // Re-fetch count for the tab badge (MemoriesPanel may not be mounted yet)
               PrismService.getAgentMemories(agentProject, 1, agentId)
-                .then((r) => setTotalMemoriesCount(r.total || 0))
+                .then((result) => setTotalMemoriesCount(result.total || 0))
                 .catch(() => {});
             } else if (statusData?.message === STATUS_MESSAGES.GENERATION_STARTED) {
               // Server-computed TTFT — accumulate per-iteration samples for averaging
@@ -4377,7 +4377,7 @@ export default function ChatConversationComponent({
                 1,
                 agentId,
               )
-                .then((r) => r.total || 0)
+                .then((result) => result.total || 0)
                 .catch(() => 0);
               let pollAttempts = 0;
               const pollInterval = setInterval(async () => {
@@ -5605,7 +5605,7 @@ export default function ChatConversationComponent({
   // -- Open file in the FileViewerPanel (shared by workspace tree & mention badges) --
   const handleOpenFileInViewer = useCallback(
     (absPath: string) => {
-      const existingTab = viewerOpenFiles.find((f) => f.path === absPath);
+      const existingTab = viewerOpenFiles.find((file) => file.path === absPath);
       if (existingTab) {
         setViewerActiveFileId(existingTab.id);
       } else {
@@ -5720,10 +5720,10 @@ export default function ChatConversationComponent({
             onChange={
               isNoAgent
                 ? (updates: Partial<PrismSettings>) =>
-                    setSettings((s) => ({ ...s, ...updates }))
+                    setSettings((state) => ({ ...state, ...updates }))
                 : (updates: Partial<PrismSettings>) =>
-                    setSettings((s) => ({
-                      ...s,
+                    setSettings((state) => ({
+                      ...state,
                       ...updates,
                       functionCallingEnabled: true,
                     }))
@@ -5744,7 +5744,7 @@ export default function ChatConversationComponent({
                       icon: <ClipboardList size={12} />,
                       label: "Plan Mode",
                       checked: planFirst,
-                      onChange: () => setPlanFirst((v) => !v),
+                      onChange: () => setPlanFirst((value) => !value),
                     },
                     {
                       key: "auto",
@@ -5768,8 +5768,8 @@ export default function ChatConversationComponent({
                       label: "Critic Gate",
                       checked: criticGateEnabled,
                       onChange: () => {
-                        setCriticGateEnabled((v) => {
-                          const next = !v;
+                        setCriticGateEnabled((value) => {
+                          const next = !value;
                           localStorage.setItem(
                             LS_CRITIC_GATE_ENABLED,
                             String(next),
@@ -6100,7 +6100,7 @@ export default function ChatConversationComponent({
             readOnly={isAdmin}
             settings={settings}
             onChange={(updates: Partial<PrismSettings>) =>
-              setSettings((s) => ({ ...s, ...updates }))
+              setSettings((state) => ({ ...state, ...updates }))
             }
             config={filteredConfig}
             isAgentMode={!isNoAgent}
@@ -6198,7 +6198,7 @@ export default function ChatConversationComponent({
                   key: "skills",
                   icon: <span className={tabBarStyles['tab-emoji-icon']}>📖</span>,
                   ...badgeProps(
-                    skills.filter((s) => s.enabled).length,
+                    skills.filter((state) => state.enabled).length,
                     "skills",
                   ),
                   tooltip: "Skills",
@@ -6665,7 +6665,7 @@ export default function ChatConversationComponent({
           ? derivedLabel || lastMessage?.status || iterationFallbackLabel
           : undefined;
 
-        const hasActiveTools = toolActivity.some((t) => t.status === "calling" || t.status === "streaming");
+        const hasActiveTools = toolActivity.some((tool) => tool.status === "calling" || tool.status === "streaming");
         // Detect awaiting-approval state (plan proposal or tool approval pending)
         const isAwaitingApproval =
           planProposal?.status === "pending" ||
@@ -6716,7 +6716,7 @@ export default function ChatConversationComponent({
           }
         }
 
-        const activeTool = toolActivity.find((t) => t.status === "calling" || t.status === "streaming");
+        const activeTool = toolActivity.find((tool) => tool.status === "calling" || tool.status === "streaming");
         const activeToolLabel = activeTool
           ? `Running tool ${renderToolName(activeTool.name)}...`
           : "Executing...";
@@ -7093,10 +7093,10 @@ export default function ChatConversationComponent({
               onSelectFile={setViewerActiveFileId}
               onCloseFile={(id: string) => {
                 setViewerOpenFiles((previousViewerOpenFiles) => {
-                  const next = previousViewerOpenFiles.filter((f) => f.id !== id);
+                  const next = previousViewerOpenFiles.filter((file) => file.id !== id);
                   if (id === viewerActiveFileId) {
                     const closedTabIndex = previousViewerOpenFiles.findIndex(
-                      (f: ViewerOpenFile) => f.id === id,
+                      (file: ViewerOpenFile) => file.id === id,
                     );
                     const newActive =
                       next[Math.min(closedTabIndex, next.length - 1)];
@@ -7107,11 +7107,11 @@ export default function ChatConversationComponent({
               }}
               onFileNotFound={(id: string) => {
                 setViewerOpenFiles((previousViewerOpenFiles) => {
-                  const next = previousViewerOpenFiles.filter((f) => f.id !== id);
+                  const next = previousViewerOpenFiles.filter((file) => file.id !== id);
                   setViewerActiveFileId((activeId: string | null) => {
                     if (activeId !== id) return activeId;
                     const closedTabIndex = previousViewerOpenFiles.findIndex(
-                      (f: ViewerOpenFile) => f.id === id,
+                      (file: ViewerOpenFile) => file.id === id,
                     );
                     const newActive =
                       next[Math.min(closedTabIndex, next.length - 1)];
@@ -7224,8 +7224,8 @@ export default function ChatConversationComponent({
                   filteredConfig?.textToText?.models?.[provider] || []
                 ).find((model: ModelOption) => model.name === modelName);
                 const temp = modelDef?.defaultTemperature ?? 1.0;
-                setSettings((s) => ({
-                  ...s,
+                setSettings((state) => ({
+                  ...state,
                   provider,
                   model: modelName,
                   temperature: temp,

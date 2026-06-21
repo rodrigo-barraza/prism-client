@@ -118,9 +118,9 @@ function flattenAllModels(
     for (const [provider, models] of Object.entries(
       modelsMap as Record<string, ModelOption[]>,
     )) {
-      for (const m of models) {
-        const id = `${provider}:${m.name}`;
-        if (!seen.has(id)) seen.set(id, { ...m, provider });
+      for (const model of models) {
+        const id = `${provider}:${model.name}`;
+        if (!seen.has(id)) seen.set(id, { ...model, provider });
       }
     }
   }
@@ -584,15 +584,15 @@ export default function BenchmarkDetailPageComponent({
             },
           ];
         } else {
-          benchmarkData.toolCalls = benchmarkData.toolCalls.map((t) =>
-            t.id === toolCall.id
+          benchmarkData.toolCalls = benchmarkData.toolCalls.map((tool) =>
+            tool.id === toolCall.id
               ? {
-                  ...t,
+                  ...tool,
                   status: toolCall.status,
                   result: toolCall.result,
                   ...(toolCall.args && { args: toolCall.args }),
                 }
-              : t,
+              : tool,
           );
         }
       },
@@ -622,15 +622,15 @@ export default function BenchmarkDetailPageComponent({
             },
           ];
         } else {
-          benchmarkData.toolCalls = benchmarkData.toolCalls.map((t) =>
-            t.id === tool.id
+          benchmarkData.toolCalls = benchmarkData.toolCalls.map((tool) =>
+            tool.id === tool.id
               ? {
-                  ...t,
+                  ...tool,
                   status: (data as Record<string, unknown>).status as string,
                   result: tool.result,
                   ...(tool.args ? { args: tool.args } : {}),
                 }
-              : t,
+              : tool,
           );
         }
       },
@@ -717,13 +717,13 @@ export default function BenchmarkDetailPageComponent({
     // Load favorites
     PrismService.getFavorites("model")
       .then((favs: Array<{ key: string }>) =>
-        setFavoriteKeys(favs.map((f) => f.key)),
+        setFavoriteKeys(favs.map((file) => file.key)),
       )
       .catch(() => {});
 
     // Load agent personas (all built-in + custom, excluding "Agentless")
     PrismService.getAgentPersonas()
-      .then((list) => setAvailableAgents(list.filter((a) => a.id !== AGENT_IDS.NONE)))
+      .then((list) => setAvailableAgents(list.filter((agent) => agent.id !== AGENT_IDS.NONE)))
       .catch(() => {});
   }, []);
 
@@ -752,7 +752,7 @@ export default function BenchmarkDetailPageComponent({
   // Each instance is enriched with full model config data.
   const selectedModels = useMemo(() => {
     const configMap = new Map();
-    for (const m of allModels) configMap.set(`${m.provider}:${m.name}`, m);
+    for (const model of allModels) configMap.set(`${model.provider}:${model.name}`, model);
     return selectedInstances.map(
       (inst: { instanceId: string; provider: string; name: string }) => {
         const config = configMap.get(`${inst.provider}:${inst.name}`) || {};
@@ -775,8 +775,8 @@ export default function BenchmarkDetailPageComponent({
   // Build provider:name → config lookup for size column
   const modelConfigMap = useMemo(() => {
     const map: Record<string, ModelOptionWithProvider> = {};
-    for (const m of allModels) {
-      map[`${m.provider}:${m.name}`] = m;
+    for (const model of allModels) {
+      map[`${model.provider}:${model.name}`] = model;
     }
     return map;
   }, [allModels]);
@@ -853,28 +853,28 @@ export default function BenchmarkDetailPageComponent({
     if (selectedModels.length === 0 && agentInstances.length === 0) return;
 
     // Build model targets from selected model instances
-    const modelTargets = selectedModels.map((m) => ({
-      provider: m.provider,
-      model: m.name,
-      display_name: m.display_name || m.label || m.name,
-      thinkingEnabled: !!thinkingMap[m.instanceId],
-      toolsEnabled: !!toolsMap[m.instanceId],
+    const modelTargets = selectedModels.map((model) => ({
+      provider: model.provider,
+      model: model.name,
+      display_name: model.display_name || model.label || model.name,
+      thinkingEnabled: !!thinkingMap[model.instanceId],
+      toolsEnabled: !!toolsMap[model.instanceId],
     }));
 
     // Append agent instances — each agent uses its own backing model
     const agentTargets = agentInstances
-      .filter((a) => a.provider && a.modelName) // skip agents without a backing model
-      .map((a) => {
+      .filter((agent) => agent.provider && agent.modelName) // skip agents without a backing model
+      .map((agent) => {
         const modelDef = allModels.find(
-          (m) => m.provider === a.provider && m.name === a.modelName,
+          (model) => model.provider === agent.provider && model.name === agent.modelName,
         );
         return {
-          provider: a.provider,
-          model: a.modelName,
-          display_name: `🤖 ${a.name} (${modelDef?.label || modelDef?.display_name || a.modelName})`,
-          thinkingEnabled: !!thinkingMap[a.instanceId],
+          provider: agent.provider,
+          model: agent.modelName,
+          display_name: `🤖 ${agent.name} (${modelDef?.label || modelDef?.display_name || agent.modelName})`,
+          thinkingEnabled: !!thinkingMap[agent.instanceId],
           toolsEnabled: true,
-          agent: a.agentId,
+          agent: agent.agentId,
         };
       });
 
@@ -960,13 +960,13 @@ export default function BenchmarkDetailPageComponent({
 
     // Synthesize a partial run from whatever streaming results we have
     if (streamingResults.length > 0) {
-      const passed = streamingResults.filter((r) => r.passed).length;
+      const passed = streamingResults.filter((result) => result.passed).length;
       const failed = streamingResults.filter(
-        (r) => !r.passed && !r.error,
+        (result) => !result.passed && !result.error,
       ).length;
-      const errored = streamingResults.filter((r) => r.error).length;
+      const errored = streamingResults.filter((result) => result.error).length;
       const totalCost = streamingResults.reduce(
-        (s: number, r: BenchmarkRunResult) => s + (r.estimatedCost || 0),
+        (state: number, accumulator: BenchmarkRunResult) => state + (accumulator.estimatedCost || 0),
         0,
       );
       setLatestRun({
@@ -1004,7 +1004,7 @@ export default function BenchmarkDetailPageComponent({
       // Hydrate model/agent selection from this run's results
       if ((run.models?.length ?? 0) > 0) {
         const configMap = new Map<string, ModelOptionWithProvider>();
-        for (const m of allModels) configMap.set(`${m.provider}:${m.name}`, m);
+        for (const model of allModels) configMap.set(`${model.provider}:${model.name}`, model);
 
         const nextInstances: ModelInstance[] = [];
         const nextAgents: AgentInstance[] = [];
@@ -1107,8 +1107,8 @@ export default function BenchmarkDetailPageComponent({
   const handleChangeAgentModel = useCallback(
     (instanceId: string, provider: string, modelName: string) => {
       setAgentInstances((prev) => {
-        const next = prev.map((a) =>
-          a.instanceId === instanceId ? { ...a, provider, modelName } : a,
+        const next = prev.map((agent) =>
+          agent.instanceId === instanceId ? { ...agent, provider, modelName } : agent,
         );
         StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
           instances: selectedInstances,
@@ -1391,7 +1391,7 @@ export default function BenchmarkDetailPageComponent({
                           },
                         ];
                   const operator = benchmark.assertionOperator || "AND";
-                  return assertions.map((a, i) => (
+                  return assertions.map((agent, i) => (
                     <span key={i} style={{ display: "contents" }}>
                       {i > 0 && (
                         <BadgeComponent
@@ -1401,10 +1401,10 @@ export default function BenchmarkDetailPageComponent({
                         </BadgeComponent>
                       )}
                       <BadgeComponent variant="accent">
-                        {a.matchMode || "contains"}
+                        {agent.matchMode || "contains"}
                       </BadgeComponent>
                       <span className={styles['expected-value']}>
-                        Expected: {a.expectedValue}
+                        Expected: {agent.expectedValue}
                       </span>
                     </span>
                   ));
@@ -1412,7 +1412,7 @@ export default function BenchmarkDetailPageComponent({
               {/* Agent assertions (behavioral) */}
               {(benchmark.benchmarkMode === "agent" ||
                 benchmark.benchmarkMode === "combined") &&
-                benchmark.agentAssertions?.map((a, i) => (
+                benchmark.agentAssertions?.map((agent, i) => (
                   <span key={`agent-${i}`} style={{ display: "contents" }}>
                     {(i > 0 ||
                       (benchmark.benchmarkMode === "combined" &&
@@ -1428,8 +1428,8 @@ export default function BenchmarkDetailPageComponent({
                       </BadgeComponent>
                     )}
                     <BadgeComponent variant="accent">
-                      {a.type?.replace(/_/g, " ")}
-                      {a.operand ? ` ${a.operator || "≥"} ${a.operand}` : ""}
+                      {agent.type?.replace(/_/g, " ")}
+                      {agent.operand ? ` ${agent.operator || "≥"} ${agent.operand}` : ""}
                     </BadgeComponent>
                   </span>
                 ))}
@@ -1446,15 +1446,15 @@ export default function BenchmarkDetailPageComponent({
             (() => {
               const totalExpected = streamingTotal || selectedModels.length;
               const completed = streamingResults.length;
-              const passed = streamingResults.filter((r) => r.passed).length;
+              const passed = streamingResults.filter((result) => result.passed).length;
               const failed = streamingResults.filter(
-                (r) => !r.passed && !r.error,
+                (result) => !result.passed && !result.error,
               ).length;
-              const errored = streamingResults.filter((r) => r.error).length;
+              const errored = streamingResults.filter((result) => result.error).length;
               const runningCount = activeModelCount;
               const totalCost = streamingResults.reduce(
-                (s: number, r: BenchmarkRunResult) =>
-                  s + (r.estimatedCost || 0),
+                (state: number, accumulator: BenchmarkRunResult) =>
+                  state + (accumulator.estimatedCost || 0),
                 0,
               );
               const passRate = completed > 0 ? (passed / completed) * 100 : 0;
@@ -1575,8 +1575,8 @@ export default function BenchmarkDetailPageComponent({
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {(() => {
                     const totalDuration = (latestRun.models || []).reduce(
-                      (sum: number, r: BenchmarkRunResult) =>
-                        sum + (r.latencyMs || 0),
+                      (sum: number, accumulator: BenchmarkRunResult) =>
+                        sum + (accumulator.latencyMs || 0),
                       0,
                     );
                     return totalDuration > 0 ? (
@@ -1632,14 +1632,14 @@ export default function BenchmarkDetailPageComponent({
                     label: `${Math.round(((latestRun.summary?.passed ?? 0) / (latestRun.summary?.total || 1)) * 100)}%`,
                   },
                   ...((latestRun.summary?.totalCost ?? 0) > 0 ||
-                  latestRun.models?.some((r) => (r.estimatedCost ?? 0) > 0)
+                  latestRun.models?.some((result) => (result.estimatedCost ?? 0) > 0)
                     ? [
                         {
                           value: formatCost(
                             latestRun.summary?.totalCost ??
                               (latestRun.models || []).reduce(
-                                (s: number, r: BenchmarkRunResult) =>
-                                  s + (r.estimatedCost || 0),
+                                (state: number, result: BenchmarkRunResult) =>
+                                  state + (result.estimatedCost || 0),
                                 0,
                               ),
                           ),
@@ -1728,11 +1728,11 @@ export default function BenchmarkDetailPageComponent({
                   if (!form.name || !form.prompt) return true;
                   const benchmarkMode = form.benchmarkMode || "model";
                   if (benchmarkMode === "model")
-                    return !form.assertions?.some((a) => a.expectedValue);
+                    return !form.assertions?.some((agent) => agent.expectedValue);
                   if (benchmarkMode === "agent")
                     return !form.agentAssertions?.length;
                   return (
-                    !form.assertions?.some((a) => a.expectedValue) &&
+                    !form.assertions?.some((agent) => agent.expectedValue) &&
                     !form.agentAssertions?.length
                   );
                 })()}

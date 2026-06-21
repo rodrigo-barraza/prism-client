@@ -813,7 +813,7 @@ export default function WorkflowInspector({
             }>;
             const disabled = new Set(node.disabledTools || []);
             const enabledCount =
-              builtIn.filter((t) => !disabled.has(t.name)).length;
+              builtIn.filter((tool) => !disabled.has(tool.name)).length;
             const totalCount = builtIn.length;
 
             const toggleTool = (toolName: string) => {
@@ -824,7 +824,7 @@ export default function WorkflowInspector({
             };
 
             const renderTool = (
-              t: {
+              tool: {
                 name?: string;
                 parameters?: {
                   properties?: Record<string, any>;
@@ -833,11 +833,11 @@ export default function WorkflowInspector({
               },
               key: string,
             ) => {
-              const name = t.name || key;
+              const name = tool.name || key;
               const isDisabled = disabled.has(name);
-              const paramCount = t.parameters?.properties
-                ? Object.keys(t.parameters.properties).length
-                : t.parameters?.length || 0;
+              const paramCount = tool.parameters?.properties
+                ? Object.keys(tool.parameters.properties).length
+                : tool.parameters?.length || 0;
               const displayName = renderToolName(name);
               return (
                 <div key={name} className={styles['tool-layout-row']}>
@@ -879,7 +879,7 @@ export default function WorkflowInspector({
                   <section className={styles['section']}>
                     <button
                       className={styles['tool-section-toggle']}
-                      onClick={() => setToolBuiltInOpen((v) => !v)}
+                      onClick={() => setToolBuiltInOpen((value) => !value)}
                     >
                       {toolBuiltInOpen ? (
                         <ChevronDown size={12} />
@@ -888,13 +888,13 @@ export default function WorkflowInspector({
                       )}
                       <span>
                         Built-in (
-                        {builtIn.filter((t) => !disabled.has(t.name)).length}/
+                        {builtIn.filter((tool) => !disabled.has(tool.name)).length}/
                         {builtIn.length})
                       </span>
                     </button>
                     {toolBuiltInOpen && (
                       <div className={styles['tool-list']}>
-                        {builtIn.map((t) => renderTool(t, t.name))}
+                        {builtIn.map((tool) => renderTool(tool, tool.name))}
                       </div>
                     )}
                   </section>
@@ -967,7 +967,7 @@ export default function WorkflowInspector({
                   [
                   {results.embedding
                     .slice(0, 8)
-                    .map((v) => v.toFixed(6))
+                    .map((value) => value.toFixed(6))
                     .join(", ")}
                   {results.embedding.length > 8 ? ", …" : ""}]
                 </div>
@@ -1051,7 +1051,7 @@ export default function WorkflowInspector({
                     [
                     {receivedOutputs.embedding
                       .slice(0, 8)
-                      .map((v) => v.toFixed(6))
+                      .map((value) => value.toFixed(6))
                       .join(", ")}
                     {receivedOutputs.embedding.length > 8 ? ", …" : ""}]
                   </div>

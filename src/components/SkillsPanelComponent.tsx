@@ -136,12 +136,12 @@ export default function SkillsPanel({
 
   const handleToggleAll = useCallback(async () => {
     const allEnabled =
-      skills.length > 0 && skills.every((s: Skill) => s.enabled);
+      skills.length > 0 && skills.every((state: Skill) => state.enabled);
     const newEnabled = !allEnabled;
     try {
       await Promise.all(
-        skills.map((s: Skill) =>
-          PrismService.updateSkill(s.id || s._id?.toString() || "", {
+        skills.map((state: Skill) =>
+          PrismService.updateSkill(state.id || state._id?.toString() || "", {
             enabled: newEnabled,
           }),
         ),
@@ -158,7 +158,7 @@ export default function SkillsPanel({
       <>
         {skills.length > 0 && (
           <ToggleComponent
-            checked={skills.length > 0 && skills.every((s: Skill) => s.enabled)}
+            checked={skills.length > 0 && skills.every((state: Skill) => state.enabled)}
             onChange={handleToggleAll}
             size="mini"
           />
@@ -200,10 +200,10 @@ export default function SkillsPanel({
               onChange={(
                 e: React.ChangeEvent<HTMLInputElement>,
               ) =>
-                setEditingSkill((s: Skill | null) =>
-                  s
+                setEditingSkill((state: Skill | null) =>
+                  state
                     ? {
-                        ...s,
+                        ...state,
                         name: e.target.value
                           .replace(/[^a-zA-Z0-9_-]/g, "-")
                           .toLowerCase(),
@@ -226,10 +226,10 @@ export default function SkillsPanel({
               onChange={(
                 e: React.ChangeEvent<HTMLInputElement>,
               ) =>
-                setEditingSkill((s: Skill | null) =>
-                  s
+                setEditingSkill((state: Skill | null) =>
+                  state
                     ? {
-                        ...s,
+                        ...state,
                         description: e.target.value,
                       }
                     : null,
@@ -252,8 +252,8 @@ export default function SkillsPanel({
               ) => {
                 const value = e.target.value;
                 if (value.length <= CONTENT_MAX_CHARS) {
-                  setEditingSkill((s: Skill | null) =>
-                    s ? { ...s, content: value } : null,
+                  setEditingSkill((state: Skill | null) =>
+                    state ? { ...state, content: value } : null,
                   );
                 }
               }}

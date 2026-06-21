@@ -110,7 +110,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         const list = data.data || [];
         const currentIds = new Set(
           list.map(
-            (s) => (s as { id?: string }).id || (s as { _id: string })._id,
+            (state) => (state as { id?: string }).id || (state as { _id: string })._id,
           ),
         );
 
@@ -188,7 +188,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           order: "desc",
         }, requestsAbortController.signal);
         const list = data.data || [];
-        const currentIds = new Set(list.map((r) => r.requestId || r._id));
+        const currentIds = new Set(list.map((response) => response.requestId || response._id));
 
         if (knownRequestsRef.current === null) {
           knownRequestsRef.current = currentIds;

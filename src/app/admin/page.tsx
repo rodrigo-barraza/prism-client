@@ -395,7 +395,7 @@ export default function DashboardPage() {
       : 0;
 
   return (
-    <div className={styles['page']}>
+    <main className={styles['page']}>
       <AdminFiltersCardComponent />
       <ErrorMessage message={error} />
       {/* -- Resource Navigation -- */}
@@ -570,14 +570,14 @@ export default function DashboardPage() {
       </div>
 
       {/* -- Projects -- */}
-      <div id="projects-table">
+      <section id="projects-table">
         <ProjectsTableComponent
           projects={projectStats}
           totalRequests={totalProjectRequests}
           totalCost={totalProjectCost}
           emptyText={loading ? "Loading..." : "No projects yet"}
         />
-      </div>
+      </section>
 
       {/* -- Providers -- */}
       <ProvidersTableComponent
@@ -598,12 +598,12 @@ export default function DashboardPage() {
       />
 
       {/* -- Agents -- */}
-      <div id="agents-table">
+      <section id="agents-table">
         <AgentsTableComponent
           agents={agentStats}
           emptyText={loading ? "Loading..." : "No agent data yet"}
         />
-      </div>
+      </section>
 
       {/* -- Recent Traces -- */}
       <TracesTableComponent
@@ -670,6 +670,6 @@ export default function DashboardPage() {
         }
         emptyText={loading ? "Loading..." : "No requests yet"}
       />
-    </div>
+    </main>
   );
 }

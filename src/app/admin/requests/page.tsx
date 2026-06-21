@@ -73,11 +73,11 @@ export default function RequestsPage() {
   const justNowIds = useMemo<Set<string>>(() => {
     const now = Date.now();
     const ids = new Set<string>();
-    for (const r of requests) {
-      if (!r.timestamp) continue;
-      const age = now - new Date(r.timestamp).getTime();
+    for (const response of requests) {
+      if (!response.timestamp) continue;
+      const age = now - new Date(response.timestamp).getTime();
       // Treat timestamps up to 10s in the future (clock skew) or < 5s old
-      if (age < 5000 && age > -10000) ids.add(r.requestId || r._id);
+      if (age < 5000 && age > -10000) ids.add(response.requestId || response._id);
     }
     return ids;
   }, [requests, justNowTick]);
@@ -94,14 +94,14 @@ export default function RequestsPage() {
     const previousJustNowIds = previousJustNowIdsRef.current;
     for (const id of previousJustNowIds) {
       if (!justNowIds.has(id) && !fadingTimers.current.has(id)) {
-        setFadingIds((s: Set<string>) => {
-          const updatedSet = new Set(s);
+        setFadingIds((state: Set<string>) => {
+          const updatedSet = new Set(state);
           updatedSet.add(id);
           return updatedSet;
         });
         const timer = setTimeout(() => {
-          setFadingIds((s: Set<string>) => {
-            const updatedSet = new Set(s);
+          setFadingIds((state: Set<string>) => {
+            const updatedSet = new Set(state);
             updatedSet.delete(id);
             return updatedSet;
           });
@@ -294,20 +294,20 @@ export default function RequestsPage() {
       "Latency",
       "Status",
     ].join(",");
-    const rows = requests.map((r: RequestItem) =>
+    const rows = requests.map((response: RequestItem) =>
       [
-        r.timestamp || "",
-        r.project || "",
-        r.endpoint || "",
-        r.operation || "",
-        r.provider || "",
-        r.model || "",
-        r.inputTokens || 0,
-        r.outputTokens || 0,
-        r.estimatedCost || 0,
-        r.tokensPerSec ? formatTokensPerSec(r.tokensPerSec) : "",
-        r.totalTime || 0,
-        r.success ? "OK" : "ERR",
+        response.timestamp || "",
+        response.project || "",
+        response.endpoint || "",
+        response.operation || "",
+        response.provider || "",
+        response.model || "",
+        response.inputTokens || 0,
+        response.outputTokens || 0,
+        response.estimatedCost || 0,
+        response.tokensPerSec ? formatTokensPerSec(response.tokensPerSec) : "",
+        response.totalTime || 0,
+        response.success ? "OK" : "ERR",
       ].join(","),
     );
     const csv = [headers, ...rows].join("\n");

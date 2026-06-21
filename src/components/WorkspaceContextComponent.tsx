@@ -57,7 +57,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       // If the persisted workspace is in the list, restore it
       const storedPath = localStorage.getItem(LS_WORKSPACE_ROOT);
       if (storedPath && list.length > 0) {
-        const match = list.find((w) => w.path === storedPath);
+        const match = list.find((workspace) => workspace.path === storedPath);
         if (match) {
           _setCurrentWorkspace(match);
         } else {

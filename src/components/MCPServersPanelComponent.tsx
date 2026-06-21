@@ -113,7 +113,7 @@ export default function MCPServersPanel({
           typeof editingServer.args === "string"
             ? editingServer.args
                 .split(",")
-                .map((a: string) => a.trim())
+                .map((agent: string) => agent.trim())
                 .filter(Boolean)
             : editingServer.args,
         ...(project ? { project } : {}),
@@ -215,10 +215,10 @@ export default function MCPServersPanel({
               onChange={(
                 e: React.ChangeEvent<HTMLInputElement>,
               ) =>
-                setEditingServer((s: MCPServer | null) =>
-                  s
+                setEditingServer((state: MCPServer | null) =>
+                  state
                     ? {
-                        ...s,
+                        ...state,
                         name: e.target.value
                           .replace(/[^a-zA-Z0-9_-]/g, "-")
                           .toLowerCase(),
@@ -241,10 +241,10 @@ export default function MCPServersPanel({
               onChange={(
                 e: React.ChangeEvent<HTMLInputElement>,
               ) =>
-                setEditingServer((s: MCPServer | null) =>
-                  s
+                setEditingServer((state: MCPServer | null) =>
+                  state
                     ? {
-                        ...s,
+                        ...state,
                         displayName: e.target.value,
                       }
                     : null,
@@ -260,8 +260,8 @@ export default function MCPServersPanel({
               <button
                 className={`${styles['transport-tab']} ${editingServer.transport === "stdio" ? styles['transport-tab-is-active-state'] : ""}`}
                 onClick={() =>
-                  setEditingServer((s: MCPServer | null) =>
-                    s ? { ...s, transport: "stdio" } : null,
+                  setEditingServer((state: MCPServer | null) =>
+                    state ? { ...state, transport: "stdio" } : null,
                   )
                 }
               >
@@ -270,8 +270,8 @@ export default function MCPServersPanel({
               <button
                 className={`${styles['transport-tab']} ${editingServer.transport === "sse" ? styles['transport-tab-is-active-state'] : ""}`}
                 onClick={() =>
-                  setEditingServer((s: MCPServer | null) =>
-                    s ? { ...s, transport: "sse" } : null,
+                  setEditingServer((state: MCPServer | null) =>
+                    state ? { ...state, transport: "sse" } : null,
                   )
                 }
               >
@@ -280,10 +280,10 @@ export default function MCPServersPanel({
               <button
                 className={`${styles['transport-tab']} ${editingServer.transport === "streamable-http" ? styles['transport-tab-is-active-state'] : ""}`}
                 onClick={() =>
-                  setEditingServer((s: MCPServer | null) =>
-                    s
+                  setEditingServer((state: MCPServer | null) =>
+                    state
                       ? {
-                          ...s,
+                          ...state,
                           transport: "streamable-http",
                         }
                       : null,
@@ -305,10 +305,10 @@ export default function MCPServersPanel({
                   onChange={(
                     e: React.ChangeEvent<HTMLInputElement>,
                   ) =>
-                    setEditingServer((s: MCPServer | null) =>
-                      s
+                    setEditingServer((state: MCPServer | null) =>
+                      state
                         ? {
-                            ...s,
+                            ...state,
                             command: e.target.value,
                           }
                         : null,
@@ -329,10 +329,10 @@ export default function MCPServersPanel({
                   onChange={(
                     e: React.ChangeEvent<HTMLInputElement>,
                   ) =>
-                    setEditingServer((s: MCPServer | null) =>
-                      s
+                    setEditingServer((state: MCPServer | null) =>
+                      state
                         ? {
-                            ...s,
+                            ...state,
                             args: e.target.value,
                           }
                         : null,
@@ -352,8 +352,8 @@ export default function MCPServersPanel({
                 onChange={(
                   e: React.ChangeEvent<HTMLInputElement>,
                 ) =>
-                  setEditingServer((s: MCPServer | null) =>
-                    s ? { ...s, url: e.target.value } : null,
+                  setEditingServer((state: MCPServer | null) =>
+                    state ? { ...state, url: e.target.value } : null,
                   )
                 }
                 placeholder="https://mcp-server.example.com/mcp"

@@ -88,7 +88,7 @@ export default function HistoryPanel({
         items={items}
         activeId={activeId}
         onSelect={(item: { id: string }) => {
-          const conversation = conversations.find((c) => c.id === item.id);
+          const conversation = conversations.find((config) => config.id === item.id);
           if (conversation && onSelect) onSelect(conversation);
         }}
         onDelete={!readOnly && onDelete ? onDelete : undefined}

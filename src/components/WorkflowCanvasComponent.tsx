@@ -175,7 +175,7 @@ export default function WorkflowCanvas({
       if (e.button !== 0) return;
       e.stopPropagation();
       onSelectNode?.(nodeId);
-      const node = nodes.find((n: IWorkflowNode) => n.id === nodeId);
+      const node = nodes.find((node: IWorkflowNode) => node.id === nodeId);
       if (!node) return;
       const svgPos = screenToSvg(e.clientX, e.clientY);
       setDragging({
@@ -212,7 +212,7 @@ export default function WorkflowCanvas({
       e.stopPropagation();
       e.preventDefault();
       onSelectNode?.(nodeId);
-      const node = nodes.find((n: IWorkflowNode) => n.id === nodeId);
+      const node = nodes.find((node: IWorkflowNode) => node.id === nodeId);
       if (!node) return;
       const touch = e.touches[0];
       const svgPos = screenToSvg(touch.clientX, touch.clientY);
@@ -327,10 +327,10 @@ export default function WorkflowCanvas({
         (draggingRef.current as { nodeId?: string })?.nodeId || null;
       const updates: Record<string, { x: number; y: number }> = {};
 
-      for (let a = 0; a < currentNodes.length; a++) {
-        for (let b = a + 1; b < currentNodes.length; b++) {
-          const nA = currentNodes[a];
-          const nB = currentNodes[b];
+      for (let agent = 0; agent < currentNodes.length; agent++) {
+        for (let current = agent + 1; current < currentNodes.length; current++) {
+          const nA = currentNodes[agent];
+          const nB = currentNodes[current];
           const boxA = getNodeBox(nA);
           const boxB = getNodeBox(nB);
 
@@ -633,7 +633,7 @@ export default function WorkflowCanvas({
 
       if ((e.ctrlKey || e.metaKey) && e.key === "c") {
         if (!selectedNodeId) return;
-        const node = nodes.find((n: IWorkflowNode) => n.id === selectedNodeId);
+        const node = nodes.find((node: IWorkflowNode) => node.id === selectedNodeId);
         if (!node) return;
         clipboardRef.current = structuredClone(node);
       }
@@ -684,8 +684,8 @@ export default function WorkflowCanvas({
       if (connecting.sourceNodeId === nodeId) return;
 
       const existingConn = connections.find(
-        (c: WorkflowConnection) =>
-          c.targetNodeId === nodeId && c.targetModality === modality,
+        (connection: WorkflowConnection) =>
+          connection.targetNodeId === nodeId && connection.targetModality === modality,
       );
       if (existingConn) return;
 
@@ -735,9 +735,9 @@ export default function WorkflowCanvas({
   const handleToggleAllExpand = useCallback(() => {
     setExpandedInputs((prev) => {
       // Count how many nodes are currently expanded
-      const expandedCount = nodes.filter((n: IWorkflowNode) => {
-        if (n.nodeType === "viewer") return !prev.has(n.id);
-        return prev.has(n.id);
+      const expandedCount = nodes.filter((node: IWorkflowNode) => {
+        if (node.nodeType === "viewer") return !prev.has(node.id);
+        return prev.has(node.id);
       }).length;
       const mostExpanded = expandedCount > nodes.length / 2;
 
@@ -745,13 +745,13 @@ export default function WorkflowCanvas({
       const next = new Set<string>();
       if (!mostExpanded) {
         // Expand all: add non-viewers, remove viewers (inverted logic)
-        for (const n of nodes) {
-          if (n.nodeType !== "viewer") next.add(n.id);
+        for (const node of nodes) {
+          if (node.nodeType !== "viewer") next.add(node.id);
         }
       } else {
         // Collapse all: add viewers (inverted), remove non-viewers
-        for (const n of nodes) {
-          if (n.nodeType === "viewer") next.add(n.id);
+        for (const node of nodes) {
+          if (node.nodeType === "viewer") next.add(node.id);
         }
       }
       try {
@@ -770,7 +770,7 @@ export default function WorkflowCanvas({
 
   const allExpanded =
     nodes.length > 0 &&
-    nodes.filter((n: IWorkflowNode) => isNodeExpanded(n)).length >
+    nodes.filter((node: IWorkflowNode) => isNodeExpanded(node)).length >
       nodes.length / 2;
 
   // Compute the vertical offset for a node's ports (used by edge routing)
@@ -791,10 +791,10 @@ export default function WorkflowCanvas({
   // Render edges
   const renderConnection = (conn: WorkflowConnection) => {
     const sourceNode = nodes.find(
-      (n: IWorkflowNode) => n.id === conn.sourceNodeId,
+      (node: IWorkflowNode) => node.id === conn.sourceNodeId,
     );
     const targetNode = nodes.find(
-      (n: IWorkflowNode) => n.id === conn.targetNodeId,
+      (node: IWorkflowNode) => node.id === conn.targetNodeId,
     );
     if (!sourceNode || !targetNode) return null;
 
@@ -829,7 +829,7 @@ export default function WorkflowCanvas({
     const isDone = sourceStatus === "done";
     const isActive = isRunning || isDone;
     const workflowIsRunning = Object.values(nodeStatuses).some(
-      (s) => s === "running",
+      (state) => state === "running",
     );
     const isEdgeSelected =
       conn.sourceNodeId === selectedNodeId ||
@@ -891,7 +891,7 @@ export default function WorkflowCanvas({
   // Render the "in-progress" edge line
   const renderConnectingLine = () => {
     if (!connecting || !connectingMouse) return null;
-    const sourceNode = nodes.find((n: IWorkflowNode) => n.id === connecting.sourceNodeId);
+    const sourceNode = nodes.find((node: IWorkflowNode) => node.id === connecting.sourceNodeId);
     if (!sourceNode) return null;
 
     const sourceIndex = (sourceNode.outputTypes || []).indexOf(

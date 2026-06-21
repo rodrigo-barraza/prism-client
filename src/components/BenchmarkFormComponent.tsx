@@ -54,7 +54,7 @@ export interface MatchModeOption {
 
 interface BenchmarkFormComponentProps {
   form: BenchmarkFormState;
-  onChange: (fn: (prev: BenchmarkFormState) => BenchmarkFormState) => void;
+  onChange: (toolFunction: (prev: BenchmarkFormState) => BenchmarkFormState) => void;
   matchModes: MatchModeOption[];
 }
 
@@ -74,17 +74,17 @@ export default function BenchmarkFormComponent({
   const update =
     (field: keyof BenchmarkFormState) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
-      onChange((f) => ({ ...f, [field]: e.target.value }));
+      onChange((file) => ({ ...file, [field]: e.target.value }));
 
   const updateTextArea =
     (field: keyof BenchmarkFormState) =>
     (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-      onChange((f) => ({ ...f, [field]: e.target.value }));
+      onChange((file) => ({ ...file, [field]: e.target.value }));
 
 
   const handleModeChange = (mode: string) => {
-    onChange((f) => ({
-      ...f,
+    onChange((file) => ({
+      ...file,
       benchmarkMode: mode as "model" | "agent" | "combined",
     }));
   };
@@ -100,13 +100,13 @@ export default function BenchmarkFormComponent({
   ];
 
   const addAssertion = () => {
-    onChange((f) => ({
-      ...f,
+    onChange((file) => ({
+      ...file,
       assertions: [
-        ...(f.assertions || [
+        ...(file.assertions || [
           {
-            expectedValue: f.expectedValue || "",
-            matchMode: f.matchMode || "contains",
+            expectedValue: file.expectedValue || "",
+            matchMode: file.matchMode || "contains",
           },
         ]),
         { expectedValue: "", matchMode: "contains" },
@@ -115,11 +115,11 @@ export default function BenchmarkFormComponent({
   };
 
   const removeAssertion = (index: number) => {
-    onChange((f) => {
-      const next = [...(f.assertions || [])];
+    onChange((file) => {
+      const next = [...(file.assertions || [])];
       next.splice(index, 1);
       return {
-        ...f,
+        ...file,
         assertions:
           next.length > 0
             ? next
@@ -131,24 +131,24 @@ export default function BenchmarkFormComponent({
   const updateAssertion =
     (index: number, field: "expectedValue" | "matchMode") =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      onChange((f) => {
+      onChange((file) => {
         const next = [
-          ...(f.assertions || [
+          ...(file.assertions || [
             {
-              expectedValue: f.expectedValue || "",
-              matchMode: f.matchMode || "contains",
+              expectedValue: file.expectedValue || "",
+              matchMode: file.matchMode || "contains",
             },
           ]),
         ];
         next[index] = { ...next[index], [field]: e.target.value };
-        return { ...f, assertions: next };
+        return { ...file, assertions: next };
       });
     };
 
   const toggleOperator = () => {
-    onChange((f) => ({
-      ...f,
-      assertionOperator: f.assertionOperator === "OR" ? "AND" : "OR",
+    onChange((file) => ({
+      ...file,
+      assertionOperator: file.assertionOperator === "OR" ? "AND" : "OR",
     }));
   };
 
@@ -158,11 +158,11 @@ export default function BenchmarkFormComponent({
   const agentAssertions = form.agentAssertions || [];
 
   const handleAgentAssertionsChange = (next: AgentAssertion[]) => {
-    onChange((f) => ({ ...f, agentAssertions: next }));
+    onChange((file) => ({ ...file, agentAssertions: next }));
   };
 
   const handleAgentOperatorChange = (next: string) => {
-    onChange((f) => ({ ...f, agentAssertionOperator: next }));
+    onChange((file) => ({ ...file, agentAssertionOperator: next }));
   };
 
   // Whether to show model assertions section
@@ -190,8 +190,8 @@ export default function BenchmarkFormComponent({
               const index = parseInt(val, 10);
               if (!isNaN(index) && presets[index]) {
                 const preset = presets[index];
-                onChange((f) => ({
-                  ...f,
+                onChange((file) => ({
+                  ...file,
                   name: preset.name,
                   systemPrompt: preset.systemPrompt,
                   prompt: preset.prompt,
@@ -263,7 +263,7 @@ export default function BenchmarkFormComponent({
           </div>
 
           <div className={styles['assertions-list']}>
-            {assertions.map((a, i: number) => (
+            {assertions.map((agent, i: number) => (
               <div key={i} className={styles['assertion-layout-row']}>
                 {/* Operator divider between assertions */}
                 {i > 0 && (
@@ -286,7 +286,7 @@ export default function BenchmarkFormComponent({
                   >
                     <InputComponent
                       type="text"
-                      value={a.expectedValue}
+                      value={agent.expectedValue}
                       onChange={updateAssertion(i, "expectedValue")}
                       placeholder="Paris"
                     />
@@ -294,20 +294,20 @@ export default function BenchmarkFormComponent({
 
                   <FormGroupComponent label="Match Mode">
                     <SelectComponent
-                      value={a.matchMode}
+                      value={agent.matchMode}
                       options={matchModes}
                       onChange={(val: string) => {
-                        onChange((f) => {
+                        onChange((file) => {
                           const next = [
-                            ...(f.assertions || [
+                            ...(file.assertions || [
                               {
-                                expectedValue: f.expectedValue || "",
-                                matchMode: f.matchMode || "contains",
+                                expectedValue: file.expectedValue || "",
+                                matchMode: file.matchMode || "contains",
                               },
                             ]),
                           ];
                           next[i] = { ...next[i], matchMode: val };
-                          return { ...f, assertions: next };
+                          return { ...file, assertions: next };
                         });
                       }}
                     />

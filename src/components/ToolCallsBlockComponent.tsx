@@ -199,10 +199,10 @@ export default function ToolCallsBlockComponent({
                     ) {
                       for (const argMember of tcArgs.members) {
                         const match = Object.values(subAgentToolActivity).find(
-                          (v) =>
-                            v.description &&
+                          (value) =>
+                            value.description &&
                             argMember.description &&
-                            v.description.includes(argMember.description),
+                            value.description.includes(argMember.description),
                         );
                         if (match?.toolNames) {
                           for (const [name, count] of Object.entries(
@@ -224,7 +224,7 @@ export default function ToolCallsBlockComponent({
                       );
                     // Static badge from completed result
                     const totalToolUses = members.reduce(
-                      (sum, m) => sum + (m.toolUses || 0),
+                      (sum, model) => sum + (model.toolUses || 0),
                       0,
                     );
                     if (totalToolUses > 0)

@@ -16,7 +16,7 @@ export default function useToolToggles(
   const handleToggleBuiltIn = useCallback(
     (toolName: string) => {
       if (coreToolsLocked) {
-        const tool = builtInTools.find((t) => t.name === toolName);
+        const tool = builtInTools.find((tool) => tool.name === toolName);
         if (tool?.system) return;
       }
       setDisabledTools((previousDisabledTools) => {

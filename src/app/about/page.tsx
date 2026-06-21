@@ -12,9 +12,9 @@ export default function AboutPage() {
       leftPanel={null}
       title="About"
     >
-      <div className={styles["page-content-area"]}>
+      <main className={styles["page-content-area"]}>
         <AboutPageComponent />
-      </div>
+      </main>
     </ThreePanelLayout>
   );
 }

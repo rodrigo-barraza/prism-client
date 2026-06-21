@@ -250,37 +250,37 @@ export default function SidebarFilterComponent({
     });
   }
 
-  for (const m of modalities) {
-    if (activeModalities.has(m.key)) {
+  for (const model of modalities) {
+    if (activeModalities.has(model.key)) {
       badges.push({
-        key: `mod-${m.key}`,
-        label: m.title,
-        icon: m.icon,
-        color: m.color,
-        onRemove: () => toggleModality(m.key),
+        key: `mod-${model.key}`,
+        label: model.title,
+        icon: model.icon,
+        color: model.color,
+        onRemove: () => toggleModality(model.key),
       });
     }
   }
 
-  for (const t of tools) {
-    if (activeTools.has(t.key)) {
+  for (const tool of tools) {
+    if (activeTools.has(tool.key)) {
       badges.push({
-        key: `tool-${t.key}`,
-        label: t.title,
-        icon: t.icon,
-        color: t.color,
-        onRemove: () => toggleTool(t.key),
+        key: `tool-${tool.key}`,
+        label: tool.title,
+        icon: tool.icon,
+        color: tool.color,
+        onRemove: () => toggleTool(tool.key),
       });
     }
   }
 
-  for (const p of providers) {
-    if (activeProviders.has(p)) {
+  for (const provider of providers) {
+    if (activeProviders.has(provider)) {
       badges.push({
-        key: `prov-${p}`,
-        label: resolveProviderLabel(p) || p,
-        providerKey: p,
-        onRemove: () => toggleProvider(p),
+        key: `prov-${provider}`,
+        label: resolveProviderLabel(provider) || provider,
+        providerKey: provider,
+        onRemove: () => toggleProvider(provider),
       });
     }
   }
@@ -307,7 +307,7 @@ export default function SidebarFilterComponent({
           <button
             type="button"
             className={`${styles['dropdown-trigger']} ${isOpen ? styles['dropdown-trigger-open'] : ""}`}
-            onClick={() => setIsOpen((v) => !v)}
+            onClick={() => setIsOpen((value) => !value)}
           >
             <span className={styles['trigger-content']}>
               <span className={styles['trigger-icon']}>
@@ -389,21 +389,21 @@ export default function SidebarFilterComponent({
               {showModalityRow && (
                 <div className={styles['menu-group']}>
                   <div className={styles['menu-group-label']}>Modality</div>
-                  {modalities.map((m: SidebarFilterItem) => {
-                    const Icon = m.icon;
-                    const isActive = activeModalities.has(m.key);
+                  {modalities.map((model: SidebarFilterItem) => {
+                    const Icon = model.icon;
+                    const isActive = activeModalities.has(model.key);
                     return (
                       <button
-                        key={m.key}
+                        key={model.key}
                         type="button"
                         className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
-                        onClick={() => toggleModality(m.key)}
+                        onClick={() => toggleModality(model.key)}
                       >
                         <Icon
                           size={13}
-                          style={m.color ? { color: m.color } : undefined}
+                          style={model.color ? { color: model.color } : undefined}
                         />
-                        <span>{m.title}</span>
+                        <span>{model.title}</span>
                         {isActive && (
                           <span className={styles['menu-check']}>✓</span>
                         )}
@@ -416,21 +416,21 @@ export default function SidebarFilterComponent({
               {showToolRow && (
                 <div className={styles['menu-group']}>
                   <div className={styles['menu-group-label']}>{toolsGroupLabel}</div>
-                  {tools.map((t: SidebarFilterItem) => {
-                    const Icon = t.icon;
-                    const isActive = activeTools.has(t.key);
+                  {tools.map((tool: SidebarFilterItem) => {
+                    const Icon = tool.icon;
+                    const isActive = activeTools.has(tool.key);
                     return (
                       <button
-                        key={t.key}
+                        key={tool.key}
                         type="button"
                         className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
-                        onClick={() => toggleTool(t.key)}
+                        onClick={() => toggleTool(tool.key)}
                       >
                         <Icon
                           size={13}
-                          style={t.color ? { color: t.color } : undefined}
+                          style={tool.color ? { color: tool.color } : undefined}
                         />
-                        <span>{t.title}</span>
+                        <span>{tool.title}</span>
                         {isActive && (
                           <span className={styles['menu-check']}>✓</span>
                         )}
@@ -443,17 +443,17 @@ export default function SidebarFilterComponent({
               {showProviderRow && (
                 <div className={styles['menu-group']}>
                   <div className={styles['menu-group-label']}>Providers</div>
-                  {providers.map((p: string) => {
-                    const isActive = activeProviders.has(p);
+                  {providers.map((provider: string) => {
+                    const isActive = activeProviders.has(provider);
                     return (
                       <button
-                        key={p}
+                        key={provider}
                         type="button"
                         className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
-                        onClick={() => toggleProvider(p)}
+                        onClick={() => toggleProvider(provider)}
                       >
-                        <ProviderLogo provider={p} size={13} />
-                        <span>{resolveProviderLabel(p)}</span>
+                        <ProviderLogo provider={provider} size={13} />
+                        <span>{resolveProviderLabel(provider)}</span>
                         {isActive && (
                           <span className={styles['menu-check']}>✓</span>
                         )}
@@ -485,36 +485,36 @@ export default function SidebarFilterComponent({
         {/* -- Active filter badges (display-only) -- */}
         {badges.length > 0 && (
           <div className={styles['badge-list']}>
-            {badges.map((b: FilterBadge) => {
-              const Icon = b.icon;
+            {badges.map((current: FilterBadge) => {
+              const Icon = current.icon;
               return (
                 <span
-                  key={b.key}
+                  key={current.key}
                   className={styles['badge']}
                   style={
-                    b.color
+                    current.color
                       ? ({
-                          "--badge-color": b.color,
-                          "--badge-background": `${b.color}18`,
-                          "--badge-border": `${b.color}40`,
+                          "--badge-color": current.color,
+                          "--badge-background": `${current.color}18`,
+                          "--badge-border": `${current.color}40`,
                         } as React.CSSProperties)
                       : undefined
                   }
                 >
-                  {b.providerKey ? (
-                    <ProviderLogo provider={b.providerKey} size={11} />
+                  {current.providerKey ? (
+                    <ProviderLogo provider={current.providerKey} size={11} />
                   ) : Icon ? (
                     <Icon size={11} />
                   ) : null}
-                  <span className={styles['badge-label']}>{b.label}</span>
+                  <span className={styles['badge-label']}>{current.label}</span>
                   <button
                     type="button"
                     className={styles['badge-remove']}
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
-                      b.onRemove();
+                      current.onRemove();
                     }}
-                    aria-label={`Remove ${b.label} filter`}
+                    aria-label={`Remove ${current.label} filter`}
                   >
                     <X size={10} />
                   </button>

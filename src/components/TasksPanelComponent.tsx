@@ -290,16 +290,16 @@ export default function TasksPanel({
           {/* -- Summary badges ------------------------------------ */}
           {summary && summary.total > 0 && (
             <div className={styles['summary-layout-row']}>
-              {STATUS_CYCLE.map((s) => {
-                const config = STATUS_CONFIG[s];
-                const count = summary[s] || 0;
-                if (count === 0 && statusFilter !== s) return null;
-                const isActive = statusFilter === s;
+              {STATUS_CYCLE.map((state) => {
+                const config = STATUS_CONFIG[state];
+                const count = summary[state] || 0;
+                if (count === 0 && statusFilter !== state) return null;
+                const isActive = statusFilter === state;
                 return (
                   <button
-                    key={s}
+                    key={state}
                     className={`${styles['summary-badge']} ${styles[config.colorClass]} ${isActive ? styles['summary-badge-is-active-state'] : ""}`}
-                    onClick={() => setStatusFilter(isActive ? null : s)}
+                    onClick={() => setStatusFilter(isActive ? null : state)}
                     title={`${isActive ? "Clear" : "Filter"}: ${config.label}`}
                   >
                     <config.icon size={9} />

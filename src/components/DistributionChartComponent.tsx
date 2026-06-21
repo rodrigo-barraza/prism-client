@@ -172,7 +172,7 @@ function buildEntries(
 
   return Object.entries(aggMap)
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
+    .sort((agent, current) => current.value - agent.value);
 }
 
 /**

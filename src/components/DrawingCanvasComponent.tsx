@@ -229,8 +229,8 @@ export default function DrawingCanvas({
     const context = canvas.getContext("2d");
     if (!context) return;
     context.clearRect(0, 0, canvas.width, canvas.height);
-    for (const s of strokeList) {
-      renderStroke(context, s);
+    for (const state of strokeList) {
+      renderStroke(context, state);
     }
   }, []);
 

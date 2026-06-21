@@ -177,8 +177,8 @@ export default function ModelsPageComponent({
         grandTotal += totalRequests;
       }
 
-      return flat.map((m) => {
-        const usageKey = `${m.provider}:${m.name}`;
+      return flat.map((model) => {
+        const usageKey = `${model.provider}:${model.name}`;
         const stats = usageMap.get(usageKey) || {
           totalRequests: 0,
           totalInputTokens: 0,
@@ -194,7 +194,7 @@ export default function ModelsPageComponent({
         };
         const usageCount = stats.totalRequests;
         let result = {
-          ...m,
+          ...model,
           usageCount,
           usageTotal: grandTotal,
           totalInputTokens: stats.totalInputTokens,
@@ -209,8 +209,8 @@ export default function ModelsPageComponent({
           errorCount: stats.errorCount,
         };
 
-        if (m.provider === "lm-studio") {
-          const apiModel = lmApiMap.get(m.name);
+        if (model.provider === "lm-studio") {
+          const apiModel = lmApiMap.get(model.name);
           if (apiModel) {
             result = {
               ...result,
@@ -280,7 +280,7 @@ export default function ModelsPageComponent({
     fetchModels();
     PrismService.getFavorites("model")
       .then((favs: Array<{ key: string }>) =>
-        setFavoriteKeys(favs.map((f) => f.key)),
+        setFavoriteKeys(favs.map((file) => file.key)),
       )
       .catch(() => {});
     const interval = setInterval(fetchModels, POLL_MODERATE);
@@ -310,9 +310,9 @@ export default function ModelsPageComponent({
   const handleLoad = (modelKey: string) => {
     // Find the raw LM Studio API model data for this key
     const rawModel = allModels.find(
-      (m) =>
-        m.provider === "lm-studio" &&
-        (m.key === modelKey || m.name === modelKey),
+      (model) =>
+        model.provider === "lm-studio" &&
+        (model.key === modelKey || model.name === modelKey),
     );
     if (rawModel) {
       setLoadConfigModel(rawModel);
@@ -354,7 +354,7 @@ export default function ModelsPageComponent({
     await fetchModels();
   };
 
-  const providerSet = new Set(allModels.map((m) => m.provider));
+  const providerSet = new Set(allModels.map((model) => model.provider));
 
   const renderActions = isAdmin
     ? (model: RawModel) => {

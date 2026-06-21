@@ -171,7 +171,7 @@ export default function FilterDropdownComponent({
           <button
             type="button"
             className={`${styles['dropdown-trigger']} ${isOpen ? styles['dropdown-trigger-open'] : ""}`}
-            {...(SoundService.interactive(() => setIsOpen((v) => !v)) as Record<
+            {...(SoundService.interactive(() => setIsOpen((value) => !value)) as Record<
               string,
               React.MouseEventHandler
             >)}
@@ -315,32 +315,32 @@ export default function FilterDropdownComponent({
       {/* -- Active filter badges -- */}
       {badges.length > 0 && (
         <div className={styles['badge-list']}>
-          {badges.map((b) => {
-            const Icon = b.icon;
+          {badges.map((current) => {
+            const Icon = current.icon;
             return (
               <span
-                key={b.key}
+                key={current.key}
                 className={styles['badge']}
                 style={
-                  b.color
+                  current.color
                     ? ({
-                        "--badge-color": b.color,
-                        "--badge-background": `${b.color}18`,
-                        "--badge-border": `${b.color}40`,
+                        "--badge-color": current.color,
+                        "--badge-background": `${current.color}18`,
+                        "--badge-border": `${current.color}40`,
                       } as React.CSSProperties)
                     : undefined
                 }
               >
                 {Icon && <Icon size={11} />}
-                <span className={styles['badge-label']}>{b.label}</span>
+                <span className={styles['badge-label']}>{current.label}</span>
                 <button
                   type="button"
                   className={styles['badge-remove']}
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
-                    b.onRemove();
+                    current.onRemove();
                   }}
-                  aria-label={`Remove ${b.label} filter`}
+                  aria-label={`Remove ${current.label} filter`}
                 >
                   <X size={10} />
                 </button>

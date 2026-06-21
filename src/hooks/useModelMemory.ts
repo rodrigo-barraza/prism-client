@@ -79,7 +79,7 @@ export default function useModelMemory(storageKey: string) {
 
       // Check the model exists in current config
       const providerModels = models[saved.provider] || [];
-      const modelDef = providerModels.find((m) => m.name === saved.model);
+      const modelDef = providerModels.find((memory) => memory.name === saved.model);
 
       if (!modelDef) {
         // Model no longer available — fall back to default
@@ -100,9 +100,9 @@ export default function useModelMemory(storageKey: string) {
 
       const temp = modelDef.defaultTemperature ?? 1.0;
       setSettings(
-        (s) =>
+        (state) =>
           ({
-            ...s,
+            ...state,
             provider: saved.provider,
             model: saved.model,
             temperature: temp,

@@ -101,12 +101,12 @@ export default function BenchmarkSidebarComponent({
     if (!search.trim()) return benchmarks;
     const normalizedSearch = search.toLowerCase();
     return benchmarks.filter(
-      (b) =>
-        b.name.toLowerCase().includes(normalizedSearch) ||
-        b.prompt?.toLowerCase().includes(normalizedSearch) ||
-        b.expectedValue?.toLowerCase().includes(normalizedSearch) ||
-        b.assertions?.some((a: BenchmarkAssertion) =>
-          a.expectedValue?.toLowerCase().includes(normalizedSearch),
+      (current) =>
+        current.name.toLowerCase().includes(normalizedSearch) ||
+        current.prompt?.toLowerCase().includes(normalizedSearch) ||
+        current.expectedValue?.toLowerCase().includes(normalizedSearch) ||
+        current.assertions?.some((assertion: BenchmarkAssertion) =>
+          assertion.expectedValue?.toLowerCase().includes(normalizedSearch),
         ),
     );
   }, [benchmarks, search]);
@@ -172,32 +172,32 @@ export default function BenchmarkSidebarComponent({
             {search ? "No matches" : "No benchmarks yet"}
           </div>
         ) : (
-          filtered.map((b) => {
-            const isActive = activeBenchmarkId === b.id;
-            const isRunning = activeBenchmarkIds.has(b.id);
-            const run = b.latestRun;
+          filtered.map((current) => {
+            const isActive = activeBenchmarkId === current.id;
+            const isRunning = activeBenchmarkIds.has(current.id);
+            const run = current.latestRun;
 
             return (
               <div
-                key={b.id}
+                key={current.id}
                 className={`${styles['item']} ${isActive ? styles['item-is-active-state'] : ""} ${isRunning ? styles['item-running'] : ""}`}
-                {...SoundService.interactive(() => navigate(b))}
+                {...SoundService.interactive(() => navigate(current))}
                 data-panel-close
               >
                 {/* Row 1: date (left) · cost (right) */}
                 <div className={styles['top-layout-row']}>
                   <BadgeComponent
                     type="dateTime"
-                    date={b.updatedAt || b.createdAt}
+                    date={current.updatedAt || current.createdAt}
                   />
                   {isRunning && (
                     <Loader2 size={10} className={styles['spin-icon']} />
                   )}
-                  <BadgeComponent type="cost" cost={b.cumulativeCost} />
+                  <BadgeComponent type="cost" cost={current.cumulativeCost} />
                 </div>
 
                 {/* Row 2: name */}
-                <span className={styles['item-name']}>{b.name}</span>
+                <span className={styles['item-name']}>{current.name}</span>
 
                 {/* Row 3: passed/failed (left) · pass bar (right) */}
                 {run ? (

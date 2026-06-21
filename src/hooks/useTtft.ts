@@ -45,7 +45,7 @@ function ttftReducer(
     const newSamples = samples.slice(prev.seenCount);
     // Compute new running average incorporating all new samples
     const prevTotal = (prev.value || 0) * prev.seenCount;
-    const newTotal = newSamples.reduce((a, b) => a + b, 0);
+    const newTotal = newSamples.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
     const avg = (prevTotal + newTotal) / samples.length;
     return {
       value: avg,

@@ -174,7 +174,7 @@ export default function WorkspaceTreePanelComponent({
     } else {
       set.add(path);
     }
-    setExpandedTick((t) => t + 1);
+    setExpandedTick((tool) => tool + 1);
   }, []);
 
   const hasMultiple = workspaces.length > 1 && !locked;
@@ -206,7 +206,7 @@ export default function WorkspaceTreePanelComponent({
           set.add(node.name);
         }
       }
-      setExpandedTick((t) => t + 1);
+      setExpandedTick((tool) => tool + 1);
     },
     [],
   );
@@ -376,7 +376,7 @@ export default function WorkspaceTreePanelComponent({
         <div className={styles['header-wrapper']} ref={switcherRef}>
           <div
             className={`${styles['header']} ${hasMultiple ? styles['header-clickable'] : ""}`}
-            onClick={hasMultiple ? () => setSwitcherOpen((v) => !v) : undefined}
+            onClick={hasMultiple ? () => setSwitcherOpen((value) => !value) : undefined}
             role={hasMultiple ? "button" : undefined}
             tabIndex={hasMultiple ? 0 : undefined}
             title={
@@ -406,25 +406,25 @@ export default function WorkspaceTreePanelComponent({
           {/* -- Workspace switcher dropdown -- */}
           {switcherOpen && (
             <div className={styles['switcher-dropdown']}>
-              {workspaces.map((w: WorkspaceItem) => {
-                const isActive = currentWorkspace?.path === w.path;
+              {workspaces.map((workspace: WorkspaceItem) => {
+                const isActive = currentWorkspace?.path === workspace.path;
                 return (
                   <button
-                    key={w.id}
+                    key={workspace.id}
                     type="button"
                     className={`${styles['switcher-item']} ${isActive ? styles['switcher-item-is-active-state'] : ""}`}
                     onClick={() => {
-                      setCurrentWorkspace(w);
+                      setCurrentWorkspace(workspace);
                       setSwitcherOpen(false);
                     }}
-                    title={w.path}
+                    title={workspace.path}
                   >
                     <FolderOpen size={10} className={styles['switcher-item-icon']} />
                     <div className={styles['switcher-item-details']}>
-                      <span className={styles['switcher-item-name']}>{w.name}</span>
-                      <span className={styles['switcher-item-path']}>{w.path}</span>
+                      <span className={styles['switcher-item-name']}>{workspace.name}</span>
+                      <span className={styles['switcher-item-path']}>{workspace.path}</span>
                     </div>
-                    {w.isAgentServed && (
+                    {workspace.isAgentServed && (
                       <span className={styles['switcher-item-agent-badge']}>remote</span>
                     )}
                     {isActive && (

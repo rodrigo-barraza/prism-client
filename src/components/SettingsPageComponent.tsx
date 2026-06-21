@@ -224,7 +224,7 @@ export default function SettingsPageComponent() {
           extractionModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -239,7 +239,7 @@ export default function SettingsPageComponent() {
           consolidationModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -254,7 +254,7 @@ export default function SettingsPageComponent() {
           embeddingModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -270,7 +270,7 @@ export default function SettingsPageComponent() {
           subAgentModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -285,7 +285,7 @@ export default function SettingsPageComponent() {
           criticModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -300,7 +300,7 @@ export default function SettingsPageComponent() {
           reminderModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -315,7 +315,7 @@ export default function SettingsPageComponent() {
           harness: harnessId,
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -361,7 +361,7 @@ export default function SettingsPageComponent() {
   const handleResetMemory = useCallback(async () => {
     if (!defaults?.memory) return;
     const updated = { memory: { ...(defaults?.memory || {}) } };
-    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
@@ -374,7 +374,7 @@ export default function SettingsPageComponent() {
           emotionModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -382,7 +382,7 @@ export default function SettingsPageComponent() {
 
   const handleResetSomatic = useCallback(async () => {
     const updated = { somatic: { emotionProvider: "", emotionModel: "" } };
-    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
     await persistSettings(updated);
   }, [persistSettings]);
 
@@ -469,7 +469,7 @@ export default function SettingsPageComponent() {
   const handleResetAgents = useCallback(async () => {
     if (!defaults?.agents) return;
     const updated = { agents: { ...(defaults?.agents || {}) } };
-    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
@@ -481,7 +481,7 @@ export default function SettingsPageComponent() {
           [key]: enabled,
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -490,7 +490,7 @@ export default function SettingsPageComponent() {
   const handleResetSecurity = useCallback(async () => {
     if (!defaults?.security) return;
     const updated = { security: { ...(defaults?.security || {}) } };
-    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
@@ -503,7 +503,7 @@ export default function SettingsPageComponent() {
           imageModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -518,7 +518,7 @@ export default function SettingsPageComponent() {
           visionModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -536,7 +536,7 @@ export default function SettingsPageComponent() {
         visionModel: defaults.creative.visionModel || "gemini-3.5-flash",
       },
     };
-    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
     await persistSettings(updated);
   }, [settings, defaults, persistSettings]);
 
@@ -549,7 +549,7 @@ export default function SettingsPageComponent() {
           textToSpeechModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -564,7 +564,7 @@ export default function SettingsPageComponent() {
           speechToTextModel: model || "",
         },
       };
-      setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
     [settings, persistSettings],
@@ -583,7 +583,7 @@ export default function SettingsPageComponent() {
         speechToTextModel: defaults.creative.speechToTextModel || "",
       },
     };
-    setSettings((s: PrismSettings | null) => ({ ...s, ...updated }));
+    setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
     await persistSettings(updated);
   }, [settings, defaults, persistSettings]);
 
@@ -1116,24 +1116,24 @@ export default function SettingsPageComponent() {
           </div>
           <div className={styles["harness-grid"]}>
             {harnesses
-              .filter((h: AgenticHarness) => h.id === "standard")
-              .map((h: AgenticHarness) => {
-                const isActive = (agentDefaults.harness || "standard") === h.id;
+              .filter((handler: AgenticHarness) => handler.id === "standard")
+              .map((handler: AgenticHarness) => {
+                const isActive = (agentDefaults.harness || "standard") === handler.id;
               return (
                 <button
-                  key={h.id}
+                  key={handler.id}
                   className={`${styles["harness-card"]} ${isActive ? styles["harness-is-active-state"] : ""}`}
-                  onClick={() => handleHarnessSelect(h.id)}
+                  onClick={() => handleHarnessSelect(handler.id)}
                 >
                   <div className={styles["harness-card-header"]}>
                     <Cpu size={16} className={styles["harness-icon"]} />
-                    <span className={styles["harness-label"]}>{h.label}</span>
+                    <span className={styles["harness-label"]}>{handler.label}</span>
                     {isActive && (
                       <span className={styles["harness-badge"]}>Current</span>
                     )}
                   </div>
                   <span className={styles["harness-description"]}>
-                    {h.description}
+                    {handler.description}
                   </span>
                 </button>
               );
@@ -1215,8 +1215,8 @@ export default function SettingsPageComponent() {
                       dynamicToolActivation: checked,
                     },
                   };
-                  setSettings((s: PrismSettings | null) => ({
-                    ...s,
+                  setSettings((state: PrismSettings | null) => ({
+                    ...state,
                     ...updated,
                   }));
                   persistSettings(updated);

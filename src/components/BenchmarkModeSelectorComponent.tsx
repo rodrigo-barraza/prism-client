@@ -47,7 +47,7 @@ export default function BenchmarkModeSelector({
 
   const updatePill = useCallback(() => {
     if (!containerRef.current) return;
-    const index = BENCHMARK_MODES.findIndex((m) => m.value === value);
+    const index = BENCHMARK_MODES.findIndex((model) => model.value === value);
     const buttons = containerRef.current!.querySelectorAll(`.${styles['option']}`);
     if (!buttons[index]) return;
 
@@ -66,7 +66,7 @@ export default function BenchmarkModeSelector({
     return () => window.removeEventListener("resize", updatePill);
   }, [updatePill]);
 
-  const activeMode = BENCHMARK_MODES.find((m) => m.value === value);
+  const activeMode = BENCHMARK_MODES.find((model) => model.value === value);
 
   return (
     <div className={`benchmark-mode-selector-component ${styles['wrapper']}`}>

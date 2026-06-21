@@ -199,18 +199,18 @@ export default function AgentAssertionsComponent({
             behavior.
           </p>
           <div className={styles['quick-add']}>
-            {AGENT_ASSERTION_TYPES.map((t) => {
-              const Icon = t.icon;
+            {AGENT_ASSERTION_TYPES.map((tool) => {
+              const Icon = tool.icon;
               return (
                 <button
-                  key={t.value}
+                  key={tool.value}
                   type="button"
                   className={styles['quick-add-button']}
-                  onClick={() => addAssertion(t.value)}
-                  title={t.description}
+                  onClick={() => addAssertion(tool.value)}
+                  title={tool.description}
                 >
                   <Icon size={12} />
-                  {t.label}
+                  {tool.label}
                 </button>
               );
             })}

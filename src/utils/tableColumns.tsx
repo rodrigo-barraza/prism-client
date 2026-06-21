@@ -113,7 +113,7 @@ export const emptyDash = () => <span className={styles['empty-dash']}>—</span>
 /** Render a value or a muted dash if falsy/zero */
 export const valueOrDash = <T,>(
   value: T | undefined | null,
-  render: (v: T) => React.ReactNode,
+  render: (value: T) => React.ReactNode,
 ) => (value ? render(value) : emptyDash());
 
 /** Merge modalities from an array of conversations into a single object */

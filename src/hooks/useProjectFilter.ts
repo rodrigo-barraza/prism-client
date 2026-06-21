@@ -52,7 +52,7 @@ export default function useProjectFilter(enabled = true) {
   const projectOptions = useMemo(
     () => [
       { value: "", label: "All Projects" },
-      ...projects.map((p) => ({ value: p, label: p })),
+      ...projects.map((project) => ({ value: project, label: project })),
     ],
     [projects],
   );

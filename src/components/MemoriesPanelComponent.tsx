@@ -167,8 +167,8 @@ export default function MemoriesPanel({
 
         // Detect newly arrived memories
         const freshIds = new Set<string>();
-        for (const m of fetched) {
-          const id = m.id || m._id;
+        for (const memory of fetched) {
+          const id = memory.id || memory._id;
           if (knownIdsRef.current.size > 0 && !knownIdsRef.current.has(id)) {
             freshIds.add(id);
           }
@@ -186,8 +186,8 @@ export default function MemoriesPanel({
 
         setMemories((prev) => {
           if (isAppend) {
-            const prevIds = new Set(prev.map((m) => m.id || m._id));
-            const newItems = fetched.filter((m) => !prevIds.has(m.id || m._id));
+            const prevIds = new Set(prev.map((memory) => memory.id || memory._id));
+            const newItems = fetched.filter((memory) => !prevIds.has(memory.id || memory._id));
             return [...prev, ...newItems];
           }
           return fetched;
@@ -287,7 +287,7 @@ export default function MemoriesPanel({
     try {
       await PrismService.deleteAgentMemory(memoryId);
       // Optimistic removal from local state
-      setMemories((prev) => prev.filter((m) => (m.id || m._id) !== memoryId));
+      setMemories((prev) => prev.filter((memory) => (memory.id || memory._id) !== memoryId));
       setTotal((prev) => Math.max(0, prev - 1));
       setConfirmingDeleteId(null);
     } catch (error: unknown) {
@@ -340,9 +340,9 @@ export default function MemoriesPanel({
     // Text search — match against title or content (case-insensitive)
     if (searchQuery.trim()) {
       const normalizedSearch = searchQuery.trim().toLowerCase();
-      result = result.filter((m) => {
-        const title = (m.title || "").toLowerCase();
-        const content = (m.content || "").toLowerCase();
+      result = result.filter((memory) => {
+        const title = (memory.title || "").toLowerCase();
+        const content = (memory.content || "").toLowerCase();
         return (
           title.includes(normalizedSearch) || content.includes(normalizedSearch)
         );
@@ -367,9 +367,9 @@ export default function MemoriesPanel({
             )
           : to;
 
-      result = result.filter((m) => {
-        if (!m.createdAt) return false;
-        const memoryDate = new Date(m.createdAt);
+      result = result.filter((memory) => {
+        if (!memory.createdAt) return false;
+        const memoryDate = new Date(memory.createdAt);
         if (from && memoryDate < from) return false;
         if (toEnd && memoryDate > toEnd) return false;
         return true;

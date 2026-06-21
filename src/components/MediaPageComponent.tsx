@@ -213,7 +213,7 @@ export default function MediaPageComponent({
   useEffect(() => {
     PrismService.getFavorites("media")
       .then((favs: Array<{ key: string }>) =>
-        setFavoriteKeys(favs.map((f) => f.key)),
+        setFavoriteKeys(favs.map((file) => file.key)),
       )
       .catch(() => {});
   }, []);
@@ -228,11 +228,11 @@ export default function MediaPageComponent({
     }
   };
 
-  const getMediaKey = (m: MediaItem, i: number) =>
-    `${m.convId}-${m.mediaType}-${i}`;
+  const getMediaKey = (mediaItem: MediaItem, i: number) =>
+    `${mediaItem.convId}-${mediaItem.mediaType}-${i}`;
 
   const displayMedia = showFavoritesOnly
-    ? media.filter((m, i) => favoriteKeys.includes(getMediaKey(m, i)))
+    ? media.filter((mediaItem, i) => favoriteKeys.includes(getMediaKey(mediaItem, i)))
     : media;
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -400,10 +400,10 @@ export default function MediaPageComponent({
                 groups={[
                   {
                     label: "Source",
-                    items: ORIGIN_FILTERS.map((f) => ({
-                      key: f.key,
-                      icon: f.icon,
-                      title: f.label,
+                    items: ORIGIN_FILTERS.map((file) => ({
+                      key: file.key,
+                      icon: file.icon,
+                      title: file.label,
                     })),
                     activeKeys: origin === "all" ? null : origin,
                     isSingleSelect: true,
@@ -414,11 +414,11 @@ export default function MediaPageComponent({
                   },
                   {
                     label: "Type",
-                    items: TYPE_FILTERS.map((f) => ({
-                      key: f.key,
-                      icon: f.icon,
-                      color: f.color,
-                      title: f.label,
+                    items: TYPE_FILTERS.map((file) => ({
+                      key: file.key,
+                      icon: file.icon,
+                      color: file.color,
+                      title: file.label,
                     })),
                     activeKeys: type === "all" ? null : type,
                     isSingleSelect: true,
@@ -431,10 +431,10 @@ export default function MediaPageComponent({
                     ? [
                         {
                           label: "Providers",
-                          items: providers.map((p) => ({
-                            key: p,
-                            icon: () => <ProviderLogo provider={p} size={13} />,
-                            title: resolveProviderLabel(p),
+                          items: providers.map((provider) => ({
+                            key: provider,
+                            icon: () => <ProviderLogo provider={provider} size={13} />,
+                            title: resolveProviderLabel(provider),
                           })),
                           activeKeys: provider || null,
                           isSingleSelect: true,
@@ -450,10 +450,10 @@ export default function MediaPageComponent({
                     ? [
                         {
                           label: "Models",
-                          items: models.map((m) => ({
-                            key: m,
+                          items: models.map((mediaItem) => ({
+                            key: mediaItem,
                             icon: Bot,
-                            title: m,
+                            title: mediaItem,
                           })),
                           activeKeys: model || null,
                           isSingleSelect: true,
@@ -477,8 +477,8 @@ export default function MediaPageComponent({
                 dateRange={!externalDateRange ? dateRange : undefined}
                 onDateChange={
                   !externalDateRange
-                    ? (v) => {
-                        setInternalDateRange(v);
+                    ? (value) => {
+                        setInternalDateRange(value);
                         setPage(1);
                       }
                     : undefined
@@ -490,8 +490,8 @@ export default function MediaPageComponent({
                 <SearchFilterComponent
                   options={projects}
                   value={project}
-                  onChange={(v) => {
-                    setInternalProject(v);
+                  onChange={(value) => {
+                    setInternalProject(value);
                     setPage(1);
                   }}
                   placeholder="All Projects"
@@ -503,8 +503,8 @@ export default function MediaPageComponent({
                 <SearchFilterComponent
                   options={usernames}
                   value={username}
-                  onChange={(v) => {
-                    setUsername(v);
+                  onChange={(value) => {
+                    setUsername(value);
                     setPage(1);
                   }}
                   placeholder="All Users"
@@ -528,13 +528,13 @@ export default function MediaPageComponent({
             {/* -- Grid View -- */}
             {!loading && viewMode === "grid" && (
               <div className={styles['media-grid']}>
-                {displayMedia.map((m, i) => {
-                  const mediaKey = getMediaKey(m, i);
+                {displayMedia.map((mediaItem, i) => {
+                  const mediaKey = getMediaKey(mediaItem, i);
                   const isFav = favoriteKeys.includes(mediaKey);
                   return (
                     <MediaCardComponent
-                      key={`${m.convId}-${i}`}
-                      media={m}
+                      key={`${mediaItem.convId}-${i}`}
+                      media={mediaItem}
                       convBasePath={convBasePath}
                       showFavorite
                       isFavorite={isFav}
@@ -593,10 +593,10 @@ export default function MediaPageComponent({
               groups={[
                 {
                   label: "Source",
-                  items: ORIGIN_FILTERS.map((f) => ({
-                    key: f.key,
-                    icon: f.icon,
-                    title: f.label,
+                  items: ORIGIN_FILTERS.map((file) => ({
+                    key: file.key,
+                    icon: file.icon,
+                    title: file.label,
                   })),
                   activeKeys: origin === "all" ? null : origin,
                   isSingleSelect: true,
@@ -607,11 +607,11 @@ export default function MediaPageComponent({
                 },
                 {
                   label: "Type",
-                  items: TYPE_FILTERS.map((f) => ({
-                    key: f.key,
-                    icon: f.icon,
-                    color: f.color,
-                    title: f.label,
+                  items: TYPE_FILTERS.map((file) => ({
+                    key: file.key,
+                    icon: file.icon,
+                    color: file.color,
+                    title: file.label,
                   })),
                   activeKeys: type === "all" ? null : type,
                   isSingleSelect: true,
@@ -624,10 +624,10 @@ export default function MediaPageComponent({
                   ? [
                       {
                         label: "Providers",
-                        items: providers.map((p) => ({
-                          key: p,
-                          icon: () => <ProviderLogo provider={p} size={13} />,
-                          title: resolveProviderLabel(p),
+                        items: providers.map((provider) => ({
+                          key: provider,
+                          icon: () => <ProviderLogo provider={provider} size={13} />,
+                          title: resolveProviderLabel(provider),
                         })),
                         activeKeys: provider || null,
                         isSingleSelect: true,
@@ -643,10 +643,10 @@ export default function MediaPageComponent({
                   ? [
                       {
                         label: "Models",
-                        items: models.map((m) => ({
-                          key: m,
+                        items: models.map((mediaItem) => ({
+                          key: mediaItem,
                           icon: Bot,
-                          title: m,
+                          title: mediaItem,
                         })),
                         activeKeys: model || null,
                         isSingleSelect: true,
@@ -670,8 +670,8 @@ export default function MediaPageComponent({
               dateRange={!externalDateRange ? dateRange : undefined}
               onDateChange={
                 !externalDateRange
-                  ? (v) => {
-                      setInternalDateRange(v);
+                  ? (value) => {
+                      setInternalDateRange(value);
                       setPage(1);
                     }
                   : undefined
@@ -683,8 +683,8 @@ export default function MediaPageComponent({
               <SearchFilterComponent
                 options={projects}
                 value={project}
-                onChange={(v) => {
-                  setInternalProject(v);
+                onChange={(value) => {
+                  setInternalProject(value);
                   setPage(1);
                 }}
                 placeholder="All Projects"
@@ -696,8 +696,8 @@ export default function MediaPageComponent({
               <SearchFilterComponent
                 options={usernames}
                 value={username}
-                onChange={(v) => {
-                  setUsername(v);
+                onChange={(value) => {
+                  setUsername(value);
                   setPage(1);
                 }}
                 placeholder="All Users"
@@ -721,13 +721,13 @@ export default function MediaPageComponent({
           {/* -- Grid View -- */}
           {!loading && viewMode === "grid" && (
             <div className={styles['media-grid']}>
-              {displayMedia.map((m, i) => {
-                const mediaKey = getMediaKey(m, i);
+              {displayMedia.map((mediaItem, i) => {
+                const mediaKey = getMediaKey(mediaItem, i);
                 const isFav = favoriteKeys.includes(mediaKey);
                 return (
                   <MediaCardComponent
-                    key={`${m.convId}-${i}`}
-                    media={m}
+                    key={`${mediaItem.convId}-${i}`}
+                    media={mediaItem}
                     convBasePath={convBasePath}
                     showFavorite
                     isFavorite={isFav}

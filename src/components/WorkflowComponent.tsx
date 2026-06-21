@@ -136,8 +136,8 @@ export default function WorkflowComponent({
   }, [onSelectNode]);
 
   const handleToggleSidebar = useCallback(() => {
-    setSidebarVisible((v) => {
-      const next = !v;
+    setSidebarVisible((value) => {
+      const next = !value;
       // On mobile, close inspector when opening sidebar
       if (next && window.innerWidth < 768) {
         onSelectNode?.(null);

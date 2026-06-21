@@ -47,7 +47,7 @@ export default function BenchmarkPageComponent({
 
   // -- Validation ---------------------------------------------
   const mode = form.benchmarkMode || "model";
-  const hasModelAssertion = form.assertions?.some((a) => a.expectedValue);
+  const hasModelAssertion = form.assertions?.some((agent) => agent.expectedValue);
   const hasAgentAssertion = form.agentAssertions?.length > 0;
 
   const isValid = (() => {

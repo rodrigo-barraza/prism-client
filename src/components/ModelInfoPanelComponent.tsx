@@ -46,42 +46,42 @@ export default function ModelInfoPanel({
   ]);
 
   const modelsMap: Record<string, ModelOption[]> = {};
-  for (const p of allProviderKeys) {
-    const textModels = textModelsMap[p] || [];
-    const imgModels = (imageModelsMap[p] || []).map((m) => ({
-      ...m,
-      label: `${m.label || m.name} (Image)`,
+  for (const provider of allProviderKeys) {
+    const textModels = textModelsMap[provider] || [];
+    const imgModels = (imageModelsMap[provider] || []).map((model) => ({
+      ...model,
+      label: `${model.label || model.name} (Image)`,
       _isImageGen: true,
     }));
-    const sttModels = (audioToTextModelsMap[p] || []).map((m) => ({
-      ...m,
-      label: `${m.label || m.name} (Transcribe)`,
+    const sttModels = (audioToTextModelsMap[provider] || []).map((model) => ({
+      ...model,
+      label: `${model.label || model.name} (Transcribe)`,
       _isTranscription: true,
     }));
     // Note: ttsModelsMap has VoiceOption[] or ModelOption[], we map it to ModelOption compatible shape
-    const ttsModels = (ttsModelsMap[p] || []).map(
-      (m: VoiceOption | ModelOption) => ({
-        ...m,
-        label: `${m.name} (TTS)`,
-        name: "id" in m ? m.id : m.name,
+    const ttsModels = (ttsModelsMap[provider] || []).map(
+      (model: VoiceOption | ModelOption) => ({
+        ...model,
+        label: `${model.name} (TTS)`,
+        name: "id" in model ? model.id : model.name,
         _isTTS: true,
       }),
     ) as unknown as ModelOption[];
 
     const seen = new Set<string>();
     const merged: ModelOption[] = [];
-    for (const m of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
-      if (!seen.has(m.name)) {
-        seen.add(m.name);
-        merged.push(m);
+    for (const model of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
+      if (!seen.has(model.name)) {
+        seen.add(model.name);
+        merged.push(model);
       }
     }
-    modelsMap[p] = merged;
+    modelsMap[provider] = merged;
   }
 
   const currentProviderModels = modelsMap[settings.provider || ""] || [];
   const selectedModelDef = currentProviderModels.find(
-    (m) => m.name === settings.model,
+    (model) => model.name === settings.model,
   );
 
   if (!selectedModelDef) {
@@ -134,36 +134,36 @@ export default function ModelInfoPanel({
           pdf: <FileText size={12} />,
         };
         const mods = allTypes
-          .map((t) => {
-            const isIn = inputs.includes(t);
-            const isOut = outputs.includes(t);
+          .map((tool) => {
+            const isIn = inputs.includes(tool);
+            const isOut = outputs.includes(tool);
             let status = null;
             if (isIn && isOut) status = "Input & Output";
             else if (isIn) status = "Input only";
             else if (isOut) status = "Output only";
-            return { type: t, status, supported: isIn || isOut };
+            return { type: tool, status, supported: isIn || isOut };
           })
-          .filter((m) => m.supported);
+          .filter((model) => model.supported);
         if (mods.length === 0) return null;
         return (
           <div className={styles['section']}>
             <div className={styles['section-header']}>Modalities</div>
-            {mods.map((m) => (
-              <div key={m.type} className={styles['modality-layout-row']}>
+            {mods.map((model) => (
+              <div key={model.type} className={styles['modality-layout-row']}>
                 <span
                   className={styles['modality-icon']}
                   style={{
                     color:
-                      MODALITY_COLORS[m.type as keyof typeof MODALITY_COLORS],
+                      MODALITY_COLORS[model.type as keyof typeof MODALITY_COLORS],
                   }}
                 >
-                  {iconMap[m.type]}
+                  {iconMap[model.type]}
                 </span>
-                <span className={styles['modality-name']}>{m.type}</span>
+                <span className={styles['modality-name']}>{model.type}</span>
                 <span
                   className={`${styles['modality-status']} ${styles['modality-active']}`}
                 >
-                  {m.status}
+                  {model.status}
                 </span>
               </div>
             ))}
@@ -274,7 +274,7 @@ export default function ModelInfoPanel({
           imageEdit: "Image Edit",
           search: "Search",
         };
-        const entries = Object.entries(arena).filter(([, v]) => v != null) as [
+        const entries = Object.entries(arena).filter(([, value]) => value != null) as [
           keyof ArenaScores,
           number,
         ][];

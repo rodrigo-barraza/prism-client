@@ -393,7 +393,7 @@ describe("applyToolExecutionToMessages", () => {
         snapshot,
       );
       expect(msgs[1].toolCalls).toHaveLength(2);
-      expect(msgs[1].toolCalls!.every((tc) => tc.status === "calling")).toBe(
+      expect(msgs[1].toolCalls!.every((toolCall) => toolCall.status === "calling")).toBe(
         true,
       );
 
@@ -426,7 +426,7 @@ describe("applyToolExecutionToMessages", () => {
         },
         snapshot,
       );
-      expect(msgs[1].toolCalls!.every((tc) => tc.status === "done")).toBe(true);
+      expect(msgs[1].toolCalls!.every((toolCall) => toolCall.status === "done")).toBe(true);
     });
   });
 });

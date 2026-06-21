@@ -1332,7 +1332,7 @@ export function ToolBadgeRow({
   return (
     <div className={toolItemStyles['badge-layout-row']}>
       {Object.entries(tools)
-        .sort(([, a]: [string, number], [, b]: [string, number]) => b - a)
+        .sort(([, agent]: [string, number], [, current]: [string, number]) => current - agent)
         .map(([name, count]: [string, number]) => (
           <BadgeComponent
             key={name}
@@ -1374,7 +1374,7 @@ export function ModelToolsRow({
 }: ModelToolsRowProps) {
   if (!tools) return null;
 
-  const activeTools = TOOL_DEFS.filter((t) => tools[t.key]);
+  const activeTools = TOOL_DEFS.filter((tool) => tools[tool.key]);
   if (activeTools.length === 0) return null;
 
   return (

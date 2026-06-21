@@ -245,16 +245,16 @@ export default function ModelPickerPopoverComponent({
 
   // -- Filter by search -------------------------------------------------
   const filteredModels = search.trim()
-    ? allModels.filter((m: ExtendedModelOption) => {
+    ? allModels.filter((model: ExtendedModelOption) => {
         const normalizedSearch = search.toLowerCase();
         return (
-          (m.name || "").toLowerCase().includes(normalizedSearch) ||
-          (m.label || "").toLowerCase().includes(normalizedSearch) ||
-          (resolveProviderLabel(m.provider || "") || "")
+          (model.name || "").toLowerCase().includes(normalizedSearch) ||
+          (model.label || "").toLowerCase().includes(normalizedSearch) ||
+          (resolveProviderLabel(model.provider || "") || "")
             .toLowerCase()
             .includes(normalizedSearch) ||
-          (m.organization || "").toLowerCase().includes(normalizedSearch) ||
-          ((m.params as string) || "").toLowerCase().includes(normalizedSearch)
+          (model.organization || "").toLowerCase().includes(normalizedSearch) ||
+          ((model.params as string) || "").toLowerCase().includes(normalizedSearch)
         );
       })
     : allModels;
@@ -487,7 +487,7 @@ export default function ModelPickerPopoverComponent({
 
   // -- Trigger display ---------------------------------------------------
   const currentModel = allModels.find(
-    (m) => m.provider === settings?.provider && m.name === settings?.model,
+    (model) => model.provider === settings?.provider && model.name === settings?.model,
   );
 
   // Detect initial config loading — config is null until the API responds
@@ -546,16 +546,16 @@ export default function ModelPickerPopoverComponent({
       "Image Generation": "imageGeneration",
     };
     const modalityToggles: Record<string, boolean> = {};
-    for (const t of currentModel.inputTypes || []) {
-      const mapped = (INPUT_MAP as Record<string, string>)[t];
+    for (const tool of currentModel.inputTypes || []) {
+      const mapped = (INPUT_MAP as Record<string, string>)[tool];
       if (mapped) modalityToggles[mapped] = true;
     }
-    for (const t of currentModel.outputTypes || []) {
-      const mapped = (OUTPUT_MAP as Record<string, string>)[t];
+    for (const tool of currentModel.outputTypes || []) {
+      const mapped = (OUTPUT_MAP as Record<string, string>)[tool];
       if (mapped) modalityToggles[mapped] = true;
     }
-    for (const t of currentModel.tools || []) {
-      const mapped = (TOOL_MAP as Record<string, string>)[t];
+    for (const tool of currentModel.tools || []) {
+      const mapped = (TOOL_MAP as Record<string, string>)[tool];
       if (mapped) modalityToggles[mapped] = true;
     }
     return Object.keys(modalityToggles).length > 0 ? modalityToggles : null;
@@ -724,16 +724,16 @@ function buildAllModels(
   for (const { key, suffix } of sections) {
     const modelsMap = config[key]?.models || {};
     for (const [provider, models] of Object.entries(modelsMap)) {
-      for (const m of models as ModelOption[]) {
-        const id = `${provider}:${m.name}`;
+      for (const model of models as ModelOption[]) {
+        const id = `${provider}:${model.name}`;
         if (!seen.has(id)) {
           seen.set(id, {
-            ...m,
+            ...model,
             provider,
             label:
-              (m.label || m.name) +
-              (suffix && !(m.label || m.name).endsWith(suffix) ? suffix : ""),
-            organization: inferOrganization(m.name, provider),
+              (model.label || model.name) +
+              (suffix && !(model.label || model.name).endsWith(suffix) ? suffix : ""),
+            organization: inferOrganization(model.name, provider),
           });
         }
       }
@@ -744,23 +744,23 @@ function buildAllModels(
 
   // Apply modelType filter if specified
   if (modelTypeFilter) {
-    result = result.filter((m) => {
+    result = result.filter((model) => {
       const lowerFilter = modelTypeFilter.toLowerCase();
       if (lowerFilter === "tts") {
         return (
-          m.label.endsWith(" (TTS)") ||
-          (m.name || "").toLowerCase().includes("tts")
+          model.label.endsWith(" (TTS)") ||
+          (model.name || "").toLowerCase().includes("tts")
         );
       }
       if (lowerFilter === "transcription" || lowerFilter === "transcribe") {
         return (
-          m.label.endsWith(" (Transcribe)") ||
-          (m.name || "").toLowerCase().includes("transcribe")
+          model.label.endsWith(" (Transcribe)") ||
+          (model.name || "").toLowerCase().includes("transcribe")
         );
       }
       return (
-        m.modelType === modelTypeFilter ||
-        (m.name || "").toLowerCase().includes(lowerFilter)
+        model.modelType === modelTypeFilter ||
+        (model.name || "").toLowerCase().includes(lowerFilter)
       );
     });
   }

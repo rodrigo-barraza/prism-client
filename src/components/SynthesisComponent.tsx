@@ -208,8 +208,8 @@ export default function SynthesisComponent() {
           fallback: (config) => {
             const { provider, model } = resolveDefaultModel(config, false);
             if (provider && model) {
-              setSettings((s) => ({
-                ...s,
+              setSettings((state) => ({
+                ...state,
                 provider,
                 model,
               }));
@@ -264,7 +264,7 @@ export default function SynthesisComponent() {
   // -- Model selection handler -----------------------------------
   const handleSelectModel = useCallback(
     (provider: string, model: string) => {
-      setSettings((s) => ({ ...s, provider, model }));
+      setSettings((state) => ({ ...state, provider, model }));
       saveModel(provider, model);
     },
     [saveModel],
@@ -272,7 +272,7 @@ export default function SynthesisComponent() {
 
   const handleSelectUserSimModel = useCallback(
     (provider: string, model: string) => {
-      setUserSimSettings((s) => ({ ...s, provider, model }));
+      setUserSimSettings((state) => ({ ...state, provider, model }));
     },
     [],
   );
@@ -718,11 +718,11 @@ export default function SynthesisComponent() {
       if (run.targetTurns) setTargetTurns(run.targetTurns);
       if (run.seedMessages) setSeedMessages(run.seedMessages as Message[]);
       if (run.settings) {
-        setSettings((s) => ({
-          ...s,
-          provider: run.settings?.provider || s.provider,
-          model: run.settings?.model || s.model,
-          temperature: run.settings?.temperature ?? s.temperature,
+        setSettings((state) => ({
+          ...state,
+          provider: run.settings?.provider || state.provider,
+          model: run.settings?.model || state.model,
+          temperature: run.settings?.temperature ?? state.temperature,
         }));
       }
 
@@ -826,7 +826,7 @@ export default function SynthesisComponent() {
             config={filteredConfig}
             settings={settings}
             onChange={(updates: Record<string, unknown>) =>
-              setSettings((s: typeof settings) => ({ ...s, ...updates }))
+              setSettings((state: typeof settings) => ({ ...state, ...updates }))
             }
             _hasAssistantImages={false}
           />

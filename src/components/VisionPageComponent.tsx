@@ -1123,9 +1123,9 @@ interface VisionChatMessage {
                           {/* Message Images */}
                           {message.images && message.images.length > 0 && (
                             <div className={styles['chat-message-images']}>
-                              {message.images.map((imgUrl: string, idx: number) => (
+                              {message.images.map((imgUrl: string, index: number) => (
                                 <img
-                                  key={idx}
+                                  key={index}
                                   src={PrismService.getFileUrl(imgUrl)}
                                   alt="Analyzed frame"
                                   className={styles['chat-message-image']}

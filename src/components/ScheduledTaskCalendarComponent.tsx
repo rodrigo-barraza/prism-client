@@ -146,7 +146,7 @@ function parseCronField(
     }
   }
 
-  return results.sort((a, b) => a - b);
+  return results.sort((agent, current) => agent - current);
 }
 
 function doesCronMatchDate(cronExpression: string, targetDate: Date): boolean {

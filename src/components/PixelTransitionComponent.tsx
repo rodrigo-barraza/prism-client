@@ -56,10 +56,10 @@ export default function PixelTransitionComponent({
   propsRef.current = { phase, duration, maxBlockSize, onComplete, targetRef };
 
   /** Ease-out cubic — fast initial ramp, decelerates toward end */
-  const easeOut = useCallback((t: number) => 1 - Math.pow(1 - t, 3), []);
+  const easeOut = useCallback((tool: number) => 1 - Math.pow(1 - tool, 3), []);
 
   /** Ease-in cubic — slow start, accelerates toward end */
-  const easeIn = useCallback((t: number) => t * t * t, []);
+  const easeIn = useCallback((tool: number) => tool * tool * tool, []);
 
   /**
    * Build (or retrieve from cache) a CSS `filter: url(...)` value for a given

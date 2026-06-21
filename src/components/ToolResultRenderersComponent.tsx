@@ -965,17 +965,17 @@ function WebSearchRenderer({ result, args }: RendererProps) {
         </span>
       </div>
       <div className={styles['search-results']}>
-        {results.slice(0, 8).map((r, i) => (
+        {results.slice(0, 8).map((result, i) => (
           <div key={i} className={styles['search-result']}>
             <a
-              href={r.url || r.link}
+              href={result.url || result.link}
               target="_blank"
               rel="noopener noreferrer"
               className={styles['search-link']}
             >
-              {r.title || r.name || r.url}
+              {result.title || result.name || result.url}
             </a>
-            {r.snippet && <p className={styles['search-snippet']}>{r.snippet}</p>}
+            {result.snippet && <p className={styles['search-snippet']}>{result.snippet}</p>}
           </div>
         ))}
       </div>
@@ -1167,10 +1167,10 @@ function ansi256ToHex(colorCode: number): string | null | undefined {
   if (colorCode < 16) return ANSI_BRIGHT_COLORS[colorCode - 8];
   if (colorCode < 232) {
     const index = colorCode - 16;
-    const r = Math.floor(index / 36) * 51;
-    const g = (Math.floor(index / 6) % 6) * 51;
-    const b = (index % 6) * 51;
-    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+    const result = Math.floor(index / 36) * 51;
+    const group = (Math.floor(index / 6) % 6) * 51;
+    const current = (index % 6) * 51;
+    return `#${result.toString(16).padStart(2, "0")}${group.toString(16).padStart(2, "0")}${current.toString(16).padStart(2, "0")}`;
   }
   const grayscaleValue = (colorCode - 232) * 10 + 8;
   return `#${grayscaleValue.toString(16).padStart(2, "0")}${grayscaleValue.toString(16).padStart(2, "0")}${grayscaleValue.toString(16).padStart(2, "0")}`;

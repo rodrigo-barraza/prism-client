@@ -233,7 +233,7 @@ export default function AboutPageComponent() {
   let globalCardIndex = 0;
 
   return (
-    <div className={styles["about-page-container"]}>
+    <article className={styles["about-page-container"]}>
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className={styles["hero-section"]}>
         <h1 className={styles["hero-title"]}>Research Implementations</h1>
@@ -282,7 +282,7 @@ export default function AboutPageComponent() {
           <span className={styles["stat-label"]}>Categories</span>
         </div>
       </footer>
-    </div>
+    </article>
   );
 }
 

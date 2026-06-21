@@ -55,22 +55,22 @@ export function FilterPillsComponent({
 }: FilterPillsProps) {
   return (
     <div className={styles['pills']}>
-      {options.map((f) => {
-        const Icon = f.icon;
+      {options.map((filter) => {
+        const Icon = filter.icon;
         return (
           <button
-            key={f.key}
+            key={filter.key}
             type="button"
-            className={`${styles['pill']} ${value === f.key ? styles['pill-is-active-state'] : ""}`}
-            onClick={() => onChange(f.key)}
+            className={`${styles['pill']} ${value === filter.key ? styles['pill-is-active-state'] : ""}`}
+            onClick={() => onChange(filter.key)}
           >
             {Icon && (
               <Icon
                 size={12}
-                style={f.color ? { color: f.color } : undefined}
+                style={filter.color ? { color: filter.color } : undefined}
               />
             )}
-            {f.label}
+            {filter.label}
           </button>
         );
       })}
@@ -126,14 +126,14 @@ export function ViewModeToggleComponent({
 }: ViewModeToggleProps) {
   return (
     <div className={styles['view-toggle']}>
-      {modes.map((m) => {
-        const Icon = m.icon;
+      {modes.map((model) => {
+        const Icon = model.icon;
         return (
-          <TooltipComponent key={m.key} label={m.title} position="bottom">
+          <TooltipComponent key={model.key} label={model.title} position="bottom">
             <button
               type="button"
-              className={`${styles['view-button']} ${mode === m.key ? styles['view-button-element-is-active-state'] : ""}`}
-              onClick={() => onChange(m.key)}
+              className={`${styles['view-button']} ${mode === model.key ? styles['view-button-element-is-active-state'] : ""}`}
+              onClick={() => onChange(model.key)}
             >
               <Icon size={14} />
             </button>

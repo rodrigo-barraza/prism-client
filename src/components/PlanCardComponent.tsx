@@ -58,7 +58,7 @@ export default function PlanCardComponent({
     <div className={`plan-card-component ${styles['card']} ${styles[status] || ""}`}>
       <button
         className={styles['header']}
-        onClick={() => setExpanded((v) => !v)}
+        onClick={() => setExpanded((value) => !value)}
         type="button"
       >
         <div className={styles['header-left']}>

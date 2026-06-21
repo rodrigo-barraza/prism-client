@@ -297,7 +297,7 @@ export default function AudioPlayerRecorderComponent({
   useEffect(() => {
     if (isRecording) {
       recTimerRef.current = setInterval(() => {
-        setRecSeconds((s) => s + 1);
+        setRecSeconds((state) => state + 1);
       }, 1000);
     } else {
       if (recTimerRef.current) clearInterval(recTimerRef.current);

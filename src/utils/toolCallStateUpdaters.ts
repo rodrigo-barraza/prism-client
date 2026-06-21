@@ -93,22 +93,22 @@ export function applyToolExecutionToMessages(
     }
   } else {
     // done / error — update the matching entry
-    updatedToolCalls = currentToolCalls.map((tc) => {
+    updatedToolCalls = currentToolCalls.map((toolCall) => {
       if (
-        (toolInput.id && tc.id === toolInput.id) ||
+        (toolInput.id && toolCall.id === toolInput.id) ||
         (!toolInput.id &&
-          tc.name === (toolInput.name || "unknown") &&
-          tc.status === "calling")
+          toolCall.name === (toolInput.name || "unknown") &&
+          toolCall.status === "calling")
       ) {
         return {
-          ...tc,
+          ...toolCall,
           status: toolInput.status,
           result: toolInput.result,
           args: toolInput.args || {},
-          durationMs: toolInput.durationMs || (tc.timestamp ? Date.now() - tc.timestamp : undefined),
+          durationMs: toolInput.durationMs || (toolCall.timestamp ? Date.now() - toolCall.timestamp : undefined),
         };
       }
-      return tc;
+      return toolCall;
     });
   }
 
@@ -256,22 +256,22 @@ export function applyToolCallToMessages(
       ];
     }
   } else {
-    updatedToolCalls = currentToolCalls.map((tc) => {
+    updatedToolCalls = currentToolCalls.map((toolCall) => {
       if (
-        (toolData.id && tc.id === toolData.id) ||
-        (!toolData.id && tc.name === toolData.name && tc.status === "calling")
+        (toolData.id && toolCall.id === toolData.id) ||
+        (!toolData.id && toolCall.name === toolData.name && toolCall.status === "calling")
       ) {
         return {
-          ...tc,
+          ...toolCall,
           status: toolData.status,
           result: toolData.result,
           ...(toolData.args && Object.keys(toolData.args).length > 0
             ? { args: toolData.args }
             : {}),
-          durationMs: toolData.durationMs || (tc.timestamp ? Date.now() - tc.timestamp : undefined),
+          durationMs: toolData.durationMs || (toolCall.timestamp ? Date.now() - toolCall.timestamp : undefined),
         };
       }
-      return tc;
+      return toolCall;
     });
   }
 

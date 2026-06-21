@@ -113,11 +113,11 @@ function humanizeModelPath(raw: string) {
   // Replace hyphens/underscores with spaces
   name = name.replace(/[-_]/g, " ");
   // Capitalize each word, preserving existing uppercase and numbers
-  name = name.replace(/\b([a-z])/g, (_: string, c: string) => c.toUpperCase());
+  name = name.replace(/\b([a-z])/g, (_: string, config: string) => config.toUpperCase());
   // Uppercase common size suffixes: "32b" → "32B", "0.6b" → "0.6B"
   name = name.replace(
     /(\d+(?:\.\d+)?)\s*b\b/gi,
-    (_: string, n: string) => `${n}B`,
+    (_: string, node: string) => `${node}B`,
   );
   return name.trim();
 }
@@ -162,7 +162,7 @@ export default function BenchmarkDashboardComponent({
     loadData();
     PrismService.getFavorites("model")
       .then((favs: Array<{ key: string }>) =>
-        setFavoriteKeys(favs.map((f) => f.key)),
+        setFavoriteKeys(favs.map((file) => file.key)),
       )
       .catch(() => {});
   }, [loadData]);

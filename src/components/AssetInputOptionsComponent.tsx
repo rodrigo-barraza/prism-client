@@ -81,7 +81,7 @@ export default function AssetInputOptions({
   }, []);
 
   const stopWebcam = useCallback(() => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current?.getTracks().forEach((tool) => tool.stop());
     streamRef.current = null;
     setShowWebcam(false);
   }, []);

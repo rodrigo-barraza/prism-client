@@ -585,6 +585,6 @@ describe("Integration: full mention flow", () => {
     const results = filterMentionResults(flat, token!.query);
     // "birthdays.js" should match "bir"
     expect(results.length).toBeGreaterThan(0);
-    expect(results.some((r: any) => r.name === "birthdays.js")).toBe(true);
+    expect(results.some((result: any) => result.name === "birthdays.js")).toBe(true);
   });
 });

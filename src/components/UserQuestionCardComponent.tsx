@@ -186,7 +186,7 @@ function QuestionBlock({
           {/* Annotation toggle */}
           <button
             className={`${styles['annotate-button']} ${showAnnotations ? styles['annotate-button-element-is-active-state'] : ""}`}
-            onClick={() => setShowAnnotations((v) => !v)}
+            onClick={() => setShowAnnotations((value) => !value)}
             title="Add notes"
           >
             <StickyNote size={14} />

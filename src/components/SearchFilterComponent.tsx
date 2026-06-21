@@ -37,7 +37,7 @@ export default function SearchFilterComponent({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const filtered = query
-    ? options.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
+    ? options.filter((option) => option.toLowerCase().includes(query.toLowerCase()))
     : options;
 
   const handleSelect = useCallback(

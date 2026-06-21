@@ -316,9 +316,9 @@ const ThreeService = {
    *
    * TickState: { scene, camera, renderer, timer, dt, elapsed, width, height }
    */
-  setTick(id: string, fn: TickCallback): void {
+  setTick(id: string, toolFunction: TickCallback): void {
     const inst = instances.get(id);
-    if (inst) inst.tick = fn;
+    if (inst) inst.tick = toolFunction;
   },
 
   /**

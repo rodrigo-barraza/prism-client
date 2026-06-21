@@ -373,10 +373,10 @@ export function setLocalProviderMeta(
 ) {
   _localMeta.clear();
   if (!providers) return;
-  for (const p of providers) {
-    _localMeta.set(p.id, {
-      nickname: p.nickname || "",
-      instanceNumber: p.instanceNumber,
+  for (const provider of providers) {
+    _localMeta.set(provider.id, {
+      nickname: provider.nickname || "",
+      instanceNumber: provider.instanceNumber,
     });
   }
 }
