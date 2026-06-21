@@ -193,12 +193,14 @@ export default function SettingsPanel({
     const criticGateToggleOption = agentToggles?.find((toggleOption) => toggleOption.key === "criticGate");
     const maxIterationsToggleOption = agentToggles?.find((toggleOption) => toggleOption.key === "iterations");
     const maxSubAgentIterationsToggleOption = agentToggles?.find((toggleOption) => toggleOption.key === "subAgentIterations");
+    const recursionDepthToggleOption = agentToggles?.find((toggleOption) => toggleOption.key === "recursionDepth");
 
     const isPlanFirst = planToggleOption ? !!planToggleOption.checked : false;
     const isAutoApprove = autoApproveToggleOption ? !!autoApproveToggleOption.checked : false;
     const isCriticGateEnabled = criticGateToggleOption ? !!criticGateToggleOption.checked : false;
     const maxIterationsCount = maxIterationsToggleOption ? (typeof maxIterationsToggleOption.value === "number" ? maxIterationsToggleOption.value : 10) : 10;
     const maxSubAgentIterationsCount = maxSubAgentIterationsToggleOption ? (typeof maxSubAgentIterationsToggleOption.value === "number" ? maxSubAgentIterationsToggleOption.value : 10) : 10;
+    const recursionDepthCount = recursionDepthToggleOption ? (typeof recursionDepthToggleOption.value === "number" ? recursionDepthToggleOption.value : 0) : 0;
 
     let requestPayload: Record<string, any> = {};
 
@@ -276,6 +278,7 @@ export default function SettingsPanel({
         maxIterations: maxIterationsCount === Infinity ? 0 : maxIterationsCount,
         maxSubAgentIterations: maxSubAgentIterationsCount === Infinity ? 0 : maxSubAgentIterationsCount,
         ...(isCriticGateEnabled && { enableCriticGate: true }),
+        ...(recursionDepthCount > 0 && { maxRecursionDepth: recursionDepthCount }),
         ...(settings.agents?.workspaceEnabled === false && {
           workspaceEnabled: false,
         }),
@@ -1175,7 +1178,7 @@ export default function SettingsPanel({
 
             {/* 3–5. Auto Approve, Max Iterations, Sub-Agent Iterations */}
             {agentToggles?.filter((toggle) =>
-              ["auto", "iterations", "subAgentIterations"].includes(toggle.key),
+              ["auto", "iterations", "subAgentIterations", "recursionDepth"].includes(toggle.key),
             ).map((toggle) => (
               <div
                 key={toggle.key}
