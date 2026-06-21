@@ -278,7 +278,7 @@ export default function SettingsPanel({
         maxIterations: maxIterationsCount === Infinity ? 0 : maxIterationsCount,
         maxSubAgentIterations: maxSubAgentIterationsCount === Infinity ? 0 : maxSubAgentIterationsCount,
         ...(isCriticGateEnabled && { enableCriticGate: true }),
-        ...(recursionDepthCount > 0 && { maxRecursionDepth: recursionDepthCount }),
+        maxRecursionDepth: recursionDepthCount,
         ...(settings.agents?.workspaceEnabled === false && {
           workspaceEnabled: false,
         }),

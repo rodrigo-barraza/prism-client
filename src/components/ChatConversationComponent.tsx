@@ -811,7 +811,7 @@ export default function ChatConversationComponent({
   const [maxIterations, setMaxIterations] = useState(MAX_TOOL_ITERATIONS);
   const [maxSubAgentIterations, setMaxSubAgentIterations] =
     useState(MAX_TOOL_ITERATIONS);
-  const [maxRecursionDepth, setMaxRecursionDepth] = useState(0);
+  const [maxRecursionDepth, setMaxRecursionDepth] = useState(1);
 
   // Hydrate from localStorage after mount to avoid SSR mismatch
   useEffect(() => {
@@ -3140,7 +3140,7 @@ export default function ChatConversationComponent({
               maxSubAgentIterations: Number.isFinite(maxSubAgentIterations)
                 ? maxSubAgentIterations
                 : 0,
-              ...(maxRecursionDepth > 0 && { maxRecursionDepth }),
+              maxRecursionDepth,
               ...(criticGateEnabled && { enableCriticGate: true }),
               ...(settings.agents?.workspaceEnabled === false && {
                 workspaceEnabled: false,
@@ -5952,7 +5952,7 @@ export default function ChatConversationComponent({
                       label: "Sub-Agent Recursion Depth",
                       value: maxRecursionDepth,
                       isActive: maxRecursionDepth > 0,
-                      title: "Click to cycle: Off → 1 → 2 → 3",
+                      title: "Click to cycle: Off → 1 (Workers) → 2 → 3",
                       onChange: () => {
                         const steps = [0, 1, 2, 3];
                         const index = steps.indexOf(maxRecursionDepth);
