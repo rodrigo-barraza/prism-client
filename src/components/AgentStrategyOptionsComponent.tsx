@@ -22,11 +22,11 @@ export function buildTopologyOptions(): StrategySelectOption[] {
   return [
     {
       value: "sequential",
-      label: "Sequential Pipeline (CoT)",
+      label: "Sequential Pipeline (SP)",
       tooltipRich: true,
       tooltip: (
         <div>
-          <span className={styles["strategy-tooltip-title"]}>Sequential Pipeline (CoT)</span>
+          <span className={styles["strategy-tooltip-title"]}>Sequential Pipeline (SP)</span>
           <p className={styles["strategy-tooltip-description"]}>
             Sub-agents execute one at a time. Each receives the
             previous agent&apos;s output as context, forming a chain.
@@ -40,11 +40,11 @@ export function buildTopologyOptions(): StrategySelectOption[] {
     },
     {
       value: "hierarchical",
-      label: "Hierarchical Parallel (ToT)",
+      label: "Hierarchical Parallel (HP)",
       tooltipRich: true,
       tooltip: (
         <div>
-          <span className={styles["strategy-tooltip-title"]}>Hierarchical Parallel (ToT)</span>
+          <span className={styles["strategy-tooltip-title"]}>Hierarchical Parallel (HP)</span>
           <p className={styles["strategy-tooltip-description"]}>
             Sub-agents execute in parallel. The orchestrator
             selects the best result. Branches never merge.
