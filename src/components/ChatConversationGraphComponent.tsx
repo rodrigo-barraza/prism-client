@@ -328,7 +328,7 @@ function buildGraphFromConversation(
         addEdge(subAgentNodeIds[index], subAgentNodeIds[nextIndex], 0.4);
       }
     }
-  } else if ((topology === TOPOLOGIES.PEER_TO_PEER || topology === "p2p") && subAgentNodeIds.length > 0) {
+  } else if (topology === TOPOLOGIES.PEER_TO_PEER && subAgentNodeIds.length > 0) {
     for (const subAgentId of subAgentNodeIds) {
       addEdge(parentAgentNodeId, subAgentId, 0.7);
     }
@@ -336,6 +336,30 @@ function buildGraphFromConversation(
       for (let nextIndex = index + 1; nextIndex < subAgentNodeIds.length; nextIndex++) {
         addEdge(subAgentNodeIds[index], subAgentNodeIds[nextIndex], 0.6);
       }
+    }
+  } else if (topology === TOPOLOGIES.CRITIC_LOOP && subAgentNodeIds.length > 0) {
+    // Critic loop: actor→critic chain — first sub-agent is actor, rest are critics
+    addEdge(parentAgentNodeId, subAgentNodeIds[0], 0.9);
+    for (let index = 1; index < subAgentNodeIds.length; index++) {
+      addEdge(subAgentNodeIds[index - 1], subAgentNodeIds[index], 0.8);
+    }
+    // Feedback loop: last critic feeds back to actor
+    if (subAgentNodeIds.length > 1) {
+      addEdge(subAgentNodeIds[subAgentNodeIds.length - 1], subAgentNodeIds[0], 0.5);
+    }
+  } else if ((topology === TOPOLOGIES.TOURNAMENT || topology === TOPOLOGIES.DIVIDE_AND_CONQUER) && subAgentNodeIds.length > 0) {
+    // Tournament / D&C: fan-out from orchestrator, no inter-agent edges
+    for (const subAgentId of subAgentNodeIds) {
+      addEdge(parentAgentNodeId, subAgentId, 0.9);
+    }
+  } else if (topology === TOPOLOGIES.MCTS && subAgentNodeIds.length > 0) {
+    // MCTS: tree-shaped — connect agents to parent based on spawn order (depth layers)
+    addEdge(parentAgentNodeId, subAgentNodeIds[0], 0.9);
+    for (let index = 1; index < subAgentNodeIds.length; index++) {
+      // Approximate tree structure: earlier agents parent later ones
+      const parentIndex = Math.floor((index - 1) / 3);
+      const treeParentId = parentIndex < subAgentNodeIds.length ? subAgentNodeIds[parentIndex] : parentAgentNodeId;
+      addEdge(treeParentId, subAgentNodeIds[index], 0.8);
     }
   } else {
     for (const subAgentId of subAgentNodeIds) {
@@ -498,6 +522,194 @@ function applyPeerToPeerLayout(graphData: GraphData, canvasWidth: number, canvas
   }
 }
 
+function applyCriticLoopLayout(graphData: GraphData, canvasWidth: number, canvasHeight: number): void {
+  const { nodes: graphNodes } = graphData;
+  if (graphNodes.length === 0) return;
+
+  const projectNode = graphNodes.find((graphNode) => graphNode.category === "project");
+  const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
+  const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
+  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent);
+  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "agent" && graphNode.metadata?.isSubagent);
+
+  const otherNodes = graphNodes.filter((graphNode) =>
+    graphNode.category !== "project" &&
+    graphNode.category !== "user" &&
+    graphNode.category !== "session" &&
+    graphNode.category !== "agent"
+  );
+
+  const centerX = canvasWidth / 2;
+
+  if (projectNode) { projectNode.x = 80; projectNode.y = 80; }
+  if (userNode) { userNode.x = 180; userNode.y = 80; }
+  if (sessionNode) { sessionNode.x = 130; sessionNode.y = 150; }
+
+  // Vertical chain: orchestrator → actor → critic(s), centered horizontally
+  if (mainAgentNode) {
+    mainAgentNode.x = centerX;
+    mainAgentNode.y = 220;
+  }
+
+  const subAgentCount = subAgentNodes.length;
+  const verticalSpacing = Math.max(90, (canvasHeight - 300) / Math.max(1, subAgentCount));
+
+  for (let index = 0; index < subAgentCount; index++) {
+    const subAgent = subAgentNodes[index];
+    subAgent.x = centerX;
+    subAgent.y = 320 + index * verticalSpacing;
+  }
+
+  for (const node of otherNodes) {
+    const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
+    const parentNode = edge ? graphNodes.find((parentNodeCandidate) => parentNodeCandidate.id === edge.source) : null;
+
+    if (parentNode) {
+      if (node.category === "request") {
+        node.x = parentNode.x + 120;
+        node.y = parentNode.y + (node.sequenceNumber || 1) * 28;
+      } else {
+        node.x = parentNode.x + (Math.random() - 0.5) * 80;
+        node.y = parentNode.y + 60;
+      }
+    } else {
+      node.x = Math.random() * canvasWidth;
+      node.y = canvasHeight / 2 + 100;
+    }
+  }
+}
+
+function applyTournamentLayout(graphData: GraphData, canvasWidth: number, canvasHeight: number): void {
+  const { nodes: graphNodes } = graphData;
+  if (graphNodes.length === 0) return;
+
+  const projectNode = graphNodes.find((graphNode) => graphNode.category === "project");
+  const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
+  const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
+  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent);
+  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "agent" && graphNode.metadata?.isSubagent);
+
+  const otherNodes = graphNodes.filter((graphNode) =>
+    graphNode.category !== "project" &&
+    graphNode.category !== "user" &&
+    graphNode.category !== "session" &&
+    graphNode.category !== "agent"
+  );
+
+  const centerX = canvasWidth / 2;
+
+  if (projectNode) { projectNode.x = 80; projectNode.y = 80; }
+  if (userNode) { userNode.x = 180; userNode.y = 80; }
+  if (sessionNode) { sessionNode.x = 130; sessionNode.y = 150; }
+
+  // Fan-out: orchestrator on top, candidates spread horizontally below
+  if (mainAgentNode) {
+    mainAgentNode.x = centerX;
+    mainAgentNode.y = 220;
+  }
+
+  const subAgentCount = subAgentNodes.length;
+  const horizontalSpacing = Math.max(120, (canvasWidth - 200) / Math.max(1, subAgentCount));
+  const startX = (canvasWidth - (subAgentCount - 1) * horizontalSpacing) / 2;
+
+  for (let index = 0; index < subAgentCount; index++) {
+    const subAgent = subAgentNodes[index];
+    subAgent.x = startX + index * horizontalSpacing;
+    subAgent.y = 360;
+  }
+
+  for (const node of otherNodes) {
+    const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
+    const parentNode = edge ? graphNodes.find((parentNodeCandidate) => parentNodeCandidate.id === edge.source) : null;
+
+    if (parentNode) {
+      if (node.category === "request") {
+        node.x = parentNode.x;
+        node.y = parentNode.y + 70 + (node.sequenceNumber || 1) * 28;
+      } else {
+        node.x = parentNode.x + (Math.random() - 0.5) * 70;
+        node.y = parentNode.y + 60;
+      }
+    } else {
+      node.x = Math.random() * canvasWidth;
+      node.y = canvasHeight / 2 + 100;
+    }
+  }
+}
+
+function applyMCTSLayout(graphData: GraphData, canvasWidth: number, canvasHeight: number): void {
+  const { nodes: graphNodes } = graphData;
+  if (graphNodes.length === 0) return;
+
+  const projectNode = graphNodes.find((graphNode) => graphNode.category === "project");
+  const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
+  const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
+  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent);
+  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "agent" && graphNode.metadata?.isSubagent);
+
+  const otherNodes = graphNodes.filter((graphNode) =>
+    graphNode.category !== "project" &&
+    graphNode.category !== "user" &&
+    graphNode.category !== "session" &&
+    graphNode.category !== "agent"
+  );
+
+  const centerX = canvasWidth / 2;
+
+  if (projectNode) { projectNode.x = 80; projectNode.y = 80; }
+  if (userNode) { userNode.x = 180; userNode.y = 80; }
+  if (sessionNode) { sessionNode.x = 130; sessionNode.y = 150; }
+
+  // Tree: root on top, children fan out with increasing horizontal spread per depth
+  if (mainAgentNode) {
+    mainAgentNode.x = centerX;
+    mainAgentNode.y = 220;
+  }
+
+  // Approximate tree depth assignment: groups of branchFactor (default 3)
+  const branchFactor = 3;
+  const subAgentCount = subAgentNodes.length;
+  let depthStart = 0;
+  let currentDepth = 0;
+  let nodesAtCurrentDepth = branchFactor;
+
+  while (depthStart < subAgentCount) {
+    const depthEnd = Math.min(depthStart + nodesAtCurrentDepth, subAgentCount);
+    const depthNodeCount = depthEnd - depthStart;
+    const depthY = 320 + currentDepth * 120;
+    const depthSpread = Math.max(100, (canvasWidth - 200) / Math.max(1, depthNodeCount));
+    const depthStartX = (canvasWidth - (depthNodeCount - 1) * depthSpread) / 2;
+
+    for (let index = depthStart; index < depthEnd; index++) {
+      const subAgent = subAgentNodes[index];
+      subAgent.x = depthStartX + (index - depthStart) * depthSpread;
+      subAgent.y = depthY;
+    }
+
+    depthStart = depthEnd;
+    currentDepth++;
+    nodesAtCurrentDepth = depthNodeCount * branchFactor;
+  }
+
+  for (const node of otherNodes) {
+    const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
+    const parentNode = edge ? graphNodes.find((parentNodeCandidate) => parentNodeCandidate.id === edge.source) : null;
+
+    if (parentNode) {
+      if (node.category === "request") {
+        node.x = parentNode.x + 80;
+        node.y = parentNode.y + (node.sequenceNumber || 1) * 28;
+      } else {
+        node.x = parentNode.x + (Math.random() - 0.5) * 60;
+        node.y = parentNode.y + 50;
+      }
+    } else {
+      node.x = Math.random() * canvasWidth;
+      node.y = canvasHeight / 2 + 100;
+    }
+  }
+}
+
 function applyTopologyLayout(
   graphData: GraphData,
   canvasWidth: number,
@@ -507,10 +719,16 @@ function applyTopologyLayout(
   const resolvedTopology = topology || DEFAULT_TOPOLOGY;
   if (resolvedTopology === TOPOLOGIES.SEQUENTIAL) {
     applySequentialLayout(graphData, canvasWidth, canvasHeight);
-  } else if (resolvedTopology === TOPOLOGIES.PEER_TO_PEER || resolvedTopology === "p2p") {
+  } else if (resolvedTopology === TOPOLOGIES.PEER_TO_PEER) {
     applyPeerToPeerLayout(graphData, canvasWidth, canvasHeight);
-  } else if (resolvedTopology === TOPOLOGIES.HIERARCHICAL_AGGREGATION) {
-    applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);
+  } else if (resolvedTopology === TOPOLOGIES.CRITIC_LOOP) {
+    applyCriticLoopLayout(graphData, canvasWidth, canvasHeight);
+  } else if (resolvedTopology === TOPOLOGIES.TOURNAMENT) {
+    applyTournamentLayout(graphData, canvasWidth, canvasHeight);
+  } else if (resolvedTopology === TOPOLOGIES.DIVIDE_AND_CONQUER) {
+    applyTournamentLayout(graphData, canvasWidth, canvasHeight);
+  } else if (resolvedTopology === TOPOLOGIES.MCTS) {
+    applyMCTSLayout(graphData, canvasWidth, canvasHeight);
   } else {
     applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);
   }
