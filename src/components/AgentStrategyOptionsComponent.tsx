@@ -181,9 +181,11 @@ export function buildThoughtStructureOptions(): StrategySelectOption[] {
         <div>
           <span className={styles["strategy-tooltip-title"]}>Chain of Thought (CoT)</span>
           <p className={styles["strategy-tooltip-description"]}>
-            Single-pass sequential reasoning. The agent reasons,
-            acts, observes results, and iterates — one step at a
-            time. Default and most efficient strategy.
+            A linear <strong>chain</strong> of reasoning steps — the agent
+            reasons, acts, observes, and iterates one step at a time.
+            Each iteration feeds the next sequentially, with no
+            branching or parallel exploration. Default and most
+            efficient strategy.
           </p>
           <TopologyGraphComponent topologyId="chain_of_thought" />
         </div>
@@ -197,10 +199,11 @@ export function buildThoughtStructureOptions(): StrategySelectOption[] {
         <div>
           <span className={styles["strategy-tooltip-title"]}>Tree of Thoughts (ToT)</span>
           <p className={styles["strategy-tooltip-description"]}>
-            Generates N parallel reasoning branches per iteration,
-            scores each on correctness/risk/efficiency/completeness,
-            selects the best, and backtracks with reflexion on
-            validation failure.
+            A <strong>tree</strong> of reasoning branches — generates
+            N parallel paths per iteration, scores each on multiple
+            criteria, selects the best, and backtracks with
+            self-correction on validation failure. Explores
+            alternatives, then prunes to a single winner.
           </p>
           <TopologyGraphComponent topologyId="tree_of_thoughts" />
         </div>
@@ -214,10 +217,11 @@ export function buildThoughtStructureOptions(): StrategySelectOption[] {
         <div>
           <span className={styles["strategy-tooltip-title"]}>Graph of Thoughts (GoT)</span>
           <p className={styles["strategy-tooltip-description"]}>
-            Generates N parallel branches, scores them, then
-            SYNTHESIZES the best aspects of all branches into a
-            single merged response — combining complementary tool
-            calls, defensive measures, and complete coverage.
+            A <strong>graph</strong> of reasoning branches — generates
+            N parallel paths, scores them, then synthesizes the
+            best aspects of all branches into a single merged
+            response. Unlike ToT which selects one winner, GoT
+            merges complementary strengths from every branch.
           </p>
           <TopologyGraphComponent topologyId="graph_of_thoughts" />
         </div>
