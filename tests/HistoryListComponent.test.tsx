@@ -15,9 +15,19 @@ vi.mock(
   }),
 );
 
+import type { FilterGroup } from "../src/components/FilterDropdownComponent";
+
 // Mock components-library SearchInputComponent
 vi.mock("@rodrigo-barraza/components-library", () => ({
-  SearchInputComponent: ({ value, onChange, placeholder }: any) => (
+  SearchInputComponent: ({
+    value,
+    onChange,
+    placeholder,
+  }: {
+    value: string;
+    onChange: (nextValue: string) => void;
+    placeholder?: string;
+  }) => (
     <input
       data-testid="search-input"
       value={value}
@@ -31,7 +41,19 @@ vi.mock("@rodrigo-barraza/components-library", () => ({
 vi.mock(
   "../src/components/HistoryItemComponent",
   () => ({
-    default: ({ item, subAgentNumber, hasSpawnedSubAgents }: any) => (
+    default: ({
+      item,
+      subAgentNumber,
+      hasSpawnedSubAgents,
+    }: {
+      item: {
+        id: string;
+        title?: string;
+        parentConversationId?: string | null;
+      };
+      subAgentNumber?: number | null;
+      hasSpawnedSubAgents?: boolean;
+    }) => (
       <div
         data-testid="history-item"
         data-id={item.id}
@@ -49,14 +71,14 @@ vi.mock(
 vi.mock(
   "../src/components/FilterDropdownComponent",
   () => ({
-    default: ({ groups }: any) => (
+    default: ({ groups }: { groups: FilterGroup[] }) => (
       <div data-testid="filter-dropdown">
-        {groups.map((group: any) => (
+        {groups.map((group) => (
           <div key={group.label} data-testid={`group-${group.label.toLowerCase()}`}>
-            {group.items.map((item: any) => (
+            {group.items.map((item) => (
               <button
                 key={item.key}
-                data-testid={`filter-btn-${item.key}`}
+                data-testid={`filter-button-${item.key}`}
                 onClick={() => {
                   if (group.onToggle) {
                     group.onToggle(item.key);
@@ -171,7 +193,7 @@ describe("HistoryListComponent - Sub-Agent Grouping", () => {
     render(<HistoryListComponent items={mockItems} />);
 
     // Toggle "Hide Sub-Agents" filter
-    const toggleButton = screen.getByTestId("filter-btn-hide-subagents");
+    const toggleButton = screen.getByTestId("filter-button-hide-subagents");
     expect(toggleButton).toBeTruthy();
 
     fireEvent.click(toggleButton);

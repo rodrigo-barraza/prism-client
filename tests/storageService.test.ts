@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import StorageService from "../src/services/StorageService";
 
+const STORAGE_PREFIX = "prism";
+
+function makeNamespacedKey(key: string): string {
+  return `${STORAGE_PREFIX}:${key}`;
+}
+
 describe("StorageService", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -8,7 +14,7 @@ describe("StorageService", () => {
 
   it("should namespace keys with prism prefix on set and get", () => {
     StorageService.set("theme", "dark");
-    expect(localStorage.getItem("prism:theme")).toBe(JSON.stringify("dark"));
+    expect(localStorage.getItem(makeNamespacedKey("theme"))).toBe(JSON.stringify("dark"));
 
     const retrievedValue = StorageService.get<string>("theme");
     expect(retrievedValue).toBe("dark");
@@ -38,7 +44,7 @@ describe("StorageService", () => {
   });
 
   it("should return fallback if storage contains invalid JSON", () => {
-    localStorage.setItem("prism:broken", "{invalid json");
+    localStorage.setItem(makeNamespacedKey("broken"), "{invalid json");
     const retrievedValue = StorageService.get("broken", "default-value");
     expect(retrievedValue).toBe("default-value");
   });

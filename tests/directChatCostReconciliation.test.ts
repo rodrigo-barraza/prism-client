@@ -116,7 +116,7 @@ describe("Direct Chat Cost Reconciliation", () => {
 describe("Direct Chat resolvedCost calculation", () => {
   /**
    * Simulates the resolvedCost computation from the live-patch
-   * useEffect in ChatSessionComponent. For direct chat (isNoAgent),
+   * useEffect in ChatConversationComponent. For direct chat (isNoAgent),
    * backendSessionStats is null, so totalCost is used directly.
    */
   function computeResolvedCost({
@@ -279,7 +279,7 @@ describe("Two-phase delayed refetch contract", () => {
   it("should document the 2s/8s fetch windows", () => {
     // This test documents the contract that both direct chat and agent
     // sessions use the same two-phase delayed fetch pattern.
-    // NOTE: These match the inline hardcoded timeouts (2000ms and 8000ms) in ChatSessionComponent.tsx.
+    // NOTE: These match the inline hardcoded timeouts (2000ms and 8000ms) in ChatConversationComponent.tsx.
     // Phase 1: 2000ms — catches iteration requests and fast background ops
     // Phase 2: 8000ms — catches slow background ops (embedding, consolidation)
     const PHASE_ONE_DELAY = 2000;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SETTINGS_DEFAULTS } from "../src/constants";
+import { SETTINGS_DEFAULTS, FALLBACK_THINKING_PATTERNS } from "../src/constants";
 import type { ModelOption } from "../src/types/types";
 
 describe("resetConversationState model parameter resetting", () => {
@@ -52,12 +52,9 @@ describe("resetConversationState model parameter resetting", () => {
         }
         if (modelDefinition) {
           const modelName = (settings.model || "").toLowerCase();
-          const nameBasedThinking = [
-            "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
-            "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
-            "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
-            "dolphin-r1", "internlm3", "kimi-k2",
-          ].some((pattern) => modelName.includes(pattern));
+          const nameBasedThinking = FALLBACK_THINKING_PATTERNS.some((pattern) =>
+            modelName.includes(pattern),
+          );
 
           isThinkingSupported = !!(
             modelDefinition.thinking ||
@@ -172,12 +169,9 @@ describe("resetConversationState model parameter resetting", () => {
         );
         if (modelDefinition) {
           const modelName = (settings.model || "").toLowerCase();
-          const nameBasedThinking = [
-            "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
-            "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
-            "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
-            "dolphin-r1", "internlm3", "kimi-k2",
-          ].some((pattern) => modelName.includes(pattern));
+          const nameBasedThinking = FALLBACK_THINKING_PATTERNS.some((pattern) =>
+            modelName.includes(pattern),
+          );
 
           isThinkingSupported = !!(
             modelDefinition.thinking ||

@@ -46,6 +46,7 @@ describe("messageHelpers - prepareDisplayMessages", () => {
     const rawMessages: Message[] = [
       {
         role: "assistant",
+        content: "",
         tool_calls: [
           {
             id: "call-1",
@@ -73,7 +74,7 @@ describe("messageHelpers - prepareDisplayMessages", () => {
       { role: "user", content: "hello" },
       { role: "assistant", content: "" }, // empty assistant
       { role: "assistant", content: " " }, // empty assistant
-      { role: "assistant", content: undefined }, // empty assistant
+      { role: "assistant", content: undefined as unknown as string }, // empty assistant
       { role: "assistant", content: "", toolCalls: [] }, // empty assistant (empty toolCalls list)
       { role: "assistant", content: "hello from assistant" }, // should keep
       { role: "assistant", content: "", images: ["img-url"] }, // should keep because of images

@@ -213,11 +213,11 @@ describe("PrismService", () => {
       await PrismService.getSkills("project-a");
       expect(lastUrl).toContain("/skills?project=project-a");
 
-      await PrismService.createSkill({ title: "skill-a" } as any);
+      await PrismService.createSkill({ name: "skill-a" } as any);
       expect(lastUrl).toContain("/skills");
       expect(lastOptions?.method).toBe("POST");
 
-      await PrismService.updateSkill("skill-123", { title: "skill-updated" });
+      await PrismService.updateSkill("skill-123", { name: "skill-updated" });
       expect(lastUrl).toContain("/skills/skill-123");
       expect(lastOptions?.method).toBe("PUT");
 
@@ -232,11 +232,11 @@ describe("PrismService", () => {
       await PrismService.getRules("coding");
       expect(lastUrl).toContain("/rules?agent=coding");
 
-      await PrismService.createRule({ pattern: "rule-a" } as any);
+      await PrismService.createRule({ name: "rule-a" } as any);
       expect(lastUrl).toContain("/rules");
       expect(lastOptions?.method).toBe("POST");
 
-      await PrismService.updateRule("rule-123", { pattern: "rule-updated" });
+      await PrismService.updateRule("rule-123", { name: "rule-updated" });
       expect(lastUrl).toContain("/rules/rule-123");
       expect(lastOptions?.method).toBe("PUT");
 

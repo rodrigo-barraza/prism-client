@@ -17,50 +17,17 @@ vi.mock(
   }),
 );
 
-// Mock utilities-library taxonomy
-vi.mock("@rodrigo-barraza/utilities-library/taxonomy", () => ({
-  DOMAINS: {
-    CORE_HARNESS: { key: "core_harness", displayName: "Core Harness Tools" },
-    CORE_WORKSPACE: { key: "core_workspace", displayName: "Core Workspace Tools" },
-    CORE_ORCHESTRATOR: { key: "core_orchestrator", displayName: "Core Orchestrator Tools" },
-    WEB: { key: "web", displayName: "Web" },
-    BROWSER: { key: "browser", displayName: "Browser" },
-    TASKS: { key: "tasks", displayName: "Task Management" },
-    MEMORY: { key: "memory", displayName: "Memory" },
-    AGENTS: { key: "agents", displayName: "Agent Management" },
-    TOOLS: { key: "tools", displayName: "Tool Management" },
-    MCP: { key: "mcp", displayName: "Model Context Protocol" },
-    META: { key: "meta", displayName: "Meta" },
-    CORE_SCHEDULE: { key: "core_schedule", displayName: "Core Schedule Tools" },
-    CONVERSATION_TIMERS: { key: "timers", displayName: "Timers" },
-    SKILLS: { key: "skills", displayName: "Skills" },
-    CONTROL: { key: "control", displayName: "Control Flow" },
-    STRUCTURED: { key: "structured", displayName: "Structured Output" },
-    REASONING: { key: "reasoning", displayName: "Reasoning" },
-    WEATHER: { key: "weather", displayName: "Weather & Environment" },
-    EVENTS: { key: "events", displayName: "Events" },
-    MARKETS: { key: "markets", displayName: "Markets & Commodities" },
-    TRENDS: { key: "trends", displayName: "Trends" },
-    PRODUCTS: { key: "products", displayName: "Products" },
-    FINANCE: { key: "finance", displayName: "Finance" },
-    KNOWLEDGE: { key: "knowledge", displayName: "Knowledge" },
-    MOVIES: { key: "movies", displayName: "Movies & TV" },
-    HEALTH: { key: "health", displayName: "Health" },
-    COMPUTE: { key: "compute", displayName: "Compute" },
-    COMMUNICATION: { key: "communication", displayName: "Communication" },
-    TRANSIT: { key: "transit", displayName: "Transit" },
-    MARITIME: { key: "maritime", displayName: "Maritime" },
-    ENERGY: { key: "energy", displayName: "Energy" },
-    CREATIVE: { key: "creative", displayName: "Creative" },
-    GAMING: { key: "gaming", displayName: "Gaming" },
-    DISCORD: { key: "discord", displayName: "Discord" },
-    SMART_HOME: { key: "smart_home", displayName: "Smart Home" },
-    SPORTS: { key: "sports", displayName: "Sports" },
-    UTILITIES: { key: "utilities", displayName: "Utilities" },
-    TORRENT: { key: "torrent", displayName: "Torrent" },
-    REDDIT: { key: "reddit", displayName: "Reddit" },
-  },
-}));
+// Mock utilities-library taxonomy to return actual implementation details to align contracts
+vi.mock("@rodrigo-barraza/utilities-library/taxonomy", async () => {
+  const actual = await vi.importActual<typeof import("@rodrigo-barraza/utilities-library/taxonomy")>(
+    "@rodrigo-barraza/utilities-library/taxonomy"
+  );
+  return {
+    ...actual,
+  };
+});
+
+import { DOMAINS, TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 // Mock renderToolName — just title-case the snake_case name
 vi.mock("@rodrigo-barraza/utilities-library", () => ({
@@ -159,28 +126,28 @@ import type { ToolSchema } from "../src/types/types";
 
 function createCoreHarnessTools(): ToolSchema[] {
   return [
-    { name: "think", description: "Think step-by-step", domain: "Core Harness Tools", system: true },
-    { name: "ask_user_question", description: "Ask the user a question", domain: "Core Harness Tools", system: true },
+    { name: TOOL_NAMES.THINK, description: "Think step-by-step", domain: DOMAINS.CORE_HARNESS.displayName, system: true },
+    { name: TOOL_NAMES.ASK_USER, description: "Ask the user a question", domain: DOMAINS.CORE_HARNESS.displayName, system: true },
   ];
 }
 
 function createCoreWorkspaceTools(): ToolSchema[] {
   return [
-    { name: "read_file", description: "Read a file", domain: "Core Workspace Tools", system: true },
-    { name: "write_file", description: "Write a file", domain: "Core Workspace Tools", system: true },
-    { name: "replace_in_file", description: "Replace in file", domain: "Core Workspace Tools", system: true },
-    { name: "replace_file_block", description: "Replace file block", domain: "Core Workspace Tools", system: true },
-    { name: "replace_file_regions", description: "Replace file regions", domain: "Core Workspace Tools", system: true },
-    { name: "patch_file", description: "Patch file", domain: "Core Workspace Tools", system: true },
-    { name: "list_directory", description: "List directory", domain: "Core Workspace Tools", system: true },
-    { name: "search_file_contents", description: "Search file contents", domain: "Core Workspace Tools", system: true },
+    { name: TOOL_NAMES.READ_FILE, description: "Read a file", domain: DOMAINS.CORE_WORKSPACE.displayName, system: true },
+    { name: TOOL_NAMES.WRITE_FILE, description: "Write a file", domain: DOMAINS.CORE_WORKSPACE.displayName, system: true },
+    { name: TOOL_NAMES.REPLACE_IN_FILE, description: "Replace in file", domain: DOMAINS.CORE_WORKSPACE.displayName, system: true },
+    { name: TOOL_NAMES.MOVE_FILE, description: "Move file", domain: DOMAINS.CORE_WORKSPACE.displayName, system: true },
+    { name: TOOL_NAMES.DELETE_FILE, description: "Delete file", domain: DOMAINS.CORE_WORKSPACE.displayName, system: true },
+    { name: TOOL_NAMES.PATCH_FILE, description: "Patch file", domain: DOMAINS.CORE_WORKSPACE.displayName, system: true },
+    { name: TOOL_NAMES.LIST_DIRECTORY, description: "List directory", domain: DOMAINS.CORE_WORKSPACE.displayName, system: true },
+    { name: TOOL_NAMES.SEARCH_FILE_CONTENTS, description: "Search file contents", domain: DOMAINS.CORE_WORKSPACE.displayName, system: true },
   ];
 }
 
 function createConfigurableTools(): ToolSchema[] {
   return [
-    { name: "search_web", description: "Search the web", domain: "Web", system: false },
-    { name: "get_weather", description: "Get weather", domain: "Weather", system: false },
+    { name: TOOL_NAMES.SEARCH_WEB, description: "Search the web", domain: DOMAINS.WEB.displayName, system: false },
+    { name: TOOL_NAMES.GET_WEATHER, description: "Get weather", domain: DOMAINS.WEATHER.displayName, system: false },
   ];
 }
 
@@ -673,7 +640,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       expect(thinkingTooltips.length).toBe(1);
     });
 
-    it("still renders ask_user_question as locked on when only think is locked off", () => {
+    it("still renders ask_user as locked on when only think is locked off", () => {
       const lockedOffTools = buildThinkingLockedOffMap();
 
       const { container } = render(
@@ -686,7 +653,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       );
 
       const coreToolRows = container.querySelectorAll(".core-tool-layout-row");
-      // ask_user_question should be in core-tool-layout-row (locked on), plus all workspace tools
+      // ask_user should be in core-tool-layout-row (locked on), plus all workspace tools
       expect(coreToolRows.length).toBe(coreHarnessTools.length - 1 + coreWorkspaceTools.length);
 
       for (const row of coreToolRows) {
@@ -712,7 +679,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
       const bulkCountElement = domainCounts[0];
       const countText = bulkCountElement?.textContent || "";
 
-      // 1 harness (ask_user_question) locked on + 8 workspace locked on + 2 configurable = 11/11
+      // 1 harness (ask_user) locked on + 8 workspace locked on + 2 configurable = 11/11
       // think is excluded from both numerator and denominator
       expect(countText).toBe("11/11");
     });

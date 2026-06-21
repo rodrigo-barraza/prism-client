@@ -11,12 +11,6 @@ describe("resolveDefaultModel utility", () => {
           model: "gemini-3.5-flash",
           temperature: 1.0,
         },
-        models: {
-          google: [
-            { name: "gemini-3.5-flash", tools: ["Tool Calling"] },
-            { name: "gemini-3-pro-preview", tools: ["Tool Calling"] },
-          ],
-        },
       },
     } as unknown as PrismConfig;
 
@@ -34,11 +28,6 @@ describe("resolveDefaultModel utility", () => {
           model: "gpt-5.4-mini",
           temperature: 0.7,
         },
-        models: {
-          openai: [
-            { name: "gpt-5.4-mini", tools: ["Tool Calling"] },
-          ],
-        },
       },
     } as unknown as PrismConfig;
 
@@ -55,11 +44,6 @@ describe("resolveDefaultModel utility", () => {
           provider: "google",
           model: "gemini-3.5-flash",
           temperature: 1.0,
-        },
-        models: {
-          google: [
-            { name: "gemini-3-pro-preview", tools: ["Tool Calling"] },
-          ],
         },
       },
     } as unknown as PrismConfig;
