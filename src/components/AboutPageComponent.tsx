@@ -80,7 +80,7 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         year: 2023,
         arxivUrl: "https://arxiv.org/abs/2310.04406",
         description:
-          "Monte Carlo Tree Search adapted for LLM agents. Uses UCB1 selection, expansion, simulation, and backpropagation to systematically explore the solution space across multiple sub-agents.",
+          "Iterative expand-evaluate-refine search inspired by MCTS. At each depth level, N branches are explored in parallel, scored by an LLM evaluator, and the best branch is refined with evaluator feedback for the next depth — unlike single-depth Tournament.",
         implementationFile: "MCTSRouter.ts",
         categoryLabel: "Tree Search",
         badgeClass: "badge-tree-search",
@@ -91,7 +91,7 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         year: 2025,
         arxivUrl: "https://arxiv.org/abs/2505.02576",
         description:
-          "A recursive decompose→solve→merge framework where the LLM planner breaks complex tasks into a DAG of independent subtasks with dependency modeling. Each subtask is dispatched to a sub-agent in parallel, then a synthesis pass merges the results.",
+          "A recursive decompose→solve→merge framework where the LLM planner breaks complex tasks into independent subtasks. Each subtask is dispatched to a sub-agent in parallel, then a synthesis pass merges the results.",
         implementationFile: "DivideAndConquerRouter.ts",
         categoryLabel: "Task Decomposition",
         badgeClass: "badge-task-decomposition",
