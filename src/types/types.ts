@@ -1633,6 +1633,38 @@ export interface AgenticHarness {
   description: string;
 }
 
+// --- Topology Definitions -----------------------------------
+
+export interface TopologyAlignmentEntry {
+  component: string;
+  status: "aligned" | "simplified" | "extended";
+  detail: string;
+}
+
+export interface TopologyConfigOption {
+  name: string;
+  type: "number" | "string" | "boolean";
+  defaultValue: string;
+  description: string;
+}
+
+export interface TopologyDefinition {
+  id: string;
+  displayName: string;
+  abbreviation: string;
+  description: string;
+  paperTitle: string | null;
+  paperAuthors: string | null;
+  paperYear: number | null;
+  paperUrl: string | null;
+  implementationFile: string;
+  categoryLabel: string;
+  phases: string[];
+  configOptions: TopologyConfigOption[];
+  alignment: TopologyAlignmentEntry[];
+  flowDescription: string;
+}
+
 // --- Approval -----------------------------------------------
 
 export interface ApprovalResponse {

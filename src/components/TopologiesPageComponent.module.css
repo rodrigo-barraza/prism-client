@@ -1,0 +1,579 @@
+/* ════════════════════════════════════════════════════════════
+   TopologiesPageComponent — Sub-Agent Topology Information
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Container ────────────────────────────────────────────── */
+
+.topologies-page-container {
+  padding-block: 48px 80px;
+  padding-inline: 48px;
+  max-inline-size: 1200px;
+  margin-inline: auto;
+}
+
+/* ── Hero Section ─────────────────────────────────────────── */
+
+.hero-section {
+  text-align: center;
+  margin-block-end: 56px;
+}
+
+.hero-title {
+  font-size: 2.75rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-block-end: 16px;
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-secondary),
+    var(--accent-tertiary)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-inline-size: 720px;
+  margin-inline: auto;
+}
+
+/* ── Topology Cards ───────────────────────────────────────── */
+
+.topology-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.topology-card {
+  --card-entrance-delay: 0ms;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 32px;
+  padding: 32px;
+  border-radius: 20px;
+  border: 1px solid var(--calculated-border-color);
+  background: var(--background-surface);
+  transition:
+    translate 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: topology-card-entrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) var(--card-entrance-delay) both;
+}
+
+.topology-card:hover {
+  translate: 0 -2px;
+  box-shadow:
+    0 8px 28px oklch(0 0 0 / 0.07),
+    0 2px 8px oklch(0 0 0 / 0.04);
+  border-color: var(--accent-primary);
+}
+
+[data-theme="dark"] .topology-card:hover,
+[data-theme="midnight"] .topology-card:hover {
+  box-shadow:
+    0 8px 28px oklch(0 0 0 / 0.3),
+    0 2px 8px oklch(0 0 0 / 0.15);
+}
+
+@keyframes topology-card-entrance {
+  from {
+    opacity: 0;
+    translate: 0 20px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* ── Graph Column ─────────────────────────────────────────── */
+
+.topology-graph-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-block-start: 8px;
+}
+
+.topology-graph-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  min-block-size: 160px;
+  padding: 12px;
+  border-radius: 14px;
+  background: oklch(0 0 0 / 0.02);
+  border: 1px solid oklch(0 0 0 / 0.04);
+}
+
+[data-theme="dark"] .topology-graph-wrapper,
+[data-theme="midnight"] .topology-graph-wrapper {
+  background: oklch(1 0 0 / 0.03);
+  border-color: oklch(1 0 0 / 0.06);
+}
+
+.flow-description-label {
+  font-size: 0.75rem;
+  font-family: var(--font-mono, "SF Mono", "Cascadia Code", "Fira Code", monospace);
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-align: center;
+  line-height: 1.4;
+  padding-block: 6px;
+  padding-inline: 10px;
+  border-radius: 8px;
+  background: oklch(0 0 0 / 0.03);
+  border: 1px solid oklch(0 0 0 / 0.04);
+}
+
+[data-theme="dark"] .flow-description-label,
+[data-theme="midnight"] .flow-description-label {
+  background: oklch(1 0 0 / 0.04);
+  border-color: oklch(1 0 0 / 0.06);
+}
+
+/* ── Content Column ───────────────────────────────────────── */
+
+.topology-content-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Header Row ───────────────────────────────────────────── */
+
+.topology-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.topology-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.topology-display-name {
+  font-size: 1.25rem;
+  font-weight: 660;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.topology-abbreviation {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.topology-badge-group {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding-block: 3px;
+  padding-inline: 10px;
+  border-radius: 100px;
+  font-size: 0.6875rem;
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  line-height: 1.4;
+  background: var(--calculated-accent-primary-subtle);
+  color: var(--accent-primary);
+  border: 1px solid oklch(0 0 0 / 0.06);
+}
+
+[data-theme="dark"] .category-badge,
+[data-theme="midnight"] .category-badge {
+  border-color: oklch(1 0 0 / 0.08);
+}
+
+/* ── Paper Reference ──────────────────────────────────────── */
+
+.paper-reference-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.paper-link {
+  font-size: 0.8125rem;
+  font-weight: 550;
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.paper-link:hover {
+  color: var(--accent-secondary);
+}
+
+.paper-external-icon {
+  font-size: 0.6875rem;
+  opacity: 0.5;
+  transition:
+    opacity 0.15s ease,
+    translate 0.15s ease;
+  vertical-align: super;
+}
+
+.paper-link:hover .paper-external-icon {
+  opacity: 1;
+  translate: 1px -1px;
+}
+
+.paper-meta {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+}
+
+.paper-year {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ── Description ──────────────────────────────────────────── */
+
+.topology-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Phases Pipeline ──────────────────────────────────────── */
+
+.phases-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.phases-pipeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.phase-step {
+  display: inline-flex;
+  align-items: center;
+  padding-block: 5px;
+  padding-inline: 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 550;
+  color: var(--text-primary);
+  background: oklch(0 0 0 / 0.03);
+  border: 1px solid oklch(0 0 0 / 0.06);
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .phase-step,
+[data-theme="midnight"] .phase-step {
+  background: oklch(1 0 0 / 0.05);
+  border-color: oklch(1 0 0 / 0.08);
+}
+
+.phase-arrow {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 6px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  user-select: none;
+}
+
+/* ── Config Options ───────────────────────────────────────── */
+
+.config-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-table-wrapper {
+  border-radius: 10px;
+  border: 1px solid oklch(0 0 0 / 0.06);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .config-table-wrapper,
+[data-theme="midnight"] .config-table-wrapper {
+  border-color: oklch(1 0 0 / 0.08);
+}
+
+.config-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.config-table th {
+  padding-block: 6px;
+  padding-inline: 12px;
+  text-align: start;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  background: oklch(0 0 0 / 0.02);
+  border-block-end: 1px solid oklch(0 0 0 / 0.06);
+}
+
+[data-theme="dark"] .config-table th,
+[data-theme="midnight"] .config-table th {
+  background: oklch(1 0 0 / 0.03);
+  border-color: oklch(1 0 0 / 0.06);
+}
+
+.config-table td {
+  padding-block: 6px;
+  padding-inline: 12px;
+  color: var(--text-secondary);
+  border-block-end: 1px solid oklch(0 0 0 / 0.03);
+}
+
+[data-theme="dark"] .config-table td,
+[data-theme="midnight"] .config-table td {
+  border-color: oklch(1 0 0 / 0.04);
+}
+
+.config-table tr:last-child td {
+  border-block-end: none;
+}
+
+.config-name {
+  font-family: var(--font-mono, "SF Mono", "Cascadia Code", "Fira Code", monospace);
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.config-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding-block: 1px;
+  padding-inline: 6px;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  font-family: var(--font-mono, "SF Mono", "Cascadia Code", "Fira Code", monospace);
+  background: oklch(0 0 0 / 0.04);
+  color: var(--text-tertiary);
+}
+
+[data-theme="dark"] .config-type-badge,
+[data-theme="midnight"] .config-type-badge {
+  background: oklch(1 0 0 / 0.06);
+}
+
+.config-default {
+  font-family: var(--font-mono, "SF Mono", "Cascadia Code", "Fira Code", monospace);
+  font-weight: 500;
+}
+
+/* ── Alignment Checklist ──────────────────────────────────── */
+
+.alignment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.alignment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alignment-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-block: 4px;
+  padding-inline: 8px;
+  border-radius: 8px;
+  transition: background 0.12s ease;
+}
+
+.alignment-entry:hover {
+  background: oklch(0 0 0 / 0.02);
+}
+
+[data-theme="dark"] .alignment-entry:hover,
+[data-theme="midnight"] .alignment-entry:hover {
+  background: oklch(1 0 0 / 0.03);
+}
+
+.alignment-indicator {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.alignment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+.alignment-component-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.alignment-detail-text {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ── Implementation Badge ─────────────────────────────────── */
+
+.implementation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 6px;
+  padding-inline: 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-family: var(--font-mono, "SF Mono", "Cascadia Code", "Fira Code", monospace);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--background-base);
+  border: 1px solid var(--calculated-border-color);
+  align-self: flex-start;
+}
+
+.implementation-icon {
+  font-size: 0.8125rem;
+  opacity: 0.7;
+}
+
+/* ── Footer Stats ─────────────────────────────────────────── */
+
+.footer-stats-section {
+  margin-block-start: 48px;
+  padding-block-start: 32px;
+  border-block-start: 1px solid var(--calculated-border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--accent-primary);
+}
+
+.stat-label {
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* ── Loading & Error States ───────────────────────────────── */
+
+.loading-state-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 300px;
+}
+
+.error-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 300px;
+  gap: 12px;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .topology-card {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .topology-graph-column {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .topology-graph-wrapper {
+    max-inline-size: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .topologies-page-container {
+    padding-block: 32px 56px;
+    padding-inline: 20px;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .topology-card {
+    padding: 20px;
+  }
+
+  .footer-stats-section {
+    gap: 24px;
+  }
+}

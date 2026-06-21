@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./AboutPageComponent.module.css";
 
@@ -75,123 +76,6 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         implementationFile: "TreeOfThoughtsStrategy.ts",
         categoryLabel: "Self-Correction",
         badgeClass: "badge-self-correction",
-      },
-    ],
-  },
-  {
-    title: "Multi-Agent Topologies",
-    icon: "🔗",
-    papers: [
-      {
-        title: "Language Agent Tree Search (LATS)",
-        authors: "Zhou et al.",
-        year: 2023,
-        arxivUrl: "https://arxiv.org/abs/2310.04406",
-        description:
-          "Iterative expand-evaluate-refine search inspired by MCTS. Uses UCB1 selection to balance exploration vs exploitation, LLM evaluation with backpropagation, and evaluator feedback to refine the best branch at each depth level.",
-        implementationFile: "MCTSRouter.ts",
-        categoryLabel: "Tree Search",
-        badgeClass: "badge-tree-search",
-        alignment: [
-          { component: "Selection (UCB1)", status: "aligned", detail: "UCT formula with configurable exploration weight" },
-          { component: "Expansion", status: "aligned", detail: "Spawns branchFactor sub-agents in parallel" },
-          { component: "Evaluation", status: "aligned", detail: "LLM judge scores branches on correctness/completeness/quality" },
-          { component: "Simulation (rollout)", status: "simplified", detail: "Not implemented — evaluates immediately after expansion" },
-          { component: "Backpropagation", status: "aligned", detail: "Running-average V(s) update along parent chain" },
-          { component: "Reflection", status: "aligned", detail: "Evaluator feedback fed into next depth's refinement prompt" },
-          { component: "Tree structure", status: "simplified", detail: "Linear depth chain, not a branching tree with UCT traversal" },
-        ],
-      },
-      {
-        title: "Recursive Decomposition with Dependencies for Generic Divide-and-Conquer Reasoning",
-        authors: "Boussioux et al.",
-        year: 2025,
-        arxivUrl: "https://arxiv.org/abs/2505.02576",
-        description:
-          "A recursive decompose→solve→merge framework where the LLM planner breaks complex tasks into subtasks with optional dependency ordering. Subtasks are grouped into execution tiers via topological sort — each tier runs in parallel, with dependent subtasks receiving prerequisite outputs as context.",
-        implementationFile: "DivideAndConquerRouter.ts",
-        categoryLabel: "Task Decomposition",
-        badgeClass: "badge-task-decomposition",
-        alignment: [
-          { component: "Recursive decomposition", status: "aligned", detail: "LLM planner decomposes task into subtasks" },
-          { component: "Dependency DAG", status: "aligned", detail: "Planner outputs dependsOn indices; topological sort groups into tiers" },
-          { component: "Sub-task execution", status: "aligned", detail: "Each subtask dispatched to a sub-agent (tier-parallel)" },
-          { component: "Recomposition", status: "aligned", detail: "Synthesis pass merges all subtask results" },
-          { component: "Recursive depth", status: "simplified", detail: "Single-level decomposition only — no recursive sub-decomposition" },
-        ],
-      },
-      {
-        title: "Self-Refine: Iterative Refinement with Self-Feedback",
-        authors: "Madaan et al.",
-        year: 2023,
-        arxivUrl: "https://arxiv.org/abs/2303.17651",
-        description:
-          "An iterative generate→feedback→refine loop where a critic evaluates the actor's output and provides structured improvement instructions. Extended here to multi-agent: separate actor and critic agents with stateful session continuity, degeneration-of-thought detection, and unanimous consensus gating.",
-        implementationFile: "CriticLoopRouter.ts",
-        categoryLabel: "Iterative Refinement",
-        badgeClass: "badge-iterative-refinement",
-        alignment: [
-          { component: "Generate (initial output)", status: "aligned", detail: "Actor agent produces initial output" },
-          { component: "Feedback (critic)", status: "extended", detail: "Separate critic agent(s), not same-LLM self-critique" },
-          { component: "Refine (incorporate)", status: "aligned", detail: "Actor continues with aggregated critic feedback" },
-          { component: "Iterative loop", status: "aligned", detail: "Loops until unanimous PASS or maxRounds" },
-          { component: "Single-LLM (paper)", status: "extended", detail: "Extended to multi-agent: separate actor + critic roles/models" },
-          { component: "Council / Jury modes", status: "extended", detail: "Original extensions beyond paper scope" },
-        ],
-      },
-      {
-        title: "Large Language Monkeys: Scaling Inference Compute with Repeated Sampling",
-        authors: "Brown et al.",
-        year: 2024,
-        arxivUrl: "https://arxiv.org/abs/2407.21787",
-        description:
-          "Best-of-N selection where multiple sub-agents solve the same task independently in parallel, then an LLM judge evaluates all outputs and selects the single best result verbatim. Coverage scales log-linearly with sample count.",
-        implementationFile: "TournamentRouter.ts",
-        categoryLabel: "Selection",
-        badgeClass: "badge-selection",
-        alignment: [
-          { component: "Repeated sampling", status: "aligned", detail: "Fan-out N sub-agents in parallel" },
-          { component: "Verification", status: "simplified", detail: "LLM judge instead of automatic verifiers (unit tests, proofs)" },
-          { component: "Coverage scaling", status: "aligned", detail: "Theoretical finding — N/A for implementation" },
-          { component: "Selection", status: "aligned", detail: "Judge selects best result verbatim" },
-        ],
-      },
-      {
-        title: "Mixture-of-Agents Enhances Large Language Model Capabilities",
-        authors: "Wang et al.",
-        year: 2024,
-        arxivUrl: "https://arxiv.org/abs/2406.04692",
-        description:
-          "A multi-layer architecture where each agent takes all outputs from the previous layer as auxiliary information. Supports configurable layer stacking (layerCount) for iterative refinement. Warns when all proposers share the same model, per the paper's diversity findings.",
-        implementationFile: "HierarchicalAggregationRouter.ts",
-        categoryLabel: "Synthesis",
-        badgeClass: "badge-synthesis",
-        alignment: [
-          { component: "Layered architecture", status: "aligned", detail: "Multi-layer stacking via layerCount config" },
-          { component: "Proposer/Aggregator roles", status: "aligned", detail: "Members are proposers, synthesis LLM is the aggregator" },
-          { component: "Collaborativeness", status: "aligned", detail: "Aggregator sees all proposer outputs as auxiliary information" },
-          { component: "Model diversity", status: "aligned", detail: "Warning logged when all proposers share same model" },
-          { component: "Iterative refinement", status: "aligned", detail: "Each layer's synthesis feeds into next layer as context" },
-        ],
-      },
-      {
-        title: "Improving Factuality and Reasoning through Multi-Agent Debate",
-        authors: "Du et al.",
-        year: 2023,
-        arxivUrl: "https://arxiv.org/abs/2305.14325",
-        description:
-          "Stateful peer-to-peer mesh where agents take turns on a shared discussion thread. Each agent preserves its session state across turns, with worktree merges enabling collaborative file editing.",
-        implementationFile: "PeerToPeerRouter.ts",
-        categoryLabel: "Multi-Agent Debate",
-        badgeClass: "badge-multi-agent-debate",
-        alignment: [
-          { component: "Multiple agents", status: "aligned", detail: "Multiple agents with configurable models/prompts" },
-          { component: "Multi-round debate", status: "aligned", detail: "Turn-based mesh with shared discussion thread" },
-          { component: "Convergence", status: "aligned", detail: "Stall detection terminates early when agents stop contributing" },
-          { component: "Symmetric design", status: "aligned", detail: "All agents are equal participants in the mesh" },
-          { component: "Stateless agents", status: "extended", detail: "Stateful session reuse via continueSubAgent" },
-          { component: "Worktree merging", status: "extended", detail: "Agents can edit files and see each other's edits" },
-        ],
       },
     ],
   },
@@ -348,8 +232,9 @@ export default function AboutPageComponent() {
         <h1 className={styles["hero-title"]}>Research Implementations</h1>
         <p className={styles["hero-subtitle"]}>
           Prism implements state-of-the-art research from agentic AI, multi-agent systems,
-          and reasoning strategies — from single-agent ReAct loops to multi-agent MCTS
-          topologies. Here is every paper and pattern powering the system.
+          and reasoning strategies — from single-agent ReAct loops to multi-agent
+          coordination patterns. For detailed sub-agent topology documentation, see the{" "}
+          <Link href="/topologies" className={styles["hero-cross-reference-link"]}>Topologies</Link> page.
         </p>
       </section>
 

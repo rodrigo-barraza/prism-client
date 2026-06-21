@@ -58,6 +58,7 @@ import type {
   Prompt,
   ScheduledTask,
   ConversationTimer,
+  TopologyDefinition,
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
@@ -745,6 +746,16 @@ export default class PrismService {
    */
   static async getHarnesses(): Promise<AgenticHarness[]> {
     return PrismService._request<AgenticHarness[]>("/settings/harnesses", {
+      method: "GET",
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Topologies
+  // ---------------------------------------------------------------------------
+
+  static async getTopologies(): Promise<TopologyDefinition[]> {
+    return PrismService._request<TopologyDefinition[]>("/topologies", {
       method: "GET",
     });
   }

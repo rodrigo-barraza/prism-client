@@ -62,6 +62,7 @@ const PAGE_ICON_ENTRIES: PageIconEntry[] = [
   { icon: Users, aliases: ["users"] },
   { icon: Layers, aliases: ["providers"] },
   { icon: BookOpen, aliases: ["about", "research"] },
+  { icon: GitBranch, aliases: ["topologies"] },
 ];
 
 const ICON_BY_ALIAS = new Map<string, LucideIcon>();
@@ -132,6 +133,7 @@ export const USER_NAV_SECTIONS: NavigationSection[] = [
         label: "Agents",
         icon: Bot,
       },
+      { href: "/topologies", label: "Topologies", icon: GitBranch },
       { href: "/models", label: "Models", icon: Server },
       { href: "/tools", label: "Tools", icon: Wrench },
       { href: "/about", label: "About", icon: BookOpen },

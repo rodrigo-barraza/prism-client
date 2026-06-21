@@ -41,6 +41,18 @@
   margin-inline: auto;
 }
 
+.hero-cross-reference-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.hero-cross-reference-link:hover {
+  color: var(--accent-secondary);
+  text-decoration: underline;
+}
+
 /* ── Section Separator ─────────────────────────────────────── */
 
 .category-section {
