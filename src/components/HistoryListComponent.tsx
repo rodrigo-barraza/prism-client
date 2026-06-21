@@ -429,22 +429,21 @@ export default function HistoryList({
 
   const groupedConversations = useMemo<ConversationGroup[]>(() => {
     const childrenByParent = new Map<string, HistoryListItem[]>();
-    const childItemIds = new Set<string>();
+    const filteredIds = new Set(filtered.map((item) => item.id));
 
     for (const item of filtered) {
       if (item.parentConversationId) {
         const siblingConversations = childrenByParent.get(item.parentConversationId) || [];
         siblingConversations.push(item);
         childrenByParent.set(item.parentConversationId, siblingConversations);
-        childItemIds.add(item.id);
       }
     }
 
     // Sort children within each cluster by creation time ascending (spawn order)
     for (const children of childrenByParent.values()) {
-      children.sort((childA, childB) => {
-        const timestampA = new Date(childA.createdAt || childA.updatedAt || "").getTime();
-        const timestampB = new Date(childB.createdAt || childB.updatedAt || "").getTime();
+      children.sort((childConversationA, childConversationB) => {
+        const timestampA = new Date(childConversationA.createdAt || childConversationA.updatedAt || "").getTime();
+        const timestampB = new Date(childConversationB.createdAt || childConversationB.updatedAt || "").getTime();
         return timestampA - timestampB;
       });
     }
@@ -469,8 +468,8 @@ export default function HistoryList({
     const groups: ConversationGroup[] = [];
 
     for (const item of filtered) {
-      // Skip items that are children — they'll be rendered inside their parent's tree
-      if (childItemIds.has(item.id) && childrenByParent.has(item.parentConversationId!)) {
+      // Skip items that are children — they'll be rendered inside their parent's tree if their parent is in the filtered list
+      if (item.parentConversationId && filteredIds.has(item.parentConversationId)) {
         continue;
       }
 
