@@ -73,7 +73,8 @@ export function prepareDisplayMessages(
         !message.toolCalls?.length &&
         !message.images?.length &&
         !message.audio &&
-        !message.error;
+        !message.error &&
+        !message.thinking;
       if (isEmptyAssistant) {
         console.debug(
           `[prepareDisplayMessages] ⚠️ FILTERING OUT empty assistant msg [${index}]:`,
