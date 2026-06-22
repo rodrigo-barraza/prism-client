@@ -16,6 +16,7 @@ import {
   Terminal,
   Copy,
   Check,
+  Users,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import {
@@ -72,6 +73,7 @@ export interface ConversationStats {
   orchestrator?: ConversationStats;
   subAgents?: ConversationStats;
   modalities?: Record<string, boolean>;
+  subAgentCount?: number;
 }
 
 export interface AgentToggleOption {
@@ -420,6 +422,12 @@ export default function SettingsPanel({
           <span className={styles['stat-badge']}>
             <FolderOpen size={10} />
             No Workspace
+          </span>
+        )}
+        {conversationType === "agent" && (stats.subAgentCount ?? 0) > 0 && (
+          <span className={styles['stat-badge']}>
+            <Users size={10} />
+            {stats.subAgentCount} sub-agent{stats.subAgentCount !== 1 ? 's' : ''}
           </span>
         )}
         {stats.uniqueModels && stats.uniqueModels.length > 0 && (

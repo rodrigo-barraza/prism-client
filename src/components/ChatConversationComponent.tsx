@@ -6163,6 +6163,7 @@ export default function ChatConversationComponent({
                           backendConversationStats.orchestrator,
                         ),
                         subAgents: mapSubStats(backendConversationStats.subAgents),
+                        subAgentCount: subAgentsCount,
                       } as DisplayConversationStats;
                     })()
                   : (() => {
@@ -6266,6 +6267,7 @@ export default function ChatConversationComponent({
                         liveProcessingPhase,
                         liveTtftSamples,
                         liveGenProgress,
+                        subAgentCount: subAgentsCount,
                       } as DisplayConversationStats;
                     })()
                 : null) as DisplayConversationStats | null

@@ -338,7 +338,7 @@ export default function HistoryItemComponent({
             hoverReveal
           />
         )}
-        {!readOnly && !admin && onDelete && (
+        {!readOnly && !admin && !item.parentConversationId && onDelete && (
           <IconButtonComponent
             icon={<Trash2 size={12} />}
             onClick={(event: React.MouseEvent) => {
