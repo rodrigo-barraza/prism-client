@@ -37,7 +37,7 @@ import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
 import { buildTopologyOptions, buildThoughtStructureOptions } from "./AgentStrategyOptionsComponent";
 import useTokenRate from "../hooks/useTokenRate";
-import useTtft from "../hooks/useTtft";
+import useTimeToFirstToken from "../hooks/useTtft";
 import type {
   PrismConfig,
   PrismSettings,
@@ -202,7 +202,7 @@ export default function SettingsPanel({
     const maxSubAgentIterationsCount = maxSubAgentIterationsToggleOption ? (typeof maxSubAgentIterationsToggleOption.value === "number" ? maxSubAgentIterationsToggleOption.value : 10) : 10;
     const recursionDepthCount = recursionDepthToggleOption ? (typeof recursionDepthToggleOption.value === "number" ? recursionDepthToggleOption.value : 0) : 0;
 
-    let requestPayload: Record<string, any> = {};
+    let requestPayload: Record<string, unknown> = {};
 
     if (isDirectChatWithoutAgent) {
       requestPayload = {
@@ -295,7 +295,6 @@ export default function SettingsPanel({
   const ttsModelsMap = config?.textToSpeech?.models || {};
   const imageModelsMap = config?.textToImage?.models || {};
 
-  // Build a merged models map: textToText + textToImage + audioToText + textToSpeech
   const allProviderKeys = new Set([
     ...Object.keys(textModelsMap),
     ...Object.keys(imageModelsMap),
@@ -305,31 +304,30 @@ export default function SettingsPanel({
   const modelsMap: Record<string, ExtendedModelOption[]> = {};
   for (const providerKey of allProviderKeys) {
     const textModels = (textModelsMap[providerKey] || []) as ExtendedModelOption[];
-    const imgModels = ((imageModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
+    const imageModels = ((imageModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
       (modelOption) => ({
         ...modelOption,
         label: `${modelOption.label} (Image)`,
         _isImageGen: true,
       }),
     );
-    const sttModels = (
+    const speechToTextModels = (
       (audioToTextModelsMap[providerKey] || []) as ExtendedModelOption[]
     ).map((modelOption) => ({
       ...modelOption,
       label: `${modelOption.label} (Transcribe)`,
       _isTranscription: true,
     }));
-    const ttsModels = ((ttsModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
+    const textToSpeechModels = ((ttsModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
       (modelOption) => ({
         ...modelOption,
         label: `${modelOption.label} (TTS)`,
         _isTTS: true,
       }),
     );
-    // Merge text models first, then image, then transcription, then TTS — deduplicated by name
     const seen = new Set<string>();
     const merged: ExtendedModelOption[] = [];
-    for (const modelOption of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
+    for (const modelOption of [...textModels, ...imageModels, ...speechToTextModels, ...textToSpeechModels]) {
       if (!seen.has(modelOption.name)) {
         seen.add(modelOption.name);
         merged.push(modelOption);
@@ -357,13 +355,13 @@ export default function SettingsPanel({
     needsTicker,
     turnActive,
     totalElapsedTime,
-    liveTokensPerSec,
-    computedTokPerSec,
+    liveTokensPerSecond,
+    computedTokensPerSecond,
     hasActiveSubAgents,
   } = useTokenRate(conversationStats);
 
   // -- Live TTFT (Time To First Token) ---------------------------
-  const { liveTtft, isLiveTtft } = useTtft(conversationStats, perfNow, needsTicker);
+  const { liveTimeToFirstToken, isLiveTimeToFirstToken } = useTimeToFirstToken(conversationStats, perfNow, needsTicker);
 
   // -- Stats tab (All / Orchestrator / Sub-Agents) --------------
   const [statsTab, setStatsTab] = useState("all");
@@ -507,17 +505,17 @@ export default function SettingsPanel({
         })()}
         <BadgeComponent
           type="throughput"
-          liveTokensPerSecond={liveTokensPerSec}
+          liveTokensPerSecond={liveTokensPerSecond}
           averageTokensPerSecond={stats.avgTokensPerSec}
-          isActivelyGenerating={computedTokPerSec !== null || hasActiveSubAgents}
+          isActivelyGenerating={computedTokensPerSecond !== null || hasActiveSubAgents}
           turnActive={turnActive}
         />
         {/* TTFT badge — live during processing, latched after first token, static after completion */}
-        {liveTtft !== null ? (
+        {liveTimeToFirstToken !== null ? (
           <span
-            className={`${styles['stat-badge']} ${isLiveTtft ? styles['ttft-badge-live'] : styles['ttft-badge']}`}
+            className={`${styles['stat-badge']} ${isLiveTimeToFirstToken ? styles['ttft-badge-live'] : styles['ttft-badge']}`}
           >
-            ⏱ {liveTtft.toFixed(isLiveTtft ? 1 : 2)}s TTFT
+            ⏱ {liveTimeToFirstToken.toFixed(isLiveTimeToFirstToken ? 1 : 2)}s TTFT
           </span>
         ) : (
           timeToFirstTokenValue != null && (
@@ -662,17 +660,17 @@ export default function SettingsPanel({
             <div className={styles['section-header']}>
               <GitBranch size={12} style={{ marginRight: 4 }} /> Workflow
             </div>
-            {workflows.map((wf) => (
+            {workflows.map((workflow) => (
               <a
-                key={wf._id}
-                href={`/workflows/${wf._id}`}
+                key={workflow._id}
+                href={`/workflows/${workflow._id}`}
                 className={styles['workflow-link']}
               >
                 <span className={styles['modality-icon']}>
                   <GitBranch size={12} />
                 </span>
                 <span className={styles['modality-name']}>
-                  {wf.workflowName || DEFAULT_WORKFLOW_TITLE}
+                  {workflow.workflowName || DEFAULT_WORKFLOW_TITLE}
                 </span>
                 <span className={styles['modality-status']}>
                   <ExternalLink size={10} />
@@ -1005,7 +1003,7 @@ export default function SettingsPanel({
                 const getToolToggle = (tool: string) => {
                   switch (tool) {
                     case "Thinking": {
-                      const isLmStudio = settings.provider === "lm-studio";
+                      const isLmStudioProvider = settings.provider === "lm-studio";
                       const isLive = selectedModelDef?.liveAPI;
                       const canDisable =
                         !selectedModelDef?.thinkingLevels ||
@@ -1015,16 +1013,16 @@ export default function SettingsPanel({
                       const modelName = (settings.model || "").toLowerCase();
                       const nameBasedThinking = (config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS)
                         .some((pattern) => modelName.includes(pattern));
-                      const lmCanToggle =
-                        isLmStudio &&
+                      const lmStudioCanToggle =
+                        isLmStudioProvider &&
                         (selectedModelDef?.thinking || nameBasedThinking);
-                      const lmLocked = isLmStudio && !lmCanToggle;
+                      const lmStudioLocked = isLmStudioProvider && !lmStudioCanToggle;
                       return {
                         checked: isLive
                           ? (settings.liveThinkingLevel || "none") !== "none"
-                          : lmLocked || alwaysOn
+                          : lmStudioLocked || alwaysOn
                             ? true
-                            : isLmStudio
+                            : isLmStudioProvider
                               ? settings.thinkingEnabled !== false
                               : settings.thinkingEnabled || false,
                         onChange: isLive
@@ -1033,12 +1031,12 @@ export default function SettingsPanel({
                                 liveThinkingLevel: value ? "low" : "none",
                               });
                             }
-                          : lmLocked || alwaysOn
+                          : lmStudioLocked || alwaysOn
                             ? () => {}
                             : (value: boolean) => {
                                 onChange({ thinkingEnabled: value });
                               },
-                        disabled: lmLocked || alwaysOn,
+                        disabled: lmStudioLocked || alwaysOn,
                       };
                     }
                     case "Web Search":

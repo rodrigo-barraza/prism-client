@@ -3,14 +3,14 @@ import type { ConversationTokenStats } from "../utils/utilities";
 
 // --- Types --------------------------------------------------
 
-interface TtftState {
+interface TimeToFirstTokenState {
   value: number | null;
   live: boolean;
-  prevPhase: string | null;
+  previousPhase: string | null;
   seenCount: number;
 }
 
-interface TtftAction {
+interface TimeToFirstTokenAction {
   phase: string | null;
   startTime: number | null;
   perfNow: number;
@@ -30,27 +30,27 @@ interface TtftAction {
  * For the client-side fallback (LM Studio native path), it live-counts
  * during the "prefilling" phase and latches on phase transition.
  */
-function ttftReducer(
-  prev: TtftState,
-  { phase, startTime, perfNow, active, samples }: TtftAction,
-): TtftState {
+function timeToFirstTokenReducer(
+  previousState: TimeToFirstTokenState,
+  { phase, startTime, perfNow, active, samples }: TimeToFirstTokenAction,
+): TimeToFirstTokenState {
   // Turn ended → clear
   if (!active) {
-    if (prev.value === null && !prev.live && prev.seenCount === 0) return prev;
-    return { value: null, live: false, prevPhase: null, seenCount: 0 };
+    if (previousState.value === null && !previousState.live && previousState.seenCount === 0) return previousState;
+    return { value: null, live: false, previousPhase: null, seenCount: 0 };
   }
 
   // New server-computed TTFT sample(s) arrived — fold into running average
-  if (samples && samples.length > prev.seenCount) {
-    const newSamples = samples.slice(prev.seenCount);
+  if (samples && samples.length > previousState.seenCount) {
+    const newSamples = samples.slice(previousState.seenCount);
     // Compute new running average incorporating all new samples
-    const prevTotal = (prev.value || 0) * prev.seenCount;
+    const previousTotal = (previousState.value || 0) * previousState.seenCount;
     const newTotal = newSamples.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-    const avg = (prevTotal + newTotal) / samples.length;
+    const average = (previousTotal + newTotal) / samples.length;
     return {
-      value: avg,
+      value: average,
       live: false,
-      prevPhase: phase,
+      previousPhase: phase,
       seenCount: samples.length,
     };
   }
@@ -60,38 +60,38 @@ function ttftReducer(
     return {
       value: (perfNow - startTime) / 1000,
       live: true,
-      prevPhase: "prefilling",
-      seenCount: prev.seenCount,
+      previousPhase: "prefilling",
+      seenCount: previousState.seenCount,
     };
   }
 
   // Phase just transitioned away from prefilling → latch final value
-  if (prev.prevPhase === "prefilling" && phase !== "prefilling" && prev.live) {
+  if (previousState.previousPhase === "prefilling" && phase !== "prefilling" && previousState.live) {
     return {
-      value: prev.value,
+      value: previousState.value,
       live: false,
-      prevPhase: phase,
-      seenCount: prev.seenCount,
+      previousPhase: phase,
+      seenCount: previousState.seenCount,
     };
   }
 
   // Still latched mid-turn — preserve
-  if (prev.value !== null && !prev.live) {
-    if (prev.prevPhase !== phase) return { ...prev, prevPhase: phase };
-    return prev;
+  if (previousState.value !== null && !previousState.live) {
+    if (previousState.previousPhase !== phase) return { ...previousState, previousPhase: phase };
+    return previousState;
   }
 
   // No data yet
-  if (prev.prevPhase !== phase) {
-    return { ...prev, prevPhase: phase };
+  if (previousState.previousPhase !== phase) {
+    return { ...previousState, previousPhase: phase };
   }
-  return prev;
+  return previousState;
 }
 
-const TTFT_INITIAL: TtftState = {
+const TIME_TO_FIRST_TOKEN_INITIAL: TimeToFirstTokenState = {
   value: null,
   live: false,
-  prevPhase: null,
+  previousPhase: null,
   seenCount: 0,
 };
 
@@ -109,16 +109,16 @@ const TTFT_INITIAL: TtftState = {
  * After the turn completes, the consumer falls back to the static
  * `avgTimeToGeneration` from backend conversation stats.
  */
-export default function useTtft(
+export default function useTimeToFirstToken(
   conversationStats: Partial<ConversationTokenStats> | null,
   perfNow: number,
   needsTicker: boolean,
-): { liveTtft: number | null; isLiveTtft: boolean } {
+): { liveTimeToFirstToken: number | null; isLiveTimeToFirstToken: boolean } {
   const phase = conversationStats?.liveProcessingPhase || null;
   const startTime = conversationStats?.liveProcessingStartTime || null;
   const samples = conversationStats?.liveTtftSamples || null;
 
-  const [state, dispatch] = useReducer(ttftReducer, TTFT_INITIAL);
+  const [state, dispatch] = useReducer(timeToFirstTokenReducer, TIME_TO_FIRST_TOKEN_INITIAL);
 
   // Dispatch on every tick to keep in sync (same pattern as tok/s reducer)
   useMemo(() => {
@@ -126,7 +126,7 @@ export default function useTtft(
   }, [phase, startTime, perfNow, needsTicker, samples]);
 
   return {
-    liveTtft: state.value,
-    isLiveTtft: state.live,
+    liveTimeToFirstToken: state.value,
+    isLiveTimeToFirstToken: state.live,
   };
 }

@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import React, { useState } from "react";
-import useTtft from "../src/hooks/useTtft";
+import useTimeToFirstToken from "../src/hooks/useTtft";
 import type { ConversationTokenStats } from "../src/utils/utilities";
 
-function TestTtftComponent({
+function TestTimeToFirstTokenComponent({
   initialStats,
   initialNeedsTicker,
 }: {
@@ -15,12 +15,12 @@ function TestTtftComponent({
   const [needsTicker, setNeedsTicker] = useState<boolean>(initialNeedsTicker);
   const [perfNow, setPerfNow] = useState<number>(1000);
 
-  const { liveTtft, isLiveTtft } = useTtft(stats, perfNow, needsTicker);
+  const { liveTimeToFirstToken, isLiveTimeToFirstToken } = useTimeToFirstToken(stats, perfNow, needsTicker);
 
   return (
     <div>
-      <div data-testid="live-ttft">{liveTtft === null ? "null" : liveTtft.toFixed(3)}</div>
-      <div data-testid="is-live-ttft">{String(isLiveTtft)}</div>
+      <div data-testid="live-ttft">{liveTimeToFirstToken === null ? "null" : liveTimeToFirstToken.toFixed(3)}</div>
+      <div data-testid="is-live-ttft">{String(isLiveTimeToFirstToken)}</div>
       
       <button data-testid="set-prefill" onClick={() => setStats({ liveProcessingPhase: "prefilling", liveProcessingStartTime: 500 })}>
         Set Prefilling
@@ -52,13 +52,13 @@ function TestTtftComponent({
 
 describe("useTtft Hook", () => {
   it("should initialize with null value and false live state when inactive", () => {
-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={false} />);
+    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={false} />);
     expect(screen.getByTestId("live-ttft").textContent).toBe("null");
     expect(screen.getByTestId("is-live-ttft").textContent).toBe("false");
   });
 
   it("should calculate live client-side TTFT during prefilling phase when active", () => {
-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
+    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
     
     // Set phase to prefilling with startTime = 500. perfNow is 1000.
     // Expected TTFT: (1000 - 500) / 1000 = 0.500
@@ -72,7 +72,7 @@ describe("useTtft Hook", () => {
   });
 
   it("should latch final value and disable live state when phase transitions away from prefilling", () => {
-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
+    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
 
     // Enter prefilling
     fireEvent.click(screen.getByTestId("set-prefill"));
@@ -95,7 +95,7 @@ describe("useTtft Hook", () => {
   });
 
   it("should calculate running average of server-computed TTFT samples", () => {
-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
+    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
 
     // Provide 2 samples: [0.5, 0.7]. Average = 0.600
     fireEvent.click(screen.getByTestId("set-samples-1"));
@@ -108,7 +108,7 @@ describe("useTtft Hook", () => {
   });
 
   it("should reset state when needsTicker is cleared (turn completes)", () => {
-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
+    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
 
     // Set samples to get a value
     fireEvent.click(screen.getByTestId("set-samples-1"));
@@ -124,7 +124,7 @@ describe("useTtft Hook", () => {
   });
 
   it("should set phase only on initial pass if no data exists yet", () => {
-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
+    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
     fireEvent.click(screen.getByTestId("set-phase-only"));
     expect(screen.getByTestId("live-ttft").textContent).toBe("null");
 

@@ -20,25 +20,25 @@ const CHUNK_STALE_MS = 2000;
 
 // --- Types --------------------------------------------------
 
-interface TokPerSecState {
+interface TokensPerSecondState {
   current: number | null;
   lastComputed: number | null;
 }
 
-interface TokPerSecAction {
+interface TokensPerSecondAction {
   computed: number | null;
   active: boolean;
 }
 
 export interface TokenRateResult {
-  nowMs: number;
+  nowMilliseconds: number;
   perfNow: number;
   isStreaming: boolean;
   needsTicker: boolean;
   turnActive: boolean;
   totalElapsedTime: number;
-  liveTokensPerSec: number | null;
-  computedTokPerSec: number | null;
+  liveTokensPerSecond: number | null;
+  computedTokensPerSecond: number | null;
   hasActiveSubAgents: boolean;
 }
 
@@ -61,10 +61,10 @@ interface ExtendedConversationStats extends Partial<ConversationTokenStats> {
  * burst's final rate so the badge doesn't flicker to zero during
  * tool calls. Clears when the turn fully ends.
  */
-function tokPerSecReducer(
-  prev: TokPerSecState,
-  { computed, active }: TokPerSecAction,
-): TokPerSecState {
+function tokensPerSecondReducer(
+  previousState: TokensPerSecondState,
+  { computed, active }: TokensPerSecondAction,
+): TokensPerSecondState {
   // Turn ended → clear everything
   if (!active) {
     return { current: null, lastComputed: null };
@@ -74,14 +74,14 @@ function tokPerSecReducer(
     return { current: computed, lastComputed: computed };
   }
   // Paused mid-turn: hold the last burst's rate
-  if (prev.lastComputed !== null) {
-    return { current: prev.lastComputed, lastComputed: null };
+  if (previousState.lastComputed !== null) {
+    return { current: previousState.lastComputed, lastComputed: null };
   }
   // Already paused, no new burst to record — keep showing held value
-  return prev;
+  return previousState;
 }
 
-const TOK_PER_SEC_INITIAL: TokPerSecState = {
+const TOK_PER_SECOND_INITIAL: TokensPerSecondState = {
   current: null,
   lastComputed: null,
 };
@@ -102,9 +102,9 @@ function sumSubAgentThroughput(
   let sum = 0;
   let count = 0;
   if (!subAgentGenerationProgress) return { sum: 0, count: 0 };
-  for (const wp of Object.values(subAgentGenerationProgress)) {
-    if (wp.tokPerSec != null && wp.tokPerSec > 0) {
-      sum += wp.tokPerSec;
+  for (const subAgentProgress of Object.values(subAgentGenerationProgress)) {
+    if (subAgentProgress.tokPerSec != null && subAgentProgress.tokPerSec > 0) {
+      sum += subAgentProgress.tokPerSec;
       count++;
     }
   }
@@ -135,10 +135,9 @@ function sumSubAgentThroughput(
 export default function useTokenRate(
   conversationStats: ExtendedConversationStats | null,
 ): TokenRateResult {
-  // -- Live ticker -----------------------------------------------
   // Stores current wall-clock and performance timestamps so render
   // stays pure (no Date.now() calls in the render body).
-  const [nowMs, setNowMs] = useState(() => Date.now());
+  const [nowMilliseconds, setNowMilliseconds] = useState(() => Date.now());
   const [perfNow, setPerfNow] = useState(() => performance.now());
 
   const isStreaming = !!conversationStats?.liveStreamingStartTime;
@@ -149,12 +148,12 @@ export default function useTokenRate(
     if (!needsTicker) return;
     // Immediate tick via microtask to avoid synchronous setState in effect body
     const immediate = setTimeout(() => {
-      setNowMs(Date.now());
+      setNowMilliseconds(Date.now());
       setPerfNow(performance.now());
     }, 0);
     // 500ms interval for smoother tok/s updates during streaming
     const id = setInterval(() => {
-      setNowMs(Date.now());
+      setNowMilliseconds(Date.now());
       setPerfNow(performance.now());
     }, 500);
     return () => {
@@ -171,12 +170,12 @@ export default function useTokenRate(
       : new Date(conversationStats.currentTurnStart).getTime()
     : null;
   const liveExtra = turnStartVal
-    ? Math.max(0, (nowMs - turnStartVal) / 1000)
+    ? Math.max(0, (nowMilliseconds - turnStartVal) / 1000)
     : 0;
   const totalElapsedTime = completedTime + liveExtra;
 
   // -- Live tok/s computation ------------------------------------
-  let computedTokPerSec: number | null = null;
+  let computedTokensPerSecond: number | null = null;
   let hasActiveSubAgents = false;
 
   // Priority 1: Sum per-sub-agent tok/s from subAgentGenerationProgress.
@@ -204,7 +203,7 @@ export default function useTokenRate(
       }
     }
 
-    computedTokPerSec = totalRate;
+    computedTokensPerSecond = totalRate;
   } else {
     // Priority 2: Backend-sourced generation_progress from
     // ConversationGenerationTracker (for solo orchestrator conversations).
@@ -215,7 +214,7 @@ export default function useTokenRate(
       perfNow - genProgress.timestamp < PROGRESS_STALE_MS;
 
     if (genProgressFresh && genProgress.tokPerSec != null) {
-      computedTokPerSec = genProgress.tokPerSec;
+      computedTokensPerSecond = genProgress.tokPerSec;
       hasActiveSubAgents = (genProgress.activeRequests || 0) > 1;
     } else {
       // Priority 3: Frontend chunk-counting fallback for non-agentic
@@ -229,33 +228,33 @@ export default function useTokenRate(
           (conversationStats.liveStreamingBurstElapsed || 0) / 1000;
         const burstTokens = conversationStats.liveStreamingBurstTokens || 0;
         if (burstElapsed > 0 && burstTokens > 0) {
-          computedTokPerSec = burstTokens / burstElapsed;
+          computedTokensPerSecond = burstTokens / burstElapsed;
         }
       }
     }
   }
 
   // -- Last-value-hold reducer ------------------------------------
-  const [tokPerSecState, dispatchTokPerSec] = useReducer(
-    tokPerSecReducer,
-    TOK_PER_SEC_INITIAL,
+  const [tokensPerSecondState, dispatchTokensPerSecond] = useReducer(
+    tokensPerSecondReducer,
+    TOK_PER_SECOND_INITIAL,
   );
-  const liveTokensPerSec = tokPerSecState.current;
+  const liveTokensPerSecond = tokensPerSecondState.current;
 
   // Dispatch every tick to keep the reducer in sync
   useMemo(() => {
-    dispatchTokPerSec({ computed: computedTokPerSec, active: needsTicker });
-  }, [computedTokPerSec, needsTicker]);
+    dispatchTokensPerSecond({ computed: computedTokensPerSecond, active: needsTicker });
+  }, [computedTokensPerSecond, needsTicker]);
 
   return {
-    nowMs,
+    nowMilliseconds,
     perfNow,
     isStreaming,
     needsTicker,
     turnActive,
     totalElapsedTime,
-    liveTokensPerSec,
-    computedTokPerSec,
+    liveTokensPerSecond,
+    computedTokensPerSecond,
     hasActiveSubAgents,
   };
 }

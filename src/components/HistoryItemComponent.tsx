@@ -45,15 +45,15 @@ interface HistoryItemProps {
   item: HistoryItem;
   isActive?: boolean;
   onClick?: (item: HistoryItem) => void;
-  onDelete?: (id: string) => void;
-  onDownload?: (id: string) => void;
-  onCopy?: (id: string) => void;
+  onDelete?: (conversationId: string) => void;
+  onDownload?: (conversationId: string) => void;
+  onCopy?: (conversationId: string) => void;
   icon?: LucideIcon;
   readOnly?: boolean;
   admin?: boolean;
   isNew?: boolean;
   isFavorite?: boolean;
-  onToggleFavorite?: (id: string) => void;
+  onToggleFavorite?: (conversationId: string) => void;
   className?: string;
   dataPanelClose?: boolean;
   onOpenInNewTab?: (item: HistoryItem) => void;
@@ -171,12 +171,10 @@ export default function HistoryItemComponent({
       {...(dataPanelClose ? { "data-panel-close-trigger": true } : {})}
       onContextMenu={
         onOpenInNewTab
-          ? (e: React.MouseEvent) => {
-              // Only show custom context on right-click of the main item area
-              // (not on action buttons which have their own handlers)
-              if ((e.target as HTMLElement).closest?.(`.${styles['actions']}`))
+          ? (event: React.MouseEvent) => {
+              if (event.target instanceof HTMLElement && event.target.closest?.(`.${styles['actions']}`))
                 return;
-              e.preventDefault();
+              event.preventDefault();
               onOpenInNewTab(item);
             }
           : undefined
@@ -185,8 +183,8 @@ export default function HistoryItemComponent({
       {onToggleFavorite && (
         <button
           className={`${styles['favorite-button']} ${isFavorite ? styles['favorite-button-is-active-state'] : ""}`}
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
+          onClick={(event: React.MouseEvent) => {
+            event.stopPropagation();
             onToggleFavorite(item.id);
           }}
           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
@@ -272,8 +270,8 @@ export default function HistoryItemComponent({
                 type="model"
                 models={
                   (item.modelNames?.length ?? 0) > 0
-                    ? (item.modelNames!.filter(Boolean) as string[])
-                    : ([item.modelName].filter(Boolean) as string[])
+                    ? (item.modelNames || []).filter((name): name is string => typeof name === "string")
+                    : [item.modelName].filter((name): name is string => typeof name === "string")
                 }
                 providers={item.providers}
                 className={styles['model-badge']}
@@ -321,8 +319,8 @@ export default function HistoryItemComponent({
         {onDownload && (
           <IconButtonComponent
             icon={<Download size={12} />}
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
+            onClick={(event: React.MouseEvent) => {
+              event.stopPropagation();
               onDownload(item.id);
             }}
             tooltip="Download"
@@ -332,8 +330,8 @@ export default function HistoryItemComponent({
         {onCopy && (
           <IconButtonComponent
             icon={<Copy size={12} />}
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
+            onClick={(event: React.MouseEvent) => {
+              event.stopPropagation();
               onCopy(item.id);
             }}
             tooltip="Copy"
@@ -343,8 +341,8 @@ export default function HistoryItemComponent({
         {!readOnly && !admin && onDelete && (
           <IconButtonComponent
             icon={<Trash2 size={12} />}
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
+            onClick={(event: React.MouseEvent) => {
+              event.stopPropagation();
               onDelete(item.id);
             }}
             tooltip="Delete"
@@ -355,8 +353,8 @@ export default function HistoryItemComponent({
         {onOpenInNewTab && (
           <IconButtonComponent
             icon={<ExternalLink size={12} />}
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
+            onClick={(event: React.MouseEvent) => {
+              event.stopPropagation();
               onOpenInNewTab(item);
             }}
             tooltip="Open in New Tab"

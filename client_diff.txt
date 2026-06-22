@@ -1,0 +1,696 @@
+diff --git a/src/components/HistoryItemComponent.tsx b/src/components/HistoryItemComponent.tsx
+index 7085067..c80d147 100644
+--- a/src/components/HistoryItemComponent.tsx
++++ b/src/components/HistoryItemComponent.tsx
+@@ -45,15 +45,15 @@ interface HistoryItemProps {
+   item: HistoryItem;
+   isActive?: boolean;
+   onClick?: (item: HistoryItem) => void;
+-  onDelete?: (id: string) => void;
+-  onDownload?: (id: string) => void;
+-  onCopy?: (id: string) => void;
++  onDelete?: (conversationId: string) => void;
++  onDownload?: (conversationId: string) => void;
++  onCopy?: (conversationId: string) => void;
+   icon?: LucideIcon;
+   readOnly?: boolean;
+   admin?: boolean;
+   isNew?: boolean;
+   isFavorite?: boolean;
+-  onToggleFavorite?: (id: string) => void;
++  onToggleFavorite?: (conversationId: string) => void;
+   className?: string;
+   dataPanelClose?: boolean;
+   onOpenInNewTab?: (item: HistoryItem) => void;
+@@ -171,12 +171,10 @@ export default function HistoryItemComponent({
+       {...(dataPanelClose ? { "data-panel-close-trigger": true } : {})}
+       onContextMenu={
+         onOpenInNewTab
+-          ? (e: React.MouseEvent) => {
+-              // Only show custom context on right-click of the main item area
+-              // (not on action buttons which have their own handlers)
+-              if ((e.target as HTMLElement).closest?.(`.${styles['actions']}`))
++          ? (event: React.MouseEvent) => {
++              if (event.target instanceof HTMLElement && event.target.closest?.(`.${styles['actions']}`))
+                 return;
+-              e.preventDefault();
++              event.preventDefault();
+               onOpenInNewTab(item);
+             }
+           : undefined
+@@ -185,8 +183,8 @@ export default function HistoryItemComponent({
+       {onToggleFavorite && (
+         <button
+           className={`${styles['favorite-button']} ${isFavorite ? styles['favorite-button-is-active-state'] : ""}`}
+-          onClick={(e: React.MouseEvent) => {
+-            e.stopPropagation();
++          onClick={(event: React.MouseEvent) => {
++            event.stopPropagation();
+             onToggleFavorite(item.id);
+           }}
+           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+@@ -272,8 +270,8 @@ export default function HistoryItemComponent({
+                 type="model"
+                 models={
+                   (item.modelNames?.length ?? 0) > 0
+-                    ? (item.modelNames!.filter(Boolean) as string[])
+-                    : ([item.modelName].filter(Boolean) as string[])
++                    ? (item.modelNames || []).filter((name): name is string => typeof name === "string")
++                    : [item.modelName].filter((name): name is string => typeof name === "string")
+                 }
+                 providers={item.providers}
+                 className={styles['model-badge']}
+@@ -321,8 +319,8 @@ export default function HistoryItemComponent({
+         {onDownload && (
+           <IconButtonComponent
+             icon={<Download size={12} />}
+-            onClick={(e: React.MouseEvent) => {
+-              e.stopPropagation();
++            onClick={(event: React.MouseEvent) => {
++              event.stopPropagation();
+               onDownload(item.id);
+             }}
+             tooltip="Download"
+@@ -332,8 +330,8 @@ export default function HistoryItemComponent({
+         {onCopy && (
+           <IconButtonComponent
+             icon={<Copy size={12} />}
+-            onClick={(e: React.MouseEvent) => {
+-              e.stopPropagation();
++            onClick={(event: React.MouseEvent) => {
++              event.stopPropagation();
+               onCopy(item.id);
+             }}
+             tooltip="Copy"
+@@ -343,8 +341,8 @@ export default function HistoryItemComponent({
+         {!readOnly && !admin && onDelete && (
+           <IconButtonComponent
+             icon={<Trash2 size={12} />}
+-            onClick={(e: React.MouseEvent) => {
+-              e.stopPropagation();
++            onClick={(event: React.MouseEvent) => {
++              event.stopPropagation();
+               onDelete(item.id);
+             }}
+             tooltip="Delete"
+@@ -355,8 +353,8 @@ export default function HistoryItemComponent({
+         {onOpenInNewTab && (
+           <IconButtonComponent
+             icon={<ExternalLink size={12} />}
+-            onClick={(e: React.MouseEvent) => {
+-              e.stopPropagation();
++            onClick={(event: React.MouseEvent) => {
++              event.stopPropagation();
+               onOpenInNewTab(item);
+             }}
+             tooltip="Open in New Tab"
+diff --git a/src/components/SettingsPanelComponent.tsx b/src/components/SettingsPanelComponent.tsx
+index 20d1232..45c37a0 100644
+--- a/src/components/SettingsPanelComponent.tsx
++++ b/src/components/SettingsPanelComponent.tsx
+@@ -37,7 +37,7 @@ import ToolBadgeComponent from "./ToolBadgeComponent";
+ import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
+ import { buildTopologyOptions, buildThoughtStructureOptions } from "./AgentStrategyOptionsComponent";
+ import useTokenRate from "../hooks/useTokenRate";
+-import useTtft from "../hooks/useTtft";
++import useTimeToFirstToken from "../hooks/useTtft";
+ import type {
+   PrismConfig,
+   PrismSettings,
+@@ -202,7 +202,7 @@ export default function SettingsPanel({
+     const maxSubAgentIterationsCount = maxSubAgentIterationsToggleOption ? (typeof maxSubAgentIterationsToggleOption.value === "number" ? maxSubAgentIterationsToggleOption.value : 10) : 10;
+     const recursionDepthCount = recursionDepthToggleOption ? (typeof recursionDepthToggleOption.value === "number" ? recursionDepthToggleOption.value : 0) : 0;
+ 
+-    let requestPayload: Record<string, any> = {};
++    let requestPayload: Record<string, unknown> = {};
+ 
+     if (isDirectChatWithoutAgent) {
+       requestPayload = {
+@@ -295,7 +295,6 @@ export default function SettingsPanel({
+   const ttsModelsMap = config?.textToSpeech?.models || {};
+   const imageModelsMap = config?.textToImage?.models || {};
+ 
+-  // Build a merged models map: textToText + textToImage + audioToText + textToSpeech
+   const allProviderKeys = new Set([
+     ...Object.keys(textModelsMap),
+     ...Object.keys(imageModelsMap),
+@@ -305,31 +304,30 @@ export default function SettingsPanel({
+   const modelsMap: Record<string, ExtendedModelOption[]> = {};
+   for (const providerKey of allProviderKeys) {
+     const textModels = (textModelsMap[providerKey] || []) as ExtendedModelOption[];
+-    const imgModels = ((imageModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
++    const imageModels = ((imageModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
+       (modelOption) => ({
+         ...modelOption,
+         label: `${modelOption.label} (Image)`,
+         _isImageGen: true,
+       }),
+     );
+-    const sttModels = (
++    const speechToTextModels = (
+       (audioToTextModelsMap[providerKey] || []) as ExtendedModelOption[]
+     ).map((modelOption) => ({
+       ...modelOption,
+       label: `${modelOption.label} (Transcribe)`,
+       _isTranscription: true,
+     }));
+-    const ttsModels = ((ttsModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
++    const textToSpeechModels = ((ttsModelsMap[providerKey] || []) as ExtendedModelOption[]).map(
+       (modelOption) => ({
+         ...modelOption,
+         label: `${modelOption.label} (TTS)`,
+         _isTTS: true,
+       }),
+     );
+-    // Merge text models first, then image, then transcription, then TTS — deduplicated by name
+     const seen = new Set<string>();
+     const merged: ExtendedModelOption[] = [];
+-    for (const modelOption of [...textModels, ...imgModels, ...sttModels, ...ttsModels]) {
++    for (const modelOption of [...textModels, ...imageModels, ...speechToTextModels, ...textToSpeechModels]) {
+       if (!seen.has(modelOption.name)) {
+         seen.add(modelOption.name);
+         merged.push(modelOption);
+@@ -357,13 +355,13 @@ export default function SettingsPanel({
+     needsTicker,
+     turnActive,
+     totalElapsedTime,
+-    liveTokensPerSec,
+-    computedTokPerSec,
++    liveTokensPerSecond,
++    computedTokensPerSecond,
+     hasActiveSubAgents,
+   } = useTokenRate(conversationStats);
+ 
+   // -- Live TTFT (Time To First Token) ---------------------------
+-  const { liveTtft, isLiveTtft } = useTtft(conversationStats, perfNow, needsTicker);
++  const { liveTimeToFirstToken, isLiveTimeToFirstToken } = useTimeToFirstToken(conversationStats, perfNow, needsTicker);
+ 
+   // -- Stats tab (All / Orchestrator / Sub-Agents) --------------
+   const [statsTab, setStatsTab] = useState("all");
+@@ -507,17 +505,17 @@ export default function SettingsPanel({
+         })()}
+         <BadgeComponent
+           type="throughput"
+-          liveTokensPerSecond={liveTokensPerSec}
++          liveTokensPerSecond={liveTokensPerSecond}
+           averageTokensPerSecond={stats.avgTokensPerSec}
+-          isActivelyGenerating={computedTokPerSec !== null || hasActiveSubAgents}
++          isActivelyGenerating={computedTokensPerSecond !== null || hasActiveSubAgents}
+           turnActive={turnActive}
+         />
+         {/* TTFT badge — live during processing, latched after first token, static after completion */}
+-        {liveTtft !== null ? (
++        {liveTimeToFirstToken !== null ? (
+           <span
+-            className={`${styles['stat-badge']} ${isLiveTtft ? styles['ttft-badge-live'] : styles['ttft-badge']}`}
++            className={`${styles['stat-badge']} ${isLiveTimeToFirstToken ? styles['ttft-badge-live'] : styles['ttft-badge']}`}
+           >
+-            ⏱ {liveTtft.toFixed(isLiveTtft ? 1 : 2)}s TTFT
++            ⏱ {liveTimeToFirstToken.toFixed(isLiveTimeToFirstToken ? 1 : 2)}s TTFT
+           </span>
+         ) : (
+           timeToFirstTokenValue != null && (
+@@ -662,17 +660,17 @@ export default function SettingsPanel({
+             <div className={styles['section-header']}>
+               <GitBranch size={12} style={{ marginRight: 4 }} /> Workflow
+             </div>
+-            {workflows.map((wf) => (
++            {workflows.map((workflow) => (
+               <a
+-                key={wf._id}
+-                href={`/workflows/${wf._id}`}
++                key={workflow._id}
++                href={`/workflows/${workflow._id}`}
+                 className={styles['workflow-link']}
+               >
+                 <span className={styles['modality-icon']}>
+                   <GitBranch size={12} />
+                 </span>
+                 <span className={styles['modality-name']}>
+-                  {wf.workflowName || DEFAULT_WORKFLOW_TITLE}
++                  {workflow.workflowName || DEFAULT_WORKFLOW_TITLE}
+                 </span>
+                 <span className={styles['modality-status']}>
+                   <ExternalLink size={10} />
+@@ -1005,7 +1003,7 @@ export default function SettingsPanel({
+                 const getToolToggle = (tool: string) => {
+                   switch (tool) {
+                     case "Thinking": {
+-                      const isLmStudio = settings.provider === "lm-studio";
++                      const isLmStudioProvider = settings.provider === "lm-studio";
+                       const isLive = selectedModelDef?.liveAPI;
+                       const canDisable =
+                         !selectedModelDef?.thinkingLevels ||
+@@ -1015,16 +1013,16 @@ export default function SettingsPanel({
+                       const modelName = (settings.model || "").toLowerCase();
+                       const nameBasedThinking = (config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS)
+                         .some((pattern) => modelName.includes(pattern));
+-                      const lmCanToggle =
+-                        isLmStudio &&
++                      const lmStudioCanToggle =
++                        isLmStudioProvider &&
+                         (selectedModelDef?.thinking || nameBasedThinking);
+-                      const lmLocked = isLmStudio && !lmCanToggle;
++                      const lmStudioLocked = isLmStudioProvider && !lmStudioCanToggle;
+                       return {
+                         checked: isLive
+                           ? (settings.liveThinkingLevel || "none") !== "none"
+-                          : lmLocked || alwaysOn
++                          : lmStudioLocked || alwaysOn
+                             ? true
+-                            : isLmStudio
++                            : isLmStudioProvider
+                               ? settings.thinkingEnabled !== false
+                               : settings.thinkingEnabled || false,
+                         onChange: isLive
+@@ -1033,12 +1031,12 @@ export default function SettingsPanel({
+                                 liveThinkingLevel: value ? "low" : "none",
+                               });
+                             }
+-                          : lmLocked || alwaysOn
++                          : lmStudioLocked || alwaysOn
+                             ? () => {}
+                             : (value: boolean) => {
+                                 onChange({ thinkingEnabled: value });
+                               },
+-                        disabled: lmLocked || alwaysOn,
++                        disabled: lmStudioLocked || alwaysOn,
+                       };
+                     }
+                     case "Web Search":
+diff --git a/src/hooks/useTokenRate.ts b/src/hooks/useTokenRate.ts
+index fee5f18..76dee35 100644
+--- a/src/hooks/useTokenRate.ts
++++ b/src/hooks/useTokenRate.ts
+@@ -20,25 +20,25 @@ const CHUNK_STALE_MS = 2000;
+ 
+ // --- Types --------------------------------------------------
+ 
+-interface TokPerSecState {
++interface TokensPerSecondState {
+   current: number | null;
+   lastComputed: number | null;
+ }
+ 
+-interface TokPerSecAction {
++interface TokensPerSecondAction {
+   computed: number | null;
+   active: boolean;
+ }
+ 
+ export interface TokenRateResult {
+-  nowMs: number;
++  nowMilliseconds: number;
+   perfNow: number;
+   isStreaming: boolean;
+   needsTicker: boolean;
+   turnActive: boolean;
+   totalElapsedTime: number;
+-  liveTokensPerSec: number | null;
+-  computedTokPerSec: number | null;
++  liveTokensPerSecond: number | null;
++  computedTokensPerSecond: number | null;
+   hasActiveSubAgents: boolean;
+ }
+ 
+@@ -61,10 +61,10 @@ interface ExtendedConversationStats extends Partial<ConversationTokenStats> {
+  * burst's final rate so the badge doesn't flicker to zero during
+  * tool calls. Clears when the turn fully ends.
+  */
+-function tokPerSecReducer(
+-  prev: TokPerSecState,
+-  { computed, active }: TokPerSecAction,
+-): TokPerSecState {
++function tokensPerSecondReducer(
++  previousState: TokensPerSecondState,
++  { computed, active }: TokensPerSecondAction,
++): TokensPerSecondState {
+   // Turn ended → clear everything
+   if (!active) {
+     return { current: null, lastComputed: null };
+@@ -74,14 +74,14 @@ function tokPerSecReducer(
+     return { current: computed, lastComputed: computed };
+   }
+   // Paused mid-turn: hold the last burst's rate
+-  if (prev.lastComputed !== null) {
+-    return { current: prev.lastComputed, lastComputed: null };
++  if (previousState.lastComputed !== null) {
++    return { current: previousState.lastComputed, lastComputed: null };
+   }
+   // Already paused, no new burst to record — keep showing held value
+-  return prev;
++  return previousState;
+ }
+ 
+-const TOK_PER_SEC_INITIAL: TokPerSecState = {
++const TOK_PER_SECOND_INITIAL: TokensPerSecondState = {
+   current: null,
+   lastComputed: null,
+ };
+@@ -102,9 +102,9 @@ function sumSubAgentThroughput(
+   let sum = 0;
+   let count = 0;
+   if (!subAgentGenerationProgress) return { sum: 0, count: 0 };
+-  for (const wp of Object.values(subAgentGenerationProgress)) {
+-    if (wp.tokPerSec != null && wp.tokPerSec > 0) {
+-      sum += wp.tokPerSec;
++  for (const subAgentProgress of Object.values(subAgentGenerationProgress)) {
++    if (subAgentProgress.tokPerSec != null && subAgentProgress.tokPerSec > 0) {
++      sum += subAgentProgress.tokPerSec;
+       count++;
+     }
+   }
+@@ -135,10 +135,9 @@ function sumSubAgentThroughput(
+ export default function useTokenRate(
+   conversationStats: ExtendedConversationStats | null,
+ ): TokenRateResult {
+-  // -- Live ticker -----------------------------------------------
+   // Stores current wall-clock and performance timestamps so render
+   // stays pure (no Date.now() calls in the render body).
+-  const [nowMs, setNowMs] = useState(() => Date.now());
++  const [nowMilliseconds, setNowMilliseconds] = useState(() => Date.now());
+   const [perfNow, setPerfNow] = useState(() => performance.now());
+ 
+   const isStreaming = !!conversationStats?.liveStreamingStartTime;
+@@ -149,12 +148,12 @@ export default function useTokenRate(
+     if (!needsTicker) return;
+     // Immediate tick via microtask to avoid synchronous setState in effect body
+     const immediate = setTimeout(() => {
+-      setNowMs(Date.now());
++      setNowMilliseconds(Date.now());
+       setPerfNow(performance.now());
+     }, 0);
+     // 500ms interval for smoother tok/s updates during streaming
+     const id = setInterval(() => {
+-      setNowMs(Date.now());
++      setNowMilliseconds(Date.now());
+       setPerfNow(performance.now());
+     }, 500);
+     return () => {
+@@ -171,12 +170,12 @@ export default function useTokenRate(
+       : new Date(conversationStats.currentTurnStart).getTime()
+     : null;
+   const liveExtra = turnStartVal
+-    ? Math.max(0, (nowMs - turnStartVal) / 1000)
++    ? Math.max(0, (nowMilliseconds - turnStartVal) / 1000)
+     : 0;
+   const totalElapsedTime = completedTime + liveExtra;
+ 
+   // -- Live tok/s computation ------------------------------------
+-  let computedTokPerSec: number | null = null;
++  let computedTokensPerSecond: number | null = null;
+   let hasActiveSubAgents = false;
+ 
+   // Priority 1: Sum per-sub-agent tok/s from subAgentGenerationProgress.
+@@ -204,7 +203,7 @@ export default function useTokenRate(
+       }
+     }
+ 
+-    computedTokPerSec = totalRate;
++    computedTokensPerSecond = totalRate;
+   } else {
+     // Priority 2: Backend-sourced generation_progress from
+     // ConversationGenerationTracker (for solo orchestrator conversations).
+@@ -215,7 +214,7 @@ export default function useTokenRate(
+       perfNow - genProgress.timestamp < PROGRESS_STALE_MS;
+ 
+     if (genProgressFresh && genProgress.tokPerSec != null) {
+-      computedTokPerSec = genProgress.tokPerSec;
++      computedTokensPerSecond = genProgress.tokPerSec;
+       hasActiveSubAgents = (genProgress.activeRequests || 0) > 1;
+     } else {
+       // Priority 3: Frontend chunk-counting fallback for non-agentic
+@@ -229,33 +228,33 @@ export default function useTokenRate(
+           (conversationStats.liveStreamingBurstElapsed || 0) / 1000;
+         const burstTokens = conversationStats.liveStreamingBurstTokens || 0;
+         if (burstElapsed > 0 && burstTokens > 0) {
+-          computedTokPerSec = burstTokens / burstElapsed;
++          computedTokensPerSecond = burstTokens / burstElapsed;
+         }
+       }
+     }
+   }
+ 
+   // -- Last-value-hold reducer ------------------------------------
+-  const [tokPerSecState, dispatchTokPerSec] = useReducer(
+-    tokPerSecReducer,
+-    TOK_PER_SEC_INITIAL,
++  const [tokensPerSecondState, dispatchTokensPerSecond] = useReducer(
++    tokensPerSecondReducer,
++    TOK_PER_SECOND_INITIAL,
+   );
+-  const liveTokensPerSec = tokPerSecState.current;
++  const liveTokensPerSecond = tokensPerSecondState.current;
+ 
+   // Dispatch every tick to keep the reducer in sync
+   useMemo(() => {
+-    dispatchTokPerSec({ computed: computedTokPerSec, active: needsTicker });
+-  }, [computedTokPerSec, needsTicker]);
++    dispatchTokensPerSecond({ computed: computedTokensPerSecond, active: needsTicker });
++  }, [computedTokensPerSecond, needsTicker]);
+ 
+   return {
+-    nowMs,
++    nowMilliseconds,
+     perfNow,
+     isStreaming,
+     needsTicker,
+     turnActive,
+     totalElapsedTime,
+-    liveTokensPerSec,
+-    computedTokPerSec,
++    liveTokensPerSecond,
++    computedTokensPerSecond,
+     hasActiveSubAgents,
+   };
+ }
+diff --git a/src/hooks/useTtft.ts b/src/hooks/useTtft.ts
+index e492aa5..f0d8850 100644
+--- a/src/hooks/useTtft.ts
++++ b/src/hooks/useTtft.ts
+@@ -3,14 +3,14 @@ import type { ConversationTokenStats } from "../utils/utilities";
+ 
+ // --- Types --------------------------------------------------
+ 
+-interface TtftState {
++interface TimeToFirstTokenState {
+   value: number | null;
+   live: boolean;
+-  prevPhase: string | null;
++  previousPhase: string | null;
+   seenCount: number;
+ }
+ 
+-interface TtftAction {
++interface TimeToFirstTokenAction {
+   phase: string | null;
+   startTime: number | null;
+   perfNow: number;
+@@ -30,27 +30,27 @@ interface TtftAction {
+  * For the client-side fallback (LM Studio native path), it live-counts
+  * during the "prefilling" phase and latches on phase transition.
+  */
+-function ttftReducer(
+-  prev: TtftState,
+-  { phase, startTime, perfNow, active, samples }: TtftAction,
+-): TtftState {
++function timeToFirstTokenReducer(
++  previousState: TimeToFirstTokenState,
++  { phase, startTime, perfNow, active, samples }: TimeToFirstTokenAction,
++): TimeToFirstTokenState {
+   // Turn ended → clear
+   if (!active) {
+-    if (prev.value === null && !prev.live && prev.seenCount === 0) return prev;
+-    return { value: null, live: false, prevPhase: null, seenCount: 0 };
++    if (previousState.value === null && !previousState.live && previousState.seenCount === 0) return previousState;
++    return { value: null, live: false, previousPhase: null, seenCount: 0 };
+   }
+ 
+   // New server-computed TTFT sample(s) arrived — fold into running average
+-  if (samples && samples.length > prev.seenCount) {
+-    const newSamples = samples.slice(prev.seenCount);
++  if (samples && samples.length > previousState.seenCount) {
++    const newSamples = samples.slice(previousState.seenCount);
+     // Compute new running average incorporating all new samples
+-    const prevTotal = (prev.value || 0) * prev.seenCount;
++    const previousTotal = (previousState.value || 0) * previousState.seenCount;
+     const newTotal = newSamples.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+-    const avg = (prevTotal + newTotal) / samples.length;
++    const average = (previousTotal + newTotal) / samples.length;
+     return {
+-      value: avg,
++      value: average,
+       live: false,
+-      prevPhase: phase,
++      previousPhase: phase,
+       seenCount: samples.length,
+     };
+   }
+@@ -60,38 +60,38 @@ function ttftReducer(
+     return {
+       value: (perfNow - startTime) / 1000,
+       live: true,
+-      prevPhase: "prefilling",
+-      seenCount: prev.seenCount,
++      previousPhase: "prefilling",
++      seenCount: previousState.seenCount,
+     };
+   }
+ 
+   // Phase just transitioned away from prefilling → latch final value
+-  if (prev.prevPhase === "prefilling" && phase !== "prefilling" && prev.live) {
++  if (previousState.previousPhase === "prefilling" && phase !== "prefilling" && previousState.live) {
+     return {
+-      value: prev.value,
++      value: previousState.value,
+       live: false,
+-      prevPhase: phase,
+-      seenCount: prev.seenCount,
++      previousPhase: phase,
++      seenCount: previousState.seenCount,
+     };
+   }
+ 
+   // Still latched mid-turn — preserve
+-  if (prev.value !== null && !prev.live) {
+-    if (prev.prevPhase !== phase) return { ...prev, prevPhase: phase };
+-    return prev;
++  if (previousState.value !== null && !previousState.live) {
++    if (previousState.previousPhase !== phase) return { ...previousState, previousPhase: phase };
++    return previousState;
+   }
+ 
+   // No data yet
+-  if (prev.prevPhase !== phase) {
+-    return { ...prev, prevPhase: phase };
++  if (previousState.previousPhase !== phase) {
++    return { ...previousState, previousPhase: phase };
+   }
+-  return prev;
++  return previousState;
+ }
+ 
+-const TTFT_INITIAL: TtftState = {
++const TIME_TO_FIRST_TOKEN_INITIAL: TimeToFirstTokenState = {
+   value: null,
+   live: false,
+-  prevPhase: null,
++  previousPhase: null,
+   seenCount: 0,
+ };
+ 
+@@ -109,16 +109,16 @@ const TTFT_INITIAL: TtftState = {
+  * After the turn completes, the consumer falls back to the static
+  * `avgTimeToGeneration` from backend conversation stats.
+  */
+-export default function useTtft(
++export default function useTimeToFirstToken(
+   conversationStats: Partial<ConversationTokenStats> | null,
+   perfNow: number,
+   needsTicker: boolean,
+-): { liveTtft: number | null; isLiveTtft: boolean } {
++): { liveTimeToFirstToken: number | null; isLiveTimeToFirstToken: boolean } {
+   const phase = conversationStats?.liveProcessingPhase || null;
+   const startTime = conversationStats?.liveProcessingStartTime || null;
+   const samples = conversationStats?.liveTtftSamples || null;
+ 
+-  const [state, dispatch] = useReducer(ttftReducer, TTFT_INITIAL);
++  const [state, dispatch] = useReducer(timeToFirstTokenReducer, TIME_TO_FIRST_TOKEN_INITIAL);
+ 
+   // Dispatch on every tick to keep in sync (same pattern as tok/s reducer)
+   useMemo(() => {
+@@ -126,7 +126,7 @@ export default function useTtft(
+   }, [phase, startTime, perfNow, needsTicker, samples]);
+ 
+   return {
+-    liveTtft: state.value,
+-    isLiveTtft: state.live,
++    liveTimeToFirstToken: state.value,
++    isLiveTimeToFirstToken: state.live,
+   };
+ }
+diff --git a/tests/useTtft.test.tsx b/tests/useTtft.test.tsx
+index 83c2e00..b738c24 100644
+--- a/tests/useTtft.test.tsx
++++ b/tests/useTtft.test.tsx
+@@ -1,10 +1,10 @@
+ import { describe, it, expect } from "vitest";
+ import { render, screen, fireEvent } from "@testing-library/react";
+ import React, { useState } from "react";
+-import useTtft from "../src/hooks/useTtft";
++import useTimeToFirstToken from "../src/hooks/useTtft";
+ import type { ConversationTokenStats } from "../src/utils/utilities";
+ 
+-function TestTtftComponent({
++function TestTimeToFirstTokenComponent({
+   initialStats,
+   initialNeedsTicker,
+ }: {
+@@ -15,12 +15,12 @@ function TestTtftComponent({
+   const [needsTicker, setNeedsTicker] = useState<boolean>(initialNeedsTicker);
+   const [perfNow, setPerfNow] = useState<number>(1000);
+ 
+-  const { liveTtft, isLiveTtft } = useTtft(stats, perfNow, needsTicker);
++  const { liveTimeToFirstToken, isLiveTimeToFirstToken } = useTimeToFirstToken(stats, perfNow, needsTicker);
+ 
+   return (
+     <div>
+-      <div data-testid="live-ttft">{liveTtft === null ? "null" : liveTtft.toFixed(3)}</div>
+-      <div data-testid="is-live-ttft">{String(isLiveTtft)}</div>
++      <div data-testid="live-ttft">{liveTimeToFirstToken === null ? "null" : liveTimeToFirstToken.toFixed(3)}</div>
++      <div data-testid="is-live-ttft">{String(isLiveTimeToFirstToken)}</div>
+       
+       <button data-testid="set-prefill" onClick={() => setStats({ liveProcessingPhase: "prefilling", liveProcessingStartTime: 500 })}>
+         Set Prefilling
+@@ -52,13 +52,13 @@ function TestTtftComponent({
+ 
+ describe("useTtft Hook", () => {
+   it("should initialize with null value and false live state when inactive", () => {
+-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={false} />);
++    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={false} />);
+     expect(screen.getByTestId("live-ttft").textContent).toBe("null");
+     expect(screen.getByTestId("is-live-ttft").textContent).toBe("false");
+   });
+ 
+   it("should calculate live client-side TTFT during prefilling phase when active", () => {
+-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
++    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
+     
+     // Set phase to prefilling with startTime = 500. perfNow is 1000.
+     // Expected TTFT: (1000 - 500) / 1000 = 0.500
+@@ -72,7 +72,7 @@ describe("useTtft Hook", () => {
+   });
+ 
+   it("should latch final value and disable live state when phase transitions away from prefilling", () => {
+-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
++    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
+ 
+     // Enter prefilling
+     fireEvent.click(screen.getByTestId("set-prefill"));
+@@ -95,7 +95,7 @@ describe("useTtft Hook", () => {
+   });
+ 
+   it("should calculate running average of server-computed TTFT samples", () => {
+-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
++    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
+ 
+     // Provide 2 samples: [0.5, 0.7]. Average = 0.600
+     fireEvent.click(screen.getByTestId("set-samples-1"));
+@@ -108,7 +108,7 @@ describe("useTtft Hook", () => {
+   });
+ 
+   it("should reset state when needsTicker is cleared (turn completes)", () => {
+-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
++    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
+ 
+     // Set samples to get a value
+     fireEvent.click(screen.getByTestId("set-samples-1"));
+@@ -124,7 +124,7 @@ describe("useTtft Hook", () => {
+   });
+ 
+   it("should set phase only on initial pass if no data exists yet", () => {
+-    render(<TestTtftComponent initialStats={null} initialNeedsTicker={true} />);
++    render(<TestTimeToFirstTokenComponent initialStats={null} initialNeedsTicker={true} />);
+     fireEvent.click(screen.getByTestId("set-phase-only"));
+     expect(screen.getByTestId("live-ttft").textContent).toBe("null");
+ 
