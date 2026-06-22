@@ -3,9 +3,9 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Star, DollarSign, Bot, AlertTriangle } from "lucide-react";
 import ProviderLogo, {
-  PROVIDER_LABELS,
   resolveProviderLabel,
 } from "./ProviderLogosComponent";
+import { PROVIDER_LABELS } from "../constants";
 import { MODALITY_FILTERS, TOOL_FILTERS } from "./SidebarFilterComponent";
 import FilterDropdownComponent, {
   type FilterGroup,

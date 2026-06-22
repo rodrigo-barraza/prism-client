@@ -1,5 +1,7 @@
 "use client";
 
+import { PROVIDER_LABELS, resolveProviderBaseType } from "../constants";
+
 /**
  * Inline SVG logos for AI providers, sized to fit inline with text/dropdowns.
  * Usage: <ProviderLogo provider="openai" size={16} />
@@ -340,20 +342,7 @@ function _resolveBaseTypeFromLogos(id: string) {
   return id;
 }
 
-/**
- * Base display labels for provider types.
- */
-export const PROVIDER_LABELS = {
-  openai: "OpenAI",
-  anthropic: "Anthropic",
-  google: "Google",
-  elevenlabs: "ElevenLabs",
-  inworld: "Inworld",
-  "lm-studio": "LM Studio",
-  vllm: "vLLM",
-  ollama: "Ollama",
-  "llama-cpp": "llama.cpp",
-};
+
 
 // -- Multi-instance nickname registry ----------------------------
 // Populated from the /config response's `localProviders` array.
@@ -381,29 +370,9 @@ export function setLocalProviderMeta(
   }
 }
 
-/**
- * Resolve the base provider type from a potentially numbered instance ID.
- * e.g. "lm-studio-2" → "lm-studio", "ollama" → "ollama"
- */
 function _resolveBaseType(id?: string) {
   if (!id) return "";
-  if ((PROVIDER_LABELS as Record<string, string | undefined>)[id]) return id;
-  // Check meta first (authoritative)
-  const meta = _localMeta.get(id);
-  if (meta) {
-    // Walk the labels to find which type this belongs to
-    for (const type of Object.keys(PROVIDER_LABELS)) {
-      if (id === type || id.startsWith(`${type}-`)) return type;
-    }
-  }
-  // Fallback: strip trailing "-N" suffix
-  const match = id.match(/^(.+)-(\d+)$/);
-  if (
-    match &&
-    (PROVIDER_LABELS as Record<string, string | undefined>)[match[1]]
-  )
-    return match[1];
-  return id;
+  return resolveProviderBaseType(id);
 }
 
 /**

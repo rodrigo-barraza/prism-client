@@ -22,9 +22,9 @@ import {
   Wrench,
 } from "lucide-react";
 import ProviderLogo, {
-  PROVIDER_LABELS,
   resolveProviderLabel,
 } from "./ProviderLogosComponent";
+import { PROVIDER_LABELS } from "../constants";
 import {
   MODALITY_ICONS,
   MODALITY_COLORS,

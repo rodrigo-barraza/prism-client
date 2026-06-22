@@ -26,10 +26,6 @@ export const SK_MODEL_MEMORY_BENCHMARKS = "modelMemory:benchmarks";
 
 
 
-// -- Application constants ----------------------------------------
-export const MAX_TOOL_ITERATIONS = 25;
-export const PROJECT_AGENT = "coding";
-
 // -- Re-exports from utilities-library (single source of truth) ---
 export {
   AGENT_IDS,
@@ -37,19 +33,17 @@ export {
   DEFAULT_CONVERSATION_TITLE,
   DEFAULT_WORKFLOW_TITLE,
   DEFAULT_USERNAME,
+  MAX_TOOL_ITERATIONS,
+  DEFAULT_CODING_PROJECT as PROJECT_AGENT,
+  PROVIDERS,
+  PROVIDER_LIST,
+  LOCAL_PROVIDER_TYPES as LOCAL_PROVIDERS,
+  PROVIDER_LABELS,
+  isLocalProvider,
+  resolveProviderBaseType,
+  THINKING_PATTERNS as FALLBACK_THINKING_PATTERNS,
 } from "@rodrigo-barraza/utilities-library/taxonomy";
-
-/**
- * Known local (self-hosted) provider identifiers.
- * Models from these providers are considered "local" for memory,
- * model-picker grouping, and progressive-config-load gating.
- */
-export const LOCAL_PROVIDERS = new Set([
-  "lm-studio",
-  "ollama",
-  "vllm",
-  "llama-cpp",
-]);
+export type { ProviderType } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 // -- Raw localStorage keys (no namespace prefix) -----------------
 export const LS_PANEL_LEFT = "panel_left";
@@ -131,14 +125,4 @@ export {
   POLL_SLOW, // 30s — health checks
   POLL_LAZY, // 60s — dashboard refresh
 } from "@rodrigo-barraza/utilities-library";
-
-// -- Fallback for config?.thinkingPatterns — used when the server config hasn't loaded yet.
-// The canonical list lives in prism-service/src/services/local-provider/constants.ts
-// and is sent to the client via the /config endpoint as `thinkingPatterns`.
-export const FALLBACK_THINKING_PATTERNS = [
-  "qwen3", "qwq", "deepseek-r1", "deepseek-v3", "gpt-oss", "gemma-4", "minimax",
-  "phi4-reasoning", "phi-4-reasoning", "marco-o1", "skywork-o1", "exaone-deep",
-  "glm-4", "glm4", "glm-5", "glm5", "cogito", "granite-reasoning",
-  "dolphin-r1", "internlm3", "kimi-k2",
-];
 

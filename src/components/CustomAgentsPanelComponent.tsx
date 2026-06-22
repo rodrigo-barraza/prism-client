@@ -84,6 +84,7 @@ import BadgeComponent from "./BadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import { getErrorMessage } from "../utils/errorMessage";
+import { deriveAgentId } from "@rodrigo-barraza/utilities-library";
 import styles from "./CustomAgentsPanelComponent.module.css";
 import type { LucideIcon } from "lucide-react";
 import type { CustomAgent, SerializedPolicy } from "../types/types";
@@ -404,13 +405,10 @@ export default function CustomAgentsPanel({
                 placeholder="My Agent"
               />
               <span className={styles['hint']}>
-                Display name — will generate ID: CUSTOM_
+                Display name — will generate ID:{" "}
                 {editingAgent.name
-                  ? editingAgent.name
-                      .toUpperCase()
-                      .replace(/[^A-Z0-9]+/g, "_")
-                      .replace(/^_+|_+$/g, "")
-                  : "..."}
+                  ? deriveAgentId(editingAgent.name)
+                  : "CUSTOM_..."}
               </span>
             </div>
             <div className={styles['form-group']} style={{ flex: 1 }}>
