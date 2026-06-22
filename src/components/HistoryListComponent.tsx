@@ -189,6 +189,9 @@ export default function HistoryList({
   const [showErrorsOnly, setShowErrorsOnly] = useState(
     () => restoredFilters?.showErrorsOnly ?? false,
   );
+  const [collapsedClusterIds, setCollapsedClusterIds] = useState<Set<string>>(
+    () => new Set(restoredFilters?.collapsedClusterIds || []),
+  );
   const [localDateRange, setLocalDateRange] = useState({ from: "", to: "" });
 
   // -- Persist filter state to localStorage on change --
@@ -207,6 +210,7 @@ export default function HistoryList({
       showFavoritesOnly,
       shouldHideSubAgents,
       showErrorsOnly,
+      collapsedClusterIds: [...collapsedClusterIds],
     };
     const hasActiveFilters =
       activeModalities.size > 0 ||
@@ -215,7 +219,8 @@ export default function HistoryList({
       activeCostTiers.size > 0 ||
       showFavoritesOnly ||
       shouldHideSubAgents ||
-      showErrorsOnly;
+      showErrorsOnly ||
+      collapsedClusterIds.size > 0;
     try {
       if (hasActiveFilters) {
         localStorage.setItem(filterStorageKey, JSON.stringify(filterSnapshot));
@@ -232,6 +237,7 @@ export default function HistoryList({
     showFavoritesOnly,
     shouldHideSubAgents,
     showErrorsOnly,
+    collapsedClusterIds,
   ]);
 
   const dateRange =
@@ -781,8 +787,26 @@ export default function HistoryList({
                 isCondensed={true}
                 subAgentNumber={subAgentNumberMap.get(group.parent.id) ?? null}
                 hasSpawnedSubAgents={true}
+                isSubAgentsCollapsed={collapsedClusterIds.has(group.parent.id)}
+                onToggleSubAgents={() => {
+                  setCollapsedClusterIds((previous) => {
+                    const next = new Set(previous);
+                    if (next.has(group.parent.id)) {
+                      next.delete(group.parent.id);
+                    } else {
+                      next.add(group.parent.id);
+                    }
+                    return next;
+                  });
+                }}
               />
-              {renderSubAgentTree(group.tree, 0)}
+              <div
+                className={`${styles['sub-agent-tree-collapsible']} ${collapsedClusterIds.has(group.parent.id) ? styles['sub-agent-tree-collapsible-is-collapsed'] : ''}`}
+              >
+                <div className={styles['sub-agent-tree-collapsible-inner']}>
+                  {renderSubAgentTree(group.tree, 0)}
+                </div>
+              </div>
             </div>
           );
         })}

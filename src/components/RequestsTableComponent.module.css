@@ -1,3 +1,35 @@
+/* ── Sidebar scroll-fill layout ────────────────────── */
+/* When the table is rendered inside a flex‑column sidebar panel,
+   this wrapper makes the table fill remaining space and scroll. */
+
+.sidebar-scroll-fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+
+  & [data-drawer-ignore-click-outside] {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  & :global(.table-component) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  & :global([data-table-scroll]) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
 /* ── Request Detail Drawer Content ──────────────────── */
 
 .detail-section {

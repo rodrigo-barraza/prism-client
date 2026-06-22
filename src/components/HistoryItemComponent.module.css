@@ -438,3 +438,46 @@
   line-height: 1;
   user-select: none;
 }
+
+/* ── Sub-Agent Collapse Toggle (Disclosure Chevron) ── */
+.sub-agent-collapse-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  background: oklch(0.5 0 0 / 0.08);
+  border: 1px solid oklch(0.5 0 0 / 0.1);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.15s ease;
+  will-change: transform;
+
+  &:hover {
+    background: oklch(0.5 0 0 / 0.14);
+    border-color: oklch(0.5 0 0 / 0.18);
+    color: var(--text-primary);
+    transform: scale(1.08);
+    box-shadow: 0 1px 4px oklch(0 0 0 / 0.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.sub-agent-collapse-toggle-is-collapsed {
+  color: var(--text-tertiary, oklch(0.55 0 0));
+  background: oklch(0.5 0 0 / 0.05);
+  border-color: oklch(0.5 0 0 / 0.07);
+}
+

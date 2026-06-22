@@ -2,7 +2,7 @@
 
 import { AGENT_IDS, DEFAULT_USERNAME } from "@/constants";
 
-import { Download, Copy, Star, Trash2, ExternalLink } from "lucide-react";
+import { Download, Copy, Star, Trash2, ExternalLink, ChevronDown, ChevronRight } from "lucide-react";
 
 import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
@@ -63,6 +63,8 @@ interface HistoryItemProps {
   subAgentNumber?: number | null;
   subAgentDepth?: number | null;
   hasSpawnedSubAgents?: boolean;
+  isSubAgentsCollapsed?: boolean;
+  onToggleSubAgents?: () => void;
 }
 
 /**
@@ -109,7 +111,10 @@ export default function HistoryItemComponent({
   subAgentNumber,
   subAgentDepth,
   hasSpawnedSubAgents = false,
+  isSubAgentsCollapsed = false,
+  onToggleSubAgents,
 }: HistoryItemProps) {
+  const isRootOrchestrator = hasSpawnedSubAgents && !item.parentConversationId;
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
   const hasModalities = modalities && Object.keys(modalities).length > 0;
@@ -258,6 +263,20 @@ export default function HistoryItemComponent({
               <span className={styles['parent-agent-emoji']} title="Parent Agent (spawned sub-agents)">
                 🧬
               </span>
+            )}
+            {isRootOrchestrator && onToggleSubAgents && (
+              <button
+                className={`${styles['sub-agent-collapse-toggle']} ${isSubAgentsCollapsed ? styles['sub-agent-collapse-toggle-is-collapsed'] : ''}`}
+                onClick={(event: React.MouseEvent) => {
+                  event.stopPropagation();
+                  onToggleSubAgents();
+                }}
+                title={isSubAgentsCollapsed ? 'Show sub-agents' : 'Hide sub-agents'}
+                aria-expanded={!isSubAgentsCollapsed}
+                aria-label={isSubAgentsCollapsed ? 'Expand sub-agent tree' : 'Collapse sub-agent tree'}
+              >
+                {isSubAgentsCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+              </button>
             )}
           </div>
         </div>

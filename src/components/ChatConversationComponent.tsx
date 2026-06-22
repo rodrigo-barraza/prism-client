@@ -127,6 +127,7 @@ import {
   FALLBACK_THINKING_PATTERNS,
 } from "../constants";
 import adminPageStyles from "../app/admin/chat/page.module.css";
+import requestsTableStyles from "./RequestsTableComponent.module.css";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 import useProjectFilter from "../hooks/useProjectFilter";
 import { getErrorMessage } from "../utils/errorMessage";
@@ -6341,14 +6342,16 @@ export default function ChatConversationComponent({
       {leftTab === "requests" && (
         <>
           <SidebarTabHeaderComponent icon="📊" title="Requests" count={backendConversationStats?.requestCount || 0} />
-          <RequestsTableComponent
-            conversationId={conversationId}
-            refreshKey={requestsRefreshKey}
-            compact
-            mini
-            maxHeight={null}
-            storageKey="conversation-requests"
-          />
+          <div className={requestsTableStyles['sidebar-scroll-fill']}>
+            <RequestsTableComponent
+              conversationId={conversationId}
+              refreshKey={requestsRefreshKey}
+              compact
+              mini
+              maxHeight={null}
+              storageKey="conversation-requests"
+            />
+          </div>
         </>
       )}
 
