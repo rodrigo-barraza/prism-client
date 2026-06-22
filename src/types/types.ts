@@ -1034,6 +1034,8 @@ export interface CoordinatorSubAgent {
   toolCallCount?: number;
   branchName?: string;
   files?: string[];
+  recursionDepth?: number;
+  toolNames?: Record<string, number>;
 }
 
 // --- Favorites ----------------------------------------------

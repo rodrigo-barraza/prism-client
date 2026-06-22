@@ -702,6 +702,7 @@ export default function HistoryList({
                 isGenerating={generatingConversationIds?.has?.(item.id)}
                 isCondensed={true}
                 subAgentNumber={subAgentNumberMap.get(item.id) ?? null}
+                subAgentDepth={item.parentConversationId ? 1 : null}
                 hasSpawnedSubAgents={parentConversationIds.has(item.id)}
               />
             );
@@ -741,6 +742,7 @@ export default function HistoryList({
                       isGenerating={generatingConversationIds?.has?.(treeNode.item.id)}
                       isCondensed={true}
                       subAgentNumber={subAgentNumberMap.get(treeNode.item.id) ?? null}
+                      subAgentDepth={depth + 1}
                       hasSpawnedSubAgents={treeNode.children.length > 0}
                     />
                     {treeNode.children.length > 0 && renderSubAgentTree(treeNode.children, depth + 1)}

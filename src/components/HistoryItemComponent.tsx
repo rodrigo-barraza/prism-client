@@ -61,6 +61,7 @@ interface HistoryItemProps {
   isCondensed?: boolean;
   children?: React.ReactNode;
   subAgentNumber?: number | null;
+  subAgentDepth?: number | null;
   hasSpawnedSubAgents?: boolean;
 }
 
@@ -106,6 +107,7 @@ export default function HistoryItemComponent({
   isCondensed = false,
   children,
   subAgentNumber,
+  subAgentDepth,
   hasSpawnedSubAgents = false,
 }: HistoryItemProps) {
   const itemDate = item.updatedAt || item.createdAt;
@@ -245,6 +247,11 @@ export default function HistoryItemComponent({
                 👶{subAgentNumber != null && (
                   <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
                 )}
+              </span>
+            )}
+            {item.parentConversationId && subAgentDepth != null && subAgentDepth > 0 && (
+              <span className={styles['sub-agent-depth-emoji']} title={`Nesting Depth: ${subAgentDepth}`}>
+                🪜<span className={styles['sub-agent-depth-number']}>{subAgentDepth}</span>
               </span>
             )}
             {(item.hasSubAgents || hasSpawnedSubAgents) && (

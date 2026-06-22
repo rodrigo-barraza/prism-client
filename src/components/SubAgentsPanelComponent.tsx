@@ -9,6 +9,7 @@ import {
   Clock,
   GitBranch,
   FileCode,
+  Layers,
 } from "lucide-react";
 import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
 import { ButtonComponent } from "@rodrigo-barraza/components-library";
@@ -195,6 +196,12 @@ export default function SubAgentsPanel({
               <span className={styles['agent-badge']}>
                 Agent {getAgentNumber(subAgent.agentId)}
               </span>
+              {typeof subAgent.recursionDepth === "number" && subAgent.recursionDepth > 0 && (
+                <span className={styles['depth-badge']}>
+                  <Layers size={9} />
+                  Depth {subAgent.recursionDepth}
+                </span>
+              )}
               <span className={`${styles['sub-agent-status']} ${styles[statusClass]}`}>
                 {statusLabel}
               </span>
@@ -282,6 +289,22 @@ export default function SubAgentsPanel({
                 </div>
               );
             })()}
+
+            {/* -- Tool names breakdown ─────────────────────── */}
+            {subAgent.toolNames && Object.keys(subAgent.toolNames).length > 0 && (
+              <div className={styles['tool-names-row']}>
+                {Object.entries(subAgent.toolNames)
+                  .sort(([, countA], [, countB]) => countB - countA)
+                  .map(([toolName, callCount]) => (
+                    <span key={toolName} className={styles['tool-name-pill']}>
+                      {renderToolName(toolName)}
+                      {callCount > 1 && (
+                        <span className={styles['tool-name-count']}>×{callCount}</span>
+                      )}
+                    </span>
+                  ))}
+              </div>
+            )}
 
             {/* Files */}
             {(subAgent.files?.length ?? 0) > 0 && (
