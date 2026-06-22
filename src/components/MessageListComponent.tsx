@@ -2036,6 +2036,12 @@ export default function MessageList({
                                 .filter(Boolean).length
                             }
                           />
+                          {message.timestamp && (
+                            <BadgeComponent
+                              type="dateTime"
+                              date={message.timestamp}
+                            />
+                          )}
                         </div>
                       )}
 
