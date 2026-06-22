@@ -4102,6 +4102,39 @@ export default function ChatConversationComponent({
                   phase: "spawned",
                 },
               }));
+
+              // Optimistic sidebar injection: add placeholder conversation
+              // entry so sub-agent appears in the HistoryList immediately
+              // rather than waiting for loadConversations() post-completion.
+              const subAgentConversationId = data.conversationId as string | undefined;
+              const subAgentParentConversationId = data.parentConversationId as string | undefined;
+              if (subAgentConversationId) {
+                const spawnTimestamp = new Date().toISOString();
+                setConversations((previousConversations) => {
+                  // Guard: don't duplicate if already in the list (e.g. continuation spawn)
+                  if (previousConversations.some(
+                    (existingConversation) => (existingConversation.id || String(existingConversation._id)) === subAgentConversationId,
+                  )) {
+                    return previousConversations;
+                  }
+                  return [
+                    {
+                      _id: subAgentConversationId,
+                      id: subAgentConversationId,
+                      project: agentProject || "",
+                      title: data.description || "Sub-agent",
+                      messages: [],
+                      updatedAt: spawnTimestamp,
+                      createdAt: spawnTimestamp,
+                      parentConversationId: subAgentParentConversationId || null,
+                      isGenerating: true,
+                      ...(data.model ? { modelNames: [data.model as string] } : {}),
+                      ...(data.provider ? { providers: [data.provider as string] } : {}),
+                    } as AgentConversation,
+                    ...previousConversations,
+                  ];
+                });
+              }
             } else if (data.message === STATUS_MESSAGES.ITERATION_PROGRESS) {
               setSubAgentToolActivity((previousSubAgentToolActivity) => ({
                 ...previousSubAgentToolActivity,
