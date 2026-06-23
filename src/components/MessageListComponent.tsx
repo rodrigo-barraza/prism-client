@@ -2037,6 +2037,37 @@ export default function MessageList({
                                 .filter(Boolean).length
                             }
                           />
+                          <BadgeComponent
+                            type="tokens"
+                            value={Math.ceil(message.content.length / 4)}
+                            label="estimated"
+                          />
+                          {message.timestamp && (
+                            <BadgeComponent
+                              type="dateTime"
+                              date={message.timestamp}
+                            />
+                          )}
+                        </div>
+                      )}
+
+                      {/* System metadata */}
+                      {message.role === "system" && message.content && (
+                        <div className={styles['meta-badges']}>
+                          <BadgeComponent
+                            type="words"
+                            count={
+                              message.content
+                                .trim()
+                                .split(/\s+/)
+                                .filter(Boolean).length
+                            }
+                          />
+                          <BadgeComponent
+                            type="tokens"
+                            value={Math.ceil(message.content.length / 4)}
+                            label="estimated"
+                          />
                           {message.timestamp && (
                             <BadgeComponent
                               type="dateTime"
