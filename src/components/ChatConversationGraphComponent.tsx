@@ -61,17 +61,33 @@ interface GraphNode {
   velocityY: number;
   sequenceNumber?: number;
   metadata?: Record<string, unknown>;
+  depth?: number;
 }
 
 interface GraphEdge {
   source: string;
   target: string;
   strength?: number;
+  isCurved?: boolean;
+}
+
+interface SubAgentTreeNode {
+  nodeId: string;
+  agentConversationId: string;
+  children: SubAgentTreeNode[];
+}
+
+interface ContainmentHalo {
+  parentNodeId: string;
+  childNodeIds: string[];
+  depth: number;
 }
 
 interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  subAgentTree: SubAgentTreeNode[];
+  containmentHalos: ContainmentHalo[];
 }
 
 const NODE_COLORS: Record<NodeCategory, string> = {
@@ -85,6 +101,18 @@ const NODE_COLORS: Record<NodeCategory, string> = {
   agent: "oklch(0.72 0.16 300)",
   embedding: "oklch(0.70 0.13 75)",
 };
+
+const AGENT_DEPTH_COLORS: string[] = [
+  "oklch(0.72 0.16 300)",
+  "oklch(0.68 0.14 270)",
+  "oklch(0.64 0.12 240)",
+  "oklch(0.60 0.10 210)",
+  "oklch(0.56 0.08 190)",
+];
+
+function resolveAgentColorByDepth(depth: number): string {
+  return AGENT_DEPTH_COLORS[Math.min(depth, AGENT_DEPTH_COLORS.length - 1)];
+}
 
 const NODE_LABELS: Record<NodeCategory, string> = {
   session: "Conversation",
@@ -133,6 +161,35 @@ function straightEdgePath(
   return `M ${startX} ${startY} L ${endX} ${endY}`;
 }
 
+function curvedEdgePath(
+  sourceX: number,
+  sourceY: number,
+  sourceRadius: number,
+  targetX: number,
+  targetY: number,
+  targetRadius: number,
+): string {
+  const deltaX = targetX - sourceX;
+  const deltaY = targetY - sourceY;
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+
+  const unitX = deltaX / distance;
+  const unitY = deltaY / distance;
+
+  const startX = sourceX + unitX * sourceRadius;
+  const startY = sourceY + unitY * sourceRadius;
+  const endX = targetX - unitX * targetRadius;
+  const endY = targetY - unitY * targetRadius;
+
+  const midX = (startX + endX) / 2;
+  const midY = (startY + endY) / 2;
+  const curvatureOffset = distance * 0.15;
+  const controlX = midX + (-unitY) * curvatureOffset;
+  const controlY = midY + unitX * curvatureOffset;
+
+  return `M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`;
+}
+
 function buildGraphFromConversation(
   conversation: AgentConversation,
   conversationStats: ConversationStats | null,
@@ -142,7 +199,6 @@ function buildGraphFromConversation(
   const edges: GraphEdge[] = [];
   const nodeIdSet = new Set<string>();
   const edgeKeySet = new Set<string>();
-  const subAgentNodeIds: string[] = [];
 
   const addNode = (
     id: string,
@@ -151,17 +207,18 @@ function buildGraphFromConversation(
     radius: number,
     metadata?: Record<string, unknown>,
     sequenceNumber?: number,
+    depth?: number,
   ) => {
     if (nodeIdSet.has(id)) return;
     nodeIdSet.add(id);
-    nodes.push({ id, label, category, radius, x: 0, y: 0, velocityX: 0, velocityY: 0, metadata, sequenceNumber });
+    nodes.push({ id, label, category, radius, x: 0, y: 0, velocityX: 0, velocityY: 0, metadata, sequenceNumber, depth });
   };
 
-  const addEdge = (source: string, target: string, strength = 1) => {
+  const addEdge = (source: string, target: string, strength = 1, isCurved = false) => {
     const edgeKey = `${source}→${target}`;
     if (edgeKeySet.has(edgeKey)) return;
     edgeKeySet.add(edgeKey);
-    edges.push({ source, target, strength });
+    edges.push({ source, target, strength, isCurved });
   };
 
   const conversationId = conversation.id || conversation._id;
@@ -196,9 +253,9 @@ function buildGraphFromConversation(
     ? `agent:${mainAgentConversationId}:${conversation.agent}`
     : `agent:${mainAgentConversationId}:default`;
   if (conversation.agent) {
-    addNode(parentAgentNodeId, conversation.agent, "agent", 24, { agent: conversation.agent });
+    addNode(parentAgentNodeId, conversation.agent, "agent", 24, { agent: conversation.agent, depth: 0 }, undefined, 0);
   } else {
-    addNode(parentAgentNodeId, "Default Agent", "agent", 24, { agent: "default" });
+    addNode(parentAgentNodeId, "Default Agent", "agent", 24, { agent: "default", depth: 0 }, undefined, 0);
   }
   addEdge(conversationNodeId, parentAgentNodeId, 0.9);
 
@@ -207,12 +264,51 @@ function buildGraphFromConversation(
   const userSet = new Set<string>();
   const addedToolNames = new Set<string>();
 
+  // Build sub-agent conversation ID → node ID mapping for tree reconstruction
+  const agentConversationIdToNodeId = new Map<string, string>();
+  agentConversationIdToNodeId.set(mainAgentConversationId, parentAgentNodeId);
+
   const sortedRequests = [...conversationRequests].sort((requestA, requestB) => {
     const timestampA = requestA.timestamp ? new Date(requestA.timestamp).getTime() : 0;
     const timestampB = requestB.timestamp ? new Date(requestB.timestamp).getTime() : 0;
     return timestampA - timestampB;
   });
 
+  // First pass: discover all sub-agent nodes and their parent relationships
+  const subAgentParentMap = new Map<string, string>();
+  const subAgentNodeIdList: string[] = [];
+
+  for (const request of sortedRequests) {
+    const requestAgentConversationId = request.agentConversationId || mainAgentConversationId;
+    const isSubAgent = requestAgentConversationId !== mainAgentConversationId;
+
+    if (isSubAgent) {
+      const currentAgentNodeId = `agent:${requestAgentConversationId}:${request.agent || AGENT_IDS.OMNI}`;
+      if (!agentConversationIdToNodeId.has(requestAgentConversationId)) {
+        agentConversationIdToNodeId.set(requestAgentConversationId, currentAgentNodeId);
+        const actualParentConversationId = request.parentAgentConversationId || mainAgentConversationId;
+        subAgentParentMap.set(requestAgentConversationId, actualParentConversationId);
+        subAgentNodeIdList.push(currentAgentNodeId);
+      }
+    }
+  }
+
+  // Compute depth for each sub-agent by walking up the parent chain
+  const subAgentDepthMap = new Map<string, number>();
+  const computeDepth = (agentConversationId: string): number => {
+    if (agentConversationId === mainAgentConversationId) return 0;
+    if (subAgentDepthMap.has(agentConversationId)) return subAgentDepthMap.get(agentConversationId)!;
+    const parentConversationId = subAgentParentMap.get(agentConversationId) || mainAgentConversationId;
+    const depth = computeDepth(parentConversationId) + 1;
+    subAgentDepthMap.set(agentConversationId, depth);
+    return depth;
+  };
+
+  for (const agentConversationId of subAgentParentMap.keys()) {
+    computeDepth(agentConversationId);
+  }
+
+  // Second pass: create nodes and edges for all requests
   for (let requestIndex = 0; requestIndex < sortedRequests.length; requestIndex++) {
     const request = sortedRequests[requestIndex];
     const sequenceNumber = requestIndex + 1;
@@ -231,23 +327,23 @@ function buildGraphFromConversation(
       requestId: request.requestId || request._id,
     }, sequenceNumber);
 
-    const reqAgentConversationId = request.agentConversationId || mainAgentConversationId;
-    const isSubAgent = reqAgentConversationId !== mainAgentConversationId;
+    const requestAgentConversationId = request.agentConversationId || mainAgentConversationId;
+    const isSubAgent = requestAgentConversationId !== mainAgentConversationId;
     const currentAgentNodeId = isSubAgent
-      ? `agent:${reqAgentConversationId}:${request.agent || AGENT_IDS.OMNI}`
+      ? `agent:${requestAgentConversationId}:${request.agent || AGENT_IDS.OMNI}`
       : parentAgentNodeId;
 
     if (isSubAgent) {
       const subAgentLabel = request.agent || AGENT_IDS.OMNI;
-      addNode(currentAgentNodeId, subAgentLabel, "agent", 22, {
+      const agentDepth = subAgentDepthMap.get(requestAgentConversationId) || 1;
+      const depthScaledRadius = Math.max(14, 22 - agentDepth * 3);
+      addNode(currentAgentNodeId, subAgentLabel, "agent", depthScaledRadius, {
         agent: subAgentLabel,
         isSubagent: true,
         parentAgentConversationId: request.parentAgentConversationId || mainAgentConversationId,
-        agentConversationId: reqAgentConversationId,
-      });
-      if (!subAgentNodeIds.includes(currentAgentNodeId)) {
-        subAgentNodeIds.push(currentAgentNodeId);
-      }
+        agentConversationId: requestAgentConversationId,
+        depth: agentDepth,
+      }, undefined, agentDepth);
     }
 
     addEdge(currentAgentNodeId, requestNodeId, 0.5);
@@ -255,7 +351,7 @@ function buildGraphFromConversation(
     if (requestIndex > 0) {
       const previousRequest = sortedRequests[requestIndex - 1];
       const previousAgentConversationId = previousRequest.agentConversationId || mainAgentConversationId;
-      if (previousAgentConversationId === reqAgentConversationId) {
+      if (previousAgentConversationId === requestAgentConversationId) {
         const previousRequestNodeId = `request:${previousRequest._id || (requestIndex - 1)}`;
         addEdge(previousRequestNodeId, requestNodeId, 0.6);
       }
@@ -313,61 +409,151 @@ function buildGraphFromConversation(
     addEdge(userNodeId, conversationNodeId, 0.5);
   }
 
+  // Build the sub-agent tree from parentAgentConversationId hierarchy
+  const buildSubAgentTree = (parentConversationId: string, visitedIds: Set<string>): SubAgentTreeNode[] => {
+    const children: SubAgentTreeNode[] = [];
+    for (const [childConversationId, childParentId] of subAgentParentMap.entries()) {
+      if (childParentId === parentConversationId && !visitedIds.has(childConversationId)) {
+        const childNodeId = agentConversationIdToNodeId.get(childConversationId);
+        if (childNodeId) {
+          const nextVisited = new Set(visitedIds);
+          nextVisited.add(childConversationId);
+          children.push({
+            nodeId: childNodeId,
+            agentConversationId: childConversationId,
+            children: buildSubAgentTree(childConversationId, nextVisited),
+          });
+        }
+      }
+    }
+    return children;
+  };
+
+  const subAgentTree = buildSubAgentTree(mainAgentConversationId, new Set([mainAgentConversationId]));
+
+  // Create edges based on the tree structure using curved paths for parent→child agent links
+  const createTreeEdges = (treeNodes: SubAgentTreeNode[], parentNodeId: string) => {
+    for (const treeNode of treeNodes) {
+      addEdge(parentNodeId, treeNode.nodeId, 0.9, true);
+      if (treeNode.children.length > 0) {
+        createTreeEdges(treeNode.children, treeNode.nodeId);
+      }
+    }
+  };
+
   const topology = conversation.settings?.agents?.topology || DEFAULT_TOPOLOGY;
-  if (topology === TOPOLOGIES.SEQUENTIAL && subAgentNodeIds.length > 0) {
-    addEdge(parentAgentNodeId, subAgentNodeIds[0], 0.9);
-    for (let index = 1; index < subAgentNodeIds.length; index++) {
-      addEdge(subAgentNodeIds[index - 1], subAgentNodeIds[index], 0.9);
-    }
-  } else if (topology === TOPOLOGIES.HIERARCHICAL_AGGREGATION && subAgentNodeIds.length > 0) {
-    for (const subAgentId of subAgentNodeIds) {
-      addEdge(parentAgentNodeId, subAgentId, 0.9);
-    }
-    for (let index = 0; index < subAgentNodeIds.length; index++) {
-      for (let nextIndex = index + 1; nextIndex < subAgentNodeIds.length; nextIndex++) {
-        addEdge(subAgentNodeIds[index], subAgentNodeIds[nextIndex], 0.4);
+
+  // For topologies that benefit from tree-aware edges, use the reconstructed tree
+  if (subAgentTree.length > 0) {
+    if (topology === TOPOLOGIES.SEQUENTIAL) {
+      const flattenedNodes = flattenSubAgentTree(subAgentTree);
+      if (flattenedNodes.length > 0) {
+        addEdge(parentAgentNodeId, flattenedNodes[0], 0.9, true);
+        for (let index = 1; index < flattenedNodes.length; index++) {
+          addEdge(flattenedNodes[index - 1], flattenedNodes[index], 0.9, true);
+        }
       }
-    }
-  } else if (topology === TOPOLOGIES.PEER_TO_PEER && subAgentNodeIds.length > 0) {
-    for (const subAgentId of subAgentNodeIds) {
-      addEdge(parentAgentNodeId, subAgentId, 0.7);
-    }
-    for (let index = 0; index < subAgentNodeIds.length; index++) {
-      for (let nextIndex = index + 1; nextIndex < subAgentNodeIds.length; nextIndex++) {
-        addEdge(subAgentNodeIds[index], subAgentNodeIds[nextIndex], 0.6);
+    } else if (topology === TOPOLOGIES.PEER_TO_PEER) {
+      createTreeEdges(subAgentTree, parentAgentNodeId);
+      // Add cross-links between direct siblings
+      for (let index = 0; index < subAgentTree.length; index++) {
+        for (let nextIndex = index + 1; nextIndex < subAgentTree.length; nextIndex++) {
+          addEdge(subAgentTree[index].nodeId, subAgentTree[nextIndex].nodeId, 0.4);
+        }
       }
-    }
-  } else if (topology === TOPOLOGIES.CRITIC_LOOP && subAgentNodeIds.length > 0) {
-    // Critic loop: actor→critic chain — first sub-agent is actor, rest are critics
-    addEdge(parentAgentNodeId, subAgentNodeIds[0], 0.9);
-    for (let index = 1; index < subAgentNodeIds.length; index++) {
-      addEdge(subAgentNodeIds[index - 1], subAgentNodeIds[index], 0.8);
-    }
-    // Feedback loop: last critic feeds back to actor
-    if (subAgentNodeIds.length > 1) {
-      addEdge(subAgentNodeIds[subAgentNodeIds.length - 1], subAgentNodeIds[0], 0.5);
-    }
-  } else if ((topology === TOPOLOGIES.TOURNAMENT || topology === TOPOLOGIES.DIVIDE_AND_CONQUER) && subAgentNodeIds.length > 0) {
-    // Tournament / D&C: fan-out from orchestrator, no inter-agent edges
-    for (const subAgentId of subAgentNodeIds) {
-      addEdge(parentAgentNodeId, subAgentId, 0.9);
-    }
-  } else if (topology === TOPOLOGIES.MCTS && subAgentNodeIds.length > 0) {
-    // MCTS: tree-shaped — connect agents to parent based on spawn order (depth layers)
-    addEdge(parentAgentNodeId, subAgentNodeIds[0], 0.9);
-    for (let index = 1; index < subAgentNodeIds.length; index++) {
-      // Approximate tree structure: earlier agents parent later ones
-      const parentIndex = Math.floor((index - 1) / 3);
-      const treeParentId = parentIndex < subAgentNodeIds.length ? subAgentNodeIds[parentIndex] : parentAgentNodeId;
-      addEdge(treeParentId, subAgentNodeIds[index], 0.8);
-    }
-  } else {
-    for (const subAgentId of subAgentNodeIds) {
-      addEdge(parentAgentNodeId, subAgentId, 0.9);
+    } else if (topology === TOPOLOGIES.CRITIC_LOOP) {
+      const flattenedNodes = flattenSubAgentTree(subAgentTree);
+      if (flattenedNodes.length > 0) {
+        addEdge(parentAgentNodeId, flattenedNodes[0], 0.9, true);
+        for (let index = 1; index < flattenedNodes.length; index++) {
+          addEdge(flattenedNodes[index - 1], flattenedNodes[index], 0.8, true);
+        }
+        if (flattenedNodes.length > 1) {
+          addEdge(flattenedNodes[flattenedNodes.length - 1], flattenedNodes[0], 0.5, true);
+        }
+      }
+    } else if (topology === TOPOLOGIES.HIERARCHICAL_AGGREGATION) {
+      createTreeEdges(subAgentTree, parentAgentNodeId);
+      // Add inter-sibling edges at depth 1
+      for (let index = 0; index < subAgentTree.length; index++) {
+        for (let nextIndex = index + 1; nextIndex < subAgentTree.length; nextIndex++) {
+          addEdge(subAgentTree[index].nodeId, subAgentTree[nextIndex].nodeId, 0.4);
+        }
+      }
+    } else {
+      // Default: use tree-aware curved edges
+      createTreeEdges(subAgentTree, parentAgentNodeId);
     }
   }
 
-  return { nodes, edges };
+  // Build containment halos for agents that have children in the tree
+  const containmentHalos: ContainmentHalo[] = [];
+
+  const buildContainmentHalos = (treeNodes: SubAgentTreeNode[], parentNodeId: string, parentDepth: number) => {
+    const childNodeIds = treeNodes.map((treeNode) => treeNode.nodeId);
+    if (childNodeIds.length > 0) {
+      containmentHalos.push({
+        parentNodeId,
+        childNodeIds,
+        depth: parentDepth,
+      });
+    }
+    for (const treeNode of treeNodes) {
+      if (treeNode.children.length > 0) {
+        const childDepth = (subAgentDepthMap.get(treeNode.agentConversationId) || 1);
+        buildContainmentHalos(treeNode.children, treeNode.nodeId, childDepth);
+      }
+    }
+  };
+
+  buildContainmentHalos(subAgentTree, parentAgentNodeId, 0);
+
+  return { nodes, edges, subAgentTree, containmentHalos };
+}
+
+function flattenSubAgentTree(treeNodes: SubAgentTreeNode[]): string[] {
+  const result: string[] = [];
+  for (const treeNode of treeNodes) {
+    result.push(treeNode.nodeId);
+    result.push(...flattenSubAgentTree(treeNode.children));
+  }
+  return result;
+}
+
+function applyRecursiveRadialSubAgentLayout(
+  treeNodes: SubAgentTreeNode[],
+  parentNode: GraphNode,
+  nodeMap: Map<string, GraphNode>,
+  depth: number,
+  baseAngle: number,
+  arcSpan: number,
+): void {
+  const orbitRadius = Math.max(60, 140 - depth * 30);
+  const childCount = treeNodes.length;
+
+  for (let childIndex = 0; childIndex < childCount; childIndex++) {
+    const treeChild = treeNodes[childIndex];
+    const childNode = nodeMap.get(treeChild.nodeId);
+    if (!childNode) continue;
+
+    const angleOffset = childCount === 1
+      ? baseAngle
+      : baseAngle - arcSpan / 2 + (childIndex / (childCount - 1)) * arcSpan;
+
+    childNode.x = parentNode.x + Math.cos(angleOffset) * orbitRadius;
+    childNode.y = parentNode.y + Math.sin(angleOffset) * orbitRadius;
+
+    if (treeChild.children.length > 0) {
+      applyRecursiveRadialSubAgentLayout(
+        treeChild.children,
+        childNode,
+        nodeMap,
+        depth + 1,
+        angleOffset,
+        arcSpan * 0.65,
+      );
+    }
+  }
 }
 
 function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canvasHeight: number): void {
@@ -732,6 +918,44 @@ function applyTopologyLayout(
   } else {
     applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);
   }
+
+  // After base layout, apply recursive radial positioning for nested sub-agent trees
+  if (graphData.subAgentTree && graphData.subAgentTree.length > 0) {
+    const nodeMap = new Map(graphData.nodes.map((node) => [node.id, node]));
+
+    // Check if any tree node has children (i.e., depth > 1 nesting exists)
+    const hasNestedSubAgents = graphData.subAgentTree.some((treeNode) => treeNode.children.length > 0);
+
+    if (hasNestedSubAgents) {
+      const mainAgentNode = graphData.nodes.find(
+        (graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent
+      );
+
+      if (mainAgentNode) {
+        // Reposition sub-agent children using radial orbit from their actual parent
+        for (const topLevelSubAgent of graphData.subAgentTree) {
+          if (topLevelSubAgent.children.length > 0) {
+            const topLevelNode = nodeMap.get(topLevelSubAgent.nodeId);
+            if (topLevelNode) {
+              // Compute angle from main agent to this sub-agent for child fan-out direction
+              const angleFromParent = Math.atan2(
+                topLevelNode.y - mainAgentNode.y,
+                topLevelNode.x - mainAgentNode.x,
+              );
+              applyRecursiveRadialSubAgentLayout(
+                topLevelSubAgent.children,
+                topLevelNode,
+                nodeMap,
+                1,
+                angleFromParent,
+                Math.PI * 0.8,
+              );
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 const MINIMUM_ZOOM = 0.02;
@@ -800,6 +1024,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [enteringNodeIds, setEnteringNodeIds] = useState<Set<string>>(new Set());
   const [isLiveConnected, setIsLiveConnected] = useState(false);
+  const [collapsedSubTreeIds, setCollapsedSubTreeIds] = useState<Set<string>>(new Set());
 
   const [selectedRequestDetail, setSelectedRequestDetail] = useState<IrisRequestEntry | null>(null);
   const [isRequestDetailLoading, setIsRequestDetailLoading] = useState(false);
@@ -1280,6 +1505,103 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
     return `${originX} ${originY} ${scaledWidth} ${scaledHeight}`;
   }, [canvasWidth, canvasHeight, zoom, panOffset]);
 
+  // Compute which node IDs are hidden because their ancestor is collapsed
+  const hiddenNodeIds = useMemo<Set<string>>(() => {
+    if (!graphData || collapsedSubTreeIds.size === 0) return new Set();
+    const hidden = new Set<string>();
+
+    const hideDescendants = (treeNodes: SubAgentTreeNode[]) => {
+      for (const treeNode of treeNodes) {
+        hidden.add(treeNode.nodeId);
+        // Also hide all requests/tools/models connected to this hidden agent
+        for (const edge of graphData.edges) {
+          if (edge.source === treeNode.nodeId) {
+            const targetNode = graphData.nodes.find((graphNode) => graphNode.id === edge.target);
+            if (targetNode && targetNode.category !== "agent") {
+              hidden.add(edge.target);
+            }
+          }
+        }
+        hideDescendants(treeNode.children);
+      }
+    };
+
+    const walkAndCollapse = (treeNodes: SubAgentTreeNode[]) => {
+      for (const treeNode of treeNodes) {
+        if (collapsedSubTreeIds.has(treeNode.nodeId)) {
+          hideDescendants(treeNode.children);
+        } else {
+          walkAndCollapse(treeNode.children);
+        }
+      }
+    };
+
+    walkAndCollapse(graphData.subAgentTree);
+    return hidden;
+  }, [graphData, collapsedSubTreeIds]);
+
+  // Compute containment halo ellipse geometry from positioned nodes
+  const containmentHaloGeometry = useMemo(() => {
+    if (!graphData || graphData.containmentHalos.length === 0) return [];
+    const nodeMap = new Map(graphData.nodes.map((node) => [node.id, node]));
+
+    return graphData.containmentHalos
+      .filter((halo) => !hiddenNodeIds.has(halo.parentNodeId))
+      .map((halo) => {
+        const parentNode = nodeMap.get(halo.parentNodeId);
+        if (!parentNode) return null;
+
+        const visibleChildNodes = halo.childNodeIds
+          .filter((childId) => !hiddenNodeIds.has(childId))
+          .map((childId) => nodeMap.get(childId))
+          .filter((childNode): childNode is GraphNode => childNode != null);
+
+        if (visibleChildNodes.length === 0) return null;
+
+        const allRelevantNodes = [parentNode, ...visibleChildNodes];
+        let minimumX = Infinity;
+        let minimumY = Infinity;
+        let maximumX = -Infinity;
+        let maximumY = -Infinity;
+
+        for (const node of allRelevantNodes) {
+          minimumX = Math.min(minimumX, node.x - node.radius);
+          minimumY = Math.min(minimumY, node.y - node.radius);
+          maximumX = Math.max(maximumX, node.x + node.radius);
+          maximumY = Math.max(maximumY, node.y + node.radius);
+        }
+
+        const haloPadding = 25 - halo.depth * 4;
+        const centerX = (minimumX + maximumX) / 2;
+        const centerY = (minimumY + maximumY) / 2;
+        const radiusX = (maximumX - minimumX) / 2 + haloPadding;
+        const radiusY = (maximumY - minimumY) / 2 + haloPadding;
+
+        return {
+          parentNodeId: halo.parentNodeId,
+          depth: halo.depth,
+          centerX,
+          centerY,
+          radiusX,
+          radiusY,
+          color: resolveAgentColorByDepth(halo.depth),
+        };
+      })
+      .filter((haloGeometry): haloGeometry is NonNullable<typeof haloGeometry> => haloGeometry != null);
+  }, [graphData, hiddenNodeIds]);
+
+  const toggleSubTreeCollapse = useCallback((nodeId: string) => {
+    setCollapsedSubTreeIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(nodeId)) {
+        next.delete(nodeId);
+      } else {
+        next.add(nodeId);
+      }
+      return next;
+    });
+  }, []);
+
   // -- Empty state when no conversationId -----------------------------
   if (!conversationId) {
     return (
@@ -1371,29 +1693,88 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                     <path d="M 0 2.5 L 7 5 L 0 7.5 z" fill={color} />
                   </marker>
                 ))}
+                {AGENT_DEPTH_COLORS.map((depthColor, depthIndex) => (
+                  <marker
+                    key={`chat-graph-arrow-agent-depth-${depthIndex}`}
+                    id={`chat-graph-arrow-agent-depth-${depthIndex}`}
+                    viewBox="0 0 10 10"
+                    refX={7}
+                    refY={5}
+                    markerWidth={6}
+                    markerHeight={6}
+                    orient="auto"
+                  >
+                    <path d="M 0 2.5 L 7 5 L 0 7.5 z" fill={depthColor} />
+                  </marker>
+                ))}
               </defs>
+
+              {/* Containment Halos — rendered behind edges and nodes */}
+              {containmentHaloGeometry.map((haloGeometry) => (
+                <g
+                  key={`containment-halo-${haloGeometry.parentNodeId}`}
+                  className={styles['containment-halo-group']}
+                >
+                  <ellipse
+                    cx={haloGeometry.centerX}
+                    cy={haloGeometry.centerY}
+                    rx={haloGeometry.radiusX}
+                    ry={haloGeometry.radiusY}
+                    fill={haloGeometry.color}
+                    fillOpacity={0.03 - haloGeometry.depth * 0.005}
+                    className={styles['containment-halo-fill']}
+                  />
+                  <ellipse
+                    cx={haloGeometry.centerX}
+                    cy={haloGeometry.centerY}
+                    rx={haloGeometry.radiusX}
+                    ry={haloGeometry.radiusY}
+                    fill="none"
+                    stroke={haloGeometry.color}
+                    strokeOpacity={0.15 - haloGeometry.depth * 0.03}
+                    strokeWidth={1.5 - haloGeometry.depth * 0.2}
+                    strokeDasharray="8 5"
+                    className={styles['containment-halo-stroke']}
+                  />
+                </g>
+              ))}
 
               {/* Edges */}
               {graphData.edges.map((edge, edgeIndex) => {
                 const sourceNode = graphData.nodes.find((node) => node.id === edge.source);
                 const targetNode = graphData.nodes.find((node) => node.id === edge.target);
                 if (!sourceNode || !targetNode) return null;
+                if (hiddenNodeIds.has(edge.source) || hiddenNodeIds.has(edge.target)) return null;
                 const isEdgeSelected = selectedNodeId === edge.source || selectedNodeId === edge.target;
                 const baseOpacity = 0.15 + (edge.strength || 0.5) * 0.2;
                 const edgeOpacity = isEdgeSelected ? 0.95 : baseOpacity;
-                const edgeColor = NODE_COLORS[targetNode.category] || "oklch(0.6 0 0)";
-                const pathData = straightEdgePath(sourceNode.x, sourceNode.y, sourceNode.radius, targetNode.x, targetNode.y, targetNode.radius);
+
+                // Use depth-encoded color for agent-to-agent edges
+                const isAgentToAgentEdge = sourceNode.category === "agent" && targetNode.category === "agent";
+                const targetDepth = targetNode.depth ?? 0;
+                const edgeColor = isAgentToAgentEdge
+                  ? resolveAgentColorByDepth(targetDepth)
+                  : NODE_COLORS[targetNode.category] || "oklch(0.6 0 0)";
+
+                const pathData = edge.isCurved
+                  ? curvedEdgePath(sourceNode.x, sourceNode.y, sourceNode.radius, targetNode.x, targetNode.y, targetNode.radius)
+                  : straightEdgePath(sourceNode.x, sourceNode.y, sourceNode.radius, targetNode.x, targetNode.y, targetNode.radius);
+
+                const arrowMarkerId = isAgentToAgentEdge
+                  ? `chat-graph-arrow-agent-depth-${Math.min(targetDepth, AGENT_DEPTH_COLORS.length - 1)}`
+                  : `chat-graph-arrow-${targetNode.category}`;
+
                 return (
                   <g key={`edge-group-${edgeIndex}`} className={`${graphStyles['connection-group']} ${isEdgeSelected ? graphStyles['connection-selected'] : ""}`}>
                     <path d={pathData} stroke="transparent" strokeWidth={8} fill="none" style={{ cursor: "pointer" }} />
                     <path
                       d={pathData}
                       stroke={edgeColor}
-                      strokeWidth={isEdgeSelected ? 2.5 : 1.5}
+                      strokeWidth={isEdgeSelected ? 2.5 : isAgentToAgentEdge ? 2 : 1.5}
                       strokeOpacity={edgeOpacity}
                       fill="none"
                       className={graphStyles['connection-line']}
-                      markerEnd={`url(#chat-graph-arrow-${targetNode.category})`}
+                      markerEnd={`url(#${arrowMarkerId})`}
                     />
                   </g>
                 );
@@ -1401,18 +1782,72 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
 
               {/* Nodes */}
               {graphData.nodes.map((node) => {
+                if (hiddenNodeIds.has(node.id)) return null;
                 const isSelected = selectedNodeId === node.id;
                 const isSessionCenter = node.category === "session";
-                const nodeColor = NODE_COLORS[node.category];
+                const isAgentNode = node.category === "agent";
+                const agentDepth = node.depth ?? 0;
+                const nodeColor = isAgentNode
+                  ? resolveAgentColorByDepth(agentDepth)
+                  : NODE_COLORS[node.category];
+
+                const isEntering = enteringNodeIds.has(node.id);
+
+                // Check if this agent node has children in the sub-agent tree
+                const hasSubAgentChildren = isAgentNode && graphData.subAgentTree && (() => {
+                  const findInTree = (treeNodes: SubAgentTreeNode[]): boolean => {
+                    for (const treeNode of treeNodes) {
+                      if (treeNode.nodeId === node.id) return treeNode.children.length > 0;
+                      if (findInTree(treeNode.children)) return true;
+                    }
+                    return false;
+                  };
+                  // Also check if this is the root agent with top-level children
+                  if (!node.metadata?.isSubagent && graphData.subAgentTree.length > 0) return true;
+                  return findInTree(graphData.subAgentTree);
+                })();
+
+                const isCollapsed = collapsedSubTreeIds.has(node.id);
+
+                // Count hidden children for collapsed badge
+                const collapsedChildCount = isCollapsed && graphData.subAgentTree ? (() => {
+                  const countDescendants = (treeNodes: SubAgentTreeNode[]): number => {
+                    let totalCount = 0;
+                    for (const treeNode of treeNodes) {
+                      totalCount += 1;
+                      totalCount += countDescendants(treeNode.children);
+                    }
+                    return totalCount;
+                  };
+                  const findNodeChildren = (treeNodes: SubAgentTreeNode[]): SubAgentTreeNode[] => {
+                    for (const treeNode of treeNodes) {
+                      if (treeNode.nodeId === node.id) return treeNode.children;
+                      const found = findNodeChildren(treeNode.children);
+                      if (found.length > 0) return found;
+                    }
+                    return [];
+                  };
+                  return countDescendants(findNodeChildren(graphData.subAgentTree));
+                })() : 0;
+
                 return (
                   <g
                     key={node.id}
                     data-node-identifier={node.id}
-                    className={`${graphStyles['node-group']}${enteringNodeIds.has(node.id) ? ` ${graphStyles['node-entering']}` : ""}`}
+                    className={`${graphStyles['node-group']}${isEntering ? ` ${graphStyles['node-entering']}` : ""}`}
                     onMouseDown={(event) => handleNodeMouseDown(event, node.id)}
                     onClick={() => handleNodeClick(node.id)}
                     filter={isSessionCenter ? "url(#chat-graph-session-glow)" : isSelected ? "url(#chat-graph-node-hover-glow)" : undefined}
                   >
+                    {/* Spawn ripple animation for entering agent nodes */}
+                    {isEntering && isAgentNode && (
+                      <circle
+                        cx={node.x} cy={node.y}
+                        r={node.radius + 30}
+                        stroke={nodeColor}
+                        className={styles['spawn-ripple-circle']}
+                      />
+                    )}
                     {isSelected && (
                       <circle
                         cx={node.x} cy={node.y} r={node.radius + 5}
@@ -1433,12 +1868,59 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                         </text>
                       </>
                     )}
+                    {/* Depth label for nested sub-agents */}
+                    {isAgentNode && agentDepth > 0 && (
+                      <text
+                        x={node.x}
+                        y={node.y + node.radius + 12}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fill={nodeColor}
+                        fontSize={8}
+                        fontWeight={500}
+                        opacity={0.6}
+                        className={styles['depth-label-text']}
+                      >
+                        L{agentDepth}
+                      </text>
+                    )}
                     <text x={node.x + node.radius + 8} y={node.y} textAnchor="start" dominantBaseline="central" fill="oklch(0.75 0 0)" fontSize={10} fontWeight={500} style={{ pointerEvents: "none", userSelect: "none" }}>
                       {node.label.length > 24 ? `${node.label.slice(0, 22)}…` : node.label}
                     </text>
                     <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fill="oklch(0.98 0 0)" fontSize={node.radius * 0.7} fontWeight={600} style={{ pointerEvents: "none", userSelect: "none" }}>
                       {node.category === "session" ? "◉" : node.category === "model" ? "◈" : node.category === "tool" ? "⚙" : node.category === "request" ? "↗" : node.category === "user" ? "●" : node.category === "project" ? "▣" : node.category === "provider" ? "◆" : node.category === "agent" ? "◎" : node.category === "embedding" ? "⬡" : "○"}
                     </text>
+                    {/* Collapse/expand toggle badge for agents with children */}
+                    {hasSubAgentChildren && (
+                      <g
+                        className={styles['collapsed-subtree-badge-group']}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleSubTreeCollapse(node.id);
+                        }}
+                      >
+                        <circle
+                          cx={node.x - node.radius * 0.65}
+                          cy={node.y - node.radius * 0.65}
+                          r={9}
+                          fill="oklch(0.2 0 0)"
+                          stroke={nodeColor}
+                          strokeWidth={1.5}
+                        />
+                        <text
+                          x={node.x - node.radius * 0.65}
+                          y={node.y - node.radius * 0.65}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          fill="oklch(0.95 0 0)"
+                          fontSize={8}
+                          fontWeight={700}
+                          style={{ pointerEvents: "none", userSelect: "none" }}
+                        >
+                          {isCollapsed ? `+${collapsedChildCount}` : "−"}
+                        </text>
+                      </g>
+                    )}
                   </g>
                 );
               })}
@@ -1556,6 +2038,18 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                   <div className={graphStyles['node-detail-popover-section']}>
                     <div className={graphStyles['node-detail-popover-section-title']}>Agent Details</div>
                     <InlineDetailRow label="Agent" value={String(selectedNode.metadata?.agent || "—")} />
+                    {!!selectedNode.metadata?.isSubagent && (
+                      <>
+                        <InlineDetailRow label="Role" value="Sub-Agent" />
+                        <InlineDetailRow label="Depth" value={`Level ${selectedNode.depth ?? 1}`} />
+                        {!!selectedNode.metadata?.parentAgentConversationId && (
+                          <InlineDetailRow label="Parent" value={String(selectedNode.metadata.parentAgentConversationId).slice(0, 12) + "…"} />
+                        )}
+                      </>
+                    )}
+                    {!selectedNode.metadata?.isSubagent && (
+                      <InlineDetailRow label="Role" value="Orchestrator" />
+                    )}
                   </div>
                 )}
 
