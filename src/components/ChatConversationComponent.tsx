@@ -82,7 +82,7 @@ import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ApprovalCardComponent from "./ApprovalCardComponent";
 import UserQuestionCardComponent from "./UserQuestionCardComponent";
 
-import StatusBarComponent, { type StatusBarPhase } from "./StatusBarComponent";
+import StatusBarComponent, { type StatusBarPhase, PHASE_GRADIENT_STOPS } from "./StatusBarComponent";
 import PixelTransitionComponent from "./PixelTransitionComponent";
 import ChatConversationGraphComponent from "./ChatConversationGraphComponent";
 import ChatViewModeControlComponent from "./ChatViewModeControlComponent";
@@ -6968,6 +6968,15 @@ export default function ChatConversationComponent({
             ? "awaiting"
             : subAgentDerivedPhase || (hasActiveTools ? "executing" : rawPhase)
           : null;
+
+        // Sync phase color to :root so the sidebar generating-dot can match the bar
+        const phaseGradientStops = phase ? PHASE_GRADIENT_STOPS[phase] : null;
+        const phaseRepresentativeColor = phaseGradientStops ? phaseGradientStops[3] : null;
+        if (phaseRepresentativeColor) {
+          document.documentElement.style.setProperty("--generating-dot-phase-color", phaseRepresentativeColor);
+        } else {
+          document.documentElement.style.removeProperty("--generating-dot-phase-color");
+        }
         const label = isGenerating
           ? isAwaitingApproval
             ? "Awaiting For User Input..."

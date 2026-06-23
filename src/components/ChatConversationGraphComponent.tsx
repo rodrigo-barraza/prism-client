@@ -48,6 +48,7 @@ type NodeCategory =
   | "project"
   | "provider"
   | "agent"
+  | "subagent"
   | "embedding";
 
 interface GraphNode {
@@ -99,6 +100,7 @@ const NODE_COLORS: Record<NodeCategory, string> = {
   project: "oklch(0.72 0.15 120)",
   provider: "oklch(0.68 0.14 200)",
   agent: "oklch(0.72 0.16 300)",
+  subagent: "oklch(0.68 0.14 270)",
   embedding: "oklch(0.70 0.13 75)",
 };
 
@@ -123,6 +125,7 @@ const NODE_LABELS: Record<NodeCategory, string> = {
   project: "Project",
   provider: "Provider",
   agent: "Agent",
+  subagent: "Sub-Agent",
   embedding: "Embedding",
 };
 
@@ -131,6 +134,7 @@ const TIER_ORDER: Record<NodeCategory, number> = {
   user: 0,
   session: 1,
   agent: 2,
+  subagent: 3,
   tool: 4,
   request: 3,
   model: 4,
@@ -337,7 +341,7 @@ function buildGraphFromConversation(
       const subAgentLabel = request.agent || AGENT_IDS.OMNI;
       const agentDepth = subAgentDepthMap.get(requestAgentConversationId) || 1;
       const depthScaledRadius = Math.max(14, 22 - agentDepth * 3);
-      addNode(currentAgentNodeId, subAgentLabel, "agent", depthScaledRadius, {
+      addNode(currentAgentNodeId, subAgentLabel, "subagent", depthScaledRadius, {
         agent: subAgentLabel,
         isSubagent: true,
         parentAgentConversationId: request.parentAgentConversationId || mainAgentConversationId,
@@ -595,14 +599,15 @@ function applySequentialLayout(graphData: GraphData, canvasWidth: number, canvas
   const projectNode = graphNodes.find((graphNode) => graphNode.category === "project");
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
-  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent);
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "agent" && graphNode.metadata?.isSubagent);
+  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
+  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
   
   const otherNodes = graphNodes.filter((graphNode) => 
     graphNode.category !== "project" && 
     graphNode.category !== "user" && 
     graphNode.category !== "session" && 
-    graphNode.category !== "agent"
+    graphNode.category !== "agent" &&
+    graphNode.category !== "subagent"
   );
 
   const centerY = canvasHeight / 2;
@@ -656,14 +661,15 @@ function applyPeerToPeerLayout(graphData: GraphData, canvasWidth: number, canvas
   const projectNode = graphNodes.find((graphNode) => graphNode.category === "project");
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
-  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent);
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "agent" && graphNode.metadata?.isSubagent);
+  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
+  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
   
   const otherNodes = graphNodes.filter((graphNode) => 
     graphNode.category !== "project" && 
     graphNode.category !== "user" && 
     graphNode.category !== "session" && 
-    graphNode.category !== "agent"
+    graphNode.category !== "agent" &&
+    graphNode.category !== "subagent"
   );
 
   const centerX = canvasWidth / 2;
@@ -719,14 +725,15 @@ function applyCriticLoopLayout(graphData: GraphData, canvasWidth: number, canvas
   const projectNode = graphNodes.find((graphNode) => graphNode.category === "project");
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
-  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent);
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "agent" && graphNode.metadata?.isSubagent);
+  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
+  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
 
   const otherNodes = graphNodes.filter((graphNode) =>
     graphNode.category !== "project" &&
     graphNode.category !== "user" &&
     graphNode.category !== "session" &&
-    graphNode.category !== "agent"
+    graphNode.category !== "agent" &&
+    graphNode.category !== "subagent"
   );
 
   const centerX = canvasWidth / 2;
@@ -776,14 +783,15 @@ function applyTournamentLayout(graphData: GraphData, canvasWidth: number, canvas
   const projectNode = graphNodes.find((graphNode) => graphNode.category === "project");
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
-  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent);
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "agent" && graphNode.metadata?.isSubagent);
+  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
+  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
 
   const otherNodes = graphNodes.filter((graphNode) =>
     graphNode.category !== "project" &&
     graphNode.category !== "user" &&
     graphNode.category !== "session" &&
-    graphNode.category !== "agent"
+    graphNode.category !== "agent" &&
+    graphNode.category !== "subagent"
   );
 
   const centerX = canvasWidth / 2;
@@ -834,14 +842,15 @@ function applyMCTSLayout(graphData: GraphData, canvasWidth: number, canvasHeight
   const projectNode = graphNodes.find((graphNode) => graphNode.category === "project");
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
-  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent);
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "agent" && graphNode.metadata?.isSubagent);
+  const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
+  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
 
   const otherNodes = graphNodes.filter((graphNode) =>
     graphNode.category !== "project" &&
     graphNode.category !== "user" &&
     graphNode.category !== "session" &&
-    graphNode.category !== "agent"
+    graphNode.category !== "agent" &&
+    graphNode.category !== "subagent"
   );
 
   const centerX = canvasWidth / 2;
@@ -927,7 +936,7 @@ function applyTopologyLayout(
   if (graphData.subAgentTree && graphData.subAgentTree.length > 0) {
     const nodeMap = new Map(graphData.nodes.map((node) => [node.id, node]));
     const mainAgentNode = graphData.nodes.find(
-      (graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent
+      (graphNode) => graphNode.category === "agent"
     );
 
     if (mainAgentNode) {

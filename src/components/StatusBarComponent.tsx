@@ -282,4 +282,4 @@ export default function StatusBarComponent({
   );
 }
 
-export { PHASE_LABELS, PHASE_ICONS };
+export { PHASE_LABELS, PHASE_ICONS, PHASE_GRADIENT_STOPS };
