@@ -254,7 +254,7 @@ export default function HistoryItemComponent({
           <div className={styles['sub-agent-indicators-row']}>
             {item.parentConversationId && (
               <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
-                {subAgentDepth === 1 ? '👶🏻' : subAgentDepth === 2 ? '👶🏼' : subAgentDepth != null && subAgentDepth >= 3 ? '👶🏽' : '👶🏻'}{subAgentNumber != null && (
+                {subAgentDepth === 2 ? '👶🏻' : subAgentDepth === 3 ? '👶🏼' : subAgentDepth != null && subAgentDepth >= 4 ? '👶🏽' : '👶'}{subAgentNumber != null && (
                   <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
                 )}
               </span>
