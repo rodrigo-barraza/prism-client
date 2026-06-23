@@ -1027,7 +1027,8 @@ export default function MessageList({
         </div>
       </div>
       {hasSystemPrompt && (
-        <div className={`${styles['message']} ${styles['system-node']}`}>
+        <div className={`${styles['message']} ${styles['system-node']}`} data-navigation-target>
+
           <div className={styles['avatar']}>
             <Terminal size={16} />
           </div>
@@ -1053,6 +1054,24 @@ export default function MessageList({
               </div>
             </div>
             <MarkdownContent content={systemPrompt} />
+            {systemPrompt && (
+              <div className={styles['meta-badges']}>
+                <BadgeComponent
+                  type="words"
+                  count={
+                    systemPrompt
+                      .trim()
+                      .split(/\s+/)
+                      .filter(Boolean).length
+                  }
+                />
+                <BadgeComponent
+                  type="tokens"
+                  value={Math.ceil(systemPrompt.length / 4)}
+                  label="estimated"
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
