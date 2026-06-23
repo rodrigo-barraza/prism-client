@@ -20,6 +20,9 @@ importers:
       gifuct-js:
         specifier: ^2.1.2
         version: 2.1.2
+      katex:
+        specifier: ^0.16.22
+        version: 0.16.47
       lucide-react:
         specifier: ^1.14.0
         version: 1.21.0(react@19.2.6)
@@ -647,7 +650,7 @@ packages:
     resolution: {directory: ../utilities-library, type: directory}
 
   '@rodrigo-barraza/utilities-library@https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/16951ef6d0c01979265c18c3e94070d304851a3a':
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/16951ef6d0c01979265c18c3e94070d304851a3a}
+    resolution: {gitHosted: true, integrity: sha512-vqr0AunkWBXYU0agrQp94egLleIdjXQxiuRJUtFz2Tgsl4fP2SHd93uD677EKTNcCAVh3Z9i3rxC0EIyrl1zDA==, tarball: https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/16951ef6d0c01979265c18c3e94070d304851a3a}
     version: 0.2.0
 
   '@rolldown/binding-android-arm64@1.0.3':
