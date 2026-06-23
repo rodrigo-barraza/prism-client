@@ -56,12 +56,14 @@ export default function SubAgentsPanel({
   conversationId,
   refreshKey,
   onCountChange,
+  onMaxDepthChange,
   onActionsChange,
   subAgentToolActivity = {},
 }: {
   conversationId: string;
   refreshKey?: number;
   onCountChange?: (count: number) => void;
+  onMaxDepthChange?: (depth: number) => void;
   onActionsChange?: (actions: ReactNode) => void;
   subAgentToolActivity?: Record<string, SubAgentToolActivityItem>;
 }) {
@@ -81,6 +83,9 @@ export default function SubAgentsPanel({
       const list = result.subAgents || [];
       setSubAgents(list);
       onCountChange?.(list.length);
+      onMaxDepthChange?.(
+        list.reduce((maximumDepth, subAgent) => Math.max(maximumDepth, subAgent.recursionDepth ?? 0), 0),
+      );
       hasData.current = true;
     } catch (error: unknown) {
       console.error("Failed to load sub-agents:", error);
@@ -88,7 +93,7 @@ export default function SubAgentsPanel({
     } finally {
       setLoading(false);
     }
-  }, [conversationId, onCountChange]);
+  }, [conversationId, onCountChange, onMaxDepthChange]);
 
   // Reset on conversation change
   useEffect(() => {

@@ -900,6 +900,8 @@ export default class PrismService {
         branchName?: string | null;
         files?: string[];
         toolCallCount?: number;
+        recursionDepth?: number;
+        toolNames?: Record<string, number>;
       }>;
     }
     const response = await PrismService._request<SubAgentsResponse>(
@@ -922,6 +924,8 @@ export default class PrismService {
       toolCallCount: subAgent.toolCallCount ?? subAgent.toolUses,
       branchName: subAgent.branchName ?? undefined,
       files: subAgent.files,
+      recursionDepth: subAgent.recursionDepth,
+      toolNames: subAgent.toolNames,
     }));
     return { subAgents: mappedSubAgentsList };
   }

@@ -630,6 +630,7 @@ export default function ChatConversationComponent({
   const [memoriesHeaderActions, setMemoriesHeaderActions] =
     useState<ReactNode>(null);
   const [subAgentsCount, setSubAgentsCount] = useState(0);
+  const [maxSubAgentDepth, setMaxSubAgentDepth] = useState(0);
   const [subAgentsHeaderActions, setSubAgentsHeaderActions] =
     useState<ReactNode>(null);
   const [skillsHeaderActions, setSkillsHeaderActions] =
@@ -1955,12 +1956,22 @@ export default function ChatConversationComponent({
         .catch(() => setTasksCount(0));
 
       PrismService.getCoordinatorSubAgents(activeId)
-        .then((result) => setSubAgentsCount((result.subAgents || []).length))
-        .catch(() => setSubAgentsCount(0));
+        .then((result) => {
+          const subAgentsList = result.subAgents || [];
+          setSubAgentsCount(subAgentsList.length);
+          setMaxSubAgentDepth(
+            subAgentsList.reduce((maximumDepth, subAgent) => Math.max(maximumDepth, subAgent.recursionDepth ?? 0), 0),
+          );
+        })
+        .catch(() => {
+          setSubAgentsCount(0);
+          setMaxSubAgentDepth(0);
+        });
     } else {
       setBackendConversationStats(null);
       setTasksCount(0);
       setSubAgentsCount(0);
+      setMaxSubAgentDepth(0);
     }
   }, [isAdmin, activeId, adminSelectedSource]);
 
@@ -2308,7 +2319,13 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (isAdmin) return;
     PrismService.getCoordinatorSubAgents(conversationId)
-      .then((result) => setSubAgentsCount((result.subAgents || []).length))
+      .then((result) => {
+        const subAgentsList = result.subAgents || [];
+        setSubAgentsCount(subAgentsList.length);
+        setMaxSubAgentDepth(
+          subAgentsList.reduce((maximumDepth, subAgent) => Math.max(maximumDepth, subAgent.recursionDepth ?? 0), 0),
+        );
+      })
       .catch(() => {});
   }, [conversationId, tasksRefreshKey, isAdmin]);
 
@@ -6165,6 +6182,7 @@ export default function ChatConversationComponent({
                         ),
                         subAgents: mapSubStats(backendConversationStats.subAgents),
                         subAgentCount: subAgentsCount,
+                        maxSubAgentDepth,
                       } as DisplayConversationStats;
                     })()
                   : (() => {
@@ -6269,6 +6287,7 @@ export default function ChatConversationComponent({
                         liveTtftSamples,
                         liveGenProgress,
                         subAgentCount: subAgentsCount,
+                        maxSubAgentDepth,
                       } as DisplayConversationStats;
                     })()
                 : null) as DisplayConversationStats | null
@@ -6333,6 +6352,7 @@ export default function ChatConversationComponent({
             conversationId={conversationId}
             refreshKey={tasksRefreshKey}
             onCountChange={setSubAgentsCount}
+            onMaxDepthChange={setMaxSubAgentDepth}
             onActionsChange={setSubAgentsHeaderActions}
             subAgentToolActivity={subAgentToolActivity}
           />

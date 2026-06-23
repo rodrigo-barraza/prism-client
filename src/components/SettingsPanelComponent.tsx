@@ -74,6 +74,7 @@ export interface ConversationStats {
   subAgents?: ConversationStats;
   modalities?: Record<string, boolean>;
   subAgentCount?: number;
+  maxSubAgentDepth?: number;
 }
 
 export interface AgentToggleOption {
@@ -428,6 +429,12 @@ export default function SettingsPanel({
           <span className={styles['stat-badge']}>
             <Users size={10} />
             {stats.subAgentCount} sub-agent{stats.subAgentCount !== 1 ? 's' : ''}
+          </span>
+        )}
+        {conversationType === "agent" && (stats.maxSubAgentDepth ?? 0) > 0 && (
+          <span className={styles['stat-badge']}>
+            <Layers size={10} />
+            depth {stats.maxSubAgentDepth}
           </span>
         )}
         {stats.uniqueModels && stats.uniqueModels.length > 0 && (
