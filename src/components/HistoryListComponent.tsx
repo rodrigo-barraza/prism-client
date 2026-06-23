@@ -719,42 +719,66 @@ export default function HistoryList({
           const renderSubAgentTree = (nodes: SubAgentTreeNode[], depth: number) => (
             <div className={styles['sub-agent-tree-container']} data-tree-depth={depth}>
               <div className={styles['sub-agent-tree-rail']} />
-              {nodes.map((treeNode, nodeIndex) => (
-                <div
-                  key={treeNode.item.id}
-                  className={`${styles['sub-agent-tree-node']} ${nodeIndex === nodes.length - 1 ? styles['sub-agent-tree-node-is-last'] : ''}`}
-                >
-                  <div className={styles['sub-agent-tree-branch']} />
-                  <div className={styles['sub-agent-tree-node-content']}>
-                    <HistoryItemComponent
-                      item={treeNode.item}
-                      isActive={treeNode.item.id === activeId}
-                      onClick={onSelect}
-                      onDelete={onDelete}
-                      onDownload={onDownload}
-                      onCopy={onCopy}
-                      icon={ItemIcon}
-                      readOnly={readOnly}
-                      admin={admin}
-                      isNew={newIds?.has?.(treeNode.item.id)}
-                      isFavorite={(favorites || []).includes(treeNode.item.id)}
-                      onToggleFavorite={onToggleFavorite}
-                      dataPanelClose
-                      onOpenInNewTab={
-                        onOpenInNewTab
-                          ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
-                          : undefined
-                      }
-                      isGenerating={generatingConversationIds?.has?.(treeNode.item.id)}
-                      isCondensed={true}
-                      subAgentNumber={subAgentNumberMap.get(treeNode.item.id) ?? null}
-                      subAgentDepth={depth + 1}
-                      hasSpawnedSubAgents={treeNode.children.length > 0}
-                    />
-                    {treeNode.children.length > 0 && renderSubAgentTree(treeNode.children, depth + 1)}
+              {nodes.map((treeNode, nodeIndex) => {
+                const nodeHasChildren = treeNode.children.length > 0;
+                const isNodeCollapsed = collapsedClusterIds.has(treeNode.item.id);
+                return (
+                  <div
+                    key={treeNode.item.id}
+                    className={`${styles['sub-agent-tree-node']} ${nodeIndex === nodes.length - 1 ? styles['sub-agent-tree-node-is-last'] : ''}`}
+                  >
+                    <div className={styles['sub-agent-tree-branch']} />
+                    <div className={styles['sub-agent-tree-node-content']}>
+                      <HistoryItemComponent
+                        item={treeNode.item}
+                        isActive={treeNode.item.id === activeId}
+                        onClick={onSelect}
+                        onDelete={onDelete}
+                        onDownload={onDownload}
+                        onCopy={onCopy}
+                        icon={ItemIcon}
+                        readOnly={readOnly}
+                        admin={admin}
+                        isNew={newIds?.has?.(treeNode.item.id)}
+                        isFavorite={(favorites || []).includes(treeNode.item.id)}
+                        onToggleFavorite={onToggleFavorite}
+                        dataPanelClose
+                        onOpenInNewTab={
+                          onOpenInNewTab
+                            ? (openItem: HistoryListItem) => onOpenInNewTab(openItem)
+                            : undefined
+                        }
+                        isGenerating={generatingConversationIds?.has?.(treeNode.item.id)}
+                        isCondensed={true}
+                        subAgentNumber={subAgentNumberMap.get(treeNode.item.id) ?? null}
+                        subAgentDepth={depth + 1}
+                        hasSpawnedSubAgents={nodeHasChildren}
+                        isSubAgentsCollapsed={isNodeCollapsed}
+                        onToggleSubAgents={nodeHasChildren ? () => {
+                          setCollapsedClusterIds((previous) => {
+                            const next = new Set(previous);
+                            if (next.has(treeNode.item.id)) {
+                              next.delete(treeNode.item.id);
+                            } else {
+                              next.add(treeNode.item.id);
+                            }
+                            return next;
+                          });
+                        } : undefined}
+                      />
+                      {nodeHasChildren && (
+                        <div
+                          className={`${styles['sub-agent-tree-collapsible']} ${isNodeCollapsed ? styles['sub-agent-tree-collapsible-is-collapsed'] : ''}`}
+                        >
+                          <div className={styles['sub-agent-tree-collapsible-inner']}>
+                            {renderSubAgentTree(treeNode.children, depth + 1)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           );
 

@@ -114,7 +114,6 @@ export default function HistoryItemComponent({
   isSubAgentsCollapsed = false,
   onToggleSubAgents,
 }: HistoryItemProps) {
-  const isRootOrchestrator = hasSpawnedSubAgents && !item.parentConversationId;
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
   const hasModalities = modalities && Object.keys(modalities).length > 0;
@@ -247,6 +246,12 @@ export default function HistoryItemComponent({
                   </span>
                 );
               })()}
+          </div>
+        </div>
+
+        {/* Row 1b: sub-agent indicator emojis + collapse toggle (right-aligned) */}
+        {(item.parentConversationId || item.hasSubAgents || hasSpawnedSubAgents) && (
+          <div className={styles['sub-agent-indicators-row']}>
             {item.parentConversationId && (
               <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
                 👶{subAgentNumber != null && (
@@ -264,7 +269,7 @@ export default function HistoryItemComponent({
                 🧬
               </span>
             )}
-            {isRootOrchestrator && onToggleSubAgents && (
+            {hasSpawnedSubAgents && onToggleSubAgents && (
               <button
                 className={`${styles['sub-agent-collapse-toggle']} ${isSubAgentsCollapsed ? styles['sub-agent-collapse-toggle-is-collapsed'] : ''}`}
                 onClick={(event: React.MouseEvent) => {
@@ -279,7 +284,7 @@ export default function HistoryItemComponent({
               </button>
             )}
           </div>
-        </div>
+        )}
 
         {/* Row 2: title */}
         <div className={styles['title']}>

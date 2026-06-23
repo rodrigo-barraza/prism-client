@@ -77,6 +77,14 @@
   flex-shrink: 0;
 }
 
+/* ── Row 1b: sub-agent indicators (right-aligned) ── */
+.sub-agent-indicators-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
 /* ── Row 2: title ── */
 .title {
   font-size: 0.8125rem;
