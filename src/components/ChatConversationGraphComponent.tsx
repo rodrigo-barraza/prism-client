@@ -1765,10 +1765,10 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                 const baseOpacity = 0.15 + (edge.strength || 0.5) * 0.2;
                 const edgeOpacity = isEdgeSelected ? 0.95 : baseOpacity;
 
-                // Use depth-encoded color for agent-to-agent edges
-                const isAgentToAgentEdge = sourceNode.category === "agent" && targetNode.category === "agent";
+                // Use depth-encoded color for agent-to-subagent and subagent-to-subagent edges
+                const isAgentHierarchyEdge = (sourceNode.category === "agent" || sourceNode.category === "subagent") && (targetNode.category === "agent" || targetNode.category === "subagent");
                 const targetDepth = targetNode.depth ?? 0;
-                const edgeColor = isAgentToAgentEdge
+                const edgeColor = isAgentHierarchyEdge
                   ? resolveAgentColorByDepth(targetDepth)
                   : NODE_COLORS[targetNode.category] || "oklch(0.6 0 0)";
 
@@ -1776,7 +1776,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                   ? curvedEdgePath(sourceNode.x, sourceNode.y, sourceNode.radius, targetNode.x, targetNode.y, targetNode.radius)
                   : straightEdgePath(sourceNode.x, sourceNode.y, sourceNode.radius, targetNode.x, targetNode.y, targetNode.radius);
 
-                const arrowMarkerId = isAgentToAgentEdge
+                const arrowMarkerId = isAgentHierarchyEdge
                   ? `chat-graph-arrow-agent-depth-${Math.min(targetDepth, AGENT_DEPTH_COLORS.length - 1)}`
                   : `chat-graph-arrow-${targetNode.category}`;
 
@@ -1786,7 +1786,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                     <path
                       d={pathData}
                       stroke={edgeColor}
-                      strokeWidth={isEdgeSelected ? 2.5 : isAgentToAgentEdge ? 2 : 1.5}
+                      strokeWidth={isEdgeSelected ? 2.5 : isAgentHierarchyEdge ? 2 : 1.5}
                       strokeOpacity={edgeOpacity}
                       fill="none"
                       className={graphStyles['connection-line']}
@@ -1801,7 +1801,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                 if (hiddenNodeIds.has(node.id)) return null;
                 const isSelected = selectedNodeId === node.id;
                 const isSessionCenter = node.category === "session";
-                const isAgentNode = node.category === "agent";
+                const isAgentNode = node.category === "agent" || node.category === "subagent";
                 const agentDepth = node.depth ?? 0;
                 const nodeColor = isAgentNode
                   ? resolveAgentColorByDepth(agentDepth)
@@ -1819,7 +1819,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                     return false;
                   };
                   // Also check if this is the root agent with top-level children
-                  if (!node.metadata?.isSubagent && graphData.subAgentTree.length > 0) return true;
+                  if (node.category === "agent" && graphData.subAgentTree.length > 0) return true;
                   return findInTree(graphData.subAgentTree);
                 })();
 
@@ -1904,7 +1904,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                       {node.label.length > 24 ? `${node.label.slice(0, 22)}…` : node.label}
                     </text>
                     <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fill="oklch(0.98 0 0)" fontSize={node.radius * 0.7} fontWeight={600} style={{ pointerEvents: "none", userSelect: "none" }}>
-                      {node.category === "session" ? "◉" : node.category === "model" ? "◈" : node.category === "tool" ? "⚙" : node.category === "request" ? "↗" : node.category === "user" ? "●" : node.category === "project" ? "▣" : node.category === "provider" ? "◆" : node.category === "agent" ? "◎" : node.category === "embedding" ? "⬡" : "○"}
+                      {node.category === "session" ? "◉" : node.category === "model" ? "◈" : node.category === "tool" ? "⚙" : node.category === "request" ? "↗" : node.category === "user" ? "●" : node.category === "project" ? "▣" : node.category === "provider" ? "◆" : node.category === "agent" ? "◎" : node.category === "subagent" ? "◍" : node.category === "embedding" ? "⬡" : "○"}
                     </text>
                     {/* Collapse/expand toggle badge for agents with children */}
                     {hasSubAgentChildren && (
@@ -2054,17 +2054,18 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                   <div className={graphStyles['node-detail-popover-section']}>
                     <div className={graphStyles['node-detail-popover-section-title']}>Agent Details</div>
                     <InlineDetailRow label="Agent" value={String(selectedNode.metadata?.agent || "—")} />
-                    {!!selectedNode.metadata?.isSubagent && (
-                      <>
-                        <InlineDetailRow label="Role" value="Sub-Agent" />
-                        <InlineDetailRow label="Depth" value={`Level ${selectedNode.depth ?? 1}`} />
-                        {!!selectedNode.metadata?.parentAgentConversationId && (
-                          <InlineDetailRow label="Parent" value={String(selectedNode.metadata.parentAgentConversationId).slice(0, 12) + "…"} />
-                        )}
-                      </>
-                    )}
-                    {!selectedNode.metadata?.isSubagent && (
-                      <InlineDetailRow label="Role" value="Orchestrator" />
+                    <InlineDetailRow label="Role" value="Orchestrator" />
+                  </div>
+                )}
+
+                {selectedNode.category === "subagent" && (
+                  <div className={graphStyles['node-detail-popover-section']}>
+                    <div className={graphStyles['node-detail-popover-section-title']}>Sub-Agent Details</div>
+                    <InlineDetailRow label="Agent" value={String(selectedNode.metadata?.agent || "—")} />
+                    <InlineDetailRow label="Role" value="Sub-Agent" />
+                    <InlineDetailRow label="Depth" value={`Level ${selectedNode.depth ?? 1}`} />
+                    {!!selectedNode.metadata?.parentAgentConversationId && (
+                      <InlineDetailRow label="Parent" value={String(selectedNode.metadata.parentAgentConversationId).slice(0, 12) + "…"} />
                     )}
                   </div>
                 )}
