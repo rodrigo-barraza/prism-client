@@ -111,6 +111,7 @@
   position: relative;
   padding-inline-start: var(--tree-rail-inset);
   min-width: 0;
+  background: oklch(0 0 0 / 0.05);
 }
 
 /* Vertical rail is no longer a standalone element — each tree node draws its
@@ -173,16 +174,16 @@
 /* Push the child item to the right of the branch */
 .sub-agent-tree-node-content > :global(.history-item-component) {
   border-radius: 0;
-  border-inline-start: 2px solid color-mix(in oklch, var(--cluster-accent-color) 25%, transparent);
-  border-bottom: 1px solid color-mix(in oklch, var(--cluster-accent-color) 8%, transparent);
+  border-inline-start: 2px solid oklch(0 0 0 / 0.1);
+  border-bottom: 1px solid oklch(0 0 0 / 0.05);
   transition:
     border-color 0.2s ease,
     background-color 0.2s ease;
 }
 
 .sub-agent-tree-node-content > :global(.history-item-component):hover {
-  background: color-mix(in oklch, var(--cluster-accent-color) 5%, transparent);
-  border-inline-start-color: color-mix(in oklch, var(--cluster-accent-color) 50%, transparent);
+  background: oklch(0 0 0 / 0.03);
+  border-inline-start-color: oklch(0 0 0 / 0.2);
 }
 
 .sub-agent-tree-node-content > :global(.history-item-component):global(.is-active-state) {
@@ -196,7 +197,7 @@
 
 /* ── Nested sub-trees (depth > 0) — progressive depth styling ── */
 .sub-agent-tree-node-content > .sub-agent-tree-container {
-  border-inline-start: 1px solid color-mix(in oklch, var(--cluster-accent-color) 15%, transparent);
+  border-inline-start: 1px solid oklch(0 0 0 / 0.08);
 }
 
 /* Reduce horizontal padding at deeper levels to prevent excessive indentation */
@@ -209,11 +210,11 @@
 /* Hover glow on tree connectors — targets both per-node vertical segments
    and horizontal branch connectors */
 .agent-cluster-group:hover .sub-agent-tree-node::before {
-  background: color-mix(in oklch, var(--cluster-accent-color) 55%, transparent);
+  background: oklch(0 0 0 / 0.2);
 }
 
 .agent-cluster-group:hover .sub-agent-tree-branch {
-  background: color-mix(in oklch, var(--cluster-accent-color) 55%, transparent);
+  background: oklch(0 0 0 / 0.2);
 }
 
 @keyframes agent-cluster-entrance {
