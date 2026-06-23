@@ -1408,24 +1408,50 @@ export default function ChatConversationComponent({
           }
         }
 
-        if (liveEnrichmentsByConversationId.size === 0) return result.items;
+        // Preserve optimistically injected sub-agent entries that don't
+        // exist in MongoDB yet. The hasSubAgents write on the parent
+        // triggers a change-stream → loadConversations() runs before
+        // the sub-agent's first appendAndFinalize creates its document.
+        // Without this, the sub-agent vanishes from the sidebar until
+        // its MongoDB document is created and a subsequent reload picks it up.
+        const apiResponseIds = new Set(
+          result.items.map((entry) => entry.id || String(entry._id)),
+        );
+        const optimisticSubAgentEntries = previousConversations.filter(
+          (previousConversation) => {
+            const conversationId = previousConversation.id || String(previousConversation._id);
+            const hasParent = !!(previousConversation as AgentConversation).parentConversationId;
+            return hasParent && !apiResponseIds.has(conversationId);
+          },
+        );
 
-        return result.items.map((entry) => {
-          const entryId = entry.id || String(entry._id);
-          const enrichment = liveEnrichmentsByConversationId.get(entryId);
-          if (!enrichment) return entry;
+        let mergedConversations: Array<AgentConversation | Conversation>;
 
-          const backendEntry = entry as unknown as Record<string, unknown>;
-          const backendHasModelNames =
-            Array.isArray(backendEntry.modelNames) &&
-            (backendEntry.modelNames as string[]).length > 0;
+        if (liveEnrichmentsByConversationId.size === 0) {
+          mergedConversations = result.items;
+        } else {
+          mergedConversations = result.items.map((entry) => {
+            const entryId = entry.id || String(entry._id);
+            const enrichment = liveEnrichmentsByConversationId.get(entryId);
+            if (!enrichment) return entry;
 
-          // If the backend already has authoritative modelNames,
-          // the client-side enrichment is no longer needed.
-          if (backendHasModelNames) return entry;
+            const backendEntry = entry as unknown as Record<string, unknown>;
+            const backendHasModelNames =
+              Array.isArray(backendEntry.modelNames) &&
+              (backendEntry.modelNames as string[]).length > 0;
 
-          return { ...entry, ...enrichment } as typeof entry;
-        });
+            // If the backend already has authoritative modelNames,
+            // the client-side enrichment is no longer needed.
+            if (backendHasModelNames) return entry;
+
+            return { ...entry, ...enrichment } as typeof entry;
+          });
+        }
+
+        if (optimisticSubAgentEntries.length > 0) {
+          return [...optimisticSubAgentEntries, ...mergedConversations];
+        }
+        return mergedConversations;
       });
       conversationsCursorRef.current = result.nextCursor;
       setConversationsHasMore(result.hasMore);

@@ -528,7 +528,7 @@ function applyRecursiveRadialSubAgentLayout(
   baseAngle: number,
   arcSpan: number,
 ): void {
-  const orbitRadius = Math.max(60, 140 - depth * 30);
+  const orbitRadius = Math.max(80, 160 - depth * 25);
   const childCount = treeNodes.length;
 
   for (let childIndex = 0; childIndex < childCount; childIndex++) {
@@ -544,12 +544,16 @@ function applyRecursiveRadialSubAgentLayout(
     childNode.y = parentNode.y + Math.sin(angleOffset) * orbitRadius;
 
     if (treeChild.children.length > 0) {
+      // Continue fan-out rightward, clamping to right hemisphere
+      const childAngle = Math.abs(angleOffset) > Math.PI / 2
+        ? Math.sign(angleOffset) * Math.PI / 4
+        : angleOffset;
       applyRecursiveRadialSubAgentLayout(
         treeChild.children,
         childNode,
         nodeMap,
         depth + 1,
-        angleOffset,
+        childAngle,
         arcSpan * 0.65,
       );
     }
@@ -919,39 +923,42 @@ function applyTopologyLayout(
     applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);
   }
 
-  // After base layout, apply recursive radial positioning for nested sub-agent trees
+  // After base layout, position sub-agent trees: orchestrator left, sub-agents right
   if (graphData.subAgentTree && graphData.subAgentTree.length > 0) {
     const nodeMap = new Map(graphData.nodes.map((node) => [node.id, node]));
+    const mainAgentNode = graphData.nodes.find(
+      (graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent
+    );
 
-    // Check if any tree node has children (i.e., depth > 1 nesting exists)
-    const hasNestedSubAgents = graphData.subAgentTree.some((treeNode) => treeNode.children.length > 0);
+    if (mainAgentNode) {
+      // Position top-level sub-agents to the right of the orchestrator, fanned vertically
+      const topLevelCount = graphData.subAgentTree.length;
+      const topLevelOrbitRadius = Math.max(100, 180);
+      const topLevelArcSpan = Math.min(Math.PI * 0.8, topLevelCount * 0.4);
 
-    if (hasNestedSubAgents) {
-      const mainAgentNode = graphData.nodes.find(
-        (graphNode) => graphNode.category === "agent" && !graphNode.metadata?.isSubagent
-      );
+      for (let childIndex = 0; childIndex < topLevelCount; childIndex++) {
+        const treeChild = graphData.subAgentTree[childIndex];
+        const childNode = nodeMap.get(treeChild.nodeId);
+        if (!childNode) continue;
 
-      if (mainAgentNode) {
-        // Reposition sub-agent children using radial orbit from their actual parent
-        for (const topLevelSubAgent of graphData.subAgentTree) {
-          if (topLevelSubAgent.children.length > 0) {
-            const topLevelNode = nodeMap.get(topLevelSubAgent.nodeId);
-            if (topLevelNode) {
-              // Compute angle from main agent to this sub-agent for child fan-out direction
-              const angleFromParent = Math.atan2(
-                topLevelNode.y - mainAgentNode.y,
-                topLevelNode.x - mainAgentNode.x,
-              );
-              applyRecursiveRadialSubAgentLayout(
-                topLevelSubAgent.children,
-                topLevelNode,
-                nodeMap,
-                1,
-                angleFromParent,
-                Math.PI * 0.8,
-              );
-            }
-          }
+        // Fan out rightward (angle 0 = right) with vertical spread
+        const angleOffset = topLevelCount === 1
+          ? 0
+          : -topLevelArcSpan / 2 + (childIndex / (topLevelCount - 1)) * topLevelArcSpan;
+
+        childNode.x = mainAgentNode.x + Math.cos(angleOffset) * topLevelOrbitRadius;
+        childNode.y = mainAgentNode.y + Math.sin(angleOffset) * topLevelOrbitRadius;
+
+        // Recursively position nested sub-agents further rightward
+        if (treeChild.children.length > 0) {
+          applyRecursiveRadialSubAgentLayout(
+            treeChild.children,
+            childNode,
+            nodeMap,
+            1,
+            angleOffset,
+            Math.PI * 0.7,
+          );
         }
       }
     }
