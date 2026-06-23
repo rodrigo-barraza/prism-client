@@ -1075,6 +1075,54 @@
   }
 }
 
+/* ── Sub-agent navigate-to-conversation button ─────────────── */
+
+.sub-agent-navigate-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--accent-primary, var(--color-indigo)) 25%,
+      transparent
+    );
+  border-radius: 5px;
+  background: color-mix(
+    in srgb,
+    var(--accent-primary, var(--color-indigo)) 6%,
+    transparent
+  );
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    scale 0.12s ease;
+
+  &:hover {
+    background: color-mix(
+      in srgb,
+      var(--accent-primary, var(--color-indigo)) 18%,
+      transparent
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--accent-primary, var(--color-indigo)) 50%,
+      transparent
+    );
+    color: var(--accent-primary, var(--color-indigo));
+    scale: 1.1;
+  }
+
+  &:active {
+    scale: 0.95;
+  }
+}
+
 /* ── Emoji Kitchen ─────────────────────────────────────────── */
 
 .emoji-combine-container {

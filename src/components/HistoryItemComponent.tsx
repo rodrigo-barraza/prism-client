@@ -249,7 +249,41 @@ export default function HistoryItemComponent({
           </div>
         </div>
 
-        {/* Row 1b: sub-agent indicator emojis + collapse toggle (right-aligned) */}
+        {/* Row 2: title */}
+        <div className={styles['title']}>
+          {isGenerating && <span className={styles['generating-dot']} />}
+          {item.title || "Untitled"}
+          {isNew && <span className={styles['new-badge']}>NEW</span>}
+        </div>
+
+        {/* Row 3: model badge & cost badge (when condensed) */}
+        {(hasModel || (isCondensed && item.totalCost !== undefined && item.totalCost > 0)) && (
+          <div className={styles['model-badge-and-cost-container']}>
+            {hasModel && (
+              <BadgeComponent
+                type="model"
+                models={
+                  (item.modelNames?.length ?? 0) > 0
+                    ? (item.modelNames || []).filter((name): name is string => typeof name === "string")
+                    : [item.modelName].filter((name): name is string => typeof name === "string")
+                }
+                providers={item.providers}
+                className={styles['model-badge']}
+                noHover
+              />
+            )}
+            {isCondensed && item.totalCost !== undefined && item.totalCost > 0 && (
+              <BadgeComponent
+                type="cost"
+                cost={item.totalCost ?? 0}
+                showIcon={false}
+                className={styles['cost-badge-right-aligned']}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Row 3b: sub-agent indicator emojis + collapse toggle */}
         {(item.parentConversationId || item.hasSubAgents || hasSpawnedSubAgents) && (
           <div className={styles['sub-agent-indicators-row']}>
             {item.parentConversationId && (
@@ -282,40 +316,6 @@ export default function HistoryItemComponent({
               >
                 {isSubAgentsCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
               </button>
-            )}
-          </div>
-        )}
-
-        {/* Row 2: title */}
-        <div className={styles['title']}>
-          {isGenerating && <span className={styles['generating-dot']} />}
-          {item.title || "Untitled"}
-          {isNew && <span className={styles['new-badge']}>NEW</span>}
-        </div>
-
-        {/* Row 3: model badge & cost badge (when condensed) */}
-        {(hasModel || (isCondensed && item.totalCost !== undefined && item.totalCost > 0)) && (
-          <div className={styles['model-badge-and-cost-container']}>
-            {hasModel && (
-              <BadgeComponent
-                type="model"
-                models={
-                  (item.modelNames?.length ?? 0) > 0
-                    ? (item.modelNames || []).filter((name): name is string => typeof name === "string")
-                    : [item.modelName].filter((name): name is string => typeof name === "string")
-                }
-                providers={item.providers}
-                className={styles['model-badge']}
-                noHover
-              />
-            )}
-            {isCondensed && item.totalCost !== undefined && item.totalCost > 0 && (
-              <BadgeComponent
-                type="cost"
-                cost={item.totalCost ?? 0}
-                showIcon={false}
-                className={styles['cost-badge-right-aligned']}
-              />
             )}
           </div>
         )}

@@ -33,6 +33,7 @@ import {
   Music,
   Volume2,
   RotateCcw,
+  ExternalLink,
 } from "lucide-react";
 
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
@@ -66,6 +67,7 @@ export interface SubAgentActivity {
   toolNames?: string[] | Record<string, number> | Record<string, string>;
   description?: string;
   toolCalls?: import("../types/types").ToolCallEvent[];
+  conversationId?: string;
 }
 
 export interface ToolArgs {
@@ -2521,9 +2523,15 @@ function TeamCreateRenderer({
 
   const rawArgMembers = args?.members;
   const argMembers = Array.isArray(rawArgMembers) ? rawArgMembers : [];
-  const rawResultMembers = parsed?.members;
+  // create_team returns a raw array of SubAgentResult objects, not { members: [...] }
+  const rawResultMembers = Array.isArray(parsed)
+    ? parsed
+    : (parsed?.members ?? []);
   const resultMembers = Array.isArray(rawResultMembers) ? rawResultMembers : [];
-  const teamName = args?.name || parsed?.team || "";
+  const parsedIsComplete = Array.isArray(parsed)
+    ? parsed.length > 0
+    : !!parsed;
+  const teamName = args?.name || (Array.isArray(parsed) ? "" : parsed?.team) || "";
 
   const hasActiveSubAgents = useMemo(() => {
     if (!subAgentToolActivity) return false;
@@ -2590,9 +2598,9 @@ function TeamCreateRenderer({
   const failed =
     parsed?.failed ??
     resultMembers.filter((member) => member.status === "failed").length;
-  const allDone = parsed
+  const allDone = parsedIsComplete
     ? resultMembers.every(
-        (member) =>
+        (member: Record<string, unknown>) =>
           member.status === "completed" ||
           member.status === "failed" ||
           member.status === "stopped",
@@ -2600,7 +2608,7 @@ function TeamCreateRenderer({
     : false;
   const teamSuccess = failed === 0 && !hasError;
 
-  const membersList = parsed
+  const membersList = (parsedIsComplete && resultMembers.length > 0)
     ? resultMembers
     : argMembers.map((member) => ({
         agent_id: undefined,
@@ -2625,9 +2633,9 @@ function TeamCreateRenderer({
           {membersList.length !== 1 ? "s" : ""}
         </span>
         <StatusBadge
-          success={!parsed ? true : teamSuccess}
+          success={!parsedIsComplete ? true : teamSuccess}
           label={
-            !parsed
+            !parsedIsComplete
               ? "running"
               : allDone
                 ? `${succeeded} done${failed ? `, ${failed} failed` : ""}`
@@ -2696,6 +2704,28 @@ function TeamCreateRenderer({
                       : member.status || "unknown"
                 }
               />
+              {(() => {
+                const subAgentConversationId =
+                  (activity as SubAgentActivity | null)?.conversationId ||
+                  (member.agent_id && subAgentToolActivity?.[member.agent_id] &&
+                    (subAgentToolActivity[member.agent_id] as SubAgentActivity)?.conversationId);
+                if (!subAgentConversationId) return null;
+                return (
+                  <button
+                    className={styles['sub-agent-navigate-button']}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      const currentUrl = new URL(window.location.href);
+                      currentUrl.searchParams.set("conversation", subAgentConversationId);
+                      window.open(currentUrl.toString(), "_blank", "noopener");
+                    }}
+                    title="Open sub-agent conversation"
+                    aria-label={`Open conversation for sub-agent ${index + 1}`}
+                  >
+                    <ExternalLink size={11} />
+                  </button>
+                );
+              })()}
             </div>
 
             {toolNames && Object.keys(toolNames).length > 0 && (
@@ -2710,15 +2740,7 @@ function TeamCreateRenderer({
               <div className={styles['error-text']}>{member.error}</div>
             )}
 
-            {activity && (!isTerminal || (
-              isTerminal && !isFailed &&
-              Array.isArray(activity.toolCalls) &&
-              activity.toolCalls.some(
-                (toolCall) =>
-                  toolCall.name === "create_team" &&
-                  (toolCall.status === "calling" || toolCall.status === "streaming"),
-              )
-            )) && <SubAgentStatusBar activity={activity} />}
+            {activity && <SubAgentStatusBar activity={activity} />}
 
             <div className={styles['sub-agent-result-card']}>
               <button

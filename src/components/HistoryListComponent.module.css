@@ -113,35 +113,11 @@
   min-width: 0;
 }
 
-/* Vertical rail line running down the left side of the tree */
+/* Vertical rail is no longer a standalone element — each tree node draws its
+   own segment via ::before so the line cleanly terminates at the last child's
+   branch point without needing a fragile background-color mask. */
 .sub-agent-tree-rail {
-  position: absolute;
-  inset-inline-start: var(--tree-rail-inset);
-  inset-block-start: 0;
-  inset-block-end: 0;
-  width: var(--tree-line-thickness);
-  background: var(--tree-line-color);
-  border-radius: 1px;
-  transition: background-color 0.2s ease;
-}
-
-/* Mask the rail below the last child's midpoint using a cover-up pseudo-element.
-   Only apply when this is the terminal leaf-level last node — nested sub-trees
-   below this node need the rail to keep running through them. */
-.sub-agent-tree-node-is-last:not(:has(.sub-agent-tree-container)) {
-  position: relative;
-  z-index: 1;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset-inline-start: 0;
-    inset-block-start: 50%;
-    inset-block-end: 0;
-    width: calc(var(--tree-rail-inset) + var(--tree-line-thickness) + 2px);
-    background: color-mix(in oklch, var(--cluster-accent-color) 2.5%, var(--background-base));
-    z-index: 1;
-  }
+  display: none;
 }
 
 /* ── Individual tree node (branch + child item) ── */
@@ -150,6 +126,27 @@
   display: flex;
   align-items: stretch;
   min-width: 0;
+
+  /* Per-node vertical rail segment — runs from the top of this node down to
+     the bottom, providing an unbroken vertical line between siblings. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0;
+    inset-block-end: 0;
+    width: var(--tree-line-thickness);
+    background: var(--tree-line-color);
+    border-radius: 1px;
+    transition: background-color 0.2s ease;
+  }
+}
+
+/* Last node — rail segment only extends down to the branch connector (20px)
+   instead of running full height, so there's no excess to mask. */
+.sub-agent-tree-node-is-last::before {
+  inset-block-end: auto;
+  height: calc(20px + var(--tree-line-thickness));
 }
 
 /* Horizontal branch connector from the vertical rail to the child item */
@@ -209,7 +206,9 @@
 }
 
 /* Subtle hover glow on the whole cluster */
-.agent-cluster-group:hover .sub-agent-tree-rail {
+/* Hover glow on tree connectors — targets both per-node vertical segments
+   and horizontal branch connectors */
+.agent-cluster-group:hover .sub-agent-tree-node::before {
   background: color-mix(in oklch, var(--cluster-accent-color) 55%, transparent);
 }
 

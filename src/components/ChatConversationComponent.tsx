@@ -4144,6 +4144,7 @@ export default function ChatConversationComponent({
                   }),
                   description: data.description,
                   phase: "spawned",
+                  conversationId: (data.conversationId as string) || undefined,
                 },
               }));
 
@@ -4178,6 +4179,14 @@ export default function ChatConversationComponent({
                     ...previousConversations,
                   ];
                 });
+                // Mark this sub-agent conversation as generating so the
+                // sidebar shows the pulsing generating-dot indicator.
+                setGeneratingConversationIds(
+                  (previousGeneratingConversationIds) =>
+                    new Set(previousGeneratingConversationIds).add(
+                      subAgentConversationId,
+                    ),
+                );
               }
             } else if (data.message === STATUS_MESSAGES.ITERATION_PROGRESS) {
               setSubAgentToolActivity((previousSubAgentToolActivity) => ({
@@ -4310,17 +4319,32 @@ export default function ChatConversationComponent({
               });
             } else if (data.message === STATUS_MESSAGES.COMPLETE) {
               // Sub-agent finished — clear phase so StatusBar stops showing "Generating..."
-              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
-                ...previousSubAgentToolActivity,
-                [subAgentId]: {
-                  ...(previousSubAgentToolActivity[subAgentId] || {}),
-                  phase: "complete",
-                  currentTool: null,
-                  durationMs: data.durationMs,
-                  toolCount:
-                    data.toolCount ?? previousSubAgentToolActivity[subAgentId]?.toolCount,
-                },
-              }));
+              setSubAgentToolActivity((previousSubAgentToolActivity) => {
+                // Remove the sub-agent's conversation from the generating set
+                // so the sidebar generating-dot stops pulsing.
+                const completedConversationId =
+                  previousSubAgentToolActivity[subAgentId]?.conversationId;
+                if (completedConversationId) {
+                  setGeneratingConversationIds(
+                    (previousGeneratingConversationIds) => {
+                      const next = new Set(previousGeneratingConversationIds);
+                      next.delete(completedConversationId);
+                      return next;
+                    },
+                  );
+                }
+                return {
+                  ...previousSubAgentToolActivity,
+                  [subAgentId]: {
+                    ...(previousSubAgentToolActivity[subAgentId] || {}),
+                    phase: "complete",
+                    currentTool: null,
+                    durationMs: data.durationMs,
+                    toolCount:
+                      data.toolCount ?? previousSubAgentToolActivity[subAgentId]?.toolCount,
+                  },
+                };
+              });
               // Accumulate sub-agent usage into the streaming assistant message
               // so stats badges update in real-time per sub-agent completion
               if (data.usage) {
@@ -5076,7 +5100,6 @@ export default function ChatConversationComponent({
 
     setSettings((currentSettings) => {
       let defaultTemperature = 1.0;
-      let isThinkingSupported = false;
       if (config && currentSettings.provider && currentSettings.model) {
         const providerModels =
           config.textToText?.models?.[currentSettings.provider] || [];
@@ -5089,19 +5112,6 @@ export default function ChatConversationComponent({
         ) {
           defaultTemperature = modelDefinition.defaultTemperature;
         }
-        if (modelDefinition) {
-          const modelName = (currentSettings.model || "").toLowerCase();
-          const nameBasedThinking = (config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS)
-            .some((pattern) => modelName.includes(pattern));
-
-          isThinkingSupported = !!(
-            modelDefinition.thinking ||
-            modelDefinition.supportsThinking ||
-            (modelDefinition.thinkingLevels && modelDefinition.thinkingLevels.length > 0) ||
-            (modelDefinition.tools && modelDefinition.tools.includes("Thinking")) ||
-            (currentSettings.provider === "lm-studio" && nameBasedThinking)
-          );
-        }
       }
 
       return {
@@ -5112,7 +5122,7 @@ export default function ChatConversationComponent({
         temperature: defaultTemperature,
         maxTokens: 64000,
         functionCallingEnabled: !isNoAgent,
-        thinkingEnabled: isThinkingSupported,
+        thinkingEnabled: true,
         minP: 0,
         repeatPenalty: 1.0,
         seed: null,

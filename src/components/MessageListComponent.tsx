@@ -63,6 +63,7 @@ export interface SubAgentToolActivityItem {
   iteration?: number;
   maxIterations?: number;
   toolCalls?: import("../types/types").ToolCallEvent[];
+  conversationId?: string;
 }
 
 /* -- Task notification detection (Claude Code pattern) -------
