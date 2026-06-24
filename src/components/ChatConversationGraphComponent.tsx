@@ -1042,6 +1042,18 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [collapsedSubTreeIds, setCollapsedSubTreeIds] = useState<Set<string>>(new Set());
 
+  const [phaseColor, setPhaseColor] = useState<string | null>(null);
+
+  useEffect(() => {
+    const readPhaseColorFromRoot = () => {
+      const rawValue = document.documentElement.style.getPropertyValue("--generating-dot-phase-color").trim();
+      setPhaseColor(rawValue || null);
+    };
+    readPhaseColorFromRoot();
+    const intervalId = setInterval(readPhaseColorFromRoot, 400);
+    return () => clearInterval(intervalId);
+  }, []);
+
   const [selectedRequestDetail, setSelectedRequestDetail] = useState<IrisRequestEntry | null>(null);
   const [isRequestDetailLoading, setIsRequestDetailLoading] = useState(false);
   const [expandedPopoverSections, setExpandedPopoverSections] = useState<Set<string>>(new Set());
@@ -1671,7 +1683,10 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
           </div>
         )}
 
-        {graphData && !isLoading && (
+        {graphData && !isLoading && (() => {
+          const phaseRepresentativeColor = phaseColor;
+
+          return (
           <>
             <svg
               className={graphStyles['graph-canvas']}
@@ -1682,7 +1697,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
             >
               <defs>
                 <filter id="chat-graph-session-glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="6" result="blur" />
+                  <feGaussianBlur stdDeviation={phaseRepresentativeColor ? 10 : 6} result="blur" />
                   <feMerge>
                     <feMergeNode in="blur" />
                     <feMergeNode in="SourceGraphic" />
@@ -1803,9 +1818,12 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                 const isSessionCenter = node.category === "session";
                 const isAgentNode = node.category === "agent" || node.category === "subagent";
                 const agentDepth = node.depth ?? 0;
-                const nodeColor = isAgentNode
-                  ? resolveAgentColorByDepth(agentDepth)
-                  : NODE_COLORS[node.category];
+                const isPhaseActive = isSessionCenter && !!phaseRepresentativeColor;
+                const nodeColor = isPhaseActive
+                  ? phaseRepresentativeColor
+                  : isAgentNode
+                    ? resolveAgentColorByDepth(agentDepth)
+                    : NODE_COLORS[node.category];
 
                 const isEntering = enteringNodeIds.has(node.id);
 
@@ -1855,6 +1873,18 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                     onClick={() => handleNodeClick(node.id)}
                     filter={isSessionCenter ? "url(#chat-graph-session-glow)" : isSelected ? "url(#chat-graph-node-hover-glow)" : undefined}
                   >
+                    {/* Phase-synced activity pulse ring for session center */}
+                    {isPhaseActive && (
+                      <circle
+                        cx={node.x} cy={node.y}
+                        r={node.radius + 8}
+                        fill="none"
+                        stroke={nodeColor}
+                        strokeWidth={2}
+                        strokeOpacity={0.5}
+                        className={styles['phase-activity-pulse-ring']}
+                      />
+                    )}
                     {/* Spawn ripple animation for entering agent nodes */}
                     {isEntering && isAgentNode && (
                       <circle
@@ -1874,7 +1904,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                     <circle
                       cx={node.x} cy={node.y} r={node.radius}
                       fill={nodeColor} fillOpacity={isSessionCenter ? 0.95 : 0.85}
-                      stroke={nodeColor} strokeWidth={isSelected ? 2 : 1} strokeOpacity={0.5}
+                      stroke={nodeColor} strokeWidth={isSelected ? 2 : 1} strokeOpacity={isPhaseActive ? 0.8 : 0.5}
                     />
                     {node.sequenceNumber != null && node.category === "request" && (
                       <>
@@ -2093,7 +2123,8 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
               </div>
             )}
           </>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

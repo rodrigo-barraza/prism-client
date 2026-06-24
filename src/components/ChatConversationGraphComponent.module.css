@@ -80,3 +80,21 @@
   user-select: none;
   font-variant-numeric: tabular-nums;
 }
+
+/* ── Phase Activity Pulse — animated ring synced to status bar phase ── */
+
+@keyframes phase-activity-pulse-animation {
+  0%, 100% {
+    opacity: 0.6;
+    stroke-width: 2;
+  }
+  50% {
+    opacity: 0.2;
+    stroke-width: 1;
+  }
+}
+
+.phase-activity-pulse-ring {
+  pointer-events: none;
+  animation: phase-activity-pulse-animation 2s ease-in-out infinite;
+}

@@ -56,13 +56,6 @@ const COST_TIERS = [
 
 const COST_FILTER_COLOR = "#22c55e";
 
-function deriveClusterHue(conversationId: string): number {
-  let hash = 5381;
-  for (let index = 0; index < conversationId.length; index++) {
-    hash = ((hash << 5) + hash + conversationId.charCodeAt(index)) | 0;
-  }
-  return ((hash % 360) + 360) % 360;
-}
 
 interface HistoryListProps {
   items?: HistoryListItem[];
@@ -714,7 +707,7 @@ export default function HistoryList({
             );
           }
 
-          const clusterAccentColor = `oklch(0.65 0.18 ${deriveClusterHue(group.parent.id)})`;
+
 
           const renderSubAgentTree = (nodes: SubAgentTreeNode[], depth: number) => (
             <div className={styles['sub-agent-tree-container']} data-tree-depth={depth}>
@@ -786,7 +779,6 @@ export default function HistoryList({
             <div
               key={group.parent.id}
               className={styles['agent-cluster-group']}
-              style={{ '--cluster-accent-color': clusterAccentColor } as React.CSSProperties}
             >
               <HistoryItemComponent
                 item={group.parent}
