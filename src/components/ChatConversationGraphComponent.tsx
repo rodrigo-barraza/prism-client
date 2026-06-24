@@ -129,20 +129,36 @@ const NODE_LABELS: Record<NodeCategory, string> = {
   embedding: "Embedding",
 };
 
-const TIER_ORDER: Record<NodeCategory, number> = {
-  project: 0,
-  user: 0,
-  session: 1,
-  agent: 2,
-  subagent: 3,
-  // Tiers 4–5 accommodate sub-agent depth 2+ when present; the layout
-  // collapses empty tiers so downstream columns shift left automatically.
-  request: 6,
-  tool: 7,
-  model: 8,
-  embedding: 8,
-  provider: 9,
-};
+// Dynamically computes the column tier for a node based on the maximum
+// sub-agent depth observed in the graph. Sub-agents at depth N occupy
+// tier 2 + N, and all downstream categories (request, tool, model,
+// provider) shift right accordingly. This scales to any depth without
+// hardcoded tier slots. Empty tiers are collapsed by the layout logic.
+function computeNodeTier(node: GraphNode, maximumSubAgentDepth: number): number {
+  const firstDownstreamTier = 3 + maximumSubAgentDepth;
+  switch (node.category) {
+    case "project":
+    case "user":
+      return 0;
+    case "session":
+      return 1;
+    case "agent":
+      return 2;
+    case "subagent":
+      return 2 + (node.depth ?? 1);
+    case "request":
+      return firstDownstreamTier;
+    case "tool":
+      return firstDownstreamTier + 1;
+    case "model":
+    case "embedding":
+      return firstDownstreamTier + 2;
+    case "provider":
+      return firstDownstreamTier + 3;
+    default:
+      return firstDownstreamTier;
+  }
+}
 
 function straightEdgePath(
   sourceX: number,
@@ -614,9 +630,16 @@ function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canv
   const { nodes: graphNodes } = graphData;
   if (graphNodes.length === 0) return;
 
+  const maximumSubAgentDepth = graphNodes.reduce((maxDepth, node) => {
+    if (node.category === "subagent" && node.depth !== undefined) {
+      return Math.max(maxDepth, node.depth);
+    }
+    return maxDepth;
+  }, 0);
+
   const tierBuckets: Map<number, GraphNode[]> = new Map();
   for (const node of graphNodes) {
-    const tier = TIER_ORDER[node.category] ?? 6;
+    const tier = computeNodeTier(node, maximumSubAgentDepth);
     if (!tierBuckets.has(tier)) tierBuckets.set(tier, []);
     tierBuckets.get(tier)!.push(node);
   }
@@ -1452,26 +1475,47 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   }, [conversationId, dimensions.width, dimensions.height]);
 
   // -- SSE live updates ------------------------------------------
+  // Uses per-event incremental streaming: each MongoDB Change Stream
+  // event triggers an immediate single-request fetch and graph rebuild,
+  // so request nodes appear one-by-one in real-time instead of in batches.
   useEffect(() => {
     if (!conversationId) return;
 
     let pollInterval: ReturnType<typeof setInterval> | null = null;
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    let previousRequestCount = conversationRequestsRef.current.length;
     let isBootstrapping = false;
+    let isCancelled = false;
+
+    // Track known request IDs to prevent duplicate appends from
+    // concurrent SSE events or re-deliveries
+    const knownRequestIds = new Set<string>();
+    for (const existingRequest of conversationRequestsRef.current) {
+      if (existingRequest._id) knownRequestIds.add(existingRequest._id);
+    }
+
+    // Serialize concurrent SSE event processing with a FIFO queue
+    // so rapid events are handled one-at-a-time in arrival order
+    let processingChain = Promise.resolve();
 
     const performColdStartBootstrap = async () => {
-      if (isBootstrapping) return;
+      if (isBootstrapping || isCancelled) return;
       isBootstrapping = true;
       try {
         const fetchedConversation = await IrisService.getAgentConversation(conversationId);
+        if (isCancelled) return;
+
         const [bootstrapStats, bootstrapRequestsResponse] = await Promise.all([
           IrisService.getConversationRunStats(conversationId).catch(() => null),
           IrisService.getConversationRequests(conversationId).catch(() => ({ requests: [] as IrisRequestEntry[] })),
         ]);
+        if (isCancelled) return;
 
         const bootstrapRequests = bootstrapRequestsResponse.requests || [];
-        previousRequestCount = bootstrapRequests.length;
+
+        // Seed the known IDs set from the full bootstrap
+        knownRequestIds.clear();
+        for (const bootstrapRequest of bootstrapRequests) {
+          if (bootstrapRequest._id) knownRequestIds.add(bootstrapRequest._id);
+        }
 
         setConversation(fetchedConversation);
         setConversationStats(bootstrapStats);
@@ -1490,25 +1534,32 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       }
     };
 
-    const performIncrementalRefresh = async () => {
+    // Full re-fetch fallback for polling mode (no Change Streams)
+    const performFullRefresh = async () => {
       const activeConversation = conversationRef.current;
-
-      if (!activeConversation) {
-        await performColdStartBootstrap();
+      if (!activeConversation || isCancelled) {
+        if (!activeConversation) await performColdStartBootstrap();
         return;
       }
 
       const activeConversationId = activeConversation.id || activeConversation._id;
-
       try {
         const [updatedStats, updatedRequestsResponse] = await Promise.all([
           IrisService.getConversationRunStats(activeConversationId).catch(() => conversationStatsRef.current),
           IrisService.getConversationRequests(activeConversationId).catch(() => ({ requests: conversationRequestsRef.current })),
         ]);
+        if (isCancelled) return;
 
         const updatedRequests = updatedRequestsResponse.requests || [];
-        if (updatedRequests.length !== previousRequestCount) {
-          previousRequestCount = updatedRequests.length;
+        const previousCount = knownRequestIds.size;
+
+        // Re-seed known IDs
+        knownRequestIds.clear();
+        for (const request of updatedRequests) {
+          if (request._id) knownRequestIds.add(request._id);
+        }
+
+        if (updatedRequests.length !== previousCount) {
           setConversationStats(updatedStats);
           setConversationRequests(updatedRequests);
           incrementalGraphRebuild(activeConversation, updatedStats, updatedRequests);
@@ -1521,29 +1572,91 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       }
     };
 
-    const debouncedRefresh = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(performIncrementalRefresh, 400);
+    // Handle a single SSE change event by fetching only the affected
+    // request document and appending/replacing it in the local array
+    const handleSingleRequestChange = async (changeEvent: IrisCollectionChangeEvent) => {
+      if (isCancelled) return;
+
+      const activeConversation = conversationRef.current;
+      if (!activeConversation) {
+        await performColdStartBootstrap();
+        return;
+      }
+
+      const requestDocumentId = changeEvent.documentId;
+      const isInsertOperation = changeEvent.operationType === "insert";
+      const isUpdateOperation = changeEvent.operationType === "update" || changeEvent.operationType === "replace";
+
+      // For inserts, skip if we already know this request ID (duplicate SSE delivery)
+      if (isInsertOperation && requestDocumentId && knownRequestIds.has(requestDocumentId)) {
+        return;
+      }
+
+      // If we don't have a documentId to fetch individually, fall back to full refresh
+      if (!requestDocumentId) {
+        await performFullRefresh();
+        return;
+      }
+
+      try {
+        // Fetch the single request and the latest stats concurrently
+        const [fetchedRequest, updatedStats] = await Promise.all([
+          IrisService.getRequest(requestDocumentId),
+          IrisService.getConversationRunStats(
+            activeConversation.id || activeConversation._id,
+          ).catch(() => conversationStatsRef.current),
+        ]);
+        if (isCancelled) return;
+
+        let updatedRequests: IrisRequestEntry[];
+
+        if (isInsertOperation) {
+          // Append the new request to the existing array
+          knownRequestIds.add(requestDocumentId);
+          updatedRequests = [...conversationRequestsRef.current, fetchedRequest];
+        } else if (isUpdateOperation) {
+          // Replace the existing request in-place
+          updatedRequests = conversationRequestsRef.current.map((existingRequest) =>
+            existingRequest._id === requestDocumentId ? fetchedRequest : existingRequest,
+          );
+        } else {
+          // For delete or other operations, do a full refresh
+          await performFullRefresh();
+          return;
+        }
+
+        setConversationStats(updatedStats);
+        setConversationRequests(updatedRequests);
+        incrementalGraphRebuild(activeConversation, updatedStats, updatedRequests);
+        startCollisionLoop(40);
+      } catch {
+        // Single-request fetch failed — fall back to full refresh
+        await performFullRefresh();
+      }
     };
 
     const subscription = IrisService.subscribeCollectionChanges({
       onStatus: (statusEvent: IrisCollectionChangeEvent) => {
         setIsLiveConnected(!!statusEvent.changeStreams);
         if (!statusEvent.changeStreams) {
-          if (!pollInterval) pollInterval = setInterval(performIncrementalRefresh, 10_000);
+          if (!pollInterval) pollInterval = setInterval(performFullRefresh, 10_000);
         }
       },
       onChange: (changeEvent: IrisCollectionChangeEvent) => {
         if (changeEvent.collection === "requests" && changeEvent.conversationId === conversationId) {
-          debouncedRefresh();
+          // Chain each event handler into a FIFO queue so rapid SSE
+          // events are processed sequentially in arrival order
+          processingChain = processingChain
+            .then(() => handleSingleRequestChange(changeEvent))
+            .catch(() => {});
         }
       },
     });
 
     return () => {
+      isCancelled = true;
       subscription.close();
       if (pollInterval) clearInterval(pollInterval);
-      if (debounceTimer) clearTimeout(debounceTimer);
     };
   }, [conversationId, dimensions.width, dimensions.height, incrementalGraphRebuild, startCollisionLoop]);
 
@@ -2075,7 +2188,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 const isSessionCenter = node.category === "session";
                 const isAgentNode = node.category === "agent" || node.category === "subagent";
                 const agentDepth = node.depth ?? 0;
-                const isPhaseActive = isSessionCenter && !!phaseRepresentativeColor;
+                const isPhaseActive = (isSessionCenter || (isAgentNode && isGenerating)) && !!phaseRepresentativeColor;
                 const nodeColor = isPhaseActive
                   ? phaseRepresentativeColor
                   : isAgentNode
@@ -2134,7 +2247,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                     className={`${graphStyles['node-group']}${isEntering ? ` ${graphStyles['node-entering']}` : ""}`}
                     onMouseDown={(event) => handleNodeMouseDown(event, node.id)}
                     onClick={(event) => handleNodeClick(event, node.id)}
-                    filter={isSessionCenter ? "url(#chat-graph-session-glow)" : (isSelected || isNodeLiveActive) ? "url(#chat-graph-node-hover-glow)" : undefined}
+                    filter={isPhaseActive ? "url(#chat-graph-session-glow)" : (isSelected || isNodeLiveActive) ? "url(#chat-graph-node-hover-glow)" : undefined}
                   >
                     {/* Phase-synced activity pulse ring for session center */}
                     {isPhaseActive && (
@@ -2178,8 +2291,8 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                     )}
                     <circle
                       cx={node.x} cy={node.y} r={node.radius}
-                      fill={nodeColor} fillOpacity={isSessionCenter ? 0.95 : isNodeLiveActive ? 0.95 : 0.85}
-                      stroke={nodeColor} strokeWidth={(isSelected || isNodeLiveActive) ? 2 : 1} strokeOpacity={(isPhaseActive || isNodeLiveActive) ? 0.8 : 0.5}
+                      fill={nodeColor} fillOpacity={isPhaseActive ? 0.95 : isNodeLiveActive ? 0.95 : 0.85}
+                      stroke={nodeColor} strokeWidth={(isSelected || isNodeLiveActive || isPhaseActive) ? 2 : 1} strokeOpacity={(isPhaseActive || isNodeLiveActive) ? 0.8 : 0.5}
                     />
                     {node.sequenceNumber != null && node.category === "request" && (
                       <>
