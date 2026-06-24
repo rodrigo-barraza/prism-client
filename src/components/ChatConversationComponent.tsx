@@ -6750,7 +6750,11 @@ export default function ChatConversationComponent({
       </div>
       {/* Nodes tab — inline conversation graph */}
       {chatAreaTab === "nodes" && (
-        <ChatConversationGraphComponent conversationId={activeId} />
+        <ChatConversationGraphComponent
+          conversationId={activeId}
+          toolActivity={toolActivity}
+          isGenerating={isGenerating}
+        />
       )}
       {chatAreaTab !== "nodes" && !isAdmin && (
         <PixelTransitionComponent
@@ -7117,7 +7121,7 @@ export default function ChatConversationComponent({
             liveStreamingBurstTokens / (liveStreamingBurstElapsed / 1000);
         }
 
-        if (chatAreaTab === "nodes") return null;
+
         return (
           <StatusBarComponent
             active={isGenerating}
@@ -7135,7 +7139,7 @@ export default function ChatConversationComponent({
 
       {!isAdmin && (
       <div
-        className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model ? chatStyles['input-wrapper-disabled'] : ""} ${chatAreaTab === "nodes" ? chatStyles['input-wrapper-hidden'] : ""}`}
+        className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model ? chatStyles['input-wrapper-disabled'] : ""}`}
       >
         <form
           onSubmit={handleSend}

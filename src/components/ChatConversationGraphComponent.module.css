@@ -98,3 +98,43 @@
   pointer-events: none;
   animation: phase-activity-pulse-animation 2s ease-in-out infinite;
 }
+
+/* ── Node Activity Pulse — animated ring on active request/model nodes ── */
+
+@keyframes node-activity-pulse-animation {
+  0%, 100% {
+    opacity: 0.7;
+    stroke-width: 2.5;
+  }
+  50% {
+    opacity: 0.15;
+    stroke-width: 1;
+  }
+}
+
+.node-activity-pulse-ring {
+  pointer-events: none;
+  animation: node-activity-pulse-animation 1.4s ease-in-out infinite;
+}
+
+/* ── Tool Activity Pulse — faster, more energetic glow for tool execution ── */
+
+@keyframes node-tool-activity-pulse-animation {
+  0%, 100% {
+    opacity: 0.8;
+    stroke-width: 3;
+  }
+  40% {
+    opacity: 0.1;
+    stroke-width: 0.8;
+  }
+  70% {
+    opacity: 0.5;
+    stroke-width: 2;
+  }
+}
+
+.node-tool-activity-pulse-ring {
+  pointer-events: none;
+  animation: node-tool-activity-pulse-animation 0.9s ease-in-out infinite;
+}

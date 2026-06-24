@@ -19,7 +19,7 @@ import IrisService, {
   type IrisRequestEntry,
   type IrisCollectionChangeEvent,
 } from "../services/IrisService";
-import type { AgentConversation, ConversationStats } from "../types/types";
+import type { AgentConversation, ConversationStats, ToolCallEvent } from "../types/types";
 import { cleanModelName } from "./BadgeComponent";
 import { resolveProviderLabel } from "./ProviderLogosComponent";
 import StarfieldComponent from "./StarfieldComponent";
@@ -1101,13 +1101,15 @@ function computeFitToGraphTransform(
 
 export interface ChatConversationGraphComponentProps {
   conversationId: string | null;
+  toolActivity?: ToolCallEvent[];
+  isGenerating?: boolean;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════════════════════ */
 
-export default function ChatConversationGraphComponent({ conversationId }: ChatConversationGraphComponentProps) {
+export default function ChatConversationGraphComponent({ conversationId, toolActivity = [], isGenerating = false }: ChatConversationGraphComponentProps) {
   const [conversation, setConversation] = useState<AgentConversation | null>(null);
   const [conversationStats, setConversationStats] = useState<ConversationStats | null>(null);
   const [conversationRequests, setConversationRequests] = useState<IrisRequestEntry[]>([]);
@@ -1779,6 +1781,35 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
     });
   }, []);
 
+  // -- Derive active node identifiers from live toolActivity -----------
+  const activeToolNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const toolCall of toolActivity) {
+      if (toolCall.status === "calling" || toolCall.status === "streaming") {
+        names.add(toolCall.name);
+      }
+    }
+    return names;
+  }, [toolActivity]);
+
+  const activeModelNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const toolCall of toolActivity) {
+      if ((toolCall.status === "calling" || toolCall.status === "streaming") && toolCall._sourceModel) {
+        names.add(toolCall._sourceModel);
+      }
+    }
+    return names;
+  }, [toolActivity]);
+
+  const latestRequestNodeId = useMemo(() => {
+    if (!graphData || !isGenerating) return null;
+    const requestNodes = graphData.nodes
+      .filter((node) => node.category === "request")
+      .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0));
+    return requestNodes.length > 0 ? requestNodes[requestNodes.length - 1].id : null;
+  }, [graphData, isGenerating]);
+
   // -- Empty state when no conversationId -----------------------------
   if (!conversationId) {
     return (
@@ -1976,6 +2007,12 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
 
                 const isEntering = enteringNodeIds.has(node.id);
 
+                // Derive live activity state from toolActivity props
+                const isActiveToolNode = node.category === "tool" && activeToolNames.has(node.metadata?.toolName as string);
+                const isActiveModelNode = node.category === "model" && activeModelNames.has(node.metadata?.fullModelName as string);
+                const isActiveRequestNode = node.category === "request" && isGenerating && latestRequestNodeId === node.id;
+                const isNodeLiveActive = isActiveToolNode || isActiveModelNode || isActiveRequestNode;
+
                 // Check if this agent node has children in the sub-agent tree
                 const hasSubAgentChildren = isAgentNode && graphData.subAgentTree && (() => {
                   const findInTree = (treeNodes: SubAgentTreeNode[]): boolean => {
@@ -2020,7 +2057,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                     className={`${graphStyles['node-group']}${isEntering ? ` ${graphStyles['node-entering']}` : ""}`}
                     onMouseDown={(event) => handleNodeMouseDown(event, node.id)}
                     onClick={(event) => handleNodeClick(event, node.id)}
-                    filter={isSessionCenter ? "url(#chat-graph-session-glow)" : isSelected ? "url(#chat-graph-node-hover-glow)" : undefined}
+                    filter={isSessionCenter ? "url(#chat-graph-session-glow)" : (isSelected || isNodeLiveActive) ? "url(#chat-graph-node-hover-glow)" : undefined}
                   >
                     {/* Phase-synced activity pulse ring for session center */}
                     {isPhaseActive && (
@@ -2032,6 +2069,18 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                         strokeWidth={2}
                         strokeOpacity={0.5}
                         className={styles['phase-activity-pulse-ring']}
+                      />
+                    )}
+                    {/* Live activity pulse ring for request/model/tool nodes */}
+                    {isNodeLiveActive && (
+                      <circle
+                        cx={node.x} cy={node.y}
+                        r={node.radius + 6}
+                        fill="none"
+                        stroke={nodeColor}
+                        strokeWidth={2}
+                        strokeOpacity={0.6}
+                        className={isActiveToolNode ? styles['node-tool-activity-pulse-ring'] : styles['node-activity-pulse-ring']}
                       />
                     )}
                     {/* Spawn ripple animation for entering agent nodes */}
@@ -2052,8 +2101,8 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                     )}
                     <circle
                       cx={node.x} cy={node.y} r={node.radius}
-                      fill={nodeColor} fillOpacity={isSessionCenter ? 0.95 : 0.85}
-                      stroke={nodeColor} strokeWidth={isSelected ? 2 : 1} strokeOpacity={isPhaseActive ? 0.8 : 0.5}
+                      fill={nodeColor} fillOpacity={isSessionCenter ? 0.95 : isNodeLiveActive ? 0.95 : 0.85}
+                      stroke={nodeColor} strokeWidth={(isSelected || isNodeLiveActive) ? 2 : 1} strokeOpacity={(isPhaseActive || isNodeLiveActive) ? 0.8 : 0.5}
                     />
                     {node.sequenceNumber != null && node.category === "request" && (
                       <>
