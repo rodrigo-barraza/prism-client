@@ -399,8 +399,8 @@ function buildGraphFromConversation(
     }
 
     if (request.model) {
-      const modelNodeId = isEmbeddingRequest ? `embedding:${request.model}` : `model:${request.model}`;
-      const modelCategory: NodeCategory = isEmbeddingRequest ? "embedding" : "model";
+      const modelNodeId = `model:${request.model}`;
+      const modelCategory: NodeCategory = "model";
       if (!modelNodeIds.has(modelNodeId)) {
         modelNodeIds.add(modelNodeId);
         addNode(modelNodeId, cleanModelName(request.model), modelCategory, 24, { fullModelName: request.model });
@@ -2376,7 +2376,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                     )}
                     {node.category !== "provider" && node.category !== "tool" && (
                       <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={28} style={{ pointerEvents: "none", userSelect: "none" }}>
-                        {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "model" ? "💾" : node.category === "request" ? "🔗" : node.category === "user" ? "●" : node.category === "embedding" ? "⬡" : "○"}
+                        {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "model" ? "💾" : node.category === "request" ? "🔗" : node.category === "user" ? "●" : node.category === "embedding" ? "💾" : "○"}
                       </text>
                     )}
                     {/* Collapse/expand toggle badge for agents with children */}
