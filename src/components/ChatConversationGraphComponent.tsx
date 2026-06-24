@@ -135,9 +135,10 @@ const TIER_ORDER: Record<NodeCategory, number> = {
   session: 1,
   agent: 2,
   subagent: 3,
-  // Tiers 4–5 reserved for sub-agent depth 2 and depth 3 (columns stay even when empty)
-  tool: 7,
+  // Tiers 4–5 accommodate sub-agent depth 2+ when present; the layout
+  // collapses empty tiers so downstream columns shift left automatically.
   request: 6,
+  tool: 7,
   model: 8,
   embedding: 8,
   provider: 9,
@@ -620,18 +621,19 @@ function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canv
     tierBuckets.get(tier)!.push(node);
   }
 
-  // Include all tiers from 0 to max so reserved empty sub-agent columns still occupy space
-  const maximumTier = Math.max(...tierBuckets.keys());
-  const totalColumns = maximumTier + 1;
+  // Collect only populated tiers in ascending order so empty columns
+  // (e.g. sub-agent depth tiers when no sub-agents exist) are collapsed
+  // and downstream columns shift left to fill the gap.
+  const populatedTierIndices = [...tierBuckets.keys()].sort((tierA, tierB) => tierA - tierB);
+  const totalColumns = populatedTierIndices.length;
   const horizontalSpacing = Math.max(160, (canvasWidth - 100) / Math.max(totalColumns, 1));
   const startX = 80;
 
   const centerY = canvasHeight / 2;
 
-  for (let tierIndex = 0; tierIndex <= maximumTier; tierIndex++) {
-    const tierNodes = tierBuckets.get(tierIndex);
-    if (!tierNodes || tierNodes.length === 0) continue;
-    const tierX = startX + tierIndex * horizontalSpacing;
+  for (let columnIndex = 0; columnIndex < populatedTierIndices.length; columnIndex++) {
+    const tierNodes = tierBuckets.get(populatedTierIndices[columnIndex])!;
+    const tierX = startX + columnIndex * horizontalSpacing;
     const verticalSpacing = Math.max(50, canvasHeight / (tierNodes.length + 1));
     const totalTierHeight = (tierNodes.length - 1) * verticalSpacing;
     const tierStartY = centerY - totalTierHeight / 2;
