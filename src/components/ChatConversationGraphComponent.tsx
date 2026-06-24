@@ -253,7 +253,7 @@ function buildGraphFromConversation(
   const conversationId = conversation.id || conversation._id;
   const conversationNodeId = `session:${conversationId}`;
 
-  addNode(conversationNodeId, conversation.title || "Conversation", "session", 32, {
+  addNode(conversationNodeId, conversation.title || "Conversation", "session", 24, {
     conversationId,
     status: conversation.status,
     createdAt: conversation.createdAt,
@@ -266,7 +266,7 @@ function buildGraphFromConversation(
 
   if (conversation.project) {
     const projectNodeId = `project:${conversation.project}`;
-    addNode(projectNodeId, conversation.project, "project", 22, { project: conversation.project });
+    addNode(projectNodeId, conversation.project, "project", 24, { project: conversation.project });
     addEdge(projectNodeId, conversationNodeId, 0.8);
   }
 
@@ -352,7 +352,7 @@ function buildGraphFromConversation(
     const operationLabel = request.operation || "unknown";
     const requestNodeId = `request:${request._id || requestIndex}`;
 
-    addNode(requestNodeId, `#${sequenceNumber} ${operationLabel}`, "request", 16, {
+    addNode(requestNodeId, `#${sequenceNumber} ${operationLabel}`, "request", 24, {
       operation: operationLabel,
       estimatedCost: request.estimatedCost,
       inputTokens: request.inputTokens,
@@ -372,8 +372,7 @@ function buildGraphFromConversation(
     if (isSubAgent) {
       const subAgentLabel = request.agent || AGENT_IDS.OMNI;
       const agentDepth = subAgentDepthMap.get(requestAgentConversationId) || 1;
-      const depthScaledRadius = Math.max(14, 22 - agentDepth * 3);
-      addNode(currentAgentNodeId, subAgentLabel, "subagent", depthScaledRadius, {
+      addNode(currentAgentNodeId, subAgentLabel, "subagent", 24, {
         agent: subAgentLabel,
         isSubagent: true,
         parentAgentConversationId: request.parentAgentConversationId || mainAgentConversationId,
@@ -404,7 +403,7 @@ function buildGraphFromConversation(
       const modelCategory: NodeCategory = isEmbeddingRequest ? "embedding" : "model";
       if (!modelNodeIds.has(modelNodeId)) {
         modelNodeIds.add(modelNodeId);
-        addNode(modelNodeId, cleanModelName(request.model), modelCategory, 20, { fullModelName: request.model });
+        addNode(modelNodeId, cleanModelName(request.model), modelCategory, 24, { fullModelName: request.model });
       }
       addEdge(requestNodeId, modelNodeId, 0.9);
 
@@ -412,7 +411,7 @@ function buildGraphFromConversation(
         const providerNodeId = `provider:${request.provider}`;
         if (!providerNodeIds.has(providerNodeId)) {
           providerNodeIds.add(providerNodeId);
-          addNode(providerNodeId, resolveProviderLabel(request.provider) || request.provider, "provider", 18, { provider: request.provider });
+          addNode(providerNodeId, resolveProviderLabel(request.provider) || request.provider, "provider", 24, { provider: request.provider });
         }
         addEdge(modelNodeId, providerNodeId, 0.7);
       }
@@ -422,8 +421,7 @@ function buildGraphFromConversation(
       for (const toolName of request.toolApiNames) {
         const uniqueToolNodeId = `tool:${request._id || requestIndex}:${toolName}`;
         const invocationsInRequest = request.toolApiNames.filter((name) => name === toolName).length;
-        const normalizedRadius = Math.min(22, 12 + Math.sqrt(invocationsInRequest) * 2);
-        addNode(uniqueToolNodeId, toolName, "tool", normalizedRadius, { toolName, usageCount: invocationsInRequest });
+        addNode(uniqueToolNodeId, toolName, "tool", 24, { toolName, usageCount: invocationsInRequest });
         addEdge(requestNodeId, uniqueToolNodeId, 0.7);
         addedToolNames.add(toolName);
       }
@@ -438,8 +436,7 @@ function buildGraphFromConversation(
     for (const [toolName, usageCount] of Object.entries(conversationStats.toolCounts)) {
       if (!addedToolNames.has(toolName)) {
         const fallbackToolNodeId = `tool:fallback:${toolName}`;
-        const normalizedRadius = Math.min(22, 12 + Math.sqrt(usageCount) * 2);
-        addNode(fallbackToolNodeId, toolName, "tool", normalizedRadius, { toolName, usageCount });
+        addNode(fallbackToolNodeId, toolName, "tool", 24, { toolName, usageCount });
         addEdge(parentAgentNodeId, fallbackToolNodeId, 0.7);
       }
     }
@@ -447,7 +444,7 @@ function buildGraphFromConversation(
 
   for (const userName of userSet) {
     const userNodeId = `user:${userName}`;
-    addNode(userNodeId, userName, "user", 18, { username: userName });
+    addNode(userNodeId, userName, "user", 24, { username: userName });
     addEdge(userNodeId, conversationNodeId, 0.5);
   }
 
@@ -2373,13 +2370,13 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                       />
                     )}
                     {node.category === "tool" && !toolEmojiMap.get(String(node.metadata?.toolName || ""))?.startsWith("http") && (
-                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={node.radius * 0.75} style={{ pointerEvents: "none", userSelect: "none" }}>
+                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={28} style={{ pointerEvents: "none", userSelect: "none" }}>
                         {toolEmojiMap.get(String(node.metadata?.toolName || "")) || "⚙"}
                       </text>
                     )}
                     {node.category !== "provider" && node.category !== "tool" && (
-                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={node.radius * 0.75} style={{ pointerEvents: "none", userSelect: "none" }}>
-                        {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "model" ? "◈" : node.category === "request" ? "↗" : node.category === "user" ? "●" : node.category === "embedding" ? "⬡" : "○"}
+                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={28} style={{ pointerEvents: "none", userSelect: "none" }}>
+                        {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "model" ? "💾" : node.category === "request" ? "🔗" : node.category === "user" ? "●" : node.category === "embedding" ? "⬡" : "○"}
                       </text>
                     )}
                     {/* Collapse/expand toggle badge for agents with children */}
