@@ -2318,7 +2318,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                     )}
                     <circle
                       cx={node.x} cy={node.y} r={node.radius}
-                      fill={nodeColor} fillOpacity={isPhaseActive ? 0.95 : isNodeLiveActive ? 0.95 : 0.85}
+                      fill={isSelected ? "oklch(1 0 0)" : nodeColor} fillOpacity={isSelected ? 1 : isPhaseActive ? 0.95 : isNodeLiveActive ? 0.95 : 0.85}
                       stroke={nodeColor} strokeWidth={(isSelected || isNodeLiveActive || isPhaseActive) ? 2 : 1} strokeOpacity={(isPhaseActive || isNodeLiveActive) ? 0.8 : 0.5}
                     />
                     {typeof node.sequenceNumber === "number" && node.category === "request" && (
@@ -2362,26 +2362,21 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                         </div>
                       </foreignObject>
                     )}
-                    {node.category === "tool" && (() => {
-                      const toolNodeEmoji = toolEmojiMap.get(String(node.metadata?.toolName || ""));
-                      if (toolNodeEmoji && toolNodeEmoji.startsWith("http")) {
-                        return (
-                          <image
-                            href={toolNodeEmoji}
-                            x={node.x - node.radius * 0.4}
-                            y={node.y - node.radius * 0.4}
-                            width={node.radius * 0.8}
-                            height={node.radius * 0.8}
-                            style={{ pointerEvents: "none" }}
-                          />
-                        );
-                      }
-                      return (
-                        <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={node.radius * 0.75} style={{ pointerEvents: "none", userSelect: "none" }}>
-                          {toolNodeEmoji || "⚙"}
-                        </text>
-                      );
-                    })()}
+                    {node.category === "tool" && toolEmojiMap.get(String(node.metadata?.toolName || ""))?.startsWith("http") && (
+                      <image
+                        href={toolEmojiMap.get(String(node.metadata?.toolName || ""))!}
+                        x={node.x - node.radius * 0.4}
+                        y={node.y - node.radius * 0.4}
+                        width={node.radius * 0.8}
+                        height={node.radius * 0.8}
+                        style={{ pointerEvents: "none" }}
+                      />
+                    )}
+                    {node.category === "tool" && !toolEmojiMap.get(String(node.metadata?.toolName || ""))?.startsWith("http") && (
+                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={node.radius * 0.75} style={{ pointerEvents: "none", userSelect: "none" }}>
+                        {toolEmojiMap.get(String(node.metadata?.toolName || "")) || "⚙"}
+                      </text>
+                    )}
                     {node.category !== "provider" && node.category !== "tool" && (
                       <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={node.radius * 0.75} style={{ pointerEvents: "none", userSelect: "none" }}>
                         {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "model" ? "◈" : node.category === "request" ? "↗" : node.category === "user" ? "●" : node.category === "embedding" ? "⬡" : "○"}
