@@ -2230,7 +2230,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 const isAgentNode = node.category === "agent" || node.category === "subagent";
                 const agentDepth = node.depth ?? 0;
                 const isPhaseActive = (isSessionCenter || (isAgentNode && isGenerating)) && !!phaseRepresentativeColor;
-                const nodeColor = isPhaseActive
+                const nodeColor = (isPhaseActive && phaseRepresentativeColor)
                   ? phaseRepresentativeColor
                   : isAgentNode
                     ? resolveAgentColorByDepth(agentDepth)
@@ -2239,7 +2239,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 const isEntering = enteringNodeIds.has(node.id);
 
                 // Detect pending (in-flight) request nodes from two-phase lifecycle
-                const isPendingRequest = node.category === "request" && node.metadata?.status === "pending";
+                const isPendingRequest = node.category === "request" && (node.metadata?.status as string) === "pending";
 
                 // Derive live activity state from toolActivity props
                 const isActiveToolNode = node.category === "tool" && activeToolNames.has(node.metadata?.toolName as string);
@@ -2248,7 +2248,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 const isNodeLiveActive = isActiveToolNode || isActiveModelNode || isActiveRequestNode || isPendingRequest;
 
                 // Check if this agent node has children in the sub-agent tree
-                const hasSubAgentChildren = isAgentNode && graphData.subAgentTree && (() => {
+                const hasSubAgentChildren = !!(isAgentNode && graphData.subAgentTree && (() => {
                   const findInTree = (treeNodes: SubAgentTreeNode[]): boolean => {
                     for (const treeNode of treeNodes) {
                       if (treeNode.nodeId === node.id) return treeNode.children.length > 0;
@@ -2259,7 +2259,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                   // Also check if this is the root agent with top-level children
                   if (node.category === "agent" && graphData.subAgentTree.length > 0) return true;
                   return findInTree(graphData.subAgentTree);
-                })();
+                })());
 
                 const isCollapsed = collapsedSubTreeIds.has(node.id);
 
@@ -2344,14 +2344,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                       fill={isSelected ? "oklch(1 0 0)" : nodeColor} fillOpacity={isSelected ? 1 : isPhaseActive ? 0.95 : isNodeLiveActive ? 0.95 : 0.85}
                       stroke={nodeColor} strokeWidth={(isSelected || isNodeLiveActive || isPhaseActive) ? 2 : 1} strokeOpacity={(isPhaseActive || isNodeLiveActive) ? 0.8 : 0.5}
                     />
-                    {typeof node.sequenceNumber === "number" && node.category === "request" && (
+                    {node.category === "request" && typeof node.sequenceNumber === "number" ? (
                       <>
                         <circle cx={node.x + node.radius * 0.7} cy={node.y - node.radius * 0.7} r={8} fill="oklch(0.25 0 0)" stroke={nodeColor} strokeWidth={1.5} />
                         <text x={node.x + node.radius * 0.7} y={node.y - node.radius * 0.7} textAnchor="middle" dominantBaseline="central" fill="oklch(0.95 0 0)" fontSize={8} fontWeight={600}>
                           {node.sequenceNumber > 99 ? "99+" : node.sequenceNumber}
                         </text>
                       </>
-                    )}
+                    ) : null}
                     {/* Depth label for nested sub-agents */}
                     {isAgentNode && agentDepth > 0 && (
                       <text
@@ -2372,7 +2372,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                       {node.label.length > 24 ? `${node.label.slice(0, 22)}…` : node.label}
                     </text>
                     {/* Node center icon — emojis, provider logos, or fallback symbols */}
-                    {node.category === "provider" && node.metadata?.provider && (
+                    {node.category === "provider" && !!node.metadata?.provider && (
                       <foreignObject
                         x={node.x - node.radius * 0.45}
                         y={node.y - node.radius * 0.45}
