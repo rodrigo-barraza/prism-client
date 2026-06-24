@@ -136,8 +136,8 @@ const TIER_ORDER: Record<NodeCategory, number> = {
   agent: 2,
   subagent: 3,
   // Tiers 4–5 reserved for sub-agent depth 2 and depth 3 (columns stay even when empty)
-  tool: 6,
-  request: 7,
+  tool: 7,
+  request: 6,
   model: 8,
   embedding: 8,
   provider: 9,
@@ -1340,10 +1340,23 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         if (!existingNodeIds.has(node.id)) newNodeIds.add(node.id);
       }
 
+      // Determine which categories gained new nodes — those columns
+      // must be fully re-laid-out to maintain vertical centering
+      const categoriesWithNewNodes = new Set<NodeCategory>();
+      for (const node of graph.nodes) {
+        if (newNodeIds.has(node.id)) {
+          categoriesWithNewNodes.add(node.category);
+        }
+      }
+
       const topology = activeConversation.settings?.agents?.topology || "hierarchical";
       applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
 
+      // Preserve old positions only for categories that didn't change.
+      // Categories that gained new nodes get fully re-laid-out so the
+      // entire column re-centers vertically instead of stacking.
       for (const node of graph.nodes) {
+        if (categoriesWithNewNodes.has(node.category)) continue;
         const previousPosition = existingPositions.get(node.id);
         if (previousPosition) {
           node.x = previousPosition.x;
