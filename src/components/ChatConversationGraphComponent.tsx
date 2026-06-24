@@ -626,14 +626,18 @@ function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canv
   const horizontalSpacing = Math.max(160, (canvasWidth - 100) / Math.max(totalColumns, 1));
   const startX = 80;
 
+  const centerY = canvasHeight / 2;
+
   for (let tierIndex = 0; tierIndex <= maximumTier; tierIndex++) {
     const tierNodes = tierBuckets.get(tierIndex);
     if (!tierNodes || tierNodes.length === 0) continue;
     const tierX = startX + tierIndex * horizontalSpacing;
-    const verticalSpacing = Math.max(80, canvasHeight / (tierNodes.length + 1));
+    const verticalSpacing = Math.max(50, canvasHeight / (tierNodes.length + 1));
+    const totalTierHeight = (tierNodes.length - 1) * verticalSpacing;
+    const tierStartY = centerY - totalTierHeight / 2;
     for (let nodeIndex = 0; nodeIndex < tierNodes.length; nodeIndex++) {
       tierNodes[nodeIndex].x = tierX;
-      tierNodes[nodeIndex].y = (nodeIndex + 1) * verticalSpacing;
+      tierNodes[nodeIndex].y = tierStartY + nodeIndex * verticalSpacing;
     }
   }
 }
@@ -1129,8 +1133,8 @@ function computeFitToGraphTransform(
   const viewportCenterY = viewportHeight / 2;
 
   const fittedPanOffset = {
-    x: viewportCenterX / fittedZoom - graphCenterX,
-    y: viewportCenterY / fittedZoom - graphCenterY,
+    x: viewportCenterX - graphCenterX,
+    y: viewportCenterY - graphCenterY,
   };
 
   return { zoom: fittedZoom, panOffset: fittedPanOffset };
@@ -1180,9 +1184,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const zoomRef = useRef(zoom);
   const panOffsetRef = useRef(panOffset);
-  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
   useEffect(() => { panOffsetRef.current = panOffset; }, [panOffset]);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
   const hasDraggedRef = useRef(false);
@@ -1610,12 +1612,11 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const animateCenterOnNode = useCallback((targetNode: GraphNode) => {
     const viewportWidth = dimensions.width;
     const viewportHeight = dimensions.height;
-    const currentZoom = zoomRef.current;
     const currentPanOffset = panOffsetRef.current;
 
     const targetPanOffset = {
-      x: (viewportWidth / 2) / currentZoom - targetNode.x,
-      y: (viewportHeight / 2) / currentZoom - targetNode.y,
+      x: viewportWidth / 2 - targetNode.x,
+      y: viewportHeight / 2 - targetNode.y,
     };
 
     const startPanOffset = { ...currentPanOffset };
