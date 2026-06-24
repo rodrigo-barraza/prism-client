@@ -1414,14 +1414,32 @@ export default function ChatConversationComponent({
         // the sub-agent's first appendAndFinalize creates its document.
         // Without this, the sub-agent vanishes from the sidebar until
         // its MongoDB document is created and a subsequent reload picks it up.
+        //
+        // IMPORTANT: Only preserve entries that are genuinely optimistic
+        // (recently created, still generating). Old sub-agent entries that
+        // fell off the API pagination window must NOT be preserved — doing
+        // so causes stale conversations to appear at the top of the list
+        // since they get prepended without sorting.
         const apiResponseIds = new Set(
           result.items.map((entry) => entry.id || String(entry._id)),
         );
+        const OPTIMISTIC_ENTRY_AGE_THRESHOLD_MS = 60_000;
+        const optimisticCutoffTimestamp = Date.now() - OPTIMISTIC_ENTRY_AGE_THRESHOLD_MS;
         const optimisticSubAgentEntries = previousConversations.filter(
           (previousConversation) => {
             const conversationId = previousConversation.id || String(previousConversation._id);
             const hasParent = !!(previousConversation as AgentConversation).parentConversationId;
-            return hasParent && !apiResponseIds.has(conversationId);
+            if (!hasParent || apiResponseIds.has(conversationId)) return false;
+            // Only preserve entries injected very recently (within the last
+            // 60 seconds) or still actively generating. Older entries that
+            // dropped off the pagination window are stale and must not be
+            // re-injected at the top of the list.
+            const createdTimestamp = new Date(
+              previousConversation.createdAt || previousConversation.updatedAt || 0,
+            ).getTime();
+            const isRecentlyCreated = createdTimestamp > optimisticCutoffTimestamp;
+            const isActivelyGenerating = !!(previousConversation as unknown as Record<string, unknown>).isGenerating;
+            return isRecentlyCreated || isActivelyGenerating;
           },
         );
 
@@ -1449,7 +1467,14 @@ export default function ChatConversationComponent({
         }
 
         if (optimisticSubAgentEntries.length > 0) {
-          return [...optimisticSubAgentEntries, ...mergedConversations];
+          // Merge and re-sort to maintain correct updatedAt descending order
+          const combinedConversations = [...optimisticSubAgentEntries, ...mergedConversations];
+          combinedConversations.sort((conversationA, conversationB) => {
+            const timestampA = new Date(conversationA.updatedAt || conversationA.createdAt || 0).getTime();
+            const timestampB = new Date(conversationB.updatedAt || conversationB.createdAt || 0).getTime();
+            return timestampB - timestampA;
+          });
+          return combinedConversations;
         }
         return mergedConversations;
       });
