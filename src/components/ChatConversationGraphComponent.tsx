@@ -661,7 +661,14 @@ function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canv
   for (let columnIndex = 0; columnIndex < populatedTierIndices.length; columnIndex++) {
     const tierNodes = tierBuckets.get(populatedTierIndices[columnIndex])!;
     const tierX = startX + columnIndex * horizontalSpacing;
-    const verticalSpacing = Math.max(50, canvasHeight / (tierNodes.length + 1));
+    // Compute spacing so the column always fits within 90% of viewport height.
+    // For small columns this yields generous spacing (capped at 80px);
+    // for large columns the spacing compresses proportionally. The collision
+    // physics loop handles final node separation to prevent exact overlap.
+    const proportionalSpacing = tierNodes.length > 1
+      ? (canvasHeight * 0.9) / (tierNodes.length - 1)
+      : canvasHeight * 0.9;
+    const verticalSpacing = Math.min(80, proportionalSpacing);
     const totalTierHeight = (tierNodes.length - 1) * verticalSpacing;
     const tierStartY = centerY - totalTierHeight / 2;
     for (let nodeIndex = 0; nodeIndex < tierNodes.length; nodeIndex++) {
@@ -702,7 +709,10 @@ function applySequentialLayout(graphData: GraphData, canvasWidth: number, canvas
 
   const subAgentCount = subAgentNodes.length;
   const subAgentColumnX = 320;
-  const subAgentVerticalSpacing = Math.max(80, (canvasHeight - 200) / Math.max(1, subAgentCount));
+  const subAgentAdaptiveSpacing = subAgentCount > 1
+    ? (canvasHeight * 0.8) / (subAgentCount - 1)
+    : canvasHeight * 0.8;
+  const subAgentVerticalSpacing = Math.max(48, Math.min(80, subAgentAdaptiveSpacing));
   const subAgentStartY = centerY - ((subAgentCount - 1) * subAgentVerticalSpacing) / 2;
 
   for (let index = 0; index < subAgentCount; index++) {
@@ -1098,7 +1108,12 @@ function applyTopologyLayout(
     if (mainAgentNode) {
       const subAgentColumnOffset = 200;
       const topLevelCount = graphData.subAgentTree.length;
-      const subAgentVerticalSpacing = Math.max(80, (canvasHeight - 200) / Math.max(1, topLevelCount));
+      // Viewport-adaptive spacing: keep sub-agents within 80% of viewport
+      // height, with a minimum of node diameter to prevent overlap.
+      const subAgentAdaptiveSpacing = topLevelCount > 1
+        ? (canvasHeight * 0.8) / (topLevelCount - 1)
+        : canvasHeight * 0.8;
+      const subAgentVerticalSpacing = Math.max(48, Math.min(80, subAgentAdaptiveSpacing));
       const subAgentStartY = mainAgentNode.y - ((topLevelCount - 1) * subAgentVerticalSpacing) / 2;
 
       for (let childIndex = 0; childIndex < topLevelCount; childIndex++) {
@@ -1154,7 +1169,9 @@ function computeFitToGraphTransform(
 
   const horizontalZoom = viewportWidth / graphWidth;
   const verticalZoom = viewportHeight / graphHeight;
-  const fittedZoom = Math.max(MINIMUM_ZOOM, Math.min(MAXIMUM_ZOOM, Math.min(horizontalZoom, verticalZoom)));
+  // Cap auto-fit at 1.0 so the graph never appears zoomed-in beyond 1:1.
+  // The user can manually zoom in for detail via scroll wheel.
+  const fittedZoom = Math.max(MINIMUM_ZOOM, Math.min(1.0, Math.min(horizontalZoom, verticalZoom)));
 
   const graphCenterX = (minimumX + maximumX) / 2;
   const graphCenterY = (minimumY + maximumY) / 2;
@@ -2221,11 +2238,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
                 const isEntering = enteringNodeIds.has(node.id);
 
+                // Detect pending (in-flight) request nodes from two-phase lifecycle
+                const isPendingRequest = node.category === "request" && node.metadata?.status === "pending";
+
                 // Derive live activity state from toolActivity props
                 const isActiveToolNode = node.category === "tool" && activeToolNames.has(node.metadata?.toolName as string);
                 const isActiveModelNode = node.category === "model" && activeModelNames.has(node.metadata?.fullModelName as string);
                 const isActiveRequestNode = node.category === "request" && isGenerating && latestRequestNodeId === node.id;
-                const isNodeLiveActive = isActiveToolNode || isActiveModelNode || isActiveRequestNode;
+                const isNodeLiveActive = isActiveToolNode || isActiveModelNode || isActiveRequestNode || isPendingRequest;
 
                 // Check if this agent node has children in the sub-agent tree
                 const hasSubAgentChildren = isAgentNode && graphData.subAgentTree && (() => {
@@ -2294,7 +2314,13 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                         stroke={nodeColor}
                         strokeWidth={2}
                         strokeOpacity={0.6}
-                        className={isActiveToolNode ? styles['node-tool-activity-pulse-ring'] : styles['node-activity-pulse-ring']}
+                        className={
+                          isPendingRequest
+                            ? styles['pending-request-pulse-ring']
+                            : isActiveToolNode
+                              ? styles['node-tool-activity-pulse-ring']
+                              : styles['node-activity-pulse-ring']
+                        }
                       />
                     )}
                     {/* Spawn ripple animation for entering agent nodes */}

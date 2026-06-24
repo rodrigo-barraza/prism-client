@@ -138,3 +138,24 @@
   pointer-events: none;
   animation: node-tool-activity-pulse-animation 0.9s ease-in-out infinite;
 }
+
+/* ── Pending Request Pulse — breathing shimmer for in-flight requests ── */
+
+@keyframes pending-request-pulse-animation {
+  0%, 100% {
+    opacity: 0.7;
+    stroke-width: 2.5;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    opacity: 0.2;
+    stroke-width: 1.5;
+    stroke-dashoffset: 12;
+  }
+}
+
+.pending-request-pulse-ring {
+  pointer-events: none;
+  stroke-dasharray: 6 4;
+  animation: pending-request-pulse-animation 1.6s ease-in-out infinite;
+}
