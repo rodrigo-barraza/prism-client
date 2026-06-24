@@ -213,6 +213,27 @@ export default class PrismService {
   }
 
   /**
+   * Fetch the assembled system prompt for a given agent/tool/workspace
+   * configuration without making any LLM calls. Used by the Raw view
+   * to display a live preview on new conversations.
+   */
+  static async previewSystemPrompt(options: {
+    agent?: string | null;
+    disabledTools?: string[];
+    workspaceEnabled?: boolean;
+    systemPrompt?: string;
+  }): Promise<{ prompt: string; characterCount: number; estimatedTokens: number }> {
+    return PrismService._request<{
+      prompt: string;
+      characterCount: number;
+      estimatedTokens: number;
+    }>("/config/system-prompt-preview", {
+      method: "POST",
+      body: options,
+    });
+  }
+
+  /**
    * Fetch the list of registered agent personas from Prism.
    */
   static async getAgentPersonas(): Promise<AgentPersona[]> {

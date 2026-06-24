@@ -135,11 +135,11 @@ const TIER_ORDER: Record<NodeCategory, number> = {
   session: 1,
   agent: 2,
   subagent: 3,
-  tool: 4,
-  request: 3,
-  model: 4,
-  embedding: 4,
-  provider: 5,
+  tool: 3,
+  request: 4,
+  model: 5,
+  embedding: 5,
+  provider: 6,
 };
 
 function straightEdgePath(
@@ -631,6 +631,9 @@ function applySequentialLayout(graphData: GraphData, canvasWidth: number, canvas
     subAgent.y = centerY;
   }
 
+  const toolCounterByParent = new Map<string, number>();
+  const modelCounterByParent = new Map<string, number>();
+
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
     const parentNode = edge ? graphNodes.find((parentNodeCandidate) => parentNodeCandidate.id === edge.source) : null;
@@ -639,10 +642,19 @@ function applySequentialLayout(graphData: GraphData, canvasWidth: number, canvas
       if (node.category === "request") {
         node.x = parentNode.x;
         node.y = parentNode.y + 70 + (node.sequenceNumber || 1) * 30;
-      } else if (node.category === "tool" || node.category === "model" || node.category === "embedding") {
-        const angle = Math.random() * Math.PI;
-        node.x = parentNode.x + Math.cos(angle) * 60;
-        node.y = parentNode.y + Math.sin(angle) * 60;
+      } else if (node.category === "tool") {
+        const toolIndex = toolCounterByParent.get(parentNode.id) || 0;
+        toolCounterByParent.set(parentNode.id, toolIndex + 1);
+        node.x = parentNode.x - 80 - toolIndex * 30;
+        node.y = parentNode.y + (toolIndex % 3) * 35;
+      } else if (node.category === "model" || node.category === "embedding") {
+        const modelIndex = modelCounterByParent.get(parentNode.id) || 0;
+        modelCounterByParent.set(parentNode.id, modelIndex + 1);
+        node.x = parentNode.x + 80 + modelIndex * 30;
+        node.y = parentNode.y + (modelIndex % 3) * 35;
+      } else if (node.category === "provider") {
+        node.x = parentNode.x + 80;
+        node.y = parentNode.y + 50;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 80;
         node.y = parentNode.y + 80;
@@ -694,19 +706,35 @@ function applyPeerToPeerLayout(graphData: GraphData, canvasWidth: number, canvas
     subAgent.y = centerY + Math.sin(angle) * radius;
   }
 
+  const peerToolCounter = new Map<string, number>();
+  const peerModelCounter = new Map<string, number>();
+
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
     const parentNode = edge ? graphNodes.find((parentNodeCandidate) => parentNodeCandidate.id === edge.source) : null;
 
     if (parentNode) {
       if (node.category === "request") {
-        const dx = parentNode.x - centerX;
-        const dy = parentNode.y - centerY;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const ux = dx / dist;
-        const uy = dy / dist;
-        node.x = parentNode.x + ux * 50;
-        node.y = parentNode.y + uy * 50;
+        const deltaX = parentNode.x - centerX;
+        const deltaY = parentNode.y - centerY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+        const unitX = deltaX / distance;
+        const unitY = deltaY / distance;
+        node.x = parentNode.x + unitX * 50;
+        node.y = parentNode.y + unitY * 50;
+      } else if (node.category === "tool") {
+        const toolIndex = peerToolCounter.get(parentNode.id) || 0;
+        peerToolCounter.set(parentNode.id, toolIndex + 1);
+        node.x = parentNode.x - 70 - toolIndex * 25;
+        node.y = parentNode.y + (toolIndex % 3) * 30;
+      } else if (node.category === "model" || node.category === "embedding") {
+        const modelIndex = peerModelCounter.get(parentNode.id) || 0;
+        peerModelCounter.set(parentNode.id, modelIndex + 1);
+        node.x = parentNode.x + 70 + modelIndex * 25;
+        node.y = parentNode.y + (modelIndex % 3) * 30;
+      } else if (node.category === "provider") {
+        node.x = parentNode.x + 70;
+        node.y = parentNode.y + 45;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 60;
         node.y = parentNode.y + (Math.random() - 0.5) * 60;
@@ -757,6 +785,9 @@ function applyCriticLoopLayout(graphData: GraphData, canvasWidth: number, canvas
     subAgent.y = 320 + index * verticalSpacing;
   }
 
+  const criticToolCounter = new Map<string, number>();
+  const criticModelCounter = new Map<string, number>();
+
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
     const parentNode = edge ? graphNodes.find((parentNodeCandidate) => parentNodeCandidate.id === edge.source) : null;
@@ -765,6 +796,19 @@ function applyCriticLoopLayout(graphData: GraphData, canvasWidth: number, canvas
       if (node.category === "request") {
         node.x = parentNode.x + 120;
         node.y = parentNode.y + (node.sequenceNumber || 1) * 28;
+      } else if (node.category === "tool") {
+        const toolIndex = criticToolCounter.get(parentNode.id) || 0;
+        criticToolCounter.set(parentNode.id, toolIndex + 1);
+        node.x = parentNode.x - 80 - toolIndex * 25;
+        node.y = parentNode.y + (toolIndex % 3) * 30;
+      } else if (node.category === "model" || node.category === "embedding") {
+        const modelIndex = criticModelCounter.get(parentNode.id) || 0;
+        criticModelCounter.set(parentNode.id, modelIndex + 1);
+        node.x = parentNode.x + 80 + modelIndex * 25;
+        node.y = parentNode.y + (modelIndex % 3) * 30;
+      } else if (node.category === "provider") {
+        node.x = parentNode.x + 80;
+        node.y = parentNode.y + 50;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 80;
         node.y = parentNode.y + 60;
@@ -816,6 +860,9 @@ function applyTournamentLayout(graphData: GraphData, canvasWidth: number, canvas
     subAgent.y = 360;
   }
 
+  const tournamentToolCounter = new Map<string, number>();
+  const tournamentModelCounter = new Map<string, number>();
+
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
     const parentNode = edge ? graphNodes.find((parentNodeCandidate) => parentNodeCandidate.id === edge.source) : null;
@@ -824,6 +871,19 @@ function applyTournamentLayout(graphData: GraphData, canvasWidth: number, canvas
       if (node.category === "request") {
         node.x = parentNode.x;
         node.y = parentNode.y + 70 + (node.sequenceNumber || 1) * 28;
+      } else if (node.category === "tool") {
+        const toolIndex = tournamentToolCounter.get(parentNode.id) || 0;
+        tournamentToolCounter.set(parentNode.id, toolIndex + 1);
+        node.x = parentNode.x - 80 - toolIndex * 25;
+        node.y = parentNode.y + (toolIndex % 3) * 30;
+      } else if (node.category === "model" || node.category === "embedding") {
+        const modelIndex = tournamentModelCounter.get(parentNode.id) || 0;
+        tournamentModelCounter.set(parentNode.id, modelIndex + 1);
+        node.x = parentNode.x + 80 + modelIndex * 25;
+        node.y = parentNode.y + (modelIndex % 3) * 30;
+      } else if (node.category === "provider") {
+        node.x = parentNode.x + 80;
+        node.y = parentNode.y + 50;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 70;
         node.y = parentNode.y + 60;
@@ -890,6 +950,9 @@ function applyMCTSLayout(graphData: GraphData, canvasWidth: number, canvasHeight
     nodesAtCurrentDepth = depthNodeCount * branchFactor;
   }
 
+  const mctsToolCounter = new Map<string, number>();
+  const mctsModelCounter = new Map<string, number>();
+
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
     const parentNode = edge ? graphNodes.find((parentNodeCandidate) => parentNodeCandidate.id === edge.source) : null;
@@ -898,6 +961,19 @@ function applyMCTSLayout(graphData: GraphData, canvasWidth: number, canvasHeight
       if (node.category === "request") {
         node.x = parentNode.x + 80;
         node.y = parentNode.y + (node.sequenceNumber || 1) * 28;
+      } else if (node.category === "tool") {
+        const toolIndex = mctsToolCounter.get(parentNode.id) || 0;
+        mctsToolCounter.set(parentNode.id, toolIndex + 1);
+        node.x = parentNode.x - 70 - toolIndex * 25;
+        node.y = parentNode.y + (toolIndex % 3) * 28;
+      } else if (node.category === "model" || node.category === "embedding") {
+        const modelIndex = mctsModelCounter.get(parentNode.id) || 0;
+        mctsModelCounter.set(parentNode.id, modelIndex + 1);
+        node.x = parentNode.x + 70 + modelIndex * 25;
+        node.y = parentNode.y + (modelIndex % 3) * 28;
+      } else if (node.category === "provider") {
+        node.x = parentNode.x + 70;
+        node.y = parentNode.y + 45;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 60;
         node.y = parentNode.y + 50;
@@ -1037,7 +1113,8 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
   const [conversationRequests, setConversationRequests] = useState<IrisRequestEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [graphData, setGraphData] = useState<GraphData | null>(null);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [enteringNodeIds, setEnteringNodeIds] = useState<Set<string>>(new Set());
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [collapsedSubTreeIds, setCollapsedSubTreeIds] = useState<Set<string>>(new Set());
@@ -1060,6 +1137,10 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
 
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const zoomRef = useRef(zoom);
+  const panOffsetRef = useRef(panOffset);
+  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
+  useEffect(() => { panOffsetRef.current = panOffset; }, [panOffset]);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
   const hasDraggedRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
@@ -1241,14 +1322,16 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
       setConversationStats(null);
       setConversationRequests([]);
       setGraphData(null);
-      setSelectedNodeId(null);
+      setSelectedNodeIds(new Set());
+      setFocusedNodeId(null);
       return;
     }
 
     let isCancelled = false;
     setIsLoading(true);
     setGraphData(null);
-    setSelectedNodeId(null);
+    setSelectedNodeIds(new Set());
+    setFocusedNodeId(null);
 
     const loadGraph = async () => {
       try {
@@ -1481,20 +1564,86 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
     setPanOffset(fitTransform.panOffset);
   }, [graphData, dimensions.width, dimensions.height]);
 
-  const handleNodeClick = useCallback((nodeId: string) => {
-    if (!hasDraggedRef.current) {
-      setSelectedNodeId((previousId) => previousId === nodeId ? null : nodeId);
+  const animateCenterOnNode = useCallback((targetNode: GraphNode) => {
+    const viewportWidth = dimensions.width;
+    const viewportHeight = dimensions.height;
+    const currentZoom = zoomRef.current;
+    const currentPanOffset = panOffsetRef.current;
+
+    const targetPanOffset = {
+      x: (viewportWidth / 2) / currentZoom - targetNode.x,
+      y: (viewportHeight / 2) / currentZoom - targetNode.y,
+    };
+
+    const startPanOffset = { ...currentPanOffset };
+    const animationDuration = 350;
+    let animationStartTimestamp: number | null = null;
+
+    const animationStep = (currentTimestamp: number) => {
+      if (!animationStartTimestamp) animationStartTimestamp = currentTimestamp;
+      const elapsedTime = currentTimestamp - animationStartTimestamp;
+      const normalizedProgress = Math.min(elapsedTime / animationDuration, 1);
+      // Ease-out cubic for smooth deceleration
+      const easedProgress = 1 - Math.pow(1 - normalizedProgress, 3);
+
+      const interpolatedPanOffset = {
+        x: startPanOffset.x + (targetPanOffset.x - startPanOffset.x) * easedProgress,
+        y: startPanOffset.y + (targetPanOffset.y - startPanOffset.y) * easedProgress,
+      };
+      setPanOffset(interpolatedPanOffset);
+
+      if (normalizedProgress < 1) {
+        requestAnimationFrame(animationStep);
+      }
+    };
+    requestAnimationFrame(animationStep);
+  }, [dimensions.width, dimensions.height]);
+
+  const handleNodeClick = useCallback((event: React.MouseEvent, nodeId: string) => {
+    if (hasDraggedRef.current) return;
+
+    const isMultiSelectModifier = event.shiftKey || event.ctrlKey || event.metaKey;
+
+    if (isMultiSelectModifier) {
+      setSelectedNodeIds((previousIds) => {
+        const nextIds = new Set(previousIds);
+        if (nextIds.has(nodeId)) {
+          nextIds.delete(nodeId);
+          if (focusedNodeId === nodeId) {
+            setFocusedNodeId(nextIds.size > 0 ? [...nextIds][nextIds.size - 1] : null);
+          }
+        } else {
+          nextIds.add(nodeId);
+          setFocusedNodeId(nodeId);
+        }
+        return nextIds;
+      });
+    } else {
+      setSelectedNodeIds((previousIds) => {
+        if (previousIds.size === 1 && previousIds.has(nodeId)) {
+          setFocusedNodeId(null);
+          return new Set();
+        }
+        setFocusedNodeId(nodeId);
+        return new Set([nodeId]);
+      });
+
+      // Center the view on the clicked node
+      const targetNode = graphData?.nodes.find((graphNode) => graphNode.id === nodeId);
+      if (targetNode) {
+        animateCenterOnNode(targetNode);
+      }
     }
-  }, []);
+  }, [graphData, animateCenterOnNode, focusedNodeId]);
 
   // Lazy-fetch full request detail
   useEffect(() => {
-    if (!selectedNodeId || !graphData) {
+    if (!focusedNodeId || !graphData) {
       setSelectedRequestDetail(null);
       setExpandedPopoverSections(new Set());
       return;
     }
-    const node = graphData.nodes.find((graphNode) => graphNode.id === selectedNodeId);
+    const node = graphData.nodes.find((graphNode) => graphNode.id === focusedNodeId);
     if (!node || node.category !== "request" || !node.metadata?.requestId) {
       setSelectedRequestDetail(null);
       setExpandedPopoverSections(new Set());
@@ -1508,7 +1657,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
       .then((detail) => { if (!isCancelled) { setSelectedRequestDetail(detail); setIsRequestDetailLoading(false); } })
       .catch(() => { if (!isCancelled) { setSelectedRequestDetail(null); setIsRequestDetailLoading(false); } });
     return () => { isCancelled = true; };
-  }, [selectedNodeId, graphData]);
+  }, [focusedNodeId, graphData]);
 
   const togglePopoverSection = useCallback((sectionKey: string) => {
     setExpandedPopoverSections((previous) => {
@@ -1519,9 +1668,9 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
   }, []);
 
   const selectedNode = useMemo(() => {
-    if (!selectedNodeId || !graphData) return null;
-    return graphData.nodes.find((node) => node.id === selectedNodeId) || null;
-  }, [selectedNodeId, graphData]);
+    if (!focusedNodeId || !graphData) return null;
+    return graphData.nodes.find((node) => node.id === focusedNodeId) || null;
+  }, [focusedNodeId, graphData]);
 
   const { width: canvasWidth, height: canvasHeight } = dimensions;
 
@@ -1776,7 +1925,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                 const targetNode = graphData.nodes.find((node) => node.id === edge.target);
                 if (!sourceNode || !targetNode) return null;
                 if (hiddenNodeIds.has(edge.source) || hiddenNodeIds.has(edge.target)) return null;
-                const isEdgeSelected = selectedNodeId === edge.source || selectedNodeId === edge.target;
+                const isEdgeSelected = selectedNodeIds.has(edge.source) || selectedNodeIds.has(edge.target);
                 const baseOpacity = 0.15 + (edge.strength || 0.5) * 0.2;
                 const edgeOpacity = isEdgeSelected ? 0.95 : baseOpacity;
 
@@ -1814,7 +1963,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
               {/* Nodes */}
               {graphData.nodes.map((node) => {
                 if (hiddenNodeIds.has(node.id)) return null;
-                const isSelected = selectedNodeId === node.id;
+                const isSelected = selectedNodeIds.has(node.id);
                 const isSessionCenter = node.category === "session";
                 const isAgentNode = node.category === "agent" || node.category === "subagent";
                 const agentDepth = node.depth ?? 0;
@@ -1870,7 +2019,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                     data-node-identifier={node.id}
                     className={`${graphStyles['node-group']}${isEntering ? ` ${graphStyles['node-entering']}` : ""}`}
                     onMouseDown={(event) => handleNodeMouseDown(event, node.id)}
-                    onClick={() => handleNodeClick(node.id)}
+                    onClick={(event) => handleNodeClick(event, node.id)}
                     filter={isSessionCenter ? "url(#chat-graph-session-glow)" : isSelected ? "url(#chat-graph-node-hover-glow)" : undefined}
                   >
                     {/* Phase-synced activity pulse ring for session center */}
@@ -2000,7 +2149,7 @@ export default function ChatConversationGraphComponent({ conversationId }: ChatC
                   </div>
                   <button
                     className={graphStyles['zoom-button']}
-                    onClick={() => setSelectedNodeId(null)}
+                    onClick={() => { setSelectedNodeIds(new Set()); setFocusedNodeId(null); }}
                     title="Close details"
                     aria-label="Close details"
                     style={{ width: 24, height: 24 }}

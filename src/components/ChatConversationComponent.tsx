@@ -587,6 +587,8 @@ export default function ChatConversationComponent({
     string | null
   >(null);
 
+  const [previewSystemPrompt, setPreviewSystemPrompt] = useState<string | null>(null);
+
   // -- Notifications & Toasts ------------------------------------
   const { toasts, addToast: originalAddToast, removeToast } = useToast();
   const addToast = originalAddToast as (
@@ -2370,6 +2372,41 @@ export default function ChatConversationComponent({
     currentWorkspace,
     builtInTools,
     settings.agents?.workspaceEnabled,
+  ]);
+
+  useEffect(() => {
+    if (!showRaw || messages.length > 0 || isNoAgent) {
+      setPreviewSystemPrompt(null);
+      return;
+    }
+
+    const debounceTimer = setTimeout(() => {
+      const allDisabledTools = [...disabledTools, ...lockedOffTools.keys()];
+      PrismService.previewSystemPrompt({
+        agent: agentId || undefined,
+        disabledTools: allDisabledTools,
+        workspaceEnabled: settings.agents?.workspaceEnabled !== false,
+        systemPrompt: settings.systemPrompt || undefined,
+      })
+        .then((result) => {
+          setPreviewSystemPrompt(result.prompt);
+        })
+        .catch((error: unknown) => {
+          console.error("[SystemPromptPreview] Failed to fetch preview:", error);
+          setPreviewSystemPrompt(null);
+        });
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [
+    showRaw,
+    messages.length,
+    isNoAgent,
+    agentId,
+    disabledTools,
+    lockedOffTools,
+    settings.agents?.workspaceEnabled,
+    settings.systemPrompt,
   ]);
 
   // -- Eager-fetch tab badge counts (fires on mount / conversation change) --
@@ -6798,7 +6835,7 @@ export default function ChatConversationComponent({
         <MessageList
           messages={filteredMessages}
           showRaw={showRaw}
-          systemPrompt={showRaw ? settings.systemPrompt : undefined}
+          systemPrompt={showRaw ? (previewSystemPrompt || settings.systemPrompt) : undefined}
           onSystemPromptEdit={
             isNoAgent
               ? (editedPromptValue: string) => {
