@@ -77,13 +77,6 @@
   border-color: var(--accent-primary);
 }
 
-[data-theme="dark"] .topology-card:hover,
-[data-theme="midnight"] .topology-card:hover {
-  box-shadow:
-    0 8px 28px oklch(0 0 0 / 0.3),
-    0 2px 8px oklch(0 0 0 / 0.15);
-}
-
 @keyframes topology-card-entrance {
   from {
     opacity: 0;
@@ -117,12 +110,6 @@
   border: 1px solid oklch(0 0 0 / 0.04);
 }
 
-[data-theme="dark"] .topology-graph-wrapper,
-[data-theme="midnight"] .topology-graph-wrapper {
-  background: oklch(1 0 0 / 0.03);
-  border-color: oklch(1 0 0 / 0.06);
-}
-
 .flow-description-label {
   font-size: 0.75rem;
   font-family: var(--font-mono, "SF Mono", "Cascadia Code", "Fira Code", monospace);
@@ -135,12 +122,6 @@
   border-radius: 8px;
   background: oklch(0 0 0 / 0.03);
   border: 1px solid oklch(0 0 0 / 0.04);
-}
-
-[data-theme="dark"] .flow-description-label,
-[data-theme="midnight"] .flow-description-label {
-  background: oklch(1 0 0 / 0.04);
-  border-color: oklch(1 0 0 / 0.06);
 }
 
 /* ── Content Column ───────────────────────────────────────── */
@@ -200,11 +181,6 @@
   background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
   border: 1px solid oklch(0 0 0 / 0.06);
-}
-
-[data-theme="dark"] .category-badge,
-[data-theme="midnight"] .category-badge {
-  border-color: oklch(1 0 0 / 0.08);
 }
 
 /* ── Paper Reference ──────────────────────────────────────── */
@@ -297,12 +273,6 @@
   white-space: nowrap;
 }
 
-[data-theme="dark"] .phase-step,
-[data-theme="midnight"] .phase-step {
-  background: oklch(1 0 0 / 0.05);
-  border-color: oklch(1 0 0 / 0.08);
-}
-
 .phase-arrow {
   display: inline-flex;
   align-items: center;
@@ -326,11 +296,6 @@
   overflow: hidden;
 }
 
-[data-theme="dark"] .config-table-wrapper,
-[data-theme="midnight"] .config-table-wrapper {
-  border-color: oklch(1 0 0 / 0.08);
-}
-
 .config-table {
   inline-size: 100%;
   border-collapse: collapse;
@@ -350,22 +315,11 @@
   border-block-end: 1px solid oklch(0 0 0 / 0.06);
 }
 
-[data-theme="dark"] .config-table th,
-[data-theme="midnight"] .config-table th {
-  background: oklch(1 0 0 / 0.03);
-  border-color: oklch(1 0 0 / 0.06);
-}
-
 .config-table td {
   padding-block: 6px;
   padding-inline: 12px;
   color: var(--text-secondary);
   border-block-end: 1px solid oklch(0 0 0 / 0.03);
-}
-
-[data-theme="dark"] .config-table td,
-[data-theme="midnight"] .config-table td {
-  border-color: oklch(1 0 0 / 0.04);
 }
 
 .config-table tr:last-child td {
@@ -389,11 +343,6 @@
   font-family: var(--font-mono, "SF Mono", "Cascadia Code", "Fira Code", monospace);
   background: oklch(0 0 0 / 0.04);
   color: var(--text-tertiary);
-}
-
-[data-theme="dark"] .config-type-badge,
-[data-theme="midnight"] .config-type-badge {
-  background: oklch(1 0 0 / 0.06);
 }
 
 .config-default {
@@ -427,11 +376,6 @@
 
 .alignment-entry:hover {
   background: oklch(0 0 0 / 0.02);
-}
-
-[data-theme="dark"] .alignment-entry:hover,
-[data-theme="midnight"] .alignment-entry:hover {
-  background: oklch(1 0 0 / 0.03);
 }
 
 .alignment-indicator {

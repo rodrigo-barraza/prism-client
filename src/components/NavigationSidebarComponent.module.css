@@ -265,16 +265,6 @@
     }
   }
 
-  :global([data-theme="dark"]) & {
-    background: oklch(95.5% 0.0001 263.3);
-    color: oklch(51% 0 263.3);
-
-    &:hover {
-      background: oklch(90.7% 0.0001 263.3);
-      color: oklch(32.1% 0 263.3);
-    }
-  }
-
   :global([data-theme="tropical"]) & {
     background: oklch(26.4% 0.0234 55.1);
     color: oklch(74.7% 0.061 75.1);

@@ -77,24 +77,6 @@
   --color-github-green: oklch(69.5% 0.1809 145.6);
 }
 
-/* ── Dark Mode ─────────────────────────────────────────────── */
-/* Accent overrides — surface/text/semantic tokens come from base.css */
-
-[data-theme="dark"] {
-  --accent-primary: oklch(58.5% 0.2041 277.1);
-  --calculated-accent-primary-hover: oklch(51.1% 0.2301 277.0);
-  --calculated-accent-primary-glow: oklch(58.5% 0.2041 277.1 / 0.4);
-  --calculated-accent-primary-subtle: oklch(58.5% 0.2041 277.1 / 0.1);
-  --calculated-accent-primary-contrast: oklch(100.0% 0.0001 263.3 / 0.92);
-  --calculated-shadow-glow: 0 0 20px oklch(58.5% 0.2041 277.1 / 0.15);
-
-  --accent-secondary: oklch(70.9% 0.1592 293.5);
-  --calculated-accent-secondary-hover: oklch(60.6% 0.219 292.7);
-  --calculated-accent-secondary-glow: oklch(70.9% 0.1592 293.5 / 0.4);
-  --calculated-accent-secondary-subtle: oklch(70.9% 0.1592 293.5 / 0.1);
-  --accent-tertiary: oklch(75.3% 0.1391 232.7);
-}
-
 /* ── Daylight Mode ─────────────────────────────────────────── */
 
 [data-theme="light"] {
@@ -247,24 +229,6 @@
   --calculated-accent-secondary-glow: oklch(87.0% 0.0001 263.3 / 0.3);
   --calculated-accent-secondary-subtle: oklch(87.0% 0.0001 263.3 / 0.08);
   --accent-tertiary: oklch(55.6% 0.0 263.3);
-}
-
-/* ── Midnight Mode ───────────────────────────────────────── */
-/* Soft violet-blue accents over true-black AMOLED surfaces. */
-
-[data-theme="midnight"] {
-  --accent-primary: oklch(62.0% 0.2041 277.1);
-  --calculated-accent-primary-hover: oklch(55.0% 0.2301 277.0);
-  --calculated-accent-primary-glow: oklch(62.0% 0.2041 277.1 / 0.35);
-  --calculated-accent-primary-subtle: oklch(62.0% 0.2041 277.1 / 0.1);
-  --calculated-accent-primary-contrast: oklch(100.0% 0.0001 263.3 / 0.92);
-  --calculated-shadow-glow: 0 0 20px oklch(62.0% 0.2041 277.1 / 0.12);
-
-  --accent-secondary: oklch(73.0% 0.1592 293.5);
-  --calculated-accent-secondary-hover: oklch(63.0% 0.219 292.7);
-  --calculated-accent-secondary-glow: oklch(73.0% 0.1592 293.5 / 0.35);
-  --calculated-accent-secondary-subtle: oklch(73.0% 0.1592 293.5 / 0.1);
-  --accent-tertiary: oklch(70.0% 0.1391 232.7);
 }
 
 /* ── Regal Mode ──────────────────────────────────────────── */
