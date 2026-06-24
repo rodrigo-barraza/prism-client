@@ -135,11 +135,11 @@ const TIER_ORDER: Record<NodeCategory, number> = {
   session: 1,
   agent: 2,
   subagent: 3,
-  tool: 3,
-  request: 4,
-  model: 5,
-  embedding: 5,
-  provider: 6,
+  tool: 4,
+  request: 5,
+  model: 6,
+  embedding: 6,
+  provider: 7,
 };
 
 function straightEdgePath(
@@ -577,6 +577,37 @@ function applyRecursiveRadialSubAgentLayout(
   }
 }
 
+function applyColumnarSubAgentLayout(
+  treeNodes: SubAgentTreeNode[],
+  parentNode: GraphNode,
+  nodeMap: Map<string, GraphNode>,
+  verticalSpacing: number,
+  depth: number,
+): void {
+  const columnOffset = 160;
+  const childCount = treeNodes.length;
+  const childStartY = parentNode.y - ((childCount - 1) * verticalSpacing) / 2;
+
+  for (let childIndex = 0; childIndex < childCount; childIndex++) {
+    const treeChild = treeNodes[childIndex];
+    const childNode = nodeMap.get(treeChild.nodeId);
+    if (!childNode) continue;
+
+    childNode.x = parentNode.x + columnOffset;
+    childNode.y = childStartY + childIndex * verticalSpacing;
+
+    if (treeChild.children.length > 0) {
+      applyColumnarSubAgentLayout(
+        treeChild.children,
+        childNode,
+        nodeMap,
+        verticalSpacing * 0.8,
+        depth + 1,
+      );
+    }
+  }
+}
+
 function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canvasHeight: number): void {
   const { nodes: graphNodes } = graphData;
   if (graphNodes.length === 0) return;
@@ -635,13 +666,14 @@ function applySequentialLayout(graphData: GraphData, canvasWidth: number, canvas
   }
 
   const subAgentCount = subAgentNodes.length;
-  const startX = 280;
-  const spacingX = Math.max(150, (canvasWidth - startX - 100) / Math.max(1, subAgentCount));
+  const subAgentColumnX = 320;
+  const subAgentVerticalSpacing = Math.max(80, (canvasHeight - 200) / Math.max(1, subAgentCount));
+  const subAgentStartY = centerY - ((subAgentCount - 1) * subAgentVerticalSpacing) / 2;
 
   for (let index = 0; index < subAgentCount; index++) {
     const subAgent = subAgentNodes[index];
-    subAgent.x = startX + index * spacingX;
-    subAgent.y = centerY;
+    subAgent.x = subAgentColumnX;
+    subAgent.y = subAgentStartY + index * subAgentVerticalSpacing;
   }
 
   const toolCounterByParent = new Map<string, number>();
@@ -1021,7 +1053,7 @@ function applyTopologyLayout(
     applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);
   }
 
-  // After base layout, position sub-agent trees: orchestrator left, sub-agents right
+  // After base layout, position sub-agent trees in a dedicated column to the right of the agent
   if (graphData.subAgentTree && graphData.subAgentTree.length > 0) {
     const nodeMap = new Map(graphData.nodes.map((node) => [node.id, node]));
     const mainAgentNode = graphData.nodes.find(
@@ -1029,33 +1061,27 @@ function applyTopologyLayout(
     );
 
     if (mainAgentNode) {
-      // Position top-level sub-agents to the right of the orchestrator, fanned vertically
+      const subAgentColumnOffset = 200;
       const topLevelCount = graphData.subAgentTree.length;
-      const topLevelOrbitRadius = Math.max(100, 180);
-      const topLevelArcSpan = Math.min(Math.PI * 0.8, topLevelCount * 0.4);
+      const subAgentVerticalSpacing = Math.max(80, (canvasHeight - 200) / Math.max(1, topLevelCount));
+      const subAgentStartY = mainAgentNode.y - ((topLevelCount - 1) * subAgentVerticalSpacing) / 2;
 
       for (let childIndex = 0; childIndex < topLevelCount; childIndex++) {
         const treeChild = graphData.subAgentTree[childIndex];
         const childNode = nodeMap.get(treeChild.nodeId);
         if (!childNode) continue;
 
-        // Fan out rightward (angle 0 = right) with vertical spread
-        const angleOffset = topLevelCount === 1
-          ? 0
-          : -topLevelArcSpan / 2 + (childIndex / (topLevelCount - 1)) * topLevelArcSpan;
+        childNode.x = mainAgentNode.x + subAgentColumnOffset;
+        childNode.y = subAgentStartY + childIndex * subAgentVerticalSpacing;
 
-        childNode.x = mainAgentNode.x + Math.cos(angleOffset) * topLevelOrbitRadius;
-        childNode.y = mainAgentNode.y + Math.sin(angleOffset) * topLevelOrbitRadius;
-
-        // Recursively position nested sub-agents further rightward
+        // Recursively position nested sub-agents in subsequent columns further right
         if (treeChild.children.length > 0) {
-          applyRecursiveRadialSubAgentLayout(
+          applyColumnarSubAgentLayout(
             treeChild.children,
             childNode,
             nodeMap,
+            subAgentVerticalSpacing,
             1,
-            angleOffset,
-            Math.PI * 0.7,
           );
         }
       }
