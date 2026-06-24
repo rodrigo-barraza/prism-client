@@ -6,6 +6,7 @@ import { Download, Copy, Star, Trash2, ExternalLink } from "lucide-react";
 
 import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
+import { resolveSubAgentEmoji } from "../utils/subAgentEmojis";
 
 import styles from "./HistoryItemComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
@@ -288,7 +289,7 @@ export default function HistoryItemComponent({
           <div className={styles['sub-agent-indicators-row']}>
             {item.parentConversationId && (
               <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
-                {subAgentDepth === 2 ? '👶🏻' : subAgentDepth === 3 ? '👶🏼' : subAgentDepth != null && subAgentDepth >= 4 ? '👶🏽' : '👶'}{subAgentNumber != null && (
+                {resolveSubAgentEmoji(subAgentDepth ?? 1)}{subAgentNumber != null && (
                   <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
                 )}
               </span>

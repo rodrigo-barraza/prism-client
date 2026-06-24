@@ -19,11 +19,18 @@ import IrisService, {
   type IrisRequestEntry,
   type IrisCollectionChangeEvent,
 } from "../services/IrisService";
-import type { AgentConversation, ConversationStats, ToolCallEvent } from "../types/types";
+import PrismService from "../services/PrismService";
+import type { AgentConversation, ConversationStats, ToolCallEvent, ToolSchema } from "../types/types";
 import { cleanModelName } from "./BadgeComponent";
-import { resolveProviderLabel } from "./ProviderLogosComponent";
+import ProviderLogo, { resolveProviderLabel, resolveProviderLogoKey } from "./ProviderLogosComponent";
 import StarfieldComponent from "./StarfieldComponent";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
+import {
+  resolveSubAgentEmoji,
+  AGENT_EMOJI,
+  CONVERSATION_EMOJI,
+  PROJECT_EMOJI,
+} from "../utils/subAgentEmojis";
 import {
   formatNumber,
   formatCost,
@@ -1190,6 +1197,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const [enteringNodeIds, setEnteringNodeIds] = useState<Set<string>>(new Set());
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [collapsedSubTreeIds, setCollapsedSubTreeIds] = useState<Set<string>>(new Set());
+  const [toolEmojiMap, setToolEmojiMap] = useState<Map<string, string>>(new Map());
 
   const [phaseColor, setPhaseColor] = useState<string | null>(null);
 
@@ -1201,6 +1209,25 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     readPhaseColorFromRoot();
     const intervalId = setInterval(readPhaseColorFromRoot, 400);
     return () => clearInterval(intervalId);
+  }, []);
+
+  // Fetch tool schemas once to build emoji map for tool nodes
+  useEffect(() => {
+    let isCancelled = false;
+    PrismService.getBuiltInToolSchemas()
+      .then((toolSchemas: ToolSchema[]) => {
+        if (isCancelled) return;
+        const emojiMap = new Map<string, string>();
+        for (const toolSchema of toolSchemas) {
+          if (toolSchema.emoji) {
+            const resolvedEmoji = Array.isArray(toolSchema.emoji) ? toolSchema.emoji[0] : toolSchema.emoji;
+            if (resolvedEmoji) emojiMap.set(toolSchema.name, resolvedEmoji);
+          }
+        }
+        setToolEmojiMap(emojiMap);
+      })
+      .catch(() => { /* Tool emojis are cosmetic — fail silently */ });
+    return () => { isCancelled = true; };
   }, []);
 
   const [selectedRequestDetail, setSelectedRequestDetail] = useState<IrisRequestEntry | null>(null);
@@ -2294,7 +2321,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                       fill={nodeColor} fillOpacity={isPhaseActive ? 0.95 : isNodeLiveActive ? 0.95 : 0.85}
                       stroke={nodeColor} strokeWidth={(isSelected || isNodeLiveActive || isPhaseActive) ? 2 : 1} strokeOpacity={(isPhaseActive || isNodeLiveActive) ? 0.8 : 0.5}
                     />
-                    {node.sequenceNumber != null && node.category === "request" && (
+                    {typeof node.sequenceNumber === "number" && node.category === "request" && (
                       <>
                         <circle cx={node.x + node.radius * 0.7} cy={node.y - node.radius * 0.7} r={8} fill="oklch(0.25 0 0)" stroke={nodeColor} strokeWidth={1.5} />
                         <text x={node.x + node.radius * 0.7} y={node.y - node.radius * 0.7} textAnchor="middle" dominantBaseline="central" fill="oklch(0.95 0 0)" fontSize={8} fontWeight={600}>
@@ -2321,9 +2348,45 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                     <text x={node.x + node.radius + 8} y={node.y} textAnchor="start" dominantBaseline="central" fill="oklch(0.75 0 0)" fontSize={10} fontWeight={500} style={{ pointerEvents: "none", userSelect: "none" }}>
                       {node.label.length > 24 ? `${node.label.slice(0, 22)}…` : node.label}
                     </text>
-                    <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fill="oklch(0.98 0 0)" fontSize={node.radius * 0.7} fontWeight={600} style={{ pointerEvents: "none", userSelect: "none" }}>
-                      {node.category === "session" ? "◉" : node.category === "model" ? "◈" : node.category === "tool" ? "⚙" : node.category === "request" ? "↗" : node.category === "user" ? "●" : node.category === "project" ? "▣" : node.category === "provider" ? "◆" : node.category === "agent" ? "◎" : node.category === "subagent" ? "◍" : node.category === "embedding" ? "⬡" : "○"}
-                    </text>
+                    {/* Node center icon — emojis, provider logos, or fallback symbols */}
+                    {node.category === "provider" && node.metadata?.provider && (
+                      <foreignObject
+                        x={node.x - node.radius * 0.45}
+                        y={node.y - node.radius * 0.45}
+                        width={node.radius * 0.9}
+                        height={node.radius * 0.9}
+                        style={{ pointerEvents: "none", overflow: "visible" }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+                          <ProviderLogo provider={resolveProviderLogoKey(String(node.metadata.provider))} size={Math.round(node.radius * 0.75)} />
+                        </div>
+                      </foreignObject>
+                    )}
+                    {node.category === "tool" && (() => {
+                      const toolNodeEmoji = toolEmojiMap.get(String(node.metadata?.toolName || ""));
+                      if (toolNodeEmoji && toolNodeEmoji.startsWith("http")) {
+                        return (
+                          <image
+                            href={toolNodeEmoji}
+                            x={node.x - node.radius * 0.4}
+                            y={node.y - node.radius * 0.4}
+                            width={node.radius * 0.8}
+                            height={node.radius * 0.8}
+                            style={{ pointerEvents: "none" }}
+                          />
+                        );
+                      }
+                      return (
+                        <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={node.radius * 0.75} style={{ pointerEvents: "none", userSelect: "none" }}>
+                          {toolNodeEmoji || "⚙"}
+                        </text>
+                      );
+                    })()}
+                    {node.category !== "provider" && node.category !== "tool" && (
+                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={node.radius * 0.75} style={{ pointerEvents: "none", userSelect: "none" }}>
+                        {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "model" ? "◈" : node.category === "request" ? "↗" : node.category === "user" ? "●" : node.category === "embedding" ? "⬡" : "○"}
+                      </text>
+                    )}
                     {/* Collapse/expand toggle badge for agents with children */}
                     {hasSubAgentChildren && (
                       <g
