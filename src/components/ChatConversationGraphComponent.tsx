@@ -246,6 +246,10 @@ function buildGraphFromConversation(
   }
 
   let mainAgentConversationId = conversationId;
+  // Pick the first agentConversationId that has no parent as the canonical main agent ID.
+  // Sub-agent detection does NOT rely on comparing agentConversationId values — it uses
+  // parentAgentConversationId as the authoritative signal. This avoids false positives
+  // when multi-turn conversations generate a different agentConversationId per turn.
   for (const request of conversationRequests) {
     if (!request.parentAgentConversationId && request.agentConversationId) {
       mainAgentConversationId = request.agentConversationId;
@@ -284,7 +288,10 @@ function buildGraphFromConversation(
 
   for (const request of sortedRequests) {
     const requestAgentConversationId = request.agentConversationId || mainAgentConversationId;
-    const isSubAgent = requestAgentConversationId !== mainAgentConversationId;
+    // A request is a sub-agent ONLY if it has an explicit parentAgentConversationId.
+    // Different agentConversationId values without a parent are just different turns
+    // of the same top-level agent (the server generates a new UUID per turn).
+    const isSubAgent = !!request.parentAgentConversationId;
 
     if (isSubAgent) {
       const currentAgentNodeId = `agent:${requestAgentConversationId}:${request.agent || AGENT_IDS.OMNI}`;
@@ -332,7 +339,7 @@ function buildGraphFromConversation(
     }, sequenceNumber);
 
     const requestAgentConversationId = request.agentConversationId || mainAgentConversationId;
-    const isSubAgent = requestAgentConversationId !== mainAgentConversationId;
+    const isSubAgent = !!request.parentAgentConversationId;
     const currentAgentNodeId = isSubAgent
       ? `agent:${requestAgentConversationId}:${request.agent || AGENT_IDS.OMNI}`
       : parentAgentNodeId;
@@ -355,7 +362,13 @@ function buildGraphFromConversation(
     if (requestIndex > 0) {
       const previousRequest = sortedRequests[requestIndex - 1];
       const previousAgentConversationId = previousRequest.agentConversationId || mainAgentConversationId;
-      if (previousAgentConversationId === requestAgentConversationId) {
+      const previousIsSubAgent = !!previousRequest.parentAgentConversationId;
+      // Chain sequential requests: same sub-agent, OR both are main-agent turns
+      const isSameAgentContext = previousIsSubAgent === isSubAgent && (
+        previousAgentConversationId === requestAgentConversationId ||
+        (!isSubAgent && !previousIsSubAgent)
+      );
+      if (isSameAgentContext) {
         const previousRequestNodeId = `request:${previousRequest._id || (requestIndex - 1)}`;
         addEdge(previousRequestNodeId, requestNodeId, 0.6);
       }
