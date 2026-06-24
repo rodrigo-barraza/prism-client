@@ -350,11 +350,24 @@
 .tools-section[data-read-only="true"] .tool-layout-row,
 .tools-section[data-read-only="true"] .bulk-checkbox-layout-row {
   cursor: default;
+  pointer-events: none;
 }
 
 .tools-section[data-read-only="true"] .tool-layout-row:hover,
 .tools-section[data-read-only="true"] .bulk-checkbox-layout-row:hover {
   background: transparent;
+}
+
+.tools-section[data-read-only="true"] .domain-header,
+.tools-section[data-read-only="true"] .core-header {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.tools-section[data-read-only="true"] .domain-header .checkbox-component,
+.tools-section[data-read-only="true"] .core-header .checkbox-component {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 /* ── Tri-State: Available-Only Visual ────────────────────────── */

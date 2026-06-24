@@ -6537,6 +6537,7 @@ export default function ChatConversationComponent({
             }}
             coreToolsLocked={isCoreToolsLocked}
             lockedOffTools={lockedOffTools}
+            readOnly={isSessionLocked}
           />
         </>
       )}
