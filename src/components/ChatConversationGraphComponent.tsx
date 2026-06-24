@@ -1323,6 +1323,15 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     updatedStats: ConversationStats | null,
     updatedRequests: IrisRequestEntry[],
   ) => {
+    // Cancel any running collision loop BEFORE rebuilding. The collision
+    // tick reads positions from nodesRef (stale until React re-renders)
+    // and writes absolute positions via setGraphData, which would
+    // overwrite the correct layout positions computed below.
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+
     const existingPositions = new Map<string, { x: number; y: number }>();
     const existingNodeIds = new Set<string>();
 
@@ -1364,6 +1373,11 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         }
       }
 
+      // Eagerly synchronize nodesRef so the collision loop (restarted
+      // by the caller) reads the correct layout positions on its first
+      // tick instead of stale pre-rebuild positions.
+      nodesRef.current = graph.nodes;
+
       if (newNodeIds.size > 0) {
         setEnteringNodeIds(newNodeIds);
         setTimeout(() => setEnteringNodeIds(new Set()), 600);
@@ -1371,6 +1385,12 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
       return graph;
     });
+
+    // Auto-fit the viewport so all nodes remain visible and centered
+    // as new requests stream in. nodesRef was eagerly synced above.
+    const fitTransform = computeFitToGraphTransform(nodesRef.current, dimensions.width, dimensions.height);
+    setZoom(fitTransform.zoom);
+    setPanOffset(fitTransform.panOffset);
   }, [dimensions]);
 
   // -- Load session graph ----------------------------------------
