@@ -135,11 +135,12 @@ const TIER_ORDER: Record<NodeCategory, number> = {
   session: 1,
   agent: 2,
   subagent: 3,
-  tool: 4,
-  request: 5,
-  model: 6,
-  embedding: 6,
-  provider: 7,
+  // Tiers 4–5 reserved for sub-agent depth 2 and depth 3 (columns stay even when empty)
+  tool: 6,
+  request: 7,
+  model: 8,
+  embedding: 8,
+  provider: 9,
 };
 
 function straightEdgePath(
@@ -448,10 +449,10 @@ function buildGraphFromConversation(
 
   const subAgentTree = buildSubAgentTree(mainAgentConversationId, new Set([mainAgentConversationId]));
 
-  // Create edges based on the tree structure using curved paths for parent→child agent links
+  // Create edges based on the tree structure using straight paths for parent→child agent links
   const createTreeEdges = (treeNodes: SubAgentTreeNode[], parentNodeId: string) => {
     for (const treeNode of treeNodes) {
-      addEdge(parentNodeId, treeNode.nodeId, 0.9, true);
+      addEdge(parentNodeId, treeNode.nodeId, 0.9, false);
       if (treeNode.children.length > 0) {
         createTreeEdges(treeNode.children, treeNode.nodeId);
       }
@@ -465,9 +466,9 @@ function buildGraphFromConversation(
     if (topology === TOPOLOGIES.SEQUENTIAL) {
       const flattenedNodes = flattenSubAgentTree(subAgentTree);
       if (flattenedNodes.length > 0) {
-        addEdge(parentAgentNodeId, flattenedNodes[0], 0.9, true);
+        addEdge(parentAgentNodeId, flattenedNodes[0], 0.9, false);
         for (let index = 1; index < flattenedNodes.length; index++) {
-          addEdge(flattenedNodes[index - 1], flattenedNodes[index], 0.9, true);
+          addEdge(flattenedNodes[index - 1], flattenedNodes[index], 0.9, false);
         }
       }
     } else if (topology === TOPOLOGIES.PEER_TO_PEER) {
@@ -481,12 +482,12 @@ function buildGraphFromConversation(
     } else if (topology === TOPOLOGIES.CRITIC_LOOP) {
       const flattenedNodes = flattenSubAgentTree(subAgentTree);
       if (flattenedNodes.length > 0) {
-        addEdge(parentAgentNodeId, flattenedNodes[0], 0.9, true);
+        addEdge(parentAgentNodeId, flattenedNodes[0], 0.9, false);
         for (let index = 1; index < flattenedNodes.length; index++) {
-          addEdge(flattenedNodes[index - 1], flattenedNodes[index], 0.8, true);
+          addEdge(flattenedNodes[index - 1], flattenedNodes[index], 0.8, false);
         }
         if (flattenedNodes.length > 1) {
-          addEdge(flattenedNodes[flattenedNodes.length - 1], flattenedNodes[0], 0.5, true);
+          addEdge(flattenedNodes[flattenedNodes.length - 1], flattenedNodes[0], 0.5, false);
         }
       }
     } else if (topology === TOPOLOGIES.HIERARCHICAL_AGGREGATION) {
@@ -614,19 +615,20 @@ function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canv
 
   const tierBuckets: Map<number, GraphNode[]> = new Map();
   for (const node of graphNodes) {
-    const tier = TIER_ORDER[node.category] ?? 3;
+    const tier = TIER_ORDER[node.category] ?? 6;
     if (!tierBuckets.has(tier)) tierBuckets.set(tier, []);
     tierBuckets.get(tier)!.push(node);
   }
 
-  const sortedTiers = [...tierBuckets.keys()].sort((tierA, tierB) => tierA - tierB);
-  const tierCount = sortedTiers.length;
-  const horizontalSpacing = Math.max(160, (canvasWidth - 100) / Math.max(tierCount, 1));
+  // Include all tiers from 0 to max so reserved empty sub-agent columns still occupy space
+  const maximumTier = Math.max(...tierBuckets.keys());
+  const totalColumns = maximumTier + 1;
+  const horizontalSpacing = Math.max(160, (canvasWidth - 100) / Math.max(totalColumns, 1));
   const startX = 80;
 
-  for (let tierIndex = 0; tierIndex < sortedTiers.length; tierIndex++) {
-    const tierKey = sortedTiers[tierIndex];
-    const tierNodes = tierBuckets.get(tierKey)!;
+  for (let tierIndex = 0; tierIndex <= maximumTier; tierIndex++) {
+    const tierNodes = tierBuckets.get(tierIndex);
+    if (!tierNodes || tierNodes.length === 0) continue;
     const tierX = startX + tierIndex * horizontalSpacing;
     const verticalSpacing = Math.max(80, canvasHeight / (tierNodes.length + 1));
     for (let nodeIndex = 0; nodeIndex < tierNodes.length; nodeIndex++) {
