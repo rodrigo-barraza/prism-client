@@ -2,7 +2,7 @@
 
 import { AGENT_IDS, DEFAULT_USERNAME } from "@/constants";
 
-import { Download, Copy, Star, Trash2, ExternalLink, ChevronDown, ChevronRight } from "lucide-react";
+import { Download, Copy, Star, Trash2, ExternalLink } from "lucide-react";
 
 import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
@@ -299,22 +299,24 @@ export default function HistoryItemComponent({
               </span>
             )}
             {(item.hasSubAgents || hasSpawnedSubAgents) && (
-              <span className={styles['parent-agent-emoji']} title="Parent Agent (spawned sub-agents)">
-                👴
-              </span>
-            )}
-            {hasSpawnedSubAgents && onToggleSubAgents && (
               <button
-                className={`${styles['sub-agent-collapse-toggle']} ${isSubAgentsCollapsed ? styles['sub-agent-collapse-toggle-is-collapsed'] : ''}`}
-                onClick={(event: React.MouseEvent) => {
+                className={`${styles['sub-agent-collapse-toggle']} ${hasSpawnedSubAgents && isSubAgentsCollapsed ? styles['sub-agent-collapse-toggle-is-collapsed'] : ''}`}
+                onClick={hasSpawnedSubAgents && onToggleSubAgents ? (event: React.MouseEvent) => {
                   event.stopPropagation();
                   onToggleSubAgents();
-                }}
-                title={isSubAgentsCollapsed ? 'Show sub-agents' : 'Hide sub-agents'}
-                aria-expanded={!isSubAgentsCollapsed}
-                aria-label={isSubAgentsCollapsed ? 'Expand sub-agent tree' : 'Collapse sub-agent tree'}
+                } : undefined}
+                title={hasSpawnedSubAgents && onToggleSubAgents
+                  ? (isSubAgentsCollapsed ? 'Show sub-agents' : 'Hide sub-agents')
+                  : 'Parent Agent (spawned sub-agents)'}
+                aria-expanded={hasSpawnedSubAgents ? !isSubAgentsCollapsed : undefined}
+                aria-label={hasSpawnedSubAgents
+                  ? (isSubAgentsCollapsed ? 'Expand sub-agent tree' : 'Collapse sub-agent tree')
+                  : 'Parent agent'}
+                style={!hasSpawnedSubAgents || !onToggleSubAgents ? { cursor: 'default' } : undefined}
               >
-                {isSubAgentsCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                <span className={styles['parent-agent-emoji']}>
+                  {hasSpawnedSubAgents && isSubAgentsCollapsed ? '📁' : '📂'}
+                </span>
               </button>
             )}
           </div>

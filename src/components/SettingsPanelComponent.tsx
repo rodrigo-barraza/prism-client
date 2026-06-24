@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_WORKFLOW_TITLE, FALLBACK_THINKING_PATTERNS } from "@/constants";
+import { DEFAULT_WORKFLOW_TITLE, FALLBACK_THINKING_PATTERNS, LS_WORKSPACE_TOGGLE_PREFERENCE } from "@/constants";
 import { useState } from "react";
 import {
   Cpu,
@@ -986,11 +986,14 @@ export default function SettingsPanel({
                 <span className={styles['modality-name']}>Workspace</span>
                 <ToggleSwitch
                   checked={settings.agents?.workspaceEnabled !== false}
-                  onChange={(checked: boolean) =>
+                  onChange={(checked: boolean) => {
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem(LS_WORKSPACE_TOGGLE_PREFERENCE, String(checked));
+                    }
                     onChange({
                       agents: { ...settings.agents, workspaceEnabled: checked },
-                    })
-                  }
+                    });
+                  }}
                   disabled={isAgentSettingsLocked}
                 />
               </div>

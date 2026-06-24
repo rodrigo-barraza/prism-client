@@ -125,6 +125,7 @@ import {
   EV_MODEL_CHANGE,
   EV_CRON_JOB_SCHEDULED,
   FALLBACK_THINKING_PATTERNS,
+  LS_WORKSPACE_TOGGLE_PREFERENCE,
 } from "../constants";
 import adminPageStyles from "../app/admin/chat/page.module.css";
 import requestsTableStyles from "./RequestsTableComponent.module.css";
@@ -778,15 +779,27 @@ export default function ChatConversationComponent({
       codeExecutionEnabled?: boolean;
       urlContextEnabled?: boolean;
     }
-  >({
-    ...SETTINGS_DEFAULTS,
-    maxTokens: 64000,
-    // Agents always need FC for tool orchestration; Direct Chat defaults off
-    // to avoid injecting large tool schemas into local model contexts.
-    functionCallingEnabled: initialFcEnabled ? true : !isNoAgent,
-    thinkingEnabled: initialThinkingEnabled
-      ? true
-      : SETTINGS_DEFAULTS.thinkingEnabled || false,
+  >(() => {
+    const persistedWorkspaceToggle =
+      typeof window !== "undefined"
+        ? localStorage.getItem(LS_WORKSPACE_TOGGLE_PREFERENCE)
+        : null;
+    const workspaceEnabledPreference =
+      persistedWorkspaceToggle !== null
+        ? persistedWorkspaceToggle !== "false"
+        : true;
+
+    return {
+      ...SETTINGS_DEFAULTS,
+      maxTokens: 64000,
+      functionCallingEnabled: initialFcEnabled ? true : !isNoAgent,
+      thinkingEnabled: initialThinkingEnabled
+        ? true
+        : SETTINGS_DEFAULTS.thinkingEnabled || false,
+      agents: {
+        workspaceEnabled: workspaceEnabledPreference,
+      },
+    };
   });
 
   const placeholderText = isNoAgent
@@ -1587,6 +1600,14 @@ export default function ChatConversationComponent({
           }
           return nextSettings;
         });
+
+        // Restore agent toggle state from the conversation's persisted settings
+        const urlLoadConversationSettings = full.settings as Record<string, unknown> | undefined;
+        const persistedRecursionDepth = urlLoadConversationSettings?.maxRecursionDepth;
+        if (typeof persistedRecursionDepth === "number" && [0, 1, 2, 3].includes(persistedRecursionDepth)) {
+          setMaxRecursionDepth(persistedRecursionDepth);
+        }
+
         setBackendConversationStats(full.stats || null);
         setIsBackendStatsStale(false);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
@@ -5139,11 +5160,26 @@ export default function ChatConversationComponent({
         }
       }
 
+      // Restore the user's persisted workspace toggle preference for new conversations.
+      // This reads from localStorage (explicit user action) rather than carrying over
+      // whatever state the previous/loaded conversation had.
+      const persistedWorkspaceToggle =
+        typeof window !== "undefined"
+          ? localStorage.getItem(LS_WORKSPACE_TOGGLE_PREFERENCE)
+          : null;
+      const workspaceEnabledPreference =
+        persistedWorkspaceToggle !== null
+          ? persistedWorkspaceToggle !== "false"
+          : true;
+
       return {
         ...SETTINGS_DEFAULTS,
         provider: currentSettings.provider,
         model: currentSettings.model,
-        agents: currentSettings.agents,
+        agents: {
+          ...currentSettings.agents,
+          workspaceEnabled: workspaceEnabledPreference,
+        },
         temperature: defaultTemperature,
         maxTokens: 64000,
         functionCallingEnabled: !isNoAgent,
@@ -5476,6 +5512,13 @@ export default function ChatConversationComponent({
           }
           return nextSettings;
         });
+
+        // Restore sub-agent recursion depth from conversation's persisted settings
+        const persistedRecursionDepth = (conversationSettings as Record<string, unknown>)?.maxRecursionDepth;
+        if (typeof persistedRecursionDepth === "number" && [0, 1, 2, 3].includes(persistedRecursionDepth)) {
+          setMaxRecursionDepth(persistedRecursionDepth);
+        }
+
         setBackendConversationStats(full.stats || null);
         setIsBackendStatsStale(false);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
