@@ -68,6 +68,7 @@ export const LS_AGENT_MAX_SUB_AGENT_ITERATIONS = "agent:maxSubAgentIterations";
 export const LS_AGENT_MAX_RECURSION_DEPTH = "agent:maxRecursionDepth";
 export const LS_CRON_JOB_NOTIFICATIONS_COUNT = "cron-job-notifications-count";
 export const SK_TOOL_MEMORY_AGENT_PREFIX = "toolMemory:agent:";
+export const LS_WORKSPACE_TOGGLE_PREFERENCE = "agent:workspaceTogglePreference";
 export const LS_ACTIVE_AGENT = "prism:activeAgent";
 export const LS_LM_STUDIO_LOAD_CONFIG_PREFIX = "lm-studio-load-config:";
 

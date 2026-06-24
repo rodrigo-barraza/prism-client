@@ -584,47 +584,50 @@ export default function MemoriesPanel({
         </div>
       )}
 
-      {/* -- No results after filtering -------------------------- */}
-      {isFiltered && filteredMemories.length === 0 && (
-        <div className={styles['empty-state']}>
-          <div className={styles['empty-title']}>No matching memories</div>
-          <div className={styles['empty-subtitle']}>
-            Try adjusting your search query or time range.
+      {/* -- Scrollable Content ----------------------------------- */}
+      <div className={styles['scrollable-content-area']}>
+        {/* -- No results after filtering -------------------------- */}
+        {isFiltered && filteredMemories.length === 0 && (
+          <div className={styles['empty-state']}>
+            <div className={styles['empty-title']}>No matching memories</div>
+            <div className={styles['empty-subtitle']}>
+              Try adjusting your search query or time range.
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {filteredMemories.map((memory) => {
-        const memoryId = memory.id || memory._id;
-        return (
-          <MemoryCardComponent
-            key={memoryId}
-            memory={memory}
-            isNew={newMemoryIds.has(memoryId)}
-            isConfirmingDelete={confirmingDeleteId === memoryId}
-            onDeleteRequest={(id) => setConfirmingDeleteId(id || null)}
-            onDeleteConfirm={handleDelete}
-            onDeleteCancel={() => setConfirmingDeleteId(null)}
-          />
-        );
-      })}
+        {filteredMemories.map((memory) => {
+          const memoryId = memory.id || memory._id;
+          return (
+            <MemoryCardComponent
+              key={memoryId}
+              memory={memory}
+              isNew={newMemoryIds.has(memoryId)}
+              isConfirmingDelete={confirmingDeleteId === memoryId}
+              onDeleteRequest={(id) => setConfirmingDeleteId(id || null)}
+              onDeleteConfirm={handleDelete}
+              onDeleteCancel={() => setConfirmingDeleteId(null)}
+            />
+          );
+        })}
 
-      {/* Infinite Scroll Sentinel */}
-      {hasMore && (
-        <div ref={sentinelRef} className={styles['sentinel']}>
-          {loadingMore && (
-            <PanelLoadingSpinner size="small" inline />
-          )}
-        </div>
-      )}
+        {/* Infinite Scroll Sentinel */}
+        {hasMore && (
+          <div ref={sentinelRef} className={styles['sentinel']}>
+            {loadingMore && (
+              <PanelLoadingSpinner size="small" inline />
+            )}
+          </div>
+        )}
 
-      {/* End of list indicator */}
-      {!hasMore && memories.length > 0 && (
-        <div className={styles['end-of-list']}>
-          <Brain size={12} />
-          <span>All memories loaded</span>
-        </div>
-      )}
+        {/* End of list indicator */}
+        {!hasMore && memories.length > 0 && (
+          <div className={styles['end-of-list']}>
+            <Brain size={12} />
+            <span>All memories loaded</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
