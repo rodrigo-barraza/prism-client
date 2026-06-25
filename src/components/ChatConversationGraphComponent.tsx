@@ -1251,7 +1251,12 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const panOffsetRef = useRef(panOffset);
+  const zoomRef = useRef(zoom);
   useEffect(() => { panOffsetRef.current = panOffset; }, [panOffset]);
+  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
+  const fitAnimationFrameRef = useRef<number | null>(null);
+  const isGeneratingRef = useRef(isGenerating);
+  useEffect(() => { isGeneratingRef.current = isGenerating; }, [isGenerating]);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
   const hasDraggedRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
@@ -1369,7 +1374,10 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       }
     };
 
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (fitAnimationFrameRef.current) cancelAnimationFrame(fitAnimationFrameRef.current);
+    };
   }, []);
 
   const startCollisionLoop = useCallback((frames = 30) => {
@@ -1382,6 +1390,65 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   useEffect(() => {
     if (draggedNode) startCollisionLoop(30);
   }, [draggedNode, startCollisionLoop]);
+
+  // -- Animated viewport auto-fit --------------------------------
+  // Smoothly transitions zoom + pan to keep all nodes visible
+  // using rAF-driven ease-out cubic interpolation. Cancels any
+  // in-flight animation so rapid SSE node arrivals don't stack up.
+  const animateToFitTransform = useCallback(() => {
+    const targetNodes = nodesRef.current;
+    if (targetNodes.length === 0) return;
+
+    const targetTransform = computeFitToGraphTransform(
+      targetNodes,
+      dimensions.width,
+      dimensions.height,
+    );
+
+    // Cancel any running fit animation
+    if (fitAnimationFrameRef.current) {
+      cancelAnimationFrame(fitAnimationFrameRef.current);
+      fitAnimationFrameRef.current = null;
+    }
+
+    const startZoom = zoomRef.current;
+    const startPan = { ...panOffsetRef.current };
+    const targetZoom = targetTransform.zoom;
+    const targetPan = targetTransform.panOffset;
+
+    // Skip animation if the delta is negligible (< 1px pan, < 0.5% zoom)
+    const panDelta = Math.hypot(targetPan.x - startPan.x, targetPan.y - startPan.y);
+    const zoomDelta = Math.abs(targetZoom - startZoom);
+    if (panDelta < 1 && zoomDelta < 0.005) return;
+
+    const animationDuration = 400;
+    let animationStartTimestamp: number | null = null;
+
+    const animationStep = (currentTimestamp: number) => {
+      if (!animationStartTimestamp) animationStartTimestamp = currentTimestamp;
+      const elapsedTime = currentTimestamp - animationStartTimestamp;
+      const normalizedProgress = Math.min(elapsedTime / animationDuration, 1);
+      // Ease-out cubic for smooth deceleration
+      const easedProgress = 1 - Math.pow(1 - normalizedProgress, 3);
+
+      const interpolatedZoom = startZoom + (targetZoom - startZoom) * easedProgress;
+      const interpolatedPan = {
+        x: startPan.x + (targetPan.x - startPan.x) * easedProgress,
+        y: startPan.y + (targetPan.y - startPan.y) * easedProgress,
+      };
+
+      setZoom(interpolatedZoom);
+      setPanOffset(interpolatedPan);
+
+      if (normalizedProgress < 1) {
+        fitAnimationFrameRef.current = requestAnimationFrame(animationStep);
+      } else {
+        fitAnimationFrameRef.current = null;
+      }
+    };
+
+    fitAnimationFrameRef.current = requestAnimationFrame(animationStep);
+  }, [dimensions.width, dimensions.height]);
 
   // -- Incremental rebuild ---------------------------------------
   const incrementalGraphRebuild = useCallback((
@@ -1452,12 +1519,11 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       return graph;
     });
 
-    // Auto-fit the viewport so all nodes remain visible and centered
-    // as new requests stream in. nodesRef was eagerly synced above.
-    const fitTransform = computeFitToGraphTransform(nodesRef.current, dimensions.width, dimensions.height);
-    setZoom(fitTransform.zoom);
-    setPanOffset(fitTransform.panOffset);
-  }, [dimensions]);
+    // Smoothly animate the viewport to fit all nodes whenever the
+    // graph changes during generation, so the view stays centered
+    // and all nodes remain visible without jarring instant snaps.
+    animateToFitTransform();
+  }, [dimensions, animateToFitTransform]);
 
   // -- Load session graph ----------------------------------------
   useEffect(() => {
@@ -1473,7 +1539,10 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
     let isCancelled = false;
     setIsLoading(true);
-    setGraphData(null);
+    // Preserve existing graphData — don't nuke the canvas. For a
+    // brand-new conversation the graph will be null anyway; for a
+    // conversation switch the old graph fades out via the
+    // incremental rebuild once new data arrives.
     setSelectedNodeIds(new Set());
     setFocusedNodeId(null);
 
@@ -1504,10 +1573,11 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         setPanOffset(fitTransform.panOffset);
         setIsLoading(false);
       } catch {
-        // Conversation may not exist yet for a new conversation —
-        // keep isLoading true so the SSE cold-start bootstrap
+        // Conversation may not exist yet (new conversation) —
+        // silently clear loading so the SSE cold-start bootstrap
         // can populate the graph when the first request lands.
-        if (!isCancelled) setIsLoading(true);
+        // The canvas stays visible (empty) instead of flashing a spinner.
+        if (!isCancelled) setIsLoading(false);
       }
     };
 
@@ -1793,10 +1863,11 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       setPanOffset({ x: 0, y: 0 });
       return;
     }
-    const fitTransform = computeFitToGraphTransform(graphData.nodes, dimensions.width, dimensions.height);
-    setZoom(fitTransform.zoom);
-    setPanOffset(fitTransform.panOffset);
-  }, [graphData, dimensions.width, dimensions.height]);
+    // Sync nodesRef from current graphData before animating, since
+    // animateToFitTransform reads positions from nodesRef
+    nodesRef.current = graphData.nodes;
+    animateToFitTransform();
+  }, [graphData, animateToFitTransform]);
 
   const animateCenterOnNode = useCallback((targetNode: GraphNode) => {
     const viewportWidth = dimensions.width;
@@ -2081,20 +2152,19 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
           </button>
         </div>
 
-        {isLoading && (
+        {!graphData && (
           <div className={graphStyles['graph-empty-prompt']}>
-            <PanelLoadingSpinner />
+            {isLoading
+              ? <PanelLoadingSpinner />
+              : <>
+                  <Network size={40} className={graphStyles['graph-empty-prompt-icon']} />
+                  <div className={graphStyles['graph-empty-prompt-title']}>No graph data</div>
+                </>
+            }
           </div>
         )}
 
-        {!isLoading && !graphData && (
-          <div className={graphStyles['graph-empty-prompt']}>
-            <Network size={40} className={graphStyles['graph-empty-prompt-icon']} />
-            <div className={graphStyles['graph-empty-prompt-title']}>No graph data</div>
-          </div>
-        )}
-
-        {graphData && !isLoading && (() => {
+        {graphData && (() => {
           const phaseRepresentativeColor = phaseColor;
 
           return (
