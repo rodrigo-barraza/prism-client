@@ -99,16 +99,16 @@ interface GraphData {
 }
 
 const NODE_COLORS: Record<NodeCategory, string> = {
-  session: "oklch(0.72 0.18 280)",
-  model: "oklch(0.72 0.15 160)",
-  tool: "oklch(0.72 0.16 45)",
-  request: "oklch(0.65 0.12 220)",
-  user: "oklch(0.72 0.14 330)",
   project: "oklch(0.72 0.15 120)",
-  provider: "oklch(0.68 0.14 200)",
+  user: "oklch(0.72 0.14 330)",
+  session: "oklch(0.72 0.18 280)",
   agent: "oklch(0.72 0.16 300)",
   subagent: "oklch(0.68 0.14 270)",
+  request: "oklch(0.65 0.12 220)",
+  model: "oklch(0.72 0.15 160)",
   embedding: "oklch(0.70 0.13 75)",
+  provider: "oklch(0.68 0.14 200)",
+  tool: "oklch(0.72 0.16 45)",
 };
 
 const AGENT_DEPTH_COLORS: string[] = [
@@ -124,16 +124,16 @@ function resolveAgentColorByDepth(depth: number): string {
 }
 
 const NODE_LABELS: Record<NodeCategory, string> = {
-  session: "Conversation",
-  model: "Model",
-  tool: "Tool",
-  request: "Request",
-  user: "User",
   project: "Project",
-  provider: "Provider",
+  user: "User",
+  session: "Conversation",
   agent: "Agent",
   subagent: "Sub-Agent",
+  request: "Request",
+  model: "Model",
   embedding: "Embedding",
+  provider: "Provider",
+  tool: "Tool",
 };
 
 // Dynamically computes the column tier for a node based on the maximum
@@ -155,12 +155,12 @@ function computeNodeTier(node: GraphNode, maximumSubAgentDepth: number): number 
       return 2 + (node.depth ?? 1);
     case "request":
       return firstDownstreamTier;
-    case "tool":
-      return firstDownstreamTier + 1;
     case "model":
     case "embedding":
-      return firstDownstreamTier + 2;
+      return firstDownstreamTier + 1;
     case "provider":
+      return firstDownstreamTier + 2;
+    case "tool":
       return firstDownstreamTier + 3;
     default:
       return firstDownstreamTier;
@@ -418,11 +418,14 @@ function buildGraphFromConversation(
     }
 
     if (request.toolApiNames?.length) {
+      const toolParentNodeId = request.provider
+        ? `provider:${request.provider}`
+        : requestNodeId;
       for (const toolName of request.toolApiNames) {
         const uniqueToolNodeId = `tool:${request._id || requestIndex}:${toolName}`;
         const invocationsInRequest = request.toolApiNames.filter((name) => name === toolName).length;
         addNode(uniqueToolNodeId, toolName, "tool", 24, { toolName, usageCount: invocationsInRequest });
-        addEdge(requestNodeId, uniqueToolNodeId, 0.7);
+        addEdge(toolParentNodeId, uniqueToolNodeId, 0.7);
         addedToolNames.add(toolName);
       }
     }
@@ -1598,8 +1601,8 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
     // Buffer SSE events that arrive during the cold-start bootstrap
     // phase so they can be replayed after bootstrap completes.
-    // Without this, rapid insert events (e.g. embed:memory,
-    // embed:workflow-query) that fire while bootstrap is running
+    // Without this, rapid insert events (e.g. memory:embed,
+    // workflow-query:embed) that fire while bootstrap is running
     // are silently discarded — causing the graph to show only a
     // single straight line until the user refreshes the page.
     let pendingEventsBuffer: IrisCollectionChangeEvent[] = [];
@@ -1992,6 +1995,33 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
           return new Set();
         }
         setFocusedNodeId(nodeId);
+
+        // For request nodes, walk the full edge chain in both directions
+        // to highlight the entire flow from agent/session through to provider/tool
+        const clickedNode = graphData?.nodes.find((graphNode) => graphNode.id === nodeId);
+        if (clickedNode?.category === "request" && graphData) {
+          const fullFlowIds = new Set([nodeId]);
+          const walkForward = (currentId: string) => {
+            for (const edge of graphData.edges) {
+              if (edge.source === currentId && !fullFlowIds.has(edge.target)) {
+                fullFlowIds.add(edge.target);
+                walkForward(edge.target);
+              }
+            }
+          };
+          const walkBackward = (currentId: string) => {
+            for (const edge of graphData.edges) {
+              if (edge.target === currentId && !fullFlowIds.has(edge.source)) {
+                fullFlowIds.add(edge.source);
+                walkBackward(edge.source);
+              }
+            }
+          };
+          walkForward(nodeId);
+          walkBackward(nodeId);
+          return fullFlowIds;
+        }
+
         return new Set([nodeId]);
       });
 

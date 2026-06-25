@@ -263,10 +263,7 @@ export default function RequestsPage() {
       { value: "memory:consolidate", label: "Memory: Consolidate" },
       { value: "conversation:summarize", label: "Conversation: Summarize" },
       { value: "coordinator:decompose", label: "Coordinator: Decompose" },
-      { value: "embed:memory", label: "Embed: Memory" },
-      { value: "embed:api", label: "Embed: API" },
-      { value: "embed:agent-memory", label: "Embed: Agent Memory" },
-      { value: "embed:skill-relevance", label: "Embed: Skill" },
+      { value: "memory:embed", label: "Memory: Embed" },
     ],
     [],
   );
