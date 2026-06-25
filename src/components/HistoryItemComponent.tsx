@@ -287,18 +287,6 @@ export default function HistoryItemComponent({
         {/* Row 3b: sub-agent indicator emojis + collapse toggle */}
         {(item.parentConversationId || item.hasSubAgents || hasSpawnedSubAgents) && (
           <div className={styles['sub-agent-indicators-row']}>
-            {item.parentConversationId && (
-              <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
-                {resolveSubAgentEmoji(subAgentDepth ?? 1)}{subAgentNumber != null && (
-                  <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
-                )}
-              </span>
-            )}
-            {item.parentConversationId && subAgentDepth != null && subAgentDepth > 0 && (
-              <span className={styles['sub-agent-depth-emoji']} title={`Nesting Depth: ${subAgentDepth}`}>
-                🪜<span className={styles['sub-agent-depth-number']}>{subAgentDepth}</span>
-              </span>
-            )}
             {(item.hasSubAgents || hasSpawnedSubAgents) && (
               <button
                 className={`${styles['sub-agent-collapse-toggle']} ${hasSpawnedSubAgents && isSubAgentsCollapsed ? styles['sub-agent-collapse-toggle-is-collapsed'] : ''}`}
@@ -319,6 +307,18 @@ export default function HistoryItemComponent({
                   {hasSpawnedSubAgents && isSubAgentsCollapsed ? '📁' : '📂'}
                 </span>
               </button>
+            )}
+            {item.parentConversationId && (
+              <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
+                {resolveSubAgentEmoji(subAgentDepth ?? 1)}{subAgentNumber != null && (
+                  <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
+                )}
+              </span>
+            )}
+            {item.parentConversationId && subAgentDepth != null && subAgentDepth > 0 && (
+              <span className={styles['sub-agent-depth-emoji']} title={`Nesting Depth: ${subAgentDepth}`}>
+                🪜<span className={styles['sub-agent-depth-number']}>{subAgentDepth}</span>
+              </span>
             )}
           </div>
         )}

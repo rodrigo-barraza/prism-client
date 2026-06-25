@@ -1997,13 +1997,17 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         setFocusedNodeId(nodeId);
 
         // For request nodes, walk the full edge chain in both directions
-        // to highlight the entire flow from agent/session through to provider/tool
+        // to highlight the entire flow from agent/session through to provider/tool.
+        // Skip other request nodes to avoid crawling along sequential chaining edges.
         const clickedNode = graphData?.nodes.find((graphNode) => graphNode.id === nodeId);
         if (clickedNode?.category === "request" && graphData) {
+          const nodeMap = new Map(graphData.nodes.map((graphNode) => [graphNode.id, graphNode]));
           const fullFlowIds = new Set([nodeId]);
           const walkForward = (currentId: string) => {
             for (const edge of graphData.edges) {
               if (edge.source === currentId && !fullFlowIds.has(edge.target)) {
+                const targetNode = nodeMap.get(edge.target);
+                if (targetNode?.category === "request") continue;
                 fullFlowIds.add(edge.target);
                 walkForward(edge.target);
               }
@@ -2012,6 +2016,8 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
           const walkBackward = (currentId: string) => {
             for (const edge of graphData.edges) {
               if (edge.target === currentId && !fullFlowIds.has(edge.source)) {
+                const sourceNode = nodeMap.get(edge.source);
+                if (sourceNode?.category === "request") continue;
                 fullFlowIds.add(edge.source);
                 walkBackward(edge.source);
               }
@@ -2113,6 +2119,106 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     walkAndCollapse(graphData.subAgentTree);
     return hidden;
   }, [graphData, collapsedSubTreeIds]);
+
+  const handleKeyboardNavigation = useCallback((event: React.KeyboardEvent) => {
+    const { key } = event;
+    if (key !== "ArrowUp" && key !== "ArrowDown" && key !== "ArrowLeft" && key !== "ArrowRight" && key !== "Escape") return;
+    event.preventDefault();
+
+    if (key === "Escape") {
+      setSelectedNodeIds(new Set());
+      setFocusedNodeId(null);
+      return;
+    }
+
+    if (!graphData) return;
+
+    const visibleNodes = graphData.nodes.filter((node) => !hiddenNodeIds.has(node.id));
+    if (visibleNodes.length === 0) return;
+
+    const currentNode = focusedNodeId
+      ? visibleNodes.find((node) => node.id === focusedNodeId)
+      : null;
+
+    // If no node is currently selected, select the first session or agent node
+    if (!currentNode) {
+      const initialNode = visibleNodes.find((node) => node.category === "session")
+        || visibleNodes.find((node) => node.category === "agent")
+        || visibleNodes[0];
+      if (initialNode) {
+        setSelectedNodeIds(new Set([initialNode.id]));
+        setFocusedNodeId(initialNode.id);
+        animateCenterOnNode(initialNode);
+      }
+      return;
+    }
+
+    // Group visible nodes into columns by x-coordinate proximity.
+    // Nodes within a 40px horizontal tolerance are considered in the same column.
+    const columnTolerance = 40;
+    const sortedByX = [...visibleNodes].sort((nodeA, nodeB) => nodeA.x - nodeB.x);
+    const columns: GraphNode[][] = [];
+    let currentColumn: GraphNode[] = [];
+    let columnAnchorX = sortedByX[0]?.x ?? 0;
+
+    for (const node of sortedByX) {
+      if (currentColumn.length === 0 || Math.abs(node.x - columnAnchorX) <= columnTolerance) {
+        currentColumn.push(node);
+      } else {
+        columns.push(currentColumn.sort((nodeA, nodeB) => nodeA.y - nodeB.y));
+        currentColumn = [node];
+        columnAnchorX = node.x;
+      }
+    }
+    if (currentColumn.length > 0) {
+      columns.push(currentColumn.sort((nodeA, nodeB) => nodeA.y - nodeB.y));
+    }
+
+    // Find which column the current node belongs to
+    let currentColumnIndex = -1;
+    let currentNodeIndexInColumn = -1;
+    for (let columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+      const nodeIndexInColumn = columns[columnIndex].findIndex((node) => node.id === currentNode.id);
+      if (nodeIndexInColumn !== -1) {
+        currentColumnIndex = columnIndex;
+        currentNodeIndexInColumn = nodeIndexInColumn;
+        break;
+      }
+    }
+    if (currentColumnIndex === -1) return;
+
+    let targetNode: GraphNode | null = null;
+
+    if (key === "ArrowUp" || key === "ArrowDown") {
+      const column = columns[currentColumnIndex];
+      const direction = key === "ArrowUp" ? -1 : 1;
+      const nextIndex = currentNodeIndexInColumn + direction;
+      if (nextIndex >= 0 && nextIndex < column.length) {
+        targetNode = column[nextIndex];
+      }
+    } else {
+      // ArrowLeft / ArrowRight — move to the nearest node by y-position in an adjacent column
+      const direction = key === "ArrowLeft" ? -1 : 1;
+      const nextColumnIndex = currentColumnIndex + direction;
+      if (nextColumnIndex >= 0 && nextColumnIndex < columns.length) {
+        const adjacentColumn = columns[nextColumnIndex];
+        let closestDistance = Infinity;
+        for (const candidateNode of adjacentColumn) {
+          const verticalDistance = Math.abs(candidateNode.y - currentNode.y);
+          if (verticalDistance < closestDistance) {
+            closestDistance = verticalDistance;
+            targetNode = candidateNode;
+          }
+        }
+      }
+    }
+
+    if (targetNode) {
+      setSelectedNodeIds(new Set([targetNode.id]));
+      setFocusedNodeId(targetNode.id);
+      animateCenterOnNode(targetNode);
+    }
+  }, [graphData, focusedNodeId, hiddenNodeIds, animateCenterOnNode]);
 
   // Compute containment halo ellipse geometry from positioned nodes
   const containmentHaloGeometry = useMemo(() => {
@@ -2272,6 +2378,9 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       <div
         className={`${graphStyles['graph-canvas-wrapper']} ${styles['graph-embed-canvas-area']}`}
         ref={canvasWrapperRef}
+        tabIndex={0}
+        onKeyDown={handleKeyboardNavigation}
+        style={{ outline: "none" }}
       >
         <StarfieldComponent className={graphStyles['starfield']} panX={panOffset.x} panY={panOffset.y} />
 
