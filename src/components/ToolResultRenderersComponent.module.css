@@ -977,6 +977,38 @@
   animation: sub-agent-result-fade-in 0.3s ease-out;
 }
 
+/* Nested sub-agent trees — visual hierarchy via left border accent */
+.sub-agent-result-body .renderer-block {
+  border-inline-start: 2px solid
+    color-mix(
+      in srgb,
+      var(--accent-primary, var(--color-indigo)) 30%,
+      transparent
+    );
+  padding-inline-start: 8px;
+  margin-inline-start: 2px;
+
+  /* Second nesting level — shift accent hue toward teal */
+  & .sub-agent-result-body .renderer-block {
+    border-inline-start-color:
+      color-mix(
+        in srgb,
+        var(--color-teal, var(--color-info)) 35%,
+        transparent
+      );
+
+    /* Third+ levels — subtle violet accent */
+    & .sub-agent-result-body .renderer-block {
+      border-inline-start-color:
+        color-mix(
+          in srgb,
+          var(--color-violet, var(--color-purple)) 30%,
+          transparent
+        );
+    }
+  }
+}
+
 .sub-agent-result-toggle {
   display: flex;
   align-items: center;

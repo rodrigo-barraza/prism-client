@@ -2784,6 +2784,18 @@ function TeamCreateRenderer({
               </button>
               {memberExpanded && (
                 <div className={styles['sub-agent-result-body']}>
+                  {/* Live or completed tool calls — always render when present
+                      so nested create_team sub-agents are visible at any depth */}
+                  {activity?.toolCalls &&
+                    activity.toolCalls.length > 0 && (
+                    <div style={{ padding: "4px 0" }}>
+                      <ToolCallsBlockComponent
+                        toolCalls={activity.toolCalls}
+                        subAgentToolActivity={subAgentToolActivity}
+                      />
+                    </div>
+                  )}
+                  {/* Terminal sub-agents with full message history */}
                   {isTerminal && (member.messages?.length ?? 0) > 0 ? (
                     <Suspense fallback={null}>
                       <LazyMessageList
@@ -2793,29 +2805,23 @@ function TeamCreateRenderer({
                         readOnly
                       />
                     </Suspense>
-                  ) : !isTerminal &&
-                    activity?.toolCalls &&
-                    activity.toolCalls.length > 0 ? (
-                    <div style={{ padding: "4px 0" }}>
-                      <ToolCallsBlockComponent
-                        toolCalls={activity.toolCalls}
-                        subAgentToolActivity={subAgentToolActivity}
-                      />
-                    </div>
-                  ) : member.result ? (
-                    <MarkdownContent content={String(member.result)} />
-                  ) : (
-                    <div
-                      style={{
-                        fontStyle: "italic",
-                        opacity: 0.5,
-                        fontSize: "0.85rem",
-                        padding: "4px 8px",
-                      }}
-                    >
-                      No messages or tool calls yet.
-                    </div>
-                  )}
+                  ) : /* Result text (only when no tool calls were already rendered) */
+                  !(activity?.toolCalls && activity.toolCalls.length > 0) ? (
+                    member.result ? (
+                      <MarkdownContent content={String(member.result)} />
+                    ) : (
+                      <div
+                        style={{
+                          fontStyle: "italic",
+                          opacity: 0.5,
+                          fontSize: "0.85rem",
+                          padding: "4px 8px",
+                        }}
+                      >
+                        No messages or tool calls yet.
+                      </div>
+                    )
+                  ) : null}
                 </div>
               )}
             </div>
