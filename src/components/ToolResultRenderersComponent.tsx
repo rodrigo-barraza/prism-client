@@ -2527,7 +2527,10 @@ function TeamCreateRenderer({
   const rawResultMembers = Array.isArray(parsed)
     ? parsed
     : (parsed?.members ?? []);
-  const resultMembers = Array.isArray(rawResultMembers) ? rawResultMembers : [];
+  const allResultMembers = Array.isArray(rawResultMembers) ? rawResultMembers : [];
+  const isSynthesisAgent = (member: Record<string, unknown>) =>
+    typeof member.agent_id === "string" && member.agent_id.startsWith("synthesis-");
+  const resultMembers = allResultMembers.filter((member) => !isSynthesisAgent(member));
   const parsedIsComplete = Array.isArray(parsed)
     ? parsed.length > 0
     : !!parsed;
