@@ -1210,6 +1210,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const [isLoading, setIsLoading] = useState(false);
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
+  const [selectedEdgeKeys, setSelectedEdgeKeys] = useState<Set<string>>(new Set());
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [enteringNodeIds, setEnteringNodeIds] = useState<Set<string>>(new Set());
   const [isLiveConnected, setIsLiveConnected] = useState(false);
@@ -1536,6 +1537,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       setConversationRequests([]);
       setGraphData(null);
       setSelectedNodeIds(new Set());
+      setSelectedEdgeKeys(new Set());
       setFocusedNodeId(null);
       return;
     }
@@ -1547,6 +1549,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     // conversation switch the old graph fades out via the
     // incremental rebuild once new data arrives.
     setSelectedNodeIds(new Set());
+    setSelectedEdgeKeys(new Set());
     setFocusedNodeId(null);
 
     const loadGraph = async () => {
@@ -1975,6 +1978,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     const isMultiSelectModifier = event.shiftKey || event.ctrlKey || event.metaKey;
 
     if (isMultiSelectModifier) {
+      setSelectedEdgeKeys(new Set());
       setSelectedNodeIds((previousIds) => {
         const nextIds = new Set(previousIds);
         if (nextIds.has(nodeId)) {
@@ -1992,42 +1996,61 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       setSelectedNodeIds((previousIds) => {
         if (previousIds.size === 1 && previousIds.has(nodeId)) {
           setFocusedNodeId(null);
+          setSelectedEdgeKeys(new Set());
           return new Set();
         }
         setFocusedNodeId(nodeId);
 
-        // For request nodes, walk the full edge chain in both directions
-        // to highlight the entire flow from agent/session through to provider/tool.
-        // Skip other request nodes to avoid crawling along sequential chaining edges.
+        // For request nodes, collect only the DIRECT edges belonging to this
+        // request's specific flow chain. Unlike the previous recursive walk,
+        // this avoids traversing through shared model/provider hub nodes which
+        // would incorrectly light up edges and nodes from unrelated requests.
         const clickedNode = graphData?.nodes.find((graphNode) => graphNode.id === nodeId);
         if (clickedNode?.category === "request" && graphData) {
-          const nodeMap = new Map(graphData.nodes.map((graphNode) => [graphNode.id, graphNode]));
-          const fullFlowIds = new Set([nodeId]);
-          const walkForward = (currentId: string) => {
+          const flowNodeIds = new Set([nodeId]);
+          const flowEdgeKeys = new Set<string>();
+
+          for (const edge of graphData.edges) {
+            // Edges where this request is the source (request → model)
+            if (edge.source === nodeId) {
+              flowNodeIds.add(edge.target);
+              flowEdgeKeys.add(`${edge.source}→${edge.target}`);
+            }
+            // Edges where this request is the target (agent → request, prev-request → request)
+            if (edge.target === nodeId) {
+              flowNodeIds.add(edge.source);
+              flowEdgeKeys.add(`${edge.source}→${edge.target}`);
+            }
+          }
+
+          // For each model node in the flow, find the provider edge for this request's provider
+          // and the tool edges for this request's tools
+          const requestModelIds = [...flowNodeIds].filter((flowId) => flowId.startsWith("model:"));
+          for (const modelId of requestModelIds) {
             for (const edge of graphData.edges) {
-              if (edge.source === currentId && !fullFlowIds.has(edge.target)) {
-                const targetNode = nodeMap.get(edge.target);
-                if (targetNode?.category === "request") continue;
-                fullFlowIds.add(edge.target);
-                walkForward(edge.target);
+              // model → provider edge
+              if (edge.source === modelId && edge.target.startsWith("provider:")) {
+                flowNodeIds.add(edge.target);
+                flowEdgeKeys.add(`${edge.source}→${edge.target}`);
               }
             }
-          };
-          const walkBackward = (currentId: string) => {
-            for (const edge of graphData.edges) {
-              if (edge.target === currentId && !fullFlowIds.has(edge.source)) {
-                const sourceNode = nodeMap.get(edge.source);
-                if (sourceNode?.category === "request") continue;
-                fullFlowIds.add(edge.source);
-                walkBackward(edge.source);
-              }
+          }
+
+          // Find tool nodes that belong specifically to this request (they include the request ID)
+          const requestIdSegment = nodeId.replace("request:", "");
+          const requestToolPrefix = `tool:${requestIdSegment}:`;
+          for (const edge of graphData.edges) {
+            if (edge.target.startsWith(requestToolPrefix)) {
+              flowNodeIds.add(edge.target);
+              flowEdgeKeys.add(`${edge.source}→${edge.target}`);
             }
-          };
-          walkForward(nodeId);
-          walkBackward(nodeId);
-          return fullFlowIds;
+          }
+
+          setSelectedEdgeKeys(flowEdgeKeys);
+          return flowNodeIds;
         }
 
+        setSelectedEdgeKeys(new Set());
         return new Set([nodeId]);
       });
 
@@ -2127,6 +2150,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
     if (key === "Escape") {
       setSelectedNodeIds(new Set());
+      setSelectedEdgeKeys(new Set());
       setFocusedNodeId(null);
       return;
     }
@@ -2147,6 +2171,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         || visibleNodes[0];
       if (initialNode) {
         setSelectedNodeIds(new Set([initialNode.id]));
+        setSelectedEdgeKeys(new Set());
         setFocusedNodeId(initialNode.id);
         animateCenterOnNode(initialNode);
       }
@@ -2215,6 +2240,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
     if (targetNode) {
       setSelectedNodeIds(new Set([targetNode.id]));
+      setSelectedEdgeKeys(new Set());
       setFocusedNodeId(targetNode.id);
       animateCenterOnNode(targetNode);
     }
@@ -2344,10 +2370,12 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
       if (autoSelectedIds.size > 0) {
         setSelectedNodeIds(autoSelectedIds);
+        setSelectedEdgeKeys(new Set());
       }
     } else if (previousIsGeneratingRef.current && !isGenerating) {
       // Generation just stopped — clear auto-selection
       setSelectedNodeIds(new Set());
+      setSelectedEdgeKeys(new Set());
       setFocusedNodeId(null);
     }
 
@@ -2502,7 +2530,10 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 const targetNode = graphData.nodes.find((node) => node.id === edge.target);
                 if (!sourceNode || !targetNode) return null;
                 if (hiddenNodeIds.has(edge.source) || hiddenNodeIds.has(edge.target)) return null;
-                const isEdgeSelected = selectedNodeIds.has(edge.source) || selectedNodeIds.has(edge.target);
+                const edgeKey = `${edge.source}→${edge.target}`;
+                const isEdgeSelected = selectedEdgeKeys.size > 0
+                  ? selectedEdgeKeys.has(edgeKey)
+                  : selectedNodeIds.has(edge.source) || selectedNodeIds.has(edge.target);
                 const baseOpacity = 0.15 + (edge.strength || 0.5) * 0.2;
                 const edgeOpacity = isEdgeSelected ? 0.95 : baseOpacity;
 
@@ -2784,7 +2815,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                   </div>
                   <button
                     className={graphStyles['zoom-button']}
-                    onClick={() => { setSelectedNodeIds(new Set()); setFocusedNodeId(null); }}
+                    onClick={() => { setSelectedNodeIds(new Set()); setSelectedEdgeKeys(new Set()); setFocusedNodeId(null); }}
                     title="Close details"
                     aria-label="Close details"
                     style={{ width: 24, height: 24 }}
