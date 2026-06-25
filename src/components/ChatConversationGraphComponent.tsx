@@ -427,7 +427,7 @@ function buildGraphFromConversation(
       }
     }
 
-    if (request.username && request.username !== DEFAULT_USERNAME) {
+    if (request.username && request.username !== DEFAULT_USERNAME && request.username !== "system") {
       userSet.add(request.username);
     }
   }
