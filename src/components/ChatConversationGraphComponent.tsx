@@ -2112,6 +2112,49 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     return requestNodes.length > 0 ? requestNodes[requestNodes.length - 1].id : null;
   }, [graphData, isGenerating]);
 
+  // -- Auto-select working agents and in-flight requests during generation --
+  // When isGenerating is true, automatically highlight agent nodes that are
+  // actively working and request nodes that haven't completed yet (pending
+  // status or the latest active request). This provides immediate visual
+  // context in nodes view showing which parts of the graph are "hot".
+  // Clears auto-selection when generation stops.
+  const previousIsGeneratingRef = useRef(false);
+
+  useEffect(() => {
+    if (!graphData) return;
+
+    if (isGenerating) {
+      const autoSelectedIds = new Set<string>();
+
+      for (const node of graphData.nodes) {
+        // Select all agent and sub-agent nodes during generation
+        if (node.category === "agent" || node.category === "subagent") {
+          autoSelectedIds.add(node.id);
+        }
+
+        // Select pending (in-flight) request nodes
+        if (node.category === "request" && (node.metadata?.status as string) === "pending") {
+          autoSelectedIds.add(node.id);
+        }
+
+        // Select the latest active request node
+        if (node.category === "request" && latestRequestNodeId === node.id) {
+          autoSelectedIds.add(node.id);
+        }
+      }
+
+      if (autoSelectedIds.size > 0) {
+        setSelectedNodeIds(autoSelectedIds);
+      }
+    } else if (previousIsGeneratingRef.current && !isGenerating) {
+      // Generation just stopped — clear auto-selection
+      setSelectedNodeIds(new Set());
+      setFocusedNodeId(null);
+    }
+
+    previousIsGeneratingRef.current = isGenerating;
+  }, [isGenerating, graphData, latestRequestNodeId]);
+
   // -- Empty state when no conversationId -----------------------------
   if (!conversationId) {
     return (
