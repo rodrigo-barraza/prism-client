@@ -2001,48 +2001,134 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         }
         setFocusedNodeId(nodeId);
 
-        // For request nodes, collect only the DIRECT edges belonging to this
-        // request's specific flow chain. Unlike the previous recursive walk,
-        // this avoids traversing through shared model/provider hub nodes which
-        // would incorrectly light up edges and nodes from unrelated requests.
+        // For request and tool nodes, collect the DIRECT edges belonging to
+        // this node's specific flow chain. This traces the full path from
+        // project → session → agent → request → model → provider → tool
+        // without recursively walking through shared hub nodes.
         const clickedNode = graphData?.nodes.find((graphNode) => graphNode.id === nodeId);
-        if (clickedNode?.category === "request" && graphData) {
+        const isFlowTraversableNode = clickedNode?.category === "request" || clickedNode?.category === "tool";
+
+        if (isFlowTraversableNode && graphData) {
           const flowNodeIds = new Set([nodeId]);
           const flowEdgeKeys = new Set<string>();
 
-          for (const edge of graphData.edges) {
-            // Edges where this request is the source (request → model)
-            if (edge.source === nodeId) {
-              flowNodeIds.add(edge.target);
-              flowEdgeKeys.add(`${edge.source}→${edge.target}`);
-            }
-            // Edges where this request is the target (agent → request, prev-request → request)
-            if (edge.target === nodeId) {
-              flowNodeIds.add(edge.source);
-              flowEdgeKeys.add(`${edge.source}→${edge.target}`);
-            }
-          }
+          // Helper: add an edge and its endpoints to the flow
+          const includeEdge = (edge: GraphEdge) => {
+            flowNodeIds.add(edge.source);
+            flowNodeIds.add(edge.target);
+            flowEdgeKeys.add(`${edge.source}→${edge.target}`);
+          };
 
-          // For each model node in the flow, find the provider edge for this request's provider
-          // and the tool edges for this request's tools
-          const requestModelIds = [...flowNodeIds].filter((flowId) => flowId.startsWith("model:"));
-          for (const modelId of requestModelIds) {
+          // Helper: walk backward from a node through ancestor categories
+          // (agent/subagent → session → project) to reach the root of the chain
+          const walkAncestorChain = (startNodeId: string) => {
+            let currentId = startNodeId;
+            const ancestorCategories = new Set(["agent", "subagent", "session", "project", "user"]);
+            const visited = new Set([currentId]);
+
+            while (true) {
+              let foundParent = false;
+              for (const edge of graphData.edges) {
+                if (edge.target === currentId && !visited.has(edge.source)) {
+                  const sourceNode = graphData.nodes.find((graphNode) => graphNode.id === edge.source);
+                  if (sourceNode && ancestorCategories.has(sourceNode.category)) {
+                    includeEdge(edge);
+                    visited.add(edge.source);
+                    currentId = edge.source;
+                    foundParent = true;
+                    break;
+                  }
+                }
+              }
+              if (!foundParent) break;
+            }
+          };
+
+          if (clickedNode.category === "request") {
+            // Collect direct edges from/to the request node
             for (const edge of graphData.edges) {
-              // model → provider edge
-              if (edge.source === modelId && edge.target.startsWith("provider:")) {
+              if (edge.source === nodeId) {
                 flowNodeIds.add(edge.target);
                 flowEdgeKeys.add(`${edge.source}→${edge.target}`);
               }
+              if (edge.target === nodeId) {
+                flowNodeIds.add(edge.source);
+                flowEdgeKeys.add(`${edge.source}→${edge.target}`);
+              }
             }
-          }
 
-          // Find tool nodes that belong specifically to this request (they include the request ID)
-          const requestIdSegment = nodeId.replace("request:", "");
-          const requestToolPrefix = `tool:${requestIdSegment}:`;
-          for (const edge of graphData.edges) {
-            if (edge.target.startsWith(requestToolPrefix)) {
-              flowNodeIds.add(edge.target);
-              flowEdgeKeys.add(`${edge.source}→${edge.target}`);
+            // model → provider edges
+            const requestModelIds = [...flowNodeIds].filter((flowId) => flowId.startsWith("model:"));
+            for (const modelId of requestModelIds) {
+              for (const edge of graphData.edges) {
+                if (edge.source === modelId && edge.target.startsWith("provider:")) {
+                  includeEdge(edge);
+                }
+              }
+            }
+
+            // Tool nodes belonging to this specific request (their IDs embed the request ID)
+            const requestIdSegment = nodeId.replace("request:", "");
+            const requestToolPrefix = `tool:${requestIdSegment}:`;
+            for (const edge of graphData.edges) {
+              if (edge.target.startsWith(requestToolPrefix)) {
+                includeEdge(edge);
+              }
+            }
+
+            // Walk backward from agent/subagent nodes to session and project
+            const agentNodeIds = [...flowNodeIds].filter((flowId) =>
+              flowId.startsWith("agent:") || flowId.startsWith("subagent:"),
+            );
+            for (const agentId of agentNodeIds) {
+              walkAncestorChain(agentId);
+            }
+          } else if (clickedNode.category === "tool") {
+            // For tool nodes, trace backward: tool ← provider ← model ← request ← agent ← session ← project
+            // Find the edge pointing to this tool (provider → tool or request → tool)
+            for (const edge of graphData.edges) {
+              if (edge.target === nodeId) {
+                includeEdge(edge);
+              }
+            }
+
+            // Extract the owning request ID from the tool node ID (tool:REQUEST_ID:toolName)
+            const toolIdParts = nodeId.replace("tool:", "").split(":");
+            const owningRequestId = toolIdParts.length > 1 ? toolIdParts.slice(0, -1).join(":") : null;
+            const owningRequestNodeId = owningRequestId ? `request:${owningRequestId}` : null;
+
+            if (owningRequestNodeId && graphData.nodes.some((graphNode) => graphNode.id === owningRequestNodeId)) {
+              flowNodeIds.add(owningRequestNodeId);
+
+              // request → model edge
+              for (const edge of graphData.edges) {
+                if (edge.source === owningRequestNodeId && edge.target.startsWith("model:")) {
+                  includeEdge(edge);
+                }
+              }
+
+              // model → provider edge (for the models we just found)
+              const toolFlowModelIds = [...flowNodeIds].filter((flowId) => flowId.startsWith("model:"));
+              for (const modelId of toolFlowModelIds) {
+                for (const edge of graphData.edges) {
+                  if (edge.source === modelId && edge.target.startsWith("provider:")) {
+                    includeEdge(edge);
+                  }
+                }
+              }
+
+              // agent → request edge
+              for (const edge of graphData.edges) {
+                if (edge.target === owningRequestNodeId && (edge.source.startsWith("agent:") || edge.source.startsWith("request:"))) {
+                  includeEdge(edge);
+                }
+              }
+
+              // Walk backward from agent/subagent to session and project
+              const agentNodeIds = [...flowNodeIds].filter((flowId) => flowId.startsWith("agent:"));
+              for (const agentId of agentNodeIds) {
+                walkAncestorChain(agentId);
+              }
             }
           }
 
