@@ -37,7 +37,7 @@ import {
   formatElapsedTime,
   timeAgo as formatTimeAgo,
 } from "@rodrigo-barraza/utilities-library";
-import { AGENT_IDS, TOPOLOGIES, DEFAULT_TOPOLOGY } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { AGENT_IDS, TOPOLOGIES, DEFAULT_TOPOLOGY, DEFAULT_USERNAME } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 import graphStyles from "./ConversationGraphPageComponent.module.css";
 import styles from "./ChatConversationGraphComponent.module.css";
@@ -427,7 +427,7 @@ function buildGraphFromConversation(
       }
     }
 
-    if (request.username) {
+    if (request.username && request.username !== DEFAULT_USERNAME) {
       userSet.add(request.username);
     }
   }
