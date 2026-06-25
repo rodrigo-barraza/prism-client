@@ -1596,6 +1596,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     let isBootstrapping = false;
     let isCancelled = false;
 
+    // Buffer SSE events that arrive during the cold-start bootstrap
+    // phase so they can be replayed after bootstrap completes.
+    // Without this, rapid insert events (e.g. embed:memory,
+    // embed:workflow-query) that fire while bootstrap is running
+    // are silently discarded — causing the graph to show only a
+    // single straight line until the user refreshes the page.
+    let pendingEventsBuffer: IrisCollectionChangeEvent[] = [];
+
     // Track known request IDs to prevent duplicate appends from
     // concurrent SSE events or re-deliveries
     const knownRequestIds = new Set<string>();
@@ -1642,6 +1650,19 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         // Conversation not available yet — will retry on the next SSE event
       } finally {
         isBootstrapping = false;
+
+        // Replay any SSE events that were buffered during bootstrap.
+        // These events would otherwise be permanently lost since the
+        // Change Stream only delivers insert events once.
+        if (pendingEventsBuffer.length > 0 && !isCancelled) {
+          const bufferedEvents = pendingEventsBuffer;
+          pendingEventsBuffer = [];
+          for (const bufferedEvent of bufferedEvents) {
+            processingChain = processingChain
+              .then(() => handleSingleRequestChange(bufferedEvent))
+              .catch(() => {});
+          }
+        }
       }
     };
 
@@ -1688,8 +1709,20 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     const handleSingleRequestChange = async (changeEvent: IrisCollectionChangeEvent) => {
       if (isCancelled) return;
 
+      // If a cold-start bootstrap is already in progress, buffer this
+      // event for replay after bootstrap finishes. Without buffering,
+      // the event is permanently lost — the Change Stream will not
+      // re-deliver it, resulting in a missing node in the graph.
+      if (isBootstrapping) {
+        pendingEventsBuffer.push(changeEvent);
+        return;
+      }
+
       const activeConversation = conversationRef.current;
       if (!activeConversation) {
+        // Buffer this event so it can be replayed after bootstrap,
+        // then trigger the bootstrap itself.
+        pendingEventsBuffer.push(changeEvent);
         await performColdStartBootstrap();
         return;
       }
