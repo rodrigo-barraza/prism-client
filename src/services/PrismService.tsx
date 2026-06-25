@@ -38,6 +38,7 @@ import type {
   TextListResponse,
   LmStudioModel,
   LmStudioVramEstimate,
+  LlamaCppServerProps,
   ModelUsageStat,
   ToolUsageStat,
   ChatPayload,
@@ -1674,6 +1675,29 @@ export default class PrismService {
       `/lm-studio/models${queryString}`,
       { method: "GET" },
     );
+  }
+
+  /**
+   * Fetch rich runtime metadata from a llama.cpp server instance:
+   * context configuration, slot utilization, sampling defaults,
+   * model path, chat template, and modality flags.
+   *
+   * Returns null on error (server unreachable, non-llama-cpp instance, etc.)
+   */
+  static async getLlamaCppServerProps(
+    instanceId?: string,
+  ): Promise<LlamaCppServerProps | null> {
+    try {
+      const queryString = instanceId
+        ? `?instance=${encodeURIComponent(instanceId)}`
+        : "";
+      return await PrismService._request<LlamaCppServerProps>(
+        `/lm-studio/server-props${queryString}`,
+        { method: "GET" },
+      );
+    } catch {
+      return null;
+    }
   }
 
   /**

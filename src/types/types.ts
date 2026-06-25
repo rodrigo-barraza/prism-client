@@ -134,6 +134,46 @@ export interface LocalProviderInfo {
   nickname?: string;
 }
 
+export interface LlamaCppServerProps {
+  totalSlots: number;
+  modelPath: string | null;
+  modelAlias: string | null;
+  chatTemplate: string | null;
+  modalities: { vision: boolean; audio: boolean } | null;
+  endpointSlots: boolean;
+  endpointMetrics: boolean;
+  defaultGenerationSettings: {
+    contextLength: number;
+    temperature: number;
+    topK: number;
+    topP: number;
+    minP: number;
+    repeatPenalty: number;
+    presencePenalty: number;
+    frequencyPenalty: number;
+    seed: number;
+    maxTokens: number;
+    samplers: string[];
+    cacheTypeK: string | null;
+    cacheTypeV: string | null;
+  } | null;
+  slots: Array<{
+    id: number;
+    state: string;
+    model: string | null;
+    contextLength: number;
+    tokensUsed: number;
+    tokensPredicted: number;
+    cacheTokens: number;
+    isProcessing: boolean;
+  }>;
+  health: {
+    status: string;
+    slotsIdle: number | null;
+    slotsProcessing: number | null;
+  } | null;
+}
+
 // --- Parameter Descriptors ----------------------------------
 
 export interface ParameterDescriptor {

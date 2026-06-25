@@ -54,6 +54,7 @@ import {
   Favorite,
   Workflow,
   TransformedRequestItem,
+  LlamaCppServerProps,
 } from "../types/types";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -810,6 +811,10 @@ export default function ChatConversationComponent({
 
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 
+  // -- llama.cpp server runtime props (fetched when provider is llama-cpp) --
+  const [llamaCppServerProps, setLlamaCppServerProps] =
+    useState<LlamaCppServerProps | null>(null);
+
   const [pendingImages, setPendingImages] = useState<string[]>([]);
   const [pendingFiles, setPendingFiles] = useState<
     { name: string; mimeType: string; dataUrl: string; modality: string }[]
@@ -1386,6 +1391,21 @@ export default function ChatConversationComponent({
       }));
     }
   }, [config, settings.provider, settings.model, settings.thinkingEnabled]);
+
+  // Fetch llama.cpp server runtime properties when provider is llama-cpp
+  useEffect(() => {
+    const providerKey = settings.provider || "";
+    const isLlamaCpp = providerKey === "llama-cpp" || providerKey.startsWith("llama-cpp-");
+    if (!isLlamaCpp) {
+      setLlamaCppServerProps(null);
+      return;
+    }
+    let cancelled = false;
+    PrismService.getLlamaCppServerProps(providerKey).then((serverProperties) => {
+      if (!cancelled) setLlamaCppServerProps(serverProperties);
+    });
+    return () => { cancelled = true; };
+  }, [settings.provider, settings.model]);
 
   // Load conversation history — Direct Chat reads from conversations collection
   const loadConversations = useCallback(async () => {
@@ -6482,7 +6502,7 @@ export default function ChatConversationComponent({
       {leftTab === "info" && (
         <>
           <SidebarTabHeaderComponent icon="📄" title="Model Info" />
-          <ModelInfoPanel config={filteredConfig} settings={settings} />
+          <ModelInfoPanel config={filteredConfig} settings={settings} llamaCppServerProps={llamaCppServerProps} />
         </>
       )}
 
