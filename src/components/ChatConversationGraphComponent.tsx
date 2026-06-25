@@ -1721,10 +1721,22 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
         let updatedRequests: IrisRequestEntry[];
 
-        if (isInsertOperation) {
+        const requestExistsInCurrentRequests = conversationRequestsRef.current.some(
+          (existingRequest) => existingRequest._id === requestDocumentId,
+        );
+
+        if (isInsertOperation || !requestExistsInCurrentRequests) {
           // Append the new request to the existing array
-          knownRequestIds.add(requestDocumentId);
-          updatedRequests = [...conversationRequestsRef.current, fetchedRequest];
+          if (requestDocumentId) {
+            knownRequestIds.add(requestDocumentId);
+          }
+          if (requestExistsInCurrentRequests) {
+            updatedRequests = conversationRequestsRef.current.map((existingRequest) =>
+              existingRequest._id === requestDocumentId ? fetchedRequest : existingRequest,
+            );
+          } else {
+            updatedRequests = [...conversationRequestsRef.current, fetchedRequest];
+          }
         } else if (isUpdateOperation) {
           // Replace the existing request in-place
           updatedRequests = conversationRequestsRef.current.map((existingRequest) =>
