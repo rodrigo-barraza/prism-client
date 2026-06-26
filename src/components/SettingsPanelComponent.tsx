@@ -396,6 +396,31 @@ export default function SettingsPanel({
       ? totalElapsedTime
       : activeStats?.completedElapsedTime || 0;
 
+  const hasConversationMetadata = !!(conversationProject || conversationUsername || conversationAgent);
+
+  const renderConversationMetadataBadges = () => (
+    <>
+      {conversationProject && (
+        <span className={styles['stat-badge']}>
+          <FolderKanban size={10} />
+          {conversationProject}
+        </span>
+      )}
+      {conversationUsername && (
+        <span className={styles['stat-badge']}>
+          <User size={10} />
+          {conversationUsername}
+        </span>
+      )}
+      {conversationAgent && (
+        <span className={styles['stat-badge']}>
+          <Bot size={10} />
+          {conversationAgent}
+        </span>
+      )}
+    </>
+  );
+
   const renderStatsBadges = (stats: ConversationStats, showFull: boolean) => {
     const timeToFirstTokenValue =
       stats.avgTimeToGeneration ?? conversationStats?.lastTimeToGeneration;
@@ -404,24 +429,7 @@ export default function SettingsPanel({
 
     return (
       <div className={styles['stats-badges']}>
-        {conversationProject && (
-          <span className={styles['stat-badge']}>
-            <FolderKanban size={10} />
-            {conversationProject}
-          </span>
-        )}
-        {conversationUsername && (
-          <span className={styles['stat-badge']}>
-            <User size={10} />
-            {conversationUsername}
-          </span>
-        )}
-        {conversationAgent && (
-          <span className={styles['stat-badge']}>
-            <Bot size={10} />
-            {conversationAgent}
-          </span>
-        )}
+        {renderConversationMetadataBadges()}
         <BadgeComponent
           type="messages"
           count={stats.messageCount}
@@ -691,9 +699,21 @@ export default function SettingsPanel({
               renderStatsBadges(activeStats, statsTab === "all")
             ) : (
               <div className={styles['stats-badges']}>
+                {renderConversationMetadataBadges()}
                 <BadgeComponent type="messages" count={0} />
               </div>
             )}
+          </div>
+        )}
+
+        {!conversationStats && hasConversationMetadata && (
+          <div className={styles['conversation-stats']}>
+            <div className={styles['stats-header']}>
+              <Layers size={12} style={{ marginRight: 4 }} /> {conversationLabel} Details
+            </div>
+            <div className={styles['stats-badges']}>
+              {renderConversationMetadataBadges()}
+            </div>
           </div>
         )}
 

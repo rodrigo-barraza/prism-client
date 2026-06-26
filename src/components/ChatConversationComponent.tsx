@@ -1672,6 +1672,22 @@ export default function ChatConversationComponent({
     return adminAgents.find((agent) => agent.id === adminTargetAgentId) || null;
   }, [isAdmin, adminTargetAgentId, adminAgents]);
 
+  // Unified source of truth: resolved agent and metadata for BOTH views.
+  // Admin derives from the selected conversation's entry;
+  // non-admin derives from the URL agent param and active conversation.
+  const resolvedConversationAgent = isAdmin ? adminActiveAgentData : activeAgentData || null;
+  const resolvedConversationMetadata = useMemo(() => {
+    if (!activeId) return { project: null, username: null, agentName: null };
+    const selectedConversation = conversations.find((entry) => entry.id === activeId) as
+      | (UnifiedEntry & { username?: string })
+      | undefined;
+    return {
+      project: selectedConversation?.project || agentProject || null,
+      username: selectedConversation?.username || null,
+      agentName: resolvedConversationAgent?.name || resolvedConversationAgent?.id || null,
+    };
+  }, [activeId, conversations, agentProject, resolvedConversationAgent]);
+
   // Admin: extract conversation-time tool snapshot from conversation settings
   const adminConversationToolConfig = useMemo(() => {
     if (!isAdmin || !activeId) return null;
@@ -6466,21 +6482,9 @@ export default function ChatConversationComponent({
                     })()
                 : null) as DisplayConversationStats | null
             }
-            conversationProject={
-              isAdmin && activeId
-                ? (adminEntries.find((entry) => entry.id === activeId) as UnifiedEntry | undefined)?.project || null
-                : null
-            }
-            conversationUsername={
-              isAdmin && activeId
-                ? ((adminEntries.find((entry) => entry.id === activeId) as Conversation | undefined)?.username || null)
-                : null
-            }
-            conversationAgent={
-              isAdmin && activeId
-                ? ((adminEntries.find((entry) => entry.id === activeId) as UnifiedEntry | undefined)?.agent || null) as string | null
-                : null
-            }
+            conversationProject={resolvedConversationMetadata.project}
+            conversationUsername={resolvedConversationMetadata.username}
+            conversationAgent={resolvedConversationMetadata.agentName}
           />
         </>
       )}
@@ -6851,7 +6855,7 @@ export default function ChatConversationComponent({
               messages={filteredMessages}
               readOnly
               showRaw={showRaw}
-              activeAgent={adminActiveAgentData}
+              activeAgent={resolvedConversationAgent}
               systemPrompt={
                 showRaw
                   ? settings.systemPrompt ||
@@ -6923,7 +6927,7 @@ export default function ChatConversationComponent({
           isGenerating={isGenerating}
           streamingOutputs={streamingOutputs}
           subAgentToolActivity={subAgentToolActivity}
-          activeAgent={activeAgentData}
+          activeAgent={resolvedConversationAgent}
           knownPaths={knownPaths}
           onMentionFileOpen={(relativePath: string) => {
             const absPath = currentWorkspace?.path
