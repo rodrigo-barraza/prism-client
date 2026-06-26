@@ -563,76 +563,8 @@ function flattenSubAgentTree(treeNodes: SubAgentTreeNode[]): string[] {
   return result;
 }
 
-function applyRecursiveRadialSubAgentLayout(
-  treeNodes: SubAgentTreeNode[],
-  parentNode: GraphNode,
-  nodeMap: Map<string, GraphNode>,
-  depth: number,
-  baseAngle: number,
-  arcSpan: number,
-): void {
-  const orbitRadius = Math.max(80, 160 - depth * 25);
-  const childCount = treeNodes.length;
 
-  for (let childIndex = 0; childIndex < childCount; childIndex++) {
-    const treeChild = treeNodes[childIndex];
-    const childNode = nodeMap.get(treeChild.nodeId);
-    if (!childNode) continue;
 
-    const angleOffset = childCount === 1
-      ? baseAngle
-      : baseAngle - arcSpan / 2 + (childIndex / (childCount - 1)) * arcSpan;
-
-    childNode.x = parentNode.x + Math.cos(angleOffset) * orbitRadius;
-    childNode.y = parentNode.y + Math.sin(angleOffset) * orbitRadius;
-
-    if (treeChild.children.length > 0) {
-      // Continue fan-out rightward, clamping to right hemisphere
-      const childAngle = Math.abs(angleOffset) > Math.PI / 2
-        ? Math.sign(angleOffset) * Math.PI / 4
-        : angleOffset;
-      applyRecursiveRadialSubAgentLayout(
-        treeChild.children,
-        childNode,
-        nodeMap,
-        depth + 1,
-        childAngle,
-        arcSpan * 0.65,
-      );
-    }
-  }
-}
-
-function applyColumnarSubAgentLayout(
-  treeNodes: SubAgentTreeNode[],
-  parentNode: GraphNode,
-  nodeMap: Map<string, GraphNode>,
-  verticalSpacing: number,
-  depth: number,
-): void {
-  const columnOffset = 160;
-  const childCount = treeNodes.length;
-  const childStartY = parentNode.y - ((childCount - 1) * verticalSpacing) / 2;
-
-  for (let childIndex = 0; childIndex < childCount; childIndex++) {
-    const treeChild = treeNodes[childIndex];
-    const childNode = nodeMap.get(treeChild.nodeId);
-    if (!childNode) continue;
-
-    childNode.x = parentNode.x + columnOffset;
-    childNode.y = childStartY + childIndex * verticalSpacing;
-
-    if (treeChild.children.length > 0) {
-      applyColumnarSubAgentLayout(
-        treeChild.children,
-        childNode,
-        nodeMap,
-        verticalSpacing * 0.8,
-        depth + 1,
-      );
-    }
-  }
-}
 
 function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canvasHeight: number): void {
   const { nodes: graphNodes } = graphData;
@@ -683,14 +615,15 @@ function applySequentialLayout(graphData: GraphData, canvasWidth: number, canvas
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
   const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
   
+  // Root-agent-only request/tool nodes — sub-agent descendants are positioned by positionSubAgentBranch
   const otherNodes = graphNodes.filter((graphNode) => 
     graphNode.category !== "project" && 
     graphNode.category !== "user" && 
     graphNode.category !== "session" && 
     graphNode.category !== "agent" &&
-    graphNode.category !== "subagent"
+    graphNode.category !== "subagent" &&
+    ((graphNode.metadata?.agentDepth as number) ?? 0) === 0
   );
 
   const centerY = canvasHeight / 2;
@@ -702,20 +635,6 @@ function applySequentialLayout(graphData: GraphData, canvasWidth: number, canvas
   if (mainAgentNode) {
     mainAgentNode.x = 130;
     mainAgentNode.y = centerY;
-  }
-
-  const subAgentCount = subAgentNodes.length;
-  const subAgentColumnX = 320;
-  const subAgentAdaptiveSpacing = subAgentCount > 1
-    ? (canvasHeight * 0.8) / (subAgentCount - 1)
-    : canvasHeight * 0.8;
-  const subAgentVerticalSpacing = Math.max(48, Math.min(80, subAgentAdaptiveSpacing));
-  const subAgentStartY = centerY - ((subAgentCount - 1) * subAgentVerticalSpacing) / 2;
-
-  for (let index = 0; index < subAgentCount; index++) {
-    const subAgent = subAgentNodes[index];
-    subAgent.x = subAgentColumnX;
-    subAgent.y = subAgentStartY + index * subAgentVerticalSpacing;
   }
 
   const toolCounterByParent = new Map<string, number>();
@@ -752,14 +671,14 @@ function applyPeerToPeerLayout(graphData: GraphData, canvasWidth: number, canvas
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
   const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
   
   const otherNodes = graphNodes.filter((graphNode) => 
     graphNode.category !== "project" && 
     graphNode.category !== "user" && 
     graphNode.category !== "session" && 
     graphNode.category !== "agent" &&
-    graphNode.category !== "subagent"
+    graphNode.category !== "subagent" &&
+    ((graphNode.metadata?.agentDepth as number) ?? 0) === 0
   );
 
   const centerX = canvasWidth / 2;
@@ -772,16 +691,6 @@ function applyPeerToPeerLayout(graphData: GraphData, canvasWidth: number, canvas
   if (mainAgentNode) {
     mainAgentNode.x = centerX;
     mainAgentNode.y = centerY;
-  }
-
-  const subAgentCount = subAgentNodes.length;
-  const radius = Math.min(180, Math.min(canvasWidth, canvasHeight) / 3);
-
-  for (let index = 0; index < subAgentCount; index++) {
-    const subAgent = subAgentNodes[index];
-    const angle = (index * 2 * Math.PI) / Math.max(1, subAgentCount);
-    subAgent.x = centerX + Math.cos(angle) * radius;
-    subAgent.y = centerY + Math.sin(angle) * radius;
   }
 
   const peerToolCounter = new Map<string, number>();
@@ -823,14 +732,14 @@ function applyCriticLoopLayout(graphData: GraphData, canvasWidth: number, canvas
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
   const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
 
   const otherNodes = graphNodes.filter((graphNode) =>
     graphNode.category !== "project" &&
     graphNode.category !== "user" &&
     graphNode.category !== "session" &&
     graphNode.category !== "agent" &&
-    graphNode.category !== "subagent"
+    graphNode.category !== "subagent" &&
+    ((graphNode.metadata?.agentDepth as number) ?? 0) === 0
   );
 
   const centerX = canvasWidth / 2;
@@ -839,19 +748,9 @@ function applyCriticLoopLayout(graphData: GraphData, canvasWidth: number, canvas
   if (userNode) { userNode.x = 180; userNode.y = 80; }
   if (sessionNode) { sessionNode.x = 130; sessionNode.y = 150; }
 
-  // Vertical chain: orchestrator → actor → critic(s), centered horizontally
   if (mainAgentNode) {
     mainAgentNode.x = centerX;
     mainAgentNode.y = 220;
-  }
-
-  const subAgentCount = subAgentNodes.length;
-  const verticalSpacing = Math.max(90, (canvasHeight - 300) / Math.max(1, subAgentCount));
-
-  for (let index = 0; index < subAgentCount; index++) {
-    const subAgent = subAgentNodes[index];
-    subAgent.x = centerX;
-    subAgent.y = 320 + index * verticalSpacing;
   }
 
   const criticToolCounter = new Map<string, number>();
@@ -888,14 +787,14 @@ function applyTournamentLayout(graphData: GraphData, canvasWidth: number, canvas
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
   const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
 
   const otherNodes = graphNodes.filter((graphNode) =>
     graphNode.category !== "project" &&
     graphNode.category !== "user" &&
     graphNode.category !== "session" &&
     graphNode.category !== "agent" &&
-    graphNode.category !== "subagent"
+    graphNode.category !== "subagent" &&
+    ((graphNode.metadata?.agentDepth as number) ?? 0) === 0
   );
 
   const centerX = canvasWidth / 2;
@@ -904,20 +803,9 @@ function applyTournamentLayout(graphData: GraphData, canvasWidth: number, canvas
   if (userNode) { userNode.x = 180; userNode.y = 80; }
   if (sessionNode) { sessionNode.x = 130; sessionNode.y = 150; }
 
-  // Fan-out: orchestrator on top, candidates spread horizontally below
   if (mainAgentNode) {
     mainAgentNode.x = centerX;
     mainAgentNode.y = 220;
-  }
-
-  const subAgentCount = subAgentNodes.length;
-  const horizontalSpacing = Math.max(120, (canvasWidth - 200) / Math.max(1, subAgentCount));
-  const startX = (canvasWidth - (subAgentCount - 1) * horizontalSpacing) / 2;
-
-  for (let index = 0; index < subAgentCount; index++) {
-    const subAgent = subAgentNodes[index];
-    subAgent.x = startX + index * horizontalSpacing;
-    subAgent.y = 360;
   }
 
   const tournamentToolCounter = new Map<string, number>();
@@ -954,14 +842,14 @@ function applyMCTSLayout(graphData: GraphData, canvasWidth: number, canvasHeight
   const userNode = graphNodes.find((graphNode) => graphNode.category === "user");
   const sessionNode = graphNodes.find((graphNode) => graphNode.category === "session");
   const mainAgentNode = graphNodes.find((graphNode) => graphNode.category === "agent");
-  const subAgentNodes = graphNodes.filter((graphNode) => graphNode.category === "subagent");
 
   const otherNodes = graphNodes.filter((graphNode) =>
     graphNode.category !== "project" &&
     graphNode.category !== "user" &&
     graphNode.category !== "session" &&
     graphNode.category !== "agent" &&
-    graphNode.category !== "subagent"
+    graphNode.category !== "subagent" &&
+    ((graphNode.metadata?.agentDepth as number) ?? 0) === 0
   );
 
   const centerX = canvasWidth / 2;
@@ -970,35 +858,9 @@ function applyMCTSLayout(graphData: GraphData, canvasWidth: number, canvasHeight
   if (userNode) { userNode.x = 180; userNode.y = 80; }
   if (sessionNode) { sessionNode.x = 130; sessionNode.y = 150; }
 
-  // Tree: root on top, children fan out with increasing horizontal spread per depth
   if (mainAgentNode) {
     mainAgentNode.x = centerX;
     mainAgentNode.y = 220;
-  }
-
-  // Approximate tree depth assignment: groups of branchFactor (default 3)
-  const branchFactor = 3;
-  const subAgentCount = subAgentNodes.length;
-  let depthStart = 0;
-  let currentDepth = 0;
-  let nodesAtCurrentDepth = branchFactor;
-
-  while (depthStart < subAgentCount) {
-    const depthEnd = Math.min(depthStart + nodesAtCurrentDepth, subAgentCount);
-    const depthNodeCount = depthEnd - depthStart;
-    const depthY = 320 + currentDepth * 120;
-    const depthSpread = Math.max(100, (canvasWidth - 200) / Math.max(1, depthNodeCount));
-    const depthStartX = (canvasWidth - (depthNodeCount - 1) * depthSpread) / 2;
-
-    for (let index = depthStart; index < depthEnd; index++) {
-      const subAgent = subAgentNodes[index];
-      subAgent.x = depthStartX + (index - depthStart) * depthSpread;
-      subAgent.y = depthY;
-    }
-
-    depthStart = depthEnd;
-    currentDepth++;
-    nodesAtCurrentDepth = depthNodeCount * branchFactor;
   }
 
   const mctsToolCounter = new Map<string, number>();
@@ -1050,7 +912,8 @@ function applyTopologyLayout(
     applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);
   }
 
-  // After base layout, position sub-agent trees in a dedicated column to the right of the agent
+  // After base layout, position sub-agent trees in columns AFTER the tool column.
+  // The pattern is: ...tool → subagent → request → tool → subagent → ...
   if (graphData.subAgentTree && graphData.subAgentTree.length > 0) {
     const nodeMap = new Map(graphData.nodes.map((node) => [node.id, node]));
     const mainAgentNode = graphData.nodes.find(
@@ -1058,35 +921,103 @@ function applyTopologyLayout(
     );
 
     if (mainAgentNode) {
-      const subAgentColumnOffset = 200;
-      const topLevelCount = graphData.subAgentTree.length;
-      // Viewport-adaptive spacing: keep sub-agents within 80% of viewport
-      // height, with a minimum of node diameter to prevent overlap.
-      const subAgentAdaptiveSpacing = topLevelCount > 1
-        ? (canvasHeight * 0.8) / (topLevelCount - 1)
-        : canvasHeight * 0.8;
-      const subAgentVerticalSpacing = Math.max(48, Math.min(80, subAgentAdaptiveSpacing));
-      const subAgentStartY = mainAgentNode.y - ((topLevelCount - 1) * subAgentVerticalSpacing) / 2;
+      const columnSpacing = 200;
 
-      for (let childIndex = 0; childIndex < topLevelCount; childIndex++) {
-        const treeChild = graphData.subAgentTree[childIndex];
-        const childNode = nodeMap.get(treeChild.nodeId);
-        if (!childNode) continue;
+      // Find the rightmost tool X at depth 0 (root agent tools) to position sub-agents after
+      const rootToolNodes = graphData.nodes.filter(
+        (graphNode) => graphNode.category === "tool" && ((graphNode.metadata?.agentDepth as number) ?? 0) === 0
+      );
+      const rightmostRootToolX = rootToolNodes.length > 0
+        ? Math.max(...rootToolNodes.map((toolNode) => toolNode.x))
+        : mainAgentNode.x + columnSpacing;
 
-        childNode.x = mainAgentNode.x + subAgentColumnOffset;
-        childNode.y = subAgentStartY + childIndex * subAgentVerticalSpacing;
+      // Recursive function to position sub-agent trees and their request/tool nodes
+      const positionSubAgentBranch = (
+        treeNodes: SubAgentTreeNode[],
+        parentToolX: number,
+        parentY: number,
+        depth: number,
+      ) => {
+        const childCount = treeNodes.length;
+        const adaptiveSpacing = childCount > 1
+          ? (canvasHeight * 0.8) / (childCount - 1)
+          : canvasHeight * 0.8;
+        const verticalSpacing = Math.max(48, Math.min(80, adaptiveSpacing));
+        const childStartY = parentY - ((childCount - 1) * verticalSpacing) / 2;
 
-        // Recursively position nested sub-agents in subsequent columns further right
-        if (treeChild.children.length > 0) {
-          applyColumnarSubAgentLayout(
-            treeChild.children,
-            childNode,
-            nodeMap,
-            subAgentVerticalSpacing,
-            1,
-          );
+        for (let childIndex = 0; childIndex < childCount; childIndex++) {
+          const treeChild = treeNodes[childIndex];
+          const childNode = nodeMap.get(treeChild.nodeId);
+          if (!childNode) continue;
+
+          // Sub-agent column: one column after parent's tools
+          const subAgentX = parentToolX + columnSpacing;
+          childNode.x = subAgentX;
+          childNode.y = childStartY + childIndex * verticalSpacing;
+
+          // Position this sub-agent's request nodes in the next column
+          const subAgentRequestX = subAgentX + columnSpacing;
+          const subAgentConvId = (childNode.metadata?.agentConversationId as string) || "";
+          const subAgentRequestNodes = graphData.nodes.filter(
+            (graphNode) => graphNode.category === "request" &&
+              ((graphNode.metadata?.agentDepth as number) ?? 0) === depth
+          ).filter((requestNode) => {
+            // Match requests to this sub-agent via edges
+            return graphData.edges.some(
+              (edge) => edge.source === childNode.id && edge.target === requestNode.id
+            );
+          });
+
+          const requestSpacing = 60;
+          const requestStartY = childNode.y - ((subAgentRequestNodes.length - 1) * requestSpacing) / 2;
+          for (let requestIndex = 0; requestIndex < subAgentRequestNodes.length; requestIndex++) {
+            subAgentRequestNodes[requestIndex].x = subAgentRequestX;
+            subAgentRequestNodes[requestIndex].y = requestStartY + requestIndex * requestSpacing;
+          }
+
+          // Position this sub-agent's tool nodes in the column after requests
+          const subAgentToolX = subAgentRequestX + columnSpacing;
+          const subAgentToolNodes = graphData.nodes.filter(
+            (graphNode) => graphNode.category === "tool" &&
+              ((graphNode.metadata?.agentDepth as number) ?? 0) === depth
+          ).filter((toolNode) => {
+            // Match tools to this sub-agent's requests via edges
+            return subAgentRequestNodes.some((requestNode) =>
+              graphData.edges.some(
+                (edge) => edge.source === requestNode.id && edge.target === toolNode.id
+              )
+            );
+          });
+
+          for (let toolIndex = 0; toolIndex < subAgentToolNodes.length; toolIndex++) {
+            const parentRequest = subAgentRequestNodes.find((requestNode) =>
+              graphData.edges.some((edge) => edge.source === requestNode.id && edge.target === subAgentToolNodes[toolIndex].id)
+            );
+            subAgentToolNodes[toolIndex].x = subAgentToolX;
+            subAgentToolNodes[toolIndex].y = parentRequest ? parentRequest.y : childNode.y + toolIndex * 50;
+          }
+
+          // Recurse for nested sub-agents
+          if (treeChild.children.length > 0) {
+            const rightmostChildToolX = subAgentToolNodes.length > 0
+              ? Math.max(...subAgentToolNodes.map((toolNode) => toolNode.x))
+              : subAgentRequestX;
+            positionSubAgentBranch(
+              treeChild.children,
+              rightmostChildToolX,
+              childNode.y,
+              depth + 1,
+            );
+          }
         }
-      }
+      };
+
+      positionSubAgentBranch(
+        graphData.subAgentTree,
+        rightmostRootToolX,
+        mainAgentNode.y,
+        1,
+      );
     }
   }
 }
@@ -2664,35 +2595,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 ))}
               </defs>
 
-              {/* Containment Halos — rendered behind edges and nodes */}
-              {containmentHaloGeometry.map((haloGeometry) => (
-                <g
-                  key={`containment-halo-${haloGeometry.parentNodeId}`}
-                  className={styles['containment-halo-group']}
-                >
-                  <ellipse
-                    cx={haloGeometry.centerX}
-                    cy={haloGeometry.centerY}
-                    rx={haloGeometry.radiusX}
-                    ry={haloGeometry.radiusY}
-                    fill={haloGeometry.color}
-                    fillOpacity={0.03 - haloGeometry.depth * 0.005}
-                    className={styles['containment-halo-fill']}
-                  />
-                  <ellipse
-                    cx={haloGeometry.centerX}
-                    cy={haloGeometry.centerY}
-                    rx={haloGeometry.radiusX}
-                    ry={haloGeometry.radiusY}
-                    fill="none"
-                    stroke={haloGeometry.color}
-                    strokeOpacity={0.15 - haloGeometry.depth * 0.03}
-                    strokeWidth={1.5 - haloGeometry.depth * 0.2}
-                    strokeDasharray="8 5"
-                    className={styles['containment-halo-stroke']}
-                  />
-                </g>
-              ))}
 
               {/* Edges */}
               {graphData.edges.map((edge, edgeIndex) => {
