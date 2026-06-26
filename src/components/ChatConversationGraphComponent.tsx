@@ -995,11 +995,11 @@ function applyTopologyLayout(
       // spaced apart without overlapping.
       const REQUEST_SPACING = 60;
       const TOOL_SPACING = 50;
-      const BRANCH_GAP = 80;
+      const BRANCH_GAP = REQUEST_SPACING * 2;
       // Minimum branch height ensures a single-request sub-agent still
       // reserves enough vertical space that neighboring branches' nodes
-      // are visually separated by at least one full node gap.
-      const MINIMUM_BRANCH_HEIGHT = REQUEST_SPACING + 60;
+      // are visually separated by at least two full node diameters.
+      const MINIMUM_BRANCH_HEIGHT = REQUEST_SPACING * 2;
 
       const measureBranchHeight = (
         treeChild: SubAgentTreeNode,
@@ -1284,6 +1284,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const conversationRef = useRef<AgentConversation | null>(null);
   const conversationRequestsRef = useRef<IrisRequestEntry[]>([]);
   const conversationStatsRef = useRef<ConversationStats | null>(null);
+  const graphDataRef = useRef<GraphData | null>(null);
 
   // Coordination flag: when the SSE bootstrap or an SSE insert handler
   // has already populated graph data for the current conversation, the
@@ -1295,6 +1296,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   useEffect(() => { conversationRef.current = conversation; }, [conversation]);
   useEffect(() => { conversationRequestsRef.current = conversationRequests; }, [conversationRequests]);
   useEffect(() => { conversationStatsRef.current = conversationStats; }, [conversationStats]);
+  useEffect(() => { graphDataRef.current = graphData; }, [graphData]);
 
   // ResizeObserver for canvas dimensions
   useEffect(() => {
@@ -1538,6 +1540,57 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         if (previousPosition) {
           node.x = previousPosition.x;
           node.y = previousPosition.y;
+        }
+      }
+
+      // Re-inject the proactive pending node when generation is still
+      // active. buildGraphFromConversation has no concept of the synthetic
+      // proactive node, so the rebuild always drops it. We must re-add it
+      // unless a new real request node has arrived to replace it.
+      const hadProactiveNode = previousGraphData?.nodes.some(
+        (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
+      );
+      const previousRealRequestCount = previousGraphData
+        ? previousGraphData.nodes.filter(
+            (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
+          ).length
+        : 0;
+      const currentRealRequestCount = graph.nodes.filter(
+        (node) => node.category === "request",
+      ).length;
+
+      if (isGeneratingRef.current && hadProactiveNode && currentRealRequestCount > previousRealRequestCount) {
+        // A new real request node has superseded the proactive node.
+        // Don't re-inject — the real request is the visual replacement.
+      } else if (isGeneratingRef.current && hadProactiveNode) {
+        // No new real request yet — re-inject the proactive node so it
+        // persists through the rebuild until real data arrives.
+        const proactiveNodeFromPrevious = previousGraphData?.nodes.find(
+          (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
+        );
+        if (proactiveNodeFromPrevious) {
+          // Re-position the proactive node after the latest real request
+          const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
+          const lastRealRequest = realRequestNodes
+            .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
+            .at(-1);
+          const agentNode = graph.nodes.find((node) => node.category === "agent");
+
+          const reinjectedNode: GraphNode = {
+            ...proactiveNodeFromPrevious,
+            sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
+            label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
+            x: lastRealRequest?.x ?? (agentNode?.x ?? 400) + 200,
+            y: lastRealRequest ? lastRealRequest.y + 80 : (agentNode?.y ?? 250),
+          };
+
+          graph.nodes.push(reinjectedNode);
+          if (agentNode) {
+            graph.edges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
+          }
+          if (lastRealRequest) {
+            graph.edges.push({ source: lastRealRequest.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+          }
         }
       }
 
@@ -2453,18 +2506,29 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   // being processed, rather than retroactively lighting up the last
   // completed request node. The synthetic node is automatically replaced
   // when the real request data arrives from the backend via
-  // incrementalGraphRebuild (which calls buildGraphFromConversation).
+  // incrementalGraphRebuild, which re-injects the proactive node until
+  // a real request supersedes it.
+  //
+  // CRITICAL: This effect must NOT depend on graphData. Including graphData
+  // in the dependency array causes a re-trigger loop: inject proactive node
+  // → graphData changes → effect re-runs → previousIsGeneratingRef is
+  // already true → neither branch fires → then incrementalGraphRebuild
+  // drops the proactive node (since buildGraphFromConversation doesn't
+  // know about it) → graphData changes again → effect re-runs but still
+  // doesn't re-inject. The node vanishes permanently. Instead we read
+  // current graph state from graphDataRef.
   const previousIsGeneratingRef = useRef(false);
 
   useEffect(() => {
-    if (!graphData) return;
+    const currentGraphData = graphDataRef.current;
+    if (!currentGraphData) return;
 
     const wasGenerating = previousIsGeneratingRef.current;
     previousIsGeneratingRef.current = isGenerating;
 
     if (isGenerating && !wasGenerating) {
       // Generation just started — inject a proactive pending request node
-      const existingRequestNodes = graphData.nodes.filter(
+      const existingRequestNodes = currentGraphData.nodes.filter(
         (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
       );
       const nextSequenceNumber = existingRequestNodes.length > 0
@@ -2472,13 +2536,13 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         : 1;
 
       // Check if a proactive node already exists (idempotent guard)
-      const hasProactiveNode = graphData.nodes.some(
+      const hasProactiveNode = currentGraphData.nodes.some(
         (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
       );
       if (hasProactiveNode) return;
 
       // Find the agent node to connect the proactive request to
-      const agentNode = graphData.nodes.find(
+      const agentNode = currentGraphData.nodes.find(
         (node) => node.category === "agent",
       );
 
@@ -2559,7 +2623,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         };
       });
     }
-  }, [isGenerating, graphData, animateToFitTransform]);
+  }, [isGenerating, animateToFitTransform]);
 
   const latestRequestNodeId = useMemo(() => {
     if (!graphData || !isGenerating) return null;
