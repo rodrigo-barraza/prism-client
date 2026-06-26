@@ -533,15 +533,43 @@ export function buildGraphFromConversation(
   const containmentHalos: ContainmentHalo[] = [];
 
   const buildContainmentHalos = (treeNodes: SubAgentTreeNode[], parentNodeId: string, parentDepth: number) => {
-    const childNodeIds = treeNodes.map((treeNode) => treeNode.nodeId);
-    if (childNodeIds.length > 0) {
-      containmentHalos.push({
-        parentNodeId,
-        childNodeIds,
-        depth: parentDepth,
-      });
-    }
+    // Each sub-agent gets its own halo encompassing its request/tool descendants
     for (const treeNode of treeNodes) {
+      const subAgentNodeId = treeNode.nodeId;
+      const subAgentNode = nodes.find((node) => node.id === subAgentNodeId);
+      if (!subAgentNode) continue;
+
+      // Collect all request/tool node IDs that belong to this sub-agent
+      const branchDescendantIds: string[] = [subAgentNodeId];
+
+      // Find request nodes connected to this sub-agent via edges
+      const subAgentRequestIds = edges
+        .filter((edge) => edge.source === subAgentNodeId)
+        .map((edge) => edge.target)
+        .filter((targetId) => {
+          const targetNode = nodes.find((node) => node.id === targetId);
+          return targetNode?.category === "request";
+        });
+      branchDescendantIds.push(...subAgentRequestIds);
+
+      // Find tool nodes connected to those request nodes via edges
+      for (const requestId of subAgentRequestIds) {
+        const toolIds = edges
+          .filter((edge) => edge.source === requestId)
+          .map((edge) => edge.target)
+          .filter((targetId) => {
+            const targetNode = nodes.find((node) => node.id === targetId);
+            return targetNode?.category === "tool";
+          });
+        branchDescendantIds.push(...toolIds);
+      }
+
+      containmentHalos.push({
+        parentNodeId: parentNodeId,
+        childNodeIds: branchDescendantIds,
+        depth: subAgentDepthMap.get(treeNode.agentConversationId) ?? (parentDepth + 1),
+      });
+
       if (treeNode.children.length > 0) {
         const childDepth = (subAgentDepthMap.get(treeNode.agentConversationId) || 1);
         buildContainmentHalos(treeNode.children, treeNode.nodeId, childDepth);
@@ -933,67 +961,115 @@ function applyTopologyLayout(
         ? Math.max(...rootToolNodes.map((toolNode) => toolNode.x))
         : mainAgentNode.x + columnSpacing;
 
-      // Recursive function to position sub-agent trees and their request/tool nodes
+      // ── Helper: collect request/tool nodes belonging to a specific sub-agent ──
+      const collectBranchNodes = (
+        treeChild: SubAgentTreeNode,
+        childNode: GraphNode,
+        depth: number,
+      ): { requestNodes: GraphNode[]; toolNodes: GraphNode[] } => {
+        const requestNodes = graphData.nodes.filter(
+          (graphNode) => graphNode.category === "request" &&
+            ((graphNode.metadata?.agentDepth as number) ?? 0) === depth
+        ).filter((requestNode) =>
+          graphData.edges.some(
+            (edge) => edge.source === childNode.id && edge.target === requestNode.id
+          )
+        );
+
+        const toolNodes = graphData.nodes.filter(
+          (graphNode) => graphNode.category === "tool" &&
+            ((graphNode.metadata?.agentDepth as number) ?? 0) === depth
+        ).filter((toolNode) =>
+          requestNodes.some((requestNode) =>
+            graphData.edges.some(
+              (edge) => edge.source === requestNode.id && edge.target === toolNode.id
+            )
+          )
+        );
+
+        return { requestNodes, toolNodes };
+      };
+
+      // ── Pass 1: Measure vertical extent of each branch ──
+      // Returns the total height this branch needs so siblings can be
+      // spaced apart without overlapping.
+      const REQUEST_SPACING = 60;
+      const BRANCH_GAP = 40;
+
+      const measureBranchHeight = (
+        treeChild: SubAgentTreeNode,
+        depth: number,
+      ): number => {
+        const childNode = nodeMap.get(treeChild.nodeId);
+        if (!childNode) return 0;
+
+        const { requestNodes } = collectBranchNodes(treeChild, childNode, depth);
+
+        // Height consumed by this sub-agent's own request/tool column
+        const ownContentHeight = Math.max(
+          requestNodes.length > 0 ? (requestNodes.length - 1) * REQUEST_SPACING : 0,
+          48,
+        );
+
+        // If this sub-agent has nested children, measure their total stacked height
+        if (treeChild.children.length > 0) {
+          let nestedTotalHeight = 0;
+          for (let nestedIndex = 0; nestedIndex < treeChild.children.length; nestedIndex++) {
+            nestedTotalHeight += measureBranchHeight(treeChild.children[nestedIndex], depth + 1);
+            if (nestedIndex < treeChild.children.length - 1) {
+              nestedTotalHeight += BRANCH_GAP;
+            }
+          }
+          return Math.max(ownContentHeight, nestedTotalHeight);
+        }
+
+        return ownContentHeight;
+      };
+
+      // ── Pass 2: Position sub-agent branches using measured heights ──
       const positionSubAgentBranch = (
         treeNodes: SubAgentTreeNode[],
         parentToolX: number,
         parentY: number,
         depth: number,
       ) => {
-        const childCount = treeNodes.length;
-        // Enforce minimum spacing equal to the node diameter + collision
-        // padding so sub-agent branches never stack on initial layout.
-        const minimumSubAgentSpacing = 24 * 2 + 15;
-        const adaptiveSpacing = childCount > 1
-          ? (canvasHeight * 0.8) / (childCount - 1)
-          : canvasHeight * 0.8;
-        const verticalSpacing = Math.max(minimumSubAgentSpacing, Math.min(80, adaptiveSpacing));
-        const childStartY = parentY - ((childCount - 1) * verticalSpacing) / 2;
+        if (treeNodes.length === 0) return;
 
-        for (let childIndex = 0; childIndex < childCount; childIndex++) {
+        // Measure each branch's height
+        const branchHeights = treeNodes.map((treeChild) => measureBranchHeight(treeChild, depth));
+
+        // Total height = sum of all branches + gaps between them
+        const totalBranchesHeight = branchHeights.reduce((sum, height) => sum + height, 0)
+          + (treeNodes.length - 1) * BRANCH_GAP;
+
+        // Center the entire group around the parent Y
+        let currentY = parentY - totalBranchesHeight / 2;
+
+        for (let childIndex = 0; childIndex < treeNodes.length; childIndex++) {
           const treeChild = treeNodes[childIndex];
           const childNode = nodeMap.get(treeChild.nodeId);
           if (!childNode) continue;
 
-          // Sub-agent column: one column after parent's tools
+          const branchHeight = branchHeights[childIndex];
+
+          // Place sub-agent node at the vertical center of its allocated section
           const subAgentX = parentToolX + columnSpacing;
           childNode.x = subAgentX;
-          childNode.y = childStartY + childIndex * verticalSpacing;
+          childNode.y = currentY + branchHeight / 2;
 
           // Position this sub-agent's request nodes in the next column
           const subAgentRequestX = subAgentX + columnSpacing;
-          const subAgentConvId = (childNode.metadata?.agentConversationId as string) || "";
-          const subAgentRequestNodes = graphData.nodes.filter(
-            (graphNode) => graphNode.category === "request" &&
-              ((graphNode.metadata?.agentDepth as number) ?? 0) === depth
-          ).filter((requestNode) => {
-            // Match requests to this sub-agent via edges
-            return graphData.edges.some(
-              (edge) => edge.source === childNode.id && edge.target === requestNode.id
-            );
-          });
+          const { requestNodes: subAgentRequestNodes, toolNodes: subAgentToolNodes } =
+            collectBranchNodes(treeChild, childNode, depth);
 
-          const requestSpacing = 60;
-          const requestStartY = childNode.y - ((subAgentRequestNodes.length - 1) * requestSpacing) / 2;
+          const requestStartY = childNode.y - ((subAgentRequestNodes.length - 1) * REQUEST_SPACING) / 2;
           for (let requestIndex = 0; requestIndex < subAgentRequestNodes.length; requestIndex++) {
             subAgentRequestNodes[requestIndex].x = subAgentRequestX;
-            subAgentRequestNodes[requestIndex].y = requestStartY + requestIndex * requestSpacing;
+            subAgentRequestNodes[requestIndex].y = requestStartY + requestIndex * REQUEST_SPACING;
           }
 
           // Position this sub-agent's tool nodes in the column after requests
           const subAgentToolX = subAgentRequestX + columnSpacing;
-          const subAgentToolNodes = graphData.nodes.filter(
-            (graphNode) => graphNode.category === "tool" &&
-              ((graphNode.metadata?.agentDepth as number) ?? 0) === depth
-          ).filter((toolNode) => {
-            // Match tools to this sub-agent's requests via edges
-            return subAgentRequestNodes.some((requestNode) =>
-              graphData.edges.some(
-                (edge) => edge.source === requestNode.id && edge.target === toolNode.id
-              )
-            );
-          });
-
           for (let toolIndex = 0; toolIndex < subAgentToolNodes.length; toolIndex++) {
             const parentRequest = subAgentRequestNodes.find((requestNode) =>
               graphData.edges.some((edge) => edge.source === requestNode.id && edge.target === subAgentToolNodes[toolIndex].id)
@@ -1014,6 +1090,9 @@ function applyTopologyLayout(
               depth + 1,
             );
           }
+
+          // Advance currentY past this branch + gap
+          currentY += branchHeight + BRANCH_GAP;
         }
       };
 
@@ -2259,9 +2338,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     return graphData.containmentHalos
       .filter((halo) => !hiddenNodeIds.has(halo.parentNodeId))
       .map((halo) => {
-        const parentNode = nodeMap.get(halo.parentNodeId);
-        if (!parentNode) return null;
-
         const visibleChildNodes = halo.childNodeIds
           .filter((childId) => !hiddenNodeIds.has(childId))
           .map((childId) => nodeMap.get(childId))
@@ -2269,13 +2345,12 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
         if (visibleChildNodes.length === 0) return null;
 
-        const allRelevantNodes = [parentNode, ...visibleChildNodes];
         let minimumX = Infinity;
         let minimumY = Infinity;
         let maximumX = -Infinity;
         let maximumY = -Infinity;
 
-        for (const node of allRelevantNodes) {
+        for (const node of visibleChildNodes) {
           minimumX = Math.min(minimumX, node.x - node.radius);
           minimumY = Math.min(minimumY, node.y - node.radius);
           maximumX = Math.max(maximumX, node.x + node.radius);
@@ -2610,6 +2685,36 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 ))}
               </defs>
 
+              {/* Containment Halos — translucent regions around each sub-agent branch */}
+              {containmentHaloGeometry.map((haloGeometry, haloIndex) => (
+                <g key={`halo-${haloIndex}`} className={styles['containment-halo-group']}>
+                  <rect
+                    className={styles['containment-halo-fill']}
+                    x={haloGeometry.centerX - haloGeometry.radiusX}
+                    y={haloGeometry.centerY - haloGeometry.radiusY}
+                    width={haloGeometry.radiusX * 2}
+                    height={haloGeometry.radiusY * 2}
+                    rx={16}
+                    ry={16}
+                    fill={haloGeometry.color}
+                    fillOpacity={0.03}
+                  />
+                  <rect
+                    className={styles['containment-halo-stroke']}
+                    x={haloGeometry.centerX - haloGeometry.radiusX}
+                    y={haloGeometry.centerY - haloGeometry.radiusY}
+                    width={haloGeometry.radiusX * 2}
+                    height={haloGeometry.radiusY * 2}
+                    rx={16}
+                    ry={16}
+                    fill="none"
+                    stroke={haloGeometry.color}
+                    strokeWidth={1}
+                    strokeOpacity={0.15}
+                    strokeDasharray="6 4"
+                  />
+                </g>
+              ))}
 
               {/* Edges */}
               {graphData.edges.map((edge, edgeIndex) => {
