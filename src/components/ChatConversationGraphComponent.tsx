@@ -129,13 +129,11 @@ const NODE_LABELS: Record<NodeCategory, string> = {
   tool: "Tool",
 };
 
-// Dynamically computes the column tier for a node based on the maximum
-// sub-agent depth observed in the graph. Sub-agents at depth N occupy
-// tier 2 + N, and request/tool columns shift right accordingly.
-// This scales to any depth without hardcoded tier slots.
-// Empty tiers are collapsed by the layout logic.
-function computeNodeTier(node: GraphNode, maximumSubAgentDepth: number): number {
-  const firstDownstreamTier = 3 + maximumSubAgentDepth;
+// Dynamically computes the column tier for a node based on its agent depth.
+// The pattern repeats: agent → request → tool → subagent → request → tool → ...
+// Depth 0 (root agent): agent=2, request=3, tool=4
+// Depth N (sub-agent):  subagent=2+N*3, request=3+N*3, tool=4+N*3
+function computeNodeTier(node: GraphNode): number {
   switch (node.category) {
     case "project":
     case "user":
@@ -144,14 +142,20 @@ function computeNodeTier(node: GraphNode, maximumSubAgentDepth: number): number 
       return 1;
     case "agent":
       return 2;
-    case "subagent":
-      return 2 + (node.depth ?? 1);
-    case "request":
-      return firstDownstreamTier;
-    case "tool":
-      return firstDownstreamTier + 1;
+    case "subagent": {
+      const subagentDepth = node.depth ?? 1;
+      return 2 + subagentDepth * 3;
+    }
+    case "request": {
+      const requestAgentDepth = (node.metadata?.agentDepth as number) ?? 0;
+      return 3 + requestAgentDepth * 3;
+    }
+    case "tool": {
+      const toolAgentDepth = (node.metadata?.agentDepth as number) ?? 0;
+      return 4 + toolAgentDepth * 3;
+    }
     default:
-      return firstDownstreamTier;
+      return 3;
   }
 }
 
@@ -336,6 +340,9 @@ export function buildGraphFromConversation(
     const sequenceNumber = requestIndex + 1;
     const operationLabel = request.operation || "unknown";
     const requestNodeId = `request:${request._id || requestIndex}`;
+    const requestAgentConversationId = request.agentConversationId || mainAgentConversationId;
+    const isSubAgent = !!request.parentAgentConversationId;
+    const agentDepth = isSubAgent ? (subAgentDepthMap.get(requestAgentConversationId) || 1) : 0;
 
     addNode(requestNodeId, `#${sequenceNumber} ${operationLabel}`, "request", 24, {
       operation: operationLabel,
@@ -348,10 +355,9 @@ export function buildGraphFromConversation(
       requestId: request.requestId || request._id,
       model: request.model || null,
       provider: request.provider || null,
+      agentDepth,
     }, sequenceNumber);
 
-    const requestAgentConversationId = request.agentConversationId || mainAgentConversationId;
-    const isSubAgent = !!request.parentAgentConversationId;
     const currentAgentNodeId = isSubAgent
       ? `agent:${requestAgentConversationId}:${request.agent || AGENT_IDS.OMNI}`
       : parentAgentNodeId;
@@ -389,7 +395,7 @@ export function buildGraphFromConversation(
       for (const toolName of request.toolApiNames) {
         const uniqueToolNodeId = `tool:${request._id || requestIndex}:${toolName}`;
         const invocationsInRequest = request.toolApiNames.filter((name) => name === toolName).length;
-        addNode(uniqueToolNodeId, toolName, "tool", 24, { toolName, usageCount: invocationsInRequest });
+        addNode(uniqueToolNodeId, toolName, "tool", 24, { toolName, usageCount: invocationsInRequest, agentDepth });
         addEdge(requestNodeId, uniqueToolNodeId, 0.7);
         addedToolNames.add(toolName);
       }
@@ -438,12 +444,42 @@ export function buildGraphFromConversation(
 
   const subAgentTree = buildSubAgentTree(mainAgentConversationId, new Set([mainAgentConversationId]));
 
-  // Create edges based on the tree structure using straight paths for parent→child agent links
-  const createTreeEdges = (treeNodes: SubAgentTreeNode[], parentNodeId: string) => {
+  // Create edges based on the tree structure.
+  // Instead of parent_agent → sub_agent, connect the create_team tool → sub_agent.
+  // This places sub-agents after the tool column that spawned them.
+  const createTreeEdges = (treeNodes: SubAgentTreeNode[], parentAgentConvId: string) => {
     for (const treeNode of treeNodes) {
-      addEdge(parentNodeId, treeNode.nodeId, 0.9, false);
+      // Find the create_team tool node in the parent agent's requests that spawned this sub-agent
+      const parentAgentRequests = sortedRequests.filter((sortedRequest) => {
+        const sortedRequestConvId = sortedRequest.agentConversationId || mainAgentConversationId;
+        const sortedRequestIsSubAgent = !!sortedRequest.parentAgentConversationId;
+        if (sortedRequestIsSubAgent) {
+          return sortedRequestConvId === parentAgentConvId;
+        }
+        return !sortedRequest.parentAgentConversationId && parentAgentConvId === mainAgentConversationId;
+      });
+
+      let linkedToTool = false;
+      for (const parentRequest of parentAgentRequests) {
+        if (parentRequest.toolApiNames?.includes("create_team")) {
+          const createTeamToolNodeId = `tool:${parentRequest._id || sortedRequests.indexOf(parentRequest)}:create_team`;
+          // Verify this tool node exists before creating the edge
+          if (nodeIdSet.has(createTeamToolNodeId)) {
+            addEdge(createTeamToolNodeId, treeNode.nodeId, 0.9, false);
+            linkedToTool = true;
+            break;
+          }
+        }
+      }
+
+      // Fallback: connect to parent agent node if no create_team tool was found
+      if (!linkedToTool) {
+        const parentNodeId = agentConversationIdToNodeId.get(parentAgentConvId) || parentAgentNodeId;
+        addEdge(parentNodeId, treeNode.nodeId, 0.9, false);
+      }
+
       if (treeNode.children.length > 0) {
-        createTreeEdges(treeNode.children, treeNode.nodeId);
+        createTreeEdges(treeNode.children, treeNode.agentConversationId);
       }
     }
   };
@@ -461,7 +497,7 @@ export function buildGraphFromConversation(
         }
       }
     } else if (topology === TOPOLOGIES.PEER_TO_PEER) {
-      createTreeEdges(subAgentTree, parentAgentNodeId);
+      createTreeEdges(subAgentTree, mainAgentConversationId);
       // Add cross-links between direct siblings
       for (let index = 0; index < subAgentTree.length; index++) {
         for (let nextIndex = index + 1; nextIndex < subAgentTree.length; nextIndex++) {
@@ -480,7 +516,7 @@ export function buildGraphFromConversation(
         }
       }
     } else if (topology === TOPOLOGIES.HIERARCHICAL_AGGREGATION) {
-      createTreeEdges(subAgentTree, parentAgentNodeId);
+      createTreeEdges(subAgentTree, mainAgentConversationId);
       // Add inter-sibling edges at depth 1
       for (let index = 0; index < subAgentTree.length; index++) {
         for (let nextIndex = index + 1; nextIndex < subAgentTree.length; nextIndex++) {
@@ -489,7 +525,7 @@ export function buildGraphFromConversation(
       }
     } else {
       // Default: use tree-aware curved edges
-      createTreeEdges(subAgentTree, parentAgentNodeId);
+      createTreeEdges(subAgentTree, mainAgentConversationId);
     }
   }
 
@@ -602,16 +638,9 @@ function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canv
   const { nodes: graphNodes } = graphData;
   if (graphNodes.length === 0) return;
 
-  const maximumSubAgentDepth = graphNodes.reduce((maxDepth, node) => {
-    if (node.category === "subagent" && node.depth !== undefined) {
-      return Math.max(maxDepth, node.depth);
-    }
-    return maxDepth;
-  }, 0);
-
   const tierBuckets: Map<number, GraphNode[]> = new Map();
   for (const node of graphNodes) {
-    const tier = computeNodeTier(node, maximumSubAgentDepth);
+    const tier = computeNodeTier(node);
     if (!tierBuckets.has(tier)) tierBuckets.set(tier, []);
     tierBuckets.get(tier)!.push(node);
   }
