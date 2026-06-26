@@ -1197,13 +1197,14 @@ export interface ChatConversationGraphComponentProps {
   conversationId: string | null;
   toolActivity?: ToolCallEvent[];
   isGenerating?: boolean;
+  compact?: boolean;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════════════════════ */
 
-export default function ChatConversationGraphComponent({ conversationId, toolActivity = [], isGenerating = false }: ChatConversationGraphComponentProps) {
+export default function ChatConversationGraphComponent({ conversationId, toolActivity = [], isGenerating = false, compact = false }: ChatConversationGraphComponentProps) {
   const [conversation, setConversation] = useState<AgentConversation | null>(null);
   const [conversationStats, setConversationStats] = useState<ConversationStats | null>(null);
   const [conversationRequests, setConversationRequests] = useState<IrisRequestEntry[]>([]);
@@ -2499,17 +2500,19 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         <StarfieldComponent className={graphStyles['starfield']} panX={panOffset.x} panY={panOffset.y} />
 
         {/* Floating Zoom Controls */}
-        <div className={graphStyles['zoom-controls']}>
-          <button className={graphStyles['zoom-button']} onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
-            <ZoomIn size={14} />
-          </button>
-          <button className={graphStyles['zoom-button']} onClick={handleZoomFit} title="Fit to view" aria-label="Fit to view">
-            <Maximize size={14} />
-          </button>
-          <button className={graphStyles['zoom-button']} onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
-            <ZoomOut size={14} />
-          </button>
-        </div>
+        {!compact && (
+          <div className={graphStyles['zoom-controls']}>
+            <button className={graphStyles['zoom-button']} onClick={handleZoomIn} title="Zoom in" aria-label="Zoom in">
+              <ZoomIn size={14} />
+            </button>
+            <button className={graphStyles['zoom-button']} onClick={handleZoomFit} title="Fit to view" aria-label="Fit to view">
+              <Maximize size={14} />
+            </button>
+            <button className={graphStyles['zoom-button']} onClick={handleZoomOut} title="Zoom out" aria-label="Zoom out">
+              <ZoomOut size={14} />
+            </button>
+          </div>
+        )}
 
         {!graphData && (
           <div className={graphStyles['graph-empty-prompt']}>
@@ -2874,14 +2877,16 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
             </svg>
 
             {/* Legend */}
-            <div className={graphStyles['graph-legend']}>
-              {(Object.entries(NODE_COLORS) as [NodeCategory, string][]).map(([category, color]) => (
-                <div key={category} className={graphStyles['graph-legend-item']}>
-                  <span className={graphStyles['graph-legend-dot']} style={{ background: color }} />
-                  {NODE_LABELS[category]}
-                </div>
-              ))}
-            </div>
+            {!compact && (
+              <div className={graphStyles['graph-legend']}>
+                {(Object.entries(NODE_COLORS) as [NodeCategory, string][]).map(([category, color]) => (
+                  <div key={category} className={graphStyles['graph-legend-item']}>
+                    <span className={graphStyles['graph-legend-dot']} style={{ background: color }} />
+                    {NODE_LABELS[category]}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Node detail popover */}
             {selectedNode && (

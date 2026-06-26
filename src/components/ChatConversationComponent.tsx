@@ -6549,6 +6549,7 @@ export default function ChatConversationComponent({
             conversationId={activeId}
             toolActivity={toolActivity}
             isGenerating={isGenerating}
+            compact
           />
         </>
       )}
