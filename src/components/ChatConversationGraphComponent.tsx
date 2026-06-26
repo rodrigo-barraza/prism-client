@@ -1277,6 +1277,12 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const conversationRequestsRef = useRef<IrisRequestEntry[]>([]);
   const conversationStatsRef = useRef<ConversationStats | null>(null);
 
+  // Coordination flag: when the SSE bootstrap or an SSE insert handler
+  // has already populated graph data for the current conversation, the
+  // initial loadGraph fetch must NOT blindly overwrite that data — doing
+  // so would regress request nodes that arrived via the real-time path.
+  const ssePopulatedForConversationRef = useRef<string | null>(null);
+
   // Keep refs in sync
   useEffect(() => { conversationRef.current = conversation; }, [conversation]);
   useEffect(() => { conversationRequestsRef.current = conversationRequests; }, [conversationRequests]);
@@ -1556,11 +1562,16 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       setSelectedNodeIds(new Set());
       setSelectedEdgeKeys(new Set());
       setFocusedNodeId(null);
+      ssePopulatedForConversationRef.current = null;
       return;
     }
 
     let isCancelled = false;
     setIsLoading(true);
+    // Reset the SSE coordination flag for the new conversation so
+    // the first successful data source (loadGraph OR SSE bootstrap)
+    // populates the graph without being blocked.
+    ssePopulatedForConversationRef.current = null;
     // Preserve existing graphData — don't nuke the canvas. For a
     // brand-new conversation the graph will be null anyway; for a
     // conversation switch the old graph fades out via the
@@ -1574,12 +1585,28 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         const fetchedConversation = await IrisService.getAgentConversation(conversationId);
         if (isCancelled) return;
 
+        // If the SSE bootstrap or an SSE event handler has already
+        // populated graph data for this conversation while our async
+        // fetch was in flight, yield to avoid overwriting with stale
+        // data that may be missing recently-inserted request nodes.
+        if (ssePopulatedForConversationRef.current === conversationId) {
+          setIsLoading(false);
+          return;
+        }
+
         const [statsResponse, requestsResponse] = await Promise.all([
           IrisService.getConversationRunStats(conversationId).catch(() => null),
           IrisService.getConversationRequests(conversationId).catch(() => ({ requests: [] })),
         ]);
 
         if (isCancelled) return;
+
+        // Re-check after the second await — SSE may have populated
+        // data during the stats/requests fetch.
+        if (ssePopulatedForConversationRef.current === conversationId) {
+          setIsLoading(false);
+          return;
+        }
 
         setConversation(fetchedConversation);
         setConversationStats(statsResponse);
@@ -1666,6 +1693,9 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         nodesRef.current = graph.nodes;
         setGraphData(graph);
         setIsLoading(false);
+        // Signal that SSE has populated graph data for this conversation
+        // so the loadGraph effect yields instead of overwriting.
+        ssePopulatedForConversationRef.current = conversationId;
         startCollisionLoop(40);
         animateToFitTransform();
       } catch {
@@ -1714,6 +1744,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         if (updatedRequests.length !== previousCount) {
           setConversationStats(updatedStats);
           setConversationRequests(updatedRequests);
+          ssePopulatedForConversationRef.current = activeConversationId;
           incrementalGraphRebuild(activeConversation, updatedStats, updatedRequests);
           startCollisionLoop(40);
         } else if (updatedStats) {
@@ -1823,6 +1854,9 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
         setConversationStats(updatedStats);
         setConversationRequests(updatedRequests);
+        // Mark SSE as the authoritative data source for this conversation
+        // so any still-pending loadGraph fetch yields on completion.
+        ssePopulatedForConversationRef.current = conversationId;
         incrementalGraphRebuild(activeConversation, updatedStats, updatedRequests);
         startCollisionLoop(40);
       } catch {
