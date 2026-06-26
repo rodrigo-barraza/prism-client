@@ -579,9 +579,11 @@ describe("ChatConversationGraphComponent — Graph Parity", () => {
       const fingerprint = extractGraphFingerprint(graphData);
       expect(fingerprint.nodeIds).toContain("request:req-solo");
 
-      // Should have model and provider nodes connected
-      expect(fingerprint.nodeIds).toContain("model:gemini-2.5-pro");
-      expect(fingerprint.nodeIds).toContain("provider:Google");
+      // Should have model and provider metadata on the request node
+      const requestNode = graphData.nodes.find((node) => node.id === "request:req-solo");
+      expect(requestNode).toBeDefined();
+      expect(requestNode?.metadata?.model).toBe("gemini-2.5-pro");
+      expect(requestNode?.metadata?.provider).toBe("Google");
     });
 
     it("should handle duplicate request IDs gracefully (SSE re-delivery)", () => {
