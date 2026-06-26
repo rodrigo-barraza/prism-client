@@ -1456,6 +1456,19 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     fitAnimationFrameRef.current = requestAnimationFrame(animationStep);
   }, [dimensions.width, dimensions.height]);
 
+  // -- Reactive auto-fit on node arrival -------------------------
+  // Whenever the node count increases (new nodes entered the graph),
+  // smoothly animate the viewport to fit all nodes. This fires on
+  // the React commit cycle as a safety net — guaranteeing centering
+  // happens even if an imperative code path omits the call.
+  useEffect(() => {
+    const currentNodeCount = graphData?.nodes.length ?? 0;
+    if (currentNodeCount > previousNodeCountRef.current && previousNodeCountRef.current > 0) {
+      animateToFitTransform();
+    }
+    previousNodeCountRef.current = currentNodeCount;
+  }, [graphData?.nodes.length, animateToFitTransform]);
+
   // -- Incremental rebuild ---------------------------------------
   const incrementalGraphRebuild = useCallback((
     activeConversation: AgentConversation,
