@@ -994,21 +994,58 @@ function applyTopologyLayout(
       // Returns the total height this branch needs so siblings can be
       // spaced apart without overlapping.
       const REQUEST_SPACING = 60;
-      const BRANCH_GAP = 40;
+      const TOOL_SPACING = 50;
+      const BRANCH_GAP = 80;
+      // Minimum branch height ensures a single-request sub-agent still
+      // reserves enough vertical space that neighboring branches' nodes
+      // are visually separated by at least one full node gap.
+      const MINIMUM_BRANCH_HEIGHT = REQUEST_SPACING + 60;
 
       const measureBranchHeight = (
         treeChild: SubAgentTreeNode,
         depth: number,
       ): number => {
         const childNode = nodeMap.get(treeChild.nodeId);
-        if (!childNode) return 0;
+        if (!childNode) return MINIMUM_BRANCH_HEIGHT;
 
-        const { requestNodes } = collectBranchNodes(treeChild, childNode, depth);
+        const { requestNodes, toolNodes } = collectBranchNodes(treeChild, childNode, depth);
 
-        // Height consumed by this sub-agent's own request/tool column
+        // Height consumed by this sub-agent's request column
+        const requestColumnHeight = requestNodes.length > 0
+          ? (requestNodes.length - 1) * REQUEST_SPACING
+          : 0;
+
+        // Height consumed by the tool column — count how many tools
+        // fan out from each request and take the worst-case total.
+        // Tools from the same request are stacked vertically with
+        // TOOL_SPACING, so the tool column can be taller than the
+        // request column when a single request invokes many tools.
+        let toolColumnHeight = 0;
+        if (requestNodes.length > 0) {
+          // Build a per-request tool count to measure the full tool
+          // column height including per-request fan-out offsets.
+          let accumulatedToolHeight = 0;
+          for (const requestNode of requestNodes) {
+            const toolsForRequest = toolNodes.filter((toolNode) =>
+              graphData.edges.some(
+                (edge) => edge.source === requestNode.id && edge.target === toolNode.id
+              )
+            );
+            if (toolsForRequest.length > 1) {
+              accumulatedToolHeight += (toolsForRequest.length - 1) * TOOL_SPACING;
+            }
+          }
+          // The tool column spans from the first request's Y to the
+          // last request's Y plus any fan-out from the last request.
+          toolColumnHeight = requestColumnHeight + accumulatedToolHeight;
+        } else if (toolNodes.length > 0) {
+          toolColumnHeight = (toolNodes.length - 1) * TOOL_SPACING;
+        }
+
         const ownContentHeight = Math.max(
-          requestNodes.length > 0 ? (requestNodes.length - 1) * REQUEST_SPACING : 0,
-          48,
+          requestColumnHeight,
+          toolColumnHeight,
+          MINIMUM_BRANCH_HEIGHT,
         );
 
         // If this sub-agent has nested children, measure their total stacked height
@@ -1068,14 +1105,23 @@ function applyTopologyLayout(
             subAgentRequestNodes[requestIndex].y = requestStartY + requestIndex * REQUEST_SPACING;
           }
 
-          // Position this sub-agent's tool nodes in the column after requests
+          // Position this sub-agent's tool nodes in the column after requests.
+          // Tools sharing the same parent request are offset vertically by
+          // TOOL_SPACING so they never stack on top of each other.
           const subAgentToolX = subAgentRequestX + columnSpacing;
+          const toolOffsetByRequest = new Map<string, number>();
           for (let toolIndex = 0; toolIndex < subAgentToolNodes.length; toolIndex++) {
             const parentRequest = subAgentRequestNodes.find((requestNode) =>
               graphData.edges.some((edge) => edge.source === requestNode.id && edge.target === subAgentToolNodes[toolIndex].id)
             );
             subAgentToolNodes[toolIndex].x = subAgentToolX;
-            subAgentToolNodes[toolIndex].y = parentRequest ? parentRequest.y : childNode.y + toolIndex * 50;
+            if (parentRequest) {
+              const siblingOffset = toolOffsetByRequest.get(parentRequest.id) ?? 0;
+              subAgentToolNodes[toolIndex].y = parentRequest.y + siblingOffset * TOOL_SPACING;
+              toolOffsetByRequest.set(parentRequest.id, siblingOffset + 1);
+            } else {
+              subAgentToolNodes[toolIndex].y = childNode.y + toolIndex * TOOL_SPACING;
+            }
           }
 
           // Recurse for nested sub-agents
