@@ -1272,6 +1272,11 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const fitAnimationFrameRef = useRef<number | null>(null);
   const isGeneratingRef = useRef(isGenerating);
   useEffect(() => { isGeneratingRef.current = isGenerating; }, [isGenerating]);
+
+  // Tracks the real request count at the moment generation started.
+  // Used to determine whether real request nodes have arrived to
+  // replace the proactive pending node after generation stops.
+  const requestCountAtGenerationStartRef = useRef<number>(0);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
   const hasDraggedRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
@@ -1559,17 +1564,52 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         (node) => node.category === "request",
       ).length;
 
-      if (isGeneratingRef.current && hadProactiveNode && currentRealRequestCount > previousRealRequestCount) {
-        // A new real request node has superseded the proactive node.
-        // Don't re-inject — the real request is the visual replacement.
-      } else if (isGeneratingRef.current && hadProactiveNode) {
+      const hasNewRealRequestsArrived = currentRealRequestCount > requestCountAtGenerationStartRef.current;
+
+      if (hadProactiveNode && currentRealRequestCount > previousRealRequestCount) {
+        if (isGeneratingRef.current) {
+          // Generation still active — a real request superseded the proactive
+          // node. Re-inject a new proactive node after the latest real request
+          // to show that the next request is coming (cascading processing).
+          const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
+          const lastRealRequest = realRequestNodes
+            .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
+            .at(-1);
+          const agentNode = graph.nodes.find((node) => node.category === "agent");
+
+          const cascadingProactiveNode: GraphNode = {
+            id: PROACTIVE_PENDING_REQUEST_NODE_ID,
+            label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
+            category: "request",
+            radius: 24,
+            x: lastRealRequest?.x ?? (agentNode?.x ?? 400) + 200,
+            y: lastRealRequest ? lastRealRequest.y + 80 : (agentNode?.y ?? 250),
+            velocityX: 0,
+            velocityY: 0,
+            sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
+            metadata: { operation: "pending", status: "pending" },
+          };
+
+          graph.nodes.push(cascadingProactiveNode);
+          if (agentNode) {
+            graph.edges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
+          }
+          if (lastRealRequest) {
+            graph.edges.push({ source: lastRealRequest.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+          }
+        }
+        // Generation stopped and real requests arrived — the proactive node
+        // is naturally dropped by buildGraphFromConversation. No re-injection needed.
+      } else if (hadProactiveNode && !isGeneratingRef.current && hasNewRealRequestsArrived) {
+        // Generation stopped and real requests have arrived since it started.
+        // Don't re-inject — the real request data is now authoritative.
+      } else if (hadProactiveNode) {
         // No new real request yet — re-inject the proactive node so it
         // persists through the rebuild until real data arrives.
         const proactiveNodeFromPrevious = previousGraphData?.nodes.find(
           (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
         );
         if (proactiveNodeFromPrevious) {
-          // Re-position the proactive node after the latest real request
           const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
           const lastRealRequest = realRequestNodes
             .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
@@ -2546,6 +2586,10 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         ? Math.max(...existingRequestNodes.map((node) => node.sequenceNumber ?? 0)) + 1
         : 1;
 
+      // Snapshot the current real request count so the incremental
+      // rebuild can detect when new real requests have arrived.
+      requestCountAtGenerationStartRef.current = existingRequestNodes.length;
+
       // Check if a proactive node already exists (idempotent guard)
       const hasProactiveNode = currentGraphData.nodes.some(
         (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
@@ -2613,13 +2657,29 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       // Re-fit viewport to include the new node
       animateToFitTransform();
     } else if (!isGenerating && wasGenerating) {
-      // Generation just stopped — remove any lingering proactive node
+      // Generation just stopped — only remove the proactive node if
+      // real request nodes have arrived since generation started.
+      // Otherwise, keep it visible until the incremental rebuild
+      // detects real request data arriving via SSE.
       setGraphData((previousGraphData) => {
         if (!previousGraphData) return previousGraphData;
         const hasProactive = previousGraphData.nodes.some(
           (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
         );
         if (!hasProactive) return previousGraphData;
+
+        const currentRealRequestCount = previousGraphData.nodes.filter(
+          (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
+        ).length;
+        const hasNewRealRequests = currentRealRequestCount > requestCountAtGenerationStartRef.current;
+
+        if (!hasNewRealRequests) {
+          // No real requests yet — keep the proactive node visible.
+          // The incremental rebuild will remove it once real data arrives.
+          return previousGraphData;
+        }
+
+        // Real requests have arrived — safe to remove the proactive node.
         const filteredNodes = previousGraphData.nodes.filter(
           (node) => node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
         );
@@ -2636,13 +2696,21 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     }
   }, [isGenerating, animateToFitTransform]);
 
+  // Tracks the latest request node as "processing" during generation.
+  // Also stays active after generation stops while the proactive node
+  // still exists, so the processing visual cascades until all real
+  // request data has arrived.
+  const hasProactiveNode = useMemo(() => {
+    return graphData?.nodes.some((node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID) ?? false;
+  }, [graphData]);
+
   const latestRequestNodeId = useMemo(() => {
-    if (!graphData || !isGenerating) return null;
+    if (!graphData || (!isGenerating && !hasProactiveNode)) return null;
     const requestNodes = graphData.nodes
       .filter((node) => node.category === "request")
       .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0));
     return requestNodes.length > 0 ? requestNodes[requestNodes.length - 1].id : null;
-  }, [graphData, isGenerating]);
+  }, [graphData, isGenerating, hasProactiveNode]);
 
   // -- Auto-select working agents and in-flight requests during generation --
   // When isGenerating is true, automatically highlight agent nodes that are
@@ -2660,7 +2728,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     const wasGenerating = previousIsGeneratingForSelectionRef.current;
     previousIsGeneratingForSelectionRef.current = isGenerating;
 
-    if (isGenerating) {
+    if (isGenerating || hasProactiveNode) {
       const autoSelectedIds = new Set<string>();
 
       for (const node of graphData.nodes) {
@@ -2684,13 +2752,13 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         setSelectedNodeIds(autoSelectedIds);
         setSelectedEdgeKeys(new Set());
       }
-    } else if (wasGenerating && !isGenerating) {
-      // Generation just stopped — clear auto-selection
+    } else if (wasGenerating && !isGenerating && !hasProactiveNode) {
+      // Generation stopped and proactive node is gone — clear auto-selection
       setSelectedNodeIds(new Set());
       setSelectedEdgeKeys(new Set());
       setFocusedNodeId(null);
     }
-  }, [isGenerating, graphData, latestRequestNodeId]);
+  }, [isGenerating, graphData, latestRequestNodeId, hasProactiveNode]);
 
   // -- Empty state when no conversationId -----------------------------
   if (!conversationId) {
@@ -2902,7 +2970,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
                 // Derive live activity state from toolActivity props
                 const isActiveToolNode = node.category === "tool" && activeToolNames.has(node.metadata?.toolName as string);
-                const isActiveRequestNode = node.category === "request" && isGenerating && latestRequestNodeId === node.id;
+                const isActiveRequestNode = node.category === "request" && (isGenerating || hasProactiveNode) && latestRequestNodeId === node.id;
                 const isNodeLiveActive = isActiveToolNode || isActiveRequestNode || isPendingRequest;
 
                 // Check if this agent node has children in the sub-agent tree
