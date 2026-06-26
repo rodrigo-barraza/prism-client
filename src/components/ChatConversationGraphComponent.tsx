@@ -1299,6 +1299,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const rafRef = useRef<number | null>(null);
   const settleCountRef = useRef<number>(0);
   const collisionTickRef = useRef<(() => void) | null>(null);
+  const previousNodeCountRef = useRef<number>(0);
 
   useEffect(() => { nodesRef.current = graphData?.nodes || []; }, [graphData?.nodes]);
   useEffect(() => { draggingRef.current = draggedNode; }, [draggedNode]);
@@ -1647,9 +1648,11 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         const graph = buildGraphFromConversation(fetchedConversation, bootstrapStats, bootstrapRequests);
         const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
         applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
+        nodesRef.current = graph.nodes;
         setGraphData(graph);
         setIsLoading(false);
         startCollisionLoop(40);
+        animateToFitTransform();
       } catch {
         // Conversation not available yet — will retry on the next SSE event
       } finally {
@@ -2889,7 +2892,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
             )}
 
             {/* Node detail popover */}
-            {selectedNode && (
+            {!compact && selectedNode && (
               <div className={graphStyles['node-detail-popover']}>
                 <div className={graphStyles['node-detail-popover-header']}>
                   <div className={graphStyles['node-detail-popover-title']}>
