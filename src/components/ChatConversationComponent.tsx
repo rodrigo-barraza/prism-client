@@ -1665,6 +1665,13 @@ export default function ChatConversationComponent({
        PROJECT_AGENT)
     : (adminIsAgentMode ? PROJECT_AGENT : null);
 
+  // Admin: resolve the agent persona data for the selected conversation so
+  // MessageList can render the correct agent name and avatar icon.
+  const adminActiveAgentData = useMemo(() => {
+    if (!isAdmin || !adminTargetAgentId) return null;
+    return adminAgents.find((agent) => agent.id === adminTargetAgentId) || null;
+  }, [isAdmin, adminTargetAgentId, adminAgents]);
+
   // Admin: extract conversation-time tool snapshot from conversation settings
   const adminConversationToolConfig = useMemo(() => {
     if (!isAdmin || !activeId) return null;
@@ -6459,6 +6466,21 @@ export default function ChatConversationComponent({
                     })()
                 : null) as DisplayConversationStats | null
             }
+            conversationProject={
+              isAdmin && activeId
+                ? (adminEntries.find((entry) => entry.id === activeId) as UnifiedEntry | undefined)?.project || null
+                : null
+            }
+            conversationUsername={
+              isAdmin && activeId
+                ? ((adminEntries.find((entry) => entry.id === activeId) as Conversation | undefined)?.username || null)
+                : null
+            }
+            conversationAgent={
+              isAdmin && activeId
+                ? ((adminEntries.find((entry) => entry.id === activeId) as UnifiedEntry | undefined)?.agent || null) as string | null
+                : null
+            }
           />
         </>
       )}
@@ -6829,6 +6851,7 @@ export default function ChatConversationComponent({
               messages={filteredMessages}
               readOnly
               showRaw={showRaw}
+              activeAgent={adminActiveAgentData}
               systemPrompt={
                 showRaw
                   ? settings.systemPrompt ||
@@ -7677,31 +7700,7 @@ export default function ChatConversationComponent({
             />
           </div>
         }
-        headerMeta={
-          isAdmin && activeId ? (
-            <div className={adminPageStyles['header-meta']}>
-              {(() => {
-                const selectedEntry = adminEntries.find(
-                  (entry) => entry.id === activeId,
-                ) as UnifiedEntry | undefined;
-                if (!selectedEntry) return null;
-                return (
-                  <>
-                    {selectedEntry.project && (
-                      <span>{selectedEntry.project}</span>
-                    )}
-                    {(selectedEntry as Conversation).username && (
-                      <span>{(selectedEntry as Conversation).username}</span>
-                    )}
-                    {selectedEntry.agent && (
-                      <span>{selectedEntry.agent}</span>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          ) : null
-        }
+        headerMeta={null}
         headerControls={null}
       >
         {chatContent}

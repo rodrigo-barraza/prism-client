@@ -9,7 +9,6 @@ import {
   useMemo,
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { toLocalDateString, daysAgo } from "@rodrigo-barraza/utilities-library";
 import { LS_DATE_RANGE } from "../constants";
 
 export interface DateRange {
@@ -77,8 +76,8 @@ export function AdminHeaderProvider({
     }
 
     setDateRangeState({
-      from: toLocalDateString(daysAgo(29)),
-      to: toLocalDateString(new Date()),
+      from: "",
+      to: "",
     });
   }, []);
   const [previousPathname, setPreviousPathname] = useState(pathname);

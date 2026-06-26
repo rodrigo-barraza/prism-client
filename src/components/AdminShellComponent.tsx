@@ -368,7 +368,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
             pathname.startsWith("/admin/tools")
               ? styles['no-scroll']
               : ""
-          } ${pathname.startsWith("/admin/tools") ? styles["no-padding"] : ""}`}
+          } ${pathname.startsWith("/admin/tools") || pathname.startsWith("/admin/chat") ? styles["no-padding"] : ""}`}
         >
           {children}
         </div>

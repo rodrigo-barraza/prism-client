@@ -17,6 +17,9 @@ import {
   Copy,
   Check,
   Users,
+  User,
+  Bot,
+  FolderKanban,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import {
@@ -108,6 +111,9 @@ export interface SettingsPanelProps {
   conversationType?: string;
   canSpawnSubAgents?: boolean;
   agentToggles?: AgentToggleOption[];
+  conversationProject?: string | null;
+  conversationUsername?: string | null;
+  conversationAgent?: string | null;
 }
 
 interface ExtendedModelOption extends ModelOption {
@@ -175,6 +181,9 @@ export default function SettingsPanel({
   conversationType = "conversation",
   canSpawnSubAgents = false,
   agentToggles,
+  conversationProject,
+  conversationUsername,
+  conversationAgent,
 }: SettingsPanelProps) {
   const conversationLabel = conversationType === "agent" ? "Conversation" : "Conversation";
   const [isSystemPromptOpen, setIsSystemPromptOpen] = useState(
@@ -395,6 +404,24 @@ export default function SettingsPanel({
 
     return (
       <div className={styles['stats-badges']}>
+        {conversationProject && (
+          <span className={styles['stat-badge']}>
+            <FolderKanban size={10} />
+            {conversationProject}
+          </span>
+        )}
+        {conversationUsername && (
+          <span className={styles['stat-badge']}>
+            <User size={10} />
+            {conversationUsername}
+          </span>
+        )}
+        {conversationAgent && (
+          <span className={styles['stat-badge']}>
+            <Bot size={10} />
+            {conversationAgent}
+          </span>
+        )}
         <BadgeComponent
           type="messages"
           count={stats.messageCount}
@@ -725,7 +752,10 @@ export default function SettingsPanel({
                 gap: 2,
               }}
             >
-              <span>{selectedModelDef?.label || settings.model || "-"}</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <ProviderLogo provider={settings.provider} size={14} />
+                {selectedModelDef?.label || settings.model || "-"}
+              </span>
               {selectedModelDef?.label &&
                 selectedModelDef.label !== settings.model && (
                   <span

@@ -46,17 +46,6 @@
   background: var(--background-surface);
 }
 
-/* Header content styles */
-.header-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  text-transform: none;
-  letter-spacing: 0;
-  flex-shrink: 0;
-}
 
 .generating-badge {
   display: inline-flex;
