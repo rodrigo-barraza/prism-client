@@ -27,6 +27,7 @@ import {
   ChevronDown,
   Loader,
   MessageSquare,
+  Network,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import IrisService, {
@@ -6032,6 +6033,11 @@ export default function ChatConversationComponent({
             ),
             tooltip: "Requests",
           },
+          {
+            key: "nodes",
+            icon: <Network size={13} />,
+            tooltip: "Nodes",
+          },
         ]}
         activeTab={leftTab}
         onChange={(tab: string) => {
@@ -6533,6 +6539,17 @@ export default function ChatConversationComponent({
               storageKey="conversation-requests"
             />
           </div>
+        </>
+      )}
+
+      {leftTab === "nodes" && (
+        <>
+          <SidebarTabHeaderComponent icon={<Network size={11} />} title="Nodes" />
+          <ChatConversationGraphComponent
+            conversationId={activeId}
+            toolActivity={toolActivity}
+            isGenerating={isGenerating}
+          />
         </>
       )}
 
