@@ -590,14 +590,16 @@ function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canv
   for (let columnIndex = 0; columnIndex < populatedTierIndices.length; columnIndex++) {
     const tierNodes = tierBuckets.get(populatedTierIndices[columnIndex])!;
     const tierX = startX + columnIndex * horizontalSpacing;
-    // Compute spacing so the column always fits within 90% of viewport height.
-    // For small columns this yields generous spacing (capped at 80px);
-    // for large columns the spacing compresses proportionally. The collision
-    // physics loop handles final node separation to prevent exact overlap.
+    // Compute the minimum spacing that prevents node overlap: the
+    // largest node radius in this tier × 2 plus collision padding.
+    // This guarantees nodes never stack on top of each other even
+    // when the viewport is small or the column has many nodes.
+    const largestTierRadius = Math.max(...tierNodes.map((tierNode) => tierNode.radius));
+    const minimumNodeSpacing = largestTierRadius * 2 + 15;
     const proportionalSpacing = tierNodes.length > 1
       ? (canvasHeight * 0.9) / (tierNodes.length - 1)
       : canvasHeight * 0.9;
-    const verticalSpacing = Math.min(80, proportionalSpacing);
+    const verticalSpacing = Math.max(minimumNodeSpacing, Math.min(80, proportionalSpacing));
     const totalTierHeight = (tierNodes.length - 1) * verticalSpacing;
     const tierStartY = centerY - totalTierHeight / 2;
     for (let nodeIndex = 0; nodeIndex < tierNodes.length; nodeIndex++) {
@@ -939,10 +941,13 @@ function applyTopologyLayout(
         depth: number,
       ) => {
         const childCount = treeNodes.length;
+        // Enforce minimum spacing equal to the node diameter + collision
+        // padding so sub-agent branches never stack on initial layout.
+        const minimumSubAgentSpacing = 24 * 2 + 15;
         const adaptiveSpacing = childCount > 1
           ? (canvasHeight * 0.8) / (childCount - 1)
           : canvasHeight * 0.8;
-        const verticalSpacing = Math.max(48, Math.min(80, adaptiveSpacing));
+        const verticalSpacing = Math.max(minimumSubAgentSpacing, Math.min(80, adaptiveSpacing));
         const childStartY = parentY - ((childCount - 1) * verticalSpacing) / 2;
 
         for (let childIndex = 0; childIndex < childCount; childIndex++) {
@@ -1494,7 +1499,9 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         const graph = buildGraphFromConversation(fetchedConversation, statsResponse, requestsList);
         const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
         applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
+        nodesRef.current = graph.nodes;
         setGraphData(graph);
+        startCollisionLoop(40);
 
         const fitTransform = computeFitToGraphTransform(graph.nodes, dimensions.width, dimensions.height);
         setZoom(fitTransform.zoom);
@@ -1511,7 +1518,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
     loadGraph();
     return () => { isCancelled = true; };
-  }, [conversationId, dimensions.width, dimensions.height]);
+  }, [conversationId, dimensions.width, dimensions.height, startCollisionLoop]);
 
   // -- SSE live updates ------------------------------------------
   // Uses per-event incremental streaming: each MongoDB Change Stream
@@ -2212,13 +2219,21 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         targetNode = column[nextIndex];
       }
     } else {
-      // ArrowLeft / ArrowRight — move to the nearest node by y-position in an adjacent column
+      // ArrowLeft / ArrowRight — move to the nearest connected node by y-position in an adjacent column.
+      // Only nodes sharing a direct edge with the current node are valid navigation targets.
       const direction = key === "ArrowLeft" ? -1 : 1;
       const nextColumnIndex = currentColumnIndex + direction;
       if (nextColumnIndex >= 0 && nextColumnIndex < columns.length) {
-        const adjacentColumn = columns[nextColumnIndex];
+        const connectedNodeIds = new Set(
+          graphData.edges
+            .filter((edge) => edge.source === currentNode.id || edge.target === currentNode.id)
+            .map((edge) => (edge.source === currentNode.id ? edge.target : edge.source)),
+        );
+        const connectedAdjacentNodes = columns[nextColumnIndex].filter(
+          (candidateNode) => connectedNodeIds.has(candidateNode.id),
+        );
         let closestDistance = Infinity;
-        for (const candidateNode of adjacentColumn) {
+        for (const candidateNode of connectedAdjacentNodes) {
           const verticalDistance = Math.abs(candidateNode.y - currentNode.y);
           if (verticalDistance < closestDistance) {
             closestDistance = verticalDistance;
