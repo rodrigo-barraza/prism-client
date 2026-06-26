@@ -221,7 +221,7 @@ function curvedEdgePath(
   return `M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`;
 }
 
-function buildGraphFromConversation(
+export function buildGraphFromConversation(
   conversation: AgentConversation,
   conversationStats: ConversationStats | null,
   conversationRequests: IrisRequestEntry[],

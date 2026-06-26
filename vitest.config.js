@@ -20,6 +20,12 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
     globals: true,
     passWithNoTests: true,
+    css: { modules: { classNameStrategy: "non-scoped" } },
+    server: {
+      deps: {
+        inline: [/@rodrigo-barraza\/components-library/],
+      },
+    },
   },
   resolve: {
     alias: {
