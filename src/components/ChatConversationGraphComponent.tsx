@@ -48,15 +48,12 @@ import styles from "./ChatConversationGraphComponent.module.css";
 
 type NodeCategory =
   | "session"
-  | "model"
   | "tool"
   | "request"
   | "user"
   | "project"
-  | "provider"
   | "agent"
-  | "subagent"
-  | "embedding";
+  | "subagent";
 
 interface GraphNode {
   id: string;
@@ -105,9 +102,6 @@ const NODE_COLORS: Record<NodeCategory, string> = {
   agent: "oklch(0.72 0.16 300)",
   subagent: "oklch(0.68 0.14 270)",
   request: "oklch(0.65 0.12 220)",
-  model: "oklch(0.72 0.15 160)",
-  embedding: "oklch(0.70 0.13 75)",
-  provider: "oklch(0.68 0.14 200)",
   tool: "oklch(0.72 0.16 45)",
 };
 
@@ -132,17 +126,14 @@ const NODE_LABELS: Record<NodeCategory, string> = {
   agent: "Agent",
   subagent: "Sub-Agent",
   request: "Request",
-  model: "Model",
-  embedding: "Embedding",
-  provider: "Provider",
   tool: "Tool",
 };
 
 // Dynamically computes the column tier for a node based on the maximum
 // sub-agent depth observed in the graph. Sub-agents at depth N occupy
-// tier 2 + N, and all downstream categories (request, tool, model,
-// provider) shift right accordingly. This scales to any depth without
-// hardcoded tier slots. Empty tiers are collapsed by the layout logic.
+// tier 2 + N, and request/tool columns shift right accordingly.
+// This scales to any depth without hardcoded tier slots.
+// Empty tiers are collapsed by the layout logic.
 function computeNodeTier(node: GraphNode, maximumSubAgentDepth: number): number {
   const firstDownstreamTier = 3 + maximumSubAgentDepth;
   switch (node.category) {
@@ -157,13 +148,8 @@ function computeNodeTier(node: GraphNode, maximumSubAgentDepth: number): number 
       return 2 + (node.depth ?? 1);
     case "request":
       return firstDownstreamTier;
-    case "model":
-    case "embedding":
-      return firstDownstreamTier + 1;
-    case "provider":
-      return firstDownstreamTier + 2;
     case "tool":
-      return firstDownstreamTier + 3;
+      return firstDownstreamTier + 1;
     default:
       return firstDownstreamTier;
   }
@@ -294,8 +280,6 @@ export function buildGraphFromConversation(
   }
   addEdge(conversationNodeId, parentAgentNodeId, 0.9);
 
-  const providerNodeIds = new Set<string>();
-  const modelNodeIds = new Set<string>();
   const userSet = new Set<string>();
   const addedToolNames = new Set<string>();
 
@@ -350,7 +334,6 @@ export function buildGraphFromConversation(
   for (let requestIndex = 0; requestIndex < sortedRequests.length; requestIndex++) {
     const request = sortedRequests[requestIndex];
     const sequenceNumber = requestIndex + 1;
-    const isEmbeddingRequest = request.operation?.startsWith("embed:");
     const operationLabel = request.operation || "unknown";
     const requestNodeId = `request:${request._id || requestIndex}`;
 
@@ -363,6 +346,8 @@ export function buildGraphFromConversation(
       timestamp: request.timestamp,
       status: request.status,
       requestId: request.requestId || request._id,
+      model: request.model || null,
+      provider: request.provider || null,
     }, sequenceNumber);
 
     const requestAgentConversationId = request.agentConversationId || mainAgentConversationId;
@@ -400,34 +385,12 @@ export function buildGraphFromConversation(
       }
     }
 
-    if (request.model) {
-      const modelNodeId = `model:${request.model}`;
-      const modelCategory: NodeCategory = "model";
-      if (!modelNodeIds.has(modelNodeId)) {
-        modelNodeIds.add(modelNodeId);
-        addNode(modelNodeId, cleanModelName(request.model), modelCategory, 24, { fullModelName: request.model });
-      }
-      addEdge(requestNodeId, modelNodeId, 0.9);
-
-      if (request.provider) {
-        const providerNodeId = `provider:${request.provider}`;
-        if (!providerNodeIds.has(providerNodeId)) {
-          providerNodeIds.add(providerNodeId);
-          addNode(providerNodeId, resolveProviderLabel(request.provider) || request.provider, "provider", 24, { provider: request.provider });
-        }
-        addEdge(modelNodeId, providerNodeId, 0.7);
-      }
-    }
-
     if (request.toolApiNames?.length) {
-      const toolParentNodeId = request.provider
-        ? `provider:${request.provider}`
-        : requestNodeId;
       for (const toolName of request.toolApiNames) {
         const uniqueToolNodeId = `tool:${request._id || requestIndex}:${toolName}`;
         const invocationsInRequest = request.toolApiNames.filter((name) => name === toolName).length;
         addNode(uniqueToolNodeId, toolName, "tool", 24, { toolName, usageCount: invocationsInRequest });
-        addEdge(toolParentNodeId, uniqueToolNodeId, 0.7);
+        addEdge(requestNodeId, uniqueToolNodeId, 0.7);
         addedToolNames.add(toolName);
       }
     }
@@ -727,7 +690,6 @@ function applySequentialLayout(graphData: GraphData, canvasWidth: number, canvas
   }
 
   const toolCounterByParent = new Map<string, number>();
-  const modelCounterByParent = new Map<string, number>();
 
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
@@ -742,14 +704,6 @@ function applySequentialLayout(graphData: GraphData, canvasWidth: number, canvas
         toolCounterByParent.set(parentNode.id, toolIndex + 1);
         node.x = parentNode.x - 80 - toolIndex * 30;
         node.y = parentNode.y + (toolIndex % 3) * 35;
-      } else if (node.category === "model" || node.category === "embedding") {
-        const modelIndex = modelCounterByParent.get(parentNode.id) || 0;
-        modelCounterByParent.set(parentNode.id, modelIndex + 1);
-        node.x = parentNode.x + 80 + modelIndex * 30;
-        node.y = parentNode.y + (modelIndex % 3) * 35;
-      } else if (node.category === "provider") {
-        node.x = parentNode.x + 80;
-        node.y = parentNode.y + 50;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 80;
         node.y = parentNode.y + 80;
@@ -802,7 +756,6 @@ function applyPeerToPeerLayout(graphData: GraphData, canvasWidth: number, canvas
   }
 
   const peerToolCounter = new Map<string, number>();
-  const peerModelCounter = new Map<string, number>();
 
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
@@ -822,14 +775,6 @@ function applyPeerToPeerLayout(graphData: GraphData, canvasWidth: number, canvas
         peerToolCounter.set(parentNode.id, toolIndex + 1);
         node.x = parentNode.x - 70 - toolIndex * 25;
         node.y = parentNode.y + (toolIndex % 3) * 30;
-      } else if (node.category === "model" || node.category === "embedding") {
-        const modelIndex = peerModelCounter.get(parentNode.id) || 0;
-        peerModelCounter.set(parentNode.id, modelIndex + 1);
-        node.x = parentNode.x + 70 + modelIndex * 25;
-        node.y = parentNode.y + (modelIndex % 3) * 30;
-      } else if (node.category === "provider") {
-        node.x = parentNode.x + 70;
-        node.y = parentNode.y + 45;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 60;
         node.y = parentNode.y + (Math.random() - 0.5) * 60;
@@ -881,7 +826,6 @@ function applyCriticLoopLayout(graphData: GraphData, canvasWidth: number, canvas
   }
 
   const criticToolCounter = new Map<string, number>();
-  const criticModelCounter = new Map<string, number>();
 
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
@@ -896,14 +840,6 @@ function applyCriticLoopLayout(graphData: GraphData, canvasWidth: number, canvas
         criticToolCounter.set(parentNode.id, toolIndex + 1);
         node.x = parentNode.x - 80 - toolIndex * 25;
         node.y = parentNode.y + (toolIndex % 3) * 30;
-      } else if (node.category === "model" || node.category === "embedding") {
-        const modelIndex = criticModelCounter.get(parentNode.id) || 0;
-        criticModelCounter.set(parentNode.id, modelIndex + 1);
-        node.x = parentNode.x + 80 + modelIndex * 25;
-        node.y = parentNode.y + (modelIndex % 3) * 30;
-      } else if (node.category === "provider") {
-        node.x = parentNode.x + 80;
-        node.y = parentNode.y + 50;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 80;
         node.y = parentNode.y + 60;
@@ -956,7 +892,6 @@ function applyTournamentLayout(graphData: GraphData, canvasWidth: number, canvas
   }
 
   const tournamentToolCounter = new Map<string, number>();
-  const tournamentModelCounter = new Map<string, number>();
 
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
@@ -971,14 +906,6 @@ function applyTournamentLayout(graphData: GraphData, canvasWidth: number, canvas
         tournamentToolCounter.set(parentNode.id, toolIndex + 1);
         node.x = parentNode.x - 80 - toolIndex * 25;
         node.y = parentNode.y + (toolIndex % 3) * 30;
-      } else if (node.category === "model" || node.category === "embedding") {
-        const modelIndex = tournamentModelCounter.get(parentNode.id) || 0;
-        tournamentModelCounter.set(parentNode.id, modelIndex + 1);
-        node.x = parentNode.x + 80 + modelIndex * 25;
-        node.y = parentNode.y + (modelIndex % 3) * 30;
-      } else if (node.category === "provider") {
-        node.x = parentNode.x + 80;
-        node.y = parentNode.y + 50;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 70;
         node.y = parentNode.y + 60;
@@ -1046,7 +973,6 @@ function applyMCTSLayout(graphData: GraphData, canvasWidth: number, canvasHeight
   }
 
   const mctsToolCounter = new Map<string, number>();
-  const mctsModelCounter = new Map<string, number>();
 
   for (const node of otherNodes) {
     const edge = graphData.edges.find((edgeCandidate) => edgeCandidate.target === node.id);
@@ -1061,14 +987,6 @@ function applyMCTSLayout(graphData: GraphData, canvasWidth: number, canvasHeight
         mctsToolCounter.set(parentNode.id, toolIndex + 1);
         node.x = parentNode.x - 70 - toolIndex * 25;
         node.y = parentNode.y + (toolIndex % 3) * 28;
-      } else if (node.category === "model" || node.category === "embedding") {
-        const modelIndex = mctsModelCounter.get(parentNode.id) || 0;
-        mctsModelCounter.set(parentNode.id, modelIndex + 1);
-        node.x = parentNode.x + 70 + modelIndex * 25;
-        node.y = parentNode.y + (modelIndex % 3) * 28;
-      } else if (node.category === "provider") {
-        node.x = parentNode.x + 70;
-        node.y = parentNode.y + 45;
       } else {
         node.x = parentNode.x + (Math.random() - 0.5) * 60;
         node.y = parentNode.y + 50;
@@ -2110,16 +2028,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
               }
             }
 
-            // model → provider edges
-            const requestModelIds = [...flowNodeIds].filter((flowId) => flowId.startsWith("model:"));
-            for (const modelId of requestModelIds) {
-              for (const edge of graphData.edges) {
-                if (edge.source === modelId && edge.target.startsWith("provider:")) {
-                  includeEdge(edge);
-                }
-              }
-            }
-
             // Tool nodes belonging to this specific request (their IDs embed the request ID)
             const requestIdSegment = nodeId.replace("request:", "");
             const requestToolPrefix = `tool:${requestIdSegment}:`;
@@ -2137,8 +2045,8 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
               walkAncestorChain(agentId);
             }
           } else if (clickedNode.category === "tool") {
-            // For tool nodes, trace backward: tool ← provider ← model ← request ← agent ← session ← project
-            // Find the edge pointing to this tool (provider → tool or request → tool)
+            // For tool nodes, trace backward: tool ← request ← agent ← session ← project
+            // Find the edge pointing to this tool (request → tool)
             for (const edge of graphData.edges) {
               if (edge.target === nodeId) {
                 includeEdge(edge);
@@ -2152,23 +2060,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
             if (owningRequestNodeId && graphData.nodes.some((graphNode) => graphNode.id === owningRequestNodeId)) {
               flowNodeIds.add(owningRequestNodeId);
-
-              // request → model edge
-              for (const edge of graphData.edges) {
-                if (edge.source === owningRequestNodeId && edge.target.startsWith("model:")) {
-                  includeEdge(edge);
-                }
-              }
-
-              // model → provider edge (for the models we just found)
-              const toolFlowModelIds = [...flowNodeIds].filter((flowId) => flowId.startsWith("model:"));
-              for (const modelId of toolFlowModelIds) {
-                for (const edge of graphData.edges) {
-                  if (edge.source === modelId && edge.target.startsWith("provider:")) {
-                    includeEdge(edge);
-                  }
-                }
-              }
 
               // agent → request edge
               for (const edge of graphData.edges) {
@@ -2458,15 +2349,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     return names;
   }, [toolActivity]);
 
-  const activeModelNames = useMemo(() => {
-    const names = new Set<string>();
-    for (const toolCall of toolActivity) {
-      if ((toolCall.status === "calling" || toolCall.status === "streaming") && toolCall._sourceModel) {
-        names.add(toolCall._sourceModel);
-      }
-    }
-    return names;
-  }, [toolActivity]);
 
   // -- Proactive pending request node injection -----------------------
   // When isGenerating transitions false → true, inject a synthetic
@@ -2848,9 +2730,8 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
                 // Derive live activity state from toolActivity props
                 const isActiveToolNode = node.category === "tool" && activeToolNames.has(node.metadata?.toolName as string);
-                const isActiveModelNode = node.category === "model" && activeModelNames.has(node.metadata?.fullModelName as string);
                 const isActiveRequestNode = node.category === "request" && isGenerating && latestRequestNodeId === node.id;
-                const isNodeLiveActive = isActiveToolNode || isActiveModelNode || isActiveRequestNode || isPendingRequest;
+                const isNodeLiveActive = isActiveToolNode || isActiveRequestNode || isPendingRequest;
 
                 // Check if this agent node has children in the sub-agent tree
                 const hasSubAgentChildren = !!(isAgentNode && graphData.subAgentTree && (() => {
@@ -2910,7 +2791,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                         className={styles['phase-activity-pulse-ring']}
                       />
                     )}
-                    {/* Live activity pulse ring for request/model/tool nodes */}
+                    {/* Live activity pulse ring for request/tool nodes */}
                     {isNodeLiveActive && (
                       <circle
                         cx={node.x} cy={node.y}
@@ -2977,7 +2858,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                       {node.label.length > 24 ? `${node.label.slice(0, 22)}…` : node.label}
                     </text>
                     {/* Node center icon — emojis, provider logos, or fallback symbols */}
-                    {node.category === "provider" && !!node.metadata?.provider && (
+                    {node.category === "request" && !!node.metadata?.provider && (
                       <foreignObject
                         x={node.x - node.radius * 0.45}
                         y={node.y - node.radius * 0.45}
@@ -3005,9 +2886,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                         {toolEmojiMap.get(String(node.metadata?.toolName || "")) || "⚙"}
                       </text>
                     )}
-                    {node.category !== "provider" && node.category !== "tool" && (
+                    {node.category === "request" && !node.metadata?.provider && (
                       <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={28} style={{ pointerEvents: "none", userSelect: "none" }}>
-                        {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "model" ? "💾" : node.category === "request" ? "🔗" : node.category === "user" ? "●" : node.category === "embedding" ? "💾" : "○"}
+                        🔗
+                      </text>
+                    )}
+                    {node.category !== "request" && node.category !== "tool" && (
+                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={28} style={{ pointerEvents: "none", userSelect: "none" }}>
+                        {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "user" ? "●" : "○"}
                       </text>
                     )}
                     {/* Collapse/expand toggle badge for agents with children */}
@@ -3102,14 +2988,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                   </div>
                 )}
 
-                {selectedNode.category === "model" && (
-                  <div className={graphStyles['node-detail-popover-section']}>
-                    <div className={graphStyles['node-detail-popover-section-title']}>Model Details</div>
-                    <InlineDetailRow label="Full Name" value={String(selectedNode.metadata?.fullModelName || "—")} />
-                    <InlineDetailRow label="Total Cost" value={formatCost(Number(selectedNode.metadata?.totalCost || 0))} />
-                    <InlineDetailRow label="Tokens Used" value={formatNumber(Number(selectedNode.metadata?.totalTokens || 0))} />
-                  </div>
-                )}
 
                 {selectedNode.category === "tool" && (
                   <div className={graphStyles['node-detail-popover-section']}>
@@ -3125,6 +3003,8 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                       <div className={graphStyles['node-detail-popover-section-title']}>Request Details</div>
                       {selectedNode.sequenceNumber != null && <InlineDetailRow label="Sequence" value={`#${selectedNode.sequenceNumber}`} />}
                       <InlineDetailRow label="Operation" value={String(selectedNode.metadata?.operation || "—")} />
+                      {!!selectedNode.metadata?.model && <InlineDetailRow label="Model" value={cleanModelName(String(selectedNode.metadata.model))} />}
+                      {!!selectedNode.metadata?.provider && <InlineDetailRow label="Provider" value={resolveProviderLabel(String(selectedNode.metadata.provider)) || String(selectedNode.metadata.provider)} />}
                       <InlineDetailRow label="Cost" value={formatCost(Number(selectedNode.metadata?.estimatedCost || 0))} />
                       {Number(selectedNode.metadata?.inputTokens || 0) > 0 && <InlineDetailRow label="Input Tokens" value={formatNumber(Number(selectedNode.metadata?.inputTokens))} />}
                       {Number(selectedNode.metadata?.outputTokens || 0) > 0 && <InlineDetailRow label="Output Tokens" value={formatNumber(Number(selectedNode.metadata?.outputTokens))} />}
@@ -3176,12 +3056,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                   </div>
                 )}
 
-                {selectedNode.category === "provider" && (
-                  <div className={graphStyles['node-detail-popover-section']}>
-                    <div className={graphStyles['node-detail-popover-section-title']}>Provider Details</div>
-                    <InlineDetailRow label="Provider" value={String(selectedNode.metadata?.provider || "—")} />
-                  </div>
-                )}
 
                 {selectedNode.category === "project" && (
                   <div className={graphStyles['node-detail-popover-section']}>
@@ -3190,12 +3064,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                   </div>
                 )}
 
-                {selectedNode.category === "embedding" && (
-                  <div className={graphStyles['node-detail-popover-section']}>
-                    <div className={graphStyles['node-detail-popover-section-title']}>Embedding Model</div>
-                    <InlineDetailRow label="Full Name" value={String(selectedNode.metadata?.fullModelName || "—")} />
-                  </div>
-                )}
               </div>
             )}
           </>
