@@ -773,6 +773,15 @@ export default class PrismService {
     });
   }
 
+  /**
+   * Fetch available prompt locale options from the server.
+   */
+  static async getAvailableLocales(): Promise<{ value: string; label: string }[]> {
+    return PrismService._request<{ value: string; label: string }[]>("/config/locales", {
+      method: "GET",
+    });
+  }
+
   // ---------------------------------------------------------------------------
   // Topologies
   // ---------------------------------------------------------------------------

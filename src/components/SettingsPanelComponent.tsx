@@ -1,7 +1,7 @@
 "use client";
 
 import { DEFAULT_WORKFLOW_TITLE, FALLBACK_THINKING_PATTERNS, LS_WORKSPACE_TOGGLE_PREFERENCE } from "@/constants";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Cpu,
   Edit3,
@@ -20,6 +20,7 @@ import {
   User,
   Bot,
   FolderKanban,
+  Globe,
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import {
@@ -40,6 +41,7 @@ import { TOGGLEABLE_TOOLS } from "./WorkflowNodeConstantsComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
 import { buildTopologyOptions, buildThoughtStructureOptions } from "./AgentStrategyOptionsComponent";
+import PrismService from "../services/PrismService";
 import useTokenRate from "../hooks/useTokenRate";
 import useTimeToFirstToken from "../hooks/useTtft";
 import type {
@@ -190,6 +192,18 @@ export default function SettingsPanel({
     () => !!settings.systemPrompt,
   );
 
+  const [availableLocales, setAvailableLocales] = useState<{ value: string; label: string }[]>([
+    { value: "en", label: "English" },
+  ]);
+
+  useEffect(() => {
+    PrismService.getAvailableLocales()
+      .then((locales) => {
+        if (locales && locales.length > 0) setAvailableLocales(locales);
+      })
+      .catch(() => {});
+  }, []);
+
   const { copy: copyToClipboard, copied: isCopied } = useClipboard(2000);
 
   const generateCurlCommand = () => {
@@ -293,6 +307,9 @@ export default function SettingsPanel({
         maxRecursionDepth: recursionDepthCount,
         ...(settings.agents?.workspaceEnabled === false && {
           workspaceEnabled: false,
+        }),
+        ...(settings.agents?.locale && settings.agents.locale !== "en" && {
+          locale: settings.agents.locale,
         }),
       };
     }
@@ -1360,7 +1377,28 @@ export default function SettingsPanel({
               );
             })()}
 
-            {/* 9–10. Critic Gate, Plan Mode */}
+            {/* 9. Agent Locale */}
+            {conversationType === "agent" && (
+              <div
+                className={`${styles['modality-layout-row']} ${styles['tool-toggle-layout-row']}`}
+              >
+                <SelectComponent
+                  value={settings.agents?.locale || "en"}
+                  options={availableLocales}
+                  onChange={(value: string) =>
+                    onChange({
+                      agents: { ...settings.agents, locale: value },
+                    })
+                  }
+                  label="Agent Locale"
+                  labelIcon={<Globe size={12} />}
+                  compact
+                  disabled={isAgentSettingsLocked}
+                />
+              </div>
+            )}
+
+            {/* 10–11. Critic Gate, Plan Mode */}
             {agentToggles?.filter((toggle) =>
               ["criticGate", "plan"].includes(toggle.key),
             ).map((toggle) => (

@@ -3316,6 +3316,9 @@ export default function ChatConversationComponent({
               ...(settings.agents?.workspaceEnabled === false && {
                 workspaceEnabled: false,
               }),
+              ...(settings.agents?.locale && settings.agents.locale !== "en" && {
+                locale: settings.agents.locale,
+              }),
             };
 
         let streamedText = "";

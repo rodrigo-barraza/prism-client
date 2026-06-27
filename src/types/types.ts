@@ -965,6 +965,7 @@ export interface AgentDefaultsConfig {
   dynamicToolActivation?: boolean;
   thoughtStructure?: string;
   workspaceEnabled?: boolean;
+  locale?: string;
 }
 
 export interface SecurityConfig {
