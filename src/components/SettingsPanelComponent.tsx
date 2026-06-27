@@ -471,6 +471,12 @@ export default function SettingsPanel({
             {formatThoughtStructureLabel(settings.agents.thoughtStructure as string)}
           </span>
         )}
+        {conversationType === "agent" && settings.agents?.locale && settings.agents.locale !== "en" && (
+          <span className={styles['stat-badge']}>
+            <Globe size={10} />
+            {availableLocales.find((localeOption) => localeOption.value === settings.agents?.locale)?.label || settings.agents.locale}
+          </span>
+        )}
         {conversationType === "agent" && settings.agents?.workspaceEnabled === false && (
           <span className={styles['stat-badge']}>
             <FolderOpen size={10} />

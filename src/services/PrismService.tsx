@@ -223,6 +223,7 @@ export default class PrismService {
     disabledTools?: string[];
     workspaceEnabled?: boolean;
     systemPrompt?: string;
+    locale?: string;
   }): Promise<{ prompt: string; characterCount: number; estimatedTokens: number }> {
     return PrismService._request<{
       prompt: string;

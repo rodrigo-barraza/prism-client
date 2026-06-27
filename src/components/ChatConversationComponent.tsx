@@ -2431,6 +2431,7 @@ export default function ChatConversationComponent({
         disabledTools: allDisabledTools,
         workspaceEnabled: settings.agents?.workspaceEnabled !== false,
         systemPrompt: settings.systemPrompt || undefined,
+        locale: settings.agents?.locale || undefined,
       })
         .then((result) => {
           setPreviewSystemPrompt(result.prompt);
@@ -2450,6 +2451,7 @@ export default function ChatConversationComponent({
     disabledTools,
     lockedOffTools,
     settings.agents?.workspaceEnabled,
+    settings.agents?.locale,
     settings.systemPrompt,
   ]);
 
