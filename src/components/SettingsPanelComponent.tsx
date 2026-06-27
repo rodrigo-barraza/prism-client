@@ -308,7 +308,7 @@ export default function SettingsPanel({
         ...(settings.agents?.workspaceEnabled === false && {
           workspaceEnabled: false,
         }),
-        ...(settings.agents?.locale && settings.agents.locale !== "en" && {
+        ...(settings.agents?.locale && {
           locale: settings.agents.locale,
         }),
       };
