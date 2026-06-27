@@ -4674,6 +4674,7 @@ export default function ChatConversationComponent({
       settings.agents?.topology,
       settings.agents?.thoughtStructure,
       settings.agents?.workspaceEnabled,
+      settings.agents?.locale,
       criticGateEnabled,
       conversationId,
       traceId,
