@@ -1589,6 +1589,7 @@ export default function ChatConversationComponent({
         const lastAssistant = [...(full.messages || [])]
           .reverse()
           .find((message) => message.role === "assistant" && message.provider);
+        const urlLoadConversationSettings = full.settings as Record<string, unknown> | undefined;
         setSettings((previousSettings) => {
           const nextSettings = { ...previousSettings };
           if (lastAssistant) {
@@ -1621,11 +1622,24 @@ export default function ChatConversationComponent({
           if (full.systemPrompt != null) {
             nextSettings.systemPrompt = full.systemPrompt;
           }
+          const urlHarness = urlLoadConversationSettings?.harness as string | undefined;
+          const urlTopology = urlLoadConversationSettings?.topology as string | undefined;
+          const urlThoughtStructure = urlLoadConversationSettings?.thoughtStructure as string | undefined;
+          const urlLocale = urlLoadConversationSettings?.locale as string | undefined;
+          if (urlHarness || urlTopology || urlThoughtStructure || urlLocale) {
+            nextSettings.agents = {
+              ...nextSettings.agents,
+              ...(urlHarness && { harness: urlHarness }),
+              ...(urlTopology && { topology: urlTopology }),
+              ...(urlThoughtStructure && { thoughtStructure: urlThoughtStructure }),
+              ...(urlLocale && { locale: urlLocale }),
+            };
+          }
           return nextSettings;
         });
 
         // Restore agent toggle state from the conversation's persisted settings
-        const urlLoadConversationSettings = full.settings as Record<string, unknown> | undefined;
+        const urlLoadConversationSettingsDummy = urlLoadConversationSettings;
         const persistedRecursionDepth = urlLoadConversationSettings?.maxRecursionDepth;
         if (typeof persistedRecursionDepth === "number" && [0, 1, 2, 3].includes(persistedRecursionDepth)) {
           setMaxRecursionDepth(persistedRecursionDepth);
@@ -5589,12 +5603,19 @@ export default function ChatConversationComponent({
           const conversationHarness = (conversationSettings as Record<string, unknown>)?.harness as string | undefined;
           const conversationTopology = (conversationSettings as Record<string, unknown>)?.topology as string | undefined;
           const conversationThoughtStructure = (conversationSettings as Record<string, unknown>)?.thoughtStructure as string | undefined;
-          if (conversationHarness || conversationTopology || conversationThoughtStructure) {
+          const conversationLocale = (conversationSettings as Record<string, unknown>)?.locale as string | undefined;
+          if (
+            conversationHarness ||
+            conversationTopology ||
+            conversationThoughtStructure ||
+            conversationLocale
+          ) {
             nextSettings.agents = {
               ...nextSettings.agents,
               ...(conversationHarness && { harness: conversationHarness }),
               ...(conversationTopology && { topology: conversationTopology }),
               ...(conversationThoughtStructure && { thoughtStructure: conversationThoughtStructure }),
+              ...(conversationLocale && { locale: conversationLocale }),
             };
           }
           return nextSettings;
