@@ -284,7 +284,6 @@ export function buildGraphFromConversation(
   addEdge(conversationNodeId, parentAgentNodeId, 0.9);
 
   const userSet = new Set<string>();
-  const addedToolNames = new Set<string>();
 
   const sortedRequests = [...conversationRequests].sort((requestA, requestB) => {
     const timestampA = requestA.timestamp ? new Date(requestA.timestamp).getTime() : 0;
@@ -372,6 +371,11 @@ export function buildGraphFromConversation(
     const isSubAgent = knownSubAgentConversationIds.has(requestAgentConversationId);
     const agentDepth = isSubAgent ? (subAgentDepthMap.get(requestAgentConversationId) || 1) : 0;
 
+    // Deduplicate tool names for this request (preserving order)
+    const uniqueToolNames = request.toolApiNames
+      ? [...new Set(request.toolApiNames)]
+      : [];
+
     addNode(requestNodeId, `#${sequenceNumber} ${operationLabel}`, "request", 24, {
       operation: operationLabel,
       estimatedCost: request.estimatedCost,
@@ -384,6 +388,7 @@ export function buildGraphFromConversation(
       model: request.model || null,
       provider: request.provider || null,
       agentDepth,
+      toolNames: uniqueToolNames,
     }, sequenceNumber);
 
     const currentAgentNodeId = isSubAgent
@@ -416,28 +421,8 @@ export function buildGraphFromConversation(
     }
     lastRequestNodeIdPerAgentContext.set(agentContextKey, requestNodeId);
 
-    if (request.toolApiNames?.length) {
-      for (const toolName of request.toolApiNames) {
-        const uniqueToolNodeId = `tool:${request._id || requestIndex}:${toolName}`;
-        const invocationsInRequest = request.toolApiNames.filter((name) => name === toolName).length;
-        addNode(uniqueToolNodeId, toolName, "tool", 24, { toolName, usageCount: invocationsInRequest, agentDepth });
-        addEdge(requestNodeId, uniqueToolNodeId, 0.7);
-        addedToolNames.add(toolName);
-      }
-    }
-
     if (request.username && request.username !== DEFAULT_USERNAME && request.username !== "system") {
       userSet.add(request.username);
-    }
-  }
-
-  if (conversationStats?.toolCounts) {
-    for (const [toolName, usageCount] of Object.entries(conversationStats.toolCounts)) {
-      if (!addedToolNames.has(toolName)) {
-        const fallbackToolNodeId = `tool:fallback:${toolName}`;
-        addNode(fallbackToolNodeId, toolName, "tool", 24, { toolName, usageCount });
-        addEdge(parentAgentNodeId, fallbackToolNodeId, 0.7);
-      }
     }
   }
 
@@ -490,10 +475,10 @@ export function buildGraphFromConversation(
       let linkedToTool = false;
       for (const parentRequest of parentAgentRequests) {
         if (parentRequest.toolApiNames?.includes("create_team")) {
-          const createTeamToolNodeId = `tool:${parentRequest._id || sortedRequests.indexOf(parentRequest)}:create_team`;
-          // Verify this tool node exists before creating the edge
-          if (nodeIdSet.has(createTeamToolNodeId)) {
-            addEdge(createTeamToolNodeId, treeNode.nodeId, 0.9, false);
+          // Link sub-agent from the request node that invoked create_team
+          const requestNodeId = `request:${parentRequest._id || sortedRequests.indexOf(parentRequest)}`;
+          if (nodeIdSet.has(requestNodeId)) {
+            addEdge(requestNodeId, treeNode.nodeId, 0.9, false);
             linkedToTool = true;
             break;
           }
@@ -982,8 +967,8 @@ export function applyTopologyLayout(
     applyHierarchicalLayout(graphData, canvasWidth, canvasHeight);
   }
 
-  // After base layout, position sub-agent trees in columns AFTER the tool column.
-  // The pattern is: ...tool → subagent → request → tool → subagent → ...
+  // After base layout, position sub-agent trees in columns after the request column.
+  // The pattern is: ...request → subagent → request → subagent → ...
   if (graphData.subAgentTree && graphData.subAgentTree.length > 0) {
     const nodeMap = new Map(graphData.nodes.map((node) => [node.id, node]));
     const mainAgentNode = graphData.nodes.find(
@@ -993,12 +978,14 @@ export function applyTopologyLayout(
     if (mainAgentNode) {
       const columnSpacing = 200;
 
-      // Find the rightmost tool X at depth 0 (root agent tools) to position sub-agents after
-      const rootToolNodes = graphData.nodes.filter(
-        (graphNode) => graphNode.category === "tool" && ((graphNode.metadata?.agentDepth as number) ?? 0) === 0
+      // Find the rightmost root request X to position sub-agents after.
+      // Since tools are now embedded as pill badges on request nodes,
+      // sub-agents branch from the request column at depth 0.
+      const rootRequestNodes = graphData.nodes.filter(
+        (graphNode) => graphNode.category === "request" && ((graphNode.metadata?.agentDepth as number) ?? 0) === 0
       );
-      const rightmostRootToolX = rootToolNodes.length > 0
-        ? Math.max(...rootToolNodes.map((toolNode) => toolNode.x))
+      const rightmostRootRequestX = rootRequestNodes.length > 0
+        ? Math.max(...rootRequestNodes.map((requestNode) => requestNode.x))
         : mainAgentNode.x + columnSpacing;
 
       // ── Helper: collect request/tool nodes belonging to a specific sub-agent ──
@@ -1009,7 +996,7 @@ export function applyTopologyLayout(
         treeChild: SubAgentTreeNode,
         childNode: GraphNode,
         depth: number,
-      ): { requestNodes: GraphNode[]; toolNodes: GraphNode[] } => {
+      ): GraphNode[] => {
         const requestNodes: GraphNode[] = [];
         const depthMatchedRequests = new Set(
           graphData.nodes
@@ -1043,25 +1030,13 @@ export function applyTopologyLayout(
           }
         }
 
-        const toolNodes = graphData.nodes.filter(
-          (graphNode) => graphNode.category === "tool" &&
-            ((graphNode.metadata?.agentDepth as number) ?? 0) === depth
-        ).filter((toolNode) =>
-          requestNodes.some((requestNode) =>
-            graphData.edges.some(
-              (edge) => edge.source === requestNode.id && edge.target === toolNode.id
-            )
-          )
-        );
-
-        return { requestNodes, toolNodes };
+        return requestNodes;
       };
 
       // ── Pass 1: Measure vertical extent of each branch ──
       // Returns the total height this branch needs so siblings can be
       // spaced apart without overlapping.
       const REQUEST_SPACING = 60;
-      const TOOL_SPACING = 50;
       const BRANCH_GAP = REQUEST_SPACING * 2;
       // Minimum branch height ensures a single-request sub-agent still
       // reserves enough vertical space that neighboring branches' nodes
@@ -1075,43 +1050,14 @@ export function applyTopologyLayout(
         const childNode = nodeMap.get(treeChild.nodeId);
         if (!childNode) return MINIMUM_BRANCH_HEIGHT;
 
-        const { requestNodes, toolNodes } = collectBranchNodes(treeChild, childNode, depth);
+        const requestNodes = collectBranchNodes(treeChild, childNode, depth);
 
-        // Height consumed by this sub-agent's request column
         const requestColumnHeight = requestNodes.length > 0
           ? (requestNodes.length - 1) * REQUEST_SPACING
           : 0;
 
-        // Height consumed by the tool column — count how many tools
-        // fan out from each request and take the worst-case total.
-        // Tools from the same request are stacked vertically with
-        // TOOL_SPACING, so the tool column can be taller than the
-        // request column when a single request invokes many tools.
-        let toolColumnHeight = 0;
-        if (requestNodes.length > 0) {
-          // Build a per-request tool count to measure the full tool
-          // column height including per-request fan-out offsets.
-          let accumulatedToolHeight = 0;
-          for (const requestNode of requestNodes) {
-            const toolsForRequest = toolNodes.filter((toolNode) =>
-              graphData.edges.some(
-                (edge) => edge.source === requestNode.id && edge.target === toolNode.id
-              )
-            );
-            if (toolsForRequest.length > 1) {
-              accumulatedToolHeight += (toolsForRequest.length - 1) * TOOL_SPACING;
-            }
-          }
-          // The tool column spans from the first request's Y to the
-          // last request's Y plus any fan-out from the last request.
-          toolColumnHeight = requestColumnHeight + accumulatedToolHeight;
-        } else if (toolNodes.length > 0) {
-          toolColumnHeight = (toolNodes.length - 1) * TOOL_SPACING;
-        }
-
         const ownContentHeight = Math.max(
           requestColumnHeight,
-          toolColumnHeight,
           MINIMUM_BRANCH_HEIGHT,
         );
 
@@ -1133,7 +1079,7 @@ export function applyTopologyLayout(
       // ── Pass 2: Position sub-agent branches using measured heights ──
       const positionSubAgentBranch = (
         treeNodes: SubAgentTreeNode[],
-        parentToolX: number,
+        parentColumnX: number,
         parentY: number,
         depth: number,
       ) => {
@@ -1157,14 +1103,13 @@ export function applyTopologyLayout(
           const branchHeight = branchHeights[childIndex];
 
           // Place sub-agent node at the vertical center of its allocated section
-          const subAgentX = parentToolX + columnSpacing;
+          const subAgentX = parentColumnX + columnSpacing;
           childNode.x = subAgentX;
           childNode.y = currentY + branchHeight / 2;
 
           // Position this sub-agent's request nodes in the next column
           const subAgentRequestX = subAgentX + columnSpacing;
-          const { requestNodes: subAgentRequestNodes, toolNodes: subAgentToolNodes } =
-            collectBranchNodes(treeChild, childNode, depth);
+          const subAgentRequestNodes = collectBranchNodes(treeChild, childNode, depth);
 
           const requestStartY = childNode.y - ((subAgentRequestNodes.length - 1) * REQUEST_SPACING) / 2;
           for (let requestIndex = 0; requestIndex < subAgentRequestNodes.length; requestIndex++) {
@@ -1172,33 +1117,11 @@ export function applyTopologyLayout(
             subAgentRequestNodes[requestIndex].y = requestStartY + requestIndex * REQUEST_SPACING;
           }
 
-          // Position this sub-agent's tool nodes in the column after requests.
-          // Tools sharing the same parent request are offset vertically by
-          // TOOL_SPACING so they never stack on top of each other.
-          const subAgentToolX = subAgentRequestX + columnSpacing;
-          const toolOffsetByRequest = new Map<string, number>();
-          for (let toolIndex = 0; toolIndex < subAgentToolNodes.length; toolIndex++) {
-            const parentRequest = subAgentRequestNodes.find((requestNode) =>
-              graphData.edges.some((edge) => edge.source === requestNode.id && edge.target === subAgentToolNodes[toolIndex].id)
-            );
-            subAgentToolNodes[toolIndex].x = subAgentToolX;
-            if (parentRequest) {
-              const siblingOffset = toolOffsetByRequest.get(parentRequest.id) ?? 0;
-              subAgentToolNodes[toolIndex].y = parentRequest.y + siblingOffset * TOOL_SPACING;
-              toolOffsetByRequest.set(parentRequest.id, siblingOffset + 1);
-            } else {
-              subAgentToolNodes[toolIndex].y = childNode.y + toolIndex * TOOL_SPACING;
-            }
-          }
-
           // Recurse for nested sub-agents
           if (treeChild.children.length > 0) {
-            const rightmostChildToolX = subAgentToolNodes.length > 0
-              ? Math.max(...subAgentToolNodes.map((toolNode) => toolNode.x))
-              : subAgentRequestX;
             positionSubAgentBranch(
               treeChild.children,
-              rightmostChildToolX,
+              subAgentRequestX,
               childNode.y,
               depth + 1,
             );
@@ -1211,7 +1134,7 @@ export function applyTopologyLayout(
 
       positionSubAgentBranch(
         graphData.subAgentTree,
-        rightmostRootToolX,
+        rightmostRootRequestX,
         mainAgentNode.y,
         1,
       );
@@ -2369,9 +2292,8 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 const isPendingRequest = node.category === "request" && (node.metadata?.status as string) === "pending";
 
                 // Derive live activity state from toolActivity props
-                const isActiveToolNode = node.category === "tool" && activeToolNames.has(node.metadata?.toolName as string);
                 const isActiveRequestNode = node.category === "request" && (isGenerating || hasProactiveNode) && latestRequestNodeId === node.id;
-                const isNodeLiveActive = isActiveToolNode || isActiveRequestNode || isPendingRequest;
+                const isNodeLiveActive = isActiveRequestNode || isPendingRequest;
 
                 // Check if this agent node has children in the sub-agent tree
                 const hasSubAgentChildren = !!(isAgentNode && graphData.subAgentTree && (() => {
@@ -2443,9 +2365,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                         className={
                           isPendingRequest
                             ? styles['pending-request-pulse-ring']
-                            : isActiveToolNode
-                              ? styles['node-tool-activity-pulse-ring']
-                              : styles['node-activity-pulse-ring']
+                            : styles['node-activity-pulse-ring']
                         }
                       />
                     )}
@@ -2511,20 +2431,49 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                         </div>
                       </foreignObject>
                     )}
-                    {node.category === "tool" && toolEmojiMap.get(String(node.metadata?.toolName || ""))?.startsWith("http") && (
-                      <image
-                        href={toolEmojiMap.get(String(node.metadata?.toolName || ""))!}
-                        x={node.x - node.radius * 0.4}
-                        y={node.y - node.radius * 0.4}
-                        width={node.radius * 0.8}
-                        height={node.radius * 0.8}
-                        style={{ pointerEvents: "none" }}
-                      />
-                    )}
-                    {node.category === "tool" && !toolEmojiMap.get(String(node.metadata?.toolName || ""))?.startsWith("http") && (
-                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={28} style={{ pointerEvents: "none", userSelect: "none" }}>
-                        {toolEmojiMap.get(String(node.metadata?.toolName || "")) || "⚙"}
-                      </text>
+                    {/* Tool pill badges rendered below request nodes */}
+                    {node.category === "request" && Array.isArray(node.metadata?.toolNames) && (node.metadata.toolNames as string[]).length > 0 && (
+                      <foreignObject
+                        x={node.x - 60}
+                        y={node.y + node.radius + 4}
+                        width={120}
+                        height={(node.metadata.toolNames as string[]).length * 18 + 4}
+                        style={{ pointerEvents: "none", overflow: "visible" }}
+                      >
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
+                          {(node.metadata.toolNames as string[]).map((toolName: string, toolPillIndex: number) => {
+                            const toolEmoji = toolEmojiMap.get(toolName);
+                            const isImageEmoji = toolEmoji?.startsWith("http");
+                            return (
+                              <div
+                                key={`${node.id}-tool-${toolPillIndex}`}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "3px",
+                                  background: "oklch(0.18 0.01 45 / 0.85)",
+                                  border: "1px solid oklch(0.72 0.16 45 / 0.3)",
+                                  borderRadius: "8px",
+                                  padding: "1px 6px",
+                                  fontSize: "8px",
+                                  fontWeight: 500,
+                                  color: "oklch(0.82 0.08 45)",
+                                  whiteSpace: "nowrap",
+                                  maxWidth: "120px",
+                                  lineHeight: "14px",
+                                }}
+                              >
+                                {isImageEmoji ? (
+                                  <img src={toolEmoji} alt="" style={{ width: 10, height: 10, borderRadius: 2 }} />
+                                ) : (
+                                  <span style={{ fontSize: "9px" }}>{toolEmoji || "⚙"}</span>
+                                )}
+                                <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{toolName}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </foreignObject>
                     )}
                     {node.category === "request" && !node.metadata?.provider && (
                       <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={28} style={{ pointerEvents: "none", userSelect: "none" }}>
@@ -2629,13 +2578,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 )}
 
 
-                {selectedNode.category === "tool" && (
-                  <div className={graphStyles['node-detail-popover-section']}>
-                    <div className={graphStyles['node-detail-popover-section-title']}>Tool Details</div>
-                    <InlineDetailRow label="Tool Name" value={String(selectedNode.metadata?.toolName || "—")} />
-                    <InlineDetailRow label="Invocations" value={formatNumber(Number(selectedNode.metadata?.usageCount || 0))} />
-                  </div>
-                )}
+
 
                 {selectedNode.category === "request" && (
                   <>
@@ -2651,6 +2594,42 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                       {Number(selectedNode.metadata?.duration || 0) > 0 && <InlineDetailRow label="Duration" value={formatElapsedTime(Number(selectedNode.metadata?.duration))} />}
                       {selectedNode.metadata?.timestamp != null && <InlineDetailRow label="Timestamp" value={formatTimeAgo(String(selectedNode.metadata.timestamp))} />}
                     </div>
+
+                    {Array.isArray(selectedNode.metadata?.toolNames) && (selectedNode.metadata.toolNames as string[]).length > 0 && (
+                      <div className={graphStyles['node-detail-popover-section']}>
+                        <div className={graphStyles['node-detail-popover-section-title']}>Tools Invoked</div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBlockStart: "4px" }}>
+                          {(selectedNode.metadata.toolNames as string[]).map((toolName: string, detailToolIndex: number) => {
+                            const toolEmoji = toolEmojiMap.get(toolName);
+                            const isImageEmoji = toolEmoji?.startsWith("http");
+                            return (
+                              <span
+                                key={`detail-tool-${detailToolIndex}`}
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  background: "oklch(0.22 0.01 45 / 0.8)",
+                                  border: "1px solid oklch(0.72 0.16 45 / 0.25)",
+                                  borderRadius: "6px",
+                                  padding: "2px 8px",
+                                  fontSize: "11px",
+                                  fontWeight: 500,
+                                  color: "oklch(0.82 0.08 45)",
+                                }}
+                              >
+                                {isImageEmoji ? (
+                                  <img src={toolEmoji} alt="" style={{ width: 12, height: 12, borderRadius: 2 }} />
+                                ) : (
+                                  <span style={{ fontSize: "11px" }}>{toolEmoji || "⚙"}</span>
+                                )}
+                                {toolName}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     {isRequestDetailLoading && (
                       <div className={graphStyles['request-payload-is-loading-state']}>
