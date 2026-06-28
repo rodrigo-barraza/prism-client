@@ -358,7 +358,9 @@ export function buildGraphFromConversation(
     computeDepth(agentConversationId);
   }
 
-  // Second pass: create nodes and edges for all requests
+  // Second pass: create nodes and edges for all requests.
+  // Track the last request node per agent context for sequential chaining.
+  const lastRequestNodeIdPerAgentContext = new Map<string, string>();
   for (let requestIndex = 0; requestIndex < sortedRequests.length; requestIndex++) {
     const request = sortedRequests[requestIndex];
     const sequenceNumber = requestIndex + 1;
@@ -400,22 +402,19 @@ export function buildGraphFromConversation(
       }, undefined, agentDepth);
     }
 
-    addEdge(currentAgentNodeId, requestNodeId, 0.5);
+    // Trace-tree DAG edge topology: agent → first request → req2 → req3 → ...
+    // Each agent context (main agent or individual sub-agent) connects to its
+    // first request only. Subsequent requests chain to the previous one in the
+    // same context, creating a clean causal flow without redundant hub-and-spoke edges.
+    const agentContextKey = isSubAgent ? requestAgentConversationId : "__main_agent__";
+    const previousRequestNodeId = lastRequestNodeIdPerAgentContext.get(agentContextKey);
 
-    if (requestIndex > 0) {
-      const previousRequest = sortedRequests[requestIndex - 1];
-      const previousAgentConversationId = previousRequest.agentConversationId || mainAgentConversationId;
-      const previousIsSubAgent = knownSubAgentConversationIds.has(previousAgentConversationId);
-      // Chain sequential requests: same sub-agent, OR both are main-agent turns
-      const isSameAgentContext = previousIsSubAgent === isSubAgent && (
-        previousAgentConversationId === requestAgentConversationId ||
-        (!isSubAgent && !previousIsSubAgent)
-      );
-      if (isSameAgentContext) {
-        const previousRequestNodeId = `request:${previousRequest._id || (requestIndex - 1)}`;
-        addEdge(previousRequestNodeId, requestNodeId, 0.6);
-      }
+    if (!previousRequestNodeId) {
+      addEdge(currentAgentNodeId, requestNodeId, 0.6);
+    } else {
+      addEdge(previousRequestNodeId, requestNodeId, 0.5);
     }
+    lastRequestNodeIdPerAgentContext.set(agentContextKey, requestNodeId);
 
     if (request.toolApiNames?.length) {
       for (const toolName of request.toolApiNames) {
