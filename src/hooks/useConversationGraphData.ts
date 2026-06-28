@@ -328,6 +328,7 @@ export default function useConversationGraphData(
           if (bootstrapRequest._id) knownRequestIds.add(bootstrapRequest._id);
         }
 
+        conversationRequestsRef.current = bootstrapRequests;
         setConversation(fetchedConversation);
         setConversationStats(bootstrapStats);
         setConversationRequests(bootstrapRequests);
@@ -378,6 +379,7 @@ export default function useConversationGraphData(
         }
 
         if (updatedRequests.length !== previousCount) {
+          conversationRequestsRef.current = updatedRequests;
           setConversationStats(updatedStats);
           setConversationRequests(updatedRequests);
           ssePopulatedForConversationRef.current = activeConversationId;
@@ -474,6 +476,10 @@ export default function useConversationGraphData(
             updatedRequests.push(fetchedRequest);
           }
         }
+
+        // Synchronously update the ref so any subsequent batch that fires
+        // before React's useEffect ref-sync sees the correct baseline.
+        conversationRequestsRef.current = updatedRequests;
 
         setConversationStats(updatedStats);
         setConversationRequests(updatedRequests);
