@@ -52,7 +52,8 @@ export type NodeCategory =
   | "user"
   | "project"
   | "agent"
-  | "subagent";
+  | "subagent"
+  | "turn";
 
 export interface GraphNode {
   id: string;
@@ -95,6 +96,7 @@ const NODE_COLORS: Record<NodeCategory, string> = {
   subagent: "oklch(0.68 0.14 270)",
   request: "oklch(0.65 0.12 220)",
   tool: "oklch(0.72 0.16 45)",
+  turn: "oklch(0.78 0.12 170)",
 };
 
 export const PROACTIVE_PENDING_REQUEST_NODE_ID = "request:proactive-pending";
@@ -119,6 +121,7 @@ const NODE_LABELS: Record<NodeCategory, string> = {
   subagent: "Sub-Agent",
   request: "Request",
   tool: "Tool",
+  turn: "Turn",
 };
 
 // Dynamically computes the column tier for a node based on its agent depth.
@@ -138,6 +141,8 @@ function computeNodeTier(node: GraphNode): number {
       const subagentDepth = node.depth ?? 1;
       return 2 + subagentDepth * 3;
     }
+    case "turn":
+      return 3;
     case "request": {
       const requestAgentDepth = (node.metadata?.agentDepth as number) ?? 0;
       return 3 + requestAgentDepth * 3;
@@ -353,6 +358,20 @@ export function buildGraphFromConversation(
   // Second pass: create nodes and edges for all requests.
   // Track the last request node per agent context for sequential chaining.
   const lastRequestNodeIdPerAgentContext = new Map<string, string>();
+
+  // Extract user messages from the conversation for turn boundary labels.
+  // Each user message corresponds to a new turn in the main agent context.
+  const userMessages = conversation.messages
+    ?.filter((message) => message.role === "user")
+    .map((message) => {
+      const messageText = (message.content || "").trim();
+      return messageText.length > 30 ? `${messageText.slice(0, 28)}…` : messageText || "user message";
+    }) ?? [];
+
+  // Track turns: detect when agentConversationId changes for the main agent
+  let currentMainAgentConversationId: string | null = null;
+  let mainAgentTurnIndex = 0;
+
   for (let requestIndex = 0; requestIndex < sortedRequests.length; requestIndex++) {
     const request = sortedRequests[requestIndex];
     const sequenceNumber = requestIndex + 1;
@@ -363,6 +382,36 @@ export function buildGraphFromConversation(
     // since some sub-agent requests lack parentAgentConversationId due to logging inconsistencies.
     const isSubAgent = knownSubAgentConversationIds.has(requestAgentConversationId);
     const agentDepth = isSubAgent ? (subAgentDepthMap.get(requestAgentConversationId) || 1) : 0;
+
+    // Insert a turn boundary node when the main agent's agentConversationId changes.
+    // This visually segments multi-turn conversations with user message nodes.
+    if (!isSubAgent && requestAgentConversationId !== currentMainAgentConversationId) {
+      const isFirstTurn = currentMainAgentConversationId === null;
+      currentMainAgentConversationId = requestAgentConversationId;
+
+      // Only create turn nodes for subsequent turns (the first turn flows
+      // naturally from the agent node without needing a boundary marker)
+      if (!isFirstTurn) {
+        const turnNodeId = `turn:${mainAgentTurnIndex}`;
+        const turnLabel = userMessages[mainAgentTurnIndex] || `Turn ${mainAgentTurnIndex + 1}`;
+        addNode(turnNodeId, turnLabel, "turn", 18, {
+          turnIndex: mainAgentTurnIndex,
+          agentConversationId: requestAgentConversationId,
+        });
+
+        // Chain: previous_request → turn_node
+        const previousRequestNodeId = lastRequestNodeIdPerAgentContext.get("__main_agent__");
+        if (previousRequestNodeId) {
+          addEdge(previousRequestNodeId, turnNodeId, 0.5);
+        } else {
+          addEdge(parentAgentNodeId, turnNodeId, 0.6);
+        }
+
+        // The turn node becomes the "last node" so the next request chains from it
+        lastRequestNodeIdPerAgentContext.set("__main_agent__", turnNodeId);
+      }
+      mainAgentTurnIndex++;
+    }
 
     // Deduplicate tool names for this request (preserving order)
     const uniqueToolNames = request.toolApiNames
@@ -1640,6 +1689,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
           includeEdge(edge);
         }
       }
+    } else if (targetNode.category === "turn") {
+      // For turn nodes: include forward edges to the next request(s) and walk backward to root
+      for (const edge of graphData.edges) {
+        if (edge.source === targetNodeId || edge.target === targetNodeId) {
+          includeEdge(edge);
+        }
+      }
+      walkBackwardToRoot(targetNodeId);
     }
 
     return { flowNodeIds, flowEdgeKeys };
@@ -2350,8 +2407,8 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                       </text>
                     )}
                     {node.category !== "request" && node.category !== "tool" && (
-                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={28} style={{ pointerEvents: "none", userSelect: "none" }}>
-                        {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "user" ? "●" : "○"}
+                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={node.category === "turn" ? 20 : 28} style={{ pointerEvents: "none", userSelect: "none" }}>
+                        {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "user" ? "●" : node.category === "turn" ? "💬" : "○"}
                       </text>
                     )}
                     {/* Collapse/expand toggle badge for agents with children */}
