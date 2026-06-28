@@ -2525,13 +2525,11 @@ function SubSubAgentStatusBars({
 }) {
   if (!subAgentToolActivity) return null;
 
-  const activeCreateTeamCalls = toolCalls.filter(
-    (toolCall) =>
-      toolCall.name === "create_team" &&
-      (toolCall.status === "calling" || toolCall.status === "streaming"),
+  const createTeamCalls = toolCalls.filter(
+    (toolCall) => toolCall.name === "create_team",
   );
 
-  if (activeCreateTeamCalls.length === 0) return null;
+  if (createTeamCalls.length === 0) return null;
 
   const subSubAgentEntries: Array<{
     agentId: string;
@@ -2539,7 +2537,7 @@ function SubSubAgentStatusBars({
     activity: SubAgentActivity | SubAgentToolActivityItem;
   }> = [];
 
-  for (const createTeamCall of activeCreateTeamCalls) {
+  for (const createTeamCall of createTeamCalls) {
     const parsedResult = createTeamCall.result
       ? typeof createTeamCall.result === "string"
         ? (() => { try { return JSON.parse(createTeamCall.result); } catch { return null; } })()
@@ -2594,12 +2592,6 @@ function SubSubAgentStatusBars({
     <div className={styles['sub-sub-agent-status-bars']}>
       {subSubAgentEntries.map((entry) => {
         const activityData = entry.activity as SubAgentActivity;
-        const isEntryTerminal =
-          activityData.phase === "complete" || activityData.phase === "failed";
-        const isEntryActive =
-          !isEntryTerminal || !!activityData.currentTool;
-
-        if (!isEntryActive) return null;
 
         return (
           <div key={entry.agentId} className={styles['sub-sub-agent-status-entry']}>
@@ -2851,9 +2843,7 @@ function TeamCreateRenderer({
             <div className={styles['sub-agent-result-card']}>
               {activity?.toolCalls &&
                 activity.toolCalls.some(
-                  (toolCall) =>
-                    toolCall.name === "create_team" &&
-                    (toolCall.status === "calling" || toolCall.status === "streaming"),
+                  (toolCall) => toolCall.name === "create_team",
                 ) && (
                 <SubSubAgentStatusBars
                   toolCalls={activity.toolCalls}

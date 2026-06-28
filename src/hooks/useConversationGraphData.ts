@@ -144,15 +144,32 @@ export default function useConversationGraphData(
       const topology = activeConversation.settings?.agents?.topology || "hierarchical";
       applyTopologyLayout(graph, CANONICAL_LAYOUT_WIDTH, CANONICAL_LAYOUT_HEIGHT, topology);
 
-      // Preserve positions for ALL pre-existing nodes. Only truly new
-      // nodes receive their fresh layout coordinates. This prevents
-      // existing turn/request nodes from shifting when new nodes arrive.
-      for (const node of graph.nodes) {
-        if (newNodeIds.has(node.id)) continue;
-        const previousPosition = existingPositions.get(node.id);
-        if (previousPosition) {
-          node.x = previousPosition.x;
-          node.y = previousPosition.y;
+      // When new sub-agent nodes appear, the graph topology has changed
+      // significantly — the layout algorithm computes sub-agent branch
+      // positions relative to the main chain, so preserving old positions
+      // would place new nodes at coordinates relative to a stale grid.
+      // Only preserve positions for simple request-chain appends (same topology).
+      const hasNewSubAgentNodes = [...newNodeIds].some((nodeId) => {
+        const node = graph.nodes.find((graphNode) => graphNode.id === nodeId);
+        if (!node) return false;
+        // Sub-agent agent nodes themselves
+        if (node.category === "subagent") return true;
+        // Sub-agent request nodes (agentDepth > 0 means they belong to a sub-agent branch)
+        if (node.category === "request" && ((node.metadata?.agentDepth as number) ?? 0) > 0) return true;
+        return false;
+      });
+
+      if (!hasNewSubAgentNodes) {
+        // Preserve positions for ALL pre-existing nodes. Only truly new
+        // nodes receive their fresh layout coordinates. This prevents
+        // existing turn/request nodes from shifting when new nodes arrive.
+        for (const node of graph.nodes) {
+          if (newNodeIds.has(node.id)) continue;
+          const previousPosition = existingPositions.get(node.id);
+          if (previousPosition) {
+            node.x = previousPosition.x;
+            node.y = previousPosition.y;
+          }
         }
       }
 
