@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import useConversationGraphData from "../hooks/useConversationGraphData";
 import {
   Network,
   ZoomIn,
@@ -17,10 +18,8 @@ import {
 } from "lucide-react";
 import IrisService, {
   type IrisRequestEntry,
-  type IrisCollectionChangeEvent,
 } from "../services/IrisService";
-import PrismService from "../services/PrismService";
-import type { AgentConversation, ConversationStats, ToolCallEvent, ToolSchema } from "../types/types";
+import type { AgentConversation, ConversationStats, ToolCallEvent } from "../types/types";
 import { cleanModelName } from "./BadgeComponent";
 import ProviderLogo, { resolveProviderLabel, resolveProviderLogoKey } from "./ProviderLogosComponent";
 import StarfieldComponent from "./StarfieldComponent";
@@ -46,7 +45,7 @@ import styles from "./ChatConversationGraphComponent.module.css";
    Node Graph Data Structures (mirrored from ConversationGraphPageComponent)
    ═══════════════════════════════════════════════════════════════════ */
 
-type NodeCategory =
+export type NodeCategory =
   | "session"
   | "tool"
   | "request"
@@ -55,7 +54,7 @@ type NodeCategory =
   | "agent"
   | "subagent";
 
-interface GraphNode {
+export interface GraphNode {
   id: string;
   label: string;
   category: NodeCategory;
@@ -69,7 +68,7 @@ interface GraphNode {
   depth?: number;
 }
 
-interface GraphEdge {
+export interface GraphEdge {
   source: string;
   target: string;
   strength?: number;
@@ -88,7 +87,7 @@ interface ContainmentHalo {
   depth: number;
 }
 
-interface GraphData {
+export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
   subAgentTree: SubAgentTreeNode[];
@@ -105,7 +104,7 @@ const NODE_COLORS: Record<NodeCategory, string> = {
   tool: "oklch(0.72 0.16 45)",
 };
 
-const PROACTIVE_PENDING_REQUEST_NODE_ID = "request:proactive-pending";
+export const PROACTIVE_PENDING_REQUEST_NODE_ID = "request:proactive-pending";
 
 const AGENT_DEPTH_COLORS: string[] = [
   "oklch(0.72 0.16 300)",
@@ -919,7 +918,7 @@ function applyMCTSLayout(graphData: GraphData, canvasWidth: number, canvasHeight
   }
 }
 
-function applyTopologyLayout(
+export function applyTopologyLayout(
   graphData: GraphData,
   canvasWidth: number,
   canvasHeight: number,
@@ -1208,25 +1207,39 @@ export interface ChatConversationGraphComponentProps {
   toolActivity?: ToolCallEvent[];
   isGenerating?: boolean;
   compact?: boolean;
+  graphState?: import("../hooks/useConversationGraphData").ConversationGraphDataState;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════════════════════ */
 
-export default function ChatConversationGraphComponent({ conversationId, toolActivity = [], isGenerating = false, compact = false }: ChatConversationGraphComponentProps) {
-  const [conversation, setConversation] = useState<AgentConversation | null>(null);
-  const [conversationStats, setConversationStats] = useState<ConversationStats | null>(null);
-  const [conversationRequests, setConversationRequests] = useState<IrisRequestEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [graphData, setGraphData] = useState<GraphData | null>(null);
+export default function ChatConversationGraphComponent({ conversationId, toolActivity = [], isGenerating = false, compact = false, graphState: externalGraphState }: ChatConversationGraphComponentProps) {
+  // When external graphState is provided, the internal hook is a no-op (null conversationId).
+  // When standalone (no parent providing graphState), the hook manages its own SSE + data.
+  const internalGraphState = useConversationGraphData(
+    externalGraphState ? null : conversationId,
+    isGenerating,
+  );
+
+  const resolvedGraphState = externalGraphState || internalGraphState;
+
+  const {
+    graphData,
+    setGraphData,
+    isLoading,
+    isLiveConnected,
+    enteringNodeIds,
+    setEnteringNodeIds,
+    toolEmojiMap,
+    nodesRef,
+    graphDataRef,
+  } = resolvedGraphState;
+
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [selectedEdgeKeys, setSelectedEdgeKeys] = useState<Set<string>>(new Set());
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
-  const [enteringNodeIds, setEnteringNodeIds] = useState<Set<string>>(new Set());
-  const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [collapsedSubTreeIds, setCollapsedSubTreeIds] = useState<Set<string>>(new Set());
-  const [toolEmojiMap, setToolEmojiMap] = useState<Map<string, string>>(new Map());
 
   const [phaseColor, setPhaseColor] = useState<string | null>(null);
 
@@ -1240,24 +1253,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     return () => clearInterval(intervalId);
   }, []);
 
-  // Fetch tool schemas once to build emoji map for tool nodes
-  useEffect(() => {
-    let isCancelled = false;
-    PrismService.getBuiltInToolSchemas()
-      .then((toolSchemas: ToolSchema[]) => {
-        if (isCancelled) return;
-        const emojiMap = new Map<string, string>();
-        for (const toolSchema of toolSchemas) {
-          if (toolSchema.emoji) {
-            const resolvedEmoji = Array.isArray(toolSchema.emoji) ? toolSchema.emoji[0] : toolSchema.emoji;
-            if (resolvedEmoji) emojiMap.set(toolSchema.name, resolvedEmoji);
-          }
-        }
-        setToolEmojiMap(emojiMap);
-      })
-      .catch(() => { /* Tool emojis are cosmetic — fail silently */ });
-    return () => { isCancelled = true; };
-  }, []);
+
 
   const [selectedRequestDetail, setSelectedRequestDetail] = useState<IrisRequestEntry | null>(null);
   const [isRequestDetailLoading, setIsRequestDetailLoading] = useState(false);
@@ -1270,13 +1266,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   useEffect(() => { panOffsetRef.current = panOffset; }, [panOffset]);
   useEffect(() => { zoomRef.current = zoom; }, [zoom]);
   const fitAnimationFrameRef = useRef<number | null>(null);
-  const isGeneratingRef = useRef(isGenerating);
-  useEffect(() => { isGeneratingRef.current = isGenerating; }, [isGenerating]);
 
-  // Tracks the real request count at the moment generation started.
-  // Used to determine whether real request nodes have arrived to
-  // replace the proactive pending node after generation stops.
-  const requestCountAtGenerationStartRef = useRef<number>(0);
   const lastMousePositionRef = useRef({ x: 0, y: 0 });
   const hasDraggedRef = useRef(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
@@ -1286,22 +1276,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const [draggedNode, setDraggedNode] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
 
-  const conversationRef = useRef<AgentConversation | null>(null);
-  const conversationRequestsRef = useRef<IrisRequestEntry[]>([]);
-  const conversationStatsRef = useRef<ConversationStats | null>(null);
-  const graphDataRef = useRef<GraphData | null>(null);
 
-  // Coordination flag: when the SSE bootstrap or an SSE insert handler
-  // has already populated graph data for the current conversation, the
-  // initial loadGraph fetch must NOT blindly overwrite that data — doing
-  // so would regress request nodes that arrived via the real-time path.
-  const ssePopulatedForConversationRef = useRef<string | null>(null);
-
-  // Keep refs in sync
-  useEffect(() => { conversationRef.current = conversation; }, [conversation]);
-  useEffect(() => { conversationRequestsRef.current = conversationRequests; }, [conversationRequests]);
-  useEffect(() => { conversationStatsRef.current = conversationStats; }, [conversationStats]);
-  useEffect(() => { graphDataRef.current = graphData; }, [graphData]);
 
   // ResizeObserver for canvas dimensions
   useEffect(() => {
@@ -1316,15 +1291,12 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     return () => resizeObserver.disconnect();
   }, []);
 
-  // -- Collision physics -----------------------------------------
-  const nodesRef = useRef<GraphNode[]>([]);
   const draggingRef = useRef<{ id: string } | null>(null);
   const rafRef = useRef<number | null>(null);
   const settleCountRef = useRef<number>(0);
   const collisionTickRef = useRef<(() => void) | null>(null);
   const previousNodeCountRef = useRef<number>(0);
 
-  useEffect(() => { nodesRef.current = graphData?.nodes || []; }, [graphData?.nodes]);
   useEffect(() => { draggingRef.current = draggedNode; }, [draggedNode]);
 
   useEffect(() => {
@@ -1420,6 +1392,11 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     if (draggedNode) startCollisionLoop(30);
   }, [draggedNode, startCollisionLoop]);
 
+  // Start collision settlement when new graph data arrives from the hook
+  useEffect(() => {
+    if (graphData && graphData.nodes.length > 0) startCollisionLoop(40);
+  }, [graphData?.nodes.length, startCollisionLoop]);
+
   // -- Animated viewport auto-fit --------------------------------
   // Smoothly transitions zoom + pan to keep all nodes visible
   // using rAF-driven ease-out cubic interpolation. Cancels any
@@ -1480,521 +1457,20 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   }, [dimensions.width, dimensions.height]);
 
   // -- Reactive auto-fit on node arrival -------------------------
-  // Whenever the node count increases (new nodes entered the graph),
-  // smoothly animate the viewport to fit all nodes. This fires on
-  // the React commit cycle as a safety net — guaranteeing centering
-  // happens even if an imperative code path omits the call.
   useEffect(() => {
     const currentNodeCount = graphData?.nodes.length ?? 0;
-    if (currentNodeCount > previousNodeCountRef.current && previousNodeCountRef.current > 0) {
+    if (currentNodeCount > previousNodeCountRef.current) {
       animateToFitTransform();
     }
     previousNodeCountRef.current = currentNodeCount;
   }, [graphData?.nodes.length, animateToFitTransform]);
 
-  // -- Incremental rebuild ---------------------------------------
-  const incrementalGraphRebuild = useCallback((
-    activeConversation: AgentConversation,
-    updatedStats: ConversationStats | null,
-    updatedRequests: IrisRequestEntry[],
-  ) => {
-    // Cancel any running collision loop BEFORE rebuilding. The collision
-    // tick reads positions from nodesRef (stale until React re-renders)
-    // and writes absolute positions via setGraphData, which would
-    // overwrite the correct layout positions computed below.
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-
-    const existingPositions = new Map<string, { x: number; y: number }>();
-    const existingNodeIds = new Set<string>();
-
-    setGraphData((previousGraphData) => {
-      if (previousGraphData) {
-        for (const node of previousGraphData.nodes) {
-          existingPositions.set(node.id, { x: node.x, y: node.y });
-          existingNodeIds.add(node.id);
-        }
-      }
-
-      const graph = buildGraphFromConversation(activeConversation, updatedStats, updatedRequests);
-      const newNodeIds = new Set<string>();
-      for (const node of graph.nodes) {
-        if (!existingNodeIds.has(node.id)) newNodeIds.add(node.id);
-      }
-
-      // Determine which categories gained new nodes — those columns
-      // must be fully re-laid-out to maintain vertical centering
-      const categoriesWithNewNodes = new Set<NodeCategory>();
-      for (const node of graph.nodes) {
-        if (newNodeIds.has(node.id)) {
-          categoriesWithNewNodes.add(node.category);
-        }
-      }
-
-      const topology = activeConversation.settings?.agents?.topology || "hierarchical";
-      applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
-
-      // Preserve old positions only for categories that didn't change.
-      // Categories that gained new nodes get fully re-laid-out so the
-      // entire column re-centers vertically instead of stacking.
-      for (const node of graph.nodes) {
-        if (categoriesWithNewNodes.has(node.category)) continue;
-        const previousPosition = existingPositions.get(node.id);
-        if (previousPosition) {
-          node.x = previousPosition.x;
-          node.y = previousPosition.y;
-        }
-      }
-
-      // Re-inject the proactive pending node when generation is still
-      // active. buildGraphFromConversation has no concept of the synthetic
-      // proactive node, so the rebuild always drops it. We must re-add it
-      // unless a new real request node has arrived to replace it.
-      const hadProactiveNode = previousGraphData?.nodes.some(
-        (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
-      );
-      const previousRealRequestCount = previousGraphData
-        ? previousGraphData.nodes.filter(
-            (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-          ).length
-        : 0;
-      const currentRealRequestCount = graph.nodes.filter(
-        (node) => node.category === "request",
-      ).length;
-
-      const hasNewRealRequestsArrived = currentRealRequestCount > requestCountAtGenerationStartRef.current;
-
-      if (hadProactiveNode && currentRealRequestCount > previousRealRequestCount) {
-        if (isGeneratingRef.current) {
-          // Generation still active — a real request superseded the proactive
-          // node. Re-inject a new proactive node after the latest real request
-          // to show that the next request is coming (cascading processing).
-          const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
-          const lastRealRequest = realRequestNodes
-            .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
-            .at(-1);
-          const agentNode = graph.nodes.find((node) => node.category === "agent");
-
-          const cascadingProactiveNode: GraphNode = {
-            id: PROACTIVE_PENDING_REQUEST_NODE_ID,
-            label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
-            category: "request",
-            radius: 24,
-            x: lastRealRequest?.x ?? (agentNode?.x ?? 400) + 200,
-            y: lastRealRequest ? lastRealRequest.y + 80 : (agentNode?.y ?? 250),
-            velocityX: 0,
-            velocityY: 0,
-            sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
-            metadata: { operation: "pending", status: "pending" },
-          };
-
-          graph.nodes.push(cascadingProactiveNode);
-          if (agentNode) {
-            graph.edges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
-          }
-          if (lastRealRequest) {
-            graph.edges.push({ source: lastRealRequest.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
-          }
-        }
-        // Generation stopped and real requests arrived — the proactive node
-        // is naturally dropped by buildGraphFromConversation. No re-injection needed.
-      } else if (hadProactiveNode && !isGeneratingRef.current && hasNewRealRequestsArrived) {
-        // Generation stopped and real requests have arrived since it started.
-        // Don't re-inject — the real request data is now authoritative.
-      } else if (hadProactiveNode) {
-        // No new real request yet — re-inject the proactive node so it
-        // persists through the rebuild until real data arrives.
-        const proactiveNodeFromPrevious = previousGraphData?.nodes.find(
-          (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
-        );
-        if (proactiveNodeFromPrevious) {
-          const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
-          const lastRealRequest = realRequestNodes
-            .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
-            .at(-1);
-          const agentNode = graph.nodes.find((node) => node.category === "agent");
-
-          const reinjectedNode: GraphNode = {
-            ...proactiveNodeFromPrevious,
-            sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
-            label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
-            x: lastRealRequest?.x ?? (agentNode?.x ?? 400) + 200,
-            y: lastRealRequest ? lastRealRequest.y + 80 : (agentNode?.y ?? 250),
-          };
-
-          graph.nodes.push(reinjectedNode);
-          if (agentNode) {
-            graph.edges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
-          }
-          if (lastRealRequest) {
-            graph.edges.push({ source: lastRealRequest.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
-          }
-        }
-      }
-
-      // Eagerly synchronize nodesRef so the collision loop (restarted
-      // by the caller) reads the correct layout positions on its first
-      // tick instead of stale pre-rebuild positions.
-      nodesRef.current = graph.nodes;
-
-      if (newNodeIds.size > 0) {
-        setEnteringNodeIds(newNodeIds);
-        setTimeout(() => setEnteringNodeIds(new Set()), 600);
-      }
-
-      return graph;
-    });
-
-    // Smoothly animate the viewport to fit all nodes whenever the
-    // graph changes during generation, so the view stays centered
-    // and all nodes remain visible without jarring instant snaps.
-    animateToFitTransform();
-  }, [dimensions, animateToFitTransform]);
-
-  // -- Load session graph ----------------------------------------
+  // -- Clear per-instance selection on conversation change --------
   useEffect(() => {
-    if (!conversationId) {
-      setConversation(null);
-      setConversationStats(null);
-      setConversationRequests([]);
-      setGraphData(null);
-      setSelectedNodeIds(new Set());
-      setSelectedEdgeKeys(new Set());
-      setFocusedNodeId(null);
-      ssePopulatedForConversationRef.current = null;
-      return;
-    }
-
-    let isCancelled = false;
-    setIsLoading(true);
-    // Reset the SSE coordination flag for the new conversation so
-    // the first successful data source (loadGraph OR SSE bootstrap)
-    // populates the graph without being blocked.
-    ssePopulatedForConversationRef.current = null;
-    // Preserve existing graphData — don't nuke the canvas. For a
-    // brand-new conversation the graph will be null anyway; for a
-    // conversation switch the old graph fades out via the
-    // incremental rebuild once new data arrives.
     setSelectedNodeIds(new Set());
     setSelectedEdgeKeys(new Set());
     setFocusedNodeId(null);
-
-    const loadGraph = async () => {
-      try {
-        const fetchedConversation = await IrisService.getAgentConversation(conversationId);
-        if (isCancelled) return;
-
-        // If the SSE bootstrap or an SSE event handler has already
-        // populated graph data for this conversation while our async
-        // fetch was in flight, yield to avoid overwriting with stale
-        // data that may be missing recently-inserted request nodes.
-        if (ssePopulatedForConversationRef.current === conversationId) {
-          setIsLoading(false);
-          return;
-        }
-
-        const [statsResponse, requestsResponse] = await Promise.all([
-          IrisService.getConversationRunStats(conversationId).catch(() => null),
-          IrisService.getConversationRequests(conversationId).catch(() => ({ requests: [] })),
-        ]);
-
-        if (isCancelled) return;
-
-        // Re-check after the second await — SSE may have populated
-        // data during the stats/requests fetch.
-        if (ssePopulatedForConversationRef.current === conversationId) {
-          setIsLoading(false);
-          return;
-        }
-
-        setConversation(fetchedConversation);
-        setConversationStats(statsResponse);
-        const requestsList = requestsResponse.requests || [];
-        setConversationRequests(requestsList);
-
-        const graph = buildGraphFromConversation(fetchedConversation, statsResponse, requestsList);
-        const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
-        applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
-        nodesRef.current = graph.nodes;
-        setGraphData(graph);
-        startCollisionLoop(40);
-
-        const fitTransform = computeFitToGraphTransform(graph.nodes, dimensions.width, dimensions.height);
-        setZoom(fitTransform.zoom);
-        setPanOffset(fitTransform.panOffset);
-        setIsLoading(false);
-      } catch {
-        // Conversation may not exist yet (new conversation) —
-        // silently clear loading so the SSE cold-start bootstrap
-        // can populate the graph when the first request lands.
-        // The canvas stays visible (empty) instead of flashing a spinner.
-        if (!isCancelled) setIsLoading(false);
-      }
-    };
-
-    loadGraph();
-    return () => { isCancelled = true; };
-  }, [conversationId, dimensions.width, dimensions.height, startCollisionLoop]);
-
-  // -- SSE live updates ------------------------------------------
-  // Uses per-event incremental streaming: each MongoDB Change Stream
-  // event triggers an immediate single-request fetch and graph rebuild,
-  // so request nodes appear one-by-one in real-time instead of in batches.
-  useEffect(() => {
-    if (!conversationId) return;
-
-    let pollInterval: ReturnType<typeof setInterval> | null = null;
-    let isBootstrapping = false;
-    let isCancelled = false;
-
-    // Buffer SSE events that arrive during the cold-start bootstrap
-    // phase so they can be replayed after bootstrap completes.
-    // Without this, rapid insert events (e.g. memory:embed,
-    // workflow-query:embed) that fire while bootstrap is running
-    // are silently discarded — causing the graph to show only a
-    // single straight line until the user refreshes the page.
-    let pendingEventsBuffer: IrisCollectionChangeEvent[] = [];
-
-    // Track known request IDs to prevent duplicate appends from
-    // concurrent SSE events or re-deliveries
-    const knownRequestIds = new Set<string>();
-    for (const existingRequest of conversationRequestsRef.current) {
-      if (existingRequest._id) knownRequestIds.add(existingRequest._id);
-    }
-
-
-    const performColdStartBootstrap = async () => {
-      if (isBootstrapping || isCancelled) return;
-      isBootstrapping = true;
-      try {
-        const fetchedConversation = await IrisService.getAgentConversation(conversationId);
-        if (isCancelled) return;
-
-        const [bootstrapStats, bootstrapRequestsResponse] = await Promise.all([
-          IrisService.getConversationRunStats(conversationId).catch(() => null),
-          IrisService.getConversationRequests(conversationId).catch(() => ({ requests: [] as IrisRequestEntry[] })),
-        ]);
-        if (isCancelled) return;
-
-        const bootstrapRequests = bootstrapRequestsResponse.requests || [];
-
-        // Seed the known IDs set from the full bootstrap
-        knownRequestIds.clear();
-        for (const bootstrapRequest of bootstrapRequests) {
-          if (bootstrapRequest._id) knownRequestIds.add(bootstrapRequest._id);
-        }
-
-        setConversation(fetchedConversation);
-        setConversationStats(bootstrapStats);
-        setConversationRequests(bootstrapRequests);
-
-        const graph = buildGraphFromConversation(fetchedConversation, bootstrapStats, bootstrapRequests);
-        const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
-        applyTopologyLayout(graph, dimensions.width, dimensions.height, topology);
-        nodesRef.current = graph.nodes;
-        setGraphData(graph);
-        setIsLoading(false);
-        // Signal that SSE has populated graph data for this conversation
-        // so the loadGraph effect yields instead of overwriting.
-        ssePopulatedForConversationRef.current = conversationId;
-        startCollisionLoop(40);
-        animateToFitTransform();
-      } catch {
-        // Conversation not available yet — will retry on the next SSE event
-      } finally {
-        isBootstrapping = false;
-
-        // Replay any SSE events that were buffered during bootstrap.
-        // These events would otherwise be permanently lost since the
-        // Change Stream only delivers insert events once.
-        if (pendingEventsBuffer.length > 0 && !isCancelled) {
-          const bufferedEvents = pendingEventsBuffer;
-          pendingEventsBuffer = [];
-          for (const bufferedEvent of bufferedEvents) {
-            enqueueChangeEvent(bufferedEvent);
-          }
-        }
-      }
-    };
-
-    // Full re-fetch fallback for polling mode (no Change Streams)
-    const performFullRefresh = async () => {
-      const activeConversation = conversationRef.current;
-      if (!activeConversation || isCancelled) {
-        if (!activeConversation) await performColdStartBootstrap();
-        return;
-      }
-
-      const activeConversationId = activeConversation.id || activeConversation._id;
-      try {
-        const [updatedStats, updatedRequestsResponse] = await Promise.all([
-          IrisService.getConversationRunStats(activeConversationId).catch(() => conversationStatsRef.current),
-          IrisService.getConversationRequests(activeConversationId).catch(() => ({ requests: conversationRequestsRef.current })),
-        ]);
-        if (isCancelled) return;
-
-        const updatedRequests = updatedRequestsResponse.requests || [];
-        const previousCount = knownRequestIds.size;
-
-        // Re-seed known IDs
-        knownRequestIds.clear();
-        for (const request of updatedRequests) {
-          if (request._id) knownRequestIds.add(request._id);
-        }
-
-        if (updatedRequests.length !== previousCount) {
-          setConversationStats(updatedStats);
-          setConversationRequests(updatedRequests);
-          ssePopulatedForConversationRef.current = activeConversationId;
-          incrementalGraphRebuild(activeConversation, updatedStats, updatedRequests);
-          startCollisionLoop(40);
-        } else if (updatedStats) {
-          setConversationStats(updatedStats);
-        }
-      } catch {
-        // Silently ignore
-      }
-    };
-
-    // ── Batched SSE processing ──────────────────────────────────
-    // Instead of processing each SSE event serially (1 getRequest +
-    // 1 getConversationRunStats per event), we collect events that
-    // arrive within a short window and process them in a single batch.
-    // For 3 events this reduces 6 sequential HTTP requests down to
-    // 4 parallel ones (3× getRequest + 1× stats), cutting perceived
-    // latency from ~2-4s to ~200-400ms.
-    let batchedChangeEvents: IrisCollectionChangeEvent[] = [];
-    let batchFlushTimer: ReturnType<typeof setTimeout> | null = null;
-    const BATCH_WINDOW_MILLISECONDS = 150;
-
-    const flushBatchedEvents = async () => {
-      batchFlushTimer = null;
-      if (isCancelled || batchedChangeEvents.length === 0) return;
-
-      const eventsToProcess = batchedChangeEvents;
-      batchedChangeEvents = [];
-
-      // If bootstrapping is in progress, buffer all events for replay
-      if (isBootstrapping) {
-        pendingEventsBuffer.push(...eventsToProcess);
-        return;
-      }
-
-      const activeConversation = conversationRef.current;
-      if (!activeConversation) {
-        pendingEventsBuffer.push(...eventsToProcess);
-        await performColdStartBootstrap();
-        return;
-      }
-
-      // Deduplicate and categorize events
-      const insertDocumentIds: string[] = [];
-      const updateDocumentIds: string[] = [];
-      let hasUnknownOperations = false;
-
-      for (const changeEvent of eventsToProcess) {
-        const requestDocumentId = changeEvent.documentId;
-        if (!requestDocumentId) {
-          hasUnknownOperations = true;
-          continue;
-        }
-
-        const isInsertOperation = changeEvent.operationType === "insert";
-        const isUpdateOperation = changeEvent.operationType === "update" || changeEvent.operationType === "replace";
-
-        if (isInsertOperation) {
-          if (!knownRequestIds.has(requestDocumentId)) {
-            insertDocumentIds.push(requestDocumentId);
-            knownRequestIds.add(requestDocumentId);
-          }
-        } else if (isUpdateOperation) {
-          updateDocumentIds.push(requestDocumentId);
-        } else {
-          hasUnknownOperations = true;
-        }
-      }
-
-      // If we only have unknown operations, fall back to full refresh
-      if (insertDocumentIds.length === 0 && updateDocumentIds.length === 0) {
-        if (hasUnknownOperations) await performFullRefresh();
-        return;
-      }
-
-      try {
-        // Fetch all affected requests in parallel + a single stats call
-        const allDocumentIds = [...new Set([...insertDocumentIds, ...updateDocumentIds])];
-        const [updatedStats, ...fetchedRequests] = await Promise.all([
-          IrisService.getConversationRunStats(
-            activeConversation.id || activeConversation._id,
-          ).catch(() => conversationStatsRef.current),
-          ...allDocumentIds.map((documentId) => IrisService.getRequest(documentId)),
-        ]);
-        if (isCancelled) return;
-
-        // Build a lookup map for the fetched requests
-        const fetchedRequestMap = new Map<string, IrisRequestEntry>();
-        for (const fetchedRequest of fetchedRequests) {
-          if (fetchedRequest?._id) {
-            fetchedRequestMap.set(fetchedRequest._id, fetchedRequest);
-          }
-        }
-
-        // Merge into the current requests array
-        let updatedRequests = [...conversationRequestsRef.current];
-        const existingIds = new Set(updatedRequests.map((request) => request._id));
-
-        for (const [documentId, fetchedRequest] of fetchedRequestMap) {
-          if (existingIds.has(documentId)) {
-            updatedRequests = updatedRequests.map((existingRequest) =>
-              existingRequest._id === documentId ? fetchedRequest : existingRequest,
-            );
-          } else {
-            updatedRequests.push(fetchedRequest);
-          }
-        }
-
-        setConversationStats(updatedStats);
-        setConversationRequests(updatedRequests);
-        // Mark SSE as the authoritative data source for this conversation
-        // so any still-pending loadGraph fetch yields on completion.
-        ssePopulatedForConversationRef.current = conversationId;
-        incrementalGraphRebuild(activeConversation, updatedStats, updatedRequests);
-        startCollisionLoop(40);
-      } catch {
-        await performFullRefresh();
-      }
-    };
-
-    const enqueueChangeEvent = (changeEvent: IrisCollectionChangeEvent) => {
-      batchedChangeEvents.push(changeEvent);
-      if (!batchFlushTimer) {
-        batchFlushTimer = setTimeout(flushBatchedEvents, BATCH_WINDOW_MILLISECONDS);
-      }
-    };
-
-    const subscription = IrisService.subscribeCollectionChanges({
-      onStatus: (statusEvent: IrisCollectionChangeEvent) => {
-        setIsLiveConnected(!!statusEvent.changeStreams);
-        if (!statusEvent.changeStreams) {
-          if (!pollInterval) pollInterval = setInterval(performFullRefresh, 10_000);
-        }
-      },
-      onChange: (changeEvent: IrisCollectionChangeEvent) => {
-        if (changeEvent.collection === "requests" && changeEvent.conversationId === conversationId) {
-          enqueueChangeEvent(changeEvent);
-        }
-      },
-    });
-
-    return () => {
-      isCancelled = true;
-      subscription.close();
-      if (pollInterval) clearInterval(pollInterval);
-      if (batchFlushTimer) clearTimeout(batchFlushTimer);
-    };
-  }, [conversationId, dimensions.width, dimensions.height, incrementalGraphRebuild, startCollisionLoop]);
+  }, [conversationId]);
 
   // -- Screen ↔ SVG coordinate helper ---------------------------
   const screenToSvg = useCallback(
@@ -2550,151 +2026,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   }, [toolActivity]);
 
 
-  // -- Proactive pending request node injection -----------------------
-  // When isGenerating transitions false → true, inject a synthetic
-  // "proactive pending" request node into the graph immediately. This
-  // gives the user instant visual feedback that an upcoming request is
-  // being processed, rather than retroactively lighting up the last
-  // completed request node. The synthetic node is automatically replaced
-  // when the real request data arrives from the backend via
-  // incrementalGraphRebuild, which re-injects the proactive node until
-  // a real request supersedes it.
-  //
-  // CRITICAL: This effect must NOT depend on graphData. Including graphData
-  // in the dependency array causes a re-trigger loop: inject proactive node
-  // → graphData changes → effect re-runs → previousIsGeneratingRef is
-  // already true → neither branch fires → then incrementalGraphRebuild
-  // drops the proactive node (since buildGraphFromConversation doesn't
-  // know about it) → graphData changes again → effect re-runs but still
-  // doesn't re-inject. The node vanishes permanently. Instead we read
-  // current graph state from graphDataRef.
-  const previousIsGeneratingRef = useRef(false);
 
-  useEffect(() => {
-    const currentGraphData = graphDataRef.current;
-    if (!currentGraphData) return;
-
-    const wasGenerating = previousIsGeneratingRef.current;
-    previousIsGeneratingRef.current = isGenerating;
-
-    if (isGenerating && !wasGenerating) {
-      // Generation just started — inject a proactive pending request node
-      const existingRequestNodes = currentGraphData.nodes.filter(
-        (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-      );
-      const nextSequenceNumber = existingRequestNodes.length > 0
-        ? Math.max(...existingRequestNodes.map((node) => node.sequenceNumber ?? 0)) + 1
-        : 1;
-
-      // Snapshot the current real request count so the incremental
-      // rebuild can detect when new real requests have arrived.
-      requestCountAtGenerationStartRef.current = existingRequestNodes.length;
-
-      // Check if a proactive node already exists (idempotent guard)
-      const hasProactiveNode = currentGraphData.nodes.some(
-        (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
-      );
-      if (hasProactiveNode) return;
-
-      // Find the agent node to connect the proactive request to
-      const agentNode = currentGraphData.nodes.find(
-        (node) => node.category === "agent",
-      );
-
-      // Position the proactive node after the last request node in the
-      // request column, or below the agent node if no requests exist yet
-      const lastRequestNode = existingRequestNodes
-        .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
-        .at(-1);
-
-      const proactiveNodeX = lastRequestNode?.x ?? (agentNode?.x ?? 400) + 200;
-      const proactiveNodeY = lastRequestNode ? lastRequestNode.y + 80 : (agentNode?.y ?? 250);
-
-      const proactiveNode: GraphNode = {
-        id: PROACTIVE_PENDING_REQUEST_NODE_ID,
-        label: `#${nextSequenceNumber} pending`,
-        category: "request",
-        radius: 24,
-        x: proactiveNodeX,
-        y: proactiveNodeY,
-        velocityX: 0,
-        velocityY: 0,
-        sequenceNumber: nextSequenceNumber,
-        metadata: {
-          operation: "pending",
-          status: "pending",
-        },
-      };
-
-      const proactiveEdges: GraphEdge[] = [];
-      if (agentNode) {
-        proactiveEdges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
-      }
-      if (lastRequestNode) {
-        proactiveEdges.push({ source: lastRequestNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
-      }
-
-      setGraphData((previousGraphData) => {
-        if (!previousGraphData) return previousGraphData;
-        // Double-check the proactive node hasn't been added by a concurrent update
-        if (previousGraphData.nodes.some((node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID)) {
-          return previousGraphData;
-        }
-        const updatedNodes = [...previousGraphData.nodes, proactiveNode];
-        const updatedEdges = [...previousGraphData.edges, ...proactiveEdges];
-        nodesRef.current = updatedNodes;
-        return {
-          ...previousGraphData,
-          nodes: updatedNodes,
-          edges: updatedEdges,
-        };
-      });
-
-      // Mark the proactive node as entering for the spawn animation
-      setEnteringNodeIds(new Set([PROACTIVE_PENDING_REQUEST_NODE_ID]));
-      setTimeout(() => setEnteringNodeIds(new Set()), 600);
-
-      // Re-fit viewport to include the new node
-      animateToFitTransform();
-    } else if (!isGenerating && wasGenerating) {
-      // Generation just stopped — only remove the proactive node if
-      // real request nodes have arrived since generation started.
-      // Otherwise, keep it visible until the incremental rebuild
-      // detects real request data arriving via SSE.
-      setGraphData((previousGraphData) => {
-        if (!previousGraphData) return previousGraphData;
-        const hasProactive = previousGraphData.nodes.some(
-          (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
-        );
-        if (!hasProactive) return previousGraphData;
-
-        const currentRealRequestCount = previousGraphData.nodes.filter(
-          (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-        ).length;
-        const hasNewRealRequests = currentRealRequestCount > requestCountAtGenerationStartRef.current;
-
-        if (!hasNewRealRequests) {
-          // No real requests yet — keep the proactive node visible.
-          // The incremental rebuild will remove it once real data arrives.
-          return previousGraphData;
-        }
-
-        // Real requests have arrived — safe to remove the proactive node.
-        const filteredNodes = previousGraphData.nodes.filter(
-          (node) => node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-        );
-        const filteredEdges = previousGraphData.edges.filter(
-          (edge) => edge.source !== PROACTIVE_PENDING_REQUEST_NODE_ID && edge.target !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-        );
-        nodesRef.current = filteredNodes;
-        return {
-          ...previousGraphData,
-          nodes: filteredNodes,
-          edges: filteredEdges,
-        };
-      });
-    }
-  }, [isGenerating, animateToFitTransform]);
 
   // Tracks the latest request node as "processing" during generation.
   // Also stays active after generation stops while the proactive node

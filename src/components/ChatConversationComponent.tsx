@@ -87,6 +87,7 @@ import UserQuestionCardComponent from "./UserQuestionCardComponent";
 import StatusBarComponent, { type StatusBarPhase, PHASE_GRADIENT_STOPS } from "./StatusBarComponent";
 import PixelTransitionComponent from "./PixelTransitionComponent";
 import ChatConversationGraphComponent from "./ChatConversationGraphComponent";
+import useConversationGraphData from "../hooks/useConversationGraphData";
 import ChatViewModeControlComponent from "./ChatViewModeControlComponent";
 import type { ChatViewMode } from "./ChatViewModeControlComponent";
 
@@ -557,6 +558,13 @@ export default function ChatConversationComponent({
   const [conversationsHasMore, setConversationsHasMore] = useState(false);
   const [conversationsLoading, setConversationsLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Single source of truth for the conversation graph.
+  // Called unconditionally so the SSE subscription stays alive
+  // across tab switches, keeping both the sidebar and main-content
+  // graph instances in sync.
+  const conversationGraphState = useConversationGraphData(activeId, isGenerating);
+
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState(isNoAgent ? "Agentless Chat" : "Agent");
   const [leftTab, setLeftTab] = useState(() => {
@@ -6602,6 +6610,7 @@ export default function ChatConversationComponent({
             conversationId={activeId}
             toolActivity={toolActivity}
             isGenerating={isGenerating}
+            graphState={conversationGraphState}
             compact
           />
         </>
@@ -6845,6 +6854,7 @@ export default function ChatConversationComponent({
           conversationId={activeId}
           toolActivity={toolActivity}
           isGenerating={isGenerating}
+          graphState={conversationGraphState}
         />
       )}
       {chatAreaTab !== "nodes" && !isAdmin && (
