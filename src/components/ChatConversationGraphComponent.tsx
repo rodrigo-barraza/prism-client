@@ -596,7 +596,7 @@ function flattenSubAgentTree(treeNodes: SubAgentTreeNode[]): string[] {
 
 
 function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canvasHeight: number): void {
-  const { nodes: graphNodes } = graphData;
+  const { nodes: graphNodes, edges: graphEdges } = graphData;
   if (graphNodes.length === 0) return;
 
   const tierBuckets: Map<number, GraphNode[]> = new Map();
@@ -604,6 +604,71 @@ function applyHierarchicalLayout(graphData: GraphData, canvasWidth: number, canv
     const tier = computeNodeTier(node);
     if (!tierBuckets.has(tier)) tierBuckets.set(tier, []);
     tierBuckets.get(tier)!.push(node);
+  }
+
+  // Topologically sort nodes within each tier based on edge topology.
+  // This ensures turn boundary nodes are correctly interleaved between
+  // their request groups regardless of the node array insertion order.
+  const nodeIdSet = new Set(graphNodes.map((node) => node.id));
+  for (const [, tierNodes] of tierBuckets) {
+    if (tierNodes.length <= 1) continue;
+
+    const tierNodeIds = new Set(tierNodes.map((tierNode) => tierNode.id));
+    // Build adjacency within this tier
+    const inDegree = new Map<string, number>();
+    const outEdges = new Map<string, string[]>();
+    for (const tierNode of tierNodes) {
+      inDegree.set(tierNode.id, 0);
+      outEdges.set(tierNode.id, []);
+    }
+
+    for (const edge of graphEdges) {
+      if (tierNodeIds.has(edge.source) && tierNodeIds.has(edge.target)) {
+        outEdges.get(edge.source)!.push(edge.target);
+        inDegree.set(edge.target, (inDegree.get(edge.target) ?? 0) + 1);
+      }
+    }
+
+    // Also consider edges from outside the tier to establish ordering.
+    // If two tier nodes share a parent in a previous tier, the one whose
+    // parent edge appears first in the edge list comes first.
+    // More importantly, follow transitive chains: if A → B via edges
+    // through intermediate nodes outside this tier, A should precede B.
+    const incomingFromOutside = new Map<string, string[]>();
+    for (const edge of graphEdges) {
+      if (tierNodeIds.has(edge.target) && !tierNodeIds.has(edge.source) && nodeIdSet.has(edge.source)) {
+        if (!incomingFromOutside.has(edge.target)) incomingFromOutside.set(edge.target, []);
+        incomingFromOutside.get(edge.target)!.push(edge.source);
+      }
+    }
+
+    // Kahn's algorithm (stable topological sort)
+    const sortedNodes: GraphNode[] = [];
+    const queue: string[] = [];
+    const nodeMap = new Map(tierNodes.map((tierNode) => [tierNode.id, tierNode]));
+
+    for (const tierNode of tierNodes) {
+      if ((inDegree.get(tierNode.id) ?? 0) === 0) queue.push(tierNode.id);
+    }
+
+    while (queue.length > 0) {
+      const currentNodeId = queue.shift()!;
+      sortedNodes.push(nodeMap.get(currentNodeId)!);
+      for (const neighborId of (outEdges.get(currentNodeId) ?? [])) {
+        const newDegree = (inDegree.get(neighborId) ?? 1) - 1;
+        inDegree.set(neighborId, newDegree);
+        if (newDegree === 0) queue.push(neighborId);
+      }
+    }
+
+    // Append any remaining nodes not reached by the sort (disconnected)
+    for (const tierNode of tierNodes) {
+      if (!sortedNodes.includes(tierNode)) sortedNodes.push(tierNode);
+    }
+
+    // Replace tier contents with sorted order
+    tierNodes.length = 0;
+    tierNodes.push(...sortedNodes);
   }
 
   // Collect only populated tiers in ascending order so empty columns
