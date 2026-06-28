@@ -286,42 +286,67 @@ export function buildGraphFromConversation(
   const userSet = new Set<string>();
   const addedToolNames = new Set<string>();
 
-  // Build sub-agent conversation ID → node ID mapping for tree reconstruction
-  const agentConversationIdToNodeId = new Map<string, string>();
-  agentConversationIdToNodeId.set(mainAgentConversationId, parentAgentNodeId);
-
   const sortedRequests = [...conversationRequests].sort((requestA, requestB) => {
     const timestampA = requestA.timestamp ? new Date(requestA.timestamp).getTime() : 0;
     const timestampB = requestB.timestamp ? new Date(requestB.timestamp).getTime() : 0;
     return timestampA - timestampB;
   });
 
-  // First pass: discover all sub-agent nodes and their parent relationships
+  // First pass: discover all sub-agent nodes and their parent relationships.
+  // An agentConversationId is a sub-agent if ANY request with that ID has parentAgentConversationId set.
   const subAgentParentMap = new Map<string, string>();
   const subAgentNodeIdList: string[] = [];
+  const knownSubAgentConversationIds = new Set<string>();
 
   for (const request of sortedRequests) {
     const requestAgentConversationId = request.agentConversationId || mainAgentConversationId;
-    // A request is a sub-agent ONLY if it has an explicit parentAgentConversationId.
-    // Different agentConversationId values without a parent are just different turns
-    // of the same top-level agent (the server generates a new UUID per turn).
     const isSubAgent = !!request.parentAgentConversationId;
 
     if (isSubAgent) {
-      const currentAgentNodeId = `agent:${requestAgentConversationId}:${request.agent || AGENT_IDS.OMNI}`;
-      if (!agentConversationIdToNodeId.has(requestAgentConversationId)) {
-        agentConversationIdToNodeId.set(requestAgentConversationId, currentAgentNodeId);
-        const actualParentConversationId = request.parentAgentConversationId || mainAgentConversationId;
-        subAgentParentMap.set(requestAgentConversationId, actualParentConversationId);
-        subAgentNodeIdList.push(currentAgentNodeId);
+      knownSubAgentConversationIds.add(requestAgentConversationId);
+      if (!subAgentParentMap.has(requestAgentConversationId)) {
+        subAgentParentMap.set(requestAgentConversationId, request.parentAgentConversationId!);
       }
     }
+  }
+
+  // Collect ALL agentConversationId values belonging to the main agent.
+  // Multi-turn conversations generate a new agentConversationId per turn, but they
+  // all represent the same top-level agent. Sub-agents reference the specific turn ID
+  // as their parentAgentConversationId, so we must recognize all of them.
+  // Exclude IDs that are known sub-agents (some sub-agent requests may lack
+  // parentAgentConversationId due to server-side logging inconsistencies).
+  const mainAgentConversationIds = new Set<string>([mainAgentConversationId]);
+  for (const request of conversationRequests) {
+    if (request.agentConversationId && !knownSubAgentConversationIds.has(request.agentConversationId)) {
+      mainAgentConversationIds.add(request.agentConversationId);
+    }
+  }
+
+  // Normalize parent references: if a sub-agent's parent is any main agent turn ID,
+  // collapse it to the canonical mainAgentConversationId so tree traversal works.
+  // Also build the node ID mapping and sub-agent node list.
+  const agentConversationIdToNodeId = new Map<string, string>();
+  for (const mainId of mainAgentConversationIds) {
+    agentConversationIdToNodeId.set(mainId, parentAgentNodeId);
+  }
+
+  for (const [subAgentId, rawParentId] of subAgentParentMap) {
+    const requestAgentConversationId = subAgentId;
+    const matchingRequest = sortedRequests.find(
+      (request) => request.agentConversationId === requestAgentConversationId && request.parentAgentConversationId,
+    );
+    const currentAgentNodeId = `agent:${requestAgentConversationId}:${matchingRequest?.agent || AGENT_IDS.OMNI}`;
+    agentConversationIdToNodeId.set(requestAgentConversationId, currentAgentNodeId);
+    const normalizedParentId = mainAgentConversationIds.has(rawParentId) ? mainAgentConversationId : rawParentId;
+    subAgentParentMap.set(requestAgentConversationId, normalizedParentId);
+    subAgentNodeIdList.push(currentAgentNodeId);
   }
 
   // Compute depth for each sub-agent by walking up the parent chain
   const subAgentDepthMap = new Map<string, number>();
   const computeDepth = (agentConversationId: string): number => {
-    if (agentConversationId === mainAgentConversationId) return 0;
+    if (mainAgentConversationIds.has(agentConversationId)) return 0;
     if (subAgentDepthMap.has(agentConversationId)) return subAgentDepthMap.get(agentConversationId)!;
     const parentConversationId = subAgentParentMap.get(agentConversationId) || mainAgentConversationId;
     const depth = computeDepth(parentConversationId) + 1;
@@ -340,7 +365,9 @@ export function buildGraphFromConversation(
     const operationLabel = request.operation || "unknown";
     const requestNodeId = `request:${request._id || requestIndex}`;
     const requestAgentConversationId = request.agentConversationId || mainAgentConversationId;
-    const isSubAgent = !!request.parentAgentConversationId;
+    // Use the consolidated sub-agent set rather than per-request parentAgentConversationId,
+    // since some sub-agent requests lack parentAgentConversationId due to logging inconsistencies.
+    const isSubAgent = knownSubAgentConversationIds.has(requestAgentConversationId);
     const agentDepth = isSubAgent ? (subAgentDepthMap.get(requestAgentConversationId) || 1) : 0;
 
     addNode(requestNodeId, `#${sequenceNumber} ${operationLabel}`, "request", 24, {
@@ -378,7 +405,7 @@ export function buildGraphFromConversation(
     if (requestIndex > 0) {
       const previousRequest = sortedRequests[requestIndex - 1];
       const previousAgentConversationId = previousRequest.agentConversationId || mainAgentConversationId;
-      const previousIsSubAgent = !!previousRequest.parentAgentConversationId;
+      const previousIsSubAgent = knownSubAgentConversationIds.has(previousAgentConversationId);
       // Chain sequential requests: same sub-agent, OR both are main-agent turns
       const isSameAgentContext = previousIsSubAgent === isSubAgent && (
         previousAgentConversationId === requestAgentConversationId ||
@@ -448,14 +475,17 @@ export function buildGraphFromConversation(
   // This places sub-agents after the tool column that spawned them.
   const createTreeEdges = (treeNodes: SubAgentTreeNode[], parentAgentConvId: string) => {
     for (const treeNode of treeNodes) {
-      // Find the create_team tool node in the parent agent's requests that spawned this sub-agent
+      // Find the create_team tool node in the parent agent's requests that spawned this sub-agent.
+      // When the parent is the main agent, include requests from ALL main agent turn IDs
+      // since the server generates a new agentConversationId per turn.
+      const isParentMainAgent = mainAgentConversationIds.has(parentAgentConvId);
       const parentAgentRequests = sortedRequests.filter((sortedRequest) => {
         const sortedRequestConvId = sortedRequest.agentConversationId || mainAgentConversationId;
-        const sortedRequestIsSubAgent = !!sortedRequest.parentAgentConversationId;
+        const sortedRequestIsSubAgent = knownSubAgentConversationIds.has(sortedRequestConvId);
         if (sortedRequestIsSubAgent) {
           return sortedRequestConvId === parentAgentConvId;
         }
-        return !sortedRequest.parentAgentConversationId && parentAgentConvId === mainAgentConversationId;
+        return !sortedRequestIsSubAgent && isParentMainAgent;
       });
 
       let linkedToTool = false;
