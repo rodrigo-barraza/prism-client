@@ -1947,51 +1947,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     }
   }, [graphData, focusedNodeId, hiddenNodeIds, animateCenterOnNode, applyNodeSelectionWithAncestorFlow]);
 
-  // Compute containment halo ellipse geometry from positioned nodes
-  const containmentHaloGeometry = useMemo(() => {
-    if (!graphData || graphData.containmentHalos.length === 0) return [];
-    const nodeMap = new Map(graphData.nodes.map((node) => [node.id, node]));
 
-    return graphData.containmentHalos
-      .filter((halo) => !hiddenNodeIds.has(halo.parentNodeId))
-      .map((halo) => {
-        const visibleChildNodes = halo.childNodeIds
-          .filter((childId) => !hiddenNodeIds.has(childId))
-          .map((childId) => nodeMap.get(childId))
-          .filter((childNode): childNode is GraphNode => childNode != null);
-
-        if (visibleChildNodes.length === 0) return null;
-
-        let minimumX = Infinity;
-        let minimumY = Infinity;
-        let maximumX = -Infinity;
-        let maximumY = -Infinity;
-
-        for (const node of visibleChildNodes) {
-          minimumX = Math.min(minimumX, node.x - node.radius);
-          minimumY = Math.min(minimumY, node.y - node.radius);
-          maximumX = Math.max(maximumX, node.x + node.radius);
-          maximumY = Math.max(maximumY, node.y + node.radius);
-        }
-
-        const haloPadding = 25 - halo.depth * 4;
-        const centerX = (minimumX + maximumX) / 2;
-        const centerY = (minimumY + maximumY) / 2;
-        const radiusX = (maximumX - minimumX) / 2 + haloPadding;
-        const radiusY = (maximumY - minimumY) / 2 + haloPadding;
-
-        return {
-          parentNodeId: halo.parentNodeId,
-          depth: halo.depth,
-          centerX,
-          centerY,
-          radiusX,
-          radiusY,
-          color: resolveAgentColorByDepth(halo.depth),
-        };
-      })
-      .filter((haloGeometry): haloGeometry is NonNullable<typeof haloGeometry> => haloGeometry != null);
-  }, [graphData, hiddenNodeIds]);
 
   const toggleSubTreeCollapse = useCallback((nodeId: string) => {
     setCollapsedSubTreeIds((previous) => {
@@ -2197,36 +2153,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 ))}
               </defs>
 
-              {/* Containment Halos — translucent regions around each sub-agent branch */}
-              {containmentHaloGeometry.map((haloGeometry, haloIndex) => (
-                <g key={`halo-${haloIndex}`} className={styles['containment-halo-group']}>
-                  <rect
-                    className={styles['containment-halo-fill']}
-                    x={haloGeometry.centerX - haloGeometry.radiusX}
-                    y={haloGeometry.centerY - haloGeometry.radiusY}
-                    width={haloGeometry.radiusX * 2}
-                    height={haloGeometry.radiusY * 2}
-                    rx={16}
-                    ry={16}
-                    fill={haloGeometry.color}
-                    fillOpacity={0.03}
-                  />
-                  <rect
-                    className={styles['containment-halo-stroke']}
-                    x={haloGeometry.centerX - haloGeometry.radiusX}
-                    y={haloGeometry.centerY - haloGeometry.radiusY}
-                    width={haloGeometry.radiusX * 2}
-                    height={haloGeometry.radiusY * 2}
-                    rx={16}
-                    ry={16}
-                    fill="none"
-                    stroke={haloGeometry.color}
-                    strokeWidth={1}
-                    strokeOpacity={0.15}
-                    strokeDasharray="6 4"
-                  />
-                </g>
-              ))}
+
 
               {/* Edges */}
               {graphData.edges.map((edge, edgeIndex) => {
