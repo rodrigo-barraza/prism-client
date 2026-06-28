@@ -81,17 +81,10 @@ interface SubAgentTreeNode {
   children: SubAgentTreeNode[];
 }
 
-interface ContainmentHalo {
-  parentNodeId: string;
-  childNodeIds: string[];
-  depth: number;
-}
-
 export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
   subAgentTree: SubAgentTreeNode[];
-  containmentHalos: ContainmentHalo[];
 }
 
 const NODE_COLORS: Record<NodeCategory, string> = {
@@ -542,69 +535,7 @@ export function buildGraphFromConversation(
     }
   }
 
-  // Build containment halos for agents that have children in the tree
-  const containmentHalos: ContainmentHalo[] = [];
-
-  const buildContainmentHalos = (treeNodes: SubAgentTreeNode[], parentNodeId: string, parentDepth: number) => {
-    // Each sub-agent gets its own halo encompassing its request/tool descendants
-    for (const treeNode of treeNodes) {
-      const subAgentNodeId = treeNode.nodeId;
-      const subAgentNode = nodes.find((node) => node.id === subAgentNodeId);
-      if (!subAgentNode) continue;
-
-      // Collect all request/tool node IDs that belong to this sub-agent.
-      // With trace-tree DAG topology, walk the request chain starting
-      // from the first direct sub-agent→request edge.
-      const branchDescendantIds: string[] = [subAgentNodeId];
-
-      // Find the first request (direct edge from sub-agent)
-      const firstRequestEdge = edges.find(
-        (edge) => edge.source === subAgentNodeId && nodes.find((node) => node.id === edge.target)?.category === "request"
-      );
-      const subAgentRequestIds: string[] = [];
-      if (firstRequestEdge) {
-        subAgentRequestIds.push(firstRequestEdge.target);
-        // Walk the request→request chain
-        let currentId = firstRequestEdge.target;
-        while (true) {
-          const nextEdge = edges.find(
-            (edge) => edge.source === currentId && nodes.find((node) => node.id === edge.target)?.category === "request"
-          );
-          if (!nextEdge) break;
-          subAgentRequestIds.push(nextEdge.target);
-          currentId = nextEdge.target;
-        }
-      }
-      branchDescendantIds.push(...subAgentRequestIds);
-
-      // Find tool nodes connected to those request nodes via edges
-      for (const requestId of subAgentRequestIds) {
-        const toolIds = edges
-          .filter((edge) => edge.source === requestId)
-          .map((edge) => edge.target)
-          .filter((targetId) => {
-            const targetNode = nodes.find((node) => node.id === targetId);
-            return targetNode?.category === "tool";
-          });
-        branchDescendantIds.push(...toolIds);
-      }
-
-      containmentHalos.push({
-        parentNodeId: parentNodeId,
-        childNodeIds: branchDescendantIds,
-        depth: subAgentDepthMap.get(treeNode.agentConversationId) ?? (parentDepth + 1),
-      });
-
-      if (treeNode.children.length > 0) {
-        const childDepth = (subAgentDepthMap.get(treeNode.agentConversationId) || 1);
-        buildContainmentHalos(treeNode.children, treeNode.nodeId, childDepth);
-      }
-    }
-  };
-
-  buildContainmentHalos(subAgentTree, parentAgentNodeId, 0);
-
-  return { nodes, edges, subAgentTree, containmentHalos };
+  return { nodes, edges, subAgentTree };
 }
 
 function flattenSubAgentTree(treeNodes: SubAgentTreeNode[]): string[] {
@@ -1598,15 +1529,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   // Compute the full ancestor flow for a given node: all upstream nodes and
   // edges leading from the root (project → session → agent) through sequential
   // request chains down to the selected node and its direct children (tools).
-  // Returns `null` for non-traversable categories (project, user, session, agent).
   const computeAncestorFlowForNode = useCallback((targetNodeId: string): { flowNodeIds: Set<string>; flowEdgeKeys: Set<string> } | null => {
     if (!graphData) return null;
 
     const targetNode = graphData.nodes.find((graphNode) => graphNode.id === targetNodeId);
     if (!targetNode) return null;
 
-    const isFlowTraversableNode = targetNode.category === "request" || targetNode.category === "tool";
-    if (!isFlowTraversableNode) return null;
+    // Project and user nodes are graph roots — no meaningful ancestor chain
+    if (targetNode.category === "project" || targetNode.category === "user") return null;
 
     const flowNodeIds = new Set([targetNodeId]);
     const flowEdgeKeys = new Set<string>();
@@ -1617,33 +1547,31 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       flowEdgeKeys.add(`${edge.source}→${edge.target}`);
     };
 
-    // Walk backward from a node through ancestor categories
-    // (agent/subagent → session → project) to reach the root of the chain
-    const walkAncestorChain = (startNodeId: string) => {
-      let currentId = startNodeId;
-      const ancestorCategories = new Set(["agent", "subagent", "session", "project", "user"]);
-      const visited = new Set([currentId]);
+    // Generic backward walk: follow any incoming edge up toward the
+    // session/project root, traversing through ALL node categories
+    // (request, agent, subagent, session, project, user).
+    const walkBackwardToRoot = (startNodeId: string) => {
+      const visited = new Set([startNodeId]);
+      const queue = [startNodeId];
 
-      while (true) {
-        let foundParent = false;
+      while (queue.length > 0) {
+        const currentId = queue.shift()!;
+
         for (const edge of graphData.edges) {
           if (edge.target === currentId && !visited.has(edge.source)) {
             const sourceNode = graphData.nodes.find((graphNode) => graphNode.id === edge.source);
-            if (sourceNode && ancestorCategories.has(sourceNode.category)) {
-              includeEdge(edge);
-              visited.add(edge.source);
-              currentId = edge.source;
-              foundParent = true;
-              break;
-            }
+            if (!sourceNode) continue;
+
+            includeEdge(edge);
+            visited.add(edge.source);
+            queue.push(edge.source);
           }
         }
-        if (!foundParent) break;
       }
     };
 
     if (targetNode.category === "request") {
-      // Collect direct edges from/to the request node
+      // Include direct child edges (tools, sub-agents spawned by this request)
       for (const edge of graphData.edges) {
         if (edge.source === targetNodeId) {
           flowNodeIds.add(edge.target);
@@ -1664,13 +1592,8 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         }
       }
 
-      // Walk backward from agent/subagent nodes to session and project
-      const agentNodeIds = [...flowNodeIds].filter((flowId) =>
-        flowId.startsWith("agent:") || flowId.startsWith("subagent:"),
-      );
-      for (const agentId of agentNodeIds) {
-        walkAncestorChain(agentId);
-      }
+      // Walk backward from the request through the full chain to the root
+      walkBackwardToRoot(targetNodeId);
     } else if (targetNode.category === "tool") {
       // For tool nodes, trace backward: tool ← request ← agent ← session ← project
       for (const edge of graphData.edges) {
@@ -1686,18 +1609,35 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
 
       if (owningRequestNodeId && graphData.nodes.some((graphNode) => graphNode.id === owningRequestNodeId)) {
         flowNodeIds.add(owningRequestNodeId);
-
-        // agent → request edge
-        for (const edge of graphData.edges) {
-          if (edge.target === owningRequestNodeId && (edge.source.startsWith("agent:") || edge.source.startsWith("request:"))) {
+        walkBackwardToRoot(owningRequestNodeId);
+      }
+    } else if (targetNode.category === "subagent" || targetNode.category === "agent") {
+      // For agent/subagent nodes: include all child requests and their tools,
+      // then walk backward to the root from the agent itself
+      for (const edge of graphData.edges) {
+        if (edge.source === targetNodeId) {
+          const childNode = graphData.nodes.find((graphNode) => graphNode.id === edge.target);
+          if (childNode && childNode.category === "request") {
             includeEdge(edge);
+
+            // Include tool children of each direct request
+            const childRequestIdSegment = edge.target.replace("request:", "");
+            const childToolPrefix = `tool:${childRequestIdSegment}:`;
+            for (const toolEdge of graphData.edges) {
+              if (toolEdge.source === edge.target && toolEdge.target.startsWith(childToolPrefix)) {
+                includeEdge(toolEdge);
+              }
+            }
           }
         }
+      }
 
-        // Walk backward from agent/subagent to session and project
-        const agentNodeIds = [...flowNodeIds].filter((flowId) => flowId.startsWith("agent:"));
-        for (const agentId of agentNodeIds) {
-          walkAncestorChain(agentId);
+      walkBackwardToRoot(targetNodeId);
+    } else if (targetNode.category === "session") {
+      // For session nodes: include direct children (agent, user, project edges)
+      for (const edge of graphData.edges) {
+        if (edge.source === targetNodeId || edge.target === targetNodeId) {
+          includeEdge(edge);
         }
       }
     }
