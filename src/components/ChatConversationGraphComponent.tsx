@@ -567,17 +567,29 @@ export function buildGraphFromConversation(
       const subAgentNode = nodes.find((node) => node.id === subAgentNodeId);
       if (!subAgentNode) continue;
 
-      // Collect all request/tool node IDs that belong to this sub-agent
+      // Collect all request/tool node IDs that belong to this sub-agent.
+      // With trace-tree DAG topology, walk the request chain starting
+      // from the first direct sub-agent→request edge.
       const branchDescendantIds: string[] = [subAgentNodeId];
 
-      // Find request nodes connected to this sub-agent via edges
-      const subAgentRequestIds = edges
-        .filter((edge) => edge.source === subAgentNodeId)
-        .map((edge) => edge.target)
-        .filter((targetId) => {
-          const targetNode = nodes.find((node) => node.id === targetId);
-          return targetNode?.category === "request";
-        });
+      // Find the first request (direct edge from sub-agent)
+      const firstRequestEdge = edges.find(
+        (edge) => edge.source === subAgentNodeId && nodes.find((node) => node.id === edge.target)?.category === "request"
+      );
+      const subAgentRequestIds: string[] = [];
+      if (firstRequestEdge) {
+        subAgentRequestIds.push(firstRequestEdge.target);
+        // Walk the request→request chain
+        let currentId = firstRequestEdge.target;
+        while (true) {
+          const nextEdge = edges.find(
+            (edge) => edge.source === currentId && nodes.find((node) => node.id === edge.target)?.category === "request"
+          );
+          if (!nextEdge) break;
+          subAgentRequestIds.push(nextEdge.target);
+          currentId = nextEdge.target;
+        }
+      }
       branchDescendantIds.push(...subAgentRequestIds);
 
       // Find tool nodes connected to those request nodes via edges
@@ -990,19 +1002,46 @@ export function applyTopologyLayout(
         : mainAgentNode.x + columnSpacing;
 
       // ── Helper: collect request/tool nodes belonging to a specific sub-agent ──
+      // With trace-tree DAG topology, only the first request has a direct edge
+      // from the sub-agent node. Subsequent requests chain via request→request
+      // edges. Walk the chain to collect all requests in this branch.
       const collectBranchNodes = (
         treeChild: SubAgentTreeNode,
         childNode: GraphNode,
         depth: number,
       ): { requestNodes: GraphNode[]; toolNodes: GraphNode[] } => {
-        const requestNodes = graphData.nodes.filter(
-          (graphNode) => graphNode.category === "request" &&
-            ((graphNode.metadata?.agentDepth as number) ?? 0) === depth
-        ).filter((requestNode) =>
-          graphData.edges.some(
-            (edge) => edge.source === childNode.id && edge.target === requestNode.id
-          )
+        const requestNodes: GraphNode[] = [];
+        const depthMatchedRequests = new Set(
+          graphData.nodes
+            .filter((graphNode) =>
+              graphNode.category === "request" &&
+              ((graphNode.metadata?.agentDepth as number) ?? 0) === depth
+            )
+            .map((graphNode) => graphNode.id)
         );
+
+        // Find the first request (direct edge from sub-agent node)
+        const firstRequestEdge = graphData.edges.find(
+          (edge) => edge.source === childNode.id && depthMatchedRequests.has(edge.target)
+        );
+        if (firstRequestEdge) {
+          const firstRequestNode = graphData.nodes.find((node) => node.id === firstRequestEdge.target);
+          if (firstRequestNode) {
+            requestNodes.push(firstRequestNode);
+            // Walk the request→request chain
+            let currentRequestId = firstRequestNode.id;
+            while (true) {
+              const nextChainEdge = graphData.edges.find(
+                (edge) => edge.source === currentRequestId && depthMatchedRequests.has(edge.target)
+              );
+              if (!nextChainEdge) break;
+              const nextRequestNode = graphData.nodes.find((node) => node.id === nextChainEdge.target);
+              if (!nextRequestNode) break;
+              requestNodes.push(nextRequestNode);
+              currentRequestId = nextRequestNode.id;
+            }
+          }
+        }
 
         const toolNodes = graphData.nodes.filter(
           (graphNode) => graphNode.category === "tool" &&
