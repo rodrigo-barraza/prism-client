@@ -2849,9 +2849,12 @@ function TeamCreateRenderer({
             {activity && <SubAgentStatusBar activity={activity} />}
 
             <div className={styles['sub-agent-result-card']}>
-              {memberHasActiveSubSubAgents &&
-                activity?.toolCalls &&
-                activity.toolCalls.length > 0 && (
+              {activity?.toolCalls &&
+                activity.toolCalls.some(
+                  (toolCall) =>
+                    toolCall.name === "create_team" &&
+                    (toolCall.status === "calling" || toolCall.status === "streaming"),
+                ) && (
                 <SubSubAgentStatusBars
                   toolCalls={activity.toolCalls}
                   subAgentToolActivity={subAgentToolActivity}

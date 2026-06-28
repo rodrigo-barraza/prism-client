@@ -68,6 +68,11 @@ export default function useConversationGraphData(
   const conversationStatsRef = useRef<ConversationStats | null>(null);
   const graphDataRef = useRef<GraphData | null>(null);
   const nodesRef = useRef<GraphNode[]>([]);
+
+  // All agentConversationIds known from the current request set.
+  // Sub-agent requests use their own unique conversationId, so the SSE
+  // filter must accept events matching any of these — not only the root.
+  const knownAgentConversationIdsRef = useRef<Set<string>>(new Set());
   const isGeneratingRef = useRef(isGenerating);
 
   // Coordination flag: when the SSE bootstrap or an SSE insert handler
@@ -81,7 +86,14 @@ export default function useConversationGraphData(
 
   // -- Ref sync ---------------------------------------------------
   useEffect(() => { conversationRef.current = conversation; }, [conversation]);
-  useEffect(() => { conversationRequestsRef.current = conversationRequests; }, [conversationRequests]);
+  useEffect(() => {
+    conversationRequestsRef.current = conversationRequests;
+    const updatedIds = new Set<string>();
+    for (const request of conversationRequests) {
+      if (request.agentConversationId) updatedIds.add(request.agentConversationId);
+    }
+    knownAgentConversationIdsRef.current = updatedIds;
+  }, [conversationRequests]);
   useEffect(() => { conversationStatsRef.current = conversationStats; }, [conversationStats]);
   useEffect(() => { graphDataRef.current = graphData; }, [graphData]);
   useEffect(() => { nodesRef.current = graphData?.nodes || []; }, [graphData?.nodes]);
@@ -318,6 +330,8 @@ export default function useConversationGraphData(
     let isBootstrapping = false;
     let isCancelled = false;
     let pendingEventsBuffer: IrisCollectionChangeEvent[] = [];
+    let conversationDocRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const CONVERSATION_DOC_REFRESH_DEBOUNCE_MILLISECONDS = 500;
 
     const knownRequestIds = new Set<string>();
     for (const existingRequest of conversationRequestsRef.current) {
@@ -527,6 +541,15 @@ export default function useConversationGraphData(
         // before React's useEffect ref-sync sees the correct baseline.
         conversationRequestsRef.current = updatedRequests;
 
+        // Eagerly update known agent conversation IDs so the next SSE batch
+        // can match events from newly discovered sub-agents immediately,
+        // without waiting for the React state update → useEffect cycle.
+        const eagerAgentConversationIds = new Set<string>();
+        for (const request of updatedRequests) {
+          if (request.agentConversationId) eagerAgentConversationIds.add(request.agentConversationId);
+        }
+        knownAgentConversationIdsRef.current = eagerAgentConversationIds;
+
         setConversationStats(updatedStats);
         setConversationRequests(updatedRequests);
         ssePopulatedForConversationRef.current = conversationId;
@@ -551,8 +574,36 @@ export default function useConversationGraphData(
         }
       },
       onChange: (changeEvent: IrisCollectionChangeEvent) => {
-        if (changeEvent.collection === "requests" && changeEvent.conversationId === conversationId) {
-          enqueueChangeEvent(changeEvent);
+        if (changeEvent.collection === "requests") {
+          const eventConversationId = changeEvent.conversationId;
+          const isRootMatch = eventConversationId === conversationId;
+          const isSubAgentMatch = eventConversationId
+            ? knownAgentConversationIdsRef.current.has(eventConversationId)
+            : false;
+          // Self-bootstrapping chain: if a sub-agent's parentAgentConversationId
+          // matches any already-known agent conversation ID, accept the event.
+          // This handles the first request from a newly spawned sub-agent whose
+          // own conversationId isn't in knownAgentConversationIdsRef yet.
+          const isDescendantMatch = changeEvent.parentAgentConversationId
+            ? knownAgentConversationIdsRef.current.has(changeEvent.parentAgentConversationId)
+            : false;
+          if (isRootMatch || isSubAgentMatch || isDescendantMatch) {
+            enqueueChangeEvent(changeEvent);
+          }
+        }
+
+        // When an agent_conversations document for this conversation changes
+        // (e.g. hasSubAgents set to true), trigger a full refresh so newly
+        // spawned sub-agents and their request chains appear on the graph.
+        if (
+          changeEvent.collection === "agent_conversations" &&
+          (changeEvent.documentId === conversationId || changeEvent.id === conversationId)
+        ) {
+          if (conversationDocRefreshTimer) clearTimeout(conversationDocRefreshTimer);
+          conversationDocRefreshTimer = setTimeout(
+            performFullRefresh,
+            CONVERSATION_DOC_REFRESH_DEBOUNCE_MILLISECONDS,
+          );
         }
       },
     });
@@ -562,6 +613,7 @@ export default function useConversationGraphData(
       subscription.close();
       if (pollInterval) clearInterval(pollInterval);
       if (batchFlushTimer) clearTimeout(batchFlushTimer);
+      if (conversationDocRefreshTimer) clearTimeout(conversationDocRefreshTimer);
     };
   }, [conversationId, incrementalGraphRebuild]);
 

@@ -77,6 +77,7 @@ export interface IrisCollectionChangeEvent {
   timestamp?: string;
   changeStreams?: boolean;
   conversationId?: string | null;
+  parentAgentConversationId?: string | null;
 }
 
 export interface IrisHealthResponse {
