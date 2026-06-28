@@ -2106,7 +2106,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                   ? selectedEdgeKeys.has(edgeKey)
                   : selectedNodeIds.has(edge.source) || selectedNodeIds.has(edge.target);
                 const baseOpacity = 0.15 + (edge.strength || 0.5) * 0.2;
-                const edgeOpacity = isEdgeSelected ? 0.95 : baseOpacity;
+                const edgeOpacity = isEdgeSelected ? 1.0 : baseOpacity;
 
                 // Use depth-encoded color for agent-to-subagent and subagent-to-subagent edges
                 const isAgentHierarchyEdge = (sourceNode.category === "agent" || sourceNode.category === "subagent") && (targetNode.category === "agent" || targetNode.category === "subagent");
@@ -2129,7 +2129,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                     <path
                       d={pathData}
                       stroke={edgeColor}
-                      strokeWidth={isEdgeSelected ? 2.5 : isAgentHierarchyEdge ? 2 : 1.5}
+                      strokeWidth={isEdgeSelected ? 4 : isAgentHierarchyEdge ? 2 : 1.5}
                       strokeOpacity={edgeOpacity}
                       fill="none"
                       className={graphStyles['connection-line']}
