@@ -449,13 +449,35 @@ export default function useConversationGraphData(
 
       try {
         const allDocumentIds = [...new Set([...insertDocumentIds, ...updateDocumentIds])];
-        const [updatedStats, ...fetchedRequests] = await Promise.all([
-          IrisService.getConversationRunStats(
-            activeConversation.id || activeConversation._id,
-          ).catch(() => conversationStatsRef.current),
+        const activeConversationId = activeConversation.id || activeConversation._id;
+
+        // Re-fetch the conversation when new requests are inserted to keep
+        // conversation.messages fresh for turn boundary node labels.
+        const fetchPromises: Promise<unknown>[] = [
+          IrisService.getConversationRunStats(activeConversationId).catch(() => conversationStatsRef.current),
           ...allDocumentIds.map((documentId) => IrisService.getRequest(documentId)),
-        ]);
+        ];
+        if (insertDocumentIds.length > 0) {
+          fetchPromises.push(
+            IrisService.getAgentConversation(activeConversationId).catch(() => null),
+          );
+        }
+
+        const fetchResults = await Promise.all(fetchPromises);
         if (isCancelled) return;
+
+        const updatedStats = fetchResults[0] as ConversationStats | null;
+        const fetchedRequests = fetchResults.slice(1, 1 + allDocumentIds.length) as IrisRequestEntry[];
+        const refreshedConversation = insertDocumentIds.length > 0
+          ? (fetchResults[fetchResults.length - 1] as AgentConversation | null)
+          : null;
+
+        // Update conversation ref if a fresh version was fetched
+        const resolvedConversation = refreshedConversation || activeConversation;
+        if (refreshedConversation) {
+          conversationRef.current = refreshedConversation;
+          setConversation(refreshedConversation);
+        }
 
         const fetchedRequestMap = new Map<string, IrisRequestEntry>();
         for (const fetchedRequest of fetchedRequests) {
@@ -484,7 +506,7 @@ export default function useConversationGraphData(
         setConversationStats(updatedStats);
         setConversationRequests(updatedRequests);
         ssePopulatedForConversationRef.current = conversationId;
-        incrementalGraphRebuild(activeConversation, updatedStats, updatedRequests);
+        incrementalGraphRebuild(resolvedConversation, updatedStats, updatedRequests);
       } catch {
         await performFullRefresh();
       }

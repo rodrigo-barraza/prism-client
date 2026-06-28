@@ -386,30 +386,25 @@ export function buildGraphFromConversation(
     // Insert a turn boundary node when the main agent's agentConversationId changes.
     // This visually segments multi-turn conversations with user message nodes.
     if (!isSubAgent && requestAgentConversationId !== currentMainAgentConversationId) {
-      const isFirstTurn = currentMainAgentConversationId === null;
       currentMainAgentConversationId = requestAgentConversationId;
 
-      // Only create turn nodes for subsequent turns (the first turn flows
-      // naturally from the agent node without needing a boundary marker)
-      if (!isFirstTurn) {
-        const turnNodeId = `turn:${mainAgentTurnIndex}`;
-        const turnLabel = userMessages[mainAgentTurnIndex] || `Turn ${mainAgentTurnIndex + 1}`;
-        addNode(turnNodeId, turnLabel, "turn", 18, {
-          turnIndex: mainAgentTurnIndex,
-          agentConversationId: requestAgentConversationId,
-        });
+      const turnNodeId = `turn:${mainAgentTurnIndex}`;
+      const turnLabel = userMessages[mainAgentTurnIndex] || `Turn ${mainAgentTurnIndex + 1}`;
+      addNode(turnNodeId, turnLabel, "turn", 18, {
+        turnIndex: mainAgentTurnIndex,
+        agentConversationId: requestAgentConversationId,
+      });
 
-        // Chain: previous_request → turn_node
-        const previousRequestNodeId = lastRequestNodeIdPerAgentContext.get("__main_agent__");
-        if (previousRequestNodeId) {
-          addEdge(previousRequestNodeId, turnNodeId, 0.5);
-        } else {
-          addEdge(parentAgentNodeId, turnNodeId, 0.6);
-        }
-
-        // The turn node becomes the "last node" so the next request chains from it
-        lastRequestNodeIdPerAgentContext.set("__main_agent__", turnNodeId);
+      // Chain: previous_request → turn_node (or agent → turn_node for the first turn)
+      const previousRequestNodeId = lastRequestNodeIdPerAgentContext.get("__main_agent__");
+      if (previousRequestNodeId) {
+        addEdge(previousRequestNodeId, turnNodeId, 0.5);
+      } else {
+        addEdge(parentAgentNodeId, turnNodeId, 0.6);
       }
+
+      // The turn node becomes the "last node" so the next request chains from it
+      lastRequestNodeIdPerAgentContext.set("__main_agent__", turnNodeId);
       mainAgentTurnIndex++;
     }
 
