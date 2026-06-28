@@ -129,21 +129,14 @@ export default function useConversationGraphData(
         if (!existingNodeIds.has(node.id)) newNodeIds.add(node.id);
       }
 
-      // Determine which categories gained new nodes — those columns
-      // must be fully re-laid-out to maintain vertical centering
-      const categoriesWithNewNodes = new Set<string>();
-      for (const node of graph.nodes) {
-        if (newNodeIds.has(node.id)) {
-          categoriesWithNewNodes.add(node.category);
-        }
-      }
-
       const topology = activeConversation.settings?.agents?.topology || "hierarchical";
       applyTopologyLayout(graph, CANONICAL_LAYOUT_WIDTH, CANONICAL_LAYOUT_HEIGHT, topology);
 
-      // Preserve old positions only for categories that didn't change
+      // Preserve positions for ALL pre-existing nodes. Only truly new
+      // nodes receive their fresh layout coordinates. This prevents
+      // existing turn/request nodes from shifting when new nodes arrive.
       for (const node of graph.nodes) {
-        if (categoriesWithNewNodes.has(node.category)) continue;
+        if (newNodeIds.has(node.id)) continue;
         const previousPosition = existingPositions.get(node.id);
         if (previousPosition) {
           node.x = previousPosition.x;

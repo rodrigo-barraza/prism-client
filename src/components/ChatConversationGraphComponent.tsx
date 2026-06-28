@@ -2066,28 +2066,49 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     previousIsGeneratingForSelectionRef.current = isGenerating;
 
     if (isGenerating || hasProactiveNode) {
-      const autoSelectedIds = new Set<string>();
+      // Determine the best target node for the active flow highlight.
+      // Prefer the proactive pending node, then the latest request node,
+      // then any pending request, then the last agent.
+      let activeFlowTargetNodeId: string | null = null;
 
-      for (const node of graphData.nodes) {
-        // Select all agent and sub-agent nodes during generation
-        if (node.category === "agent" || node.category === "subagent") {
-          autoSelectedIds.add(node.id);
-        }
-
-        // Select pending (in-flight) request nodes (including proactive)
-        if (node.category === "request" && (node.metadata?.status as string) === "pending") {
-          autoSelectedIds.add(node.id);
-        }
-
-        // Select the latest active request node
-        if (node.category === "request" && latestRequestNodeId === node.id) {
-          autoSelectedIds.add(node.id);
-        }
+      const proactiveNode = graphData.nodes.find(
+        (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
+      );
+      if (proactiveNode) {
+        activeFlowTargetNodeId = proactiveNode.id;
+      } else if (latestRequestNodeId) {
+        activeFlowTargetNodeId = latestRequestNodeId;
+      } else {
+        const pendingRequest = graphData.nodes.find(
+          (node) => node.category === "request" && (node.metadata?.status as string) === "pending",
+        );
+        if (pendingRequest) activeFlowTargetNodeId = pendingRequest.id;
       }
 
-      if (autoSelectedIds.size > 0) {
-        setSelectedNodeIds(autoSelectedIds);
-        setSelectedEdgeKeys(new Set());
+      if (activeFlowTargetNodeId) {
+        // Use the ancestor flow computation to highlight the entire chain
+        // from root (project → session → agent → turns → requests) to the
+        // latest active node, including all intermediate edges.
+        const ancestorFlow = computeAncestorFlowForNode(activeFlowTargetNodeId);
+        if (ancestorFlow) {
+          setSelectedNodeIds(ancestorFlow.flowNodeIds);
+          setSelectedEdgeKeys(ancestorFlow.flowEdgeKeys);
+        } else {
+          setSelectedNodeIds(new Set([activeFlowTargetNodeId]));
+          setSelectedEdgeKeys(new Set());
+        }
+      } else {
+        // Fallback: select all agents during generation
+        const agentNodeIds = new Set<string>();
+        for (const node of graphData.nodes) {
+          if (node.category === "agent" || node.category === "subagent") {
+            agentNodeIds.add(node.id);
+          }
+        }
+        if (agentNodeIds.size > 0) {
+          setSelectedNodeIds(agentNodeIds);
+          setSelectedEdgeKeys(new Set());
+        }
       }
     } else if (wasGenerating && !isGenerating && !hasProactiveNode) {
       // Generation stopped and proactive node is gone — clear auto-selection
@@ -2095,7 +2116,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       setSelectedEdgeKeys(new Set());
       setFocusedNodeId(null);
     }
-  }, [isGenerating, graphData, latestRequestNodeId, hasProactiveNode]);
+  }, [isGenerating, graphData, latestRequestNodeId, hasProactiveNode, computeAncestorFlowForNode]);
 
   // -- Empty state when no conversationId -----------------------------
   if (!conversationId) {
