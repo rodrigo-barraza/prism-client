@@ -527,20 +527,33 @@ export default function useConversationGraphData(
     const wasGenerating = previousIsGeneratingRef.current;
     previousIsGeneratingRef.current = isGenerating;
 
-    if (isGenerating && !wasGenerating) {
+    // ── Injection: generation is active, pending node needed ──
+    if (isGenerating) {
+      // Record baseline on the first firing where graphData is available
+      if (!wasGenerating) {
+        const existingRequestNodes = currentGraphData.nodes.filter(
+          (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
+        );
+        requestCountAtGenerationStartRef.current = existingRequestNodes.length;
+      }
+
+      const hasProactiveNode = currentGraphData.nodes.some(
+        (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
+      );
+      if (hasProactiveNode) return;
+
+      // Don't re-inject if real requests have already arrived for this generation cycle
+      const currentRealRequestCount = currentGraphData.nodes.filter(
+        (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
+      ).length;
+      if (currentRealRequestCount > requestCountAtGenerationStartRef.current) return;
+
       const existingRequestNodes = currentGraphData.nodes.filter(
         (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
       );
       const nextSequenceNumber = existingRequestNodes.length > 0
         ? Math.max(...existingRequestNodes.map((node) => node.sequenceNumber ?? 0)) + 1
         : 1;
-
-      requestCountAtGenerationStartRef.current = existingRequestNodes.length;
-
-      const hasProactiveNode = currentGraphData.nodes.some(
-        (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
-      );
-      if (hasProactiveNode) return;
 
       const agentNode = currentGraphData.nodes.find(
         (node) => node.category === "agent",
@@ -594,6 +607,8 @@ export default function useConversationGraphData(
 
       setEnteringNodeIds(new Set([PROACTIVE_PENDING_REQUEST_NODE_ID]));
       setTimeout(() => setEnteringNodeIds(new Set()), 600);
+
+    // ── Removal: generation stopped ──
     } else if (!isGenerating && wasGenerating) {
       setGraphData((previousGraphData) => {
         if (!previousGraphData) return previousGraphData;
@@ -625,7 +640,7 @@ export default function useConversationGraphData(
         };
       });
     }
-  }, [isGenerating]);
+  }, [isGenerating, graphData]);
 
   return {
     conversation,
