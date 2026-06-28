@@ -2280,11 +2280,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 const isAgentNode = node.category === "agent" || node.category === "subagent";
                 const agentDepth = node.depth ?? 0;
                 const isPhaseActive = (isSessionCenter || (isAgentNode && isGenerating)) && !!phaseRepresentativeColor;
+                const isRequestWithTools = node.category === "request" && Array.isArray(node.metadata?.toolNames) && (node.metadata.toolNames as string[]).length > 0;
                 const nodeColor = (isPhaseActive && phaseRepresentativeColor)
                   ? phaseRepresentativeColor
                   : isAgentNode
                     ? resolveAgentColorByDepth(agentDepth)
-                    : NODE_COLORS[node.category];
+                    : isRequestWithTools
+                      ? NODE_COLORS.tool
+                      : NODE_COLORS[node.category];
 
                 const isEntering = enteringNodeIds.has(node.id);
 
@@ -2431,16 +2434,16 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                         </div>
                       </foreignObject>
                     )}
-                    {/* Tool pill badges rendered below request nodes */}
+                    {/* Tool pill badges rendered below the request label (right of node) */}
                     {node.category === "request" && Array.isArray(node.metadata?.toolNames) && (node.metadata.toolNames as string[]).length > 0 && (
                       <foreignObject
-                        x={node.x - 60}
-                        y={node.y + node.radius + 4}
-                        width={120}
-                        height={(node.metadata.toolNames as string[]).length * 18 + 4}
+                        x={node.x + node.radius + 8}
+                        y={node.y + 8}
+                        width={160}
+                        height={Math.ceil((node.metadata.toolNames as string[]).length / 2) * 18 + 4}
                         style={{ pointerEvents: "none", overflow: "visible" }}
                       >
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "2px" }}>
                           {(node.metadata.toolNames as string[]).map((toolName: string, toolPillIndex: number) => {
                             const toolEmoji = toolEmojiMap.get(toolName);
                             const isImageEmoji = toolEmoji?.startsWith("http");
@@ -2459,7 +2462,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                                   fontWeight: 500,
                                   color: "oklch(0.82 0.08 45)",
                                   whiteSpace: "nowrap",
-                                  maxWidth: "120px",
                                   lineHeight: "14px",
                                 }}
                               >
