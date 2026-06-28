@@ -2511,6 +2511,109 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
   );
 }
 
+/**
+ * Renders live status bars for sub-sub-agents spawned by a sub-agent's
+ * nested create_team tool call. Extracts agent_ids from the in-flight
+ * create_team and looks them up in subAgentToolActivity.
+ */
+function SubSubAgentStatusBars({
+  toolCalls,
+  subAgentToolActivity,
+}: {
+  toolCalls: import("../types/types").ToolCallEvent[];
+  subAgentToolActivity?: Record<string, SubAgentActivity | SubAgentToolActivityItem> | null;
+}) {
+  if (!subAgentToolActivity) return null;
+
+  const activeCreateTeamCalls = toolCalls.filter(
+    (toolCall) =>
+      toolCall.name === "create_team" &&
+      (toolCall.status === "calling" || toolCall.status === "streaming"),
+  );
+
+  if (activeCreateTeamCalls.length === 0) return null;
+
+  const subSubAgentEntries: Array<{
+    agentId: string;
+    description: string;
+    activity: SubAgentActivity | SubAgentToolActivityItem;
+  }> = [];
+
+  for (const createTeamCall of activeCreateTeamCalls) {
+    const parsedResult = createTeamCall.result
+      ? typeof createTeamCall.result === "string"
+        ? (() => { try { return JSON.parse(createTeamCall.result); } catch { return null; } })()
+        : createTeamCall.result
+      : null;
+
+    const resultMembers: Array<{ agent_id?: string; description?: string }> =
+      Array.isArray(parsedResult)
+        ? parsedResult
+        : (parsedResult as Record<string, unknown>)?.members as Array<{ agent_id?: string; description?: string }> ?? [];
+
+    const argMembers: Array<{ description?: string }> =
+      Array.isArray((createTeamCall.args as ToolArgs)?.members)
+        ? (createTeamCall.args as ToolArgs).members!
+        : [];
+
+    // Match by agent_id from result members first
+    for (const resultMember of resultMembers) {
+      if (resultMember.agent_id && subAgentToolActivity[resultMember.agent_id]) {
+        subSubAgentEntries.push({
+          agentId: resultMember.agent_id,
+          description: resultMember.description || `Sub-Agent`,
+          activity: subAgentToolActivity[resultMember.agent_id],
+        });
+      }
+    }
+
+    // Fallback: match by description from args if no result members were found
+    if (subSubAgentEntries.length === 0 && argMembers.length > 0) {
+      for (const argMember of argMembers) {
+        if (!argMember.description) continue;
+        const matchedActivity = Object.entries(subAgentToolActivity).find(
+          ([, value]) =>
+            value.description &&
+            argMember.description &&
+            value.description.includes(argMember.description),
+        );
+        if (matchedActivity) {
+          subSubAgentEntries.push({
+            agentId: matchedActivity[0],
+            description: argMember.description,
+            activity: matchedActivity[1],
+          });
+        }
+      }
+    }
+  }
+
+  if (subSubAgentEntries.length === 0) return null;
+
+  return (
+    <div className={styles['sub-sub-agent-status-bars']}>
+      {subSubAgentEntries.map((entry) => {
+        const activityData = entry.activity as SubAgentActivity;
+        const isEntryTerminal =
+          activityData.phase === "complete" || activityData.phase === "failed";
+        const isEntryActive =
+          !isEntryTerminal || !!activityData.currentTool;
+
+        if (!isEntryActive) return null;
+
+        return (
+          <div key={entry.agentId} className={styles['sub-sub-agent-status-entry']}>
+            <span className={styles['sub-sub-agent-label']}>
+              {entry.description}
+            </span>
+            <SubAgentStatusBar activity={activityData} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function TeamCreateRenderer({
   result,
   args,
@@ -2746,6 +2849,14 @@ function TeamCreateRenderer({
             {activity && <SubAgentStatusBar activity={activity} />}
 
             <div className={styles['sub-agent-result-card']}>
+              {memberHasActiveSubSubAgents &&
+                activity?.toolCalls &&
+                activity.toolCalls.length > 0 && (
+                <SubSubAgentStatusBars
+                  toolCalls={activity.toolCalls}
+                  subAgentToolActivity={subAgentToolActivity}
+                />
+              )}
               <button
                 className={styles['sub-agent-result-toggle']}
                 onClick={() => toggleMember(index)}

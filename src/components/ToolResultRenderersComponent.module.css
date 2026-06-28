@@ -977,6 +977,44 @@
   animation: sub-agent-result-fade-in 0.3s ease-out;
 }
 
+/* ── Sub-sub-agent live status bars ─────────────────────────── */
+
+.sub-sub-agent-status-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px 4px;
+  border-block-end: 1px solid
+    color-mix(
+      in srgb,
+      var(--accent-primary, var(--color-indigo)) 12%,
+      transparent
+    );
+}
+
+.sub-sub-agent-status-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sub-sub-agent-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-inline-size: 100%;
+}
+
+.sub-sub-agent-status-entry :global(.status-bar-component) {
+  border-radius: 4px;
+  min-block-size: 18px;
+  font-size: 0.625rem;
+}
+
 /* Nested sub-agent trees — visual hierarchy via left border accent */
 .sub-agent-result-body .renderer-block {
   border-inline-start: 2px solid
