@@ -2502,6 +2502,24 @@ export default function ChatConversationComponent({
         setMaxSubAgentDepth(
           subAgentsList.reduce((maximumDepth, subAgent) => Math.max(maximumDepth, subAgent.recursionDepth ?? 0), 0),
         );
+        setSubAgentToolActivity((previousSubAgentToolActivity) => {
+          const nextSubAgentToolActivity = { ...previousSubAgentToolActivity };
+          for (const subAgent of subAgentsList) {
+            const agentId = subAgent.agentId || subAgent.id;
+            if (agentId && !nextSubAgentToolActivity[agentId]) {
+              nextSubAgentToolActivity[agentId] = {
+                toolCount: subAgent.toolCallCount || 0,
+                currentTool: null,
+                iteration: 0,
+                toolNames: subAgent.toolNames || {},
+                description: subAgent.description,
+                phase: subAgent.status === "running" ? "generating" : subAgent.status,
+                conversationId: subAgent.id || undefined,
+              };
+            }
+          }
+          return nextSubAgentToolActivity;
+        });
       })
       .catch(() => {});
   }, [conversationId, tasksRefreshKey, isAdmin]);
