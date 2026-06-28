@@ -14,6 +14,7 @@ import {
   type GraphNode,
   applyTopologyLayout,
   PROACTIVE_PENDING_REQUEST_NODE_ID,
+  PROACTIVE_PENDING_TURN_NODE_ID,
 } from "../components/ChatConversationGraphComponent";
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -151,8 +152,11 @@ export default function useConversationGraphData(
       }
 
       // Re-inject the proactive pending node when generation is still active
-      const hadProactiveNode = previousGraphData?.nodes.some(
+      const hadProactiveRequest = previousGraphData?.nodes.some(
         (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
+      );
+      const hadProactiveTurn = previousGraphData?.nodes.some(
+        (node) => node.id === PROACTIVE_PENDING_TURN_NODE_ID,
       );
       const previousRealRequestCount = previousGraphData
         ? previousGraphData.nodes.filter(
@@ -165,21 +169,43 @@ export default function useConversationGraphData(
 
       const hasNewRealRequestsArrived = currentRealRequestCount > requestCountAtGenerationStartRef.current;
 
-      if (hadProactiveNode && currentRealRequestCount > previousRealRequestCount) {
+      // Find the tail of the main-agent chain (last request or turn node)
+      const findChainTail = () => {
+        const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
+        const lastRealRequest = realRequestNodes
+          .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
+          .at(-1);
+        // Check if the last node in the chain is actually a turn node
+        // (i.e., a turn node exists that has no outgoing edge to a request)
+        const turnNodes = graph.nodes.filter((node) => node.category === "turn");
+        const lastTurnNode = turnNodes.at(-1);
+        if (lastTurnNode) {
+          const turnHasRequestChild = graph.edges.some(
+            (edge) => edge.source === lastTurnNode.id && graph.nodes.some(
+              (node) => node.id === edge.target && node.category === "request",
+            ),
+          );
+          if (!turnHasRequestChild) return lastTurnNode;
+        }
+        return lastRealRequest;
+      };
+
+      if ((hadProactiveRequest || hadProactiveTurn) && currentRealRequestCount > previousRealRequestCount) {
         if (isGeneratingRef.current) {
-          const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
-          const lastRealRequest = realRequestNodes
+          const chainTail = findChainTail();
+          const agentNode = graph.nodes.find((node) => node.category === "agent");
+          const lastRealRequest = graph.nodes
+            .filter((node) => node.category === "request")
             .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
             .at(-1);
-          const agentNode = graph.nodes.find((node) => node.category === "agent");
 
           const cascadingProactiveNode: GraphNode = {
             id: PROACTIVE_PENDING_REQUEST_NODE_ID,
             label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
             category: "request",
             radius: 24,
-            x: lastRealRequest?.x ?? (agentNode?.x ?? 400) + 200,
-            y: lastRealRequest ? lastRealRequest.y + 80 : (agentNode?.y ?? 250),
+            x: chainTail?.x ?? (agentNode?.x ?? 400) + 200,
+            y: chainTail ? chainTail.y + 80 : (agentNode?.y ?? 250),
             velocityX: 0,
             velocityY: 0,
             sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
@@ -187,40 +213,37 @@ export default function useConversationGraphData(
           };
 
           graph.nodes.push(cascadingProactiveNode);
-          if (agentNode) {
-            graph.edges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
-          }
-          if (lastRealRequest) {
-            graph.edges.push({ source: lastRealRequest.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+          if (chainTail) {
+            graph.edges.push({ source: chainTail.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
           }
         }
-      } else if (hadProactiveNode && !isGeneratingRef.current && hasNewRealRequestsArrived) {
+      } else if ((hadProactiveRequest || hadProactiveTurn) && !isGeneratingRef.current && hasNewRealRequestsArrived) {
         // Generation stopped and real requests have arrived — don't re-inject
-      } else if (hadProactiveNode) {
-        const proactiveNodeFromPrevious = previousGraphData?.nodes.find(
-          (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
-        );
-        if (proactiveNodeFromPrevious) {
-          const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
-          const lastRealRequest = realRequestNodes
+      } else if (hadProactiveRequest || hadProactiveTurn) {
+        if (isGeneratingRef.current) {
+          const chainTail = findChainTail();
+          const agentNode = graph.nodes.find((node) => node.category === "agent");
+          const lastRealRequest = graph.nodes
+            .filter((node) => node.category === "request")
             .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
             .at(-1);
-          const agentNode = graph.nodes.find((node) => node.category === "agent");
 
           const reinjectedNode: GraphNode = {
-            ...proactiveNodeFromPrevious,
-            sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
+            id: PROACTIVE_PENDING_REQUEST_NODE_ID,
             label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
-            x: lastRealRequest?.x ?? (agentNode?.x ?? 400) + 200,
-            y: lastRealRequest ? lastRealRequest.y + 80 : (agentNode?.y ?? 250),
+            category: "request",
+            radius: 24,
+            x: chainTail?.x ?? (agentNode?.x ?? 400) + 200,
+            y: chainTail ? chainTail.y + 80 : (agentNode?.y ?? 250),
+            velocityX: 0,
+            velocityY: 0,
+            sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
+            metadata: { operation: "pending", status: "pending" },
           };
 
           graph.nodes.push(reinjectedNode);
-          if (agentNode) {
-            graph.edges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
-          }
-          if (lastRealRequest) {
-            graph.edges.push({ source: lastRealRequest.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+          if (chainTail) {
+            graph.edges.push({ source: chainTail.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
           }
         }
       }
@@ -364,11 +387,19 @@ export default function useConversationGraphData(
 
       const activeConversationId = activeConversation.id || activeConversation._id;
       try {
-        const [updatedStats, updatedRequestsResponse] = await Promise.all([
+        const [updatedStats, updatedRequestsResponse, refreshedConversation] = await Promise.all([
           IrisService.getConversationRunStats(activeConversationId).catch(() => conversationStatsRef.current),
           IrisService.getConversationRequests(activeConversationId).catch(() => ({ requests: conversationRequestsRef.current })),
+          IrisService.getAgentConversation(activeConversationId).catch(() => null),
         ]);
         if (isCancelled) return;
+
+        // Update conversation ref if a fresh version was fetched
+        const resolvedConversation = refreshedConversation || activeConversation;
+        if (refreshedConversation) {
+          conversationRef.current = refreshedConversation;
+          setConversation(refreshedConversation);
+        }
 
         const updatedRequests = updatedRequestsResponse.requests || [];
         const previousCount = knownRequestIds.size;
@@ -383,7 +414,7 @@ export default function useConversationGraphData(
           setConversationStats(updatedStats);
           setConversationRequests(updatedRequests);
           ssePopulatedForConversationRef.current = activeConversationId;
-          incrementalGraphRebuild(activeConversation, updatedStats, updatedRequests);
+          incrementalGraphRebuild(resolvedConversation, updatedStats, updatedRequests);
         } else if (updatedStats) {
           setConversationStats(updatedStats);
         }
@@ -585,31 +616,86 @@ export default function useConversationGraphData(
         .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
         .at(-1);
 
-      const proactiveNodeX = lastRequestNode?.x ?? (agentNode?.x ?? 400) + 200;
-      const proactiveNodeY = lastRequestNode ? lastRequestNode.y + 80 : (agentNode?.y ?? 250);
+      // Determine if this is a subsequent turn (there are already request nodes from a previous turn)
+      const isSubsequentTurn = existingRequestNodes.length > 0;
+      const existingTurnNodes = currentGraphData.nodes.filter(
+        (node) => node.category === "turn" && node.id !== PROACTIVE_PENDING_TURN_NODE_ID,
+      );
+      const nextTurnIndex = existingTurnNodes.length;
 
-      const proactiveNode: GraphNode = {
-        id: PROACTIVE_PENDING_REQUEST_NODE_ID,
-        label: `#${nextSequenceNumber} pending`,
-        category: "request",
-        radius: 24,
-        x: proactiveNodeX,
-        y: proactiveNodeY,
-        velocityX: 0,
-        velocityY: 0,
-        sequenceNumber: nextSequenceNumber,
-        metadata: {
-          operation: "pending",
-          status: "pending",
-        },
-      };
-
+      const proactiveNodes: GraphNode[] = [];
       const proactiveEdges: Array<{ source: string; target: string; strength: number }> = [];
-      if (agentNode) {
-        proactiveEdges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
-      }
-      if (lastRequestNode) {
-        proactiveEdges.push({ source: lastRequestNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+      const enteringIds = new Set<string>();
+
+      // For subsequent turns, inject a turn boundary node first
+      if (isSubsequentTurn) {
+        const turnNodeX = lastRequestNode?.x ?? (agentNode?.x ?? 400) + 200;
+        const turnNodeY = lastRequestNode ? lastRequestNode.y + 80 : (agentNode?.y ?? 250);
+
+        const proactiveTurnNode: GraphNode = {
+          id: PROACTIVE_PENDING_TURN_NODE_ID,
+          label: `Turn ${nextTurnIndex + 1}`,
+          category: "turn",
+          radius: 24,
+          x: turnNodeX,
+          y: turnNodeY,
+          velocityX: 0,
+          velocityY: 0,
+          metadata: { turnIndex: nextTurnIndex },
+        };
+        proactiveNodes.push(proactiveTurnNode);
+        enteringIds.add(PROACTIVE_PENDING_TURN_NODE_ID);
+
+        // Chain: last_request → turn_node
+        if (lastRequestNode) {
+          proactiveEdges.push({ source: lastRequestNode.id, target: PROACTIVE_PENDING_TURN_NODE_ID, strength: 0.5 });
+        }
+
+        // Chain: turn_node → pending_request
+        const pendingNodeX = turnNodeX;
+        const pendingNodeY = turnNodeY + 80;
+
+        const proactivePendingNode: GraphNode = {
+          id: PROACTIVE_PENDING_REQUEST_NODE_ID,
+          label: `#${nextSequenceNumber} pending`,
+          category: "request",
+          radius: 24,
+          x: pendingNodeX,
+          y: pendingNodeY,
+          velocityX: 0,
+          velocityY: 0,
+          sequenceNumber: nextSequenceNumber,
+          metadata: { operation: "pending", status: "pending" },
+        };
+        proactiveNodes.push(proactivePendingNode);
+        enteringIds.add(PROACTIVE_PENDING_REQUEST_NODE_ID);
+        proactiveEdges.push({ source: PROACTIVE_PENDING_TURN_NODE_ID, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+      } else {
+        // First turn: just inject the pending request node
+        const proactiveNodeX = lastRequestNode?.x ?? (agentNode?.x ?? 400) + 200;
+        const proactiveNodeY = lastRequestNode ? lastRequestNode.y + 80 : (agentNode?.y ?? 250);
+
+        const proactivePendingNode: GraphNode = {
+          id: PROACTIVE_PENDING_REQUEST_NODE_ID,
+          label: `#${nextSequenceNumber} pending`,
+          category: "request",
+          radius: 24,
+          x: proactiveNodeX,
+          y: proactiveNodeY,
+          velocityX: 0,
+          velocityY: 0,
+          sequenceNumber: nextSequenceNumber,
+          metadata: { operation: "pending", status: "pending" },
+        };
+        proactiveNodes.push(proactivePendingNode);
+        enteringIds.add(PROACTIVE_PENDING_REQUEST_NODE_ID);
+
+        if (agentNode) {
+          proactiveEdges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
+        }
+        if (lastRequestNode) {
+          proactiveEdges.push({ source: lastRequestNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+        }
       }
 
       setGraphData((previousGraphData) => {
@@ -617,7 +703,7 @@ export default function useConversationGraphData(
         if (previousGraphData.nodes.some((node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID)) {
           return previousGraphData;
         }
-        const updatedNodes = [...previousGraphData.nodes, proactiveNode];
+        const updatedNodes = [...previousGraphData.nodes, ...proactiveNodes];
         const updatedEdges = [...previousGraphData.edges, ...proactiveEdges];
         nodesRef.current = updatedNodes;
         return {
@@ -627,17 +713,20 @@ export default function useConversationGraphData(
         };
       });
 
-      setEnteringNodeIds(new Set([PROACTIVE_PENDING_REQUEST_NODE_ID]));
+      setEnteringNodeIds(enteringIds);
       setTimeout(() => setEnteringNodeIds(new Set()), 600);
 
     // ── Removal: generation stopped ──
     } else if (!isGenerating && wasGenerating) {
       setGraphData((previousGraphData) => {
         if (!previousGraphData) return previousGraphData;
-        const hasProactive = previousGraphData.nodes.some(
+        const hasProactiveRequest = previousGraphData.nodes.some(
           (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
         );
-        if (!hasProactive) return previousGraphData;
+        const hasProactiveTurn = previousGraphData.nodes.some(
+          (node) => node.id === PROACTIVE_PENDING_TURN_NODE_ID,
+        );
+        if (!hasProactiveRequest && !hasProactiveTurn) return previousGraphData;
 
         const currentRealRequestCount = previousGraphData.nodes.filter(
           (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
@@ -648,11 +737,12 @@ export default function useConversationGraphData(
           return previousGraphData;
         }
 
+        const proactiveNodeIds = new Set([PROACTIVE_PENDING_REQUEST_NODE_ID, PROACTIVE_PENDING_TURN_NODE_ID]);
         const filteredNodes = previousGraphData.nodes.filter(
-          (node) => node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
+          (node) => !proactiveNodeIds.has(node.id),
         );
         const filteredEdges = previousGraphData.edges.filter(
-          (edge) => edge.source !== PROACTIVE_PENDING_REQUEST_NODE_ID && edge.target !== PROACTIVE_PENDING_REQUEST_NODE_ID,
+          (edge) => !proactiveNodeIds.has(edge.source) && !proactiveNodeIds.has(edge.target),
         );
         nodesRef.current = filteredNodes;
         return {

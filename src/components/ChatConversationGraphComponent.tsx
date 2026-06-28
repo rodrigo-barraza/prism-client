@@ -100,6 +100,7 @@ const NODE_COLORS: Record<NodeCategory, string> = {
 };
 
 export const PROACTIVE_PENDING_REQUEST_NODE_ID = "request:proactive-pending";
+export const PROACTIVE_PENDING_TURN_NODE_ID = "turn:proactive-pending";
 
 const AGENT_DEPTH_COLORS: string[] = [
   "oklch(0.72 0.16 300)",
@@ -390,7 +391,7 @@ export function buildGraphFromConversation(
 
       const turnNodeId = `turn:${mainAgentTurnIndex}`;
       const turnLabel = userMessages[mainAgentTurnIndex] || `Turn ${mainAgentTurnIndex + 1}`;
-      addNode(turnNodeId, turnLabel, "turn", 18, {
+      addNode(turnNodeId, turnLabel, "turn", 24, {
         turnIndex: mainAgentTurnIndex,
         agentConversationId: requestAgentConversationId,
       });
@@ -2402,7 +2403,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                       </text>
                     )}
                     {node.category !== "request" && node.category !== "tool" && (
-                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={node.category === "turn" ? 20 : 28} style={{ pointerEvents: "none", userSelect: "none" }}>
+                      <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central" fontSize={28} style={{ pointerEvents: "none", userSelect: "none" }}>
                         {node.category === "session" ? CONVERSATION_EMOJI : node.category === "agent" ? AGENT_EMOJI : node.category === "subagent" ? resolveSubAgentEmoji(agentDepth) : node.category === "project" ? PROJECT_EMOJI : node.category === "user" ? "●" : node.category === "turn" ? "💬" : "○"}
                       </text>
                     )}
