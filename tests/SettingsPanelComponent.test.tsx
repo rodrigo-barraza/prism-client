@@ -19,6 +19,11 @@ vi.mock(
 
 const mockCopyToClipboardHandler = vi.fn();
 vi.mock("@rodrigo-barraza/components-library", () => ({
+  ButtonComponent: ({ children, onClick, disabled }: any) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  ),
   SelectComponent: () => <div data-testid="mock-select" />,
   ToggleComponent: () => <input type="checkbox" data-testid="mock-toggle" />,
   TextAreaComponent: () => <textarea data-testid="mock-textarea" />,
