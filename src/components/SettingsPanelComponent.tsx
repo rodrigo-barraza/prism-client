@@ -14,7 +14,6 @@ import {
   Network,
   FolderOpen,
   Terminal,
-  Copy,
   Check,
   Users,
   User,
