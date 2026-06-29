@@ -66,10 +66,16 @@ export interface SubAgentToolActivityItem {
   conversationId?: string;
 }
 
-/* -- Task notification detection (Claude Code pattern) -------
- * Sub-agent results arrive as user-role messages containing
- * <task-notification> XML. Detect by content so it works for
- * both live messages and already-persisted history.            */
+/* -- Task notification detection ─────────────────────────────
+ * Sub-agent results, async task completions, and timer reminders
+ * arrive as user-role messages with _notificationSource metadata.
+ * For legacy messages persisted before the metadata field existed,
+ * fall back to content-based <task-notification> XML detection.  */
+
+function isNotificationMessage(message: Message): boolean {
+  if (message._notificationSource) return true;
+  return !!(message.content && message.content.includes("<task-notification>"));
+}
 
 function parseTaskNotification(content: string | undefined | null) {
   if (!content || !content.includes("<task-notification>")) return null;
@@ -764,7 +770,7 @@ export default function MessageList({
     return messages
       .filter((message) => {
         if (!showRaw && message.role === "system") return false;
-        if (!showRaw && message.role === "user" && parseTaskNotification(message.content)) return false;
+        if (!showRaw && message.role === "user" && isNotificationMessage(message)) return false;
         return true;
       })
       .map((message) => {
@@ -791,7 +797,7 @@ export default function MessageList({
       if (
         displayMessages[i].role === "user" &&
         !displayMessages[i].deleted &&
-        !parseTaskNotification(displayMessages[i].content)
+        !isNotificationMessage(displayMessages[i])
       )
         return i;
     }

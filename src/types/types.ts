@@ -400,6 +400,11 @@ export interface Message {
       arguments?: string | Record<string, JsonValue>;
     };
   }>;
+  /** Notification origin — identifies system-generated messages for deterministic detection.
+   *  Values: "orchestrator" | "timer" | "async-task". Absent on real user messages. */
+  _notificationSource?: string;
+  /** Idempotency key — prevents duplicate notification persistence during race conditions. */
+  _notificationId?: string;
 }
 
 export interface Conversation {
