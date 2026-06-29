@@ -10,6 +10,7 @@ const PHASE_LABELS = {
   generating: "Generating...",
   thinking: "Thinking...",
   executing: "Executing...",
+  synthesizing: "Synthesizing...",
   delegating: "Awaiting Sub-Agents...",
   awaiting: "Awaiting For User Input...",
 };
@@ -21,6 +22,7 @@ const PHASE_ICONS = {
   generating: "✨",
   thinking: "🧠",
   executing: "🔧",
+  synthesizing: "🧬",
   delegating: "👥",
   awaiting: "⏸️",
 };
@@ -80,6 +82,15 @@ const PHASE_GRADIENT_STOPS: Record<string, string[]> = {
     "oklch(0.783 0.178 71)",
     "oklch(0.646 0.222 22)",
   ],
+  synthesizing: [
+    "oklch(0.795 0.164 90)",
+    "oklch(0.723 0.191 145)",
+    "oklch(0.588 0.158 262)",
+    "oklch(0.546 0.198 275)",
+    "oklch(0.723 0.191 145)",
+    "oklch(0.588 0.158 262)",
+    "oklch(0.795 0.164 90)",
+  ],
 };
 
 // Asymptotic curve: progress = 1 - e^(-t/τ)
@@ -89,7 +100,7 @@ const SYNTHETIC_TICK_MS = 150;
 const MAX_SYNTHETIC = 0.99;
 const PHASE_COMPLETION_FLASH_DURATION_MS = 280;
 
-export type StatusBarPhase = "starting" | "loading" | "prefilling" | "generating" | "thinking" | "executing" | "delegating" | "awaiting";
+export type StatusBarPhase = "starting" | "loading" | "prefilling" | "generating" | "thinking" | "executing" | "synthesizing" | "delegating" | "awaiting";
 
 interface StatusBarProps {
   active?: boolean;

@@ -119,6 +119,7 @@ import {
   LS_AGENT_MAX_ITERATIONS,
   LS_AGENT_MAX_SUB_AGENT_ITERATIONS,
   LS_AGENT_MAX_RECURSION_DEPTH,
+  DEFAULT_RECURSIVE_SPAWNING_DEPTH,
   EV_SIDEBAR_TAB_CHANGE,
   EV_SIDEBAR_TAB_BOTTOM_CHANGE,
   EV_VIEW_MODE_CHANGE,
@@ -870,7 +871,7 @@ export default function ChatConversationComponent({
   const [maxIterations, setMaxIterations] = useState(MAX_TOOL_ITERATIONS);
   const [maxSubAgentIterations, setMaxSubAgentIterations] =
     useState(MAX_TOOL_ITERATIONS);
-  const [maxRecursionDepth, setMaxRecursionDepth] = useState(1);
+  const [maxRecursionDepth, setMaxRecursionDepth] = useState(DEFAULT_RECURSIVE_SPAWNING_DEPTH);
 
   // Hydrate from localStorage after mount to avoid SSR mismatch
   useEffect(() => {
@@ -7217,10 +7218,11 @@ export default function ChatConversationComponent({
               subAgent.phase !== "spawned",
           );
           if (activeSubAgents.length > 0) {
-            // Priority: generating > thinking > prefilling > executing > loading > starting
+            // Priority: generating > thinking > synthesizing > prefilling > executing > loading > starting
             const phasePriority = [
               "generating",
               "thinking",
+              "synthesizing",
               "prefilling",
               "executing",
               "loading",
