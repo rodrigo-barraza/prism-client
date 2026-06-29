@@ -351,6 +351,34 @@ interface SubAgentActivityEntry {
     | ToolCallEvent[];
 }
 
+/**
+ * Normalize a backend sub-agent status to the frontend phase vocabulary.
+ *
+ * The backend persists sub-agent status as "running" | "complete" | "failed" | "stopped",
+ * and SubAgentResultBuilder transforms "complete" → "completed" for tool results.
+ * The frontend terminal-phase checks use "complete" | "failed".
+ *
+ * When hydrating sub-agent activity from persisted DB records (not live SSE),
+ * a status of "running" is stale — the sub-agent already finished but the
+ * record was captured before it completed. Map it to "complete" so the
+ * StatusBarComponent renders the idle/done state instead of animating.
+ * If the sub-agent is truly still active, the live SSE stream will override
+ * this with the real phase ("generating", "thinking", etc.).
+ */
+function normalizeSubAgentStatusToPhase(backendStatus: string): string {
+  switch (backendStatus) {
+    case "completed":
+    case "complete":
+    case "stopped":
+    case "running":
+      return "complete";
+    case "failed":
+      return "failed";
+    default:
+      return backendStatus;
+  }
+}
+
 /** Approval request from an agentic tool call. */
 interface PendingApproval {
   id: string;
@@ -1021,15 +1049,16 @@ export default function ChatConversationComponent({
     // bars stop animating — the SSE stream was aborted before "complete" events
     // could arrive, leaving activity entries stuck in active phases.
     setSubAgentToolActivity((previousSubAgentToolActivity) => {
+      const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
       const hasActive = Object.values(previousSubAgentToolActivity).some(
         (subAgent: SubAgentActivityEntry) =>
-          subAgent.phase && subAgent.phase !== "complete" && subAgent.phase !== "failed",
+          subAgent.phase && !terminalPhases.has(subAgent.phase),
       );
       if (!hasActive) return previousSubAgentToolActivity;
       const next: Record<string, SubAgentActivityEntry> = {};
       for (const [id, subAgent] of Object.entries(previousSubAgentToolActivity)) {
         next[id] =
-          subAgent.phase && subAgent.phase !== "complete" && subAgent.phase !== "failed"
+          subAgent.phase && !terminalPhases.has(subAgent.phase)
             ? { ...subAgent, phase: "complete", currentTool: null }
             : subAgent;
       }
@@ -2513,7 +2542,7 @@ export default function ChatConversationComponent({
                 iteration: 0,
                 toolNames: subAgent.toolNames || {},
                 description: subAgent.description,
-                phase: subAgent.status === "running" ? "generating" : subAgent.status,
+                phase: normalizeSubAgentStatusToPhase(subAgent.status),
                 conversationId: subAgent.id || undefined,
               };
             }
@@ -4805,7 +4834,7 @@ export default function ChatConversationComponent({
       // so their progress bars remain visible while the follow-up generates.
       // Only wipe entries that already reached "complete" or "failed".
       setSubAgentToolActivity((previousSubAgentToolActivity) => {
-        const terminalPhases = new Set(["complete", "failed"]);
+        const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
         const preserved: Record<string, SubAgentActivityEntry> = {};
         for (const [id, entry] of Object.entries(previousSubAgentToolActivity)) {
           if (!entry.phase || !terminalPhases.has(entry.phase)) {
@@ -7182,7 +7211,9 @@ export default function ChatConversationComponent({
             (subAgent: SubAgentActivityEntry) =>
               subAgent.phase &&
               subAgent.phase !== "complete" &&
+              subAgent.phase !== "completed" &&
               subAgent.phase !== "failed" &&
+              subAgent.phase !== "stopped" &&
               subAgent.phase !== "spawned",
           );
           if (activeSubAgents.length > 0) {

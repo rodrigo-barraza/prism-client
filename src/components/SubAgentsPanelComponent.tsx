@@ -26,6 +26,7 @@ import styles from "./SubAgentsPanelComponent.module.css";
 const STATUS_LABEL: Record<string, string> = {
   running: "Running",
   complete: "Complete",
+  completed: "Complete",
   failed: "Failed",
   stopped: "Stopped",
   pending: "Pending",
@@ -34,6 +35,7 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_CLASS: Record<string, string> = {
   running: "status-running",
   complete: "status-complete",
+  completed: "status-complete",
   failed: "status-failed",
   stopped: "status-stopped",
   pending: "status-pending",
@@ -42,6 +44,7 @@ const STATUS_CLASS: Record<string, string> = {
 const CARD_CLASS: Record<string, string> = {
   running: "sub-agent-card-running",
   complete: "sub-agent-card-complete",
+  completed: "sub-agent-card-complete",
   failed: "sub-agent-card-failed",
   stopped: "sub-agent-card-stopped",
 };
@@ -186,7 +189,7 @@ export default function SubAgentsPanel({
         const statusClass = STATUS_CLASS[subAgent.status] || "status-pending";
         const cardClass = CARD_CLASS[subAgent.status] || "";
         const isLive = subAgent.status === "running";
-        const isComplete = subAgent.status === "complete";
+        const isComplete = subAgent.status === "complete" || subAgent.status === "completed";
 
         // Sub-agents are text-in → text-out agents
         const subAgentModalities = { textIn: true, textOut: true };

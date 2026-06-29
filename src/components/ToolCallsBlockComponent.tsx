@@ -55,7 +55,7 @@ export default function ToolCallsBlockComponent({
   // Detect sub-agents still running for any create_team tool call in this block.
   // Even after the tool call status flips to "done", sub-agents may still be active.
   // A sub-agent is active unless it reached a terminal phase (complete/failed) or has no phase at all.
-  const terminalPhases = new Set(["complete", "failed"]);
+  const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
   const isSubAgentActive = (activity: SubAgentToolActivityItem | null | undefined): boolean =>
     !!activity && (!!activity.currentTool || (!!activity.phase && !terminalPhases.has(activity.phase)));
 
@@ -350,7 +350,7 @@ export default function ToolCallsBlockComponent({
 
                     if (subAgentEntries.length === 0) return null;
 
-                    const terminalPhaseSet = new Set(["complete", "failed"]);
+                    const terminalPhaseSet = new Set(["complete", "completed", "failed", "stopped"]);
                     return (
                       <div className={styles['sub-agent-status-bars-container']}>
                         {subAgentEntries.map((entry) => {

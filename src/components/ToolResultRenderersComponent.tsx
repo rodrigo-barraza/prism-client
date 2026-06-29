@@ -2444,7 +2444,7 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
     maxIterations,
     phase,
   } = activity;
-  const isTerminal = phase === "complete" || phase === "failed";
+  const isTerminal = phase === "complete" || phase === "completed" || phase === "failed" || phase === "stopped";
   const isToolActive = !!currentTool;
 
   // Detect sub-sub-agent delegation: the sub-agent's LLM is "complete" but it
@@ -2643,7 +2643,7 @@ function TeamCreateRenderer({
     : !!parsed;
   const teamName = args?.name || (Array.isArray(parsed) ? "" : parsed?.team) || "";
 
-  const terminalSubAgentPhases = useMemo(() => new Set(["complete", "failed"]), []);
+  const terminalSubAgentPhases = useMemo(() => new Set(["complete", "completed", "failed", "stopped"]), []);
   const hasActiveSubAgents = useMemo(() => {
     if (!subAgentToolActivity) return false;
     return Object.values(subAgentToolActivity).some(
