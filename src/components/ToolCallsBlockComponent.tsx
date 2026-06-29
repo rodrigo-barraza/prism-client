@@ -10,6 +10,8 @@ import {
 import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderersComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
+import StatusBarComponent from "./StatusBarComponent";
+import type { StatusBarPhase } from "./StatusBarComponent";
 import { renderToolName, formatLatencyMilliseconds } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { ToolCallEvent } from "../types/types";
@@ -52,8 +54,10 @@ export default function ToolCallsBlockComponent({
 
   // Detect sub-agents still running for any create_team tool call in this block.
   // Even after the tool call status flips to "done", sub-agents may still be active.
+  // A sub-agent is active unless it reached a terminal phase (complete/failed) or has no phase at all.
+  const terminalPhases = new Set(["complete", "failed"]);
   const isSubAgentActive = (activity: SubAgentToolActivityItem | null | undefined): boolean =>
-    !!activity && (!!activity.currentTool || activity.phase === "generating" || activity.phase === "thinking");
+    !!activity && (!!activity.currentTool || (!!activity.phase && !terminalPhases.has(activity.phase)));
 
   const hasActiveSubAgents = (() => {
     if (!toolCalls || !subAgentToolActivity) return false;
@@ -99,12 +103,12 @@ export default function ToolCallsBlockComponent({
     }
   }, [isAutoCollapsed, isBlockActive]);
 
-  // Force-expand when sub-agents become active; collapse when they finish
+  // Force-expand when sub-agents become active.
+  // Do NOT auto-collapse when they finish — the card stays open until
+  // the user manually closes it or isAutoCollapsed kicks in.
   useEffect(() => {
     if (isBlockActive && !previousIsBlockActive.current) {
       setHeaderCollapsed(false);
-    } else if (!isBlockActive && previousIsBlockActive.current) {
-      setHeaderCollapsed(true);
     }
     previousIsBlockActive.current = isBlockActive;
   }, [isBlockActive]);
@@ -284,6 +288,136 @@ export default function ToolCallsBlockComponent({
                         />
                       );
                     return null;
+                  })()}
+
+                {/* Sub-agent status bars — live phase indicators for each team member */}
+                {(toolCall.name === TOOL_NAMES.CREATE_TEAM) &&
+                  (() => {
+                    if (!subAgentToolActivity) return null;
+                    const parsed = toolCall.result
+                      ? typeof toolCall.result === "string"
+                        ? (() => { try { return JSON.parse(toolCall.result); } catch { return null; } })()
+                        : toolCall.result
+                      : null;
+                    const resultMembers: Array<{ agent_id?: string; description?: string }> =
+                      Array.isArray(parsed)
+                        ? parsed
+                        : (parsed as { members?: Array<{ agent_id?: string; description?: string }> })?.members ?? [];
+                    const argumentMembers: Array<{ description?: string }> =
+                      Array.isArray((toolCall.args as { members?: Array<{ description?: string }> })?.members)
+                        ? (toolCall.args as { members: Array<{ description?: string }> }).members
+                        : [];
+
+                    // Resolve sub-agent entries: by agent_id from result, or fallback by description from args
+                    const subAgentEntries: Array<{ key: string; description: string; activity: SubAgentToolActivityItem }> = [];
+                    for (const resultMember of resultMembers) {
+                      if (resultMember.agent_id && subAgentToolActivity[resultMember.agent_id]) {
+                        subAgentEntries.push({
+                          key: resultMember.agent_id,
+                          description: resultMember.description || "Sub-Agent",
+                          activity: subAgentToolActivity[resultMember.agent_id],
+                        });
+                      }
+                    }
+                    if (subAgentEntries.length === 0 && argumentMembers.length > 0) {
+                      for (const argumentMember of argumentMembers) {
+                        if (!argumentMember.description) continue;
+                        const matchedEntry = Object.entries(subAgentToolActivity).find(
+                          ([, value]) =>
+                            value.description &&
+                            argumentMember.description &&
+                            value.description.includes(argumentMember.description),
+                        );
+                        if (matchedEntry) {
+                          subAgentEntries.push({
+                            key: matchedEntry[0],
+                            description: argumentMember.description,
+                            activity: matchedEntry[1],
+                          });
+                        }
+                      }
+                    }
+
+                    if (subAgentEntries.length === 0) return null;
+
+                    const terminalPhaseSet = new Set(["complete", "failed"]);
+                    return (
+                      <div className={styles['sub-agent-status-bars-container']}>
+                        {subAgentEntries.map((entry) => {
+                          const { phase, currentTool, toolCount = 0, iteration, maxIterations, phaseProgress } = entry.activity;
+                          const isTerminal = terminalPhaseSet.has(phase ?? "");
+                          const isToolActive = !!currentTool;
+
+                          // Detect sub-sub-agent delegation
+                          const hasActiveSubSubAgents =
+                            isTerminal &&
+                            phase !== "failed" &&
+                            Array.isArray(entry.activity.toolCalls) &&
+                            entry.activity.toolCalls.some(
+                              (subToolCall) =>
+                                subToolCall.name === "create_team" &&
+                                (subToolCall.status === "calling" || subToolCall.status === "streaming"),
+                            );
+
+                          const hasPhase = !!phase && !isTerminal;
+                          const isActive = isToolActive || hasPhase || hasActiveSubSubAgents;
+
+                          const effectivePhase = hasActiveSubSubAgents
+                            ? "delegating"
+                            : isToolActive
+                              ? "executing"
+                              : isTerminal
+                                ? null
+                                : phase;
+
+                          const statusLabel = hasActiveSubSubAgents
+                            ? "Awaiting Sub-Agents…"
+                            : isToolActive
+                              ? renderToolName(currentTool!)
+                              : entry.activity.phaseLabel || undefined;
+
+                          const statusIcon = hasActiveSubSubAgents ? "👥" : isToolActive ? "🔧" : undefined;
+
+                          const progress =
+                            effectivePhase === "prefilling" || effectivePhase === "loading"
+                              ? (phaseProgress ?? null)
+                              : null;
+
+                          let tokPerSec = null;
+                          if (!isToolActive && (phase === "generating" || phase === "thinking")) {
+                            tokPerSec = entry.activity.tokPerSec ?? null;
+                          }
+
+                          const idleLabel = isTerminal
+                            ? phase === "failed"
+                              ? "Sub-agent failed"
+                              : `Done · ${toolCount} tool${toolCount !== 1 ? "s" : ""} used`
+                            : toolCount > 0
+                              ? `${toolCount} tools used`
+                              : "Sub-agent idle";
+
+                          return (
+                            <div key={entry.key} className={styles['sub-agent-status-entry']}>
+                              <span className={styles['sub-agent-status-label']}>
+                                {entry.description}
+                              </span>
+                              <StatusBarComponent
+                                active={isActive}
+                                variant="subAgent"
+                                phase={(effectivePhase ?? undefined) as StatusBarPhase | undefined}
+                                label={statusLabel}
+                                icon={statusIcon}
+                                progress={progress}
+                                tokPerSec={tokPerSec}
+                                iteration={iteration}
+                                maxIterations={maxIterations}
+                                idleLabel={idleLabel}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
                   })()}
 
                 {/* Tool-specific result renderer (registry pattern) */}

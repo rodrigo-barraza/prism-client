@@ -2628,13 +2628,15 @@ function TeamCreateRenderer({
     : !!parsed;
   const teamName = args?.name || (Array.isArray(parsed) ? "" : parsed?.team) || "";
 
+  const terminalSubAgentPhases = useMemo(() => new Set(["complete", "failed"]), []);
   const hasActiveSubAgents = useMemo(() => {
     if (!subAgentToolActivity) return false;
     return Object.values(subAgentToolActivity).some(
       (activity) =>
-        activity.phase === "generating" || activity.phase === "thinking",
+        !!activity.currentTool ||
+        (!!activity.phase && !terminalSubAgentPhases.has(activity.phase)),
     );
-  }, [subAgentToolActivity]);
+  }, [subAgentToolActivity, terminalSubAgentPhases]);
 
   const [, setTick] = useState(0);
   useEffect(() => {

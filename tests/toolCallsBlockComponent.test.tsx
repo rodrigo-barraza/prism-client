@@ -191,7 +191,7 @@ describe("ToolCallsBlockComponent", () => {
     it("stays expanded when sub-agents have phase=thinking", () => {
       const subAgentToolActivity: Record<string, SubAgentToolActivityItem> = {
         "agent-1": { phase: "thinking", currentTool: null, description: "Manager 1" },
-        "agent-2": { phase: "done", currentTool: null, description: "Manager 2" },
+        "agent-2": { phase: "complete", currentTool: null, description: "Manager 2" },
       };
 
       render(
@@ -208,7 +208,7 @@ describe("ToolCallsBlockComponent", () => {
     it("stays expanded when sub-agents have currentTool set", () => {
       const subAgentToolActivity: Record<string, SubAgentToolActivityItem> = {
         "agent-1": { phase: "generating", currentTool: "read_file", description: "Manager 1" },
-        "agent-2": { phase: "done", currentTool: null, description: "Manager 2" },
+        "agent-2": { phase: "complete", currentTool: null, description: "Manager 2" },
       };
 
       render(
@@ -224,8 +224,8 @@ describe("ToolCallsBlockComponent", () => {
 
     it("collapses when all sub-agents are done", () => {
       const subAgentToolActivity: Record<string, SubAgentToolActivityItem> = {
-        "agent-1": { phase: "done", currentTool: null, description: "Manager 1" },
-        "agent-2": { phase: "done", currentTool: null, description: "Manager 2" },
+        "agent-1": { phase: "complete", currentTool: null, description: "Manager 1" },
+        "agent-2": { phase: "complete", currentTool: null, description: "Manager 2" },
       };
 
       render(
@@ -343,7 +343,7 @@ describe("ToolCallsBlockComponent", () => {
       expect(hasStreamingClass()).toBe(true);
     });
 
-    it("collapses when sub-agents finish after being active", () => {
+    it("stays expanded when sub-agents finish (does NOT auto-collapse)", () => {
       const { rerender } = render(
         <ToolCallsBlockComponent
           toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
@@ -362,14 +362,14 @@ describe("ToolCallsBlockComponent", () => {
           <ToolCallsBlockComponent
             toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
             subAgentToolActivity={{
-              "agent-1": { phase: "done", currentTool: null, description: "Manager 1" },
+              "agent-1": { phase: "complete", currentTool: null, description: "Manager 1" },
             }}
           />,
         );
       });
 
-      // Should now be collapsed since nothing is active
-      expect(isBlockCollapsed()).toBe(true);
+      // The block stays expanded — only isAutoCollapsed or manual toggle collapses it
+      expect(isBlockExpanded()).toBe(true);
       expect(hasStreamingClass()).toBe(false);
     });
   });
@@ -394,7 +394,7 @@ describe("ToolCallsBlockComponent", () => {
 
     it("auto-collapses when sub-agents are finished and isAutoCollapsed is true", () => {
       const subAgentToolActivity: Record<string, SubAgentToolActivityItem> = {
-        "agent-1": { phase: "done", currentTool: null, description: "Manager 1" },
+        "agent-1": { phase: "complete", currentTool: null, description: "Manager 1" },
       };
 
       render(
