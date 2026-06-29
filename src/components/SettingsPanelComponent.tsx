@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import {
+  ButtonComponent,
   SelectComponent,
   ToggleComponent as ToggleSwitch,
   TextAreaComponent,
@@ -1484,27 +1485,18 @@ export default function SettingsPanel({
 
         {/* Copy curl button */}
         <div className={styles['copy-curl-container-section']}>
-          <button
-            type="button"
-            className={`${styles['copy-curl-action-button']} ${isCopied ? styles['copy-curl-button-copied-state'] : ""}`}
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+          <ButtonComponent
+            variant="disabled"
+            icon={isCopied ? Check : Terminal}
+            fullWidth
+            onClick={(event: React.MouseEvent<HTMLElement>) => {
               event.stopPropagation();
               const generatedCurlCommand = generateCurlCommand();
               copyToClipboard(generatedCurlCommand);
             }}
           >
-            {isCopied ? (
-              <>
-                <Check size={14} />
-                <span>cURL Copied!</span>
-              </>
-            ) : (
-              <>
-                <Terminal size={14} />
-                <span>Copy cURL</span>
-              </>
-            )}
-          </button>
+            {isCopied ? "cURL Copied!" : "Copy cURL"}
+          </ButtonComponent>
         </div>
       </div>
 
