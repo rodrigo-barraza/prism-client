@@ -762,7 +762,11 @@ export default function MessageList({
 
   const displayMessages = useMemo(() => {
     return messages
-      .filter((message) => showRaw || message.role !== "system")
+      .filter((message) => {
+        if (!showRaw && message.role === "system") return false;
+        if (!showRaw && message.role === "user" && parseTaskNotification(message.content)) return false;
+        return true;
+      })
       .map((message) => {
         if (message.role === "user") {
           const { clean, raw } = getCleanAndRaw(message.content || "", message.rawContent);

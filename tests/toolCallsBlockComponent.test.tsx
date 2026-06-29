@@ -53,7 +53,7 @@ vi.mock("@rodrigo-barraza/utilities-library", () => ({
 
 vi.mock("@rodrigo-barraza/utilities-library/taxonomy", () => ({
   TOOL_NAMES: {
-    CREATE_TEAM: "create_team",
+    CREATE_SUBAGENTS: "create_subagents",
     GOOGLE_SEARCH: "google_search",
   },
 }));
@@ -77,7 +77,7 @@ function makeToolCall(overrides: Partial<ToolCallEvent> = {}): ToolCallEvent {
 function makeCreateTeamToolCall(overrides: Partial<ToolCallEvent> = {}): ToolCallEvent {
   return {
     id: "tc-team-1",
-    name: "create_team",
+    name: "create_subagents",
     args: {
       members: [
         { description: "Manager 1: Benchmarking 300,000 and 400,000 rows" },
@@ -169,7 +169,7 @@ describe("ToolCallsBlockComponent", () => {
     });
   });
 
-  describe("create_team with sub-agents still running (raw array result)", () => {
+  describe("create_subagents with sub-agents still running (raw array result)", () => {
     it("stays expanded when sub-agents have phase=generating", () => {
       const subAgentToolActivity: Record<string, SubAgentToolActivityItem> = {
         "agent-1": { phase: "generating", currentTool: null, description: "Manager 1" },
@@ -241,7 +241,7 @@ describe("ToolCallsBlockComponent", () => {
     });
   });
 
-  describe("create_team with { members: [...] } result format", () => {
+  describe("create_subagents with { members: [...] } result format", () => {
     it("stays expanded when sub-agents have phase=generating (object result)", () => {
       const objectResult = JSON.stringify({
         members: [
@@ -267,7 +267,7 @@ describe("ToolCallsBlockComponent", () => {
     });
   });
 
-  describe("create_team with no result yet (calling state, description fallback)", () => {
+  describe("create_subagents with no result yet (calling state, description fallback)", () => {
     it("stays expanded when sub-agents matched by description are generating", () => {
       const subAgentToolActivity: Record<string, SubAgentToolActivityItem> = {
         "unknown-id-1": {
@@ -409,7 +409,7 @@ describe("ToolCallsBlockComponent", () => {
     });
   });
 
-  describe("non-create_team tool calls are unaffected", () => {
+  describe("non-create_subagents tool calls are unaffected", () => {
     it("collapses normally even with subAgentToolActivity present", () => {
       const subAgentToolActivity: Record<string, SubAgentToolActivityItem> = {
         "agent-1": { phase: "generating", currentTool: "read_file", description: "Manager 1" },
@@ -422,7 +422,7 @@ describe("ToolCallsBlockComponent", () => {
         />,
       );
 
-      // Non-create_team tool calls should not care about subAgentToolActivity
+      // Non-create_subagents tool calls should not care about subAgentToolActivity
       expect(isBlockCollapsed()).toBe(true);
     });
   });

@@ -230,7 +230,7 @@
   font-weight: normal;
 }
 
-/* ── Sub-agent status bars inside create_team tool-call-item ── */
+/* ── Sub-agent status bars inside create_subagents tool-call-item ── */
 .sub-agent-status-bars-container {
   flex-basis: 100%;
   display: flex;

@@ -7202,7 +7202,7 @@ export default function ChatConversationComponent({
 
         // -- Derive phase from live sub-agent activity --------------
         // When sub-agents are active (whether via an in-flight tool call
-        // or after a non-blocking create_team dispatch), the orchestrator
+        // or after a non-blocking create_subagents dispatch), the orchestrator
         // bar should reflect the aggregate sub-agent state.
         let subAgentDerivedPhase = null;
         let subAgentDerivedLabel = null;

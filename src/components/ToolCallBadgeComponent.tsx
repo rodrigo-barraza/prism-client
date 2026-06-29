@@ -31,9 +31,9 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   [TOOL_NAMES.CONTROL_BROWSER]: "Browser",
   [TOOL_NAMES.SUMMARIZE_PROJECT]: "Summary",
   [TOOL_NAMES.GENERATE_IMAGE]: "Image Gen",
-  // Coordinator tools
-  [TOOL_NAMES.CREATE_TEAM]: "Create Team",
-  [TOOL_NAMES.DELETE_TEAM]: "Delete Team",
+  // Orchestrator subagent tools
+  [TOOL_NAMES.CREATE_SUBAGENTS]: "Create Subagents",
+  [TOOL_NAMES.DELETE_SUBAGENTS]: "Delete Subagents",
   [TOOL_NAMES.SLEEP]: "Sleep",
   [TOOL_NAMES.ENTER_PLAN_MODE]: "Plan",
   [TOOL_NAMES.EXIT_PLAN_MODE]: "Execute",
@@ -59,7 +59,7 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   [TOOL_NAMES.LIST_TASKS]: "List Tasks",
   [TOOL_NAMES.GET_TASK]: "Get Task",
   [TOOL_NAMES.UPDATE_TASK]: "Update Task",
-  [TOOL_NAMES.GET_TASK_OUTPUT]: "Get Task Output",
+  [TOOL_NAMES.GET_SUBAGENT_OUTPUT]: "Get Subagent Output",
   // Structured output
   [TOOL_NAMES.EMIT_STRUCTURED_OUTPUT]: "Output",
   // Worktree isolation

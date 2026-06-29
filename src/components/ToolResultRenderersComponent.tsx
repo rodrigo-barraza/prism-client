@@ -2448,14 +2448,14 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
   const isToolActive = !!currentTool;
 
   // Detect sub-sub-agent delegation: the sub-agent's LLM is "complete" but it
-  // spawned a nested team whose create_team tool call is still in-flight.
+  // spawned a nested team whose create_subagents tool call is still in-flight.
   const hasActiveSubSubAgents =
     isTerminal &&
     phase !== "failed" &&
     Array.isArray(activity.toolCalls) &&
     activity.toolCalls.some(
       (toolCall) =>
-        toolCall.name === "create_team" &&
+        toolCall.name === "create_subagents" &&
         (toolCall.status === "calling" || toolCall.status === "streaming"),
     );
 
@@ -2525,8 +2525,8 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
 
 /**
  * Renders live status bars for sub-sub-agents spawned by a sub-agent's
- * nested create_team tool call. Extracts agent_ids from the in-flight
- * create_team and looks them up in subAgentToolActivity.
+ * nested create_subagents tool call. Extracts agent_ids from the in-flight
+ * create_subagents and looks them up in subAgentToolActivity.
  */
 function SubSubAgentStatusBars({
   toolCalls,
@@ -2538,7 +2538,7 @@ function SubSubAgentStatusBars({
   if (!subAgentToolActivity) return null;
 
   const createTeamCalls = toolCalls.filter(
-    (toolCall) => toolCall.name === "create_team",
+    (toolCall) => toolCall.name === "create_subagents",
   );
 
   if (createTeamCalls.length === 0) return null;
@@ -2630,7 +2630,7 @@ function TeamCreateRenderer({
 
   const rawArgMembers = args?.members;
   const argMembers = Array.isArray(rawArgMembers) ? rawArgMembers : [];
-  // create_team returns a raw array, { members: [...] }, or non-blocking { agents: [...] }
+  // create_subagents returns a raw array, { members: [...] }, or non-blocking { agents: [...] }
   const rawResultMembers = Array.isArray(parsed)
     ? parsed
     : (parsed?.members ?? parsed?.agents ?? []);
@@ -2763,13 +2763,13 @@ function TeamCreateRenderer({
         const toolNames = activity?.toolNames || member.toolNames;
 
         // Detect when this sub-agent is "completed" but still has
-        // in-flight create_team tool calls (sub-sub-agents still running)
+        // in-flight create_subagents tool calls (sub-sub-agents still running)
         const memberHasActiveSubSubAgents =
           isCompleted &&
           Array.isArray(activity?.toolCalls) &&
           activity!.toolCalls.some(
             (toolCall) =>
-              toolCall.name === "create_team" &&
+              toolCall.name === "create_subagents" &&
               (toolCall.status === "calling" || toolCall.status === "streaming"),
           );
 
@@ -2838,7 +2838,7 @@ function TeamCreateRenderer({
 
             {activity?.toolCalls &&
               activity.toolCalls.some(
-                (toolCall) => toolCall.name === "create_team",
+                (toolCall) => toolCall.name === "create_subagents",
               ) && (
               <SubSubAgentStatusBars
                 toolCalls={activity.toolCalls}
@@ -2984,9 +2984,9 @@ const TOOL_RESULT_REGISTRY = {
   synthesize_speech_local: { Renderer: TextToSpeechRenderer },
 
   // Coordinator
-  create_team: { Renderer: TeamCreateRenderer },
-  send_message: { Renderer: SendMessageRenderer },
-  stop_agent: { Renderer: StopAgentRenderer },
+  create_subagents: { Renderer: TeamCreateRenderer },
+  send_subagent_message: { Renderer: SendMessageRenderer },
+  stop_subagent: { Renderer: StopAgentRenderer },
 };
 
 /**

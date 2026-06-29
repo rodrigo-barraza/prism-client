@@ -52,7 +52,7 @@ export default function ToolCallsBlockComponent({
     ? toolCalls.some((toolCall) => toolCall.status === "calling" || toolCall.status === "streaming")
     : false;
 
-  // Detect sub-agents still running for any create_team tool call in this block.
+  // Detect sub-agents still running for any create_subagents tool call in this block.
   // Even after the tool call status flips to "done", sub-agents may still be active.
   // A sub-agent is active unless it reached a terminal phase (complete/failed) or has no phase at all.
   const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
@@ -62,14 +62,14 @@ export default function ToolCallsBlockComponent({
   const hasActiveSubAgents = (() => {
     if (!toolCalls || !subAgentToolActivity) return false;
     for (const toolCall of toolCalls) {
-      if (toolCall.name !== TOOL_NAMES.CREATE_TEAM) continue;
+      if (toolCall.name !== TOOL_NAMES.CREATE_SUBAGENTS) continue;
       // Check result members for agent_ids with active tool activity
       const parsed = toolCall.result
         ? typeof toolCall.result === "string"
           ? (() => { try { return JSON.parse(toolCall.result); } catch { return null; } })()
           : toolCall.result
         : null;
-      // create_team returns a raw array, { members: [...] }, or non-blocking { agents: [...] }
+      // create_subagents returns a raw array, { members: [...] }, or non-blocking { agents: [...] }
       const rawMembers = Array.isArray(parsed)
         ? parsed
         : (parsed as { members?: Array<{ agent_id?: string }>; agents?: Array<{ agent_id?: string }> })?.members
@@ -202,7 +202,7 @@ export default function ToolCallsBlockComponent({
                 )}
 
                 {/* Sub-agent tool badges — show which tools a spawned agent used */}
-                {(toolCall.name === TOOL_NAMES.CREATE_TEAM) &&
+                {(toolCall.name === TOOL_NAMES.CREATE_SUBAGENTS) &&
                   (() => {
                     const parsed = toolCall.result
                       ? typeof toolCall.result === "string"
@@ -299,7 +299,7 @@ export default function ToolCallsBlockComponent({
                   })()}
 
                 {/* Sub-agent status bars — live phase indicators for each team member */}
-                {(toolCall.name === TOOL_NAMES.CREATE_TEAM) &&
+                {(toolCall.name === TOOL_NAMES.CREATE_SUBAGENTS) &&
                   (() => {
                     if (!subAgentToolActivity) return null;
                     const parsed = toolCall.result
@@ -365,7 +365,7 @@ export default function ToolCallsBlockComponent({
                             Array.isArray(entry.activity.toolCalls) &&
                             entry.activity.toolCalls.some(
                               (subToolCall) =>
-                                subToolCall.name === "create_team" &&
+                                subToolCall.name === "create_subagents" &&
                                 (subToolCall.status === "calling" || subToolCall.status === "streaming"),
                             );
 

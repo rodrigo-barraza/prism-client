@@ -493,11 +493,11 @@ export function buildGraphFromConversation(
   const subAgentTree = buildSubAgentTree(mainAgentConversationId, new Set([mainAgentConversationId]));
 
   // Create edges based on the tree structure.
-  // Instead of parent_agent → sub_agent, connect the create_team tool → sub_agent.
+  // Instead of parent_agent → sub_agent, connect the create_subagents tool → sub_agent.
   // This places sub-agents after the tool column that spawned them.
   const createTreeEdges = (treeNodes: SubAgentTreeNode[], parentAgentConvId: string) => {
     for (const treeNode of treeNodes) {
-      // Find the create_team tool node in the parent agent's requests that spawned this sub-agent.
+      // Find the create_subagents tool node in the parent agent's requests that spawned this sub-agent.
       // When the parent is the main agent, include requests from ALL main agent turn IDs
       // since the server generates a new agentConversationId per turn.
       const isParentMainAgent = mainAgentConversationIds.has(parentAgentConvId);
@@ -512,8 +512,8 @@ export function buildGraphFromConversation(
 
       let linkedToTool = false;
       for (const parentRequest of parentAgentRequests) {
-        if (parentRequest.toolApiNames?.includes("create_team")) {
-          // Link sub-agent from the request node that invoked create_team
+        if (parentRequest.toolApiNames?.includes("create_subagents")) {
+          // Link sub-agent from the request node that invoked create_subagents
           const requestNodeId = `request:${parentRequest._id || sortedRequests.indexOf(parentRequest)}`;
           if (nodeIdSet.has(requestNodeId)) {
             addEdge(requestNodeId, treeNode.nodeId, 0.9, false);
@@ -523,7 +523,7 @@ export function buildGraphFromConversation(
         }
       }
 
-      // Fallback: connect to parent agent node if no create_team tool was found
+      // Fallback: connect to parent agent node if no create_subagents tool was found
       if (!linkedToTool) {
         const parentNodeId = agentConversationIdToNodeId.get(parentAgentConvId) || parentAgentNodeId;
         addEdge(parentNodeId, treeNode.nodeId, 0.9, false);
