@@ -52,6 +52,9 @@ export default function ToolCallsBlockComponent({
 
   // Detect sub-agents still running for any create_team tool call in this block.
   // Even after the tool call status flips to "done", sub-agents may still be active.
+  const isSubAgentActive = (activity: SubAgentToolActivityItem | null | undefined): boolean =>
+    !!activity && (!!activity.currentTool || activity.phase === "generating" || activity.phase === "thinking");
+
   const hasActiveSubAgents = (() => {
     if (!toolCalls || !subAgentToolActivity) return false;
     for (const toolCall of toolCalls) {
@@ -62,10 +65,13 @@ export default function ToolCallsBlockComponent({
           ? (() => { try { return JSON.parse(toolCall.result); } catch { return null; } })()
           : toolCall.result
         : null;
-      const members = (parsed as { members?: Array<{ agent_id?: string }> })?.members || [];
+      // create_team returns either a raw array or { members: [...] }
+      const rawMembers = Array.isArray(parsed)
+        ? parsed
+        : (parsed as { members?: Array<{ agent_id?: string }> })?.members ?? [];
+      const members: Array<{ agent_id?: string }> = Array.isArray(rawMembers) ? rawMembers : [];
       for (const member of members) {
-        const activity = member.agent_id ? subAgentToolActivity[member.agent_id] : null;
-        if (activity?.currentTool) return true;
+        if (isSubAgentActive(member.agent_id ? subAgentToolActivity[member.agent_id] : null)) return true;
       }
       // Fallback: match by description during calling state (before result arrives)
       const toolCallArguments = toolCall.args as { members?: Array<{ description?: string }> };
@@ -74,7 +80,7 @@ export default function ToolCallsBlockComponent({
           const match = Object.values(subAgentToolActivity).find(
             (value) => value.description && argumentMember.description && value.description.includes(argumentMember.description),
           );
-          if (match?.currentTool) return true;
+          if (isSubAgentActive(match)) return true;
         }
       }
     }
@@ -85,6 +91,7 @@ export default function ToolCallsBlockComponent({
 
   const [headerCollapsed, setHeaderCollapsed] = useState(!isBlockActive);
   const wasManuallyExpanded = useRef(false);
+  const previousIsBlockActive = useRef(isBlockActive);
 
   useEffect(() => {
     if (isAutoCollapsed && !isBlockActive && !wasManuallyExpanded.current) {
@@ -92,11 +99,14 @@ export default function ToolCallsBlockComponent({
     }
   }, [isAutoCollapsed, isBlockActive]);
 
-  // Force-expand when sub-agents become active (block may have been collapsed on mount)
+  // Force-expand when sub-agents become active; collapse when they finish
   useEffect(() => {
-    if (isBlockActive) {
+    if (isBlockActive && !previousIsBlockActive.current) {
       setHeaderCollapsed(false);
+    } else if (!isBlockActive && previousIsBlockActive.current) {
+      setHeaderCollapsed(true);
     }
+    previousIsBlockActive.current = isBlockActive;
   }, [isBlockActive]);
 
   if (!toolCalls || toolCalls.length === 0) return null;
