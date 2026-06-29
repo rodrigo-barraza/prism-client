@@ -22,43 +22,43 @@ function TestToolTogglesComponent({
         {Array.from(disabledTools).join(",")}
       </div>
       <button
-        data-testid="toggle-btn"
+        data-testid="toggle-button"
         onClick={() => handleToggleBuiltIn("search_web")}
       >
         Toggle search_web
       </button>
       <button
-        data-testid="toggle-system-btn"
+        data-testid="toggle-system-button"
         onClick={() => handleToggleBuiltIn("read_file")}
       >
         Toggle read_file
       </button>
       <button
-        data-testid="disable-all-btn"
+        data-testid="disable-all-button"
         onClick={() => handleToggleAllBuiltIn(false)}
       >
         Disable All
       </button>
       <button
-        data-testid="enable-all-btn"
+        data-testid="enable-all-button"
         onClick={() => handleToggleAllBuiltIn(true)}
       >
         Enable All
       </button>
       <button
-        data-testid="reset-to-all-disabled-btn"
+        data-testid="reset-to-all-disabled-button"
         onClick={() => resetToAllDisabled()}
       >
         Reset To All Disabled
       </button>
       <button
-        data-testid="restore-disabled-btn"
+        data-testid="restore-disabled-button"
         onClick={() => restoreDisabledTools(["search_web", "get_weather"])}
       >
         Restore Disabled
       </button>
       <button
-        data-testid="restore-empty-btn"
+        data-testid="restore-empty-button"
         onClick={() => restoreDisabledTools([])}
       >
         Restore Empty
@@ -88,7 +88,7 @@ describe("useToolToggles Hook", () => {
   it("should toggle configurable tools correctly", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const toggleBtn = screen.getByTestId("toggle-btn");
+    const toggleButton = screen.getByTestId("toggle-button");
 
     // Initially search_web and get_weather are disabled
     let disabledList = disabledToolsDiv.textContent?.split(",") || [];
@@ -96,13 +96,13 @@ describe("useToolToggles Hook", () => {
     expect(disabledList).toContain("get_weather");
 
     // Toggle search_web (enables it -> removes from disabled list)
-    fireEvent.click(toggleBtn);
+    fireEvent.click(toggleButton);
     disabledList = disabledToolsDiv.textContent?.split(",") || [];
     expect(disabledList).not.toContain("search_web");
     expect(disabledList).toContain("get_weather");
 
     // Toggle search_web back (disables it -> adds to disabled list)
-    fireEvent.click(toggleBtn);
+    fireEvent.click(toggleButton);
     disabledList = disabledToolsDiv.textContent?.split(",") || [];
     expect(disabledList).toContain("search_web");
     expect(disabledList).toContain("get_weather");
@@ -111,10 +111,10 @@ describe("useToolToggles Hook", () => {
   it("should NOT toggle system tools when coreToolsLocked is true", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const toggleSystemBtn = screen.getByTestId("toggle-system-btn");
+    const toggleSystemButton = screen.getByTestId("toggle-system-button");
 
     // Attempt to toggle system tool
-    fireEvent.click(toggleSystemBtn);
+    fireEvent.click(toggleSystemButton);
     // Should remain only configurable tools disabled
     const disabledList = disabledToolsDiv.textContent?.split(",") || [];
     expect(disabledList).toContain("search_web");
@@ -126,7 +126,7 @@ describe("useToolToggles Hook", () => {
   it("should toggle system tools when coreToolsLocked is false", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={false} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const toggleSystemBtn = screen.getByTestId("toggle-system-btn");
+    const toggleSystemButton = screen.getByTestId("toggle-system-button");
 
     // Initially all tools disabled
     let disabledList = disabledToolsDiv.textContent?.split(",") || [];
@@ -136,7 +136,7 @@ describe("useToolToggles Hook", () => {
     expect(disabledList).toContain("get_weather");
 
     // Attempt to toggle system tool when unlocked (enables it -> removes from disabled list)
-    fireEvent.click(toggleSystemBtn);
+    fireEvent.click(toggleSystemButton);
     disabledList = disabledToolsDiv.textContent?.split(",") || [];
     expect(disabledList).not.toContain("read_file");
     expect(disabledList).toContain("write_file");
@@ -145,9 +145,9 @@ describe("useToolToggles Hook", () => {
   it("should disable only configurable tools on bulk disable (Disable All) when coreToolsLocked is true", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const disableAllBtn = screen.getByTestId("disable-all-btn");
+    const disableAllButton = screen.getByTestId("disable-all-button");
 
-    fireEvent.click(disableAllBtn);
+    fireEvent.click(disableAllButton);
     // Should disable only search_web and get_weather, keeping system tools enabled
     const disabledList = disabledToolsDiv.textContent?.split(",") || [];
     expect(disabledList).toContain("search_web");
@@ -159,9 +159,9 @@ describe("useToolToggles Hook", () => {
   it("should disable all tools including system tools on bulk disable when coreToolsLocked is false", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={false} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const disableAllBtn = screen.getByTestId("disable-all-btn");
+    const disableAllButton = screen.getByTestId("disable-all-button");
 
-    fireEvent.click(disableAllBtn);
+    fireEvent.click(disableAllButton);
     // Should disable all tools
     const disabledList = disabledToolsDiv.textContent?.split(",") || [];
     expect(disabledList).toContain("search_web");
@@ -173,11 +173,11 @@ describe("useToolToggles Hook", () => {
   it("should enable all tools on bulk enable (Enable All)", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const toggleBtn = screen.getByTestId("toggle-btn");
-    const enableAllBtn = screen.getByTestId("enable-all-btn");
+    const toggleButton = screen.getByTestId("toggle-button");
+    const enableAllBtn = screen.getByTestId("enable-all-button");
 
     // Enable search_web first (removes from disabled set)
-    fireEvent.click(toggleBtn);
+    fireEvent.click(toggleButton);
     let disabledList = disabledToolsDiv.textContent?.split(",") || [];
     expect(disabledList).not.toContain("search_web");
     expect(disabledList).toContain("get_weather");
@@ -190,7 +190,7 @@ describe("useToolToggles Hook", () => {
   it("should disable all configurable tools on resetToAllDisabled when coreToolsLocked is true", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const resetButton = screen.getByTestId("reset-to-all-disabled-btn");
+    const resetButton = screen.getByTestId("reset-to-all-disabled-button");
 
     fireEvent.click(resetButton);
     const disabledList = disabledToolsDiv.textContent?.split(",") || [];
@@ -203,7 +203,7 @@ describe("useToolToggles Hook", () => {
   it("should disable all tools including system on resetToAllDisabled when coreToolsLocked is false", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={false} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const resetButton = screen.getByTestId("reset-to-all-disabled-btn");
+    const resetButton = screen.getByTestId("reset-to-all-disabled-button");
 
     fireEvent.click(resetButton);
     const disabledList = disabledToolsDiv.textContent?.split(",") || [];
@@ -216,7 +216,7 @@ describe("useToolToggles Hook", () => {
   it("should replace the disabled set with restoreDisabledTools", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const restoreButton = screen.getByTestId("restore-disabled-btn");
+    const restoreButton = screen.getByTestId("restore-disabled-button");
 
     // Initially configurable tools disabled
     let disabledList = disabledToolsDiv.textContent?.split(",") || [];
@@ -235,8 +235,8 @@ describe("useToolToggles Hook", () => {
   it("should clear all disabled tools when restoreDisabledTools receives empty array", () => {
     render(<TestToolTogglesComponent builtInTools={mockTools} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const resetButton = screen.getByTestId("reset-to-all-disabled-btn");
-    const restoreEmptyButton = screen.getByTestId("restore-empty-btn");
+    const resetButton = screen.getByTestId("reset-to-all-disabled-button");
+    const restoreEmptyButton = screen.getByTestId("restore-empty-button");
 
     // First disable some tools
     fireEvent.click(resetButton);
@@ -263,7 +263,7 @@ describe("useToolToggles Hook", () => {
   it("should NOT automatically disable tools if restoreDisabledTools was already called (e.g. session load)", () => {
     const { rerender } = render(<TestToolTogglesComponent builtInTools={[]} coreToolsLocked={true} />);
     const disabledToolsDiv = screen.getByTestId("disabled-tools");
-    const restoreButton = screen.getByTestId("restore-disabled-btn");
+    const restoreButton = screen.getByTestId("restore-disabled-button");
 
     // Simulate session load before tools list arrives
     fireEvent.click(restoreButton);

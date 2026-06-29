@@ -21,19 +21,19 @@ export function serializeEditable(element: Node) {
   for (const node of element.childNodes) {
     if (node.nodeType === Node.TEXT_NODE) {
       text += node.textContent;
-    } else if ((node as HTMLElement).dataset?.mentionPath) {
+    } else if (node instanceof HTMLElement && node.dataset?.mentionPath) {
       // Include line range suffix if present (e.g. @path#L10 or @path#L10-25)
-      let ref = `@${(node as HTMLElement).dataset.mentionPath}`;
-      const ls = (node as HTMLElement).dataset.mentionLineStart;
-      const le = (node as HTMLElement).dataset.mentionLineEnd;
-      if (ls) {
-        ref += le && le !== ls ? `#L${ls}-${le}` : `#L${ls}`;
+      let reference = `@${node.dataset.mentionPath}`;
+      const lineStart = node.dataset.mentionLineStart;
+      const lineEnd = node.dataset.mentionLineEnd;
+      if (lineStart) {
+        reference += lineEnd && lineEnd !== lineStart ? `#L${lineStart}-${lineEnd}` : `#L${lineStart}`;
       }
-      text += ref;
-    } else if ((node as HTMLElement).dataset?.slashCommand) {
+      text += reference;
+    } else if (node instanceof HTMLElement && node.dataset?.slashCommand) {
       // Slash command badges are stripped from serialization — rule
       // content is injected separately by the send handler.
-    } else if ((node as HTMLElement).tagName === "BR") {
+    } else if (node instanceof HTMLElement && node.tagName === "BR") {
       text += "\n";
     } else {
       // Block wrappers created by Enter in contentEditable (div, p)
@@ -61,19 +61,19 @@ export function flattenTree(
   nodes: WorkspaceEntry[],
   prefix = "",
 ): WorkspaceEntry[] {
-  const out: WorkspaceEntry[] = [];
+  const flattenedEntries: WorkspaceEntry[] = [];
   for (const node of nodes) {
     const fullPath = prefix ? `${prefix}/${node.name}` : node.name;
-    out.push({
+    flattenedEntries.push({
       path: String(fullPath || ""),
       name: String(node.name || ""),
       type: String(node.type || ""),
     });
     if (node.type === "directory" && node.children?.length) {
-      out.push(...flattenTree(node.children, fullPath));
+      flattenedEntries.push(...flattenTree(node.children, fullPath));
     }
   }
-  return out;
+  return flattenedEntries;
 }
 
 // -- Mention Query Detection ---------------------------------------
@@ -84,14 +84,14 @@ export function flattenTree(
  * or null if not in a mention.
  */
 export function detectMentionToken(text: string, cursorOffset: number) {
-  let i = cursorOffset - 1;
-  while (i >= 0 && text[i] !== "@" && text[i] !== " " && text[i] !== "\n") i--;
+  let index = cursorOffset - 1;
+  while (index >= 0 && text[index] !== "@" && text[index] !== " " && text[index] !== "\n") index--;
   if (
-    i >= 0 &&
-    text[i] === "@" &&
-    (i === 0 || text[i - 1] === " " || text[i - 1] === "\n")
+    index >= 0 &&
+    text[index] === "@" &&
+    (index === 0 || text[index - 1] === " " || text[index - 1] === "\n")
   ) {
-    return { query: text.slice(i + 1, cursorOffset), anchorOffset: i };
+    return { query: text.slice(index + 1, cursorOffset), anchorOffset: index };
   }
   return null;
 }
@@ -140,14 +140,14 @@ export function parseMentionTokens(text: string): MentionSegment[] {
   // Match @path tokens — path must contain at least one `/` or `.` to
   // distinguish real file/dir mentions from casual "@someone" usage.
   // Optionally captures a trailing `#Lstart` or `#Lstart-end` suffix.
-  const mentionRe =
+  const mentionRegex =
     /(?:^|(?<=\s))@((?:[^\s]+\/[^\s]*|[^\s]+\.[^\s]+?)(?:#L(\d+)(?:-(\d+))?)?)(?=\s|$)/g;
 
   const segments: MentionSegment[] = [];
   let lastIndex = 0;
   let match;
 
-  while ((match = mentionRe.exec(text)) !== null) {
+  while ((match = mentionRegex.exec(text)) !== null) {
     // Text before this mention
     if (match.index > lastIndex) {
       segments.push({
@@ -162,7 +162,7 @@ export function parseMentionTokens(text: string): MentionSegment[] {
       if (match[3]) segment.lineEnd = parseInt(match[3], 10);
     }
     segments.push(segment);
-    lastIndex = mentionRe.lastIndex;
+    lastIndex = mentionRegex.lastIndex;
   }
 
   // Trailing text
@@ -177,7 +177,7 @@ export function parseMentionTokens(text: string): MentionSegment[] {
 // Uses the shared MentionBadgeComponent CSS module so both the
 // contentEditable input and the message list render identical badges.
 
-interface MentionBadgeOpts {
+interface MentionBadgeOptions {
   stale?: boolean;
   lineStart?: number;
   lineEnd?: number;
@@ -190,38 +190,38 @@ export function createMentionBadge(
   path: string,
   name: string,
   type: string | undefined,
-  opts: MentionBadgeOpts = {},
+  options: MentionBadgeOptions = {},
 ) {
   const badge = document.createElement("span");
   badge.contentEditable = "false";
   const classes = [badgeStyles['mention-badge']];
-  if (opts.stale) classes.push(badgeStyles['mention-badge-stale']);
+  if (options.stale) classes.push(badgeStyles['mention-badge-stale']);
   badge.className = classes.join(" ");
   badge.dataset.mentionPath = path;
   badge.dataset.mentionType = type || "file";
   // Store line range in data attributes for serialization
-  if (opts.lineStart != null) {
-    badge.dataset.mentionLineStart = String(opts.lineStart);
-    if (opts.lineEnd != null && opts.lineEnd !== opts.lineStart) {
-      badge.dataset.mentionLineEnd = String(opts.lineEnd);
+  if (options.lineStart != null) {
+    badge.dataset.mentionLineStart = String(options.lineStart);
+    if (options.lineEnd != null && options.lineEnd !== options.lineStart) {
+      badge.dataset.mentionLineEnd = String(options.lineEnd);
     }
   }
   // Build display name with line suffix (#L format — GitHub convention)
   let displayName = name;
-  if (opts.lineStart != null) {
+  if (options.lineStart != null) {
     displayName +=
-      opts.lineEnd != null && opts.lineEnd !== opts.lineStart
-        ? `#L${opts.lineStart}-${opts.lineEnd}`
-        : `#L${opts.lineStart}`;
+      options.lineEnd != null && options.lineEnd !== options.lineStart
+        ? `#L${options.lineStart}-${options.lineEnd}`
+        : `#L${options.lineStart}`;
   }
   // Native title attribute — used as tooltip fallback inside overflow-clipped
   // contentEditable containers where the ::after CSS tooltip gets cut off.
   let titleText = path;
-  if (opts.lineStart != null) {
+  if (options.lineStart != null) {
     titleText +=
-      opts.lineEnd != null && opts.lineEnd !== opts.lineStart
-        ? `#L${opts.lineStart}-${opts.lineEnd}`
-        : `#L${opts.lineStart}`;
+      options.lineEnd != null && options.lineEnd !== options.lineStart
+        ? `#L${options.lineStart}-${options.lineEnd}`
+        : `#L${options.lineStart}`;
   }
   badge.title = titleText;
   const icon = type === "directory" ? "📁" : "📄";
@@ -250,8 +250,10 @@ export function extractSlashCommandNames(element: HTMLElement): Set<string> {
   const names = new Set<string>();
   const badges = element.querySelectorAll("[data-slash-command]");
   for (const badge of badges) {
-    const name = (badge as HTMLElement).dataset.slashCommand;
-    if (name) names.add(name);
+    if (badge instanceof HTMLElement) {
+      const name = badge.dataset.slashCommand;
+      if (name) names.add(name);
+    }
   }
   return names;
 }

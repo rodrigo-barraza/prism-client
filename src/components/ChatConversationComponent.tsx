@@ -4801,7 +4801,19 @@ export default function ChatConversationComponent({
         new Set(previousGeneratingConversationIds).add(genId),
       );
       setToolActivity([]);
-      setSubAgentToolActivity({});
+      // Preserve sub-agent entries that are still in non-terminal phases
+      // so their progress bars remain visible while the follow-up generates.
+      // Only wipe entries that already reached "complete" or "failed".
+      setSubAgentToolActivity((previousSubAgentToolActivity) => {
+        const terminalPhases = new Set(["complete", "failed"]);
+        const preserved: Record<string, SubAgentActivityEntry> = {};
+        for (const [id, entry] of Object.entries(previousSubAgentToolActivity)) {
+          if (!entry.phase || !terminalPhases.has(entry.phase)) {
+            preserved[id] = entry;
+          }
+        }
+        return preserved;
+      });
       setStreamingOutputs(new Map());
       setPendingApprovals([]);
       setPendingUserQuestion(null);

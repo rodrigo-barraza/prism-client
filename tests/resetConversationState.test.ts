@@ -32,17 +32,29 @@ describe("resetConversationState model parameter resetting", () => {
       },
     };
 
+    interface TestModelOption {
+      name: string;
+      defaultTemperature?: number;
+    }
+
+    interface TestConversationSettingsInput {
+      provider?: string;
+      model?: string;
+      agents?: {
+        workspaceEnabled?: boolean;
+      };
+    }
+
     const updateSettings = (
-      settings: typeof currentSettings,
+      settings: TestConversationSettingsInput,
       isNoAgent: boolean,
     ) => {
       let defaultTemperature = 1.0;
-      let isThinkingSupported = false;
       if (mockConfig && settings.provider && settings.model) {
         const providerModels =
-          (mockConfig.textToText?.models as Record<string, any>)?.[settings.provider] || [];
+          (mockConfig.textToText?.models as Record<string, TestModelOption[]>)?.[settings.provider] || [];
         const modelDefinition = providerModels.find(
-          (model: ModelOption) => model.name === settings.model,
+          (model: TestModelOption) => model.name === settings.model,
         );
         if (
           modelDefinition &&
@@ -50,30 +62,29 @@ describe("resetConversationState model parameter resetting", () => {
         ) {
           defaultTemperature = modelDefinition.defaultTemperature;
         }
-        if (modelDefinition) {
-          const modelName = (settings.model || "").toLowerCase();
-          const nameBasedThinking = FALLBACK_THINKING_PATTERNS.some((pattern) =>
-            modelName.includes(pattern),
-          );
-
-          isThinkingSupported = !!(
-            modelDefinition.thinking ||
-            modelDefinition.supportsThinking ||
-            (modelDefinition.thinkingLevels && modelDefinition.thinkingLevels.length > 0) ||
-            (modelDefinition.tools && modelDefinition.tools.includes("Thinking")) ||
-            (settings.provider === "lm-studio" && nameBasedThinking)
-          );
-        }
       }
+
+      const persistedWorkspaceToggle =
+        typeof window !== "undefined"
+          ? localStorage.getItem("agent:workspaceTogglePreference")
+          : null;
+      const workspaceEnabledPreference =
+        persistedWorkspaceToggle !== null
+          ? persistedWorkspaceToggle !== "false"
+          : true;
 
       return {
         ...SETTINGS_DEFAULTS,
         provider: settings.provider,
         model: settings.model,
+        agents: {
+          ...settings.agents,
+          workspaceEnabled: workspaceEnabledPreference,
+        },
         temperature: defaultTemperature,
         maxTokens: 64000,
         functionCallingEnabled: !isNoAgent,
-        thinkingEnabled: isThinkingSupported,
+        thinkingEnabled: true,
         minP: 0,
         repeatPenalty: 1.0,
         seed: null,
@@ -97,7 +108,7 @@ describe("resetConversationState model parameter resetting", () => {
     expect(updatedAgentSettings.temperature).toBe(0.7);
     expect(updatedAgentSettings.maxTokens).toBe(64000);
     expect(updatedAgentSettings.functionCallingEnabled).toBe(true);
-    expect(updatedAgentSettings.thinkingEnabled).toBe(false);
+    expect(updatedAgentSettings.thinkingEnabled).toBe(true);
     expect(updatedAgentSettings.minP).toBe(0);
     expect(updatedAgentSettings.repeatPenalty).toBe(1.0);
     expect(updatedAgentSettings.seed).toBeNull();
@@ -110,7 +121,7 @@ describe("resetConversationState model parameter resetting", () => {
     expect(updatedChatSettings.temperature).toBe(0.7);
     expect(updatedChatSettings.maxTokens).toBe(64000);
     expect(updatedChatSettings.functionCallingEnabled).toBe(false);
-    expect(updatedChatSettings.thinkingEnabled).toBe(false);
+    expect(updatedChatSettings.thinkingEnabled).toBe(true);
     expect(updatedChatSettings.minP).toBe(0);
     expect(updatedChatSettings.repeatPenalty).toBe(1.0);
     expect(updatedChatSettings.seed).toBeNull();
@@ -160,34 +171,11 @@ describe("resetConversationState model parameter resetting", () => {
     const updateSettings = (
       settings: { provider: string; model: string },
     ) => {
-      let isThinkingSupported = false;
-      if (mockConfig && settings.provider && settings.model) {
-        const providerModels =
-          (mockConfig.textToText?.models as Record<string, any>)?.[settings.provider] || [];
-        const modelDefinition = providerModels.find(
-          (model: any) => model.name === settings.model,
-        );
-        if (modelDefinition) {
-          const modelName = (settings.model || "").toLowerCase();
-          const nameBasedThinking = FALLBACK_THINKING_PATTERNS.some((pattern) =>
-            modelName.includes(pattern),
-          );
-
-          isThinkingSupported = !!(
-            modelDefinition.thinking ||
-            modelDefinition.supportsThinking ||
-            (modelDefinition.thinkingLevels && modelDefinition.thinkingLevels.length > 0) ||
-            (modelDefinition.tools && modelDefinition.tools.includes("Thinking")) ||
-            (settings.provider === "lm-studio" && nameBasedThinking)
-          );
-        }
-      }
-
       return {
         ...SETTINGS_DEFAULTS,
         provider: settings.provider,
         model: settings.model,
-        thinkingEnabled: isThinkingSupported,
+        thinkingEnabled: true,
       };
     };
 
@@ -207,9 +195,9 @@ describe("resetConversationState model parameter resetting", () => {
     expect(lmStudioQwenSettings.thinkingEnabled).toBe(true);
 
     const lmStudioLlamaSettings = updateSettings({ provider: "lm-studio", model: "generic-llama-3" });
-    expect(lmStudioLlamaSettings.thinkingEnabled).toBe(false);
+    expect(lmStudioLlamaSettings.thinkingEnabled).toBe(true);
 
     const standardSettings = updateSettings({ provider: "google", model: "gemini-2.0-flash" });
-    expect(standardSettings.thinkingEnabled).toBe(false);
+    expect(standardSettings.thinkingEnabled).toBe(true);
   });
 });

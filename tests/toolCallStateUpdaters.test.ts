@@ -21,7 +21,7 @@ function makeSnapshot(
   };
 }
 
-function makeAssistantMsg(
+function makeAssistantMessage(
   overrides: Partial<ToolMessageSlice> = {},
 ): ToolMessageSlice {
   return {
@@ -32,7 +32,7 @@ function makeAssistantMsg(
   };
 }
 
-function makeUserMsg(text = "hello"): ToolMessageSlice {
+function makeUserMessage(text = "hello"): ToolMessageSlice {
   return { role: "user", content: text };
 }
 
@@ -42,8 +42,8 @@ describe("applyToolExecutionToMessages", () => {
   describe("status = calling", () => {
     it("adds a new tool call with 'calling' status to an existing assistant message", () => {
       const messages: ToolMessageSlice[] = [
-        makeUserMsg(),
-        makeAssistantMsg({ content: "Let me help." }),
+        makeUserMessage(),
+        makeAssistantMessage({ content: "Let me help." }),
       ];
 
       const result = applyToolExecutionToMessages(
@@ -72,7 +72,7 @@ describe("applyToolExecutionToMessages", () => {
     });
 
     it("creates a placeholder assistant message if none exists", () => {
-      const messages: ToolMessageSlice[] = [makeUserMsg()];
+      const messages: ToolMessageSlice[] = [makeUserMessage()];
 
       const result = applyToolExecutionToMessages(
         messages,
@@ -103,8 +103,8 @@ describe("applyToolExecutionToMessages", () => {
         timestamp: 1000,
       };
       const messages: ToolMessageSlice[] = [
-        makeUserMsg(),
-        makeAssistantMsg({ toolCalls: [existingTool] }),
+        makeUserMessage(),
+        makeAssistantMessage({ toolCalls: [existingTool] }),
       ];
 
       const result = applyToolExecutionToMessages(
@@ -127,8 +127,8 @@ describe("applyToolExecutionToMessages", () => {
         timestamp: 1000,
       };
       const messages: ToolMessageSlice[] = [
-        makeUserMsg(),
-        makeAssistantMsg({ toolCalls: [tool1] }),
+        makeUserMessage(),
+        makeAssistantMessage({ toolCalls: [tool1] }),
       ];
 
       const result = applyToolExecutionToMessages(
@@ -160,8 +160,8 @@ describe("applyToolExecutionToMessages", () => {
         timestamp: 1000,
       };
       const messages: ToolMessageSlice[] = [
-        makeUserMsg(),
-        makeAssistantMsg({ content: "Searching...", toolCalls: [callingTool] }),
+        makeUserMessage(),
+        makeAssistantMessage({ content: "Searching...", toolCalls: [callingTool] }),
       ];
 
       const result = applyToolExecutionToMessages(
@@ -204,8 +204,8 @@ describe("applyToolExecutionToMessages", () => {
         timestamp: 2000,
       };
       const messages: ToolMessageSlice[] = [
-        makeUserMsg(),
-        makeAssistantMsg({ toolCalls: [tool1, tool2] }),
+        makeUserMessage(),
+        makeAssistantMessage({ toolCalls: [tool1, tool2] }),
       ];
 
       const result = applyToolExecutionToMessages(
@@ -236,8 +236,8 @@ describe("applyToolExecutionToMessages", () => {
         timestamp: 1000,
       };
       const messages: ToolMessageSlice[] = [
-        makeUserMsg(),
-        makeAssistantMsg({ toolCalls: [callingTool] }),
+        makeUserMessage(),
+        makeAssistantMessage({ toolCalls: [callingTool] }),
       ];
 
       const result = applyToolExecutionToMessages(
@@ -267,8 +267,8 @@ describe("applyToolExecutionToMessages", () => {
         timestamp: 1000,
       };
       const messages: ToolMessageSlice[] = [
-        makeUserMsg(),
-        makeAssistantMsg({ toolCalls: [callingTool] }),
+        makeUserMessage(),
+        makeAssistantMessage({ toolCalls: [callingTool] }),
       ];
 
       const result = applyToolExecutionToMessages(
@@ -293,7 +293,7 @@ describe("applyToolExecutionToMessages", () => {
 
   describe("immutability", () => {
     it("does not mutate the input messages array", () => {
-      const messages: ToolMessageSlice[] = [makeUserMsg(), makeAssistantMsg()];
+      const messages: ToolMessageSlice[] = [makeUserMessage(), makeAssistantMessage()];
       const original = [...messages];
 
       applyToolExecutionToMessages(
@@ -307,8 +307,8 @@ describe("applyToolExecutionToMessages", () => {
     });
 
     it("does not mutate the last message object", () => {
-      const lastMessage = makeAssistantMsg({ content: "hello" });
-      const messages: ToolMessageSlice[] = [makeUserMsg(), lastMessage];
+      const lastMessage = makeAssistantMessage({ content: "hello" });
+      const messages: ToolMessageSlice[] = [makeUserMessage(), lastMessage];
 
       applyToolExecutionToMessages(
         messages,
@@ -327,7 +327,7 @@ describe("applyToolExecutionToMessages", () => {
 
       // Step 1: Tool starts calling
       const step1 = applyToolExecutionToMessages(
-        [makeUserMsg(), makeAssistantMsg({ content: "thinking..." })],
+        [makeUserMessage(), makeAssistantMessage({ content: "thinking..." })],
         "tc-1",
         {
           id: "tc-1",
@@ -364,11 +364,11 @@ describe("applyToolExecutionToMessages", () => {
 
     it("multiple tools: calling A → calling B → done A → done B", () => {
       const snapshot = makeSnapshot();
-      let msgs: ToolMessageSlice[] = [makeUserMsg(), makeAssistantMsg()];
+      let messages: ToolMessageSlice[] = [makeUserMessage(), makeAssistantMessage()];
 
       // Tool A starts
-      msgs = applyToolExecutionToMessages(
-        msgs,
+      messages = applyToolExecutionToMessages(
+        messages,
         "tc-a",
         {
           id: "tc-a",
@@ -378,11 +378,11 @@ describe("applyToolExecutionToMessages", () => {
         },
         snapshot,
       );
-      expect(msgs[1].toolCalls).toHaveLength(1);
+      expect(messages[1].toolCalls).toHaveLength(1);
 
       // Tool B starts
-      msgs = applyToolExecutionToMessages(
-        msgs,
+      messages = applyToolExecutionToMessages(
+        messages,
         "tc-b",
         {
           id: "tc-b",
@@ -392,14 +392,14 @@ describe("applyToolExecutionToMessages", () => {
         },
         snapshot,
       );
-      expect(msgs[1].toolCalls).toHaveLength(2);
-      expect(msgs[1].toolCalls!.every((toolCall) => toolCall.status === "calling")).toBe(
+      expect(messages[1].toolCalls).toHaveLength(2);
+      expect(messages[1].toolCalls!.every((toolCall) => toolCall.status === "calling")).toBe(
         true,
       );
 
       // Tool A completes
-      msgs = applyToolExecutionToMessages(
-        msgs,
+      messages = applyToolExecutionToMessages(
+        messages,
         "tc-a",
         {
           id: "tc-a",
@@ -410,12 +410,12 @@ describe("applyToolExecutionToMessages", () => {
         },
         snapshot,
       );
-      expect(msgs[1].toolCalls![0].status).toBe("done");
-      expect(msgs[1].toolCalls![1].status).toBe("calling");
+      expect(messages[1].toolCalls![0].status).toBe("done");
+      expect(messages[1].toolCalls![1].status).toBe("calling");
 
       // Tool B completes
-      msgs = applyToolExecutionToMessages(
-        msgs,
+      messages = applyToolExecutionToMessages(
+        messages,
         "tc-b",
         {
           id: "tc-b",
@@ -426,7 +426,7 @@ describe("applyToolExecutionToMessages", () => {
         },
         snapshot,
       );
-      expect(msgs[1].toolCalls!.every((toolCall) => toolCall.status === "done")).toBe(true);
+      expect(messages[1].toolCalls!.every((toolCall) => toolCall.status === "done")).toBe(true);
     });
   });
 });
@@ -525,7 +525,7 @@ describe("applyToolExecutionToActivity", () => {
 
 describe("applyToolCallToMessages", () => {
   it("adds calling tool to messages (MCP path)", () => {
-    const messages: ToolMessageSlice[] = [makeUserMsg(), makeAssistantMsg()];
+    const messages: ToolMessageSlice[] = [makeUserMessage(), makeAssistantMessage()];
     const toolData: ToolCallEvent = {
       id: "mcp-1",
       name: "mcp_tool",
@@ -557,8 +557,8 @@ describe("applyToolCallToMessages", () => {
       timestamp: 1000,
     };
     const messages: ToolMessageSlice[] = [
-      makeUserMsg(),
-      makeAssistantMsg({ toolCalls: [calling] }),
+      makeUserMessage(),
+      makeAssistantMessage({ toolCalls: [calling] }),
     ];
     const toolData: ToolCallEvent = {
       id: "mcp-1",
@@ -581,7 +581,7 @@ describe("applyToolCallToMessages", () => {
   });
 
   it("creates placeholder when no assistant message exists (MCP path)", () => {
-    const messages: ToolMessageSlice[] = [makeUserMsg()];
+    const messages: ToolMessageSlice[] = [makeUserMessage()];
     const toolData: ToolCallEvent = {
       id: "mcp-1",
       name: "mcp_tool",
@@ -611,14 +611,14 @@ describe("regression: large tool results", () => {
     const largeAsciiResult = "X".repeat(200_000); // 200KB of ASCII art
 
     // Build up state: user msg → assistant → tool calling → tool done
-    let msgs: ToolMessageSlice[] = [
-      makeUserMsg("Convert this image to ASCII"),
-      makeAssistantMsg({ content: "I'll convert that image for you." }),
+    let messages: ToolMessageSlice[] = [
+      makeUserMessage("Convert this image to ASCII"),
+      makeAssistantMessage({ content: "I'll convert that image for you." }),
     ];
 
     // Tool starts calling
-    msgs = applyToolExecutionToMessages(
-      msgs,
+    messages = applyToolExecutionToMessages(
+      messages,
       "tc-ascii",
       {
         id: "tc-ascii",
@@ -629,13 +629,13 @@ describe("regression: large tool results", () => {
       snapshot,
     );
 
-    expect(msgs).toHaveLength(2);
-    expect(msgs[0].content).toBe("Convert this image to ASCII");
-    expect(msgs[1].toolCalls).toHaveLength(1);
+    expect(messages).toHaveLength(2);
+    expect(messages[0].content).toBe("Convert this image to ASCII");
+    expect(messages[1].toolCalls).toHaveLength(1);
 
     // Tool completes with large result
-    msgs = applyToolExecutionToMessages(
-      msgs,
+    messages = applyToolExecutionToMessages(
+      messages,
       "tc-ascii",
       {
         id: "tc-ascii",
@@ -656,15 +656,15 @@ describe("regression: large tool results", () => {
     );
 
     // Critical: all messages must still be present
-    expect(msgs).toHaveLength(2);
-    expect(msgs[0].role).toBe("user");
-    expect(msgs[0].content).toBe("Convert this image to ASCII");
-    expect(msgs[1].role).toBe("assistant");
-    expect(msgs[1].content).toBe("I'll convert that image for you.");
-    expect(msgs[1].toolCalls).toHaveLength(1);
-    expect(msgs[1].toolCalls![0].status).toBe("done");
+    expect(messages).toHaveLength(2);
+    expect(messages[0].role).toBe("user");
+    expect(messages[0].content).toBe("Convert this image to ASCII");
+    expect(messages[1].role).toBe("assistant");
+    expect(messages[1].content).toBe("I'll convert that image for you.");
+    expect(messages[1].toolCalls).toHaveLength(1);
+    expect(messages[1].toolCalls![0].status).toBe("done");
     expect(
-      (msgs[1].toolCalls![0].result as Record<string, unknown>).success,
+      (messages[1].toolCalls![0].result as Record<string, unknown>).success,
     ).toBe(true);
   });
 
@@ -679,8 +679,8 @@ describe("regression: large tool results", () => {
       thinkingFragments: ["Let me think..."],
     });
 
-    const msgs = applyToolExecutionToMessages(
-      [makeUserMsg(), makeAssistantMsg({ content: "Processing..." })],
+    const messages = applyToolExecutionToMessages(
+      [makeUserMessage(), makeAssistantMessage({ content: "Processing..." })],
       "tc-1",
       {
         id: "tc-1",
@@ -692,8 +692,8 @@ describe("regression: large tool results", () => {
       snapshot,
     );
 
-    expect(msgs[1].contentSegments).toEqual(segments);
-    expect(msgs[1].textFragments).toEqual(["Here is the result:"]);
-    expect(msgs[1].thinkingFragments).toEqual(["Let me think..."]);
+    expect(messages[1].contentSegments).toEqual(segments);
+    expect(messages[1].textFragments).toEqual(["Here is the result:"]);
+    expect(messages[1].thinkingFragments).toEqual(["Let me think..."]);
   });
 });

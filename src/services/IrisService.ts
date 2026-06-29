@@ -121,8 +121,8 @@ export interface RateLimitData {
  */
 type QueryParams = Record<string, string | number | boolean>;
 
-function toSearchParams(params: QueryParams): string {
-  const entries = Object.entries(params).map(([key, value]) => [key, String(value)]);
+function toSearchParams(queryParameters: QueryParams): string {
+  const entries = Object.entries(queryParameters).map(([key, value]) => [key, String(value)]);
   return new URLSearchParams(entries).toString();
 }
 
@@ -132,9 +132,9 @@ function toSearchParams(params: QueryParams): string {
 async function fetchJSON<T = unknown>(
   path: string,
   options: RequestInit = {},
-  admin = true,
+  isAdmin = true,
 ): Promise<T> {
-  const prefix = admin ? "/admin" : "";
+  const prefix = isAdmin ? "/admin" : "";
   const response = await fetch(`${API_BASE}${prefix}${path}`, {
     headers: getAdminHeaders(),
     ...options,
@@ -149,10 +149,10 @@ async function fetchJSON<T = unknown>(
 export default class IrisService {
   // -- Requests ----------------------------------------------
   static async getRequests(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
     signal?: AbortSignal,
   ): Promise<IrisRequestListResponse> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisRequestListResponse>(
       `/requests${query ? `?${query}` : ""}`,
       signal ? { signal } : {},
@@ -176,53 +176,53 @@ export default class IrisService {
   }
 
   // -- Stats -------------------------------------------------
-  static async getStats(params: QueryParams = {}): Promise<IrisDashboardStats> {
-    const query = toSearchParams(params);
+  static async getStats(queryParameters: QueryParams = {}): Promise<IrisDashboardStats> {
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisDashboardStats>(`/stats${query ? `?${query}` : ""}`);
   }
 
   static async getProjectStats(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisProjectStat[]> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisProjectStat[]>(
       `/stats/projects${query ? `?${query}` : ""}`,
     );
   }
 
   static async getModelStats(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisModelStat[]> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisModelStat[]>(
       `/stats/models${query ? `?${query}` : ""}`,
     );
   }
 
   static async getAgentStats(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisAgentStat[]> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisAgentStat[]>(
       `/stats/agents${query ? `?${query}` : ""}`,
     );
   }
 
   static async getUserStats(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisUserStat[]> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisUserStat[]>(
       `/stats/users${query ? `?${query}` : ""}`,
     );
   }
 
   static async getEndpointStats(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<
     Array<{ endpoint: string; totalRequests: number; avgDuration?: number }>
   > {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<
       Array<{ endpoint: string; totalRequests: number; avgDuration?: number }>
     >(`/stats/endpoints${query ? `?${query}` : ""}`);
@@ -230,19 +230,19 @@ export default class IrisService {
 
   static async getTimeline(
     hours = 24,
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
     granularity?: string,
   ): Promise<IrisTimelineResponse> {
-    const allParams: QueryParams = { hours, ...params };
-    if (granularity) allParams.granularity = granularity;
-    const query = toSearchParams(allParams);
+    const allQueryParameters: QueryParams = { hours, ...queryParameters };
+    if (granularity) allQueryParameters.granularity = granularity;
+    const query = toSearchParams(allQueryParameters);
     return fetchJSON<IrisTimelineResponse>(`/stats/timeline?${query}`);
   }
 
   static async getCostStats(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisStatsResponse> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisStatsResponse>(
       `/stats/costs${query ? `?${query}` : ""}`,
     );
@@ -250,9 +250,9 @@ export default class IrisService {
 
   // -- Conversations -----------------------------------------
   static async getConversations(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisConversationListResponse> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisConversationListResponse>(
       `/conversations${query ? `?${query}` : ""}`,
     );
@@ -296,9 +296,9 @@ export default class IrisService {
   static async getConversationStats(
     project: string | null = null,
   ): Promise<IrisConversationStatsResponse> {
-    const params = project ? `?project=${encodeURIComponent(project)}` : "";
+    const queryParametersString = project ? `?project=${encodeURIComponent(project)}` : "";
     return fetchJSON<IrisConversationStatsResponse>(
-      `/conversations/stats${params}`,
+      `/conversations/stats${queryParametersString}`,
     );
   }
 
@@ -310,8 +310,8 @@ export default class IrisService {
     onStats: (data: IrisConversationStatsResponse) => void,
     project: string | null = null,
   ): { close: () => void } {
-    const params = project ? `?project=${encodeURIComponent(project)}` : "";
-    const url = `${API_BASE}/admin/conversations/stream${params}`;
+    const queryParametersString = project ? `?project=${encodeURIComponent(project)}` : "";
+    const url = `${API_BASE}/admin/conversations/stream${queryParametersString}`;
     const { unsubscribe } = sseSubscribe(url, (data) =>
       onStats(data as IrisConversationStatsResponse),
     );
@@ -403,9 +403,9 @@ export default class IrisService {
 
   // -- Workflows ---------------------------------------------
   static async getWorkflows(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisPaginatedResponse<Workflow>> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisPaginatedResponse<Workflow>>(
       `/workflows${query ? `?${query}` : ""}`,
     );
@@ -417,10 +417,10 @@ export default class IrisService {
 
   // -- Traces ----------------------------------------------
   static async getTraces(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
     signal?: AbortSignal,
   ): Promise<IrisPaginatedResponse<IrisRequestEntry>> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisPaginatedResponse<IrisRequestEntry>>(
       `/traces${query ? `?${query}` : ""}`,
       signal ? { signal } : {},
@@ -445,9 +445,9 @@ export default class IrisService {
 
   // -- Agent Conversations (admin) --------------------------------
   static async getAgentConversations(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisPaginatedResponse<AgentConversation>> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisPaginatedResponse<AgentConversation>>(
       `/agent-conversations${query ? `?${query}` : ""}`,
     );
@@ -459,9 +459,9 @@ export default class IrisService {
 
   // -- Media -------------------------------------------------
   static async getMedia(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisPaginatedResponse> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisPaginatedResponse>(
       `/media${query ? `?${query}` : ""}`,
     );
@@ -469,9 +469,9 @@ export default class IrisService {
 
   // -- Text --------------------------------------------------
   static async getText(
-    params: QueryParams = {},
+    queryParameters: QueryParams = {},
   ): Promise<IrisPaginatedResponse> {
-    const query = toSearchParams(params);
+    const query = toSearchParams(queryParameters);
     return fetchJSON<IrisPaginatedResponse>(`/text${query ? `?${query}` : ""}`);
   }
 

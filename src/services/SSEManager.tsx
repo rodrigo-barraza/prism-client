@@ -14,7 +14,7 @@
 type SSEListener = (data: unknown) => void;
 
 interface PoolEntry {
-  es: EventSource;
+  eventSource: EventSource;
   listeners: Set<SSEListener>;
 }
 
@@ -30,12 +30,12 @@ export function subscribe(
   let entry = pools.get(url);
 
   if (!entry) {
-    const es = new EventSource(url);
+    const eventSource = new EventSource(url);
 
-    entry = { es, listeners: new Set() };
+    entry = { eventSource, listeners: new Set() };
     pools.set(url, entry);
 
-    es.onmessage = (event: MessageEvent) => {
+    eventSource.onmessage = (event: MessageEvent) => {
       let data: unknown;
       try {
         data = JSON.parse(event.data);
@@ -52,7 +52,7 @@ export function subscribe(
       }
     };
 
-    es.onerror = () => {
+    eventSource.onerror = () => {
       // EventSource auto-reconnects; nothing extra needed here.
     };
   }
@@ -65,7 +65,7 @@ export function subscribe(
       if (!existingPool) return;
       existingPool.listeners.delete(onMessage);
       if (existingPool.listeners.size === 0) {
-        existingPool.es.close();
+        existingPool.eventSource.close();
         pools.delete(url);
       }
     },

@@ -131,9 +131,9 @@ export default class WorkspaceService {
     path: string,
     maxDepth = 3,
   ): Promise<WorkspaceTreeResponse> {
-    const params = new URLSearchParams({ path });
-    if (maxDepth !== 3) params.set("maxDepth", String(maxDepth));
-    const response = await fetch(`${API_BASE}/workspaces/tree?${params}`, {
+    const searchParameters = new URLSearchParams({ path });
+    if (maxDepth !== 3) searchParameters.set("maxDepth", String(maxDepth));
+    const response = await fetch(`${API_BASE}/workspaces/tree?${searchParameters}`, {
       method: "GET",
       headers: getBaseHeaders(),
       cache: "no-store",

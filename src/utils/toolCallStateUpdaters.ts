@@ -142,20 +142,20 @@ export function applyToolExecutionToMessages(
  * Returns `null` when the event is a duplicate (no update needed).
  */
 export function applyToolExecutionToActivity(
-  prev: ToolCallEvent[],
+  previousToolActivity: ToolCallEvent[],
   resolvedId: string,
   toolInput: ToolExecutionInput,
 ): ToolCallEvent[] | null {
   if (toolInput.status === "streaming" || toolInput.status === "calling") {
-    const existingIndex = prev.findIndex((activity) => activity.id === resolvedId);
+    const existingIndex = previousToolActivity.findIndex((activity) => activity.id === resolvedId);
     if (existingIndex >= 0) {
-      const existingTool = prev[existingIndex];
+      const existingTool = previousToolActivity[existingIndex];
       const hasArgsChange = toolInput.args && Object.keys(toolInput.args).length > 0 &&
                             JSON.stringify(existingTool.args || {}) !== JSON.stringify(toolInput.args);
       const hasStatusChange = existingTool.status !== toolInput.status;
 
       if (hasArgsChange || hasStatusChange) {
-        return prev.map((activity) =>
+        return previousToolActivity.map((activity) =>
           activity.id === resolvedId
             ? {
                 ...activity,
@@ -170,7 +170,7 @@ export function applyToolExecutionToActivity(
       return null; // Signal: no change
     }
     return [
-      ...prev,
+      ...previousToolActivity,
       {
         id: resolvedId,
         name: toolInput.name || "unknown",
@@ -180,7 +180,7 @@ export function applyToolExecutionToActivity(
       },
     ];
   } else {
-    return prev.map((activity) => {
+    return previousToolActivity.map((activity) => {
       if (
         (toolInput.id && activity.id === toolInput.id) ||
         (!toolInput.id &&

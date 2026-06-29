@@ -36,7 +36,7 @@ const WorkflowService = {
       // Update existing
       const { id, ...data } = workflow;
       await PrismService.updateWorkflow(id, data);
-      return workflow as Workflow & { id: string };
+      return { ...workflow, id };
     }
     // Create new
     const result = await PrismService.saveWorkflow(workflow);

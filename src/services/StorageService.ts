@@ -28,9 +28,9 @@ const StorageService = {
   get<T = unknown>(key: string, fallback: T | null = null): T | null {
     if (!isAvailable()) return fallback;
     try {
-      const raw = localStorage.getItem(makeKey(key));
-      if (raw === null) return fallback;
-      return JSON.parse(raw) as T;
+      const serializedValue = localStorage.getItem(makeKey(key));
+      if (serializedValue === null) return fallback;
+      return JSON.parse(serializedValue) as T;
     } catch {
       return fallback;
     }
