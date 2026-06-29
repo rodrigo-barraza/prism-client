@@ -998,52 +998,8 @@
   font-size: 0.625rem;
 }
 
-/* Nested sub-agent trees — visual hierarchy via left border accent */
-.sub-agent-result-body .renderer-block {
-  border-inline-start: 2px solid
-    color-mix(
-      in srgb,
-      var(--accent-primary, var(--color-indigo)) 30%,
-      transparent
-    );
-  padding-inline-start: 8px;
-  margin-inline-start: 2px;
-
-  /* Second nesting level — shift accent hue toward teal */
-  & .sub-agent-result-body .renderer-block {
-    border-inline-start-color:
-      color-mix(
-        in srgb,
-        var(--color-teal, var(--color-info)) 35%,
-        transparent
-      );
-
-    /* Third+ levels — subtle violet accent */
-    & .sub-agent-result-body .renderer-block {
-      border-inline-start-color:
-        color-mix(
-          in srgb,
-          var(--color-violet, var(--color-purple)) 30%,
-          transparent
-        );
-    }
-  }
-}
 
 
-
-
-.sub-agent-result-body {
-  padding: 10px 6px 10px;
-  border-top: 1px solid
-    color-mix(
-      in srgb,
-      var(--accent-primary, var(--color-indigo)) 12%,
-      transparent
-    );
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
 
 @keyframes sub-agent-result-fade-in {
   from {

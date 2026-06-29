@@ -2828,7 +2828,6 @@ function TeamCreateRenderer({
                 subAgentToolActivity={subAgentToolActivity}
               />
             )}
-            <div className={styles['sub-agent-result-body']}>
               {/* Live or completed tool calls — always render when present
                   so nested create_team sub-agents are visible at any depth */}
               {activity?.toolCalls &&
@@ -2867,7 +2866,6 @@ function TeamCreateRenderer({
                   </div>
                 )
               ) : null}
-            </div>
           </div>
         );
       })}
