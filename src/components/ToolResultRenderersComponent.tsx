@@ -48,7 +48,7 @@ import { ToolBadgeRow } from "./ToolBadgeComponent";
 import StatusBarComponent from "./StatusBarComponent";
 import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import PrismService from "../services/PrismService";
-import { formatLatency, renderToolName } from "@rodrigo-barraza/utilities-library";
+import { formatDuration, renderToolName } from "@rodrigo-barraza/utilities-library";
 import styles from "./ToolResultRenderersComponent.module.css";
 import TimerBadgeComponent from "./TimerBadgeComponent";
 import JsonViewerComponent from "./JsonViewerComponent";
@@ -2754,7 +2754,7 @@ function TeamCreateRenderer({
         const isFailed = member.status === "failed";
         const memberExpanded = expandedMembers.has(index);
         const durationLabel = member.durationMs
-          ? formatLatency(Number(member.durationMs) / 1000)
+          ? formatDuration(Number(member.durationMs))
           : null;
         const tokPerSec = !isTerminal ? getSubAgentTokPerSec(activity) : null;
 
@@ -2840,98 +2840,96 @@ function TeamCreateRenderer({
 
             {activity && <SubAgentStatusBar activity={activity} />}
 
-            <div className={styles['sub-agent-result-card']}>
-              {activity?.toolCalls &&
-                activity.toolCalls.some(
-                  (toolCall) => toolCall.name === "create_team",
-                ) && (
-                <SubSubAgentStatusBars
-                  toolCalls={activity.toolCalls}
-                  subAgentToolActivity={subAgentToolActivity}
-                />
-              )}
-              <button
-                className={styles['sub-agent-result-toggle']}
-                onClick={() => toggleMember(index)}
-              >
-                <Zap size={12} />
-                <span className={styles['sub-agent-result-summary']}>
-                  {member.summary ||
-                    (!isTerminal
-                      ? activity?.currentTool
-                        ? `Executing ${renderToolName(activity.currentTool)}...`
-                        : "Sub-agent running..."
-                      : isCompleted
-                        ? "Sub-agent completed"
-                        : isFailed
-                          ? "Sub-agent failed"
-                          : "Sub-agent finished")}
+            {activity?.toolCalls &&
+              activity.toolCalls.some(
+                (toolCall) => toolCall.name === "create_team",
+              ) && (
+              <SubSubAgentStatusBars
+                toolCalls={activity.toolCalls}
+                subAgentToolActivity={subAgentToolActivity}
+              />
+            )}
+            <button
+              className={styles['sub-agent-result-toggle']}
+              onClick={() => toggleMember(index)}
+            >
+              <Zap size={12} />
+              <span className={styles['sub-agent-result-summary']}>
+                {member.summary ||
+                  (!isTerminal
+                    ? activity?.currentTool
+                      ? `Executing ${renderToolName(activity.currentTool)}...`
+                      : "Sub-agent running..."
+                    : isCompleted
+                      ? "Sub-agent completed"
+                      : isFailed
+                        ? "Sub-agent failed"
+                        : "Sub-agent finished")}
+              </span>
+              {durationLabel && (
+                <span className={styles['sub-agent-result-meta']}>
+                  {durationLabel}
                 </span>
-                {durationLabel && (
-                  <span className={styles['sub-agent-result-meta']}>
-                    {durationLabel}
-                  </span>
-                )}
-                {toolUsesCount > 0 && (
-                  <span className={styles['sub-agent-result-meta']}>
-                    {toolUsesCount} tools
-                  </span>
-                )}
-                {iterationsCount > 0 && (
-                  <span className={styles['sub-agent-result-meta']}>
-                    {iterationsCount} iteration
-                    {iterationsCount !== 1 ? "s" : ""}
-                  </span>
-                )}
-                {memberExpanded ? (
-                  <ChevronDown size={12} />
-                ) : (
-                  <ChevronRight size={12} />
-                )}
-              </button>
-              {memberExpanded && (
-                <div className={styles['sub-agent-result-body']}>
-                  {/* Live or completed tool calls — always render when present
-                      so nested create_team sub-agents are visible at any depth */}
-                  {activity?.toolCalls &&
-                    activity.toolCalls.length > 0 && (
-                    <div style={{ padding: "4px 0" }}>
-                      <ToolCallsBlockComponent
-                        toolCalls={activity.toolCalls}
-                        subAgentToolActivity={subAgentToolActivity}
-                      />
-                    </div>
-                  )}
-                  {/* Terminal sub-agents with full message history */}
-                  {isTerminal && (member.messages?.length ?? 0) > 0 ? (
-                    <Suspense fallback={null}>
-                      <LazyMessageList
-                        messages={prepareDisplayMessages(
-                          member.messages as import("../types/types").Message[],
-                        )}
-                        readOnly
-                      />
-                    </Suspense>
-                  ) : /* Result text (only when no tool calls were already rendered) */
-                  !(activity?.toolCalls && activity.toolCalls.length > 0) ? (
-                    member.result ? (
-                      <MarkdownContent content={String(member.result)} />
-                    ) : (
-                      <div
-                        style={{
-                          fontStyle: "italic",
-                          opacity: 0.5,
-                          fontSize: "0.85rem",
-                          padding: "4px 8px",
-                        }}
-                      >
-                        No messages or tool calls yet.
-                      </div>
-                    )
-                  ) : null}
-                </div>
               )}
-            </div>
+              {toolUsesCount > 0 && (
+                <span className={styles['sub-agent-result-meta']}>
+                  {toolUsesCount} tools
+                </span>
+              )}
+              {iterationsCount > 0 && (
+                <span className={styles['sub-agent-result-meta']}>
+                  {iterationsCount} iteration
+                  {iterationsCount !== 1 ? "s" : ""}
+                </span>
+              )}
+              {memberExpanded ? (
+                <ChevronDown size={12} />
+              ) : (
+                <ChevronRight size={12} />
+              )}
+            </button>
+            {memberExpanded && (
+              <div className={styles['sub-agent-result-body']}>
+                {/* Live or completed tool calls — always render when present
+                    so nested create_team sub-agents are visible at any depth */}
+                {activity?.toolCalls &&
+                  activity.toolCalls.length > 0 && (
+                  <div style={{ padding: "4px 0" }}>
+                    <ToolCallsBlockComponent
+                      toolCalls={activity.toolCalls}
+                      subAgentToolActivity={subAgentToolActivity}
+                    />
+                  </div>
+                )}
+                {/* Terminal sub-agents with full message history */}
+                {isTerminal && (member.messages?.length ?? 0) > 0 ? (
+                  <Suspense fallback={null}>
+                    <LazyMessageList
+                      messages={prepareDisplayMessages(
+                        member.messages as import("../types/types").Message[],
+                      )}
+                      readOnly
+                    />
+                  </Suspense>
+                ) : /* Result text (only when no tool calls were already rendered) */
+                !(activity?.toolCalls && activity.toolCalls.length > 0) ? (
+                  member.result ? (
+                    <MarkdownContent content={String(member.result)} />
+                  ) : (
+                    <div
+                      style={{
+                        fontStyle: "italic",
+                        opacity: 0.5,
+                        fontSize: "0.85rem",
+                        padding: "4px 8px",
+                      }}
+                    >
+                      No messages or tool calls yet.
+                    </div>
+                  )
+                ) : null}
+              </div>
+            )}
           </div>
         );
       })}

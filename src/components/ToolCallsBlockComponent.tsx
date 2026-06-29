@@ -50,14 +50,54 @@ export default function ToolCallsBlockComponent({
     ? toolCalls.some((toolCall) => toolCall.status === "calling" || toolCall.status === "streaming")
     : false;
 
-  const [headerCollapsed, setHeaderCollapsed] = useState(!hasActiveCalls);
+  // Detect sub-agents still running for any create_team tool call in this block.
+  // Even after the tool call status flips to "done", sub-agents may still be active.
+  const hasActiveSubAgents = (() => {
+    if (!toolCalls || !subAgentToolActivity) return false;
+    for (const toolCall of toolCalls) {
+      if (toolCall.name !== TOOL_NAMES.CREATE_TEAM) continue;
+      // Check result members for agent_ids with active tool activity
+      const parsed = toolCall.result
+        ? typeof toolCall.result === "string"
+          ? (() => { try { return JSON.parse(toolCall.result); } catch { return null; } })()
+          : toolCall.result
+        : null;
+      const members = (parsed as { members?: Array<{ agent_id?: string }> })?.members || [];
+      for (const member of members) {
+        const activity = member.agent_id ? subAgentToolActivity[member.agent_id] : null;
+        if (activity?.currentTool) return true;
+      }
+      // Fallback: match by description during calling state (before result arrives)
+      const toolCallArguments = toolCall.args as { members?: Array<{ description?: string }> };
+      if (Array.isArray(toolCallArguments?.members)) {
+        for (const argumentMember of toolCallArguments.members) {
+          const match = Object.values(subAgentToolActivity).find(
+            (value) => value.description && argumentMember.description && value.description.includes(argumentMember.description),
+          );
+          if (match?.currentTool) return true;
+        }
+      }
+    }
+    return false;
+  })();
+
+  const isBlockActive = hasActiveCalls || hasActiveSubAgents;
+
+  const [headerCollapsed, setHeaderCollapsed] = useState(!isBlockActive);
   const wasManuallyExpanded = useRef(false);
 
   useEffect(() => {
-    if (isAutoCollapsed && !wasManuallyExpanded.current) {
+    if (isAutoCollapsed && !isBlockActive && !wasManuallyExpanded.current) {
       setHeaderCollapsed(true);
     }
-  }, [isAutoCollapsed]);
+  }, [isAutoCollapsed, isBlockActive]);
+
+  // Force-expand when sub-agents become active (block may have been collapsed on mount)
+  useEffect(() => {
+    if (isBlockActive) {
+      setHeaderCollapsed(false);
+    }
+  }, [isBlockActive]);
 
   if (!toolCalls || toolCalls.length === 0) return null;
   const doneCount = toolCalls.filter(
@@ -72,10 +112,10 @@ export default function ToolCallsBlockComponent({
         toolCalls[0].name === TOOL_NAMES.GOOGLE_SEARCH
           ? "Google Search"
           : renderToolName(toolCalls[0].name);
-      if (hasActiveCalls) return `Calling ${name}…`;
+      if (isBlockActive) return `Calling ${name}…`;
       return `Used tool: ${name}`;
     }
-    if (hasActiveCalls) {
+    if (isBlockActive) {
       const progress =
         doneCount > 0 ? ` (${doneCount}/${toolCalls.length} done)` : "";
       return `Running ${toolCalls.length} tools${progress}…`;
@@ -85,7 +125,7 @@ export default function ToolCallsBlockComponent({
 
   return (
     <div
-      className={`tool-calls-block-component ${styles['tool-calls-block']}${hasActiveCalls ? ` ${styles['tool-calls-streaming']}` : ""}`}
+      className={`tool-calls-block-component ${styles['tool-calls-block']}${isBlockActive ? ` ${styles['tool-calls-streaming']}` : ""}`}
     >
       {/* -- Header toggle -- */}
       <button

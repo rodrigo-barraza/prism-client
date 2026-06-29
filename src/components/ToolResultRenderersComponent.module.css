@@ -957,25 +957,8 @@
   line-height: 1.5;
 }
 
-/* ── Sub-agent result card (absorbed task-notification) ──────── */
 
-.sub-agent-result-card {
-  margin-top: 6px;
-  border-radius: 6px;
-  border: 1px solid
-    color-mix(
-      in srgb,
-      var(--accent-primary, var(--color-indigo)) 20%,
-      transparent
-    );
-  background: color-mix(
-    in srgb,
-    var(--accent-primary, var(--color-indigo)) 4%,
-    var(--background-surface)
-  );
-  overflow: hidden;
-  animation: sub-agent-result-fade-in 0.3s ease-out;
-}
+
 
 /* ── Sub-sub-agent live status bars ─────────────────────────── */
 

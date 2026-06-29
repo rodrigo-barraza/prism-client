@@ -3,7 +3,7 @@
 import { Zap, Trash2 } from "lucide-react";
 import MarkdownContent from "./MarkdownContentComponent";
 
-import { formatLatency } from "@rodrigo-barraza/utilities-library";
+import { formatDuration } from "@rodrigo-barraza/utilities-library";
 import styles from "./SubAgentNotificationComponent.module.css";
 import {
   IconButtonComponent,
@@ -51,8 +51,8 @@ export default function SubAgentNotificationComponent({
         ? "var(--color-danger, #ef4444)"
         : "var(--text-muted)";
 
-  const durationSec = taskNotif.durationMs
-    ? formatLatency(Number(taskNotif.durationMs) / 1000)
+  const formattedDuration = taskNotif.durationMs
+    ? formatDuration(Number(taskNotif.durationMs))
     : null;
 
   return (
@@ -83,7 +83,7 @@ export default function SubAgentNotificationComponent({
         {/* Summary line with duration + tool count badges */}
         <div className={styles['summary']}>
           {taskNotif.summary}
-          {durationSec && <span className={styles['meta']}>({durationSec})</span>}
+          {formattedDuration && <span className={styles['meta']}>({formattedDuration})</span>}
           {taskNotif.toolUses && (
             <span className={styles['meta']}>{taskNotif.toolUses} tools</span>
           )}
