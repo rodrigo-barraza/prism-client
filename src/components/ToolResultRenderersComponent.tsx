@@ -192,6 +192,19 @@ export interface ParsedToolResult {
   team?: string;
   agent_id?: string;
   result?: unknown;
+  agents?: Array<{
+    agent_id?: string;
+    description?: string;
+    status?: string;
+    durationMs?: number;
+    toolUses?: number;
+    iterations?: number;
+    summary?: string;
+    result?: string;
+    error?: string;
+    toolNames?: string[] | Record<string, string>;
+    messages?: Array<unknown>;
+  }>;
   turtleEmbedUrl?: string;
 
   embedUrl?: string;
@@ -2546,7 +2559,9 @@ function SubSubAgentStatusBars({
     const resultMembers: Array<{ agent_id?: string; description?: string }> =
       Array.isArray(parsedResult)
         ? parsedResult
-        : (parsedResult as Record<string, unknown>)?.members as Array<{ agent_id?: string; description?: string }> ?? [];
+        : (parsedResult as Record<string, unknown>)?.members as Array<{ agent_id?: string; description?: string }>
+          ?? (parsedResult as Record<string, unknown>)?.agents as Array<{ agent_id?: string; description?: string }>
+          ?? [];
 
     const argMembers: Array<{ description?: string }> =
       Array.isArray((createTeamCall.args as ToolArgs)?.members)
@@ -2615,10 +2630,10 @@ function TeamCreateRenderer({
 
   const rawArgMembers = args?.members;
   const argMembers = Array.isArray(rawArgMembers) ? rawArgMembers : [];
-  // create_team returns a raw array of SubAgentResult objects, not { members: [...] }
+  // create_team returns a raw array, { members: [...] }, or non-blocking { agents: [...] }
   const rawResultMembers = Array.isArray(parsed)
     ? parsed
-    : (parsed?.members ?? []);
+    : (parsed?.members ?? parsed?.agents ?? []);
   const allResultMembers = Array.isArray(rawResultMembers) ? rawResultMembers : [];
   const isSynthesisAgent = (member: Record<string, unknown>) =>
     typeof member.agent_id === "string" && member.agent_id.startsWith("synthesis-");

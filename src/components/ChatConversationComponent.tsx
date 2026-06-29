@@ -5525,7 +5525,21 @@ export default function ChatConversationComponent({
         setConversationId(full.id || generateUUID());
         setTraceId(full.traceId || null);
         setActiveId(full.id ?? null);
-        setIsGenerating(!!full.isGenerating);
+        // Guard against stale isGenerating flags in the database — if the
+        // conversation hasn't been updated in over 5 minutes, the flag is
+        // likely a leftover from a crashed generation or server restart.
+        const isGeneratingFlagStale = (() => {
+          if (!full.isGenerating) return false;
+          const updatedAt = full.updatedAt ? new Date(full.updatedAt as string).getTime() : 0;
+          const STALE_THRESHOLD_MS = 5 * 60 * 1000;
+          return Date.now() - updatedAt > STALE_THRESHOLD_MS;
+        })();
+        if (isGeneratingFlagStale) {
+          console.warn(
+            `[Conversation switch] Stale isGenerating flag detected for conversation ${full.id} — clearing locally`,
+          );
+        }
+        setIsGenerating(!!full.isGenerating && !isGeneratingFlagStale);
         // Passive DB load — no active SSE connection for this generation
         isClientDrivenGenerationRef.current = false;
 
@@ -7157,13 +7171,12 @@ export default function ChatConversationComponent({
           pendingUserQuestion !== null;
 
         // -- Derive phase from live sub-agent activity --------------
-        // When coordinator tools (team_create) are executing, the
-        // orchestrator bar should reflect the aggregate sub-agent state
-        // rather than a static "Thinking...". Scan subAgentToolActivity
-        // for the dominant phase among active sub-agents.
+        // When sub-agents are active (whether via an in-flight tool call
+        // or after a non-blocking create_team dispatch), the orchestrator
+        // bar should reflect the aggregate sub-agent state.
         let subAgentDerivedPhase = null;
         let subAgentDerivedLabel = null;
-        if (hasActiveTools && Object.keys(subAgentToolActivity).length > 0) {
+        if (Object.keys(subAgentToolActivity).length > 0) {
           const subAgents = Object.values(subAgentToolActivity);
           const activeSubAgents = subAgents.filter(
             (subAgent: SubAgentActivityEntry) =>
@@ -7209,7 +7222,9 @@ export default function ChatConversationComponent({
           ? isAwaitingApproval
             ? "awaiting"
             : subAgentDerivedPhase || (hasActiveTools ? "executing" : rawPhase)
-          : null;
+          : subAgentDerivedPhase
+            ? "delegating"
+            : null;
 
         // Sync phase color to :root so the sidebar generating-dot can match the bar
         const phaseGradientStops = phase ? PHASE_GRADIENT_STOPS[phase] : null;
@@ -7227,7 +7242,9 @@ export default function ChatConversationComponent({
               : hasActiveTools
                 ? activeToolLabel
                 : rawLabel
-          : undefined;
+          : subAgentDerivedPhase
+            ? subAgentDerivedLabel || "Awaiting Sub-Agents…"
+            : undefined;
         // Structured progress (0-1) from LM Studio prompt prefilling / model loading
         const progress =
           phase === "prefilling" || phase === "loading"
@@ -7253,10 +7270,13 @@ export default function ChatConversationComponent({
             liveStreamingBurstTokens / (liveStreamingBurstElapsed / 1000);
         }
 
+        // The status bar is active when the orchestrator is generating
+        // OR when sub-agents are still running after a non-blocking dispatch
+        const isStatusBarActive = isGenerating || !!subAgentDerivedPhase;
 
         return (
           <StatusBarComponent
-            active={isGenerating}
+            active={isStatusBarActive}
             phase={phase as StatusBarPhase | undefined}
             label={label || undefined}
             progress={typeof progress === "number" ? progress : null}

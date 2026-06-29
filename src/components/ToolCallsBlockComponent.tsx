@@ -69,10 +69,12 @@ export default function ToolCallsBlockComponent({
           ? (() => { try { return JSON.parse(toolCall.result); } catch { return null; } })()
           : toolCall.result
         : null;
-      // create_team returns either a raw array or { members: [...] }
+      // create_team returns a raw array, { members: [...] }, or non-blocking { agents: [...] }
       const rawMembers = Array.isArray(parsed)
         ? parsed
-        : (parsed as { members?: Array<{ agent_id?: string }> })?.members ?? [];
+        : (parsed as { members?: Array<{ agent_id?: string }>; agents?: Array<{ agent_id?: string }> })?.members
+          ?? (parsed as { agents?: Array<{ agent_id?: string }> })?.agents
+          ?? [];
       const members: Array<{ agent_id?: string }> = Array.isArray(rawMembers) ? rawMembers : [];
       for (const member of members) {
         if (isSubAgentActive(member.agent_id ? subAgentToolActivity[member.agent_id] : null)) return true;
@@ -220,8 +222,14 @@ export default function ToolCallsBlockComponent({
                             agent_id?: string;
                             toolUses?: number;
                           }>;
+                          agents?: Array<{
+                            agent_id?: string;
+                            toolUses?: number;
+                          }>;
                         }
-                      )?.members || [];
+                      )?.members
+                      ?? (parsed as { agents?: Array<{ agent_id?: string; toolUses?: number }> })?.agents
+                      ?? [];
                     // Aggregate tool activity from all team members
                     const allToolNames: Record<string, number> = {};
                     let activeTool: string | null = null;
@@ -302,7 +310,9 @@ export default function ToolCallsBlockComponent({
                     const resultMembers: Array<{ agent_id?: string; description?: string }> =
                       Array.isArray(parsed)
                         ? parsed
-                        : (parsed as { members?: Array<{ agent_id?: string; description?: string }> })?.members ?? [];
+                        : (parsed as { members?: Array<{ agent_id?: string; description?: string }>; agents?: Array<{ agent_id?: string; description?: string }> })?.members
+                          ?? (parsed as { agents?: Array<{ agent_id?: string; description?: string }> })?.agents
+                          ?? [];
                     const argumentMembers: Array<{ description?: string }> =
                       Array.isArray((toolCall.args as { members?: Array<{ description?: string }> })?.members)
                         ? (toolCall.args as { members: Array<{ description?: string }> }).members
