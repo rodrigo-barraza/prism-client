@@ -1149,22 +1149,6 @@ export default class PrismService {
   }
 
   /**
-   * Upload a video/webcam frame for the active agentic conversation.
-   */
-  static async uploadVisionFrame(
-    conversationId: string,
-    frameDataUrl: string,
-  ): Promise<{ ok: boolean }> {
-    return PrismService._request<{ ok: boolean }>(
-      `/agent/conversation/${conversationId}/frame`,
-      {
-        method: "POST",
-        body: { frameDataUrl },
-      },
-    );
-  }
-
-  /**
    * Stream text generation via SSE (Server-Sent Events).
 
 

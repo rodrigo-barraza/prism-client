@@ -297,17 +297,6 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         badgeClass: "badge-workflow",
       },
       {
-        title: "Vision-Language Harness: Live Streaming VLM Loop",
-        authors: "Multimodal Pattern",
-        year: null,
-        arxivUrl: null,
-        description:
-          "Extended ReAct harness with real-time webcam/screen frame injection. Captures rolling buffer of live frames and attaches them to each iteration for continuous visual grounding.",
-        implementationFile: "VisionLanguageHarness.ts",
-        categoryLabel: "Multimodal",
-        badgeClass: "badge-multimodal",
-      },
-      {
         title: "Somatic State Engine: Plutchik's Wheel of Emotions",
         authors: "Affect Pattern",
         year: null,

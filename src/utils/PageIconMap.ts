@@ -152,7 +152,6 @@ export const USER_NAV_SECTIONS: NavigationSection[] = [
       { href: "/vram-benchmark", label: "VRAM Bench", icon: MemoryStick },
       { href: "/synthesis", label: "Synthesis", icon: FlaskConical },
       { href: "/workflows", label: "Workflows", icon: Workflow },
-      { href: "/vision", label: "Vision", icon: Eye },
     ],
   },
 ];
@@ -206,7 +205,6 @@ export const ADMIN_NAV_SECTIONS: NavigationSection[] = [
     items: [
       { href: "/admin/synthesis", label: "Synthesis", icon: FlaskConical },
       { href: "/admin/workflows", label: "Workflows", icon: GitBranch },
-      { href: "/admin/vision", label: "Vision", icon: Eye },
     ],
   },
 ];

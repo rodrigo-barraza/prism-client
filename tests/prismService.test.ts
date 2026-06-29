@@ -390,10 +390,7 @@ describe("PrismService", () => {
       });
     });
 
-    it("uploadVisionFrame, transcribeAudio, generateSpeech, generateEmbedding", async () => {
-      await PrismService.uploadVisionFrame("conv-123", "data:frame");
-      expect(lastUrl).toContain("/agent/conversation/conv-123/frame");
-
+    it("transcribeAudio, generateSpeech, generateEmbedding", async () => {
       await PrismService.transcribeAudio({} as any);
       expect(lastUrl).toContain("/audio-to-text");
 
