@@ -1,22 +1,34 @@
-import NextAuth from "next-auth";
+import NextAuth, { type DefaultSession } from "next-auth";
+import "next-auth/jwt";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { ACCOUNTS_SERVICE_URL } from "./config";
+import { ACCOUNTS_SERVICE_URL, AUTH_ALLOWED_EMAILS as ALLOWED_EMAILS, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET } from "./config";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      image?: string | null;
+    } & DefaultSession["user"];
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    picture?: string | null;
+  }
+}
 
 export const AUTH_ENABLED = true;
 
-const ALLOWED_EMAILS = (process.env.AUTH_ALLOWED_EMAILS || "")
-  .split(",")
-  .map((allowedEmailEntry) => allowedEmailEntry.trim().toLowerCase())
-  .filter(Boolean);
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
-    ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+    ...(AUTH_GOOGLE_ID && AUTH_GOOGLE_SECRET
       ? [
           Google({
-            clientId: process.env.AUTH_GOOGLE_ID,
-            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+            clientId: AUTH_GOOGLE_ID,
+            clientSecret: AUTH_GOOGLE_SECRET,
           }),
         ]
       : []),
@@ -88,8 +100,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
     async session({ session, token }) {
       if (session.user) {
-        (session.user as typeof session.user & { id: string }).id = token.id as string;
-        session.user.image = token.picture as string | null;
+        session.user.id = token.id || "";
+        session.user.image = token.picture || null;
       }
       return session;
     },

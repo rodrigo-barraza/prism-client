@@ -109,7 +109,7 @@
 /* Transient rainbow — applied on click, removed after ~1s */
 .chat-header-new-button-element-rainbow {
   filter: hue-rotate(0deg);
-  animation: chat-new-btn-hue 1s linear forwards;
+  animation: chat-new-button-hue 1s linear forwards;
   will-change: filter;
 }
 
@@ -130,7 +130,7 @@
   overflow: hidden;
 }
 
-@keyframes chat-new-btn-hue {
+@keyframes chat-new-button-hue {
   to {
     filter: hue-rotate(360deg);
   }

@@ -34,6 +34,7 @@ import {
   WorkflowNode,
   WorkflowNodeStatus,
   Message,
+  JsonSchemaObject,
 } from "../types/types";
 
 const MIN_WIDTH = 320;
@@ -807,7 +808,7 @@ export default function WorkflowInspector({
             const builtIn = (node.builtInTools || []) as Array<{
               name: string;
               parameters?: {
-                properties?: Record<string, any>;
+                properties?: Record<string, JsonSchemaObject>;
                 length?: number;
               };
             }>;
@@ -827,7 +828,7 @@ export default function WorkflowInspector({
               tool: {
                 name?: string;
                 parameters?: {
-                  properties?: Record<string, any>;
+                  properties?: Record<string, JsonSchemaObject>;
                   length?: number;
                 };
               },

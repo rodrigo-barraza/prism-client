@@ -3112,7 +3112,7 @@ export default function ChatConversationComponent({
     },
     [ensureMentionCache],
   );
-  const detectMentionQueryRef = useRef<((el: HTMLDivElement) => void) | null>(
+  const detectMentionQueryRef = useRef<((element: HTMLDivElement) => void) | null>(
     detectMentionQuery,
   );
   detectMentionQueryRef.current = detectMentionQuery;
