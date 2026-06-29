@@ -6301,9 +6301,9 @@ export default function ChatConversationComponent({
                       label: "Sub-Agent Recursion Depth",
                       value: maxRecursionDepth,
                       isActive: maxRecursionDepth > 0,
-                      title: "Click to cycle: Off → 1 (Workers) → 2 → 3",
+                      title: "Click to cycle: Off → 1 (Workers) → 2 → 3 → 5 → 10",
                       onChange: () => {
-                        const steps = [0, 1, 2, 3];
+                        const steps = [0, 1, 2, 3, 5, 10];
                         const index = steps.indexOf(maxRecursionDepth);
                         const next = steps[(index + 1) % steps.length];
                         setMaxRecursionDepth(next);
