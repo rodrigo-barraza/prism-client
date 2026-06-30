@@ -4720,6 +4720,20 @@ export default function ChatConversationComponent({
               return updated;
             });
           },
+          onConversationStateUpdate: (data: SSEData) => {
+            // Patch the conversations list entry with the updated counter
+            // so the status bar's hasPendingBackgroundTasks check resolves.
+            const updatedPendingCount = (data.pendingBackgroundTasks as number) ?? 0;
+            setConversations((previousConversations) =>
+              previousConversations.map((entry) => {
+                if (entry.id !== conversationId) return entry;
+                return {
+                  ...entry,
+                  pendingBackgroundTasks: updatedPendingCount,
+                } as typeof entry;
+              }),
+            );
+          },
           onDone: (data: SSEData) => {
             console.debug(`[onDone] stream finished, isStale=${isStale()}`);
             if (!isStale()) {

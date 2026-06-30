@@ -1282,6 +1282,7 @@ export default class PrismService {
       onPlanProposal,
       onUserQuestion,
       onTaskNotification,
+      onConversationStateUpdate,
       onTodoUpdate,
       onBriefUpdate,
       onRunInfo,
@@ -1368,6 +1369,9 @@ export default class PrismService {
         break;
       case "task_notification":
         onTaskNotification?.(data);
+        break;
+      case "conversation_state_update":
+        onConversationStateUpdate?.(data);
         break;
       case SERVER_SENT_EVENT_TYPES.TODO_UPDATE:
         onTodoUpdate?.(data);
