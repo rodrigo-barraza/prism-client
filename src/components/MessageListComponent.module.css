@@ -933,3 +933,70 @@
   word-break: break-word;
   margin-block-end: 4px;
 }
+
+/* ── Queued next-turn message node ── */
+.queued-message-node {
+  opacity: 0.7;
+  border: 1px dashed color-mix(in srgb, var(--accent-primary) 40%, var(--calculated-border-color));
+  border-radius: var(--border-radius-sm);
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--accent-primary) 3%, var(--background-elevated));
+  animation: queued-fade-in 0.25s ease-out forwards;
+
+  & .avatar {
+    opacity: 0.6;
+  }
+}
+
+.queued-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: 8px;
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  border-radius: 10px;
+  animation: queued-pulse 2s ease-in-out infinite;
+}
+
+.queued-message-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.queued-attachments-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin-block-end: 4px;
+}
+
+@keyframes queued-fade-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 0.7;
+    translate: 0 0;
+  }
+}
+
+@keyframes queued-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

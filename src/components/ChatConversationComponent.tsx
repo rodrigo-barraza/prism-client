@@ -78,7 +78,7 @@ import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent";
 import WorkspaceSwitcherButtonComponent from "./WorkspaceSwitcherButtonComponent";
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
-import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
+import MessageList, { prepareDisplayMessages, type QueuedNextTurn } from "./MessageListComponent";
 import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 
@@ -321,10 +321,7 @@ const NONE_EMPTY_STATE: EmptyStateConfig = {
   placeholder: "Send a message...",
 };
 
-interface QueuedNextTurn {
-  text: string;
-  images: string[];
-}
+
 
 interface ViewerOpenFile {
   id: string;
@@ -7127,6 +7124,12 @@ export default function ChatConversationComponent({
           subAgentToolActivity={subAgentToolActivity}
           activeAgent={resolvedConversationAgent}
           knownPaths={knownPaths}
+          queuedNextTurn={queuedNextTurn}
+          onCancelQueuedTurn={() => {
+            setTextareaValue(queuedNextTurn?.text || "");
+            setPendingImages(queuedNextTurn?.images || []);
+            setQueuedNextTurn(null);
+          }}
           onMentionFileOpen={(relativePath: string) => {
             const absPath = currentWorkspace?.path
               ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
@@ -7454,39 +7457,7 @@ export default function ChatConversationComponent({
           onDrop={handleDrop}
           onPaste={handlePaste}
         >
-          {queuedNextTurn && (
-            <div className={chatStyles['queued-message']}>
-              <div className={chatStyles['queued-header']}>
-                <div className={chatStyles['queued-header-left']}>
-                  <CornerDownLeft size={14} />
-                  <span>Queued for next turn</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTextareaValue(queuedNextTurn.text);
-                    setPendingImages(queuedNextTurn.images);
-                    setQueuedNextTurn(null);
-                  }}
-                  className={chatStyles['remove-attachment']}
-                  title="Edit queue"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-              {queuedNextTurn.text && (
-                <div className={chatStyles['queued-text']}>
-                  {queuedNextTurn.text}
-                </div>
-              )}
-              {queuedNextTurn.images?.length > 0 && (
-                <div className={chatStyles['queued-images-count']}>
-                  <Paperclip size={12} /> {queuedNextTurn.images.length}{" "}
-                  image(s)
-                </div>
-              )}
-            </div>
-          )}
+
           {isDragging && (
             <div className={chatStyles['drag-overlay']}>
               <Paperclip size={20} />

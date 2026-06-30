@@ -12,7 +12,9 @@ import {
   ChevronRight,
   Brain,
   Check,
+  Clock,
   FileText,
+  Paperclip,
   Trash2,
   Pencil,
   RotateCcw,
@@ -568,6 +570,11 @@ function EditableMessage({
 
 /* -- Main export ----------------------------------------------- */
 
+export interface QueuedNextTurn {
+  text: string;
+  images: string[];
+}
+
 export interface MessageListProps {
   messages?: Message[];
   readOnly?: boolean;
@@ -582,6 +589,8 @@ export interface MessageListProps {
   onPlanReject?: () => void;
   knownPaths?: string[];
   showRaw?: boolean;
+  queuedNextTurn?: QueuedNextTurn | null;
+  onCancelQueuedTurn?: () => void;
 
   onDelete?: (index: number) => void;
   onRestore?: (index: number) => void;
@@ -610,6 +619,8 @@ export default function MessageList({
   onPlanReject,
   knownPaths,
   showRaw = false,
+  queuedNextTurn,
+  onCancelQueuedTurn,
 
   activeAgent,
   onDelete,
@@ -2309,6 +2320,48 @@ export default function MessageList({
           </React.Fragment>
         );
       })}
+      {/* ── Queued next-turn message (rendered as a user-node in the list) ── */}
+      {queuedNextTurn && (
+        <div
+          className={`${styles['message']} ${styles['user-node']} ${styles['queued-message-node']}`}
+        >
+          <div className={styles['avatar']}>
+            <User size={16} />
+          </div>
+          <div className={styles['content']}>
+            <div className={styles['message-header']}>
+              <div className={styles['role-label']}>
+                User
+                <span className={styles['queued-badge']}>
+                  <Clock size={11} />
+                  Queued
+                </span>
+              </div>
+              {onCancelQueuedTurn && (
+                <div className={styles['message-actions']}>
+                  <IconButtonComponent
+                    icon={<XIcon size={14} />}
+                    onClick={onCancelQueuedTurn}
+                    tooltip="Cancel queued message"
+                    className={styles['action-button']}
+                  />
+                </div>
+              )}
+            </div>
+            {queuedNextTurn.images?.length > 0 && (
+              <div className={styles['queued-attachments-indicator']}>
+                <Paperclip size={12} />
+                {queuedNextTurn.images.length} image{queuedNextTurn.images.length > 1 ? "s" : ""} attached
+              </div>
+            )}
+            {queuedNextTurn.text && (
+              <div className={styles['queued-message-text']}>
+                {queuedNextTurn.text}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {localLightboxSourceUrl && (
         <ImagePreviewComponent
           src={localLightboxSourceUrl}
