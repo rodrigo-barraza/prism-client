@@ -571,6 +571,33 @@ export interface SSEUsageUpdateEvent {
   estimatedCost?: number;
 }
 
+export interface SSEContextBudgetEvent {
+  type: "context_budget";
+  contextWindow: number;
+  messageTokens: number;
+  systemPromptTokens: number;
+  toolSchemaTokens: number;
+  safetyMarginTokens: number;
+  totalInputTokens: number;
+  availableOutputTokens: number;
+  requestedOutputTokens: number;
+  isClamped: boolean;
+  toolCount: number;
+}
+
+export interface ContextBudget {
+  contextWindow: number;
+  messageTokens: number;
+  systemPromptTokens: number;
+  toolSchemaTokens: number;
+  safetyMarginTokens: number;
+  totalInputTokens: number;
+  availableOutputTokens: number;
+  requestedOutputTokens: number;
+  isClamped: boolean;
+  toolCount: number;
+}
+
 export interface SSEDoneEvent {
   type: "done";
   conversationId?: string;
@@ -759,6 +786,7 @@ export interface SSECallbacks {
   onModelComplete?: (event: SSEData) => void;
   onRunComplete?: (event: SSEData) => void;
   onUsageUpdate?: (event: SSEData) => void;
+  onContextBudget?: (event: SSEData) => void;
   onStatus?: (event: SSEData) => void;
   onDone?: (event: SSEData) => void;
   onError?: (error: Error) => void;

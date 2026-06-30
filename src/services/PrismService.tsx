@@ -1289,6 +1289,7 @@ export default class PrismService {
       onModelComplete,
       onRunComplete,
       onUsageUpdate,
+      onContextBudget,
       onStatus,
       onDone,
       onError,
@@ -1389,6 +1390,9 @@ export default class PrismService {
         break;
       case SERVER_SENT_EVENT_TYPES.USAGE_UPDATE:
         onUsageUpdate?.(data);
+        break;
+      case SERVER_SENT_EVENT_TYPES.CONTEXT_BUDGET:
+        onContextBudget?.(data);
         break;
       case SERVER_SENT_EVENT_TYPES.STATUS:
         onStatus?.(data);

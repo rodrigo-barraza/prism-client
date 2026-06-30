@@ -56,6 +56,7 @@ import {
   Workflow,
   TransformedRequestItem,
   LlamaCppServerProps,
+  ContextBudget,
 } from "../types/types";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -78,6 +79,7 @@ import WorkspaceSwitcherButtonComponent from "./WorkspaceSwitcherButtonComponent
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
 import MessageList, { prepareDisplayMessages } from "./MessageListComponent";
+import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
@@ -574,6 +576,7 @@ export default function ChatConversationComponent({
   const inputValueRef = useRef<string>("");
   const [hasInput, setHasInput] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [contextBudget, setContextBudget] = useState<ContextBudget | null>(null);
   const [toolActivity, setToolActivity] = useState<ToolCallEvent[]>([]);
   const [streamingOutputs, setStreamingOutputs] = useState<Map<string, string>>(
     new Map(),
@@ -4642,6 +4645,21 @@ export default function ChatConversationComponent({
               return updated;
             });
           },
+          onContextBudget: (data: SSEData) => {
+            if (isStale()) return;
+            setContextBudget({
+              contextWindow: data.contextWindow as number,
+              messageTokens: data.messageTokens as number,
+              systemPromptTokens: data.systemPromptTokens as number,
+              toolSchemaTokens: data.toolSchemaTokens as number,
+              safetyMarginTokens: data.safetyMarginTokens as number,
+              totalInputTokens: data.totalInputTokens as number,
+              availableOutputTokens: data.availableOutputTokens as number,
+              requestedOutputTokens: data.requestedOutputTokens as number,
+              isClamped: data.isClamped as boolean,
+              toolCount: data.toolCount as number,
+            });
+          },
           onTaskNotification: (data: SSEData) => {
             console.debug(`[onTaskNotification] received, isStale=${isStale()}`);
             if (isStale()) return;
@@ -7411,6 +7429,9 @@ export default function ChatConversationComponent({
       <div
         className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model ? chatStyles['input-wrapper-disabled'] : ""}`}
       >
+        {contextBudget && (
+          <ContextBudgetIndicatorComponent contextBudget={contextBudget} />
+        )}
         <form
           onSubmit={handleSend}
           className={`${chatStyles['input-box']} ${isDragging ? chatStyles['input-box-drag-is-active-state'] : ""} ${isGenerating ? chatStyles['input-box-generating'] : ""}`}
