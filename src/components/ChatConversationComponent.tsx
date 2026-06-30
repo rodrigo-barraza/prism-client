@@ -7298,6 +7298,15 @@ export default function ChatConversationComponent({
         let subAgentDerivedPhase = null;
         let subAgentDerivedLabel = null;
         let hasNonTerminalSubAgents = false;
+
+        // Check if the conversation has pending background tasks (sub-agents,
+        // long-running tools) that outlive the SSE stream. This counter is
+        // persisted in MongoDB and fetched with the conversation list.
+        const activeConversationEntry = conversations.find((entry) => entry.id === activeId);
+        const pendingBackgroundTaskCount =
+          (activeConversationEntry as Record<string, unknown> | undefined)?.pendingBackgroundTasks as number | undefined;
+        const hasPendingBackgroundTasks = (pendingBackgroundTaskCount ?? 0) > 0;
+
         if (Object.keys(subAgentToolActivity).length > 0) {
           const subAgents = Object.values(subAgentToolActivity);
 
@@ -7352,6 +7361,14 @@ export default function ChatConversationComponent({
             subAgentDerivedPhase = "delegating";
             subAgentDerivedLabel = "Awaiting Sub-Agents…";
           }
+        }
+
+        // Fallback: if no live SSE sub-agent activity but pendingBackgroundTasks > 0,
+        // the SSE stream has closed but async work is still running in the background.
+        // Show a delegating phase so the status bar stays alive.
+        if (!subAgentDerivedPhase && hasPendingBackgroundTasks) {
+          subAgentDerivedPhase = "delegating";
+          subAgentDerivedLabel = "Awaiting Background Tasks…";
         }
 
         const activeTool = toolActivity.find((tool) => tool.status === "calling" || tool.status === "streaming");
@@ -7424,7 +7441,7 @@ export default function ChatConversationComponent({
         // OR when sub-agents are still running after a non-blocking dispatch,
         // OR when any sub-agent hasn't reached a terminal state yet
         // (covers spawned/undefined-phase windows during create_subagents).
-        const isStatusBarActive = isGenerating || !!subAgentDerivedPhase || hasNonTerminalSubAgents;
+        const isStatusBarActive = isGenerating || !!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks;
 
         return (
           <StatusBarComponent

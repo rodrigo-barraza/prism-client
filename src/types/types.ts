@@ -446,6 +446,8 @@ export interface Conversation {
   hasSubAgents?: boolean;
   /** Backend-enriched: count of requests with errors (success === false) */
   requestErrorCount?: number;
+  /** Count of async background tasks in-flight (sub-agents, long-running tools, etc.) */
+  pendingBackgroundTasks?: number;
 }
 
 export interface ConversationListResponse {
@@ -475,6 +477,8 @@ export interface AgentConversation {
   parentAgentConversationId?: string | null;
   parentConversationId?: string | null;
   hasSubAgents?: boolean;
+  /** Count of async background tasks in-flight (sub-agents, long-running tools, etc.) */
+  pendingBackgroundTasks?: number;
 }
 
 export interface AgentConversationListResponse {
