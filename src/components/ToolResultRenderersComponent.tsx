@@ -2463,26 +2463,41 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
   const isActive = isToolActive || hasPhase || hasActiveSubSubAgents;
   const toolLabel = currentTool ? renderToolName(currentTool) : null;
 
+  const isToolGenerating =
+    isToolActive &&
+    activity.tokPerSec !== undefined &&
+    activity.tokPerSec !== null &&
+    activity.tokPerSec > 0;
+
   // Derive the effective phase for StatusBarComponent:
   // - Sub-sub-agents still running → "delegating" (teal — awaiting nested team)
+  // - Tool active and generating → "generating" (purple — model sub-request generating)
   // - Tool executing → "executing" (orange — actively running a tool)
   // - Terminal → null (idle)
   // - Otherwise → actual model phase (generating, thinking, prefilling, etc.)
   const effectivePhase = hasActiveSubSubAgents
     ? "delegating"
-    : isToolActive
-      ? "executing"
-      : isTerminal
-        ? null
-        : phase;
+    : isToolGenerating
+      ? "generating"
+      : isToolActive
+        ? "executing"
+        : isTerminal
+          ? null
+          : phase;
   // Show delegation label, tool name, or phase progress label
   const label = hasActiveSubSubAgents
     ? "Awaiting Sub-Agents…"
     : isToolActive
       ? toolLabel
       : activity.phaseLabel || undefined;
-  // Delegation shows the team icon, tool calls show a wrench emoji, phase uses default icons
-  const icon = hasActiveSubSubAgents ? "👥" : isToolActive ? "🔧" : undefined;
+  // Delegation shows the team icon, tool calls show a wrench emoji, generation uses default sparkles icon, phase uses default icons
+  const icon = hasActiveSubSubAgents
+    ? "👥"
+    : isToolGenerating
+      ? undefined
+      : isToolActive
+        ? "🔧"
+        : undefined;
   // Progress (0-1) from LM Studio prompt processing / model loading
   const progress =
     effectivePhase === "prefilling" || effectivePhase === "loading"
@@ -2502,7 +2517,9 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
   // Use the pre-computed value directly — it's authoritative from the
   // CoordinatorService which tracks per-sub-agent burst counters independently.
   let tokPerSec = null;
-  if (!isToolActive && (phase === "generating" || phase === "thinking")) {
+  if (isToolGenerating) {
+    tokPerSec = activity.tokPerSec;
+  } else if (!isToolActive && (phase === "generating" || phase === "thinking")) {
     tokPerSec = activity.tokPerSec ?? null;
   }
 

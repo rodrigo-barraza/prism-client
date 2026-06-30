@@ -7325,10 +7325,16 @@ export default function ChatConversationComponent({
           ? `Running tool ${renderToolName(activeTool.name)}...`
           : "Executing...";
 
+        const isToolGenerating =
+          hasActiveTools &&
+          liveGenProgress &&
+          ((liveGenProgress.activeRequests ?? 0) > 0 || (liveGenProgress.tokPerSec ?? 0) > 0);
+
         const phase = isGenerating
           ? isAwaitingApproval
             ? "awaiting"
-            : subAgentDerivedPhase || (hasActiveTools ? "executing" : rawPhase)
+            : subAgentDerivedPhase ||
+              (isToolGenerating ? "generating" : hasActiveTools ? "executing" : rawPhase)
           : subAgentDerivedPhase
             ? "delegating"
             : null;
@@ -7367,7 +7373,8 @@ export default function ChatConversationComponent({
         const isOrchestratorGenerating =
           ((phase === "generating" || phase === "thinking") &&
             !subAgentDerivedPhase) ||
-          (hasActiveTools && isChunksFlowing); // tool-call JSON still streaming
+          (hasActiveTools && isChunksFlowing) ||
+          isToolGenerating;
         if (
           isOrchestratorGenerating &&
           liveStreamingBurstTokens > 1 &&
@@ -7375,6 +7382,8 @@ export default function ChatConversationComponent({
         ) {
           orchestratorTokPerSec =
             liveStreamingBurstTokens / (liveStreamingBurstElapsed / 1000);
+        } else if (isToolGenerating && liveGenProgress && (liveGenProgress.tokPerSec ?? 0) > 0) {
+          orchestratorTokPerSec = liveGenProgress.tokPerSec;
         }
 
         // The status bar is active when the orchestrator is generating,
