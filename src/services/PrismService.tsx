@@ -947,6 +947,7 @@ export default class PrismService {
         toolCallCount?: number;
         recursionDepth?: number;
         toolNames?: Record<string, number>;
+        subAgentConversationId?: string;
       }>;
     }
     const response = await PrismService._request<SubAgentsResponse>(
@@ -960,6 +961,7 @@ export default class PrismService {
       id: subAgent.agentId,
       agentId: subAgent.agentId,
       agentConversationId: conversationId || "",
+      subAgentConversationId: subAgent.subAgentConversationId,
       status: subAgent.status,
       description: subAgent.description,
       resolvedModel: subAgent.resolvedModel,

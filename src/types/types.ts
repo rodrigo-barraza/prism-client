@@ -1065,6 +1065,7 @@ export interface CoordinatorSubAgent {
   id: string;
   agentId?: string;
   agentConversationId: string;
+  subAgentConversationId?: string;
   status: string;
   task?: string;
   description?: string;
