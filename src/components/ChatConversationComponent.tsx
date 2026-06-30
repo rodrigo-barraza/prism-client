@@ -5372,6 +5372,7 @@ export default function ChatConversationComponent({
     setInjectedSkills([]);
     setContextTruncated(null);
     setIsGenerating(false);
+    setContextBudget(null);
     setConversationId(generateUUID());
     setTraceId(null);
     setActiveId(null);
@@ -5559,6 +5560,9 @@ export default function ChatConversationComponent({
       },
     ) => {
       if (!full) return;
+
+      // Clear stale context budget from the previous conversation
+      setContextBudget(null);
 
       // -- Restore workspace selection from the conversation document --
       // Agent conversations record which workspace they were started with;
