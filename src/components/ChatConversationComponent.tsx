@@ -1689,6 +1689,10 @@ export default function ChatConversationComponent({
         setBackendConversationStats(full.stats || null);
         setIsBackendStatsStale(false);
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
+
+        // Hydrate persisted context budget from the conversation document
+        const persistedBudget = (full as unknown as Record<string, unknown>).contextBudget as ContextBudget | null | undefined;
+        setContextBudget(persistedBudget ?? null);
       } catch (error: unknown) {
         console.error("Failed to preload conversation from URL:", error);
       }
