@@ -4642,6 +4642,62 @@ export default function ChatConversationComponent({
               return updated;
             });
           },
+          onTaskNotification: (data: SSEData) => {
+            console.debug(`[onTaskNotification] received, isStale=${isStale()}`);
+            if (isStale()) return;
+
+            // ── Finalize current assistant message + inject notification ──
+            // The auto-response will stream new chunks into a fresh
+            // assistant message. Reset local streaming accumulators so the
+            // new content doesn't merge with the previous agent's output.
+            streamedText = "";
+            streamedThinking = "";
+            contentSegments.length = 0;
+            textFragments.length = 0;
+            thinkingFragments.length = 0;
+            segmentToolIdSet.clear();
+            lastSegmentType = null;
+            prevCleanLen = 0;
+            prevThinkingLen = 0;
+            firstChunkTime = undefined;
+            prevChunkTime = null;
+            burstTokens = 0;
+            burstElapsed = 0;
+
+            setMessages((previousMessages) => {
+              const updated = [...previousMessages];
+              const lastIndex = updated.length - 1;
+              const lastMessage = updated[lastIndex];
+
+              // Finalize the current assistant message if present
+              if (lastMessage?.role === "assistant" && !lastMessage.completedAt) {
+                updated[lastIndex] = {
+                  ...lastMessage,
+                  completedAt: new Date().toISOString(),
+                };
+              }
+
+              // Inject the notification as a user-role message
+              updated.push({
+                role: "user",
+                content: data.content as string,
+                timestamp: data.timestamp as string,
+                _notificationSource: data._notificationSource as string,
+                _notificationId: data._notificationId as string,
+              });
+
+              // Create a new empty assistant placeholder for the auto-response
+              updated.push({
+                role: "assistant",
+                content: "",
+                timestamp: new Date().toISOString(),
+                provider: settings.provider,
+                model: settings.model,
+              });
+
+              return updated;
+            });
+          },
           onDone: (data: SSEData) => {
             console.debug(`[onDone] stream finished, isStale=${isStale()}`);
             if (!isStale()) {

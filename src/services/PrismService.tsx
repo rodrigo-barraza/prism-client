@@ -1281,6 +1281,7 @@ export default class PrismService {
       onApprovalRequired,
       onPlanProposal,
       onUserQuestion,
+      onTaskNotification,
       onTodoUpdate,
       onBriefUpdate,
       onRunInfo,
@@ -1363,6 +1364,9 @@ export default class PrismService {
       // Prism-local agentic events
       case SERVER_SENT_EVENT_TYPES.USER_QUESTION:
         onUserQuestion?.(data);
+        break;
+      case "task_notification":
+        onTaskNotification?.(data);
         break;
       case SERVER_SENT_EVENT_TYPES.TODO_UPDATE:
         onTodoUpdate?.(data);

@@ -751,6 +751,7 @@ export interface SSECallbacks {
   onApprovalRequired?: (event: SSEData) => void;
   onPlanProposal?: (event: SSEData) => void;
   onUserQuestion?: (event: SSEData) => void;
+  onTaskNotification?: (event: SSEData) => void;
   onTodoUpdate?: (event: SSEData) => void;
   onBriefUpdate?: (event: SSEData) => void;
   onRunInfo?: (event: SSEData) => void;
