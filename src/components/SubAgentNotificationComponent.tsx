@@ -7,8 +7,8 @@ import { formatDuration } from "@rodrigo-barraza/utilities-library";
 import styles from "./SubAgentNotificationComponent.module.css";
 import {
   IconButtonComponent,
-  BadgeComponent,
 } from "@rodrigo-barraza/components-library";
+import BadgeComponent from "./BadgeComponent";
 
 /**
  * SubAgentNotificationComponent — renders a task-notification card
@@ -62,9 +62,9 @@ export default function SubAgentNotificationComponent({
       </div>
       <div className={styles['content']}>
         <div className={styles['header']}>
-          <div className={styles['role-label']} style={{ color: statusColor }}>
+          <div className={styles['role-label']}>
             <span className={styles['status-icon']}>{statusIcon}</span>
-            Sub-Agent
+            Tool: Create Subagents
             {timestamp && <BadgeComponent type="dateTime" date={timestamp} />}
           </div>
           {!readOnly && onDelete && (
@@ -95,6 +95,39 @@ export default function SubAgentNotificationComponent({
             content={taskNotif.result}
             className={styles['result-body']}
           />
+        )}
+
+        {/* Metadata badges — matches system message pattern */}
+        {taskNotif.result && (
+          <div className={styles['meta-badges']}>
+            <BadgeComponent
+              type="words"
+              count={
+                taskNotif.result
+                  .trim()
+                  .split(/\s+/)
+                  .filter(Boolean).length
+              }
+            />
+            <BadgeComponent
+              type="tokens"
+              value={Math.ceil(taskNotif.result.length / 4)}
+              label="estimated"
+            />
+            {formattedDuration && (
+              <BadgeComponent variant="info">
+                ⏱ {formattedDuration}
+              </BadgeComponent>
+            )}
+            {taskNotif.toolUses && (
+              <BadgeComponent variant="info">
+                🔧 {taskNotif.toolUses} tools
+              </BadgeComponent>
+            )}
+            {timestamp && (
+              <BadgeComponent type="dateTime" date={timestamp} />
+            )}
+          </div>
         )}
       </div>
     </div>

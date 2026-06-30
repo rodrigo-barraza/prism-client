@@ -7,14 +7,7 @@
   margin: 0 auto;
   width: 100%;
   animation: fade-in 0.3s ease-out forwards;
-  border-left: 3px solid var(--accent-primary, var(--color-indigo));
   padding: 8px 0;
-  opacity: 0.8;
-  transition: opacity 0.2s ease;
-
-  &:hover {
-    opacity: 1;
-  }
 
   &:hover .action-button {
     opacity: 1;
@@ -66,6 +59,7 @@
 .role-label {
   font-size: var(--font-size-sm);
   font-weight: 600;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: flex;
@@ -105,7 +99,6 @@
   font-size: 0.8125rem;
   line-height: 1.6;
   color: var(--text-primary);
-  opacity: 0.9;
 }
 
 .meta {
@@ -115,9 +108,18 @@
 
 /* ── Result body (rendered via MarkdownContent) ── */
 .result-body {
-  opacity: 0.7;
   font-size: var(--font-size-sm) !important;
   margin-top: 2px;
+}
+
+/* ── Metadata badges row ── */
+.meta-badges {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.6;
 }
 
 @keyframes fade-in {
@@ -126,7 +128,7 @@
     transform: translateY(6px);
   }
   to {
-    opacity: 0.8;
+    opacity: 1;
     transform: translateY(0);
   }
 }
