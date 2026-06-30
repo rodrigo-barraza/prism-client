@@ -70,27 +70,68 @@ export interface SubAgentToolActivityItem {
  * Sub-agent results, async task completions, and timer reminders
  * arrive as user-role messages with _notificationSource metadata.
  * For legacy messages persisted before the metadata field existed,
- * fall back to content-based <task-notification> XML detection.  */
+ * fall back to content-based <task-notification> XML detection.
+ * For messages persisted before the XML wrapping was added,
+ * fall back to header-based pattern detection.                  */
+
+const LEGACY_NOTIFICATION_HEADERS = [
+  "[SUB-AGENT TEAM COMPLETED]",
+  "[SUB-AGENT RESUMED COMPLETED]",
+  "[TEAM DONE]",
+  "[ASYNC TASK COMPLETED]",
+];
 
 function isNotificationMessage(message: Message): boolean {
   if (message._notificationSource) return true;
-  return !!(message.content && message.content.includes("<task-notification>"));
+  if (!message.content) return false;
+  if (message.content.includes("<task-notification>")) return true;
+  return LEGACY_NOTIFICATION_HEADERS.some(
+    (header) => message.content!.includes(header),
+  );
 }
 
 function parseTaskNotification(content: string | undefined | null) {
-  if (!content || !content.includes("<task-notification>")) return null;
-  const tag = (name: string) => {
-    const regex = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`);
-    const regexMatch = content.match(regex);
-    return regexMatch ? regexMatch[1].trim() : null;
-  };
+  if (!content) return null;
+
+  // Primary path: structured XML format
+  if (content.includes("<task-notification>")) {
+    const tag = (name: string) => {
+      const regex = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`);
+      const regexMatch = content.match(regex);
+      return regexMatch ? regexMatch[1].trim() : null;
+    };
+    return {
+      taskId: tag("task-id"),
+      status: tag("status"),
+      summary: tag("summary"),
+      result: tag("result"),
+      toolUses: tag("tool_uses") ? parseInt(tag("tool_uses") || "0", 10) : 0,
+      durationMs: tag("duration_ms"),
+    };
+  }
+
+  // Legacy fallback: plain-text format from before XML wrapping was added.
+  // Format: `[[SUB-AGENT TEAM COMPLETED] Team "name" (topology) finished.]\n\n<result body>`
+  const matchedHeader = LEGACY_NOTIFICATION_HEADERS.find((header) =>
+    content.includes(header),
+  );
+  if (!matchedHeader) return null;
+
+  // Extract the summary line (first line, strip outer brackets)
+  const firstNewline = content.indexOf("\n");
+  const summaryLine =
+    firstNewline > 0 ? content.substring(0, firstNewline) : content;
+  const cleanedSummary = summaryLine.replace(/^\[+/, "").replace(/\]+$/, "").trim();
+  const resultBody =
+    firstNewline > 0 ? content.substring(firstNewline).trim() : "";
+
   return {
-    taskId: tag("task-id"),
-    status: tag("status"),
-    summary: tag("summary"),
-    result: tag("result"),
-    toolUses: tag("tool_uses") ? parseInt(tag("tool_uses") || "0", 10) : 0,
-    durationMs: tag("duration_ms"),
+    taskId: null,
+    status: "completed",
+    summary: cleanedSummary,
+    result: resultBody || null,
+    toolUses: 0,
+    durationMs: null,
   };
 }
 
