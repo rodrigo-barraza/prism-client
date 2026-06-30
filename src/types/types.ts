@@ -583,6 +583,9 @@ export interface SSEContextBudgetEvent {
   requestedOutputTokens?: number;
   isClamped: boolean;
   toolCount: number;
+  source: "estimated" | "reported";
+  lastReportedInputTokens?: number;
+  calibrationRatio?: number;
 }
 
 export interface ContextBudget {
@@ -596,6 +599,9 @@ export interface ContextBudget {
   requestedOutputTokens?: number;
   isClamped: boolean;
   toolCount: number;
+  source: "estimated" | "reported";
+  lastReportedInputTokens?: number;
+  calibrationRatio?: number;
 }
 
 export interface SSEDoneEvent {

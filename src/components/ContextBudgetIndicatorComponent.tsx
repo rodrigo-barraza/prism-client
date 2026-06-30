@@ -27,6 +27,7 @@ export default function ContextBudgetIndicatorComponent({
     availableOutputTokens,
     isClamped,
     toolCount,
+    source,
   } = contextBudget;
 
   const utilizationPercentage = useMemo(
@@ -100,6 +101,14 @@ export default function ContextBudgetIndicatorComponent({
         <span className={styles["context-budget-available"]}>
           {formatTokenCount(availableOutputTokens)} available
         </span>
+        {source && (
+          <span
+            className={styles["context-budget-source-badge"]}
+            data-source={source}
+          >
+            {source === "reported" ? "✓ real" : "~ est"}
+          </span>
+        )}
       </div>
     </div>
   );

@@ -4658,6 +4658,9 @@ export default function ChatConversationComponent({
               requestedOutputTokens: data.requestedOutputTokens !== undefined ? (data.requestedOutputTokens as number) : undefined,
               isClamped: data.isClamped as boolean,
               toolCount: data.toolCount as number,
+              source: (data.source as "estimated" | "reported") || "estimated",
+              lastReportedInputTokens: data.lastReportedInputTokens !== undefined ? (data.lastReportedInputTokens as number) : undefined,
+              calibrationRatio: data.calibrationRatio !== undefined ? (data.calibrationRatio as number) : undefined,
             });
           },
           onTaskNotification: (data: SSEData) => {
@@ -5561,8 +5564,10 @@ export default function ChatConversationComponent({
     ) => {
       if (!full) return;
 
-      // Clear stale context budget from the previous conversation
-      setContextBudget(null);
+      // Hydrate persisted context budget from the conversation document,
+      // or clear if the conversation has no budget data.
+      const persistedBudget = (full as unknown as Record<string, unknown>).contextBudget as ContextBudget | null | undefined;
+      setContextBudget(persistedBudget ?? null);
 
       // -- Restore workspace selection from the conversation document --
       // Agent conversations record which workspace they were started with;
