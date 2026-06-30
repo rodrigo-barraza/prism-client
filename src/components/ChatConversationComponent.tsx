@@ -7204,17 +7204,27 @@ export default function ChatConversationComponent({
         // When sub-agents are active (whether via an in-flight tool call
         // or after a non-blocking create_subagents dispatch), the orchestrator
         // bar should reflect the aggregate sub-agent state.
+        const terminalSubAgentPhases = new Set(["complete", "completed", "failed", "stopped"]);
         let subAgentDerivedPhase = null;
         let subAgentDerivedLabel = null;
+        let hasNonTerminalSubAgents = false;
         if (Object.keys(subAgentToolActivity).length > 0) {
           const subAgents = Object.values(subAgentToolActivity);
+
+          // Track whether ANY sub-agent hasn't reached a terminal state yet.
+          // This includes sub-agents in "spawned" phase, undefined phase
+          // (tool execution clears phase), or any other non-terminal state.
+          // Used to keep the status bar visible even when no sub-agent has
+          // a recognized active phase (e.g., all just spawned or executing tools).
+          hasNonTerminalSubAgents = subAgents.some(
+            (subAgent: SubAgentActivityEntry) =>
+              !subAgent.phase || !terminalSubAgentPhases.has(subAgent.phase),
+          );
+
           const activeSubAgents = subAgents.filter(
             (subAgent: SubAgentActivityEntry) =>
               subAgent.phase &&
-              subAgent.phase !== "complete" &&
-              subAgent.phase !== "completed" &&
-              subAgent.phase !== "failed" &&
-              subAgent.phase !== "stopped" &&
+              !terminalSubAgentPhases.has(subAgent.phase) &&
               subAgent.phase !== "spawned",
           );
           if (activeSubAgents.length > 0) {
@@ -7243,6 +7253,14 @@ export default function ChatConversationComponent({
                 break;
               }
             }
+          }
+
+          // When sub-agents exist but none matched the priority phases
+          // (all spawned, undefined phase from tool execution, etc.),
+          // fall back to "delegating" to keep the status bar informative.
+          if (!subAgentDerivedPhase && hasNonTerminalSubAgents) {
+            subAgentDerivedPhase = "delegating";
+            subAgentDerivedLabel = "Awaiting Sub-Agents…";
           }
         }
 
@@ -7303,9 +7321,11 @@ export default function ChatConversationComponent({
             liveStreamingBurstTokens / (liveStreamingBurstElapsed / 1000);
         }
 
-        // The status bar is active when the orchestrator is generating
-        // OR when sub-agents are still running after a non-blocking dispatch
-        const isStatusBarActive = isGenerating || !!subAgentDerivedPhase;
+        // The status bar is active when the orchestrator is generating,
+        // OR when sub-agents are still running after a non-blocking dispatch,
+        // OR when any sub-agent hasn't reached a terminal state yet
+        // (covers spawned/undefined-phase windows during create_subagents).
+        const isStatusBarActive = isGenerating || !!subAgentDerivedPhase || hasNonTerminalSubAgents;
 
         return (
           <StatusBarComponent
