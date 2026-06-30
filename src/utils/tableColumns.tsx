@@ -747,11 +747,26 @@ export const statusColumn = () => ({
   description:
     "Whether the request completed successfully (OK) or failed (ERR)",
   align: "right" as const,
-  render: (row: TableRow) => (
-    <BadgeComponent variant={row.success ? "success" : "error"}>
-      {row.success ? "OK" : "ERR"}
-    </BadgeComponent>
-  ),
+  render: (row: TableRow) => {
+    const statusVariant =
+      row.success === true
+        ? "success"
+        : row.success === false
+          ? "error"
+          : "warning";
+    const statusLabel =
+      row.success === true
+        ? "OK"
+        : row.success === false
+          ? "ERR"
+          : "PENDING";
+
+    return (
+      <BadgeComponent variant={statusVariant}>
+        {statusLabel}
+      </BadgeComponent>
+    );
+  },
 });
 
 /* -- Benchmark result columns ---------------------------- */
