@@ -599,7 +599,7 @@ export interface ContextBudget {
   requestedOutputTokens?: number;
   isClamped: boolean;
   toolCount: number;
-  source: "estimated" | "reported";
+  source?: "estimated" | "reported";
   lastReportedInputTokens?: number;
   calibrationRatio?: number;
 }
