@@ -47,7 +47,6 @@ export default function ContextBudgetIndicatorComponent({
     if (utilizationPercentage >= 65) return "warning";
     return "nominal";
   }, [utilizationPercentage, isClamped]);
-
   return (
     <div
       className={styles["context-budget-indicator"]}
@@ -69,6 +68,23 @@ export default function ContextBudgetIndicatorComponent({
           style={{ width: `${segmentPercentages.toolsPercent}%` }}
           title={`Tool schemas (${toolCount}): ${formatTokenCount(toolSchemaTokens)} tokens`}
         />
+      </div>
+
+      <div className={styles["context-budget-legend"]}>
+        <div className={styles["legend-item"]}>
+          <span className={`${styles["legend-dot"]} ${styles["legend-dot-messages"]}`} />
+          <span>Messages ({formatTokenCount(messageTokens)})</span>
+        </div>
+        <div className={styles["legend-item"]}>
+          <span className={`${styles["legend-dot"]} ${styles["legend-dot-system"]}`} />
+          <span>System ({formatTokenCount(systemPromptTokens)})</span>
+        </div>
+        {toolCount > 0 && (
+          <div className={styles["legend-item"]}>
+            <span className={`${styles["legend-dot"]} ${styles["legend-dot-tools"]}`} />
+            <span>Tools ({toolCount}: {formatTokenCount(toolSchemaTokens)})</span>
+          </div>
+        )}
       </div>
 
       <div className={styles["context-budget-labels"]}>

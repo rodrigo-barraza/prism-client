@@ -580,7 +580,7 @@ export interface SSEContextBudgetEvent {
   safetyMarginTokens: number;
   totalInputTokens: number;
   availableOutputTokens: number;
-  requestedOutputTokens: number;
+  requestedOutputTokens?: number;
   isClamped: boolean;
   toolCount: number;
 }
@@ -593,7 +593,7 @@ export interface ContextBudget {
   safetyMarginTokens: number;
   totalInputTokens: number;
   availableOutputTokens: number;
-  requestedOutputTokens: number;
+  requestedOutputTokens?: number;
   isClamped: boolean;
   toolCount: number;
 }

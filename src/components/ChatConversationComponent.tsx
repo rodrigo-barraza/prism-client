@@ -4655,7 +4655,7 @@ export default function ChatConversationComponent({
               safetyMarginTokens: data.safetyMarginTokens as number,
               totalInputTokens: data.totalInputTokens as number,
               availableOutputTokens: data.availableOutputTokens as number,
-              requestedOutputTokens: data.requestedOutputTokens as number,
+              requestedOutputTokens: data.requestedOutputTokens !== undefined ? (data.requestedOutputTokens as number) : undefined,
               isClamped: data.isClamped as boolean,
               toolCount: data.toolCount as number,
             });
