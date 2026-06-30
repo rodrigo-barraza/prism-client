@@ -2524,18 +2524,24 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
 }
 
 /**
- * Renders live status bars for sub-sub-agents spawned by a sub-agent's
- * nested create_subagents tool call. Extracts agent_ids from the in-flight
- * create_subagents and looks them up in subAgentToolActivity.
+ * Renders live status bars for nested sub-agents spawned by a sub-agent's
+ * create_subagents tool call. Recursively renders deeper nesting levels so
+ * that chains of sub-agent delegation (depth 3, 4, 5, …) all display
+ * their progress bars. Capped at MAX_RECURSIVE_DEPTH to prevent runaway.
  */
+const MAX_RECURSIVE_SUB_AGENT_DEPTH = 10;
+
 function SubSubAgentStatusBars({
   toolCalls,
   subAgentToolActivity,
+  depth = 0,
 }: {
   toolCalls: import("../types/types").ToolCallEvent[];
   subAgentToolActivity?: Record<string, SubAgentActivity | SubAgentToolActivityItem> | null;
+  depth?: number;
 }) {
   if (!subAgentToolActivity) return null;
+  if (depth >= MAX_RECURSIVE_SUB_AGENT_DEPTH) return null;
 
   const createTeamCalls = toolCalls.filter(
     (toolCall) => toolCall.name === "create_subagents",
@@ -2603,9 +2609,17 @@ function SubSubAgentStatusBars({
   if (subSubAgentEntries.length === 0) return null;
 
   return (
-    <div className={styles['sub-sub-agent-status-bars']}>
+    <div
+      className={styles['sub-sub-agent-status-bars']}
+      style={depth > 0 ? { paddingInlineStart: 8 } : undefined}
+    >
       {subSubAgentEntries.map((entry) => {
         const activityData = entry.activity as SubAgentActivity;
+        const hasNestedCreateSubagents =
+          Array.isArray(activityData?.toolCalls) &&
+          activityData.toolCalls.some(
+            (toolCall) => toolCall.name === "create_subagents",
+          );
 
         return (
           <div key={entry.agentId} className={styles['sub-sub-agent-status-entry']}>
@@ -2613,6 +2627,13 @@ function SubSubAgentStatusBars({
               {entry.description}
             </span>
             <SubAgentStatusBar activity={activityData} />
+            {hasNestedCreateSubagents && (
+              <SubSubAgentStatusBars
+                toolCalls={activityData.toolCalls!}
+                subAgentToolActivity={subAgentToolActivity}
+                depth={depth + 1}
+              />
+            )}
           </div>
         );
       })}
