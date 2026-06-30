@@ -13,6 +13,7 @@ import {
   History,
   GitMerge,
   Settings,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -121,6 +122,8 @@ export default function MemoriesPanel({
   );
   const [newMemoryIds, setNewMemoryIds] = useState(new Set<string>());
   const [consolidating, setConsolidating] = useState(false);
+  const [confirmingDeleteAll, setConfirmingDeleteAll] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
   const knownIdsRef = useRef<Set<string>>(new Set());
 
@@ -333,6 +336,31 @@ export default function MemoriesPanel({
     }
   }, [project, agent, loadMemories, loadHistory, historyOpen]);
 
+  const handleDeleteAll = useCallback(async () => {
+    setDeletingAll(true);
+    try {
+      const result = await PrismService.deleteAllAgentMemories(project, agent);
+      setMemories([]);
+      setTotal(0);
+      setHasMore(false);
+      knownIdsRef.current.clear();
+      setConfirmingDeleteAll(false);
+      setToast({
+        type: "success",
+        text: `Deleted ${result.deletedCount} memor${result.deletedCount === 1 ? "y" : "ies"}`,
+      });
+      setTimeout(() => setToast(null), TOAST_DURATION_MILLISECONDS);
+    } catch (error: unknown) {
+      setToast({
+        type: "error",
+        text: `Failed to delete: ${getErrorMessage(error)}`,
+      });
+      setTimeout(() => setToast(null), TOAST_DURATION_MILLISECONDS);
+    } finally {
+      setDeletingAll(false);
+    }
+  }, [project, agent]);
+
   // -- Filtered memories (client-side) ------------------------
   const filteredMemories = useMemo(() => {
     let result = memories;
@@ -416,6 +444,37 @@ export default function MemoriesPanel({
           disabled={loading}
           title="Refresh memories"
         />
+        {confirmingDeleteAll ? (
+          <>
+            <ButtonComponent
+              variant="danger"
+              size="small"
+              onClick={handleDeleteAll}
+              disabled={deletingAll}
+              title="Confirm — permanently delete all memories"
+            >
+              {deletingAll ? "Deleting…" : "Confirm"}
+            </ButtonComponent>
+            <ButtonComponent
+              variant="text"
+              size="small"
+              onClick={() => setConfirmingDeleteAll(false)}
+              disabled={deletingAll}
+              title="Cancel"
+            >
+              Cancel
+            </ButtonComponent>
+          </>
+        ) : (
+          <ButtonComponent
+            variant="text"
+            size="small"
+            icon={Trash2}
+            iconSize={11}
+            onClick={() => setConfirmingDeleteAll(true)}
+            title="Delete all memories for this agent"
+          />
+        )}
       </>,
     );
   }, [
@@ -429,6 +488,9 @@ export default function MemoriesPanel({
     error,
     memories.length,
     memoryConfigured,
+    confirmingDeleteAll,
+    deletingAll,
+    handleDeleteAll,
   ]);
 
   // Clear actions on unmount

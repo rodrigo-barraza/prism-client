@@ -674,6 +674,19 @@ export default class PrismService {
     );
   }
 
+  static async deleteAllAgentMemories(
+    project?: string,
+    agent?: string,
+  ): Promise<{ success: boolean; deletedCount: number }> {
+    const queryString = new URLSearchParams();
+    if (project) queryString.set("project", project);
+    if (agent) queryString.set("agent", agent);
+    return PrismService._request<{ success: boolean; deletedCount: number }>(
+      `/agent-memories/all?${queryString}`,
+      { method: "DELETE" },
+    );
+  }
+
   /**
    * Trigger memory consolidation for a project.
 
