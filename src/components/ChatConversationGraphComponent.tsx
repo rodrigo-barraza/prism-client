@@ -285,9 +285,13 @@ export function buildGraphFromConversation(
   const userSet = new Set<string>();
 
   const sortedRequests = [...conversationRequests].sort((requestA, requestB) => {
-    const timestampA = requestA.createdAt ? new Date(requestA.createdAt).getTime() : 0;
-    const timestampB = requestB.createdAt ? new Date(requestB.createdAt).getTime() : 0;
-    return timestampA - timestampB;
+    const getRequestTime = (request: IrisRequestEntry): number => {
+      const rawTime = request.createdAt || (request.timestamp as string | undefined);
+      if (!rawTime) return 0;
+      const parsed = new Date(rawTime).getTime();
+      return isNaN(parsed) ? 0 : parsed;
+    };
+    return getRequestTime(requestA) - getRequestTime(requestB);
   });
 
   // First pass: discover all sub-agent nodes and their parent relationships.
