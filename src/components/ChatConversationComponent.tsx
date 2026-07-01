@@ -1000,6 +1000,47 @@ export default function ChatConversationComponent({
     }
     return parentIds;
   }, [activeId, subAgentsCount]);
+
+  // Poll for pendingBackgroundTasks resolution when the SSE stream has closed
+  // but the conversation still has outstanding background tasks. The backend
+  // emits a WebSocket event when tasks complete, but the client has no
+  // persistent WebSocket listener — so we poll until the counter resolves.
+  const pendingBackgroundTaskCountForPolling = useMemo(() => {
+    if (!activeId) return 0;
+    const activeEntry = conversations.find((entry) => entry.id === activeId);
+    return (activeEntry as { pendingBackgroundTasks?: number } | undefined)
+      ?.pendingBackgroundTasks ?? 0;
+  }, [activeId, conversations]);
+
+  useEffect(() => {
+    if (!activeId || isGenerating || pendingBackgroundTaskCountForPolling <= 0) return;
+
+    const backgroundTaskPollInterval = setInterval(async () => {
+      try {
+        const freshConversation = await PrismService.getConversation(activeId);
+        const freshPendingCount =
+          (freshConversation as unknown as { pendingBackgroundTasks?: number })
+            ?.pendingBackgroundTasks ?? 0;
+        setConversations((previousConversations) =>
+          previousConversations.map((entry) => {
+            if (entry.id !== activeId) return entry;
+            return {
+              ...entry,
+              pendingBackgroundTasks: freshPendingCount,
+            } as typeof entry;
+          }),
+        );
+        if (freshPendingCount <= 0) {
+          clearInterval(backgroundTaskPollInterval);
+        }
+      } catch {
+        // Non-critical polling — silently ignore network failures
+      }
+    }, 3000);
+
+    return () => clearInterval(backgroundTaskPollInterval);
+  }, [activeId, isGenerating, pendingBackgroundTaskCountForPolling]);
+
   // Snapshot cache: stores UI state for conversations that are generating in the background
   // so the user can switch back without waiting for backend persistence.
   const backgroundConversationsRef = useRef<Map<string, ConversationSnapshot>>(new Map());
