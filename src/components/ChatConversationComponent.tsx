@@ -2488,9 +2488,13 @@ export default function ChatConversationComponent({
         workspaceEnabled: settings.agents?.workspaceEnabled !== false,
         systemPrompt: settings.systemPrompt || undefined,
         locale: settings.agents?.locale || undefined,
+        model: settings.model || undefined,
       })
         .then((result) => {
           setPreviewSystemPrompt(result.prompt);
+          if (result.baselineBudget) {
+            setContextBudget(result.baselineBudget);
+          }
         })
         .catch((error: unknown) => {
           console.error("[SystemPromptPreview] Failed to fetch preview:", error);
@@ -2509,6 +2513,55 @@ export default function ChatConversationComponent({
     settings.agents?.workspaceEnabled,
     settings.agents?.locale,
     settings.systemPrompt,
+    settings.model,
+  ]);
+
+  // -- Baseline context budget for new conversations -----------------
+  // When no messages exist yet, fetch the baseline budget so the user
+  // can see how much of the context window is consumed by the system
+  // prompt, tool schemas, and locale before sending a message.
+  // This runs independently of showRaw (the prompt preview effect above
+  // handles its own baseline call when Raw view is active).
+  useEffect(() => {
+    if (messages.length > 0 || isNoAgent || showRaw) return;
+    if (!settings.provider || !settings.model) {
+      setContextBudget(null);
+      return;
+    }
+
+    const debounceTimer = setTimeout(() => {
+      const allDisabledTools = [...disabledTools, ...lockedOffTools.keys()];
+      PrismService.previewSystemPrompt({
+        agent: agentId || undefined,
+        disabledTools: allDisabledTools,
+        workspaceEnabled: settings.agents?.workspaceEnabled !== false,
+        systemPrompt: settings.systemPrompt || undefined,
+        locale: settings.agents?.locale || undefined,
+        model: settings.model || undefined,
+      })
+        .then((result) => {
+          if (result.baselineBudget) {
+            setContextBudget(result.baselineBudget);
+          }
+        })
+        .catch((error: unknown) => {
+          console.error("[BaselineBudget] Failed to fetch estimate:", error);
+        });
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [
+    messages.length,
+    isNoAgent,
+    showRaw,
+    agentId,
+    disabledTools,
+    lockedOffTools,
+    settings.agents?.workspaceEnabled,
+    settings.agents?.locale,
+    settings.systemPrompt,
+    settings.model,
+    settings.provider,
   ]);
 
   // -- Eager-fetch tab badge counts (fires on mount / conversation change) --

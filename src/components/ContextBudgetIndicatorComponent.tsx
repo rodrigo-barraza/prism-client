@@ -30,6 +30,8 @@ export default function ContextBudgetIndicatorComponent({
     source,
   } = contextBudget;
 
+  const isBaselineMode = messageTokens === 0;
+
   const utilizationPercentage = useMemo(
     () => Math.min((totalInputTokens / contextWindow) * 100, 100),
     [totalInputTokens, contextWindow],
@@ -52,13 +54,16 @@ export default function ContextBudgetIndicatorComponent({
     <div
       className={styles["context-budget-indicator"]}
       data-severity={severityLevel}
+      data-baseline={isBaselineMode || undefined}
     >
       <div className={styles["context-budget-bar"]}>
-        <div
-          className={styles["segment-messages"]}
-          style={{ width: `${segmentPercentages.messagesPercent}%` }}
-          title={`Messages: ${formatTokenCount(messageTokens)} tokens`}
-        />
+        {!isBaselineMode && (
+          <div
+            className={styles["segment-messages"]}
+            style={{ width: `${segmentPercentages.messagesPercent}%` }}
+            title={`Messages: ${formatTokenCount(messageTokens)} tokens`}
+          />
+        )}
         <div
           className={styles["segment-system-prompt"]}
           style={{ width: `${segmentPercentages.systemPercent}%` }}
@@ -72,10 +77,12 @@ export default function ContextBudgetIndicatorComponent({
       </div>
 
       <div className={styles["context-budget-legend"]}>
-        <div className={styles["legend-item"]}>
-          <span className={`${styles["legend-dot"]} ${styles["legend-dot-messages"]}`} />
-          <span>Messages ({formatTokenCount(messageTokens)})</span>
-        </div>
+        {!isBaselineMode && (
+          <div className={styles["legend-item"]}>
+            <span className={`${styles["legend-dot"]} ${styles["legend-dot-messages"]}`} />
+            <span>Messages ({formatTokenCount(messageTokens)})</span>
+          </div>
+        )}
         <div className={styles["legend-item"]}>
           <span className={`${styles["legend-dot"]} ${styles["legend-dot-system"]}`} />
           <span>System ({formatTokenCount(systemPromptTokens)})</span>
@@ -101,7 +108,14 @@ export default function ContextBudgetIndicatorComponent({
         <span className={styles["context-budget-available"]}>
           {formatTokenCount(availableOutputTokens)} available
         </span>
-        {source && (
+        {isBaselineMode ? (
+          <span
+            className={styles["context-budget-source-badge"]}
+            data-source="baseline"
+          >
+            ◈ baseline
+          </span>
+        ) : source && (
           <span
             className={styles["context-budget-source-badge"]}
             data-source={source}

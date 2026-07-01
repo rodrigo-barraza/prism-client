@@ -61,6 +61,7 @@ import type {
   ConversationTimer,
   TopologyDefinition,
   ThoughtStructureDefinition,
+  ContextBudget,
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
@@ -224,11 +225,18 @@ export default class PrismService {
     workspaceEnabled?: boolean;
     systemPrompt?: string;
     locale?: string;
-  }): Promise<{ prompt: string; characterCount: number; estimatedTokens: number }> {
+    model?: string;
+  }): Promise<{
+    prompt: string;
+    characterCount: number;
+    estimatedTokens: number;
+    baselineBudget?: ContextBudget;
+  }> {
     return PrismService._request<{
       prompt: string;
       characterCount: number;
       estimatedTokens: number;
+      baselineBudget?: ContextBudget;
     }>("/config/system-prompt-preview", {
       method: "POST",
       body: options,
