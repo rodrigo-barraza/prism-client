@@ -7570,6 +7570,8 @@ export default function ChatConversationComponent({
         // (covers spawned/undefined-phase windows during create_subagents).
         const isStatusBarActive = isGenerating || !!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks;
 
+        if (!isStatusBarActive) return null;
+
         return (
           <StatusBarComponent
             active={isStatusBarActive}

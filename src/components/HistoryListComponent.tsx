@@ -37,6 +37,7 @@ interface HistoryListItem {
   parentConversationId?: string | null;
   hasSubAgents?: boolean;
   requestErrorCount?: number;
+  pendingBackgroundTasks?: number;
 }
 
 interface FilterItem {
@@ -703,6 +704,7 @@ export default function HistoryList({
                 subAgentNumber={subAgentNumberMap.get(item.id) ?? null}
                 subAgentDepth={item.parentConversationId ? 1 : null}
                 hasSpawnedSubAgents={parentConversationIds.has(item.id)}
+                pendingBackgroundTasks={item.pendingBackgroundTasks}
               />
             );
           }
@@ -758,6 +760,7 @@ export default function HistoryList({
                             return next;
                           });
                         } : undefined}
+                        pendingBackgroundTasks={treeNode.item.pendingBackgroundTasks}
                       />
                       {nodeHasChildren && (
                         <div
@@ -815,6 +818,7 @@ export default function HistoryList({
                     return next;
                   });
                 }}
+                pendingBackgroundTasks={group.parent.pendingBackgroundTasks}
               />
               <div
                 className={`${styles['sub-agent-tree-collapsible']} ${collapsedClusterIds.has(group.parent.id) ? styles['sub-agent-tree-collapsible-is-collapsed'] : ''}`}

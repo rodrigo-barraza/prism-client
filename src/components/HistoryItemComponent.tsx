@@ -59,6 +59,7 @@ interface HistoryItemProps {
   dataPanelClose?: boolean;
   onOpenInNewTab?: (item: HistoryItem) => void;
   isGenerating?: boolean;
+  pendingBackgroundTasks?: number;
   isCondensed?: boolean;
   children?: React.ReactNode;
   subAgentNumber?: number | null;
@@ -107,6 +108,7 @@ export default function HistoryItemComponent({
   dataPanelClose = false,
   onOpenInNewTab,
   isGenerating = false,
+  pendingBackgroundTasks,
   isCondensed = false,
   children,
   subAgentNumber,
@@ -252,7 +254,9 @@ export default function HistoryItemComponent({
 
         {/* Row 2: title */}
         <div className={styles['title']}>
-          {isGenerating && <span className={styles['generating-dot']} />}
+          {(isGenerating || (pendingBackgroundTasks !== undefined && pendingBackgroundTasks >= 0)) && (
+            <span className={styles['generating-dot']} />
+          )}
           {item.title || "Untitled"}
           {isNew && <span className={styles['new-badge']}>NEW</span>}
         </div>
