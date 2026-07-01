@@ -1572,7 +1572,7 @@ function ModelsTableInner({
                       key: "favorites",
                       icon: Star,
                       title: "Favorites Only",
-                      color: "#f59e0b",
+                      color: "oklch(0.769 0.188 70.08)",
                     },
                   ],
                   activeKeys: showFavoritesOnly ? "favorites" : null,

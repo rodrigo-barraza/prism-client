@@ -48,7 +48,7 @@ export type { ProviderType } from "@rodrigo-barraza/utilities-library/taxonomy";
 // -- Raw localStorage keys (no namespace prefix) -----------------
 export const LOCAL_STORAGE_KEY_PANEL_LEFT = "panel_left";
 export const LOCAL_STORAGE_KEY_PANEL_RIGHT = "panel_right";
-export const LOCAL_STORAGE_KEY_PANEL_NAVIGATION = "panel_nav";
+export const LOCAL_STORAGE_KEY_PANEL_NAV = "panel_nav";
 export const LOCAL_STORAGE_KEY_SYSTEM_INSTRUCTIONS = "prism_system_instructions";
 export const LOCAL_STORAGE_KEY_WORKFLOW_INSPECTOR_WIDTH = "workflow-inspector-width";
 export const LOCAL_STORAGE_KEY_WORKFLOW_EXPANDED_NODES = "workflow-expanded-nodes";
@@ -83,6 +83,106 @@ export const EVENT_NAME_USER_TYPING = "user:typing";
 export const EVENT_NAME_CONVERSATION_CHANGE = "conversation:change";
 export const EVENT_NAME_AGENT_SWITCH = "agent:switch";
 export const EVENT_NAME_MODEL_CHANGE = "model:change";
+
+// -- Roles & Categories -------------------------------------------
+export const MESSAGE_ROLES = {
+  USER: "user",
+  ASSISTANT: "assistant",
+  SYSTEM: "system",
+  TOOL: "tool",
+} as const;
+
+export const CATEGORIES = {
+  USER: "user",
+  AGENT: "agent",
+  MODEL: "model",
+  REQUEST: "request",
+  SESSION: "session",
+  PROJECT: "project",
+  SUBAGENT: "subagent",
+  ORCHESTRATOR: "orchestrator",
+  AVATAR: "prism_avatar",
+  CUSTOM_THEMES: "prism_custom_themes",
+} as const;
+
+export const LAYOUT = {
+  CANONICAL_WIDTH: 1600,
+  CANONICAL_HEIGHT: 1000,
+  NODE_RADIUS: 24,
+  NODE_SPACING_X: 200,
+  NODE_SPACING_Y: 80,
+  DEFAULT_NODE_X: 400,
+  DEFAULT_NODE_Y: 250,
+} as const;
+
+export const TIMING = {
+  DEBOUNCE_FAST: 150,
+  DEBOUNCE_STANDARD: 500,
+  POLL_SLOW: 10000,
+  ANIMATION_DURATION: 600,
+} as const;
+
+// -- Execution & Lifecycle Statuses -------------------------------
+export const EXECUTION_STATUS = {
+  PENDING: "pending",
+  THINKING: "thinking",
+  CALLING: "calling",
+  RUNNING: "running",
+  COMPLETED: "completed",
+  SUCCESS: "success",
+  FAILED: "failed",
+  ERROR: "error",
+  WARNING: "warning",
+  IN_PROGRESS: "in_progress",
+  DONE: "done",
+  IDLE: "idle",
+  ACTIVE: "active",
+  CANCELLED: "cancelled",
+  STREAMING: "streaming",
+  COMPLETE: "complete",
+  STOPPED: "stopped",
+  GENERATING: "generating",
+  SYNTHESIZING: "synthesizing",
+  PREFILLING: "prefilling",
+  EXECUTING: "executing",
+  LOADING: "loading",
+  STARTING: "starting",
+  SPAWNED: "spawned",
+  FIRED: "fired",
+  EXPIRED: "expired",
+} as const;
+
+export const APPROVAL_STATUS = {
+  PENDING: "pending",
+  APPROVED: "approved",
+  REJECTED: "rejected",
+} as const;
+
+// -- HTTP & API ----------------------------------------------------
+export const HTTP_METHODS = {
+  GET: "GET",
+  POST: "POST",
+  PUT: "PUT",
+  DELETE: "DELETE",
+  PATCH: "PATCH",
+} as const;
+
+// -- Units & Truncation -------------------------------------------
+export const BYTES_IN_KIB = 1024;
+export const BYTES_IN_MIB = 1024 ** 2;
+export const BYTES_IN_GIB = 1024 ** 3;
+export const KIB_IN_MIB = 1024;
+export const MIB_IN_GIB = 1024;
+
+export const TRUNCATION_LIMITS = {
+  DEFAULT_TOOL_OUTPUT: 3000,
+  MAX_CONTENT_CHARS: 10000,
+} as const;
+
+// -- Additional LocalStorage Keys ---------------------------------
+export const LOCAL_STORAGE_KEY_THEME = "prism:theme";
+export const LOCAL_STORAGE_KEY_AVATAR = "prism:avatar";
+export const LOCAL_STORAGE_KEY_CUSTOM_THEMES = "prism:custom-themes";
 
 // -- Settings defaults (shared by Agent, admin) ------
 export const SETTINGS_DEFAULTS = {

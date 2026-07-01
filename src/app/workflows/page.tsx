@@ -1,5 +1,5 @@
 "use client";
-import { AGENT_IDS, DEFAULT_WORKFLOW_TITLE } from "@/constants";
+import { AGENT_IDS, DEFAULT_WORKFLOW_TITLE, MESSAGE_ROLES } from "@/constants";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
@@ -407,8 +407,8 @@ export default function WorkflowsPage({
           outputTypes: defaultModel?.outputTypes || [],
           supportsSystemPrompt: defaultModel?.supportsSystemPrompt !== false,
           messages: [
-            { role: "system", content: "" },
-            { role: "user", content: "" },
+            { role: MESSAGE_ROLES.SYSTEM, content: "" },
+            { role: MESSAGE_ROLES.USER, content: "" },
           ],
           position: {
             x: 80 + nodes.length * 60 + Math.random() * 40,
@@ -459,8 +459,8 @@ export default function WorkflowsPage({
       const isConversation = modality === "conversation";
       const defaultMessages = isConversation
         ? [
-            { role: "system", content: "" },
-            { role: "user", content: "" },
+            { role: MESSAGE_ROLES.SYSTEM, content: "" },
+            { role: MESSAGE_ROLES.USER, content: "" },
           ]
         : undefined;
       const defaultModalities = ["text"];
@@ -823,8 +823,8 @@ export default function WorkflowsPage({
             []
           ).filter((tool: string) => tool !== "conversation");
           const messages = sourceNode.messages || [
-            { role: "system", content: "" },
-            { role: "user", content: "" },
+            { role: MESSAGE_ROLES.SYSTEM, content: "" },
+            { role: MESSAGE_ROLES.USER, content: "" },
           ];
           const newPorts = new Set(buildConversationPorts(messages, rawInputs));
           // Remove edges to conversation input ports that no longer exist

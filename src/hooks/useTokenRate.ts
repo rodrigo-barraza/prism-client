@@ -1,6 +1,6 @@
 import { useState, useEffect, useReducer, useMemo } from "react";
 import type {
-  ConversationTokenStats,
+  ConversationTokenMetrics,
   SubAgentProgress,
   GenProgress,
 } from "../utils/utilities";
@@ -48,7 +48,7 @@ export interface TokenRateResult {
  * but the hook may also receive currentTurnStart and completedElapsedTime
  * from the component layer.
  */
-interface ExtendedConversationStats extends Partial<ConversationTokenStats> {
+interface ExtendedConversationStats extends Partial<ConversationTokenMetrics> {
   currentTurnStart?: string | number | null;
   completedElapsedTime?: number;
 }
@@ -89,7 +89,7 @@ const TOK_PER_SECOND_INITIAL: TokensPerSecondState = {
 /**
  * Sum per-sub-agent tok/s from subAgentGenerationProgress.
  *
- * Each sub-agent's `tokPerSec` is computed independently by CoordinatorService's
+ * Each sub-agent's `tokensPerSecond` is computed independently by CoordinatorService's
  * `buildProgress()` using burst-scoped chunk counters — these values are
  * accurate per-sub-agent rates.
  *
@@ -103,8 +103,8 @@ function sumSubAgentThroughput(
   let count = 0;
   if (!subAgentGenerationProgress) return { sum: 0, count: 0 };
   for (const subAgentProgress of Object.values(subAgentGenerationProgress)) {
-    if (subAgentProgress.tokPerSec != null && subAgentProgress.tokPerSec > 0) {
-      sum += subAgentProgress.tokPerSec;
+    if (subAgentProgress.tokensPerSecond != null && subAgentProgress.tokensPerSecond > 0) {
+      sum += subAgentProgress.tokensPerSecond;
       count++;
     }
   }
@@ -118,7 +118,7 @@ function sumSubAgentThroughput(
  * Three data sources (in priority order):
  *
  *   1. **Sub-agent aggregation** (coordinator conversations): Sum of per-sub-agent
- *      `tokPerSec` values from `subAgentGenerationProgress`. These are
+ *      `tokensPerSecond` values from `subAgentGenerationProgress`. These are
  *      computed by CoordinatorService's `buildProgress()` using accurate
  *      burst-scoped chunk counters. Plus the orchestrator's own rate if
  *      it's also generating.
@@ -213,8 +213,8 @@ export default function useTokenRate(
       genProgress.timestamp &&
       perfNow - genProgress.timestamp < PROGRESS_STALE_MS;
 
-    if (genProgressFresh && genProgress.tokPerSec != null) {
-      computedTokensPerSecond = genProgress.tokPerSec;
+    if (genProgressFresh && genProgress.tokensPerSecond != null) {
+      computedTokensPerSecond = genProgress.tokensPerSecond;
       hasActiveSubAgents = (genProgress.activeRequests || 0) > 1;
     } else {
       // Priority 3: Frontend chunk-counting fallback for non-agentic

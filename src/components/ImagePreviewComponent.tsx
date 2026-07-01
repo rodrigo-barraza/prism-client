@@ -24,13 +24,13 @@ interface ImagePreviewProps {
 }
 
 const COLORS = [
-  { value: "#000000", label: "Black" },
-  { value: "#ef4444", label: "Red" },
-  { value: "#facc15", label: "Yellow" },
-  { value: "#22c55e", label: "Green" },
-  { value: "#38bdf8", label: "Cyan" },
-  { value: "#ffffff", label: "White" },
-  { value: "#a855f7", label: "Purple" },
+  { value: "oklch(0 0 0)", label: "Black" },
+  { value: "oklch(0.585 0.22 25)", label: "Red" },
+  { value: "oklch(0.82 0.17 90)", label: "Yellow" },
+  { value: "oklch(0.7 0.17 145)", label: "Green" },
+  { value: "oklch(0.78 0.13 220)", label: "Cyan" },
+  { value: "oklch(1 0 0)", label: "White" },
+  { value: "oklch(0.6 0.23 290)", label: "Purple" },
 ];
 
 const SIZES = [

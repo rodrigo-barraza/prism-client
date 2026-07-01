@@ -12,6 +12,7 @@ import BadgeComponent from "../components/BadgeComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 import ToolIconComponent from "../components/ToolIconComponent";
 import { prepareDisplayMessages } from "../components/MessageListComponent";
+import { MESSAGE_ROLES } from "../constants";
 import type { TransformedRequestItem, Message, JsonValue } from "../types/types";
 import type { DrawerSection } from "../components/RequestDetailsComponent";
 
@@ -470,7 +471,7 @@ export function reconstructChatMessages(
   // Append the assistant response
   if (responsePayload) {
     const assistantMessage: Message = {
-      role: "assistant",
+      role: MESSAGE_ROLES.ASSISTANT,
       content: "",
       model: selectedRequest.model,
       provider: selectedRequest.provider,

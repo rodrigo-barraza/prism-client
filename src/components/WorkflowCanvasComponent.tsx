@@ -19,7 +19,7 @@ import {
   edgePath,
 } from "./WorkflowNodeConstantsComponent";
 import styles from "./WorkflowCanvasComponent.module.css";
-import { LOCAL_STORAGE_KEY_WORKFLOW_EXPANDED_NODES, LOCAL_STORAGE_KEY_WORKFLOW_VIEWS } from "../constants";
+import { LOCAL_STORAGE_KEY_WORKFLOW_EXPANDED_NODES, LOCAL_STORAGE_KEY_WORKFLOW_VIEWS, EXECUTION_STATUS } from "../constants";
 
 const COLLISION_PADDING = 20; // min gap between nodes
 
@@ -825,11 +825,11 @@ export default function WorkflowCanvas({
       (MODALITY_COLORS as Record<string, string>)[conn.sourceModality] || "#888";
 
     const sourceStatus = nodeStatuses[conn.sourceNodeId];
-    const isRunning = sourceStatus === "running";
-    const isDone = sourceStatus === "done";
+    const isRunning = sourceStatus === EXECUTION_STATUS.RUNNING;
+    const isDone = sourceStatus === EXECUTION_STATUS.DONE;
     const isActive = isRunning || isDone;
     const workflowIsRunning = Object.values(nodeStatuses).some(
-      (state) => state === "running",
+      (state) => state === EXECUTION_STATUS.RUNNING,
     );
     const isEdgeSelected =
       conn.sourceNodeId === selectedNodeId ||
@@ -961,13 +961,13 @@ export default function WorkflowCanvas({
             x2="300"
             y2="300"
           >
-            <stop offset="0%" stopColor="#ff0000" />
-            <stop offset="16%" stopColor="#ff8800" />
-            <stop offset="33%" stopColor="#ffff00" />
-            <stop offset="50%" stopColor="#00ff88" />
-            <stop offset="66%" stopColor="#0088ff" />
-            <stop offset="83%" stopColor="#8800ff" />
-            <stop offset="100%" stopColor="#ff0088" />
+            <stop offset="0%" stopColor="oklch(0.627 0.25 29)" />
+            <stop offset="16%" stopColor="oklch(0.75 0.2 50)" />
+            <stop offset="33%" stopColor="oklch(0.97 0.2 95)" />
+            <stop offset="50%" stopColor="oklch(0.85 0.2 160)" />
+            <stop offset="66%" stopColor="oklch(0.65 0.2 245)" />
+            <stop offset="83%" stopColor="oklch(0.5 0.25 295)" />
+            <stop offset="100%" stopColor="oklch(0.65 0.25 350)" />
             <animateTransform
               attributeName="gradientTransform"
               type="rotate"
@@ -985,9 +985,9 @@ export default function WorkflowCanvas({
             x2="300"
             y2="300"
           >
-            <stop offset="0%" stopColor="#f0b429" />
-            <stop offset="50%" stopColor="#d4a017" />
-            <stop offset="100%" stopColor="#10b981" />
+            <stop offset="0%" stopColor="oklch(0.75 0.15 80)" />
+            <stop offset="50%" stopColor="oklch(0.65 0.15 80)" />
+            <stop offset="100%" stopColor="oklch(0.705 0.191 165.574)" />
             <animateTransform
               attributeName="gradientTransform"
               type="rotate"

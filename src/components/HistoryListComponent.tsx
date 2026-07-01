@@ -54,7 +54,7 @@ const COST_TIERS = [
   { key: "over-1.00", title: "Over $1.00", min: 1, max: Infinity },
 ];
 
-const COST_FILTER_COLOR = "#22c55e";
+const COST_FILTER_COLOR = "oklch(0.7 0.17 145)";
 
 
 interface HistoryListProps {
@@ -528,7 +528,7 @@ export default function HistoryList({
                         key: "favorites",
                         icon: Star,
                         title: "Favorites Only",
-                        color: "#eab308",
+                        color: "oklch(0.769 0.177 90.046)",
                       },
                     ],
                     activeKeys: showFavoritesOnly ? "favorites" : null,
@@ -546,7 +546,7 @@ export default function HistoryList({
                         key: "hide-subagents",
                         icon: Bot,
                         title: "Hide Sub-Agents",
-                        color: "#a855f7",
+                        color: "oklch(0.6 0.23 290)",
                       },
                     ],
                     activeKeys: shouldHideSubAgents ? "hide-subagents" : null,
@@ -564,7 +564,7 @@ export default function HistoryList({
                         key: "show-errors-only",
                         icon: AlertTriangle,
                         title: "Has Errors",
-                        color: "#ef4444",
+                        color: "oklch(0.585 0.22 25)",
                       },
                     ],
                     activeKeys: showErrorsOnly ? "show-errors-only" : null,

@@ -57,13 +57,13 @@ type CanvasPointerEvent =
 // -- Constants -------------------------------------------------
 
 const COLORS = [
-  { value: "#000000", label: "Black" },
-  { value: "#ef4444", label: "Red" },
-  { value: "#facc15", label: "Yellow" },
-  { value: "#22c55e", label: "Green" },
-  { value: "#38bdf8", label: "Cyan" },
-  { value: "#ffffff", label: "White" },
-  { value: "#a855f7", label: "Purple" },
+  { value: "oklch(0 0 0)", label: "Black" },
+  { value: "oklch(0.585 0.22 25)", label: "Red" },
+  { value: "oklch(0.82 0.17 90)", label: "Yellow" },
+  { value: "oklch(0.7 0.17 145)", label: "Green" },
+  { value: "oklch(0.78 0.13 220)", label: "Cyan" },
+  { value: "oklch(1 0 0)", label: "White" },
+  { value: "oklch(0.6 0.23 290)", label: "Purple" },
 ];
 
 const SIZES = [
@@ -340,7 +340,7 @@ export default function DrawingCanvas({
     if (backgroundImageSourceUrl && bgCanvasRef.current) {
       context.drawImage(bgCanvasRef.current, 0, 0);
     } else {
-      context.fillStyle = "#ffffff";
+      context.fillStyle = "oklch(1 0 0)";
       context.fillRect(0, 0, offscreen.width, offscreen.height);
     }
 
@@ -389,7 +389,7 @@ export default function DrawingCanvas({
               className={`${styles['swatch']} ${color === colorOption.value && tool !== "eraser" ? styles['swatch-is-active-state'] : ""}`}
               style={{
                 background: colorOption.value,
-                border: colorOption.value === "#000000" ? "2px solid #555" : undefined,
+                border: colorOption.value === "oklch(0 0 0)" ? "2px solid oklch(0.4 0 0)" : undefined,
               }}
               onClick={() => {
                 setColor(colorOption.value);

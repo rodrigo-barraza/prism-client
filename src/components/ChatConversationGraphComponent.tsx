@@ -37,6 +37,7 @@ import {
   timeAgo as formatTimeAgo,
 } from "@rodrigo-barraza/utilities-library";
 import { AGENT_IDS, TOPOLOGIES, DEFAULT_TOPOLOGY, DEFAULT_USERNAME } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { EXECUTION_STATUS, APPROVAL_STATUS } from "../constants";
 
 import graphStyles from "./ConversationGraphPageComponent.module.css";
 import styles from "./ChatConversationGraphComponent.module.css";
@@ -2084,7 +2085,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         activeFlowTargetNodeId = latestRequestNodeId;
       } else {
         const pendingRequest = graphData.nodes.find(
-          (node) => node.category === "request" && (node.metadata?.status as string) === "pending",
+          (node) => node.category === "request" && (node.metadata?.status as string) === EXECUTION_STATUS.PENDING,
         );
         if (pendingRequest) activeFlowTargetNodeId = pendingRequest.id;
       }
@@ -2302,7 +2303,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                 const isEntering = enteringNodeIds.has(node.id);
 
                 // Detect pending (in-flight) request nodes from two-phase lifecycle
-                const isPendingRequest = node.category === "request" && (node.metadata?.status as string) === "pending";
+                const isPendingRequest = node.category === "request" && (node.metadata?.status as string) === EXECUTION_STATUS.PENDING;
 
                 // Derive live activity state from toolActivity props
                 const isActiveRequestNode = node.category === "request" && (isGenerating || hasProactiveNode) && latestRequestNodeId === node.id;

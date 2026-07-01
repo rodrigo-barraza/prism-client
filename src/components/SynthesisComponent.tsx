@@ -16,6 +16,7 @@ import {
   Settings2,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
+import { MESSAGE_ROLES, EXECUTION_STATUS, SETTINGS_DEFAULTS, STORAGE_KEY_MODEL_MEMORY_SYNTHESIS } from "../constants";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import SettingsPanel from "./SettingsPanelComponent";
@@ -40,7 +41,7 @@ import MessageList from "./MessageListComponent";
 import JsonViewerComponent from "./JsonViewerComponent";
 import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent";
 import { Message, SynthesisRun, PrismConfig } from "../types/types";
-import { SETTINGS_DEFAULTS, STORAGE_KEY_MODEL_MEMORY_SYNTHESIS } from "../constants";
+
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
 import { resolveDefaultModel } from "../utils/utilities";
 import styles from "./SynthesisComponent.module.css";
@@ -57,11 +58,11 @@ const SAMPLE_SEEDS = [
       "Bunny is a chatbot that stutters, and acts timid and unsure of its answers.",
     messages: [
       {
-        role: "user",
+        role: MESSAGE_ROLES.USER,
         content: "When was the Library of Alexandria burned down?",
       },
       {
-        role: "assistant",
+        role: MESSAGE_ROLES.ASSISTANT,
         content:
           "Umm, I-I think that was in 48 BC, b-but I'message not sure, I'message sorry.",
       },
@@ -74,7 +75,7 @@ const SAMPLE_SEEDS = [
       "You are a senior software engineer who explains concepts clearly and provides production-quality code.",
     messages: [
       {
-        role: "user",
+        role: MESSAGE_ROLES.USER,
         content: "How do I implement a debounce function in JavaScript?",
       },
     ],
@@ -86,16 +87,16 @@ const SAMPLE_SEEDS = [
       "You are a creative writing assistant with a poetic, evocative style. You help users craft vivid prose and poetry.",
     messages: [
       {
-        role: "user",
+        role: MESSAGE_ROLES.USER,
         content: "Write a haiku about the first rain of spring.",
       },
       {
-        role: "assistant",
+        role: MESSAGE_ROLES.ASSISTANT,
         content:
           "Petrichor rising,\nearth exhales its longest sigh—\nblossoms drink the sky.",
       },
       {
-        role: "user",
+        role: MESSAGE_ROLES.USER,
         content: "Now turn that into a short paragraph of prose.",
       },
     ],
@@ -107,7 +108,7 @@ const SAMPLE_SEEDS = [
       "You are an enthusiastic brainstorming partner. You generate creative, diverse ideas and build on the user's suggestions.",
     messages: [
       {
-        role: "user",
+        role: MESSAGE_ROLES.USER,
         content:
           "I need ideas for a mobile app that helps people learn languages through music.",
       },
@@ -119,13 +120,13 @@ const SAMPLE_SEEDS = [
     system:
       "You are a medieval town guide named Aldric. You speak in an old English dialect and are eager to show travelers around your village.",
     messages: [
-      { role: "user", content: "What can I do in this town?" },
+      { role: MESSAGE_ROLES.USER, content: "What can I do in this town?" },
       {
-        role: "assistant",
+        role: MESSAGE_ROLES.ASSISTANT,
         content:
           "Ah, a weary traveler! Welcome, welcome to Thornhollow! Pray, follow me — I shall show thee the finest tavern this side of the King's Road, and mayhaps the blacksmith if thou needst thy blade sharpened.",
       },
-      { role: "user", content: "Take me to the tavern." },
+      { role: MESSAGE_ROLES.USER, content: "Take me to the tavern." },
     ],
     category: "Chat",
   },
@@ -281,7 +282,7 @@ export default function SynthesisComponent() {
   const sftOutput = useMemo(() => {
     const msgs = [];
     if (systemPrompt.trim()) {
-      msgs.push({ role: "system", content: systemPrompt.trim() });
+      msgs.push({ role: MESSAGE_ROLES.SYSTEM, content: systemPrompt.trim() });
     }
     // Filter out any internal _streaming flag
     for (const message of generatedMessages) {
@@ -428,7 +429,7 @@ export default function SynthesisComponent() {
               setGeneratedMessages([
                 ...conversation,
                 {
-                  role: "assistant",
+                  role: MESSAGE_ROLES.ASSISTANT,
                   content: partial,
                   thinking: turnThinking || undefined,
                   _streaming: true,
@@ -445,7 +446,7 @@ export default function SynthesisComponent() {
                 setGeneratedMessages([
                   ...conversation,
                   {
-                    role: "assistant",
+                    role: MESSAGE_ROLES.ASSISTANT,
                     content: "",
                     thinking: turnThinking,
                     _streaming: true,
@@ -459,7 +460,7 @@ export default function SynthesisComponent() {
           if (abortedRef.current) break;
 
           conversation.push({
-            role: "assistant",
+            role: MESSAGE_ROLES.ASSISTANT,
             content: assistantContent,
             thinking: turnThinking || undefined,
           } as Message);
@@ -482,14 +483,14 @@ export default function SynthesisComponent() {
           if (conversation.length > 0) {
             const swapped = conversation.map((message: Message) => ({
               role:
-                message.role === "user" ? ("assistant" as const) : ("user" as const),
+                message.role === MESSAGE_ROLES.USER ? MESSAGE_ROLES.ASSISTANT : MESSAGE_ROLES.USER,
               content: message.content,
             }));
             // If the swapped history starts with "assistant", prepend a
             // contextual user message so the template stays happy.
-            if (swapped[0].role === "assistant") {
+            if (swapped[0].role === MESSAGE_ROLES.ASSISTANT) {
               swapped.unshift({
-                role: "user",
+                role: MESSAGE_ROLES.USER,
                 content:
                   "Continue the conversation. Generate the next natural user message.",
               });
@@ -498,7 +499,7 @@ export default function SynthesisComponent() {
           } else {
             simulatorHistory = [
               {
-                role: "user",
+                role: MESSAGE_ROLES.USER,
                 content:
                   "Start the conversation. Send the first message as the user.",
               },
@@ -523,7 +524,7 @@ export default function SynthesisComponent() {
             (partial: string) => {
               setGeneratedMessages([
                 ...conversation,
-                { role: "user", content: partial, _streaming: true },
+                { role: MESSAGE_ROLES.USER, content: partial, _streaming: true },
               ]);
               setGenerationProgress(partial);
             },
@@ -537,7 +538,7 @@ export default function SynthesisComponent() {
 
           // Append the generated user message to the conversation in Prism
           const userMessage = {
-            role: "user" as const,
+            role: MESSAGE_ROLES.USER,
             content: userContent as string,
           };
           conversation.push(userMessage);
@@ -575,7 +576,7 @@ export default function SynthesisComponent() {
             setGeneratedMessages([
               ...conversation,
               {
-                role: "assistant",
+                role: MESSAGE_ROLES.ASSISTANT,
                 content: partial,
                 thinking: finalThinking || undefined,
                 _streaming: true,
@@ -592,7 +593,7 @@ export default function SynthesisComponent() {
               setGeneratedMessages([
                 ...conversation,
                 {
-                  role: "assistant",
+                  role: MESSAGE_ROLES.ASSISTANT,
                   content: "",
                   thinking: finalThinking,
                   _streaming: true,
@@ -604,7 +605,7 @@ export default function SynthesisComponent() {
 
         if (!abortedRef.current) {
           conversation.push({
-            role: "assistant",
+            role: MESSAGE_ROLES.ASSISTANT,
             content: assistantContent,
             thinking: finalThinking || undefined,
           } as Message);
@@ -653,7 +654,7 @@ export default function SynthesisComponent() {
             (message: Message & { _streaming?: boolean }) => !message._streaming,
           ),
           {
-            role: "assistant",
+            role: MESSAGE_ROLES.ASSISTANT,
             content: `⚠️ Generation error: ${error instanceof Error ? error.message : String(error)}`,
           },
         ]);
@@ -1157,7 +1158,7 @@ export default function SynthesisComponent() {
                   ...(systemPrompt.trim()
                     ? [
                         {
-                          role: "system" as const,
+                          role: MESSAGE_ROLES.SYSTEM,
                           content: systemPrompt.trim(),
                         },
                       ]
@@ -1233,7 +1234,7 @@ function streamTurn(
       provider: settings.provider,
       model: settings.model,
       messages: [
-        { role: "system" as const, content: turnSystemPrompt },
+        { role: MESSAGE_ROLES.SYSTEM, content: turnSystemPrompt },
         ...history,
       ],
       temperature: settings.temperature,

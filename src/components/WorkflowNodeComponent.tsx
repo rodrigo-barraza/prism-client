@@ -18,6 +18,8 @@ import ProviderLogo from "./ProviderLogosComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import AssetInputOptions from "./AssetInputOptionsComponent";
 import PrismService from "../services/PrismService";
+import { EXECUTION_STATUS, MESSAGE_ROLES } from "../constants";
+import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import { MODALITY_ICONS } from "./WorkflowNodeConstantsComponent";
 import {
@@ -133,8 +135,8 @@ function NodePorts({
           (connection) =>
             connection.targetNodeId === node.id &&
             connection.targetModality === portId &&
-            (nodeStatuses[connection.sourceNodeId] === "running" ||
-              nodeStatuses[connection.sourceNodeId] === "done"),
+            (nodeStatuses[connection.sourceNodeId] === EXECUTION_STATUS.RUNNING ||
+              nodeStatuses[connection.sourceNodeId] === EXECUTION_STATUS.DONE),
         );
         const hasDoneSource =
           hasPrismSource &&
@@ -148,7 +150,7 @@ function NodePorts({
             (connection) =>
               connection.targetNodeId === node.id &&
               connection.targetModality === portId &&
-              nodeStatuses[connection.sourceNodeId] === "running",
+              nodeStatuses[connection.sourceNodeId] === EXECUTION_STATUS.RUNNING,
           );
 
         let label =
@@ -432,14 +434,14 @@ function NodeShell({
   children,
   className,
 }: NodeShellProps) {
-  const isRunning = status === "running";
-  const isDone = status === "done";
+  const isRunning = status === EXECUTION_STATUS.RUNNING;
+  const isDone = status === EXECUTION_STATUS.DONE;
   const statusBorder = isRunning
     ? "url(#prism-gradient)"
     : isDone
       ? "url(#done-gradient)"
-      : status === "error"
-        ? "#f43f5e"
+      : status === EXECUTION_STATUS.ERROR
+        ? "oklch(0.627 0.226 28.324)"
         : null;
   const borderWidth = statusBorder ? 2 : 0;
 
@@ -519,11 +521,11 @@ function NodeShell({
             }}
           >
             {headerContent}
-            {status === "done" && (
-              <Check size={12} style={{ color: "#10b981", flexShrink: 0 }} />
+            {status === EXECUTION_STATUS.DONE && (
+              <Check size={12} style={{ color: "oklch(0.705 0.191 165.574)", flexShrink: 0 }} />
             )}
-            {status === "error" && (
-              <X size={12} style={{ color: "#f43f5e", flexShrink: 0 }} />
+            {status === EXECUTION_STATUS.ERROR && (
+              <X size={12} style={{ color: "oklch(0.627 0.226 28.324)", flexShrink: 0 }} />
             )}
           </div>
         </foreignObject>
@@ -644,8 +646,8 @@ function ModelNode(props: ModelNodeProps) {
   const errorHeight = results?.error ? 28 : 0;
   const nodeHeight = HEADER_HEIGHT + configHeight + portsHeight + errorHeight;
 
-  const isRunning = status === "running";
-  const isDone = status === "done";
+  const isRunning = status === EXECUTION_STATUS.RUNNING;
+  const isDone = status === EXECUTION_STATUS.DONE;
   const isPrism = isRunning || isDone;
   const statusGradient = isRunning
     ? "url(#prism-gradient)"
@@ -674,11 +676,11 @@ function ModelNode(props: ModelNodeProps) {
   const headerActions = (
     <>
       {/* Running spinner */}
-      {status === "running" && (
+      {status === EXECUTION_STATUS.RUNNING && (
         <Loader2
           size={12}
           style={{
-            color: "#f59e0b",
+            color: "oklch(0.769 0.188 70.08)",
             animation: "spin 1s linear infinite",
             flexShrink: 0,
           }}
@@ -719,7 +721,7 @@ function ModelNode(props: ModelNodeProps) {
   );
 
   // Width for: modality icons + type badge + separators + delete button
-  const actionsWidth = modalityAreaWidth + 70 + (status === "running" ? 18 : 0);
+  const actionsWidth = modalityAreaWidth + 70 + (status === EXECUTION_STATUS.RUNNING ? 18 : 0);
 
   return (
     <NodeShell
@@ -909,9 +911,9 @@ function AssetNode(props: AssetNodeProps) {
   const outputTypes = node.outputTypes || [];
   const accentColor = (
     isViewer
-      ? "#a78bfa"
+      ? "oklch(0.7 0.15 280)"
       : (MODALITY_COLORS as Record<string, string>)[node.modality || ""] ||
-        "#8b5cf6"
+        "oklch(0.606 0.25 293.528)"
   ) as string;
   const AssetIcon = isViewer
     ? Eye
@@ -974,8 +976,8 @@ function AssetNode(props: AssetNodeProps) {
     if (e.key === "Escape") setIsRenaming(false);
   };
 
-  const isRunning = status === "running";
-  const isDone = status === "done";
+  const isRunning = status === EXECUTION_STATUS.RUNNING;
+  const isDone = status === EXECUTION_STATUS.DONE;
   const isPrism = isRunning || isDone;
   const statusGradient = isRunning
     ? "url(#prism-gradient)"
@@ -1336,8 +1338,8 @@ function AssetNode(props: AssetNodeProps) {
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 const msgs = [...(node.messages || [])];
-                msgs.push({ role: "assistant", content: "" });
-                msgs.push({ role: "user", content: "" });
+                msgs.push({ role: MESSAGE_ROLES.ASSISTANT, content: "" });
+                msgs.push({ role: MESSAGE_ROLES.USER, content: "" });
                 onUpdateConfig?.(node.id, "messages", msgs);
               }}
               title="Add assistant + user message pair"
@@ -1395,8 +1397,8 @@ function ToolNode(props: ToolNodeProps) {
   const totalEnabled = enabledBuiltIn;
   const totalTools = builtInTools.length;
 
-  const isRunning = status === "running";
-  const isDone = status === "done";
+  const isRunning = status === EXECUTION_STATUS.RUNNING;
+  const isDone = status === EXECUTION_STATUS.DONE;
   const isPrism = isRunning || isDone;
   const statusGradient = isRunning
     ? "url(#prism-gradient)"
@@ -1453,11 +1455,11 @@ function ToolNode(props: ToolNodeProps) {
 
   const headerActions = (
     <>
-      {status === "running" && (
+      {status === EXECUTION_STATUS.RUNNING && (
         <Loader2
           size={12}
           style={{
-            color: "#f59e0b",
+            color: "oklch(0.769 0.188 70.08)",
             animation: "spin 1s linear infinite",
             flexShrink: 0,
           }}

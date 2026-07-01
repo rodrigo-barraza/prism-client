@@ -372,17 +372,17 @@ const MODEL_TYPE_META = {
 };
 
 const AGENT_GRADIENTS: Record<string, string[]> = {
-  NONE: ["#64748b", "#94a3b8"],
-  CODING: ["#6366f1", "#818cf8"],
-  OMNI: ["#b91c1c", "#dc2626"],
-  LUPOS: ["#7c3aed", "#a855f7"],
-  STICKERS: ["#10b981", "#34d399"],
-  DIGEST: ["#f59e0b", "#ef4444"],
-  LIGHTS: ["#eab308", "#f59e0b"],
-  OOG: ["#78716c", "#a8a29e"],
-  IMAGE: ["#ec4899", "#8b5cf6"],
+  NONE: ["oklch(0.5 0.03 260)", "oklch(0.65 0.03 260)"],
+  CODING: ["oklch(0.585 0.233 277.117)", "oklch(0.65 0.2 277)"],
+  OMNI: ["oklch(0.4 0.2 25)", "oklch(0.5 0.22 25)"],
+  LUPOS: ["oklch(0.5 0.25 290)", "oklch(0.6 0.23 290)"],
+  STICKERS: ["oklch(0.705 0.191 165.574)", "oklch(0.8 0.15 165)"],
+  DIGEST: ["oklch(0.769 0.188 70.08)", "oklch(0.585 0.22 25)"],
+  LIGHTS: ["oklch(0.769 0.177 90.046)", "oklch(0.769 0.188 70.08)"],
+  OOG: ["oklch(0.5 0.02 60)", "oklch(0.65 0.02 60)"],
+  IMAGE: ["oklch(0.627 0.231 348.347)", "oklch(0.606 0.25 293.528)"],
 };
-const FALLBACK_GRADIENT = ["#8b5cf6", "#06b6d4"];
+const FALLBACK_GRADIENT = ["oklch(0.606 0.25 293.528)", "oklch(0.7 0.15 195)"];
 
 function resolveGradient(agent?: string | ClientAgent | null): string[] {
   if (typeof agent === "string") {
@@ -554,7 +554,7 @@ function useCoinAnimation({ agent, size }: { agent?: string | ClientAgent | null
       if (!svg) return;
 
       svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-      const markup = svg.outerHTML.replace(/currentColor/g, "#ffffff");
+      const markup = svg.outerHTML.replace(/currentColor/g, "oklch(1 0 0)");
 
       const image = new Image();
       const blob = new Blob([markup], { type: "image/svg+xml;charset=utf-8" });

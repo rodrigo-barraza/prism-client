@@ -326,12 +326,12 @@ export default function WorkflowInspector({
             </div>
           )}
           {isViewer && (
-            <div className={styles['type-icon']} style={{ color: "#a78bfa" }}>
+            <div className={styles['type-icon']} style={{ color: "oklch(0.7 0.15 280)" }}>
               <Eye size={16} />
             </div>
           )}
           {isTools && (
-            <div className={styles['type-icon']} style={{ color: "#f97316" }}>
+            <div className={styles['type-icon']} style={{ color: "oklch(0.692 0.218 36.634)" }}>
               <Parentheses size={16} />
             </div>
           )}

@@ -34,14 +34,14 @@ import {
   Search,
 } from "lucide-react";
 import Chart from "chart.js/auto";
+import PrismService from "../services/PrismService";
+import { VramBenchmarkEntry, VramBenchmarkMachine } from "../types/types";
 import type {
   TooltipOptions,
   ScaleOptionsByType,
   LegendOptions,
 } from "chart.js";
-import PrismService from "../services/PrismService";
-import { VramBenchmarkEntry, VramBenchmarkMachine } from "../types/types";
-
+import { BYTES_IN_KIB, KIB_IN_MIB } from "../constants";
 import {
   FilterBarComponent,
   FilterSelectComponent,
@@ -126,42 +126,42 @@ interface SettingsInfoEntry {
 }
 
 const QUANT_COLORS: Record<string, PaletteEntry> = {
-  Q4_0: { bg: "rgba(34,211,238,0.55)", border: "#22d3ee" },
-  Q4_K_M: { bg: "rgba(99,102,241,0.55)", border: "#6366f1" },
-  Q4_K_S: { bg: "rgba(139,92,246,0.55)", border: "#8b5cf6" },
-  Q4_1: { bg: "rgba(59,130,246,0.55)", border: "#3b82f6" },
-  Q5_K_S: { bg: "rgba(16,185,129,0.55)", border: "#10b981" },
-  Q5_K_M: { bg: "rgba(20,184,166,0.55)", border: "#14b8a6" },
-  Q6_K: { bg: "rgba(234,179,8,0.55)", border: "#eab308" },
-  Q6_K_L: { bg: "rgba(245,158,11,0.55)", border: "#f59e0b" },
-  Q8_0: { bg: "rgba(244,63,94,0.55)", border: "#f43f5e" },
-  Q3_K_L: { bg: "rgba(249,115,22,0.55)", border: "#f97316" },
-  FP16: { bg: "rgba(236,72,153,0.55)", border: "#ec4899" },
-  F16: { bg: "rgba(236,72,153,0.55)", border: "#ec4899" },
-  BF16: { bg: "rgba(217,70,239,0.55)", border: "#d946ef" },
+  Q4_0: { bg: "oklch(0.789 0.154 196.451 / 0.55)", border: "oklch(0.789 0.154 196.451)" },
+  Q4_K_M: { bg: "oklch(0.585 0.233 277.117 / 0.55)", border: "oklch(0.585 0.233 277.117)" },
+  Q4_K_S: { bg: "oklch(0.606 0.25 293.528 / 0.55)", border: "oklch(0.606 0.25 293.528)" },
+  Q4_1: { bg: "oklch(0.588 0.158 241.966 / 0.55)", border: "oklch(0.588 0.158 241.966)" },
+  Q5_K_S: { bg: "oklch(0.705 0.191 165.574 / 0.55)", border: "oklch(0.705 0.191 165.574)" },
+  Q5_K_M: { bg: "oklch(0.697 0.148 185.045 / 0.55)", border: "oklch(0.697 0.148 185.045)" },
+  Q6_K: { bg: "oklch(0.769 0.177 90.046 / 0.55)", border: "oklch(0.769 0.177 90.046)" },
+  Q6_K_L: { bg: "oklch(0.769 0.188 70.08 / 0.55)", border: "oklch(0.769 0.188 70.08)" },
+  Q8_0: { bg: "oklch(0.627 0.226 28.324 / 0.55)", border: "oklch(0.627 0.226 28.324)" },
+  Q3_K_L: { bg: "oklch(0.692 0.218 36.634 / 0.55)", border: "oklch(0.692 0.218 36.634)" },
+  FP16: { bg: "oklch(0.627 0.231 348.347 / 0.55)", border: "oklch(0.627 0.231 348.347)" },
+  F16: { bg: "oklch(0.627 0.231 348.347 / 0.55)", border: "oklch(0.627 0.231 348.347)" },
+  BF16: { bg: "oklch(0.627 0.231 310 / 0.55)", border: "oklch(0.627 0.231 310)" },
 };
 
 const GPU_COLORS: Record<string, PaletteEntry> = {
   "NVIDIA GeForce RTX 4090": {
     bg: "rgba(99,102,241,0.6)",
-    border: "#6366f1",
+    border: "oklch(0.585 0.233 277.117)",
   },
   "NVIDIA GeForce RTX 5070 Ti": {
     bg: "rgba(16,185,129,0.6)",
-    border: "#10b981",
+    border: "oklch(0.705 0.191 165.574)",
   },
 };
 
 // Fallback rainbow for unknown quant/GPU
 const PALETTE: PaletteEntry[] = [
-  { bg: "rgba(99,102,241,0.55)", border: "#6366f1" },
-  { bg: "rgba(16,185,129,0.55)", border: "#10b981" },
-  { bg: "rgba(245,158,11,0.55)", border: "#f59e0b" },
-  { bg: "rgba(244,63,94,0.55)", border: "#f43f5e" },
-  { bg: "rgba(59,130,246,0.55)", border: "#3b82f6" },
-  { bg: "rgba(139,92,246,0.55)", border: "#8b5cf6" },
-  { bg: "rgba(236,72,153,0.55)", border: "#ec4899" },
-  { bg: "rgba(34,211,238,0.55)", border: "#22d3ee" },
+  { bg: "rgba(99,102,241,0.55)", border: "oklch(0.585 0.233 277.117)" },
+  { bg: "rgba(16,185,129,0.55)", border: "oklch(0.705 0.191 165.574)" },
+  { bg: "rgba(245,158,11,0.55)", border: "oklch(0.769 0.188 70.08)" },
+  { bg: "rgba(244,63,94,0.55)", border: "oklch(0.627 0.226 28.324)" },
+  { bg: "rgba(59,130,246,0.55)", border: "oklch(0.588 0.158 241.966)" },
+  { bg: "rgba(139,92,246,0.55)", border: "oklch(0.606 0.25 293.528)" },
+  { bg: "rgba(236,72,153,0.55)", border: "oklch(0.627 0.231 348.347)" },
+  { bg: "rgba(34,211,238,0.55)", border: "oklch(0.8 0.13 195)" },
 ];
 
 let paletteIndex = 0;
@@ -174,7 +174,7 @@ function getQuantColor(q: string): PaletteEntry {
 
 function getGPUColor(gpuName: string): PaletteEntry {
   return (
-    GPU_COLORS[gpuName] || { bg: "rgba(107,114,128,0.5)", border: "#6b7280" }
+    GPU_COLORS[gpuName] || { bg: "rgba(107,114,128,0.5)", border: "oklch(0.5 0.01 260)" }
   );
 }
 
@@ -201,8 +201,8 @@ const CHART_FONT = "'Inter', sans-serif";
 
 const TOOLTIP_STYLE: Partial<TooltipOptions> = {
   backgroundColor: "rgba(10, 10, 15, 0.92)",
-  titleColor: "#f8f8f8",
-  bodyColor: "#8e95ae",
+  titleColor: "oklch(0.97 0 0)",
+  bodyColor: "oklch(0.65 0.03 260)",
   borderColor: "rgba(99, 102, 241, 0.25)",
   borderWidth: 1,
   padding: 14,
@@ -219,14 +219,14 @@ const GRID_STYLE = {
 
 const TICK_STYLE = {
   font: { family: CHART_FONT, size: 11, weight: 500 },
-  color: "#6b728e",
+  color: "oklch(0.5 0.02 260)",
   padding: 6,
 };
 
 const AXIS_TITLE_STYLE = {
   display: true,
   font: { family: CHART_FONT, weight: 600, size: 12 },
-  color: "#8e95ae",
+  color: "oklch(0.65 0.03 260)",
   padding: { top: 8 },
 };
 
@@ -237,7 +237,7 @@ const LEGEND_STYLE = {
     pointStyle: "circle",
     padding: 16,
     font: { family: CHART_FONT, size: 11, weight: 500 },
-    color: "#8e95ae",
+    color: "oklch(0.65 0.03 260)",
     boxWidth: 8,
     boxHeight: 8,
   },
@@ -779,13 +779,13 @@ export default function VramBenchmarkComponent() {
     const parsedValue = parseFloat(ctxMin);
     return isNaN(parsedValue) || parsedValue < 0
       ? undefined
-      : parsedValue * 1024;
+      : parsedValue * BYTES_IN_KIB;
   }, [ctxMin]);
   const ctxMaxVal = useMemo(() => {
     const parsedValue = parseFloat(ctxMax);
     return isNaN(parsedValue) || parsedValue <= 0
       ? undefined
-      : parsedValue * 1024;
+      : parsedValue * BYTES_IN_KIB;
   }, [ctxMax]);
 
   const parallelOptions = useMemo(() => {
@@ -1241,7 +1241,7 @@ export default function VramBenchmarkComponent() {
     // Helper — context length tag for card subtitles
     const ctag = (entry: VramBenchmarkEntry) =>
       entry.contextLength
-        ? ` · ${(entry.contextLength / 1024).toFixed(0)}K ctx`
+        ? ` · ${(entry.contextLength / BYTES_IN_KIB).toFixed(0)}K ctx`
         : "";
 
     const bestCards = [
@@ -1688,7 +1688,7 @@ export default function VramBenchmarkComponent() {
                 ) => (bestKeys.has(entryKey(p.model)) ? 1.5 : 0.5),
               ),
               hoverBorderWidth: 2.5,
-              hoverBorderColor: "#f8f8f8",
+              hoverBorderColor: "oklch(0.97 0 0)",
               order: 2,
             };
           }
@@ -1701,7 +1701,7 @@ export default function VramBenchmarkComponent() {
             borderColor: color.border,
             borderWidth: 1.5,
             hoverBorderWidth: 2.5,
-            hoverBorderColor: "#f8f8f8",
+            hoverBorderColor: "oklch(0.97 0 0)",
             order: 2,
           };
         },
@@ -1830,7 +1830,7 @@ export default function VramBenchmarkComponent() {
               ) => (bestKeys.has(entryKey(p.model)) ? 1.5 : 0.5),
             ),
             hoverBorderWidth: 2.5,
-            hoverBorderColor: "#f8f8f8",
+            hoverBorderColor: "oklch(0.97 0 0)",
           } as import("chart.js").ChartDataset<
             "scatter",
             (import("chart.js").BubbleDataPoint & {
@@ -1846,7 +1846,7 @@ export default function VramBenchmarkComponent() {
           borderColor: color.border,
           borderWidth: 1.5,
           hoverBorderWidth: 2.5,
-          hoverBorderColor: "#f8f8f8",
+          hoverBorderColor: "oklch(0.97 0 0)",
         } as import("chart.js").ChartDataset<
           "scatter",
           (import("chart.js").BubbleDataPoint & { model: VramBenchmarkEntry })[]
@@ -1979,7 +1979,7 @@ export default function VramBenchmarkComponent() {
                     `VRAM: ${(modelName.modelVramGiB || 0).toFixed(2)} GiB (est: ${((modelName.estimatedGiB as number) || 0).toFixed(2)})`,
                     `Parallel: ${sInfo?.parallel ?? "?"}`,
                     `Batch: ${sInfo?.batch ?? "?"}`,
-                    `Context: ${(modelName.contextLength / 1024).toFixed(0)}K`,
+                    `Context: ${(modelName.contextLength / BYTES_IN_KIB).toFixed(0)}K`,
                     `Speed: ${modelName.tokensPerSecond?.toFixed(1) || "0"} tok/s`,
                     `File: ${(modelName.fileSizeGB || 0).toFixed(1)} GB · ${modelName.quantization} (${modelName.bitsPerWeight || "?"} bpw)`,
                     `Efficiency: ${((modelName.tokensPerSecond || 0) / (modelName.modelVramGiB || 1)).toFixed(1)} TPS/GiB`,
@@ -2081,7 +2081,7 @@ export default function VramBenchmarkComponent() {
       }
       // Context length ranges (store full entries for per-dot tooltips)
       if (contextLength > 0) {
-        const cK = contextLength / 1024;
+        const cK = contextLength / BYTES_IN_KIB;
         if (!ctxR[name]) {
           ctxR[name] = {
             min: cK,
@@ -2217,14 +2217,14 @@ export default function VramBenchmarkComponent() {
             ),
             borderColor: models.map((m) =>
               m.fitsInVram === false
-                ? "#f43f5e"
+                ? "oklch(0.627 0.226 28.324)"
                 : vramColor(m.modelVramGiB || 0, 1).border,
             ),
             borderWidth: 1.5,
             borderSkipped: false,
             borderRadius: 2,
             hoverBorderWidth: 2.5,
-            hoverBorderColor: "#f8f8f8",
+            hoverBorderColor: "oklch(0.97 0 0)",
             order: 2,
           },
           {
@@ -2237,7 +2237,7 @@ export default function VramBenchmarkComponent() {
             pointRadius: 3.5,
             pointHoverRadius: 6,
             pointHoverBackgroundColor: "#fff",
-            pointHoverBorderColor: "#6366f1",
+            pointHoverBorderColor: "oklch(0.585 0.233 277.117)",
             pointHoverBorderWidth: 2,
             order: 1,
           },
@@ -2314,11 +2314,11 @@ export default function VramBenchmarkComponent() {
                 if (item.datasetIndex === 1) {
                   const e = (item.raw as { entry?: VramBenchmarkEntry })?.entry;
                   if (!e) return "";
-                  return `${e.quantization} · ${e.architecture} · ${(e.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name)}`;
+                  return `${e.quantization} · ${e.architecture} · ${(e.contextLength / BYTES_IN_KIB).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name)}`;
                 }
                 const model = models[item.dataIndex];
                 if (!model) return "";
-                return `${model.quantization} · ${model.architecture} · ${(model.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU((model.system as { gpu?: { name?: string } })?.gpu?.name || "")}`;
+                return `${model.quantization} · ${model.architecture} · ${(model.contextLength / BYTES_IN_KIB).toFixed(0)}K ctx · ${shortGPU((model.system as { gpu?: { name?: string } })?.gpu?.name || "")}`;
               },
               label: (
                 item: import("chart.js").TooltipItem<"bar" | "scatter">,
@@ -2356,7 +2356,7 @@ export default function VramBenchmarkComponent() {
                   "",
                   `Parallel: ${sInfo?.parallel ?? "?"}`,
                   `Batch: ${sInfo?.batch ?? "?"}`,
-                  `Context: ${(m.contextLength / 1024).toFixed(0)}K`,
+                  `Context: ${(m.contextLength / BYTES_IN_KIB).toFixed(0)}K`,
                   `Speed: ${m.tokensPerSecond?.toFixed(1) || "0"} tok/s`,
                   `File: ${(m.fileSizeGB || 0).toFixed(1)} GB · ${m.bitsPerWeight || "?"} bpw`,
                   `Efficiency: ${((m.tokensPerSecond || 0) / (m.modelVramGiB || 1)).toFixed(1)} TPS/GiB`,
@@ -2378,7 +2378,7 @@ export default function VramBenchmarkComponent() {
 
                 if (systemInfo?.cpuRam?.deltaMiB)
                   lines.push(
-                    `CPU RAM Δ: ${(systemInfo.cpuRam.deltaMiB / 1024).toFixed(2)} GiB`,
+                    `CPU RAM Δ: ${(systemInfo.cpuRam.deltaMiB / BYTES_IN_KIB).toFixed(2)} GiB`,
                   );
                 if (systemInfo?.gpu?.temp)
                   lines.push(
@@ -2496,7 +2496,7 @@ export default function VramBenchmarkComponent() {
             borderSkipped: false,
             borderRadius: 2,
             hoverBorderWidth: 2.5,
-            hoverBorderColor: "#f8f8f8",
+            hoverBorderColor: "oklch(0.97 0 0)",
             order: 2,
           },
           {
@@ -2509,7 +2509,7 @@ export default function VramBenchmarkComponent() {
             pointRadius: 3.5,
             pointHoverRadius: 6,
             pointHoverBackgroundColor: "#fff",
-            pointHoverBorderColor: "#6366f1",
+            pointHoverBorderColor: "oklch(0.585 0.233 277.117)",
             pointHoverBorderWidth: 2,
             order: 1,
           },
@@ -2585,11 +2585,11 @@ export default function VramBenchmarkComponent() {
                 if (item.datasetIndex === 1) {
                   const e = (item.raw as { entry?: VramBenchmarkEntry })?.entry;
                   if (!e) return "";
-                  return `${e.quantization} · ${e.architecture} · ${(e.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name)}`;
+                  return `${e.quantization} · ${e.architecture} · ${(e.contextLength / BYTES_IN_KIB).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name)}`;
                 }
                 const model = sorted[item.dataIndex];
                 if (!model) return "";
-                return `${model.quantization} · ${model.architecture} · ${(model.contextLength / 1024).toFixed(0)}K ctx`;
+                return `${model.quantization} · ${model.architecture} · ${(model.contextLength / BYTES_IN_KIB).toFixed(0)}K ctx`;
               },
               label: (
                 item: import("chart.js").TooltipItem<"bar" | "scatter">,
@@ -2626,7 +2626,7 @@ export default function VramBenchmarkComponent() {
                   ` VRAM: ${(m.modelVramGiB || 0).toFixed(2)} GiB`,
                   ` Parallel: ${sInfo?.parallel ?? "?"}`,
                   ` Batch: ${sInfo?.batch ?? "?"}`,
-                  ` Context: ${(m.contextLength / 1024).toFixed(0)}K`,
+                  ` Context: ${(m.contextLength / BYTES_IN_KIB).toFixed(0)}K`,
                   ` Efficiency: ${((m.tokensPerSecond || 0) / (m.modelVramGiB || 1)).toFixed(1)} TPS/GiB`,
                   ` Quant: ${m.quantization} (${m.bitsPerWeight || "?"} bpw)`,
                 ];
@@ -2801,7 +2801,7 @@ export default function VramBenchmarkComponent() {
                 bar as import("chart.js").Element & {
                   options?: { borderColor?: string };
                 }
-              ).options?.borderColor || "#6366f1";
+              ).options?.borderColor || "oklch(0.585 0.233 277.117)";
 
             // Tick line
             c.beginPath();
@@ -2978,12 +2978,12 @@ export default function VramBenchmarkComponent() {
         const cA =
           (ctxRanges as Record<string, RangeStats>)[a.displayName || "unknown"]
             ?.max ||
-          (a.contextLength || 0) / 1024 ||
+          (a.contextLength || 0) / BYTES_IN_KIB ||
           0;
         const cB =
           (ctxRanges as Record<string, RangeStats>)[b.displayName || "unknown"]
             ?.max ||
-          (b.contextLength || 0) / 1024 ||
+          (b.contextLength || 0) / BYTES_IN_KIB ||
           0;
         return cB - cA || (b.tokensPerSecond || 0) - (a.tokensPerSecond || 0);
       },
@@ -3007,7 +3007,7 @@ export default function VramBenchmarkComponent() {
       if (range && range.count > 1) {
         return [range.min, range.max];
       }
-      const k = (m.contextLength || 0) / 1024;
+      const k = (m.contextLength || 0) / BYTES_IN_KIB;
       return [Math.max(0, k - 0.5), k + 0.5];
     });
 
@@ -3027,7 +3027,7 @@ export default function VramBenchmarkComponent() {
     const allContextValues = sorted.map(
       (m) =>
         (ctxRanges as Record<string, RangeStats>)[m.displayName || "unknown"]
-          ?.max || (m.contextLength || 0) / 1024,
+          ?.max || (m.contextLength || 0) / BYTES_IN_KIB,
     );
     const contextMinimum = Math.min(...allContextValues);
     const contextMaximum = Math.max(...allContextValues);
@@ -3055,7 +3055,7 @@ export default function VramBenchmarkComponent() {
       if (!range || range.count <= 1) continue;
       for (const entry of range.entries) {
         ctxScatterData.push({
-          x: (entry.contextLength || 0) / 1024,
+          x: (entry.contextLength || 0) / BYTES_IN_KIB,
           y: labels[i] as unknown as number,
           entry,
         });
@@ -3092,17 +3092,17 @@ export default function VramBenchmarkComponent() {
                 ctxColor(
                   (ctxRanges as Record<string, RangeStats>)[
                     m.displayName || "unknown"
-                  ]?.max || (m.contextLength || 0) / 1024,
+                  ]?.max || (m.contextLength || 0) / BYTES_IN_KIB,
                   0.45,
                 ).bg,
             ),
             borderColor: sorted.map((m) =>
               m.fitsInVram === false
-                ? "#f43f5e"
+                ? "oklch(0.627 0.226 28.324)"
                 : ctxColor(
                     (ctxRanges as Record<string, RangeStats>)[
                       m.displayName || "unknown"
-                    ]?.max || (m.contextLength || 0) / 1024,
+                    ]?.max || (m.contextLength || 0) / BYTES_IN_KIB,
                     1,
                   ).border,
             ),
@@ -3110,7 +3110,7 @@ export default function VramBenchmarkComponent() {
             borderSkipped: false,
             borderRadius: 2,
             hoverBorderWidth: 2.5,
-            hoverBorderColor: "#f8f8f8",
+            hoverBorderColor: "oklch(0.97 0 0)",
             xAxisID: "x",
             order: 4,
           },
@@ -3123,7 +3123,7 @@ export default function VramBenchmarkComponent() {
             borderSkipped: false,
             borderRadius: 2,
             hoverBorderWidth: 2.5,
-            hoverBorderColor: "#f8f8f8",
+            hoverBorderColor: "oklch(0.97 0 0)",
             xAxisID: "x1",
             order: 3,
           },
@@ -3137,7 +3137,7 @@ export default function VramBenchmarkComponent() {
             pointRadius: 3.5,
             pointHoverRadius: 6,
             pointHoverBackgroundColor: "#fff",
-            pointHoverBorderColor: "#14b8a6",
+            pointHoverBorderColor: "oklch(0.697 0.148 185.045)",
             pointHoverBorderWidth: 2,
             xAxisID: "x",
             order: 1,
@@ -3152,7 +3152,7 @@ export default function VramBenchmarkComponent() {
             pointRadius: 3,
             pointHoverRadius: 5,
             pointHoverBackgroundColor: "#fff",
-            pointHoverBorderColor: "#6366f1",
+            pointHoverBorderColor: "oklch(0.585 0.233 277.117)",
             pointHoverBorderWidth: 2,
             xAxisID: "x1",
             order: 2,
@@ -3172,18 +3172,18 @@ export default function VramBenchmarkComponent() {
             let ctxLabel;
             if (cRange && cRange.count > 1) {
               const minL =
-                cRange.min >= 1024
-                  ? `${(cRange.min / 1024).toFixed(0)}M`
+                cRange.min >= KIB_IN_MIB
+                  ? `${(cRange.min / BYTES_IN_KIB).toFixed(0)}M`
                   : `${cRange.min.toFixed(0)}K`;
               const maxL =
-                cRange.max >= 1024
-                  ? `${(cRange.max / 1024).toFixed(0)}M`
+                cRange.max >= KIB_IN_MIB
+                  ? `${(cRange.max / BYTES_IN_KIB).toFixed(0)}M`
                   : `${cRange.max.toFixed(0)}K`;
               ctxLabel = `${minL}–${maxL}`;
             } else {
-              const k = (model.contextLength || 0) / 1024;
+              const k = (model.contextLength || 0) / BYTES_IN_KIB;
               ctxLabel =
-                k >= 1024 ? `${(k / 1024).toFixed(0)}M` : `${k.toFixed(0)}K`;
+                k >= KIB_IN_MIB ? `${(k / BYTES_IN_KIB).toFixed(0)}M` : `${k.toFixed(0)}K`;
             }
             // TPS label
             const tRange = tpsRanges[model.displayName || ""];
@@ -3215,8 +3215,8 @@ export default function VramBenchmarkComponent() {
             ticks: {
               ...TICK_STYLE,
               callback: (v: string | number) =>
-                Number(v) >= 1024
-                  ? `${(Number(v) / 1024).toFixed(0)}M`
+                Number(v) >= KIB_IN_MIB
+                  ? `${(Number(v) / BYTES_IN_KIB).toFixed(0)}M`
                   : `${v}K`,
             },
           },
@@ -3258,11 +3258,11 @@ export default function VramBenchmarkComponent() {
                 if (item.datasetIndex >= 2) {
                   const e = (item.raw as { entry?: VramBenchmarkEntry })?.entry;
                   if (!e) return "";
-                  return `${e.quantization} · ${e.architecture} · ${(e.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name || "")}`;
+                  return `${e.quantization} · ${e.architecture} · ${(e.contextLength / BYTES_IN_KIB).toFixed(0)}K ctx · ${shortGPU(e.system?.gpu?.name || "")}`;
                 }
                 const model = sorted[item.dataIndex];
                 if (!model) return "";
-                return `${model.quantization} · ${model.architecture} · ${(model.contextLength / 1024).toFixed(0)}K ctx · ${shortGPU(model.system?.gpu?.name || "")}`;
+                return `${model.quantization} · ${model.architecture} · ${(model.contextLength / BYTES_IN_KIB).toFixed(0)}K ctx · ${shortGPU(model.system?.gpu?.name || "")}`;
               },
               label: (
                 item: import("chart.js").TooltipItem<"bar" | "scatter">,
@@ -3271,7 +3271,7 @@ export default function VramBenchmarkComponent() {
                 if (item.datasetIndex === 2) {
                   const e = (item.raw as { entry?: VramBenchmarkEntry })?.entry;
                   if (!e) return "";
-                  return ` Context: ${((e.contextLength || 0) / 1024).toFixed(0)}K`;
+                  return ` Context: ${((e.contextLength || 0) / BYTES_IN_KIB).toFixed(0)}K`;
                 }
                 if (item.datasetIndex === 3) {
                   const e = (item.raw as { entry?: VramBenchmarkEntry })?.entry;
@@ -3284,16 +3284,16 @@ export default function VramBenchmarkComponent() {
                   const range = ctxRanges[model.displayName || ""];
                   if (range && range.count > 1) {
                     const minL =
-                      range.min >= 1024
-                        ? `${(range.min / 1024).toFixed(0)}M`
+                      range.min >= KIB_IN_MIB
+                        ? `${(range.min / BYTES_IN_KIB).toFixed(0)}M`
                         : `${range.min.toFixed(0)}K`;
                     const maxL =
-                      range.max >= 1024
-                        ? `${(range.max / 1024).toFixed(0)}M`
+                      range.max >= KIB_IN_MIB
+                        ? `${(range.max / BYTES_IN_KIB).toFixed(0)}M`
                         : `${range.max.toFixed(0)}K`;
                     return ` Context: ${minL}–${maxL} (${range.count} runs)`;
                   }
-                  return ` Context: ${((model.contextLength || 0) / 1024).toFixed(0)}K`;
+                  return ` Context: ${((model.contextLength || 0) / BYTES_IN_KIB).toFixed(0)}K`;
                 }
                 // TPS bar
                 const tRange = tpsRanges[model.displayName || ""];
@@ -3320,7 +3320,7 @@ export default function VramBenchmarkComponent() {
                   `VRAM: ${(m.modelVramGiB || 0).toFixed(2)} GiB`,
                   `Parallel: ${sInfo?.parallel ?? "?"}`,
                   `Batch: ${sInfo?.batch ?? "?"}`,
-                  `Context: ${((m.contextLength || 0) / 1024).toFixed(0)}K`,
+                  `Context: ${((m.contextLength || 0) / BYTES_IN_KIB).toFixed(0)}K`,
                   `Efficiency: ${((m.tokensPerSecond || 0) / (m.modelVramGiB || 1)).toFixed(1)} TPS/GiB`,
                   `Quant: ${m.quantization} (${m.bitsPerWeight || "?"} bpw)`,
                 ];
@@ -3465,7 +3465,7 @@ export default function VramBenchmarkComponent() {
         return {
           label,
           data: items.map((d: VramBenchmarkEntry) => ({
-            x: (d.contextLength || 0) / 1024,
+            x: (d.contextLength || 0) / BYTES_IN_KIB,
             y: d.modelVramGiB || 0,
             ctx: d,
           })),
@@ -3498,7 +3498,7 @@ export default function VramBenchmarkComponent() {
             grid: GRID_STYLE,
             afterBuildTicks: (axis: import("chart.js").Scale) => {
               // Force ticks at powers of 2 instead of decade multiples
-              const pow2 = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024];
+              const pow2 = [2, 4, 8, 16, 32, 64, 128, 256, 512, KIB_IN_MIB];
               axis.ticks = pow2
                 .filter(
                   (v) => v >= (axis.min as number) && v <= (axis.max as number),
@@ -3583,7 +3583,7 @@ export default function VramBenchmarkComponent() {
     if (loading || error) return;
 
     // Chart.js global defaults
-    Chart.defaults.color = "#6b728e";
+    Chart.defaults.color = "oklch(0.5 0.02 260)";
     Chart.defaults.borderColor = "rgba(255,255,255,0.04)";
     Chart.defaults.font.family = CHART_FONT;
 

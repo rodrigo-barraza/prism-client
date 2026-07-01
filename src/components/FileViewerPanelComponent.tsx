@@ -18,6 +18,7 @@ import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import ToolsApiService from "../services/ToolsApiService";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./FileViewerPanelComponent.module.css";
+import { BYTES_IN_KIB, BYTES_IN_MIB } from "../constants";
 
 // --- Binary file type detection -----------------------------
 const IMAGE_EXTENSIONS = new Set([
@@ -251,7 +252,7 @@ const codeTheme = {
   ...vscDarkPlus,
   'pre[class*="language-"]': {
     ...vscDarkPlus['pre[class*="language-"]'],
-    background: "#000000",
+    background: "oklch(0 0 0)",
     margin: 0,
     padding: "8px 0",
     borderRadius: 0,
@@ -975,7 +976,7 @@ export default function FileViewerPanelComponent({
                 customStyle={{
                   margin: 0,
                   padding: "8px 0",
-                  background: "#000000",
+                  background: "oklch(0 0 0)",
                   borderRadius: 0,
                   overflow: "visible",
                 }}
@@ -1027,9 +1028,9 @@ export default function FileViewerPanelComponent({
                 <>
                   <span className={styles['meta-dot']} />
                   <span>
-                    {cached.sizeBytes >= 1048576
-                      ? `${(cached.sizeBytes / 1048576).toFixed(1)} MB`
-                      : `${(cached.sizeBytes / 1024).toFixed(1)} KB`}
+                    {cached.sizeBytes >= BYTES_IN_MIB
+                      ? `${(cached.sizeBytes / BYTES_IN_MIB).toFixed(1)} MB`
+                      : `${(cached.sizeBytes / BYTES_IN_KIB).toFixed(1)} KB`}
                   </span>
                 </>
               ) : null}

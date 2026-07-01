@@ -107,7 +107,7 @@ interface IconOption {
 }
 
 interface ColorOption {
-  hex: string;
+  color: string;
   name: string;
 }
 
@@ -144,26 +144,26 @@ const EMPTY_AGENT: EditableAgent = {
 
 // -- Curated color palette for agent theming ---------------------
 const COLOR_PALETTE = [
-  { hex: "#6366f1", name: "Indigo" },
-  { hex: "#8b5cf6", name: "Violet" },
-  { hex: "#a855f7", name: "Purple" },
-  { hex: "#d946ef", name: "Fuchsia" },
-  { hex: "#ec4899", name: "Pink" },
-  { hex: "#f43f5e", name: "Rose" },
-  { hex: "#ef4444", name: "Red" },
-  { hex: "#f97316", name: "Orange" },
-  { hex: "#f59e0b", name: "Amber" },
-  { hex: "#eab308", name: "Yellow" },
-  { hex: "#84cc16", name: "Lime" },
-  { hex: "#22c55e", name: "Green" },
-  { hex: "#10b981", name: "Emerald" },
-  { hex: "#14b8a6", name: "Teal" },
-  { hex: "#06b6d4", name: "Cyan" },
-  { hex: "#0ea5e9", name: "Sky" },
-  { hex: "#3b82f6", name: "Blue" },
-  { hex: "#6d28d9", name: "Deep Violet" },
-  { hex: "#78716c", name: "Stone" },
-  { hex: "#64748b", name: "Slate" },
+  { color: "oklch(0.585 0.233 277.117)", name: "Indigo" },
+  { color: "oklch(0.606 0.25 293.528)", name: "Violet" },
+  { color: "oklch(0.6 0.23 290)", name: "Purple" },
+  { color: "oklch(0.627 0.231 310)", name: "Fuchsia" },
+  { color: "oklch(0.627 0.231 348.347)", name: "Pink" },
+  { color: "oklch(0.627 0.226 28.324)", name: "Rose" },
+  { color: "oklch(0.585 0.22 25)", name: "Red" },
+  { color: "oklch(0.692 0.218 36.634)", name: "Orange" },
+  { color: "oklch(0.769 0.188 70.08)", name: "Amber" },
+  { color: "oklch(0.769 0.177 90.046)", name: "Yellow" },
+  { color: "oklch(0.75 0.2 110)", name: "Lime" },
+  { color: "oklch(0.7 0.17 145)", name: "Green" },
+  { color: "oklch(0.705 0.191 165.574)", name: "Emerald" },
+  { color: "oklch(0.697 0.148 185.045)", name: "Teal" },
+  { color: "oklch(0.7 0.15 195)", name: "Cyan" },
+  { color: "oklch(0.6 0.15 230)", name: "Sky" },
+  { color: "oklch(0.588 0.158 241.966)", name: "Blue" },
+  { color: "oklch(0.4 0.25 290)", name: "Deep Violet" },
+  { color: "oklch(0.5 0.02 60)", name: "Stone" },
+  { color: "oklch(0.5 0.03 260)", name: "Slate" },
 ];
 
 // -- Curated icon palette for the icon picker --------------------
@@ -528,17 +528,17 @@ export default function CustomAgentsPanel({
               Accent Color
             </label>
             <div className={styles['color-grid']}>
-              {COLOR_PALETTE.map(({ hex, name }: ColorOption) => (
+              {COLOR_PALETTE.map(({ color, name }: ColorOption) => (
                 <button
-                  key={hex}
+                  key={color}
                   type="button"
                   className={styles['color-swatch']}
-                  data-is-selected={editingAgent.color === hex}
+                  data-is-selected={editingAgent.color === color}
                   onClick={() =>
-                    updateField("color", editingAgent.color === hex ? "" : hex)
+                    updateField("color", editingAgent.color === color ? "" : color)
                   }
                   title={name}
-                  style={{ "--swatch-color": hex } as React.CSSProperties}
+                  style={{ "--swatch-color": color } as React.CSSProperties}
                 />
               ))}
             </div>
@@ -550,7 +550,7 @@ export default function CustomAgentsPanel({
                     className={styles['color-preview-dot']}
                     style={{ background: editingAgent.color }}
                   />{" "}
-                  {COLOR_PALETTE.find((color) => color.hex === editingAgent.color)
+                  {COLOR_PALETTE.find((colorOption) => colorOption.color === editingAgent.color)
                     ?.name || editingAgent.color}
                 </>
               ) : (

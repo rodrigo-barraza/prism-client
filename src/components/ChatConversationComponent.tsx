@@ -101,10 +101,21 @@ import {
 } from "../utils/toolCallStateUpdaters";
 
 import useConversationStats from "../hooks/useConversationStats";
-import { generateUUID, renderToolName } from "@rodrigo-barraza/utilities-library";
+import { 
+  generateUUID, 
+  renderToolName,
+  formatTokenCount,
+  formatLatency,
+  formatTokensPerSec,
+  formatDuration,
+  POLL_STANDARD,
+} from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES, SERVER_SENT_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { mergeUsedToolsWithSubAgents, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams } from "../utils/utilities";
 import {
+  MESSAGE_ROLES,
+  EXECUTION_STATUS,
+  APPROVAL_STATUS,
   PROJECT_AGENT,
   SETTINGS_DEFAULTS,
   STORAGE_KEY_MODEL_MEMORY_AGENT,
@@ -117,7 +128,7 @@ import {
   AGENTLESS_AGENT,
   LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
   LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED,
-  LOCAL_STORAGE_AUTO_APPROVE_ENABLED,
+  LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED,
   LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS,
   LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS,
   LOCAL_STORAGE_KEY_AGENT_MAX_RECURSION_DEPTH,
@@ -337,7 +348,7 @@ interface SubAgentActivityEntry {
   error?: string;
   phaseProgress?: number;
   totalOutputTokens?: number;
-  tokPerSec?: number;
+  tokensPerSecond?: number;
   toolCount?: number;
   toolNames?: Record<string, number>;
   toolCalls?: ToolCallEvent[];
@@ -385,7 +396,7 @@ interface PendingApproval {
   toolName: string;
   toolArgs?: Record<string, unknown>;
   tier?: 1 | 2 | 3;
-  status: "pending" | "approved" | "rejected";
+  status: (typeof APPROVAL_STATUS)[keyof typeof APPROVAL_STATUS];
 }
 
 /** Snapshot of UI state stored when a background-generating conversation is paused. */
@@ -430,7 +441,7 @@ interface ClientMessage extends Message {
   _liveGenProgress?: {
     inputTokens?: number;
     outputTokens?: number;
-    tokPerSec?: number;
+    tokensPerSecond?: number;
     totalOutputTokens?: number;
     cost?: number;
     requests?: number;
@@ -864,7 +875,7 @@ export default function ChatConversationComponent({
   // Phase 1: Agentic controls
   const [autoApprove, setAutoApprove] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem(LOCAL_STORAGE_AUTO_APPROVE_ENABLED) === "true";
+      return localStorage.getItem(LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED) === "true";
     }
     return false;
   });
@@ -3397,7 +3408,7 @@ export default function ChatConversationComponent({
                 ...(settings.systemPrompt
                   ? [
                       {
-                        role: "system" as const,
+                        role: MESSAGE_ROLES.SYSTEM,
                         content: settings.systemPrompt,
                       },
                     ]
@@ -3444,7 +3455,7 @@ export default function ChatConversationComponent({
               model: settings.model ?? "",
               messages: [
                 // System prompt placeholder — replaced server-side by SystemPromptAssembler
-                { role: "system" as const, content: "" },
+                { role: MESSAGE_ROLES.SYSTEM, content: "" },
                 ...currentMessages,
               ],
               functionCallingEnabled: true,
@@ -3594,7 +3605,7 @@ export default function ChatConversationComponent({
                 };
               } else {
                 updated.push({
-                  role: "assistant",
+                  role: MESSAGE_ROLES.ASSISTANT,
                   content: cleanText,
                   contentSegments: snapshotSegments(),
                   textFragments: [...textFragments],
@@ -3666,7 +3677,7 @@ export default function ChatConversationComponent({
                 };
               } else {
                 updated.push({
-                  role: "assistant",
+                  role: MESSAGE_ROLES.ASSISTANT,
                   content: "",
                   thinking: streamedThinking,
                   contentSegments: snapshotSegments(),
@@ -3698,7 +3709,7 @@ export default function ChatConversationComponent({
                 }
               } else {
                 updated.push({
-                  role: "assistant",
+                  role: MESSAGE_ROLES.ASSISTANT,
                   content: "",
                   images: [imgRef],
                 });
@@ -3726,7 +3737,7 @@ export default function ChatConversationComponent({
                 }
               } else {
                 updated.push({
-                  role: "assistant",
+                  role: MESSAGE_ROLES.ASSISTANT,
                   content: "",
                   audio: [dataString],
                 });
@@ -4066,7 +4077,7 @@ export default function ChatConversationComponent({
                 toolName: toolCall.name || "",
                 toolArgs: toolCall.args || {},
                 tier: data.tier,
-                status: "pending",
+                status: EXECUTION_STATUS.PENDING,
               },
             ]);
             // Clear processing metadata so the live TTFT badge stops
@@ -4173,7 +4184,7 @@ export default function ChatConversationComponent({
                   };
                 } else {
                   updatedMessages.push({
-                    role: "assistant",
+                    role: MESSAGE_ROLES.ASSISTANT,
                     content: "",
                     status: "Compacting conversation...",
                     statusPhase: "prefilling",
@@ -4257,12 +4268,12 @@ export default function ChatConversationComponent({
                   updated[updated.length - 1] = {
                     ...last,
                     _liveGenProgress: {
-                      tokPerSec: statusData.tokPerSec,
-                      activeRequests: statusData.activeRequests,
-                      outputTokens: statusData.outputTokens,
-                      inputTokens: statusData.inputTokens,
-                      totalTokens: statusData.totalTokens,
-                      avgTtft: statusData.avgTtft,
+                      tokensPerSecond: (statusData as any).tokensPerSecond,
+                      activeRequests: (statusData as any).activeRequests,
+                      outputTokens: (statusData as any).outputTokens,
+                      inputTokens: (statusData as any).inputTokens,
+                      totalTokens: (statusData as any).totalTokens,
+                      avgTtft: (statusData as any).avgTtft,
                       timestamp: performance.now(),
                     },
                   };
@@ -4296,7 +4307,7 @@ export default function ChatConversationComponent({
                   // placeholder assistant message to carry the phase metadata.
                   // onChunk/onThinking will merge into this message when they fire.
                   updated.push({
-                    role: "assistant",
+                    role: MESSAGE_ROLES.ASSISTANT,
                     content: "",
                     status: statusData.message,
                     statusPhase: statusData.phase,
@@ -4541,7 +4552,7 @@ export default function ChatConversationComponent({
                 const last = updated[updated.length - 1];
                 if (last?.role === "assistant") {
                   const wp = last._subAgentGenerationProgress || {};
-                  const existing = wp[subAgentId] || {};
+                  const existing = (wp[subAgentId] || {}) as SubAgentGenerationProgress;
                   updated[updated.length - 1] = {
                     ...last,
                     _subAgentGenerationProgress: {
@@ -4549,29 +4560,29 @@ export default function ChatConversationComponent({
                       [subAgentId]: {
                         ...existing,
                         // Burst-scoped values for tok/s computation — only update when present
-                        ...(data.outputTokens != null && {
-                          outputTokens: data.outputTokens,
+                        ...((data as any).outputTokens != null && {
+                          outputTokens: (data as any).outputTokens,
                         }),
-                        ...(data.firstChunkTime != null && {
-                          firstChunkTime: data.firstChunkTime,
+                        ...((data as any).firstChunkTime != null && {
+                          firstChunkTime: (data as any).firstChunkTime,
                         }),
-                        ...(data.lastChunkTime != null && {
-                          lastChunkTime: data.lastChunkTime,
+                        ...((data as any).lastChunkTime != null && {
+                          lastChunkTime: (data as any).lastChunkTime,
                         }),
                         // Cumulative total for token badge count
                         totalOutputTokens:
-                          data.totalOutputTokens ||
-                          data.outputTokens ||
+                          (data as any).totalOutputTokens ||
+                          (data as any).outputTokens ||
                           existing.totalOutputTokens,
                         // Per-sub-agent tok/s from burst counters
-                        tokPerSec: data.tokPerSec ?? existing.tokPerSec,
-                        ...(data.inputTokens != null && {
-                          inputTokens: data.inputTokens,
+                        tokensPerSecond: (data as any).tokensPerSecond ?? existing.tokensPerSecond,
+                        ...((data as any).inputTokens != null && {
+                          inputTokens: (data as any).inputTokens,
                         }),
-                        ...(data.totalTokens != null && {
-                          totalTokens: data.totalTokens,
+                        ...((data as any).totalTokens != null && {
+                          totalTokens: (data as any).totalTokens,
                         }),
-                        ...(data.avgTtft != null && { avgTtft: data.avgTtft }),
+                        ...((data as any).avgTtft != null && { avgTtft: (data as any).avgTtft }),
                       },
                     },
                   };
@@ -4581,32 +4592,35 @@ export default function ChatConversationComponent({
               // Also store on subAgentToolActivity so TeamCreateRenderer can
               // display live per-sub-agent metrics on each sub-agent's header
               setSubAgentToolActivity((previousSubAgentToolActivity) => {
-                const existing = previousSubAgentToolActivity[subAgentId] || {
+                const existing = (previousSubAgentToolActivity[subAgentId] || {
                   toolCount: 0,
                   currentTool: null,
                   iteration: 0,
                   toolNames: {},
-                };
+                }) as SubAgentActivityEntry;
                 return {
                   ...previousSubAgentToolActivity,
                   [subAgentId]: {
                     ...existing,
-                    // Burst-scoped values — only update when present to prevent undefined overwrites
-                    ...(data.outputTokens != null && {
-                      outputTokens: data.outputTokens,
+                    status: (data as any).status || existing.status,
+                    iteration: (data as any).iteration || existing.iteration,
+                    // Burst-scoped values for header tok/s computation
+                    ...((data as any).outputTokens != null && {
+                      outputTokens: (data as any).outputTokens,
                     }),
-                    ...(data.firstChunkTime != null && {
-                      firstChunkTime: data.firstChunkTime,
+                    ...((data as any).firstChunkTime != null && {
+                      firstChunkTime: (data as any).firstChunkTime,
                     }),
-                    ...(data.lastChunkTime != null && {
-                      lastChunkTime: data.lastChunkTime,
+                    ...((data as any).lastChunkTime != null && {
+                      lastChunkTime: (data as any).lastChunkTime,
                     }),
+                    // Cumulative total for token badge count
                     totalOutputTokens:
-                      data.totalOutputTokens ||
-                      data.outputTokens ||
+                      (data as any).totalOutputTokens ||
+                      (data as any).outputTokens ||
                       existing.totalOutputTokens,
                     // Per-sub-agent tok/s from burst counters
-                    tokPerSec: data.tokPerSec ?? existing.tokPerSec,
+                    tokensPerSecond: (data as any).tokensPerSecond ?? existing.tokensPerSecond,
                     ...(data.inputTokens != null && {
                       inputTokens: data.inputTokens,
                     }),
@@ -4795,7 +4809,7 @@ export default function ChatConversationComponent({
 
               // Inject the notification as a user-role message
               updated.push({
-                role: "user",
+                role: MESSAGE_ROLES.USER,
                 content: data.content as string,
                 timestamp: data.timestamp as string,
                 _notificationSource: data._notificationSource as string,
@@ -4804,7 +4818,7 @@ export default function ChatConversationComponent({
 
               // Create a new empty assistant placeholder for the auto-response
               updated.push({
-                role: "assistant",
+                role: MESSAGE_ROLES.ASSISTANT,
                 content: "",
                 timestamp: new Date().toISOString(),
                 provider: settings.provider,
@@ -5107,7 +5121,7 @@ export default function ChatConversationComponent({
       }
 
       const userMessage = {
-        role: "user" as const,
+        role: MESSAGE_ROLES.USER,
         content: finalMessageContent,
         rawContent: text,
         timestamp: new Date().toISOString(),
@@ -5120,7 +5134,7 @@ export default function ChatConversationComponent({
       setMessages([
         ...updatedMessages,
         {
-          role: "assistant",
+          role: MESSAGE_ROLES.ASSISTANT,
           content: "",
           timestamp: new Date().toISOString(),
           provider: settings.provider,
@@ -5320,7 +5334,7 @@ export default function ChatConversationComponent({
           setMessages((previousMessages) => [
             ...previousMessages,
             {
-              role: "assistant",
+              role: MESSAGE_ROLES.ASSISTANT,
               content: `⚠️ Error: ${errorMessage}`,
               isError: true,
             },
@@ -5783,7 +5797,7 @@ export default function ChatConversationComponent({
               setPlanProposal({
                 plan: planText,
                 steps: planSteps,
-                status: "pending",
+                status: EXECUTION_STATUS.PENDING,
               });
             }
           } else if (pendingApprovalData.toolCalls) {
@@ -5793,7 +5807,7 @@ export default function ChatConversationComponent({
                 toolName: toolCall.name || "",
                 toolArgs: toolCall.args || {},
                 tier: toolCall._approval?.tier,
-                status: "pending",
+                status: EXECUTION_STATUS.PENDING,
               })),
             );
           } else if (pendingApprovalData.tools) {
@@ -5802,7 +5816,7 @@ export default function ChatConversationComponent({
                 id: `ap-${Date.now()}`,
                 toolName: toolName,
                 toolArgs: {},
-                status: "pending",
+                status: EXECUTION_STATUS.PENDING,
               })),
             );
           }
@@ -6228,7 +6242,7 @@ export default function ChatConversationComponent({
                 style={{
                   background: "rgba(99, 102, 241, 0.15)",
                   border: "1px solid rgba(99, 102, 241, 0.3)",
-                  color: "#818cf8",
+                  color: "oklch(0.65 0.2 277)",
                   padding: "3px 8px",
                   borderRadius: "4px",
                   fontSize: "11px",
@@ -6426,7 +6440,7 @@ export default function ChatConversationComponent({
                         setAutoApprove((previousAutoApprove) => {
                           const nextAutoApprove = !previousAutoApprove;
                           localStorage.setItem(
-                            LOCAL_STORAGE_AUTO_APPROVE_ENABLED,
+                            LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED,
                             String(nextAutoApprove),
                           );
                           return nextAutoApprove;
@@ -7261,7 +7275,7 @@ export default function ChatConversationComponent({
 
         {/* Pending approval cards */}
         {!isAdmin && pendingApprovals
-          .filter((approvalItem) => approvalItem.status === "pending")
+          .filter((approvalItem) => approvalItem.status === APPROVAL_STATUS.PENDING)
           .map((approval) => (
             <ApprovalCardComponent
               key={approval.id}
@@ -7291,7 +7305,7 @@ export default function ChatConversationComponent({
               onApproveAll={() => {
                 setPendingApprovals((previousPendingApprovals) =>
                   previousPendingApprovals.map((approvalItem) =>
-                    approvalItem.status === "pending" ? { ...approvalItem, status: "approved" } : approvalItem,
+                    approvalItem.status === APPROVAL_STATUS.PENDING ? { ...approvalItem, status: APPROVAL_STATUS.APPROVED } : approvalItem,
                   ),
                 );
                 setAutoApprove(true);
@@ -7391,18 +7405,23 @@ export default function ChatConversationComponent({
           ? derivedLabel || lastMessage?.status || iterationFallbackLabel
           : undefined;
 
-        const hasActiveTools = toolActivity.some((tool) => tool.status === "calling" || tool.status === "streaming");
+        const hasActiveTools = toolActivity.some((tool) => tool.status === EXECUTION_STATUS.CALLING || tool.status === EXECUTION_STATUS.STREAMING);
         // Detect awaiting-approval state (plan proposal or tool approval pending)
         const isAwaitingApproval =
-          planProposal?.status === "pending" ||
-          pendingApprovals.some((approvalItem) => approvalItem.status === "pending") ||
+          planProposal?.status === APPROVAL_STATUS.PENDING ||
+          pendingApprovals.some((approvalItem) => approvalItem.status === APPROVAL_STATUS.PENDING) ||
           pendingUserQuestion !== null;
 
         // -- Derive phase from live sub-agent activity --------------
         // When sub-agents are active (whether via an in-flight tool call
         // or after a non-blocking create_subagents dispatch), the orchestrator
         // bar should reflect the aggregate sub-agent state.
-        const terminalSubAgentPhases = new Set(["complete", "completed", "failed", "stopped"]);
+        const terminalSubAgentPhases = new Set<string>([
+          EXECUTION_STATUS.COMPLETE,
+          EXECUTION_STATUS.COMPLETED,
+          EXECUTION_STATUS.FAILED,
+          EXECUTION_STATUS.STOPPED,
+        ]);
         let subAgentDerivedPhase = null;
         let subAgentDerivedLabel = null;
         let hasNonTerminalSubAgents = false;
@@ -7432,18 +7451,18 @@ export default function ChatConversationComponent({
             (subAgent: SubAgentActivityEntry) =>
               subAgent.phase &&
               !terminalSubAgentPhases.has(subAgent.phase) &&
-              subAgent.phase !== "spawned",
+              subAgent.phase !== EXECUTION_STATUS.SPAWNED,
           );
           if (activeSubAgents.length > 0) {
             // Priority: generating > thinking > synthesizing > prefilling > executing > loading > starting
             const phasePriority = [
-              "generating",
-              "thinking",
-              "synthesizing",
-              "prefilling",
-              "executing",
-              "loading",
-              "starting",
+              EXECUTION_STATUS.GENERATING,
+              EXECUTION_STATUS.THINKING,
+              EXECUTION_STATUS.SYNTHESIZING,
+              EXECUTION_STATUS.PREFILLING,
+              EXECUTION_STATUS.EXECUTING,
+              EXECUTION_STATUS.LOADING,
+              EXECUTION_STATUS.STARTING,
             ];
             for (const phase of phasePriority) {
               const count = activeSubAgents.filter(
@@ -7487,7 +7506,7 @@ export default function ChatConversationComponent({
         const isToolGenerating =
           hasActiveTools &&
           liveGenProgress &&
-          ((liveGenProgress.activeRequests ?? 0) > 0 || (liveGenProgress.tokPerSec ?? 0) > 0);
+          ((liveGenProgress.activeRequests ?? 0) > 0 || (liveGenProgress.tokensPerSecond ?? 0) > 0);
 
         const phase = isGenerating
           ? isAwaitingApproval
@@ -7541,8 +7560,8 @@ export default function ChatConversationComponent({
         ) {
           orchestratorTokPerSec =
             liveStreamingBurstTokens / (liveStreamingBurstElapsed / 1000);
-        } else if (isToolGenerating && liveGenProgress && (liveGenProgress.tokPerSec ?? 0) > 0) {
-          orchestratorTokPerSec = liveGenProgress.tokPerSec;
+        } else if (isToolGenerating && liveGenProgress && (liveGenProgress.tokensPerSecond ?? 0) > 0) {
+          orchestratorTokPerSec = liveGenProgress.tokensPerSecond;
         }
 
         // The status bar is active when the orchestrator is generating,
@@ -7557,7 +7576,7 @@ export default function ChatConversationComponent({
             phase={phase as StatusBarPhase | undefined}
             label={label || undefined}
             progress={typeof progress === "number" ? progress : null}
-            tokPerSec={orchestratorTokPerSec}
+            tokensPerSecond={orchestratorTokPerSec}
             iteration={agenticProgress?.iteration || 0}
             maxIterations={
               Number.isFinite(maxIterations) ? maxIterations : undefined

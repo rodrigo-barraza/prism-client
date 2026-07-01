@@ -12,6 +12,7 @@ import {
   Layers,
 } from "lucide-react";
 import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
+import { EXECUTION_STATUS } from "../constants.ts";
 import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import { getErrorMessage } from "../utils/errorMessage";
@@ -24,21 +25,21 @@ import type { CoordinatorSubAgent } from "../types/types";
 import styles from "./SubAgentsPanelComponent.module.css";
 
 const STATUS_LABEL: Record<string, string> = {
-  running: "Running",
-  complete: "Complete",
-  completed: "Complete",
-  failed: "Failed",
-  stopped: "Stopped",
-  pending: "Pending",
+  [EXECUTION_STATUS.RUNNING]: "Running",
+  [EXECUTION_STATUS.COMPLETE]: "Complete",
+  [EXECUTION_STATUS.COMPLETED]: "Complete",
+  [EXECUTION_STATUS.FAILED]: "Failed",
+  [EXECUTION_STATUS.STOPPED]: "Stopped",
+  [EXECUTION_STATUS.PENDING]: "Pending",
 };
 
 const STATUS_CLASS: Record<string, string> = {
-  running: "status-running",
-  complete: "status-complete",
-  completed: "status-complete",
-  failed: "status-failed",
-  stopped: "status-stopped",
-  pending: "status-pending",
+  [EXECUTION_STATUS.RUNNING]: "status-running",
+  [EXECUTION_STATUS.COMPLETE]: "status-complete",
+  [EXECUTION_STATUS.COMPLETED]: "status-complete",
+  [EXECUTION_STATUS.FAILED]: "status-failed",
+  [EXECUTION_STATUS.STOPPED]: "status-stopped",
+  [EXECUTION_STATUS.PENDING]: "status-pending",
 };
 
 const CARD_CLASS: Record<string, string> = {
@@ -111,7 +112,7 @@ export default function SubAgentsPanel({
 
   // Auto-poll while any sub-agent is running (every 3s)
   useEffect(() => {
-    const hasRunning = subAgents.some((subAgentItem) => subAgentItem.status === "running");
+    const hasRunning = subAgents.some((subAgentItem) => subAgentItem.status === EXECUTION_STATUS.RUNNING);
 
     if (hasRunning) {
       pollRef.current = setInterval(loadSubAgents, POLL_FAST);
@@ -188,8 +189,8 @@ export default function SubAgentsPanel({
         const statusLabel = STATUS_LABEL[subAgent.status] || subAgent.status;
         const statusClass = STATUS_CLASS[subAgent.status] || "status-pending";
         const cardClass = CARD_CLASS[subAgent.status] || "";
-        const isLive = subAgent.status === "running";
-        const isComplete = subAgent.status === "complete" || subAgent.status === "completed";
+        const isLive = subAgent.status === EXECUTION_STATUS.RUNNING;
+        const isComplete = subAgent.status === EXECUTION_STATUS.COMPLETE || subAgent.status === EXECUTION_STATUS.COMPLETED;
 
         // Sub-agents are text-in → text-out agents
         const subAgentModalities = { textIn: true, textOut: true };

@@ -2,16 +2,16 @@ import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import React, { useState } from "react";
 import useTimeToFirstToken from "../src/hooks/useTtft";
-import type { ConversationTokenStats } from "../src/utils/utilities";
+import type { ConversationTokenMetrics } from "../src/utils/utilities";
 
 function TestTimeToFirstTokenComponent({
   initialStats,
   initialNeedsTicker,
 }: {
-  initialStats: Partial<ConversationTokenStats> | null;
+  initialStats: Partial<ConversationTokenMetrics> | null;
   initialNeedsTicker: boolean;
 }) {
-  const [stats, setStats] = useState<Partial<ConversationTokenStats> | null>(initialStats);
+  const [stats, setStats] = useState<Partial<ConversationTokenMetrics> | null>(initialStats);
   const [needsTicker, setNeedsTicker] = useState<boolean>(initialNeedsTicker);
   const [perfNow, setPerfNow] = useState<number>(1000);
 

@@ -7,6 +7,7 @@ import IrisService, {
   type IrisCollectionChangeEvent,
 } from "../services/IrisService";
 import PrismService from "../services/PrismService";
+import { EXECUTION_STATUS, LAYOUT, TIMING } from "../constants";
 import type { AgentConversation, ConversationStats, ToolSchema } from "../types/types";
 import {
   buildGraphFromConversation,
@@ -24,8 +25,8 @@ import {
    Each rendering instance applies its own viewport transform (zoom +
    pan) via animateToFitTransform to map these positions onto its
    actual canvas size. This decouples data/layout from viewport. */
-const CANONICAL_LAYOUT_WIDTH = 1600;
-const CANONICAL_LAYOUT_HEIGHT = 1000;
+const CANONICAL_LAYOUT_WIDTH = LAYOUT.CANONICAL_WIDTH;
+const CANONICAL_LAYOUT_HEIGHT = LAYOUT.CANONICAL_HEIGHT;
 
 /* ═══════════════════════════════════════════════════════════════════
    Public interface
@@ -225,13 +226,13 @@ export default function useConversationGraphData(
             id: PROACTIVE_PENDING_REQUEST_NODE_ID,
             label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
             category: "request",
-            radius: 24,
-            x: chainTail?.x ?? (agentNode?.x ?? 400) + 200,
-            y: chainTail ? chainTail.y + 80 : (agentNode?.y ?? 250),
+            radius: LAYOUT.NODE_RADIUS,
+            x: chainTail?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X,
+            y: chainTail ? chainTail.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y),
             velocityX: 0,
             velocityY: 0,
             sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
-            metadata: { operation: "pending", status: "pending" },
+            metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
           };
 
           graph.nodes.push(cascadingProactiveNode);
@@ -254,13 +255,13 @@ export default function useConversationGraphData(
             id: PROACTIVE_PENDING_REQUEST_NODE_ID,
             label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
             category: "request",
-            radius: 24,
-            x: chainTail?.x ?? (agentNode?.x ?? 400) + 200,
-            y: chainTail ? chainTail.y + 80 : (agentNode?.y ?? 250),
+            radius: LAYOUT.NODE_RADIUS,
+            x: chainTail?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X,
+            y: chainTail ? chainTail.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y),
             velocityX: 0,
             velocityY: 0,
             sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
-            metadata: { operation: "pending", status: "pending" },
+            metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
           };
 
           graph.nodes.push(reinjectedNode);
@@ -275,7 +276,7 @@ export default function useConversationGraphData(
 
       if (newNodeIds.size > 0) {
         setEnteringNodeIds(newNodeIds);
-        setTimeout(() => setEnteringNodeIds(new Set()), 600);
+        setTimeout(() => setEnteringNodeIds(new Set()), TIMING.ANIMATION_DURATION);
       }
 
       return graph;
@@ -348,7 +349,7 @@ export default function useConversationGraphData(
     let isCancelled = false;
     let pendingEventsBuffer: IrisCollectionChangeEvent[] = [];
     let conversationDocRefreshTimer: ReturnType<typeof setTimeout> | null = null;
-    const CONVERSATION_DOC_REFRESH_DEBOUNCE_MILLISECONDS = 500;
+    const CONVERSATION_DOC_REFRESH_DEBOUNCE_MILLISECONDS = TIMING.DEBOUNCE_STANDARD;
 
     const knownRequestIds = new Set<string>();
     for (const existingRequest of conversationRequestsRef.current) {
@@ -450,7 +451,7 @@ export default function useConversationGraphData(
     // ── Batched SSE processing ──────────────────────────────────
     let batchedChangeEvents: IrisCollectionChangeEvent[] = [];
     let batchFlushTimer: ReturnType<typeof setTimeout> | null = null;
-    const BATCH_WINDOW_MILLISECONDS = 150;
+    const BATCH_WINDOW_MILLISECONDS = TIMING.DEBOUNCE_FAST;
 
     const flushBatchedEvents = async () => {
       batchFlushTimer = null;
@@ -587,7 +588,7 @@ export default function useConversationGraphData(
       onStatus: (statusEvent: IrisCollectionChangeEvent) => {
         setIsLiveConnected(!!statusEvent.changeStreams);
         if (!statusEvent.changeStreams) {
-          if (!pollInterval) pollInterval = setInterval(performFullRefresh, 10_000);
+          if (!pollInterval) pollInterval = setInterval(performFullRefresh, TIMING.POLL_SLOW);
         }
       },
       onChange: (changeEvent: IrisCollectionChangeEvent) => {
@@ -691,14 +692,14 @@ export default function useConversationGraphData(
 
       // For subsequent turns, inject a turn boundary node first
       if (isSubsequentTurn) {
-        const turnNodeX = lastRequestNode?.x ?? (agentNode?.x ?? 400) + 200;
-        const turnNodeY = lastRequestNode ? lastRequestNode.y + 80 : (agentNode?.y ?? 250);
+        const turnNodeX = lastRequestNode?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X;
+        const turnNodeY = lastRequestNode ? lastRequestNode.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y);
 
         const proactiveTurnNode: GraphNode = {
           id: PROACTIVE_PENDING_TURN_NODE_ID,
           label: `Turn ${nextTurnIndex + 1}`,
           category: "turn",
-          radius: 24,
+          radius: LAYOUT.NODE_RADIUS,
           x: turnNodeX,
           y: turnNodeY,
           velocityX: 0,
@@ -715,39 +716,39 @@ export default function useConversationGraphData(
 
         // Chain: turn_node → pending_request
         const pendingNodeX = turnNodeX;
-        const pendingNodeY = turnNodeY + 80;
+        const pendingNodeY = turnNodeY + LAYOUT.NODE_SPACING_Y;
 
         const proactivePendingNode: GraphNode = {
           id: PROACTIVE_PENDING_REQUEST_NODE_ID,
           label: `#${nextSequenceNumber} pending`,
           category: "request",
-          radius: 24,
+          radius: LAYOUT.NODE_RADIUS,
           x: pendingNodeX,
           y: pendingNodeY,
           velocityX: 0,
           velocityY: 0,
           sequenceNumber: nextSequenceNumber,
-          metadata: { operation: "pending", status: "pending" },
+          metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
         };
         proactiveNodes.push(proactivePendingNode);
         enteringIds.add(PROACTIVE_PENDING_REQUEST_NODE_ID);
         proactiveEdges.push({ source: PROACTIVE_PENDING_TURN_NODE_ID, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
       } else {
         // First turn: just inject the pending request node
-        const proactiveNodeX = lastRequestNode?.x ?? (agentNode?.x ?? 400) + 200;
-        const proactiveNodeY = lastRequestNode ? lastRequestNode.y + 80 : (agentNode?.y ?? 250);
+        const proactiveNodeX = lastRequestNode?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X;
+        const proactiveNodeY = lastRequestNode ? lastRequestNode.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y);
 
         const proactivePendingNode: GraphNode = {
           id: PROACTIVE_PENDING_REQUEST_NODE_ID,
           label: `#${nextSequenceNumber} pending`,
           category: "request",
-          radius: 24,
+          radius: LAYOUT.NODE_RADIUS,
           x: proactiveNodeX,
           y: proactiveNodeY,
           velocityX: 0,
           velocityY: 0,
           sequenceNumber: nextSequenceNumber,
-          metadata: { operation: "pending", status: "pending" },
+          metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
         };
         proactiveNodes.push(proactivePendingNode);
         enteringIds.add(PROACTIVE_PENDING_REQUEST_NODE_ID);
@@ -776,7 +777,7 @@ export default function useConversationGraphData(
       });
 
       setEnteringNodeIds(enteringIds);
-      setTimeout(() => setEnteringNodeIds(new Set()), 600);
+      setTimeout(() => setEnteringNodeIds(new Set()), TIMING.ANIMATION_DURATION);
 
     // ── Removal: generation stopped ──
     } else if (!isGenerating && wasGenerating) {

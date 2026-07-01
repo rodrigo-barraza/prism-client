@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Clock, XCircle, Play } from "lucide-react";
 import { BadgeComponent } from "@rodrigo-barraza/components-library";
+import { EXECUTION_STATUS } from "../constants";
 import styles from "./TimerBadgeComponent.module.css";
 
 interface TimerBadgeComponentProps {
@@ -10,7 +11,7 @@ interface TimerBadgeComponentProps {
   firesAt: string;
   prompt: string;
   mode: "one_shot" | "recurring";
-  status: "active" | "fired" | "cancelled" | "expired";
+  status: (typeof EXECUTION_STATUS)[keyof typeof EXECUTION_STATUS];
   onCancel?: (timerId: string) => void;
   readOnly?: boolean;
 }
@@ -46,7 +47,7 @@ export default function TimerBadgeComponent({
     );
     setRemainingSeconds(differenceSeconds);
 
-    if (differenceSeconds <= 0 && status === "active") {
+    if (differenceSeconds <= 0 && status === EXECUTION_STATUS.ACTIVE) {
       setIsFiredLocal(true);
     }
   }, [firesAt, status]);
@@ -54,18 +55,16 @@ export default function TimerBadgeComponent({
   // Handle countdown interval
   useEffect(() => {
     calculateRemaining();
-    if (status !== "active") return;
+    if (status !== EXECUTION_STATUS.ACTIVE) return;
 
     const intervalId = setInterval(calculateRemaining, 1000);
     return () => clearInterval(intervalId);
   }, [firesAt, status, calculateRemaining]);
 
   // Determine badge styling based on state
-  const isTimerCancelled = status === "cancelled";
-  const isTimerFired =
-    status === "fired" || isFiredLocal || status === "expired";
-  const isTimerActive =
-    status === "active" && !isTimerFired && !isTimerCancelled;
+  const isTimerFired = status === EXECUTION_STATUS.FIRED || isFiredLocal || status === EXECUTION_STATUS.EXPIRED;
+  const isTimerCancelled = status === EXECUTION_STATUS.CANCELLED;
+  const isTimerActive = status === EXECUTION_STATUS.ACTIVE && !isTimerFired && !isTimerCancelled;
 
   let stateLabel = "";
   let badgeClass = styles['timer-badge-state-is-active-state'];

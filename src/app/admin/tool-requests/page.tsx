@@ -26,6 +26,7 @@ import RequestDetailsComponent from "../../../components/RequestDetailsComponent
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import { formatNumber, formatLatencyMilliseconds, formatDateTime, formatFileSize, formatCost } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../../utils/utilities";
+import { EXECUTION_STATUS } from "../../../constants";
 import { getToolRequestsColumns, ToolCallRecord } from "./toolRequestsColumns";
 import styles from "./page.module.css";
 
@@ -159,7 +160,7 @@ export default function ToolRequestsPage() {
   const handleFilterChange = useCallback((key: string, value: string) => {
     setFilters((previous) => ({ ...previous, [key]: value }));
     if (key === "domain") setFilterDomain(value);
-    if (key === "success") setFilterSuccess(value);
+    if (key === EXECUTION_STATUS.SUCCESS) setFilterSuccess(value);
     setPage(1);
   }, [setFilterDomain, setFilterSuccess]);
 

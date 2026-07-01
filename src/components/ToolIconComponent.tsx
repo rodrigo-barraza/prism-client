@@ -64,7 +64,7 @@ export default function ToolIconComponent({
                 <Icon
                   size={size}
                   style={{
-                    color: TOOL_COLORS[label] || "#f97316",
+                    color: TOOL_COLORS[label] || "oklch(0.692 0.218 36.634)",
                   }}
                 />
               </span>

@@ -109,7 +109,7 @@ interface StatusBarProps {
   label?: string;
   icon?: React.ReactNode;
   progress?: number | null;
-  tokPerSec?: number | null;
+  tokensPerSecond?: number | null;
   iteration?: number;
   maxIterations?: number;
   idleIcon?: React.ReactNode;
@@ -123,7 +123,7 @@ export default function StatusBarComponent({
   label,
   icon,
   progress,
-  tokPerSec,
+  tokensPerSecond,
   iteration,
   maxIterations,
   idleIcon,
@@ -254,9 +254,9 @@ export default function StatusBarComponent({
               <span className={styles['status-bar-progress']}>
                 {displayPercentage}%
               </span>
-              {tokPerSec != null && tokPerSec > 0 && (
+              {tokensPerSecond != null && tokensPerSecond > 0 && (
                 <span className={styles['status-bar-speed']}>
-                  ⚡ {tokPerSec.toFixed(1)} tok/s
+                  ⚡ {tokensPerSecond.toFixed(1)} tok/s
                 </span>
               )}
               {(iteration ?? 0) > 0 && (

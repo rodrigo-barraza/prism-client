@@ -9,6 +9,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import type { PrismSettings, PrismConfig, ModelOption, ParameterDescriptor } from "../types/types";
+import { BYTES_IN_KIB } from "../constants";
 import styles from "./SettingsPanelComponent.module.css";
 
 interface LoadedModelConfig {
@@ -27,7 +28,7 @@ interface LoadedModelConfig {
  */
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
-  const kilobyte = 1024;
+  const kilobyte = BYTES_IN_KIB;
   const sizes = ["B", "KB", "MB", "GB", "TB"];
   const index = Math.floor(Math.log(bytes) / Math.log(kilobyte));
   return `${parseFloat((bytes / Math.pow(kilobyte, index)).toFixed(2))} ${sizes[index]}`;

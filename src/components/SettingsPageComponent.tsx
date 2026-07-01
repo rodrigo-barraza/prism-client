@@ -58,6 +58,7 @@ import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import ToolLinkComponent from "./ToolLinkComponent";
 import { buildTopologyOptions, buildThoughtStructureOptions } from "./AgentStrategyOptionsComponent";
 import styles from "./SettingsPageComponent.module.css";
+import { BYTES_IN_MIB, BYTES_IN_GIB } from "../constants";
 
 import type {
   PrismSettings,
@@ -625,10 +626,10 @@ export default function SettingsPageComponent() {
   };
 
   const formatMemorySize = (totalBytes: number): string => {
-    const gigabytes = totalBytes / 1024 ** 3;
+    const gigabytes = totalBytes / BYTES_IN_GIB;
     return gigabytes >= 1
       ? `${gigabytes.toFixed(gigabytes >= 10 ? 0 : 1)} GB`
-      : `${(totalBytes / 1024 ** 2).toFixed(0)} MB`;
+      : `${(totalBytes / BYTES_IN_MIB).toFixed(0)} MB`;
   };
 
   const formatPlatformLabel = (hostInfo: HostInfo): string => {

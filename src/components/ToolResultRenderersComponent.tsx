@@ -47,6 +47,7 @@ import { ToolBadgeRow } from "./ToolBadgeComponent";
 import StatusBarComponent from "./StatusBarComponent";
 import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import PrismService from "../services/PrismService";
+import { EXECUTION_STATUS } from "../constants";
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import styles from "./ToolResultRenderersComponent.module.css";
 import TimerBadgeComponent from "./TimerBadgeComponent";
@@ -62,7 +63,7 @@ export interface SubAgentActivity {
   maxIterations?: number;
   phaseLabel?: string;
   phaseProgress?: number | null;
-  tokPerSec?: number | null;
+  tokensPerSecond?: number | null;
   toolNames?: string[] | Record<string, number> | Record<string, string>;
   description?: string;
   toolCalls?: import("../types/types").ToolCallEvent[];
@@ -1156,24 +1157,24 @@ const ANSI_RE = /\x1b\[([0-9;]*)m/g;
 
 const ANSI_COLORS = [
   null, // 0 – default
-  "#ef4444", // 1 – red
-  "#22c55e", // 2 – green
-  "#eab308", // 3 – yellow
-  "#3b82f6", // 4 – blue
-  "#a855f7", // 5 – magenta
-  "#06b6d4", // 6 – cyan
-  "#d4d4d8", // 7 – white
+  "oklch(0.585 0.22 25)", // 1 – red
+  "oklch(0.7 0.17 145)", // 2 – green
+  "oklch(0.769 0.177 90.046)", // 3 – yellow
+  "oklch(0.588 0.158 241.966)", // 4 – blue
+  "oklch(0.6 0.23 290)", // 5 – magenta
+  "oklch(0.7 0.15 195)", // 6 – cyan
+  "oklch(0.85 0.01 260)", // 7 – white
 ];
 
 const ANSI_BRIGHT_COLORS = [
-  "#71717a", // 0 – bright black (gray)
-  "#f87171", // 1 – bright red
-  "#4ade80", // 2 – bright green
-  "#fde047", // 3 – bright yellow
-  "#60a5fa", // 4 – bright blue
-  "#c084fc", // 5 – bright magenta
-  "#22d3ee", // 6 – bright cyan
-  "#ffffff", // 7 – bright white
+  "oklch(0.5 0.01 260)", // 0 – bright black (gray)
+  "oklch(0.65 0.15 25)", // 1 – bright red
+  "oklch(0.8 0.15 145)", // 2 – bright green
+  "oklch(0.9 0.15 90)", // 3 – bright yellow
+  "oklch(0.7 0.13 245)", // 4 – bright blue
+  "oklch(0.7 0.18 290)", // 5 – bright magenta
+  "oklch(0.8 0.13 195)", // 6 – bright cyan
+  "oklch(1 0 0)", // 7 – bright white
 ];
 
 function ansi256ToHex(colorCode: number): string | null | undefined {
@@ -1454,7 +1455,7 @@ function ScheduleRenderer({ result }: RendererProps) {
         firesAt={timer.firesAt}
         prompt={timer.prompt}
         mode={timer.mode}
-        status="active"
+        status={EXECUTION_STATUS.ACTIVE}
         readOnly={true}
       />
     </div>
@@ -2444,7 +2445,7 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
     maxIterations,
     phase,
   } = activity;
-  const isTerminal = phase === "complete" || phase === "completed" || phase === "failed" || phase === "stopped";
+  const isTerminal = phase === EXECUTION_STATUS.COMPLETE || phase === EXECUTION_STATUS.COMPLETED || phase === EXECUTION_STATUS.FAILED || phase === EXECUTION_STATUS.STOPPED;
   const isToolActive = !!currentTool;
 
   // Detect sub-sub-agent delegation: the sub-agent's LLM is "complete" but it
@@ -2465,9 +2466,9 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
 
   const isToolGenerating =
     isToolActive &&
-    activity.tokPerSec !== undefined &&
-    activity.tokPerSec !== null &&
-    activity.tokPerSec > 0;
+    activity.tokensPerSecond !== undefined &&
+    activity.tokensPerSecond !== null &&
+    activity.tokensPerSecond > 0;
 
   // Derive the effective phase for StatusBarComponent:
   // - Sub-sub-agents still running → "delegating" (teal — awaiting nested team)
@@ -2500,13 +2501,13 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
         : undefined;
   // Progress (0-1) from LM Studio prompt processing / model loading
   const progress =
-    effectivePhase === "prefilling" || effectivePhase === "loading"
+    effectivePhase === EXECUTION_STATUS.PREFILLING || effectivePhase === EXECUTION_STATUS.LOADING
       ? (activity.phaseProgress ?? null)
       : null;
 
   // Idle label reflects terminal state or tool count
   const idleLabel = isTerminal
-    ? phase === "failed"
+    ? phase === EXECUTION_STATUS.FAILED
       ? "Sub-agent failed"
       : `Done · ${toolCount} tool${toolCount !== 1 ? "s" : ""} used`
     : toolCount > 0
@@ -2516,11 +2517,11 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
   // Per-sub-agent tok/s from the backend's burst-scoped generation progress.
   // Use the pre-computed value directly — it's authoritative from the
   // CoordinatorService which tracks per-sub-agent burst counters independently.
-  let tokPerSec = null;
+  let tokensPerSecond = null;
   if (isToolGenerating) {
-    tokPerSec = activity.tokPerSec;
+    tokensPerSecond = activity.tokensPerSecond;
   } else if (!isToolActive && (phase === "generating" || phase === "thinking")) {
-    tokPerSec = activity.tokPerSec ?? null;
+    tokensPerSecond = activity.tokensPerSecond ?? null;
   }
 
   return (
@@ -2531,7 +2532,7 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
       label={label ?? undefined}
       icon={icon}
       progress={progress}
-      tokPerSec={tokPerSec}
+      tokensPerSecond={tokensPerSecond}
       iteration={iteration}
       maxIterations={maxIterations}
       idleIcon={<Users size={10} />}
@@ -2715,10 +2716,10 @@ function TeamCreateRenderer({
   }, [hasActiveSubAgents]);
 
   const getSubAgentTokPerSec = (activity: SubAgentActivity | null) => {
-    if (!activity?.tokPerSec) return null;
+    if (!activity?.tokensPerSecond) return null;
     if (activity.phase !== "generating" && activity.phase !== "thinking")
       return null;
-    return activity.tokPerSec;
+    return activity.tokensPerSecond;
   };
 
   const orderedSubAgentIds = useMemo(() => {
@@ -2757,16 +2758,17 @@ function TeamCreateRenderer({
   // hasError is declared earlier (before hasActiveSubAgents) — see above.
   const succeeded =
     parsed?.succeeded ??
-    resultMembers.filter((member) => member.status === "completed").length;
+    resultMembers.filter((member) => member.status === EXECUTION_STATUS.COMPLETED).length;
   const failed =
     parsed?.failed ??
-    resultMembers.filter((member) => member.status === "failed").length;
+    resultMembers.filter((member) => member.status === EXECUTION_STATUS.FAILED).length;
   const allDone = parsedIsComplete
     ? resultMembers.every(
         (member: Record<string, unknown>) =>
-          member.status === "completed" ||
-          member.status === "failed" ||
-          member.status === "stopped",
+          member.status === EXECUTION_STATUS.COMPLETED ||
+          member.status === EXECUTION_STATUS.COMPLETE ||
+          member.status === EXECUTION_STATUS.FAILED ||
+          member.status === EXECUTION_STATUS.STOPPED,
       )
     : false;
   const teamSuccess = failed === 0 && !hasError;
@@ -2776,7 +2778,7 @@ function TeamCreateRenderer({
     : argMembers.map((member) => ({
         agent_id: undefined,
         description: member.description || "",
-        status: "running",
+        status: EXECUTION_STATUS.RUNNING,
         durationMs: 0,
         toolUses: 0,
         iterations: 0,
@@ -2812,11 +2814,12 @@ function TeamCreateRenderer({
       {membersList.map((member, index) => {
         const activity = getActivity(member, index);
         const isTerminal =
-          member.status === "completed" ||
-          member.status === "failed" ||
-          member.status === "stopped";
-        const isCompleted = member.status === "completed";
-        const tokPerSec = !isTerminal ? getSubAgentTokPerSec(activity) : null;
+          member.status === EXECUTION_STATUS.COMPLETED ||
+          member.status === EXECUTION_STATUS.COMPLETE ||
+          member.status === EXECUTION_STATUS.FAILED ||
+          member.status === EXECUTION_STATUS.STOPPED;
+        const isCompleted = member.status === EXECUTION_STATUS.COMPLETED || member.status === EXECUTION_STATUS.COMPLETE;
+        const tokensPerSecond = !isTerminal ? getSubAgentTokPerSec(activity) : null;
 
         const toolNames = activity?.toolNames || member.toolNames;
 
@@ -2841,9 +2844,9 @@ function TeamCreateRenderer({
               <span className={styles['renderer-title']}>
                 Sub-Agent {index + 1}: <strong>{member.description}</strong>
               </span>
-              {tokPerSec !== null && (
+              {tokensPerSecond !== null && (
                 <span className={styles['sub-agent-speed-badge']}>
-                  ⚡ {tokPerSec.toFixed(1)} tok/s
+                  ⚡ {tokensPerSecond.toFixed(1)} tok/s
                 </span>
               )}
               <StatusBadge

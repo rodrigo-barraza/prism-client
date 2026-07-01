@@ -91,14 +91,14 @@ interface ToolDetailModalComponentProps {
 /* -- Agent color mapping ------------------------------------- */
 
 const AGENT_COLORS: Record<string, string> = {
-  CODING: "#3b82f6",
-  OMNI: "#dc2626",
-  OOG: "#a78bfa",
-  LUPOS: "#ef4444",
-  STICKERS: "#f59e0b",
-  LIGHTS: "#22c55e",
-  DIGEST: "#14b8a6",
-  IMAGE: "#ec4899",
+  CODING: "oklch(0.588 0.158 241.966)",
+  OMNI: "oklch(0.5 0.22 25)",
+  OOG: "oklch(0.7 0.15 280)",
+  LUPOS: "oklch(0.585 0.22 25)",
+  STICKERS: "oklch(0.769 0.188 70.08)",
+  LIGHTS: "oklch(0.7 0.17 145)",
+  DIGEST: "oklch(0.697 0.148 185.045)",
+  IMAGE: "oklch(0.627 0.231 348.347)",
 };
 
 function getAgentColor(agentId: string) {

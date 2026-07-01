@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { ClipboardList, Check, X, ChevronDown, ChevronUp } from "lucide-react";
 import MarkdownContent from "./MarkdownContentComponent";
 import { ButtonComponent } from "@rodrigo-barraza/components-library";
+import { APPROVAL_STATUS } from "../constants";
 import styles from "./PlanCardComponent.module.css";
 
 export interface PlanCardProps {
@@ -12,7 +13,7 @@ export interface PlanCardProps {
   completedSteps?: number[];
   onApprove?: () => void;
   onReject?: () => void;
-  status?: "pending" | "approved" | "rejected" | "executing";
+  status?: (typeof APPROVAL_STATUS)[keyof typeof APPROVAL_STATUS] | "executing";
 }
 
 /**
@@ -79,7 +80,7 @@ export default function PlanCardComponent({
 
       {expanded && (
         <>
-          {status === "pending" && (
+          {status === APPROVAL_STATUS.PENDING && (
             <div className={styles['actions']}>
               <ButtonComponent
                 variant="primary"

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import ToolsApiService from "../services/ToolsApiService";
 import type { AgenticTask } from "../services/ToolsApiService";
+import { EXECUTION_STATUS } from "../constants";
 import { getErrorMessage } from "../utils/errorMessage";
 import {
   SearchInputComponent,
@@ -415,7 +416,7 @@ export default function TasksPanel({
                 onClick={() => setExpandedId(isExpanded ? null : task.taskId)}
               >
                 <div
-                  className={`${styles['task-subject']} ${task.status === "completed" ? styles['task-done'] : ""}`}
+                  className={`${styles['task-subject']} ${task.status === EXECUTION_STATUS.COMPLETED ? styles['task-done'] : ""}`}
                 >
                   <span className={styles['task-id-badge']}>#{task.taskId}</span>
                   {task.subject}

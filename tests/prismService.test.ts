@@ -476,7 +476,7 @@ describe("PrismService", () => {
     });
 
     it("getMedia & getText list with filters", async () => {
-      await PrismService.fetchMedia({ limit: 10, type: "image" });
+      await PrismService.getMedia({ limit: 10, type: "image" });
       expect(lastUrl).toContain("/media?limit=10&type=image");
 
       await PrismService.getText({ limit: 5, search: "query" });

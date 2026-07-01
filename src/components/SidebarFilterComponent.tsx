@@ -245,7 +245,7 @@ export default function SidebarFilterComponent({
       key: "fav",
       label: "Favorites",
       icon: Star,
-      color: "#eab308",
+      color: "oklch(0.769 0.177 90.046)",
       onRemove: () => onFavoritesToggle?.(),
     });
   }
@@ -294,7 +294,7 @@ export default function SidebarFilterComponent({
       key: "date",
       label: dateLabel,
       icon: Calendar,
-      color: "#6366f1",
+      color: "oklch(0.585 0.233 277.117)",
       onRemove: () => onDateChange?.({ from: "", to: "" }),
     });
   }
@@ -341,7 +341,7 @@ export default function SidebarFilterComponent({
                         className={`${styles['menu-item']} ${isActive ? styles['menu-item-is-active-state'] : ""}`}
                         onClick={() => onDateChange(preset.getValue())}
                       >
-                        <Calendar size={13} style={{ color: "#6366f1" }} />
+                        <Calendar size={13} style={{ color: "oklch(0.585 0.233 277.117)" }} />
                         <span>{preset.label}</span>
                         {isActive && (
                           <span className={styles['menu-check']}>✓</span>
@@ -357,7 +357,7 @@ export default function SidebarFilterComponent({
                       setIsOpen(false);
                     }}
                   >
-                    <Calendar size={13} style={{ color: "#6366f1" }} />
+                    <Calendar size={13} style={{ color: "oklch(0.585 0.233 277.117)" }} />
                     <span>Custom…</span>
                     {!getActiveDatePreset(dateFrom, dateTo) &&
                       (dateFrom || dateTo) && (
@@ -377,7 +377,7 @@ export default function SidebarFilterComponent({
                       onFavoritesToggle();
                     }}
                   >
-                    <Star size={13} style={{ color: "#eab308" }} />
+                    <Star size={13} style={{ color: "oklch(0.769 0.177 90.046)" }} />
                     <span>Favorites Only</span>
                     {showFavoritesOnly && (
                       <span className={styles['menu-check']}>✓</span>

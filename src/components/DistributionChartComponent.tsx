@@ -14,23 +14,23 @@ import type {
 } from "../types/types";
 
 const COLORS = [
-  "#6366f1",
-  "#a855f7",
-  "#ec4899",
-  "#f59e0b",
-  "#10b981",
-  "#3b82f6",
-  "#ef4444",
-  "#06b6d4",
-  "#84cc16",
-  "#f97316",
-  "#14b8a6",
-  "#8b5cf6",
+  "oklch(0.585 0.233 277.117)",
+  "oklch(0.6 0.23 290)",
+  "oklch(0.627 0.231 348.347)",
+  "oklch(0.769 0.188 70.08)",
+  "oklch(0.705 0.191 165.574)",
+  "oklch(0.588 0.158 241.966)",
+  "oklch(0.585 0.22 25)",
+  "oklch(0.7 0.15 195)",
+  "oklch(0.75 0.2 110)",
+  "oklch(0.692 0.218 36.634)",
+  "oklch(0.697 0.148 185.045)",
+  "oklch(0.606 0.25 293.528)",
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  Success: "#10b981",
-  Error: "#ef4444",
+  Success: "oklch(0.705 0.191 165.574)",
+  Error: "oklch(0.585 0.22 25)",
 };
 
 /* -- Metric definitions -- */
@@ -241,7 +241,7 @@ function ActiveSectorRenderer(props: ActiveSectorRendererProps) {
         x={cx}
         y={cy - 8}
         textAnchor="middle"
-        fill="#f8f8f8"
+        fill="oklch(0.97 0 0)"
         fontSize="12"
         fontWeight="600"
       >
@@ -249,11 +249,11 @@ function ActiveSectorRenderer(props: ActiveSectorRendererProps) {
           ? payload.name.slice(0, 14) + "…"
           : payload.name}
       </text>
-      <text x={cx} y={cy + 8} textAnchor="middle" fill="#8e95ae" fontSize="11">
+      <text x={cx} y={cy + 8} textAnchor="middle" fill="oklch(0.65 0.03 260)" fontSize="11">
         {formattedValue}
         {unit ? ` ${unit}` : ""}
       </text>
-      <text x={cx} y={cy + 22} textAnchor="middle" fill="#5a6078" fontSize="10">
+      <text x={cx} y={cy + 22} textAnchor="middle" fill="oklch(0.45 0.05 260)" fontSize="10">
         {(percent * 100).toFixed(1)}%
       </text>
     </g>

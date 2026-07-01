@@ -9,6 +9,7 @@ import {
   IconButtonComponent,
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "./BadgeComponent";
+import { EXECUTION_STATUS } from "../constants";
 
 /**
  * SubAgentNotificationComponent — renders a task-notification card
@@ -17,7 +18,7 @@ import BadgeComponent from "./BadgeComponent";
  * formatting (code blocks, lists, links, etc.).
  */
 export interface TaskNotification {
-  status?: "completed" | "failed" | "running" | string | null;
+  status?: (typeof EXECUTION_STATUS)[keyof typeof EXECUTION_STATUS] | string | null;
   durationMs?: number | string | null;
   summary?: string | null;
   toolUses?: number | string | null;
@@ -38,17 +39,17 @@ export default function SubAgentNotificationComponent({
   onDelete,
 }: SubAgentNotificationProps) {
   const statusIcon =
-    taskNotif.status === "completed"
+    taskNotif.status === EXECUTION_STATUS.COMPLETED
       ? "✓"
-      : taskNotif.status === "failed"
+      : taskNotif.status === EXECUTION_STATUS.FAILED
         ? "✗"
         : "■";
 
   const statusColor =
-    taskNotif.status === "completed"
-      ? "var(--color-success, #22c55e)"
-      : taskNotif.status === "failed"
-        ? "var(--color-danger, #ef4444)"
+    taskNotif.status === EXECUTION_STATUS.COMPLETED
+      ? "var(--color-success, oklch(0.7 0.17 145))"
+      : taskNotif.status === EXECUTION_STATUS.FAILED
+        ? "var(--color-danger, oklch(0.585 0.22 25))"
         : "var(--text-muted)";
 
   const formattedDuration = taskNotif.durationMs

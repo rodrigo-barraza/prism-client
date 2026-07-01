@@ -47,6 +47,7 @@ import ImagePreviewComponent from "./ImagePreviewComponent";
 import styles from "./MessageListComponent.module.css";
 import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
+import { EXECUTION_STATUS, APPROVAL_STATUS } from "../constants";
 import { getTotalInputTokens } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
@@ -129,7 +130,7 @@ function parseTaskNotification(content: string | undefined | null) {
 
   return {
     taskId: null,
-    status: "completed",
+    status: EXECUTION_STATUS.COMPLETED,
     summary: cleanedSummary,
     result: resultBody || null,
     toolUses: 0,
@@ -2299,7 +2300,7 @@ export default function MessageList({
                       {/* Plan proposal card — fallback for non-segmented messages */}
                       {planProposal &&
                         message.role === "assistant" &&
-                        (planProposal.status === "pending"
+                        (planProposal.status === APPROVAL_STATUS.PENDING
                           ? i === messages.length - 1
                           : message.toolCalls?.some((toolCall) => toolCall.name === TOOL_NAMES.EXIT_PLAN_MODE)) &&
                         !message.contentSegments?.some(

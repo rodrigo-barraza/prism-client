@@ -144,7 +144,7 @@ export default function FilterDropdownComponent({
       key: "date",
       label: dateLabel,
       icon: Calendar,
-      color: "#6366f1",
+      color: "oklch(0.585 0.233 277.117)",
       onRemove: () => onDateChange?.({ from: "", to: "" }),
     });
   }
@@ -215,7 +215,7 @@ export default function FilterDropdownComponent({
                             onDateChange(preset.getValue()),
                           ) as Record<string, React.MouseEventHandler>)}
                         >
-                          <Calendar size={13} style={{ color: "#6366f1" }} />
+                          <Calendar size={13} style={{ color: "oklch(0.585 0.233 277.117)" }} />
                           <span>{preset.label}</span>
                           {isActive && (
                             <span className={styles['menu-check']}>✓</span>
@@ -232,7 +232,7 @@ export default function FilterDropdownComponent({
                       setIsOpen(false);
                     }) as Record<string, React.MouseEventHandler>)}
                   >
-                    <Calendar size={13} style={{ color: "#6366f1" }} />
+                    <Calendar size={13} style={{ color: "oklch(0.585 0.233 277.117)" }} />
                     <span>Custom…</span>
                     {!getActiveDatePreset(dateFrom, dateTo) &&
                       (dateFrom || dateTo) && (

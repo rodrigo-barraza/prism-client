@@ -1,5 +1,5 @@
 import { useReducer, useMemo } from "react";
-import type { ConversationTokenStats } from "../utils/utilities";
+import type { ConversationTokenMetrics } from "../utils/utilities";
 
 // --- Types --------------------------------------------------
 
@@ -110,7 +110,7 @@ const TIME_TO_FIRST_TOKEN_INITIAL: TimeToFirstTokenState = {
  * `avgTimeToGeneration` from backend conversation stats.
  */
 export default function useTimeToFirstToken(
-  conversationStats: Partial<ConversationTokenStats> | null,
+  conversationStats: Partial<ConversationTokenMetrics> | null,
   perfNow: number,
   needsTicker: boolean,
 ): { liveTimeToFirstToken: number | null; isLiveTimeToFirstToken: boolean } {

@@ -6,6 +6,8 @@
 // PrismService → hooks → components → utils — eliminating `as any`.
 // ============================================================
 
+import { MESSAGE_ROLES, EXECUTION_STATUS } from "../constants";
+
 // --- Identifiers --------------------------------------------
 
 /** MongoDB ObjectId string or UUID */
@@ -263,7 +265,6 @@ export interface SubAgentGenerationProgress {
   outputTokens?: number;
   totalOutputTokens?: number;
   tokensPerSecond?: number;
-  tokPerSec?: number;
   toolNames?: Record<string, number>;
 }
 
@@ -315,7 +316,7 @@ export interface ConversationMeta {
 }
 
 export interface Message {
-  role: "user" | "assistant" | "system" | "tool";
+  role: (typeof MESSAGE_ROLES)[keyof typeof MESSAGE_ROLES];
   content: string;
   rawContent?: string;
   images?: string[];
@@ -1277,7 +1278,12 @@ export interface BenchmarkRun {
   benchmarkId: ObjectId;
   results?: BenchmarkRunResult[];
   models?: BenchmarkRunResult[];
-  status?: "pending" | "running" | "completed" | "failed" | "aborted";
+  status?:
+    | typeof EXECUTION_STATUS.PENDING
+    | typeof EXECUTION_STATUS.RUNNING
+    | typeof EXECUTION_STATUS.COMPLETED
+    | typeof EXECUTION_STATUS.FAILED
+    | "aborted";
   startedAt?: string;
   completedAt?: string;
   aborted?: boolean;

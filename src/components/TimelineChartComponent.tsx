@@ -73,11 +73,11 @@ interface TimelineTabDefinition {
   unit: string;
 }
 const TABS = [
-  { key: "requests", label: "Requests", color: "#6366f1", unit: "" },
-  { key: "tokens", label: "Tokens", color: "#a855f7", unit: "" },
-  { key: "cost", label: "Cost", color: "#f59e0b", unit: "$" },
-  { key: "avgLatency", label: "Latency", color: "#ec4899", unit: "ms" },
-  { key: "successRate", label: "Success", color: "#10b981", unit: "%" },
+  { key: "requests", label: "Requests", color: "oklch(0.585 0.233 277.117)", unit: "" },
+  { key: "tokens", label: "Tokens", color: "oklch(0.6 0.23 290)", unit: "" },
+  { key: "cost", label: "Cost", color: "oklch(0.769 0.188 70.08)", unit: "$" },
+  { key: "avgLatency", label: "Latency", color: "oklch(0.627 0.231 348.347)", unit: "ms" },
+  { key: "successRate", label: "Success", color: "oklch(0.705 0.191 165.574)", unit: "%" },
 ];
 
 /**
@@ -178,7 +178,7 @@ function SparseTick({ x, y, payload, data }: RechartsTickProps & { data?: Timeli
   const text = entry?.tickLabel;
   if (!text) return null;
   return (
-    <text x={x} y={Number(y) + 12} textAnchor="middle" fill="#5a6078" fontSize={11}>
+    <text x={x} y={Number(y) + 12} textAnchor="middle" fill="oklch(0.45 0.05 260)" fontSize={11}>
       {text}
     </text>
   );
@@ -338,14 +338,14 @@ export default function TimelineChartComponent({
                 tick={
                   hasSubHourBins
                     ? renderTick
-                    : { fill: "#5a6078", fontSize: 11 }
+                    : { fill: "oklch(0.45 0.05 260)", fontSize: 11 }
                 }
                 axisLine={{ stroke: "rgba(255,255,255,0.06)" }}
                 tickLine={false}
                 interval={hasSubHourBins ? 0 : "preserveStartEnd"}
               />
               <YAxis
-                tick={{ fill: "#5a6078", fontSize: 11 }}
+                tick={{ fill: "oklch(0.45 0.05 260)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(value) => yTickFormatter(value, tab.key)}

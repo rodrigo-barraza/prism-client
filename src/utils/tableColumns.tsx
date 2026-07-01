@@ -41,7 +41,7 @@ import {
 import {
   getTotalInputTokens,
 } from "./utilities";
-import { PROVIDER_COLORS } from "../constants";
+import { PROVIDER_COLORS, BYTES_IN_KIB, KIB_IN_MIB, MIB_IN_GIB, MESSAGE_ROLES, CATEGORIES, EXECUTION_STATUS } from "../constants";
 import styles from "../components/TableComponentsComponent.module.css";
 import type { TokenUsage } from "../types/types";
 
@@ -154,7 +154,7 @@ export const modelColumn = () => ({
   description: "The AI model identifier used for the request",
   render: (row: TableRow) => (
     <BadgeComponent
-      type="model"
+      type={CATEGORIES.MODEL}
       models={row.model ? [row.model as string] : []}
       provider={row.provider as string | undefined}
     />
@@ -180,7 +180,7 @@ export const projectColumn = () => ({
   description: "The project or application this request belongs to",
   render: (row: TableRow) => (
     <BadgeComponent
-      type="project"
+      type={CATEGORIES.PROJECT}
       project={row.project as string | undefined}
     />
   ),
@@ -192,7 +192,7 @@ export const userColumn = () => ({
   description: "The user who initiated this request",
   sortable: false,
   render: (row: TableRow) => (
-    <BadgeComponent type="user" username={row.username as string | undefined} />
+    <BadgeComponent type={CATEGORIES.USER} username={row.username as string | undefined} />
   ),
 });
 
@@ -207,7 +207,7 @@ export const modelsListColumn = ({
   sortable: false,
   render: (row: TableRow) => (
     <BadgeComponent
-      type="model"
+      type={CATEGORIES.MODEL}
       models={row.models as string[] | undefined}
       providers={row.providers as string[] | undefined}
       mini={mini}
@@ -225,7 +225,7 @@ export const modelCountColumn = () => ({
     0,
   render: (row: TableRow) => (
     <BadgeComponent
-      type="model"
+      type={CATEGORIES.MODEL}
       models={(row.models as string[] | undefined) ?? []}
       providers={row.providers as string[] | undefined}
     />
@@ -576,7 +576,7 @@ export const durationColumn = ({
         })();
     const duration = formatDuration(durationMilliseconds);
     if (!duration) return emptyDash();
-    return <BadgeComponent type="stopwatch" seconds={durationMilliseconds / 1000} />;
+    return <BadgeComponent type="stopwatch" seconds={durationMilliseconds / BYTES_IN_KIB} />;
   },
 });
 
@@ -735,7 +735,7 @@ export const agentColumn = () => ({
     const agents =
       (row.agents as string[] | undefined) ??
       (row.agent ? [row.agent as string] : []);
-    return <BadgeComponent type="agent" agents={agents} />;
+    return <BadgeComponent type={CATEGORIES.AGENT} agents={agents} />;
   },
 });
 
@@ -750,10 +750,10 @@ export const statusColumn = () => ({
   render: (row: TableRow) => {
     const statusVariant =
       row.success === true
-        ? "success"
+        ? EXECUTION_STATUS.SUCCESS
         : row.success === false
-          ? "error"
-          : "warning";
+          ? EXECUTION_STATUS.ERROR
+          : EXECUTION_STATUS.WARNING;
     const statusLabel =
       row.success === true
         ? "OK"
@@ -905,9 +905,9 @@ export const benchmarkSizeColumn = ({
     if (!match) return 0;
     const value = parseFloat(match[1]);
     const unit = match[2].toUpperCase();
-    if (unit === "GB") return value * 1024;
+    if (unit === "GB") return value * MIB_IN_GIB;
     if (unit === "MB") return value;
-    return value / 1024;
+    return value / KIB_IN_MIB;
   },
   align: "right" as const,
   render: (row: TableRow) => {

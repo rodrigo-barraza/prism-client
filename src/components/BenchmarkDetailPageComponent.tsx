@@ -30,7 +30,7 @@ import BenchmarksTableComponent from "./BenchmarksTableComponent";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
 import StorageService from "../services/StorageService";
-import { STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, AGENT_IDS } from "../constants";
+import { STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, AGENT_IDS, EXECUTION_STATUS, MESSAGE_ROLES } from "../constants";
 import { formatCost, generateUUID } from "@rodrigo-barraza/utilities-library";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./BenchmarkPageComponent.module.css";
@@ -580,7 +580,7 @@ export default function BenchmarkDetailPageComponent({
               id: toolCall.id,
               name: toolCall.name,
               args: toolCall.args,
-              status: "calling",
+              status: EXECUTION_STATUS.CALLING,
             },
           ];
         } else {
@@ -618,7 +618,7 @@ export default function BenchmarkDetailPageComponent({
               id: tool.id,
               name: tool.name,
               args: tool.args,
-              status: "calling",
+              status: EXECUTION_STATUS.CALLING,
             },
           ];
         } else {
@@ -1669,11 +1669,11 @@ export default function BenchmarkDetailPageComponent({
               systemPrompt={benchmark.systemPrompt}
               messages={
                 [
-                  { role: "user", content: benchmark.prompt || "" },
+                  { role: MESSAGE_ROLES.USER, content: benchmark.prompt || "" },
                   ...(selectedResult?.response
                     ? [
                         {
-                          role: "assistant" as const,
+                          role: MESSAGE_ROLES.ASSISTANT,
                           content: selectedResult.response,
                           thinking: selectedResult.thinking || undefined,
                           toolCalls: selectedResult.toolCalls || undefined,
@@ -1685,7 +1685,7 @@ export default function BenchmarkDetailPageComponent({
                   ...(!selectedResult && viewedActiveModel
                     ? [
                         {
-                          role: "assistant" as const,
+                          role: MESSAGE_ROLES.ASSISTANT,
                           content: liveSnapshot.text || "",
                           thinking: liveSnapshot.thinking || undefined,
                           toolCalls:

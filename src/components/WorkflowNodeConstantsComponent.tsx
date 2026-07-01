@@ -24,55 +24,55 @@ import {
 
 // -- Modality Icons (icon, label, color) --
 export const MODALITY_ICONS = {
-  text: { icon: Type, label: "Text", color: "#6366f1" },
-  image: { icon: Image, label: "Image", color: "#10b981" },
-  audio: { icon: Volume2, label: "Audio", color: "#f59e0b" },
-  video: { icon: Video, label: "Video", color: "#f43f5e" },
-  pdf: { icon: FileText, label: "PDF", color: "#64748b" },
-  embedding: { icon: Hash, label: "Embedding", color: "#06b6d4" },
+  text: { icon: Type, label: "Text", color: "oklch(0.585 0.233 277.117)" },
+  image: { icon: Image, label: "Image", color: "oklch(0.705 0.191 165.574)" },
+  audio: { icon: Volume2, label: "Audio", color: "oklch(0.769 0.188 70.08)" },
+  video: { icon: Video, label: "Video", color: "oklch(0.627 0.226 28.324)" },
+  pdf: { icon: FileText, label: "PDF", color: "oklch(0.553 0.013 255.487)" },
+  embedding: { icon: Hash, label: "Embedding", color: "oklch(0.697 0.148 209.91)" },
   conversation: {
     icon: MessageSquare,
     label: "Conversation",
-    color: "#8b5cf6",
+    color: "oklch(0.606 0.25 293.528)",
   },
-  webSearch: { icon: Globe, label: "Web Search", color: "#3b82f6" },
-  codeExecution: { icon: Code, label: "Code Execution", color: "#8b5cf6" },
+  webSearch: { icon: Globe, label: "Web Search", color: "oklch(0.588 0.158 241.966)" },
+  codeExecution: { icon: Code, label: "Code Execution", color: "oklch(0.606 0.25 293.528)" },
   functionCalling: {
     icon: Wrench,
     label: "Tool Calling",
-    color: "#f97316",
+    color: "oklch(0.692 0.218 36.634)",
   },
-  thinking: { icon: Brain, label: "Thinking", color: "#eab308" },
+  thinking: { icon: Brain, label: "Thinking", color: "oklch(0.769 0.177 90.046)" },
 };
 
 // -- Modality Colors --
 export const MODALITY_COLORS = {
-  text: "#6366f1",
-  image: "#10b981",
-  audio: "#f59e0b",
-  video: "#f43f5e",
-  pdf: "#64748b",
-  embedding: "#06b6d4",
-  conversation: "#8b5cf6",
-  webSearch: "#3b82f6",
-  codeExecution: "#8b5cf6",
-  functionCalling: "#f97316",
-  thinking: "#eab308",
+  text: "oklch(0.585 0.233 277.117)",
+  image: "oklch(0.705 0.191 165.574)",
+  audio: "oklch(0.769 0.188 70.08)",
+  video: "oklch(0.627 0.226 28.324)",
+  pdf: "oklch(0.553 0.013 255.487)",
+  embedding: "oklch(0.697 0.148 209.91)",
+  conversation: "oklch(0.606 0.25 293.528)",
+  webSearch: "oklch(0.588 0.158 241.966)",
+  codeExecution: "oklch(0.606 0.25 293.528)",
+  functionCalling: "oklch(0.692 0.218 36.634)",
+  thinking: "oklch(0.769 0.177 90.046)",
 };
 
 // -- Tool Colors --
 export const TOOL_COLORS: Record<string, string> = {
-  Thinking: "#eab308",
-  "Tool Calling": "#f97316",
-  "Web Search": "#3b82f6",
-  "Google Search": "#3b82f6",
-  googleSearch: "#3b82f6",
-  "Web Fetch": "#3b82f6",
-  "Code Execution": "#8b5cf6",
-  "Computer Use": "#10b981",
-  "File Search": "#64748b",
-  "URL Context": "#06b6d4",
-  "Image Generation": "#f43f5e",
+  Thinking: "oklch(0.769 0.177 90.046)",
+  "Tool Calling": "oklch(0.692 0.218 36.634)",
+  "Web Search": "oklch(0.588 0.158 241.966)",
+  "Google Search": "oklch(0.588 0.158 241.966)",
+  googleSearch: "oklch(0.588 0.158 241.966)",
+  "Web Fetch": "oklch(0.588 0.158 241.966)",
+  "Code Execution": "oklch(0.606 0.25 293.528)",
+  "Computer Use": "oklch(0.705 0.191 165.574)",
+  "File Search": "oklch(0.553 0.013 255.487)",
+  "URL Context": "oklch(0.697 0.148 209.91)",
+  "Image Generation": "oklch(0.627 0.226 28.324)",
 };
 
 // -- Tool Icon Map (Component references — render as <Icon size={size} />) --
@@ -104,12 +104,12 @@ export function resolveToolVisuals(name: string): ToolVisuals {
   if (resolvedIcon) {
     return {
       Icon: resolvedIcon,
-      color: TOOL_COLORS[name] || "#f59e0b",
+      color: TOOL_COLORS[name] || "oklch(0.769 0.188 70.08)",
     };
   }
   return {
     Icon: TOOL_ICON_MAP["Tool Calling"] || Wrench,
-    color: TOOL_COLORS["Tool Calling"] || "#f97316",
+    color: TOOL_COLORS["Tool Calling"] || "oklch(0.692 0.218 36.634)",
   };
 }
 

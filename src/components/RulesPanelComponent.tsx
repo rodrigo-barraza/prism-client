@@ -19,11 +19,12 @@ import {
   TextAreaComponent,
   SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
+import { TRUNCATION_LIMITS } from "../constants";
 import styles from "./RulesPanelComponent.module.css";
 import type { Rule } from "@/types/types";
 
 const CONTENT_WARN_CHARS = 2000;
-const CONTENT_MAX_CHARS = 10000;
+const CONTENT_MAX_CHARS = TRUNCATION_LIMITS.MAX_CONTENT_CHARS;
 
 /**
  * RulesPanel — CRUD interface for per-agent rules (slash commands).

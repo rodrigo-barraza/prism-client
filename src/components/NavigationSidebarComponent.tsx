@@ -36,7 +36,7 @@ import SpinningCatComponent from "./SpinningCatComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./NavigationSidebarComponent.module.css";
 import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
-import { LOCAL_STORAGE_KEY_PANEL_NAV, LOCAL_STORAGE_KEY_PANEL_LEFT, LOCAL_STORAGE_KEY_PANEL_RIGHT, LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT, EVENT_NAME_CRON_JOB_SCHEDULED, EVENT_NAME_PRISM_SETTINGS_UPDATED } from "../constants";
+import { LOCAL_STORAGE_KEY_PANEL_NAV, LOCAL_STORAGE_KEY_PANEL_LEFT, LOCAL_STORAGE_KEY_PANEL_RIGHT, LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT, EVENT_NAME_CRON_JOB_SCHEDULED, EVENT_NAME_PRISM_SETTINGS_UPDATED, EXECUTION_STATUS } from "../constants";
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
@@ -413,7 +413,7 @@ export default function NavigationSidebarComponent({
         if (!element) continue;
 
         // Phase transition: sub-agent finished → start winding down
-        if (cat.retired && catState.phase === "active") {
+        if (cat.retired && catState.phase === EXECUTION_STATUS.ACTIVE) {
           catState.phase = "windingDown";
         }
 
@@ -448,7 +448,7 @@ export default function NavigationSidebarComponent({
           };
         };
 
-        if (catState.phase === "active") {
+        if (catState.phase === EXECUTION_STATUS.ACTIVE) {
           // --- Active: bouncing, FX ramping up ---
           catState.x += catState.vx * dt;
           catState.y += catState.vy * dt;

@@ -194,7 +194,7 @@ export default function AudioPlayerRecorderComponent({
     const canvas = playerCanvasRef.current;
     if (!canvas || !peaks) return;
     const progress = duration > 0 ? currentTime / duration : 0;
-    drawBars(canvas, peaks, progress, "#888888", "#333333");
+    drawBars(canvas, peaks, progress, "oklch(0.6 0 0)", "oklch(0.3 0 0)");
   }, [peaks, currentTime, duration]);
 
   useEffect(() => {
@@ -275,7 +275,7 @@ export default function AudioPlayerRecorderComponent({
       for (let i = 0; i < currentPeaks.length; i++) {
         const amp = currentPeaks[i];
         const barH = Math.max(2, amp * (canvasHeight * 0.85));
-        context.fillStyle = "#ef4444";
+        context.fillStyle = "oklch(0.585 0.22 25)";
         context.fillRect(
           startX + i * (BAR_WIDTH + BAR_GAP),
           mid - barH / 2,

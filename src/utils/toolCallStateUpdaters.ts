@@ -7,6 +7,7 @@
  */
 
 import type { ToolCallEvent, ContentSegment } from "../types/types";
+import { MESSAGE_ROLES } from "../constants";
 
 // --- Shared message shape (subset of ClientMessage) -------------
 export interface ToolMessageSlice {
@@ -123,7 +124,7 @@ export function applyToolExecutionToMessages(
   } else {
     // Tool events can arrive before any text chunks — create placeholder
     array.push({
-      role: "assistant",
+      role: MESSAGE_ROLES.ASSISTANT,
       content: "",
       toolCalls: updatedToolCalls,
       contentSegments: snapshot.contentSegments,
@@ -285,7 +286,7 @@ export function applyToolCallToMessages(
     };
   } else {
     array.push({
-      role: "assistant",
+      role: MESSAGE_ROLES.ASSISTANT,
       content: "",
       toolCalls: updatedToolCalls,
       contentSegments: snapshot.contentSegments,

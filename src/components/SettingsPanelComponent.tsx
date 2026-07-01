@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_WORKFLOW_TITLE, FALLBACK_THINKING_PATTERNS, LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE } from "@/constants";
+import { DEFAULT_WORKFLOW_TITLE, FALLBACK_THINKING_PATTERNS, LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE, MESSAGE_ROLES } from "@/constants";
 import { useState, useEffect } from "react";
 import {
   Cpu,
@@ -238,7 +238,7 @@ export default function SettingsPanel({
           ...(settings.systemPrompt
             ? [
                 {
-                  role: "system",
+                  role: MESSAGE_ROLES.SYSTEM,
                   content: settings.systemPrompt,
                 },
               ]
@@ -272,9 +272,9 @@ export default function SettingsPanel({
         provider: settings.provider ?? "",
         model: settings.model ?? "",
         messages: [
-          { role: "system", content: settings.systemPrompt || "" },
+          { role: MESSAGE_ROLES.SYSTEM, content: settings.systemPrompt || "" },
           {
-            role: "user",
+            role: MESSAGE_ROLES.USER,
             content: "Hello",
           },
         ],

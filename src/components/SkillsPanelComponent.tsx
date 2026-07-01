@@ -11,11 +11,12 @@ import {
   TextAreaComponent,
   SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
+import { TRUNCATION_LIMITS } from "../constants";
 import styles from "./SkillsPanelComponent.module.css";
 import type { Skill } from "@/types/types";
 
 const CONTENT_WARN_CHARS = 2000;
-const CONTENT_MAX_CHARS = 10000;
+const CONTENT_MAX_CHARS = TRUNCATION_LIMITS.MAX_CONTENT_CHARS;
 
 /**
  * SkillsPanel — CRUD interface for project-scoped agent skills.

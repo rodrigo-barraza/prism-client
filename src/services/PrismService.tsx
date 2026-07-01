@@ -1,4 +1,4 @@
-import { AGENT_IDS, EVENT_NAME_PRISM_SETTINGS_UPDATED } from "@/constants";
+import { AGENT_IDS, EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS } from "@/constants";
 import { SERVER_SENT_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
@@ -92,7 +92,7 @@ export default class PrismService {
    */
   static async _request<T = unknown>(
     endpoint: string,
-    { method = "POST", body }: { method?: string; body?: unknown } = {},
+    { method = HTTP_METHODS.POST, body }: { method?: string; body?: unknown } = {},
   ): Promise<T> {
     const response = await fetch(`${API_BASE}${endpoint}`, {
       method,
@@ -146,7 +146,7 @@ export default class PrismService {
    */
   static async getConfig(): Promise<PrismConfig> {
     const config = await PrismService._request<PrismConfig>("/config", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
     // Register local provider metadata (nicknames, instance numbers)
     // on every config fetch — enables resolveProviderLabel() globally
@@ -174,7 +174,7 @@ export default class PrismService {
     serviceInstance?: typeof PrismService;
   } = {}): Promise<PrismConfig> {
     const service = serviceInstance || PrismService;
-    const config = await service._request<PrismConfig>("/config?includeLocal=true", { method: "GET" });
+    const config = await service._request<PrismConfig>("/config?includeLocal=true", { method: HTTP_METHODS.GET });
 
     if (config?.localProviders) {
       setLocalProviderMeta(config.localProviders);
@@ -195,7 +195,7 @@ export default class PrismService {
   static async getBuiltInToolSchemas(agent?: string): Promise<ToolSchema[]> {
     const queryString = agent ? `?agent=${encodeURIComponent(agent)}` : "";
     return PrismService._request<ToolSchema[]>(`/config/tools${queryString}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -208,7 +208,7 @@ export default class PrismService {
   }> {
     return PrismService._request<{ ok: boolean; count: number }>(
       "/config/tools/refresh",
-      { method: "POST" },
+      { method: HTTP_METHODS.POST },
     );
   }
 
@@ -236,7 +236,7 @@ export default class PrismService {
       estimatedTokens: number;
       baselineBudget?: ContextBudget;
     }>("/config/system-prompt-preview", {
-      method: "POST",
+      method: HTTP_METHODS.POST,
       body: options,
     });
   }
@@ -246,7 +246,7 @@ export default class PrismService {
    */
   static async getAgentPersonas(): Promise<AgentPersona[]> {
     return PrismService._request<AgentPersona[]>("/config/agents", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -259,7 +259,7 @@ export default class PrismService {
    */
   static async getModelStats(): Promise<ModelUsageStat[]> {
     return PrismService._request<ModelUsageStat[]>("/stats/models", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -270,7 +270,7 @@ export default class PrismService {
    */
   static async getToolStats(): Promise<ToolUsageStat[]> {
     return PrismService._request<ToolUsageStat[]>("/admin/stats/tools", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -297,7 +297,7 @@ export default class PrismService {
     return PrismService._request<ConversationListResponse>(
       `/conversations${query ? `?${query}` : ""}`,
       {
-        method: "GET",
+        method: HTTP_METHODS.GET,
       },
     );
   }
@@ -309,7 +309,7 @@ export default class PrismService {
    */
   static async getConversation(id: string): Promise<Conversation> {
     return PrismService._request<Conversation>(`/conversations/${id}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -320,7 +320,7 @@ export default class PrismService {
    */
   static async deleteConversation(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/conversations/${id}`, {
-      method: "DELETE",
+      method: HTTP_METHODS.DELETE,
     });
   }
 
@@ -329,7 +329,7 @@ export default class PrismService {
    */
   static async getConversationTimers(id: string): Promise<ConversationTimer[]> {
     return PrismService._request<ConversationTimer[]>(`/conversations/${id}/timers`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -342,7 +342,7 @@ export default class PrismService {
   ): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(
       `/conversations/${id}/timers/${timerId}/cancel`,
-      { method: "POST" },
+      { method: HTTP_METHODS.POST },
     );
   }
 
@@ -372,7 +372,7 @@ export default class PrismService {
     if (cursor) queryString.set("cursor", cursor);
     return PrismService._request<AgentConversationListResponse>(
       `/conversations?${queryString}`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -387,7 +387,7 @@ export default class PrismService {
   ): Promise<AgentConversation> {
     return PrismService._request<AgentConversation>(
       `/conversations/${id}?project=${encodeURIComponent(project)}`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -402,7 +402,7 @@ export default class PrismService {
   ): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(
       `/conversations/${id}?project=${encodeURIComponent(project)}`,
-      { method: "DELETE" },
+      { method: HTTP_METHODS.DELETE },
     );
   }
 
@@ -448,7 +448,7 @@ export default class PrismService {
       ? `?project=${encodeURIComponent(project)}`
       : "";
     return PrismService._request<Conversation>(`/conversations/${id}${queryString}`, {
-      method: "PATCH",
+      method: HTTP_METHODS.PATCH,
       body: updates,
     });
   }
@@ -465,7 +465,7 @@ export default class PrismService {
   static async getFavorites(type?: string): Promise<Favorite[]> {
     const queryString = type ? `?type=${encodeURIComponent(type)}` : "";
     return PrismService._request<Favorite[]>(`/favorites${queryString}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -495,7 +495,7 @@ export default class PrismService {
   ): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(
       `/favorites?type=${encodeURIComponent(type)}&key=${encodeURIComponent(key)}`,
-      { method: "DELETE" },
+      { method: HTTP_METHODS.DELETE },
     );
   }
 
@@ -510,7 +510,7 @@ export default class PrismService {
    */
   static async getCustomAgents(): Promise<CustomAgent[]> {
     return PrismService._request<CustomAgent[]>("/custom-agents", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -523,7 +523,7 @@ export default class PrismService {
     agent: Omit<CustomAgent, "_id">,
   ): Promise<CustomAgent> {
     return PrismService._request<CustomAgent>("/custom-agents", {
-      method: "POST",
+      method: HTTP_METHODS.POST,
       body: agent,
     });
   }
@@ -538,7 +538,7 @@ export default class PrismService {
     updates: Partial<CustomAgent>,
   ): Promise<CustomAgent> {
     return PrismService._request<CustomAgent>(`/custom-agents/${id}`, {
-      method: "PUT",
+      method: HTTP_METHODS.PUT,
       body: updates,
     });
   }
@@ -550,7 +550,7 @@ export default class PrismService {
    */
   static async deleteCustomAgent(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/custom-agents/${id}`, {
-      method: "DELETE",
+      method: HTTP_METHODS.DELETE,
     });
   }
 
@@ -568,7 +568,7 @@ export default class PrismService {
       ? `?project=${encodeURIComponent(project)}`
       : "";
     return PrismService._request<Skill[]>(`/skills${queryString}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -579,7 +579,7 @@ export default class PrismService {
    */
   static async createSkill(skill: Omit<Skill, "_id">): Promise<Skill> {
     return PrismService._request<Skill>("/skills", {
-      method: "POST",
+      method: HTTP_METHODS.POST,
       body: skill,
     });
   }
@@ -594,7 +594,7 @@ export default class PrismService {
     updates: Partial<Skill>,
   ): Promise<Skill> {
     return PrismService._request<Skill>(`/skills/${id}`, {
-      method: "PUT",
+      method: HTTP_METHODS.PUT,
       body: updates,
     });
   }
@@ -606,7 +606,7 @@ export default class PrismService {
    */
   static async deleteSkill(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/skills/${id}`, {
-      method: "DELETE",
+      method: HTTP_METHODS.DELETE,
     });
   }
 
@@ -617,27 +617,27 @@ export default class PrismService {
   static async getRules(agent?: string): Promise<Rule[]> {
     const queryString = agent ? `?agent=${encodeURIComponent(agent)}` : "";
     return PrismService._request<Rule[]>(`/rules${queryString}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
   static async createRule(rule: Omit<Rule, "_id">): Promise<Rule> {
     return PrismService._request<Rule>("/rules", {
-      method: "POST",
+      method: HTTP_METHODS.POST,
       body: rule,
     });
   }
 
   static async updateRule(id: string, updates: Partial<Rule>): Promise<Rule> {
     return PrismService._request<Rule>(`/rules/${id}`, {
-      method: "PUT",
+      method: HTTP_METHODS.PUT,
       body: updates,
     });
   }
 
   static async deleteRule(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/rules/${id}`, {
-      method: "DELETE",
+      method: HTTP_METHODS.DELETE,
     });
   }
 
@@ -665,7 +665,7 @@ export default class PrismService {
     if (type) queryString.set("type", type);
     return PrismService._request<AgentMemoryListResponse>(
       `/agent-memories?${queryString}`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -676,7 +676,7 @@ export default class PrismService {
   static async deleteAgentMemory(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(
       `/agent-memories/${id}`,
-      { method: "DELETE" },
+      { method: HTTP_METHODS.DELETE },
     );
   }
 
@@ -689,7 +689,7 @@ export default class PrismService {
     if (agent) queryString.set("agent", agent);
     return PrismService._request<{ success: boolean; deletedCount: number }>(
       `/agent-memories/all?${queryString}`,
-      { method: "DELETE" },
+      { method: HTTP_METHODS.DELETE },
     );
   }
 
@@ -704,7 +704,7 @@ export default class PrismService {
     return PrismService._request<{ merged: number; created: number }>(
       "/agent-memories/consolidate",
       {
-        method: "POST",
+        method: HTTP_METHODS.POST,
         body: { project, ...(agent ? { agent } : {}) },
       },
     );
@@ -739,7 +739,7 @@ export default class PrismService {
         created: number;
       }>;
     }>(`/agent-memories/consolidation-history?${queryString}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -752,7 +752,7 @@ export default class PrismService {
 
    */
   static async getSettings(): Promise<PrismSettings> {
-    return PrismService._request<PrismSettings>("/settings", { method: "GET" });
+    return PrismService._request<PrismSettings>("/settings", { method: HTTP_METHODS.GET });
   }
 
   /**
@@ -763,7 +763,7 @@ export default class PrismService {
     data: Partial<PrismSettings>,
   ): Promise<PrismSettings> {
     const updatedSettings = await PrismService._request<PrismSettings>("/settings", {
-      method: "PUT",
+      method: HTTP_METHODS.PUT,
       body: data,
     });
     if (typeof window !== "undefined") {
@@ -780,7 +780,7 @@ export default class PrismService {
    */
   static async getSettingsDefaults(): Promise<PrismSettings> {
     return PrismService._request<PrismSettings>("/settings/defaults", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -789,7 +789,7 @@ export default class PrismService {
    */
   static async getHarnesses(): Promise<AgenticHarness[]> {
     return PrismService._request<AgenticHarness[]>("/settings/harnesses", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -798,7 +798,7 @@ export default class PrismService {
    */
   static async getAvailableLocales(): Promise<{ value: string; label: string }[]> {
     return PrismService._request<{ value: string; label: string }[]>("/config/locales", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -808,7 +808,7 @@ export default class PrismService {
 
   static async getTopologies(): Promise<TopologyDefinition[]> {
     return PrismService._request<TopologyDefinition[]>("/topologies", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -818,7 +818,7 @@ export default class PrismService {
 
   static async getThoughtStructures(): Promise<ThoughtStructureDefinition[]> {
     return PrismService._request<ThoughtStructureDefinition[]>("/thought-structures", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -848,7 +848,7 @@ export default class PrismService {
       ? `?project=${encodeURIComponent(project)}`
       : "";
     return PrismService._request<MCPServer[]>(`/mcp-servers${queryString}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -861,7 +861,7 @@ export default class PrismService {
     server: Omit<MCPServer, "_id">,
   ): Promise<MCPServer> {
     return PrismService._request<MCPServer>("/mcp-servers", {
-      method: "POST",
+      method: HTTP_METHODS.POST,
       body: server,
     });
   }
@@ -876,7 +876,7 @@ export default class PrismService {
     updates: Partial<MCPServer>,
   ): Promise<MCPServer> {
     return PrismService._request<MCPServer>(`/mcp-servers/${id}`, {
-      method: "PUT",
+      method: HTTP_METHODS.PUT,
       body: updates,
     });
   }
@@ -888,7 +888,7 @@ export default class PrismService {
    */
   static async deleteMCPServer(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/mcp-servers/${id}`, {
-      method: "DELETE",
+      method: HTTP_METHODS.DELETE,
     });
   }
 
@@ -910,7 +910,7 @@ export default class PrismService {
       toolCount: number;
       tools: Array<{ name: string; description?: string }>;
     }>(`/mcp-servers/${id}/connect`, {
-      method: "POST",
+      method: HTTP_METHODS.POST,
     });
   }
 
@@ -922,7 +922,7 @@ export default class PrismService {
     return PrismService._request<{ success: boolean }>(
       `/mcp-servers/${id}/disconnect`,
       {
-        method: "POST",
+        method: HTTP_METHODS.POST,
       },
     );
   }
@@ -959,7 +959,7 @@ export default class PrismService {
     const response = await PrismService._request<SubAgentsResponse>(
       `/orchestrator/sub-agents${queryString}`,
       {
-        method: "GET",
+        method: HTTP_METHODS.GET,
       },
     );
     const subAgentsList = response.subAgents || [];
@@ -991,7 +991,7 @@ export default class PrismService {
       stopped: string[];
       alreadyStopped: string[];
     }>("/orchestrator/sub-agents/stop", {
-      method: "POST",
+      method: HTTP_METHODS.POST,
       body: { conversationId },
     });
   }
@@ -1007,7 +1007,7 @@ export default class PrismService {
     return PrismService._request<{ ok: boolean; stopped: boolean }>(
       "/agent/stop",
       {
-        method: "POST",
+        method: HTTP_METHODS.POST,
         body: { conversationId },
       },
     );
@@ -1021,11 +1021,11 @@ export default class PrismService {
    * Fetch all cron jobs.
    */
   static async getCronJobs(): Promise<ScheduledTask[]> {
-    return PrismService._request<ScheduledTask[]>("/scheduled-tasks", { method: "GET" });
+    return PrismService._request<ScheduledTask[]>("/scheduled-tasks", { method: HTTP_METHODS.GET });
   }
 
   static async getAllCronJobs(): Promise<ScheduledTask[]> {
-    return PrismService._request<ScheduledTask[]>("/scheduled-tasks/all", { method: "GET" });
+    return PrismService._request<ScheduledTask[]>("/scheduled-tasks/all", { method: HTTP_METHODS.GET });
   }
 
   static async getTaskConversations(
@@ -1040,7 +1040,7 @@ export default class PrismService {
     queryString.set("limit", String(limit));
     return PrismService._request<AgentConversationListResponse>(
       `/conversations?${queryString}`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -1054,7 +1054,7 @@ export default class PrismService {
     },
   ): Promise<ScheduledTask> {
     return PrismService._request<ScheduledTask>("/scheduled-tasks", {
-      method: "POST",
+      method: HTTP_METHODS.POST,
       body: task,
     });
   }
@@ -1067,7 +1067,7 @@ export default class PrismService {
     updates: Partial<ScheduledTask>,
   ): Promise<ScheduledTask> {
     return PrismService._request<ScheduledTask>(`/scheduled-tasks/${id}`, {
-      method: "PATCH",
+      method: HTTP_METHODS.PATCH,
       body: updates,
     });
   }
@@ -1079,7 +1079,7 @@ export default class PrismService {
     return PrismService._request<{ success: boolean }>(
       `/scheduled-tasks/${id}`,
       {
-        method: "DELETE",
+        method: HTTP_METHODS.DELETE,
       },
     );
   }
@@ -1093,7 +1093,7 @@ export default class PrismService {
     return PrismService._request<{ success: boolean; agentConversationId: string }>(
       `/scheduled-tasks/${id}/trigger`,
       {
-        method: "POST",
+        method: HTTP_METHODS.POST,
       },
     );
   }
@@ -1181,7 +1181,7 @@ export default class PrismService {
    */
   static _streamSSE(
     endpoint: string,
-    { method = "POST", body }: { method?: string; body?: unknown } = {},
+    { method = HTTP_METHODS.POST, body }: { method?: string; body?: unknown } = {},
     callbacks: SSECallbacks = {},
   ): () => void {
     const { onError } = callbacks;
@@ -1526,7 +1526,7 @@ export default class PrismService {
    */
   static async generateSpeech(payload: TTSPayload): Promise<TTSResponse> {
     const response = await fetch(`${API_BASE}/text-to-audio?format=dataUrl`, {
-      method: "POST",
+      method: HTTP_METHODS.POST,
       headers: getHeaders(),
       body: JSON.stringify(payload),
     });
@@ -1572,7 +1572,7 @@ export default class PrismService {
    */
   static async getWorkflows(): Promise<Workflow[]> {
     return PrismService._request<Workflow[]>("/workflows?source=prism-client", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -1583,7 +1583,7 @@ export default class PrismService {
    */
   static async getWorkflow(id: string): Promise<Workflow> {
     return PrismService._request<Workflow>(`/workflows/${id}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -1612,7 +1612,7 @@ export default class PrismService {
     workflow: Partial<Workflow>,
   ): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/workflows/${id}`, {
-      method: "PUT",
+      method: HTTP_METHODS.PUT,
       body: workflow,
     });
   }
@@ -1623,7 +1623,7 @@ export default class PrismService {
    */
   static async deleteWorkflow(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/workflows/${id}`, {
-      method: "DELETE",
+      method: HTTP_METHODS.DELETE,
     });
   }
 
@@ -1639,7 +1639,7 @@ export default class PrismService {
     return PrismService._request<{ success: boolean }>(
       `/workflows/${id}/conversations`,
       {
-        method: "PATCH",
+        method: HTTP_METHODS.PATCH,
         body: { conversationIds },
       },
     );
@@ -1653,7 +1653,7 @@ export default class PrismService {
    * List media items from the caller's project conversations.
 
    */
-  static async fetchMedia(
+  static async getMedia(
     parameters: Record<string, string | number | boolean> = {},
   ): Promise<MediaListResponse> {
     const stringParameters: Record<string, string> = {};
@@ -1662,7 +1662,7 @@ export default class PrismService {
     return PrismService._request<MediaListResponse>(
       `/media${query ? `?${query}` : ""}`,
       {
-        method: "GET",
+        method: HTTP_METHODS.GET,
       },
     );
   }
@@ -1684,7 +1684,7 @@ export default class PrismService {
     return PrismService._request<TextListResponse>(
       `/text${query ? `?${query}` : ""}`,
       {
-        method: "GET",
+        method: HTTP_METHODS.GET,
       },
     );
   }
@@ -1700,7 +1700,7 @@ export default class PrismService {
     const queryString = instanceId ? `?instance=${encodeURIComponent(instanceId)}` : "";
     return PrismService._request<{ models: LmStudioModel[] }>(
       `/lm-studio/models${queryString}`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -1720,7 +1720,7 @@ export default class PrismService {
         : "";
       return await PrismService._request<LlamaCppServerProps>(
         `/lm-studio/server-props${queryString}`,
-        { method: "GET" },
+        { method: HTTP_METHODS.GET },
       );
     } catch {
       return null;
@@ -1734,7 +1734,7 @@ export default class PrismService {
     const queryString = instanceId ? `?instance=${encodeURIComponent(instanceId)}` : "";
     return PrismService._request<{ models: LmStudioModel[] }>(
       `/ollama/models${queryString}`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -1837,7 +1837,7 @@ export default class PrismService {
         if (onProgress) onProgress(0);
 
         const response = await fetch(`${API_BASE}/lm-studio/load`, {
-          method: "POST",
+          method: HTTP_METHODS.POST,
           headers: getHeaders(),
           body: JSON.stringify(body),
           signal: controller.signal,
@@ -1876,7 +1876,7 @@ export default class PrismService {
    */
   static async getBenchmarkPresets(): Promise<BenchmarkPreset[]> {
     const response = await PrismService._request<{ presets: BenchmarkPreset[]; count: number }>("/benchmark/presets", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
     return response.presets;
   }
@@ -1886,7 +1886,7 @@ export default class PrismService {
    */
   static async getBenchmarks(): Promise<BenchmarkListResponse> {
     return PrismService._request<BenchmarkListResponse>("/benchmark", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -1895,7 +1895,7 @@ export default class PrismService {
    */
   static async getBenchmarkStats(): Promise<BenchmarkModelStats> {
     return PrismService._request<BenchmarkModelStats>("/benchmark/stats", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -1908,7 +1908,7 @@ export default class PrismService {
   }> {
     return PrismService._request<{ models: ModelOption[]; count: number }>(
       "/benchmark/models",
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -1930,7 +1930,7 @@ export default class PrismService {
    */
   static async getBenchmark(id: string): Promise<Benchmark> {
     return PrismService._request<Benchmark>(`/benchmark/${id}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -1941,7 +1941,7 @@ export default class PrismService {
    */
   static async deleteBenchmark(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/benchmark/${id}`, {
-      method: "DELETE",
+      method: HTTP_METHODS.DELETE,
     });
   }
 
@@ -1992,7 +1992,7 @@ export default class PrismService {
   ): Promise<{ runs: BenchmarkRun[]; count: number }> {
     return PrismService._request<{ runs: BenchmarkRun[]; count: number }>(
       `/benchmark/${id}/runs`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -2032,7 +2032,7 @@ export default class PrismService {
   static async getActiveBenchmarks(): Promise<{ activeIds: string[] }> {
     return PrismService._request<{ activeIds: string[] }>(
       "/benchmark/active-list",
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -2045,7 +2045,7 @@ export default class PrismService {
   ): Promise<{ active: boolean; runId?: string }> {
     return PrismService._request<{ active: boolean; runId?: string }>(
       `/benchmark/${id}/active`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -2061,7 +2061,7 @@ export default class PrismService {
   ): () => void {
     return PrismService._streamSSE(
       `/benchmark/${id}/follow`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
       callbacks,
     );
   }
@@ -2076,7 +2076,7 @@ export default class PrismService {
    */
   static async getSynthesisRuns(): Promise<SynthesisRun[]> {
     return PrismService._request<SynthesisRun[]>("/synthesis", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -2087,7 +2087,7 @@ export default class PrismService {
    */
   static async getSynthesisRun(id: string): Promise<SynthesisRun> {
     return PrismService._request<SynthesisRun>(`/synthesis/${id}`, {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -2109,7 +2109,7 @@ export default class PrismService {
    */
   static async deleteSynthesisRun(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/synthesis/${id}`, {
-      method: "DELETE",
+      method: HTTP_METHODS.DELETE,
     });
   }
 
@@ -2127,7 +2127,7 @@ export default class PrismService {
     const query = new URLSearchParams(parameters).toString();
     return PrismService._request<{ count: number; data: VramBenchmarkEntry[] }>(
       `/vram-benchmarks${query ? `?${query}` : ""}`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -2138,7 +2138,7 @@ export default class PrismService {
     return PrismService._request<VramBenchmarkMachine[]>(
       "/vram-benchmarks/machines",
       {
-        method: "GET",
+        method: HTTP_METHODS.GET,
       },
     );
   }
@@ -2149,7 +2149,7 @@ export default class PrismService {
    */
   static async getVramBenchmarkSettings(): Promise<string[]> {
     return PrismService._request<string[]>("/vram-benchmarks/settings", {
-      method: "GET",
+      method: HTTP_METHODS.GET,
     });
   }
 
@@ -2164,7 +2164,7 @@ export default class PrismService {
     const query = new URLSearchParams(parameters).toString();
     return PrismService._request<number[]>(
       `/vram-benchmarks/contexts${query ? `?${query}` : ""}`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
@@ -2180,12 +2180,12 @@ export default class PrismService {
     const query = new URLSearchParams(stringParameters).toString();
     return PrismService._request<{ data: Prompt[]; total: number; page: number; limit: number }>(
       `/prompts${query ? `?${query}` : ""}`,
-      { method: "GET" },
+      { method: HTTP_METHODS.GET },
     );
   }
 
   static async getPrompt(id: string): Promise<Prompt> {
-    return PrismService._request<Prompt>(`/prompts/${id}`, { method: "GET" });
+    return PrismService._request<Prompt>(`/prompts/${id}`, { method: HTTP_METHODS.GET });
   }
 
   static async createPrompt(data: {
@@ -2195,7 +2195,7 @@ export default class PrismService {
     color?: string;
   }): Promise<Prompt> {
     return PrismService._request<Prompt>("/prompts", {
-      method: "POST",
+      method: HTTP_METHODS.POST,
       body: data,
     });
   }
@@ -2205,14 +2205,14 @@ export default class PrismService {
     updates: Partial<{ title: string; content: string; tags: string[]; color: string }>,
   ): Promise<Prompt> {
     return PrismService._request<Prompt>(`/prompts/${id}`, {
-      method: "PATCH",
+      method: HTTP_METHODS.PATCH,
       body: updates,
     });
   }
 
   static async deletePrompt(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/prompts/${id}`, {
-      method: "DELETE",
+      method: HTTP_METHODS.DELETE,
     });
   }
 }

@@ -260,7 +260,7 @@ export default function ModelsPageComponent({
 
       // Phase 2: progressive — merge local provider models + LM Studio API data
       const [mergedConfig, lmData] = await Promise.all([
-        PrismService.getConfigWithLocalModels({ service: configService as typeof PrismService }).catch(() => baseConfig),
+        PrismService.getConfigWithLocalModels({ serviceInstance: configService as typeof PrismService }).catch(() => baseConfig),
         lmService.getLmStudioModels().catch(() => ({ models: [] })),
       ]);
 
