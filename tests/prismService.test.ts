@@ -104,13 +104,13 @@ describe("PrismService", () => {
     it("uploadFile", async () => {
       fetchResult = {
         ok: true,
-        json: async () => ({ ref: "minio://uploaded.png", size: 100, contentType: "image/png" }),
+        json: async () => ({ reference: "minio://uploaded.png", size: 100, contentType: "image/png" }),
       };
       const result = await PrismService.uploadFile("data:image/png;base64,123");
       expect(lastUrl).toContain("/files/upload");
       expect(lastOptions?.method).toBe("POST");
       expect(JSON.parse(lastOptions?.body as string)).toEqual({ data: "data:image/png;base64,123" });
-      expect(result.ref).toBe("minio://uploaded.png");
+      expect(result.reference).toBe("minio://uploaded.png");
     });
   });
 
@@ -476,7 +476,7 @@ describe("PrismService", () => {
     });
 
     it("getMedia & getText list with filters", async () => {
-      await PrismService.getMedia({ limit: 10, type: "image" });
+      await PrismService.fetchMedia({ limit: 10, type: "image" });
       expect(lastUrl).toContain("/media?limit=10&type=image");
 
       await PrismService.getText({ limit: 5, search: "query" });

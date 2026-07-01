@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getErrorMessage } from "../src/utils/errorMessage.js";
 import {
   buildDateRangeParams,
-  getUniqueModels,
+  getUniqueModelNames,
   getUniqueProviders,
   getConversationCost,
   getTotalInputTokens,
@@ -11,7 +11,7 @@ import {
   toolCountsToUsedTools,
   mergeUsedToolsWithSubAgents,
   CAPABILITY_TOOL_NAMES,
-  getModalities,
+  computeConversationModalities,
 } from "../src/utils/utilities.js";
 import type { Message, TokenUsage } from "../src/types/types.js";
 
@@ -143,9 +143,9 @@ describe("buildLmStudioLoadBody", () => {
 // getUniqueModels & getUniqueProviders
 // ═════════════════════════════════════════════════════════════════
 
-describe("getUniqueModels", () => {
+describe("getUniqueModelNames", () => {
   it("returns empty array for no messages", () => {
-    expect(getUniqueModels([])).toEqual([]);
+    expect(getUniqueModelNames([])).toEqual([]);
   });
 
   it("extracts unique model names from assistant messages", () => {
@@ -156,14 +156,14 @@ describe("getUniqueModels", () => {
       { role: "assistant", content: "yes", model: "gpt-4o" },
       { role: "assistant", content: "also", model: "claude-3.5-sonnet" },
     ] as Message[];
-    expect(getUniqueModels(messages)).toEqual(["gpt-4o", "claude-3.5-sonnet"]);
+    expect(getUniqueModelNames(messages)).toEqual(["gpt-4o", "claude-3.5-sonnet"]);
   });
 
   it("ignores user messages with model field", () => {
     const messages = [
       { role: "user", content: "hello", model: "user-model" },
     ] as Message[];
-    expect(getUniqueModels(messages)).toEqual([]);
+    expect(getUniqueModelNames(messages)).toEqual([]);
   });
 });
 
@@ -324,9 +324,9 @@ describe("CAPABILITY_TOOL_NAMES", () => {
 // getModalities
 // ═════════════════════════════════════════════════════════════════
 
-describe("getModalities", () => {
+describe("computeConversationModalities", () => {
   it("returns all-false for empty messages", () => {
-    const result = getModalities([]);
+    const result = computeConversationModalities([]);
     expect(result.textIn).toBe(false);
     expect(result.textOut).toBe(false);
     expect(result.imageIn).toBe(false);
@@ -338,7 +338,7 @@ describe("getModalities", () => {
       { role: "user", content: "hello" },
       { role: "assistant", content: "hi" },
     ] as Message[];
-    const result = getModalities(messages);
+    const result = computeConversationModalities(messages);
     expect(result.textIn).toBe(true);
     expect(result.textOut).toBe(true);
   });
@@ -347,7 +347,7 @@ describe("getModalities", () => {
     const messages = [
       { role: "user", content: "what is this?", images: ["data:image/png;base64,abc"] },
     ] as Message[];
-    const result = getModalities(messages);
+    const result = computeConversationModalities(messages);
     expect(result.imageIn).toBe(true);
   });
 
@@ -355,7 +355,7 @@ describe("getModalities", () => {
     const messages = [
       { role: "user", content: "hello", audio: "base64data" },
     ] as Message[];
-    const result = getModalities(messages);
+    const result = computeConversationModalities(messages);
     expect(result.audioIn).toBe(true);
   });
 
@@ -363,7 +363,7 @@ describe("getModalities", () => {
     const messages = [
       { role: "assistant", content: "response", thinking: "let me reason..." },
     ] as Message[];
-    const result = getModalities(messages);
+    const result = computeConversationModalities(messages);
     expect(result.thinking).toBe(true);
   });
 
@@ -371,7 +371,7 @@ describe("getModalities", () => {
     const messages = [
       { role: "assistant", content: "", toolCalls: [{ name: "search_web" }] },
     ] as Message[];
-    const result = getModalities(messages);
+    const result = computeConversationModalities(messages);
     expect(result.webSearch).toBe(true);
   });
 
@@ -379,7 +379,7 @@ describe("getModalities", () => {
     const messages = [
       { role: "assistant", content: "", toolCalls: [{ name: "read_file" }] },
     ] as Message[];
-    const result = getModalities(messages);
+    const result = computeConversationModalities(messages);
     expect(result.functionCalling).toBe(true);
   });
 
@@ -387,7 +387,7 @@ describe("getModalities", () => {
     const messages = [
       { role: "user", content: "parse this", documents: [{ name: "report.pdf" }] },
     ] as Message[];
-    const result = getModalities(messages);
+    const result = computeConversationModalities(messages);
     expect(result.docIn).toBe(true);
   });
 });
