@@ -46,7 +46,7 @@ export default function RequestsPage() {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sort, setSort] = useState("timestamp");
+  const [sort, setSort] = useState("createdAt");
   const [order, setOrder] = useState("desc");
   const [filters, setFilters] = useState<RequestFilters>({
     provider: [],
@@ -74,8 +74,8 @@ export default function RequestsPage() {
     const now = Date.now();
     const ids = new Set<string>();
     for (const response of requests) {
-      if (!response.timestamp) continue;
-      const age = now - new Date(response.timestamp).getTime();
+      if (!response.createdAt) continue;
+      const age = now - new Date(response.createdAt).getTime();
       // Treat timestamps up to 10s in the future (clock skew) or < 5s old
       if (age < 5000 && age > -10000) ids.add(response.requestId || response._id);
     }
@@ -293,7 +293,7 @@ export default function RequestsPage() {
     ].join(",");
     const rows = requests.map((response: RequestItem) =>
       [
-        response.timestamp || "",
+        response.createdAt || "",
         response.project || "",
         response.endpoint || "",
         response.operation || "",

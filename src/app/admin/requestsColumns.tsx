@@ -27,7 +27,7 @@ export const getRequestsColumns = ({
   totalDuration = 1,
   mini = false,
 }: { totalCost?: number; totalDuration?: number; mini?: boolean } = {}) => [
-  createdAtColumn("timestamp"),
+  createdAtColumn("createdAt"),
   projectColumn(),
   modalitiesColumn({ mini }),
   endpointColumn(),

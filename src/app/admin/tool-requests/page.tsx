@@ -442,8 +442,8 @@ export default function ToolRequestsPage() {
                     {associatedRequest.estimatedCost != null && (
                       <span className={styles['associated-request-cost']}>{formatCost(associatedRequest.estimatedCost)}</span>
                     )}
-                    {associatedRequest.timestamp && (
-                      <span className={styles['associated-request-timestamp']}>{formatDateTime(associatedRequest.timestamp)}</span>
+                    {associatedRequest.createdAt && (
+                      <span className={styles['associated-request-timestamp']}>{formatDateTime(associatedRequest.createdAt)}</span>
                     )}
                     <ExternalLink size={12} style={{ opacity: 0.5, marginInlineStart: "auto" }} />
                   </div>

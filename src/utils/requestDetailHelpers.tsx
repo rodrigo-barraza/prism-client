@@ -138,8 +138,8 @@ export function buildRequestDetailSections(
         },
         {
           label: "Timestamp",
-          value: request.timestamp ? (
-            <BadgeComponent type="dateTime" date={request.timestamp} />
+          value: request.createdAt ? (
+            <BadgeComponent type="dateTime" date={request.createdAt} />
           ) : (
             "-"
           ),

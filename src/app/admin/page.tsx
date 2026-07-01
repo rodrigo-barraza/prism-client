@@ -146,7 +146,7 @@ export default function DashboardPage() {
         IrisService.getTimeline(timelineHours, filterParams, timelineGranularity || undefined),
         IrisService.getRequests({
           limit: 10,
-          sort: "timestamp",
+          sort: "createdAt",
           order: "desc",
           ...filterParams,
         }),

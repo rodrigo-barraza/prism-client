@@ -722,7 +722,7 @@ export type SSEData = TransformedSSEData;
 export interface TransformedRequestItem {
   _id: string;
   requestId?: string;
-  timestamp?: string;
+  createdAt?: string;
   project?: string;
   endpoint?: string;
   operation?: string;

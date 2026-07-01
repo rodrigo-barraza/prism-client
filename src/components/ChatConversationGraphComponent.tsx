@@ -285,8 +285,8 @@ export function buildGraphFromConversation(
   const userSet = new Set<string>();
 
   const sortedRequests = [...conversationRequests].sort((requestA, requestB) => {
-    const timestampA = requestA.timestamp ? new Date(requestA.timestamp).getTime() : 0;
-    const timestampB = requestB.timestamp ? new Date(requestB.timestamp).getTime() : 0;
+    const timestampA = requestA.createdAt ? new Date(requestA.createdAt).getTime() : 0;
+    const timestampB = requestB.createdAt ? new Date(requestB.createdAt).getTime() : 0;
     return timestampA - timestampB;
   });
 
