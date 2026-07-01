@@ -8,7 +8,7 @@ import {
   useCallback,
 } from "react";
 import WorkspaceService, { WorkspaceItem } from "../services/WorkspaceService";
-import { LS_WORKSPACE_ROOT } from "../constants";
+import { LOCAL_STORAGE_KEY_WORKSPACE_ROOT } from "../constants";
 
 export interface WorkspaceContextType {
   workspaces: WorkspaceItem[];
@@ -42,9 +42,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     _setCurrentWorkspace(workspace);
     if (typeof window !== "undefined") {
       if (workspace?.path) {
-        localStorage.setItem(LS_WORKSPACE_ROOT, workspace.path);
+        localStorage.setItem(LOCAL_STORAGE_KEY_WORKSPACE_ROOT, workspace.path);
       } else {
-        localStorage.removeItem(LS_WORKSPACE_ROOT);
+        localStorage.removeItem(LOCAL_STORAGE_KEY_WORKSPACE_ROOT);
       }
     }
   }, []);
@@ -55,7 +55,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       setWorkspaces(list);
 
       // If the persisted workspace is in the list, restore it
-      const storedPath = localStorage.getItem(LS_WORKSPACE_ROOT);
+      const storedPath = localStorage.getItem(LOCAL_STORAGE_KEY_WORKSPACE_ROOT);
       if (storedPath && list.length > 0) {
         const match = list.find((workspace) => workspace.path === storedPath);
         if (match) {
@@ -63,12 +63,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         } else {
           // Persisted path no longer in config — fall back to first
           _setCurrentWorkspace(list[0]);
-          localStorage.setItem(LS_WORKSPACE_ROOT, list[0].path);
+          localStorage.setItem(LOCAL_STORAGE_KEY_WORKSPACE_ROOT, list[0].path);
         }
       } else if (list.length > 0 && !storedPath) {
         // No previous selection — default to first workspace
         _setCurrentWorkspace(list[0]);
-        localStorage.setItem(LS_WORKSPACE_ROOT, list[0].path);
+        localStorage.setItem(LOCAL_STORAGE_KEY_WORKSPACE_ROOT, list[0].path);
       }
 
       return list;

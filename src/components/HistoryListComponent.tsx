@@ -16,7 +16,7 @@ import {
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import HistoryItemComponent from "./HistoryItemComponent";
 import styles from "./HistoryListComponent.module.css";
-import { LS_DATE_RANGE } from "../constants";
+import { LOCAL_STORAGE_KEY_DATE_RANGE } from "../constants";
 import type { LucideIcon } from "lucide-react";
 
 interface HistoryListItem {
@@ -660,7 +660,7 @@ export default function HistoryList({
         }
         dateRange={dateRange}
         onDateChange={setDateRange}
-        dateStorageKey={LS_DATE_RANGE}
+        dateStorageKey={LOCAL_STORAGE_KEY_DATE_RANGE}
       />
 
       {countLabel && (

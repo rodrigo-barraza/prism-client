@@ -1,4 +1,4 @@
-import { AGENT_IDS, EV_PRISM_SETTINGS_UPDATED } from "@/constants";
+import { AGENT_IDS, EVENT_NAME_PRISM_SETTINGS_UPDATED } from "@/constants";
 import { SERVER_SENT_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
@@ -74,14 +74,14 @@ function getHeaders() {
  * Resolve a file reference to a usable URL.
  * Points directly at the MinIO bucket URL for minio:// refs.
  */
-function resolveFileRef(ref: string): string {
-  if (typeof ref === "string" && ref.startsWith("minio://")) {
-    let key = ref.replace("minio://", "");
+function resolveFileReference(fileReference: string): string {
+  if (typeof fileReference === "string" && fileReference.startsWith("minio://")) {
+    let key = fileReference.replace("minio://", "");
     key = key.replace(/::ffff:/g, "");
     const base = MINIO_URL || `${API_BASE}/files`;
     return `${base}/${key}`;
   }
-  return ref;
+  return fileReference;
 }
 
 export default class PrismService {
@@ -112,8 +112,8 @@ export default class PrismService {
   /**
    * Resolve a file reference (minio:// or data URL) to a renderable URL.
    */
-  static getFileUrl(ref: string): string {
-    return resolveFileRef(ref);
+  static getFileUrl(fileReference: string): string {
+    return resolveFileReference(fileReference);
   }
 
   /**
@@ -123,9 +123,9 @@ export default class PrismService {
    */
   static async uploadFile(
     dataUrl: string,
-  ): Promise<{ ref: string; url: string; size: number; contentType: string }> {
+  ): Promise<{ reference: string; url: string; size: number; contentType: string }> {
     const result = await PrismService._request<{
-      ref: string;
+      reference: string;
       size: number;
       contentType: string;
     }>("/files/upload", {
@@ -133,7 +133,7 @@ export default class PrismService {
     });
     return {
       ...result,
-      url: resolveFileRef(result.ref),
+      url: resolveFileReference(result.reference),
     };
   }
 
@@ -143,7 +143,6 @@ export default class PrismService {
 
   /**
    * Fetch the Prism configuration (providers, models, defaults).
-
    */
   static async getConfig(): Promise<PrismConfig> {
     const config = await PrismService._request<PrismConfig>("/config", {
@@ -157,7 +156,6 @@ export default class PrismService {
     return config;
   }
 
-
   /**
    * Unified config loading: fetches the full config with local models
    * merged server-side via GET /config?includeLocal=true.
@@ -169,14 +167,14 @@ export default class PrismService {
   static async getConfigWithLocalModels({
     onConfig,
     onLocalMerge,
-    service,
+    serviceInstance,
   }: {
     onConfig?: (config: PrismConfig) => void;
     onLocalMerge?: (config: PrismConfig) => void;
-    service?: typeof PrismService;
+    serviceInstance?: typeof PrismService;
   } = {}): Promise<PrismConfig> {
-    const svc = service || PrismService;
-    const config = await svc._request<PrismConfig>("/config?includeLocal=true", { method: "GET" });
+    const service = serviceInstance || PrismService;
+    const config = await service._request<PrismConfig>("/config?includeLocal=true", { method: "GET" });
 
     if (config?.localProviders) {
       setLocalProviderMeta(config.localProviders);
@@ -770,7 +768,7 @@ export default class PrismService {
     });
     if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent(EV_PRISM_SETTINGS_UPDATED, { detail: updatedSettings })
+        new CustomEvent(EVENT_NAME_PRISM_SETTINGS_UPDATED, { detail: updatedSettings })
       );
     }
     return updatedSettings;
@@ -1655,12 +1653,12 @@ export default class PrismService {
    * List media items from the caller's project conversations.
 
    */
-  static async getMedia(
-    params: Record<string, string | number | boolean> = {},
+  static async fetchMedia(
+    parameters: Record<string, string | number | boolean> = {},
   ): Promise<MediaListResponse> {
-    const stringParams: Record<string, string> = {};
-    for (const [key, value] of Object.entries(params)) stringParams[key] = String(value);
-    const query = new URLSearchParams(stringParams).toString();
+    const stringParameters: Record<string, string> = {};
+    for (const [key, value] of Object.entries(parameters)) stringParameters[key] = String(value);
+    const query = new URLSearchParams(stringParameters).toString();
     return PrismService._request<MediaListResponse>(
       `/media${query ? `?${query}` : ""}`,
       {
@@ -1678,11 +1676,11 @@ export default class PrismService {
 
    */
   static async getText(
-    params: Record<string, string | number | boolean> = {},
+    parameters: Record<string, string | number | boolean> = {},
   ): Promise<TextListResponse> {
-    const stringParams: Record<string, string> = {};
-    for (const [key, value] of Object.entries(params)) stringParams[key] = String(value);
-    const query = new URLSearchParams(stringParams).toString();
+    const stringParameters: Record<string, string> = {};
+    for (const [key, value] of Object.entries(parameters)) stringParameters[key] = String(value);
+    const query = new URLSearchParams(stringParameters).toString();
     return PrismService._request<TextListResponse>(
       `/text${query ? `?${query}` : ""}`,
       {
@@ -2124,9 +2122,9 @@ export default class PrismService {
 
    */
   static async getVramBenchmarks(
-    params: Record<string, string> = {},
+    parameters: Record<string, string> = {},
   ): Promise<{ count: number; data: VramBenchmarkEntry[] }> {
-    const query = new URLSearchParams(params).toString();
+    const query = new URLSearchParams(parameters).toString();
     return PrismService._request<{ count: number; data: VramBenchmarkEntry[] }>(
       `/vram-benchmarks${query ? `?${query}` : ""}`,
       { method: "GET" },
@@ -2161,9 +2159,9 @@ export default class PrismService {
 
    */
   static async getVramBenchmarkContexts(
-    params: Record<string, string> = {},
+    parameters: Record<string, string> = {},
   ): Promise<number[]> {
-    const query = new URLSearchParams(params).toString();
+    const query = new URLSearchParams(parameters).toString();
     return PrismService._request<number[]>(
       `/vram-benchmarks/contexts${query ? `?${query}` : ""}`,
       { method: "GET" },
@@ -2175,11 +2173,11 @@ export default class PrismService {
   // ---------------------------------------------------------------------------
 
   static async getPrompts(
-    params: Record<string, string | number | boolean> = {},
+    parameters: Record<string, string | number | boolean> = {},
   ): Promise<{ data: Prompt[]; total: number; page: number; limit: number }> {
-    const stringParams: Record<string, string> = {};
-    for (const [key, value] of Object.entries(params)) stringParams[key] = String(value);
-    const query = new URLSearchParams(stringParams).toString();
+    const stringParameters: Record<string, string> = {};
+    for (const [key, value] of Object.entries(parameters)) stringParameters[key] = String(value);
+    const query = new URLSearchParams(stringParameters).toString();
     return PrismService._request<{ data: Prompt[]; total: number; page: number; limit: number }>(
       `/prompts${query ? `?${query}` : ""}`,
       { method: "GET" },

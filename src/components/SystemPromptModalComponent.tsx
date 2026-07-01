@@ -10,7 +10,7 @@ import {
   ModalComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./SystemPromptModalComponent.module.css";
-import { LS_SYSTEM_INSTRUCTIONS } from "../constants";
+import { LOCAL_STORAGE_KEY_SYSTEM_INSTRUCTIONS } from "../constants";
 
 export interface SystemInstructionItem {
   id: string;
@@ -26,7 +26,7 @@ export interface SystemPromptModalProps {
 
 function loadInstructions(): SystemInstructionItem[] {
   try {
-    const raw = localStorage.getItem(LS_SYSTEM_INSTRUCTIONS);
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY_SYSTEM_INSTRUCTIONS);
     return raw ? (JSON.parse(raw) as SystemInstructionItem[]) : [];
   } catch {
     return [];
@@ -34,7 +34,7 @@ function loadInstructions(): SystemInstructionItem[] {
 }
 
 function saveInstructions(list: SystemInstructionItem[]): void {
-  localStorage.setItem(LS_SYSTEM_INSTRUCTIONS, JSON.stringify(list));
+  localStorage.setItem(LOCAL_STORAGE_KEY_SYSTEM_INSTRUCTIONS, JSON.stringify(list));
 }
 
 export default function SystemPromptModal({

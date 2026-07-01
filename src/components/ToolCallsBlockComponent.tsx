@@ -78,9 +78,12 @@ export default function ToolCallsBlockComponent({
       for (const member of members) {
         if (isSubAgentActive(member.agent_id ? subAgentToolActivity[member.agent_id] : null)) return true;
       }
-      // Fallback: match by description during calling state (before result arrives)
+      // Fallback: match by description during calling state (before result arrives).
+      // Skip this fallback when a result already exists — error-only results
+      // (e.g. topology guard rejections) would incorrectly match agents from
+      // a separate, successful tool call with the same member descriptions.
       const toolCallArguments = toolCall.args as { members?: Array<{ description?: string }> };
-      if (Array.isArray(toolCallArguments?.members)) {
+      if (!parsed && Array.isArray(toolCallArguments?.members)) {
         for (const argumentMember of toolCallArguments.members) {
           const match = Object.values(subAgentToolActivity).find(
             (value) => value.description && argumentMember.description && value.description.includes(argumentMember.description),

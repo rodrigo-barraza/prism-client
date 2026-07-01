@@ -13,10 +13,10 @@ import { LayoutHeaderComponent } from "@rodrigo-barraza/components-library";
 import { resolvePageIcon } from "../utils/PageIconMap";
 import styles from "./ThreePanelLayoutComponent.module.css";
 import {
-  LS_PANEL_LEFT,
-  LS_PANEL_RIGHT,
-  LS_LEFT_SIDEBAR_SPLIT_RATIO,
-  EV_PANEL_DISMISS_SIDEBARS,
+  LOCAL_STORAGE_KEY_PANEL_LEFT,
+  LOCAL_STORAGE_KEY_PANEL_RIGHT,
+  LOCAL_STORAGE_KEY_LEFT_SIDEBAR_SPLIT_RATIO,
+  EVENT_NAME_PANEL_DISMISS_SIDEBARS,
 } from "../constants";
 
 /**
@@ -96,13 +96,13 @@ export default function ThreePanelLayout({
       setShowRight(false);
     } else {
       // On desktop, restore from localStorage (default open)
-      const storedLeft = localStorage.getItem(LS_PANEL_LEFT);
-      const storedRight = localStorage.getItem(LS_PANEL_RIGHT);
+      const storedLeft = localStorage.getItem(LOCAL_STORAGE_KEY_PANEL_LEFT);
+      const storedRight = localStorage.getItem(LOCAL_STORAGE_KEY_PANEL_RIGHT);
       setShowLeft(storedLeft !== null ? storedLeft === "true" : true);
       setShowRight(storedRight !== null ? storedRight === "true" : true);
     }
 
-    const storedRatio = localStorage.getItem(LS_LEFT_SIDEBAR_SPLIT_RATIO);
+    const storedRatio = localStorage.getItem(LOCAL_STORAGE_KEY_LEFT_SIDEBAR_SPLIT_RATIO);
     if (storedRatio) {
       const parsedRatio = parseFloat(storedRatio);
       if (
@@ -147,24 +147,24 @@ export default function ThreePanelLayout({
       // Entering narrow: if both are open, close the right
       if (currentLeft && currentRight) {
         setShowRight(false);
-        localStorage.setItem(LS_PANEL_RIGHT, "false");
+        localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_RIGHT, "false");
       }
     } else {
       // Leaving narrow (back to wide): restore both panels
       setShowLeft(true);
       setShowRight(true);
-      localStorage.setItem(LS_PANEL_LEFT, "true");
-      localStorage.setItem(LS_PANEL_RIGHT, "true");
+      localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_LEFT, "true");
+      localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_RIGHT, "true");
     }
   }, [isNarrow]);
 
   const toggleLeft = useCallback(() => {
     setShowLeft((prev) => {
       const next = !prev;
-      localStorage.setItem(LS_PANEL_LEFT, String(next));
+      localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_LEFT, String(next));
       if (next && window.innerWidth <= 1400) {
         setShowRight(false);
-        localStorage.setItem(LS_PANEL_RIGHT, "false");
+        localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_RIGHT, "false");
       }
       return next;
     });
@@ -173,10 +173,10 @@ export default function ThreePanelLayout({
   const toggleRight = useCallback(() => {
     setShowRight((prev) => {
       const next = !prev;
-      localStorage.setItem(LS_PANEL_RIGHT, String(next));
+      localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_RIGHT, String(next));
       if (next && window.innerWidth <= 1400) {
         setShowLeft(false);
-        localStorage.setItem(LS_PANEL_LEFT, "false");
+        localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_LEFT, "false");
       }
       return next;
     });
@@ -197,12 +197,12 @@ export default function ThreePanelLayout({
   /* -- Mobile: close individual sidebars -- */
   const closeLeftSidebar = useCallback(() => {
     setShowLeft(false);
-    localStorage.setItem(LS_PANEL_LEFT, "false");
+    localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_LEFT, "false");
   }, []);
 
   const closeRightSidebar = useCallback(() => {
     setShowRight(false);
-    localStorage.setItem(LS_PANEL_RIGHT, "false");
+    localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_RIGHT, "false");
   }, []);
 
   /* -- Mobile: dismiss all open sidebars -- */
@@ -228,16 +228,16 @@ export default function ThreePanelLayout({
   /* -- Mobile: swipe-to-reveal gestures on main content -- */
   const openLeftSidebar = useCallback(() => {
     setShowLeft(true);
-    localStorage.setItem(LS_PANEL_LEFT, "true");
+    localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_LEFT, "true");
     setShowRight(false);
-    localStorage.setItem(LS_PANEL_RIGHT, "false");
+    localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_RIGHT, "false");
   }, []);
 
   const openRightSidebar = useCallback(() => {
     setShowRight(true);
-    localStorage.setItem(LS_PANEL_RIGHT, "true");
+    localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_RIGHT, "true");
     setShowLeft(false);
-    localStorage.setItem(LS_PANEL_LEFT, "false");
+    localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_LEFT, "false");
   }, []);
 
   const mainContentSwipeReference = useSwipeToReveal({
@@ -252,9 +252,9 @@ export default function ThreePanelLayout({
   /* Listen for programmatic dismiss from child components (pickers, etc.) */
   useEffect(() => {
     const handler = () => dismissSidebars();
-    document.addEventListener(EV_PANEL_DISMISS_SIDEBARS, handler);
+    document.addEventListener(EVENT_NAME_PANEL_DISMISS_SIDEBARS, handler);
     return () =>
-      document.removeEventListener(EV_PANEL_DISMISS_SIDEBARS, handler);
+      document.removeEventListener(EVENT_NAME_PANEL_DISMISS_SIDEBARS, handler);
   }, [dismissSidebars]);
 
   // -- Left sidebar split panel drag handler --
@@ -284,7 +284,7 @@ export default function ThreePanelLayout({
       document.removeEventListener("mouseup", handleMouseUp);
       // Persist final ratio
       setSplitRatio((currentRatio) => {
-        localStorage.setItem(LS_LEFT_SIDEBAR_SPLIT_RATIO, String(currentRatio));
+        localStorage.setItem(LOCAL_STORAGE_KEY_LEFT_SIDEBAR_SPLIT_RATIO, String(currentRatio));
         return currentRatio;
       });
     };
@@ -322,7 +322,7 @@ export default function ThreePanelLayout({
       document.removeEventListener("touchend", handleTouchEnd);
       // Persist final ratio
       setSplitRatio((currentRatio) => {
-        localStorage.setItem(LS_LEFT_SIDEBAR_SPLIT_RATIO, String(currentRatio));
+        localStorage.setItem(LOCAL_STORAGE_KEY_LEFT_SIDEBAR_SPLIT_RATIO, String(currentRatio));
         return currentRatio;
       });
     };

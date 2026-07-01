@@ -19,7 +19,7 @@ import {
   edgePath,
 } from "./WorkflowNodeConstantsComponent";
 import styles from "./WorkflowCanvasComponent.module.css";
-import { LS_WORKFLOW_EXPANDED_NODES, LS_WORKFLOW_VIEWS } from "../constants";
+import { LOCAL_STORAGE_KEY_WORKFLOW_EXPANDED_NODES, LOCAL_STORAGE_KEY_WORKFLOW_VIEWS } from "../constants";
 
 const COLLISION_PADDING = 20; // min gap between nodes
 
@@ -93,7 +93,7 @@ export default function WorkflowCanvas({
   const [expandedInputs, setExpandedInputs] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set<string>();
     try {
-      const stored = localStorage.getItem(LS_WORKFLOW_EXPANDED_NODES);
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY_WORKFLOW_EXPANDED_NODES);
       return stored ? new Set(JSON.parse(stored)) : new Set();
     } catch {
       return new Set<string>();
@@ -102,7 +102,7 @@ export default function WorkflowCanvas({
   // -- View persistence helpers --
   const getStoredViews = () => {
     try {
-      return JSON.parse(localStorage.getItem(LS_WORKFLOW_VIEWS) || "{}");
+      return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_WORKFLOW_VIEWS) || "{}");
     } catch {
       return {};
     }
@@ -136,7 +136,7 @@ export default function WorkflowCanvas({
     const views = getStoredViews();
     views[activeWorkflowId] = { x: pan.x, y: pan.y, zoom };
     try {
-      localStorage.setItem(LS_WORKFLOW_VIEWS, JSON.stringify(views));
+      localStorage.setItem(LOCAL_STORAGE_KEY_WORKFLOW_VIEWS, JSON.stringify(views));
     } catch {
       /* ignore */
     }
@@ -710,7 +710,7 @@ export default function WorkflowCanvas({
       else next.add(nodeId);
       try {
         localStorage.setItem(
-          LS_WORKFLOW_EXPANDED_NODES,
+          LOCAL_STORAGE_KEY_WORKFLOW_EXPANDED_NODES,
           JSON.stringify([...next]),
         );
       } catch {
@@ -756,7 +756,7 @@ export default function WorkflowCanvas({
       }
       try {
         localStorage.setItem(
-          LS_WORKFLOW_EXPANDED_NODES,
+          LOCAL_STORAGE_KEY_WORKFLOW_EXPANDED_NODES,
           JSON.stringify([...next]),
         );
       } catch {

@@ -2681,15 +2681,31 @@ function TeamCreateRenderer({
     : !!parsed;
   const teamName = args?.name || (Array.isArray(parsed) ? "" : parsed?.team) || "";
 
+  // Detect error results — both { error: "..." } and [{ error: "..." }] forms.
+  // Must be declared before hasActiveSubAgents which depends on it.
+  const hasError = !!parsed?.error || (
+    Array.isArray(parsed) &&
+    parsed.length > 0 &&
+    parsed.every((member: Record<string, unknown>) => !!member.error && !member.agent_id)
+  );
+
   const terminalSubAgentPhases = useMemo(() => new Set(["complete", "completed", "failed", "stopped"]), []);
   const hasActiveSubAgents = useMemo(() => {
-    if (!subAgentToolActivity) return false;
-    return Object.values(subAgentToolActivity).some(
-      (activity) =>
+    if (!subAgentToolActivity || hasError) return false;
+    // Scope to agent_ids from THIS tool call's result members only — prevents
+    // error-result cards from detecting agents spawned by a different tool call.
+    const scopedAgentIds = resultMembers
+      .map((member: Record<string, unknown>) => member.agent_id as string | undefined)
+      .filter(Boolean) as string[];
+    if (scopedAgentIds.length === 0) return false;
+    return scopedAgentIds.some((agentId) => {
+      const activity = subAgentToolActivity[agentId];
+      return activity && (
         !!activity.currentTool ||
-        (!!activity.phase && !terminalSubAgentPhases.has(activity.phase)),
-    );
-  }, [subAgentToolActivity, terminalSubAgentPhases]);
+        (!!activity.phase && !terminalSubAgentPhases.has(activity.phase))
+      );
+    });
+  }, [subAgentToolActivity, terminalSubAgentPhases, resultMembers, hasError]);
 
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -2715,6 +2731,10 @@ function TeamCreateRenderer({
     memberIndex: number,
   ) => {
     if (!subAgentToolActivity) return null;
+    // Error-only members (from guard rejections like single-member topology)
+    // never spawned a real agent — skip activity lookup entirely to prevent
+    // the index/description fallbacks from matching another tool call's agent.
+    if ((member as Record<string, unknown>).error && !member.agent_id) return null;
     if (member.agent_id) return subAgentToolActivity[member.agent_id] || null;
     if (memberIndex != null && orderedSubAgentIds[memberIndex]) {
       return subAgentToolActivity[orderedSubAgentIds[memberIndex]] || null;
@@ -2734,7 +2754,7 @@ function TeamCreateRenderer({
 
 
 
-  const hasError = !!parsed?.error;
+  // hasError is declared earlier (before hasActiveSubAgents) — see above.
   const succeeded =
     parsed?.succeeded ??
     resultMembers.filter((member) => member.status === "completed").length;

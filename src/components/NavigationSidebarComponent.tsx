@@ -36,7 +36,7 @@ import SpinningCatComponent from "./SpinningCatComponent";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import styles from "./NavigationSidebarComponent.module.css";
 import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
-import { LS_PANEL_NAV, LS_PANEL_LEFT, LS_PANEL_RIGHT, LS_CRON_JOB_NOTIFICATIONS_COUNT, EV_CRON_JOB_SCHEDULED, EV_PRISM_SETTINGS_UPDATED } from "../constants";
+import { LOCAL_STORAGE_KEY_PANEL_NAV, LOCAL_STORAGE_KEY_PANEL_LEFT, LOCAL_STORAGE_KEY_PANEL_RIGHT, LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT, EVENT_NAME_CRON_JOB_SCHEDULED, EVENT_NAME_PRISM_SETTINGS_UPDATED } from "../constants";
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
 import SoundService from "@/services/SoundService";
@@ -115,13 +115,13 @@ export default function NavigationSidebarComponent({
   const [cronJobNotificationsCount, setCronJobNotificationsCount] = useState(0);
 
   const clearCronJobNotifications = useCallback(() => {
-    localStorage.setItem(LS_CRON_JOB_NOTIFICATIONS_COUNT, "0");
+    localStorage.setItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT, "0");
     setCronJobNotificationsCount(0);
-    window.dispatchEvent(new CustomEvent(EV_CRON_JOB_SCHEDULED));
+    window.dispatchEvent(new CustomEvent(EVENT_NAME_CRON_JOB_SCHEDULED));
   }, []);
 
   useEffect(() => {
-    const storedCount = parseInt(localStorage.getItem(LS_CRON_JOB_NOTIFICATIONS_COUNT) || "0", 10);
+    const storedCount = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0", 10);
     if (pathname.startsWith("/scheduled-tasks")) {
       if (storedCount > 0) {
         clearCronJobNotifications();
@@ -133,13 +133,13 @@ export default function NavigationSidebarComponent({
 
   useEffect(() => {
     const handleCronJobScheduledEvent = () => {
-      const storedCount = parseInt(localStorage.getItem(LS_CRON_JOB_NOTIFICATIONS_COUNT) || "0", 10);
+      const storedCount = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0", 10);
       setCronJobNotificationsCount(storedCount);
     };
 
-    window.addEventListener(EV_CRON_JOB_SCHEDULED, handleCronJobScheduledEvent);
+    window.addEventListener(EVENT_NAME_CRON_JOB_SCHEDULED, handleCronJobScheduledEvent);
     return () => {
-      window.removeEventListener(EV_CRON_JOB_SCHEDULED, handleCronJobScheduledEvent);
+      window.removeEventListener(EVENT_NAME_CRON_JOB_SCHEDULED, handleCronJobScheduledEvent);
     };
   }, []);
 
@@ -211,9 +211,9 @@ export default function NavigationSidebarComponent({
       }
     };
 
-    window.addEventListener(EV_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
+    window.addEventListener(EVENT_NAME_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     return () => {
-      window.removeEventListener(EV_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
+      window.removeEventListener(EVENT_NAME_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     };
   }, [mode]);
 
@@ -223,7 +223,7 @@ export default function NavigationSidebarComponent({
   }, []);
 
   useEffect(() => {
-    const stored = localStorage.getItem(LS_PANEL_NAV);
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY_PANEL_NAV);
     const initialNav = stored !== null ? stored === "true" : false;
 
     setShowNav((current) => {
@@ -259,7 +259,7 @@ export default function NavigationSidebarComponent({
   const toggleNav = useCallback(() => {
     setShowNav((previousShowNav) => {
       const next = !previousShowNav;
-      localStorage.setItem(LS_PANEL_NAV, String(next));
+      localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_NAV, String(next));
       globalShowNav = next;
       if (next) {
         document.documentElement.removeAttribute(
@@ -699,8 +699,8 @@ export default function NavigationSidebarComponent({
                                 onNavClick?.(item.href);
                                 setMobileOpen(false);
                                 // Pre-close ThreePanelLayout sidebars so the next page mounts clean
-                                localStorage.setItem(LS_PANEL_LEFT, "false");
-                                localStorage.setItem(LS_PANEL_RIGHT, "false");
+                                localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_LEFT, "false");
+                                localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_RIGHT, "false");
                                 if (item.href === "/scheduled-tasks") {
                                   clearCronJobNotifications();
                                 }

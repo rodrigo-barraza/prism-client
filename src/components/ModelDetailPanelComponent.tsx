@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import StorageService from "../services/StorageService";
-import { SK_MODEL_MEMORY_AGENT, LOCAL_PROVIDERS, type ProviderType } from "../constants";
+import { STORAGE_KEY_MODEL_MEMORY_AGENT, LOCAL_PROVIDERS, type ProviderType } from "../constants";
 import BadgeComponent from "./BadgeComponent";
 import {
   MODALITY_ICONS,
@@ -287,7 +287,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: ModelDetai
               icon={Bot}
               fullWidth
               onClick={() => {
-                StorageService.set(SK_MODEL_MEMORY_AGENT, {
+                StorageService.set(STORAGE_KEY_MODEL_MEMORY_AGENT, {
                   provider: modelDetail.provider,
                   model: modelDetail.key,
                   isLocal: LOCAL_PROVIDERS.has(modelDetail.provider as ProviderType),

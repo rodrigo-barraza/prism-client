@@ -2,13 +2,13 @@
 import {
   AGENT_IDS,
   AGENTLESS_AGENT,
-  LS_ACTIVE_AGENT,
-  EV_AGENT_SWITCH,
-  EV_MODEL_CHANGE,
-  EV_CONVERSATION_CHANGE,
-  EV_SIDEBAR_TAB_CHANGE,
-  EV_SIDEBAR_TAB_BOTTOM_CHANGE,
-  EV_VIEW_MODE_CHANGE,
+  LOCAL_STORAGE_KEY_ACTIVE_AGENT,
+  EVENT_NAME_AGENT_SWITCH,
+  EVENT_NAME_MODEL_CHANGE,
+  EVENT_NAME_CONVERSATION_CHANGE,
+  EVENT_NAME_SIDEBAR_TAB_CHANGE,
+  EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE,
+  EVENT_NAME_VIEW_MODE_CHANGE,
 } from "@/constants";
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
@@ -79,7 +79,7 @@ function AgentsPageInner() {
   const [localAgentId, setLocalAgentId] = useState<string>(AGENT_IDS.CODING);
 
   useEffect(() => {
-    const stored = localStorage.getItem(LS_ACTIVE_AGENT);
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY_ACTIVE_AGENT);
     if (stored && stored !== AGENT_IDS.CODING) {
       setLocalAgentId(stored);
     }
@@ -95,7 +95,7 @@ function AgentsPageInner() {
     const fromUrl = searchParams.get("agent");
     if (fromUrl && fromUrl !== localAgentId) {
       setLocalAgentId(fromUrl);
-      localStorage.setItem(LS_ACTIVE_AGENT, fromUrl);
+      localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVE_AGENT, fromUrl);
     }
   }, [searchParams, localAgentId]);
 
@@ -136,7 +136,7 @@ function AgentsPageInner() {
       const newId = customEvent.detail?.agentId;
       if (newId) {
         setLocalAgentId(newId);
-        localStorage.setItem(LS_ACTIVE_AGENT, newId);
+        localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVE_AGENT, newId);
         if (searchParams.has("conversation")) {
           router.push(`/chat?agent=${encodeURIComponent(newId)}`);
         } else if (newId !== activeAgentId) {
@@ -238,38 +238,38 @@ function AgentsPageInner() {
   );
 
   useEffect(() => {
-    window.addEventListener(EV_AGENT_SWITCH, handleAgentSwitch);
-    window.addEventListener(EV_MODEL_CHANGE, handleModelChange);
-    window.addEventListener(EV_CONVERSATION_CHANGE, handleConversationChange);
+    window.addEventListener(EVENT_NAME_AGENT_SWITCH, handleAgentSwitch);
+    window.addEventListener(EVENT_NAME_MODEL_CHANGE, handleModelChange);
+    window.addEventListener(EVENT_NAME_CONVERSATION_CHANGE, handleConversationChange);
     window.addEventListener(
-      EV_SIDEBAR_TAB_CHANGE,
+      EVENT_NAME_SIDEBAR_TAB_CHANGE,
       handleSidebarTabChangeNotification,
     );
     window.addEventListener(
-      EV_SIDEBAR_TAB_BOTTOM_CHANGE,
+      EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE,
       handleSidebarTabBottomChangeNotification,
     );
     window.addEventListener(
-      EV_VIEW_MODE_CHANGE,
+      EVENT_NAME_VIEW_MODE_CHANGE,
       handleViewModeChangeNotification,
     );
     return () => {
-      window.removeEventListener(EV_AGENT_SWITCH, handleAgentSwitch);
-      window.removeEventListener(EV_MODEL_CHANGE, handleModelChange);
+      window.removeEventListener(EVENT_NAME_AGENT_SWITCH, handleAgentSwitch);
+      window.removeEventListener(EVENT_NAME_MODEL_CHANGE, handleModelChange);
       window.removeEventListener(
-        EV_CONVERSATION_CHANGE,
+        EVENT_NAME_CONVERSATION_CHANGE,
         handleConversationChange,
       );
       window.removeEventListener(
-        EV_SIDEBAR_TAB_CHANGE,
+        EVENT_NAME_SIDEBAR_TAB_CHANGE,
         handleSidebarTabChangeNotification,
       );
       window.removeEventListener(
-        EV_SIDEBAR_TAB_BOTTOM_CHANGE,
+        EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE,
         handleSidebarTabBottomChangeNotification,
       );
       window.removeEventListener(
-        EV_VIEW_MODE_CHANGE,
+        EVENT_NAME_VIEW_MODE_CHANGE,
         handleViewModeChangeNotification,
       );
     };
@@ -284,7 +284,7 @@ function AgentsPageInner() {
 
   // Persist to localStorage on change
   useEffect(() => {
-    localStorage.setItem(LS_ACTIVE_AGENT, activeAgentId);
+    localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVE_AGENT, activeAgentId);
   }, [activeAgentId]);
 
   return (

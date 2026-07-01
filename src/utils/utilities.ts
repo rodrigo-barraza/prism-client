@@ -134,28 +134,34 @@ function copyViaLegacyExecCommand(text: string): boolean {
  * Get unique model names from assistant messages.
  * Shared between ChatConversationComponent and admin/conversations.
  */
-export function getUniqueModels(messages: Message[]): string[] {
-  return [
-    ...new Set(
-      messages
-        .filter((message) => message.role === "assistant" && message.model)
-        .map((message) => message.model!),
-    ),
-  ];
+/**
+ * Extract unique model names from assistant messages.
+ */
+export function getUniqueModelNames(messages: Message[]): string[] {
+  const models = new Set<string>();
+  for (const message of messages) {
+    if (message.role === "assistant" && message.model) {
+      models.add(message.model);
+    }
+  }
+  return Array.from(models);
 }
 
 /**
  * Get unique provider keys from assistant messages.
  * Shared between useConversationStats and SettingsPanel.
  */
+/**
+ * Extract unique provider names from assistant messages.
+ */
 export function getUniqueProviders(messages: Message[]): string[] {
-  return [
-    ...new Set(
-      messages
-        .filter((message) => message.role === "assistant" && message.provider)
-        .map((message) => message.provider!),
-    ),
-  ];
+  const providers = new Set<string>();
+  for (const message of messages) {
+    if (message.role === "assistant" && message.provider) {
+      providers.add(message.provider);
+    }
+  }
+  return Array.from(providers);
 }
 
 /**
@@ -179,21 +185,20 @@ export function getConversationCost(messages: Message[]): number {
  * Returns { totalTokens: { input, output, total }, requestCount }.
  */
 export interface SubAgentProgress {
-  tokPerSec?: number;
+  tokensPerSecond?: number;
   outputTokens?: number;
   totalOutputTokens?: number;
   status?: string;
 }
 
 export interface GenProgress {
-  tokPerSec?: number;
   tokensPerSecond?: number;
   timestamp?: number;
   activeRequests?: number;
   outputTokens?: number;
 }
 
-export interface ConversationTokenStats {
+export interface ConversationTokenMetrics {
   totalTokens: { input: number; output: number; total: number };
   requestCount: number;
   liveStreamingTokens: number;
@@ -210,7 +215,7 @@ export interface ConversationTokenStats {
   liveGenProgress: GenProgress | null;
 }
 
-export function getConversationTokenStats(messages: Message[]): ConversationTokenStats {
+export function computeConversationTokenMetrics(messages: Message[]): ConversationTokenMetrics {
   let input = 0;
   let output = 0;
   let requests = 0;
@@ -311,12 +316,13 @@ export function getConversationTokenStats(messages: Message[]): ConversationToke
       // in real-time during sub-agent generation (before completion).
       // Use cumulative totalOutputTokens (not burst-scoped outputTokens)
       // so the count doesn't reset when sub-agents transition between phases.
-      for (const wp of Object.values(
-        message._subAgentGenerationProgress,
-      ) as SubAgentProgress[]) {
-        const count = wp.totalOutputTokens || wp.outputTokens || 0;
+      for (const workerProgress of Object.values(
+        subAgentGenerationProgress as Record<string, SubAgentProgress>,
+      )) {
+        const count = workerProgress.totalOutputTokens || workerProgress.outputTokens || 0;
         if (count > 0) {
           output += count;
+          liveStreamingTokens += count;
         }
       }
     }
@@ -474,7 +480,7 @@ export function mergeUsedToolsWithSubAgents(
  * (textIn, textOut, imageIn, imageOut, audioIn, audioOut,
  * videoIn, docIn, webSearch, codeExecution, functionCalling, thinking).
  */
-export function getModalities(messages: Message[]) {
+export function computeConversationModalities(messages: Message[]) {
   const modalities = {
     textIn: false,
     textOut: false,

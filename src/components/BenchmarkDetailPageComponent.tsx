@@ -30,7 +30,7 @@ import BenchmarksTableComponent from "./BenchmarksTableComponent";
 import ChatPreviewComponent from "./ChatPreviewComponent";
 
 import StorageService from "../services/StorageService";
-import { SK_MODEL_MEMORY_BENCHMARKS, AGENT_IDS } from "../constants";
+import { STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, AGENT_IDS } from "../constants";
 import { formatCost, generateUUID } from "@rodrigo-barraza/utilities-library";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./BenchmarkPageComponent.module.css";
@@ -219,7 +219,7 @@ export default function BenchmarkDetailPageComponent({
   const [selectedInstances, setSelectedInstances] = useState<ModelInstance[]>(
     () => {
       const saved = StorageService.get<BenchmarkStorage>(
-        SK_MODEL_MEMORY_BENCHMARKS,
+        STORAGE_KEY_MODEL_MEMORY_BENCHMARKS,
       );
       if (saved?.instances && Array.isArray(saved.instances)) {
         return saved.instances;
@@ -240,7 +240,7 @@ export default function BenchmarkDetailPageComponent({
   const [thinkingMap, setThinkingMap] = useState<Record<string, boolean>>(
     () => {
       const saved = StorageService.get<BenchmarkStorage>(
-        SK_MODEL_MEMORY_BENCHMARKS,
+        STORAGE_KEY_MODEL_MEMORY_BENCHMARKS,
       );
       return saved?.thinkingMap && typeof saved.thinkingMap === "object"
         ? saved.thinkingMap
@@ -249,7 +249,7 @@ export default function BenchmarkDetailPageComponent({
   );
   const [toolsMap, setToolsMap] = useState<Record<string, boolean>>(() => {
     const saved = StorageService.get<BenchmarkStorage>(
-      SK_MODEL_MEMORY_BENCHMARKS,
+      STORAGE_KEY_MODEL_MEMORY_BENCHMARKS,
     );
     return saved?.toolsMap && typeof saved.toolsMap === "object"
       ? saved.toolsMap
@@ -259,7 +259,7 @@ export default function BenchmarkDetailPageComponent({
   // Agent instances — same instance-based pattern as models
   const [agentInstances, setAgentInstances] = useState<AgentInstance[]>(() => {
     const saved = StorageService.get<BenchmarkStorage>(
-      SK_MODEL_MEMORY_BENCHMARKS,
+      STORAGE_KEY_MODEL_MEMORY_BENCHMARKS,
     );
     if (saved?.agents && Array.isArray(saved.agents)) {
       return saved.agents;
@@ -1049,7 +1049,7 @@ export default function BenchmarkDetailPageComponent({
         setAgentInstances(nextAgents);
         setThinkingMap(nextThinking);
         setToolsMap(nextTools);
-        StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+        StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
           instances: nextInstances,
           agents: nextAgents,
           thinkingMap: nextThinking,
@@ -1071,7 +1071,7 @@ export default function BenchmarkDetailPageComponent({
       setAgentInstances((prev) => {
         const next = [...prev, instance];
         // Persist both model + agent instances together
-        StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+        StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
           instances: selectedInstances,
           agents: next,
           thinkingMap,
@@ -1087,7 +1087,7 @@ export default function BenchmarkDetailPageComponent({
     (instanceId: string) => {
       setAgentInstances((prev) => {
         const next = prev.filter((i) => i.instanceId !== instanceId);
-        StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+        StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
           instances: selectedInstances,
           agents: next,
           thinkingMap,
@@ -1110,7 +1110,7 @@ export default function BenchmarkDetailPageComponent({
         const next = prev.map((agent) =>
           agent.instanceId === instanceId ? { ...agent, provider, modelName } : agent,
         );
-        StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+        StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
           instances: selectedInstances,
           agents: next,
           thinkingMap,
@@ -1132,7 +1132,7 @@ export default function BenchmarkDetailPageComponent({
       };
       setSelectedInstances((prev) => {
         const next = [...prev, instance];
-        StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+        StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
           instances: next,
           agents: agentInstances,
           thinkingMap,
@@ -1148,7 +1148,7 @@ export default function BenchmarkDetailPageComponent({
     (instanceId: string) => {
       setSelectedInstances((prev) => {
         const next = prev.filter((i) => i.instanceId !== instanceId);
-        StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+        StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
           instances: next,
           agents: agentInstances,
           thinkingMap,
@@ -1177,7 +1177,7 @@ export default function BenchmarkDetailPageComponent({
         const next = prev.map((i) =>
           i.instanceId === instanceId ? { ...i, provider, name: modelName } : i,
         );
-        StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+        StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
           instances: next,
           agents: agentInstances,
           thinkingMap,
@@ -1194,7 +1194,7 @@ export default function BenchmarkDetailPageComponent({
     setAgentInstances([]);
     setThinkingMap({});
     setToolsMap({});
-    StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+    StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
       instances: [],
       agents: [],
       thinkingMap: {},
@@ -1207,8 +1207,8 @@ export default function BenchmarkDetailPageComponent({
     setThinkingMap((prev) => {
       const next = { ...prev, [instanceId]: !prev[instanceId] };
       // Persist updated toggle state
-      const saved = StorageService.get(SK_MODEL_MEMORY_BENCHMARKS) || {};
-      StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+      const saved = StorageService.get(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS) || {};
+      StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
         ...saved,
         thinkingMap: next,
       });
@@ -1221,8 +1221,8 @@ export default function BenchmarkDetailPageComponent({
     setToolsMap((prev) => {
       const next = { ...prev, [instanceId]: !prev[instanceId] };
       // Persist updated toggle state
-      const saved = StorageService.get(SK_MODEL_MEMORY_BENCHMARKS) || {};
-      StorageService.set(SK_MODEL_MEMORY_BENCHMARKS, {
+      const saved = StorageService.get(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS) || {};
+      StorageService.set(STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, {
         ...saved,
         toolsMap: next,
       });

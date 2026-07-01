@@ -27,7 +27,7 @@ import AssetInputOptions from "./AssetInputOptionsComponent";
 import { ToggleComponent } from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import styles from "./WorkflowInspectorComponent.module.css";
-import { LS_WORKFLOW_INSPECTOR_WIDTH } from "../constants";
+import { LOCAL_STORAGE_KEY_WORKFLOW_INSPECTOR_WIDTH } from "../constants";
 import {
   ModelOption,
   WorkflowConnection,
@@ -43,7 +43,7 @@ const DEFAULT_WIDTH = 320;
 
 function getStoredWidth(): number {
   try {
-    const storedWidth = localStorage.getItem(LS_WORKFLOW_INSPECTOR_WIDTH);
+    const storedWidth = localStorage.getItem(LOCAL_STORAGE_KEY_WORKFLOW_INSPECTOR_WIDTH);
     if (storedWidth) {
       const parsedWidth = parseInt(storedWidth, 10);
       if (
@@ -164,7 +164,7 @@ export default function WorkflowInspector({
   // Persist width to localStorage whenever it changes
   useEffect(() => {
     try {
-      localStorage.setItem(LS_WORKFLOW_INSPECTOR_WIDTH, String(inspectorWidth));
+      localStorage.setItem(LOCAL_STORAGE_KEY_WORKFLOW_INSPECTOR_WIDTH, String(inspectorWidth));
     } catch {
       /* ignore */
     }

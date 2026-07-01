@@ -9,7 +9,7 @@ import {
   useMemo,
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { LS_DATE_RANGE } from "../constants";
+import { LOCAL_STORAGE_KEY_DATE_RANGE } from "../constants";
 
 export interface DateRange {
   from: string;
@@ -65,7 +65,7 @@ export function AdminHeaderProvider({
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(LS_DATE_RANGE);
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY_DATE_RANGE);
       if (stored !== null) {
         const parsed = JSON.parse(stored);
         setDateRangeState(parsed);
@@ -97,7 +97,7 @@ export function AdminHeaderProvider({
 
   useEffect(() => {
     try {
-      localStorage.setItem(LS_DATE_RANGE, JSON.stringify(dateRange));
+      localStorage.setItem(LOCAL_STORAGE_KEY_DATE_RANGE, JSON.stringify(dateRange));
     } catch {
       // ignore
     }

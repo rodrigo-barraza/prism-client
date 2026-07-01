@@ -40,7 +40,7 @@ import MessageList from "./MessageListComponent";
 import JsonViewerComponent from "./JsonViewerComponent";
 import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent";
 import { Message, SynthesisRun, PrismConfig } from "../types/types";
-import { SETTINGS_DEFAULTS, SK_MODEL_MEMORY_SYNTHESIS } from "../constants";
+import { SETTINGS_DEFAULTS, STORAGE_KEY_MODEL_MEMORY_SYNTHESIS } from "../constants";
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
 import { resolveDefaultModel } from "../utils/utilities";
 import styles from "./SynthesisComponent.module.css";
@@ -154,7 +154,7 @@ export default function SynthesisComponent() {
   const [leftTab, setLeftTab] = useState("config"); // "config" | "output"
 
   // -- Model memory (persist last-used model per page) ----------
-  const { saveModel, restoreModel } = useModelMemory(SK_MODEL_MEMORY_SYNTHESIS);
+  const { saveModel, restoreModel } = useModelMemory(STORAGE_KEY_MODEL_MEMORY_SYNTHESIS);
 
   // -- Synthesis state -------------------------------------------
   const [systemPrompt, setSystemPrompt] = useState("");

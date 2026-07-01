@@ -11,7 +11,7 @@ import { WorkspaceProvider } from "../components/WorkspaceContextComponent";
 import "./globals.css";
 import SessionTrackerComponent from "@/components/SessionTrackerComponent";
 import UserAvatarDropdownComponent from "@/components/UserAvatarDropdownComponent";
-import { LS_PANEL_NAV } from "@/constants";
+import { LOCAL_STORAGE_KEY_PANEL_NAV } from "@/constants";
 
 // Force all pages to render dynamically — prevents SSG prerender
 // failures during Docker builds when Vault/Prism APIs are unreachable
@@ -60,7 +60,7 @@ export default function RootLayout({
             __html: `<script>${generateThemeInitScript("prism:theme")}
 (function(){
   try {
-    var nav = localStorage.getItem('${LS_PANEL_NAV}');
+    var nav = localStorage.getItem('${LOCAL_STORAGE_KEY_PANEL_NAV}');
     if (nav === 'false') {
       document.documentElement.setAttribute('data-navigation-is-collapsed', 'true');
     }

@@ -25,7 +25,7 @@ import { FilterBarComponent } from "./FilterBarComponent";
 import { formatCost } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../utils/utilities";
 import styles from "./TextPageComponent.module.css";
-import { LS_DATE_RANGE } from "../constants";
+import { LOCAL_STORAGE_KEY_DATE_RANGE } from "../constants";
 
 const ORIGIN_FILTERS = [
   { key: "user", label: "Prompts", icon: User },
@@ -234,7 +234,7 @@ export default function TextPageComponent({
                       }
                     : undefined
                 }
-                dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
+                dateStorageKey={!externalDateRange ? LOCAL_STORAGE_KEY_DATE_RANGE : undefined}
               />
 
               <SearchFilterComponent
@@ -406,7 +406,7 @@ export default function TextPageComponent({
                     }
                   : undefined
               }
-              dateStorageKey={!externalDateRange ? LS_DATE_RANGE : undefined}
+              dateStorageKey={!externalDateRange ? LOCAL_STORAGE_KEY_DATE_RANGE : undefined}
             />
 
             <SearchFilterComponent

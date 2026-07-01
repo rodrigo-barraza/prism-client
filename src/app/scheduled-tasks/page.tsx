@@ -1,5 +1,5 @@
 "use client";
-import { AGENT_IDS, AGENTLESS_AGENT, LS_CRON_JOB_NOTIFICATIONS_COUNT, EV_CRON_JOB_SCHEDULED } from "@/constants";
+import { AGENT_IDS, AGENTLESS_AGENT, LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT, EVENT_NAME_CRON_JOB_SCHEDULED } from "@/constants";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { usePersistedState } from "../../hooks/usePersistedState";
@@ -814,9 +814,9 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
         const createdTask = await PrismService.createCronJob(taskPayload);
         setTasks((previousTasks) => [createdTask, ...previousTasks]);
         showToast(`Scheduled Task "${formName}" created successfully!`);
-        const currentNotificationCount = parseInt(localStorage.getItem(LS_CRON_JOB_NOTIFICATIONS_COUNT) || "0", 10);
-        localStorage.setItem(LS_CRON_JOB_NOTIFICATIONS_COUNT, String(currentNotificationCount + 1));
-        window.dispatchEvent(new CustomEvent(EV_CRON_JOB_SCHEDULED));
+        const currentNotificationCount = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0", 10);
+        localStorage.setItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT, String(currentNotificationCount + 1));
+        window.dispatchEvent(new CustomEvent(EVENT_NAME_CRON_JOB_SCHEDULED));
       }
 
       setShowNewModal(false);

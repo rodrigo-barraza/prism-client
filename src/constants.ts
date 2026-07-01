@@ -12,19 +12,18 @@
  */
 
 // -- StorageService keys (auto-prefixed "prism:<key>") -----------
-export const SK_LAST_PROVIDER = "lastProvider";
-export const SK_LAST_MODEL = "lastModel";
-export const SK_INFERENCE_MODE = "inferenceMode";
+// -- StorageService keys (auto-prefixed "prism:<key>") -----------
+export const STORAGE_KEY_LAST_PROVIDER = "lastProvider";
+export const STORAGE_KEY_LAST_MODEL = "lastModel";
+export const STORAGE_KEY_INFERENCE_MODE = "inferenceMode";
 
 // -- Page-scoped model memory keys (auto-prefixed "prism:<key>") --
 // Each page remembers the last-used model independently.
 // Value shape: { provider, model, isLocal }
-export const SK_MODEL_MEMORY_AGENT = "modelMemory:agent";
-export const SK_MODEL_MEMORY_AGENT_PREFIX = "modelMemory:agent:";
-export const SK_MODEL_MEMORY_SYNTHESIS = "modelMemory:synthesis";
-export const SK_MODEL_MEMORY_BENCHMARKS = "modelMemory:benchmarks";
-
-
+export const STORAGE_KEY_MODEL_MEMORY_AGENT = "modelMemory:agent";
+export const STORAGE_KEY_MODEL_MEMORY_AGENT_PREFIX = "modelMemory:agent:";
+export const STORAGE_KEY_MODEL_MEMORY_SYNTHESIS = "modelMemory:synthesis";
+export const STORAGE_KEY_MODEL_MEMORY_BENCHMARKS = "modelMemory:benchmarks";
 
 // -- Re-exports from utilities-library (single source of truth) ---
 export {
@@ -47,43 +46,43 @@ export {
 export type { ProviderType } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 // -- Raw localStorage keys (no namespace prefix) -----------------
-export const LS_PANEL_LEFT = "panel_left";
-export const LS_PANEL_RIGHT = "panel_right";
-export const LS_PANEL_NAV = "panel_nav";
-export const LS_SYSTEM_INSTRUCTIONS = "prism_system_instructions";
-export const LS_WORKFLOW_INSPECTOR_WIDTH = "workflow-inspector-width";
-export const LS_WORKFLOW_EXPANDED_NODES = "workflow-expanded-nodes";
-export const LS_WORKFLOW_VIEWS = "workflow-views";
-export const LS_ADMIN_PROJECT_FILTER = "admin:projectFilter";
-export const LS_DATE_RANGE = "prism-date-range";
-export const LS_CHAT_FILTERS = "prism:chat-filters";
-export const LS_ADMIN_CHAT_FILTERS = "prism:admin-chat-filters";
-export const LS_WORKSPACE_ROOT = "prism:workspace";
-export const LS_FILE_VIEWER_WIDTH = "prism:fileViewerWidth";
-export const LS_LEFT_SIDEBAR_SPLIT_RATIO = "prism:leftSidebarSplitRatio";
-export const LS_USERNAME = "prism:username";
-export const LS_CRITIC_GATE_ENABLED = "agent:criticGateEnabled";
-export const LOCAL_STORAGE_AUTO_APPROVE_ENABLED = "agent:autoApproveEnabled";
-export const LS_AGENT_MAX_ITERATIONS = "agent:maxIterations";
-export const LS_AGENT_MAX_SUB_AGENT_ITERATIONS = "agent:maxSubAgentIterations";
-export const LS_AGENT_MAX_RECURSION_DEPTH = "agent:maxRecursionDepth";
-export const LS_CRON_JOB_NOTIFICATIONS_COUNT = "cron-job-notifications-count";
-export const SK_TOOL_MEMORY_AGENT_PREFIX = "toolMemory:agent:";
-export const LS_WORKSPACE_TOGGLE_PREFERENCE = "agent:workspaceTogglePreference";
-export const LS_ACTIVE_AGENT = "prism:activeAgent";
-export const LS_LM_STUDIO_LOAD_CONFIG_PREFIX = "lm-studio-load-config:";
+export const LOCAL_STORAGE_KEY_PANEL_LEFT = "panel_left";
+export const LOCAL_STORAGE_KEY_PANEL_RIGHT = "panel_right";
+export const LOCAL_STORAGE_KEY_PANEL_NAVIGATION = "panel_nav";
+export const LOCAL_STORAGE_KEY_SYSTEM_INSTRUCTIONS = "prism_system_instructions";
+export const LOCAL_STORAGE_KEY_WORKFLOW_INSPECTOR_WIDTH = "workflow-inspector-width";
+export const LOCAL_STORAGE_KEY_WORKFLOW_EXPANDED_NODES = "workflow-expanded-nodes";
+export const LOCAL_STORAGE_KEY_WORKFLOW_VIEWS = "workflow-views";
+export const LOCAL_STORAGE_KEY_ADMIN_PROJECT_FILTER = "admin:projectFilter";
+export const LOCAL_STORAGE_KEY_DATE_RANGE = "prism-date-range";
+export const LOCAL_STORAGE_KEY_CHAT_FILTERS = "prism:chat-filters";
+export const LOCAL_STORAGE_KEY_ADMIN_CHAT_FILTERS = "prism:admin-chat-filters";
+export const LOCAL_STORAGE_KEY_WORKSPACE_ROOT = "prism:workspace";
+export const LOCAL_STORAGE_KEY_FILE_VIEWER_WIDTH = "prism:fileViewerWidth";
+export const LOCAL_STORAGE_KEY_LEFT_SIDEBAR_SPLIT_RATIO = "prism:leftSidebarSplitRatio";
+export const LOCAL_STORAGE_KEY_USERNAME = "prism:username";
+export const LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED = "agent:criticGateEnabled";
+export const LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED = "agent:autoApproveEnabled";
+export const LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS = "agent:maxIterations";
+export const LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS = "agent:maxSubAgentIterations";
+export const LOCAL_STORAGE_KEY_AGENT_MAX_RECURSION_DEPTH = "agent:maxRecursionDepth";
+export const LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT = "cron-job-notifications-count";
+export const STORAGE_KEY_TOOL_MEMORY_AGENT_PREFIX = "toolMemory:agent:";
+export const LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE = "agent:workspaceTogglePreference";
+export const LOCAL_STORAGE_KEY_ACTIVE_AGENT = "prism:activeAgent";
+export const LOCAL_STORAGE_KEY_LM_STUDIO_LOAD_CONFIG_PREFIX = "lm-studio-load-config:";
 
 // -- Custom Event Names --------------------------------------------
-export const EV_CRON_JOB_SCHEDULED = "cron-job-scheduled";
-export const EV_PRISM_SETTINGS_UPDATED = "prism-settings-updated";
-export const EV_PANEL_DISMISS_SIDEBARS = "panel:dismiss-sidebars";
-export const EV_SIDEBAR_TAB_CHANGE = "sidebarTab:change";
-export const EV_SIDEBAR_TAB_BOTTOM_CHANGE = "sidebarTabBottom:change";
-export const EV_VIEW_MODE_CHANGE = "viewMode:change";
-export const EV_USER_TYPING = "user:typing";
-export const EV_CONVERSATION_CHANGE = "conversation:change";
-export const EV_AGENT_SWITCH = "agent:switch";
-export const EV_MODEL_CHANGE = "model:change";
+export const EVENT_NAME_CRON_JOB_SCHEDULED = "cron-job-scheduled";
+export const EVENT_NAME_PRISM_SETTINGS_UPDATED = "prism-settings-updated";
+export const EVENT_NAME_PANEL_DISMISS_SIDEBARS = "panel:dismiss-sidebars";
+export const EVENT_NAME_SIDEBAR_TAB_CHANGE = "sidebarTab:change";
+export const EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE = "sidebarTabBottom:change";
+export const EVENT_NAME_VIEW_MODE_CHANGE = "viewMode:change";
+export const EVENT_NAME_USER_TYPING = "user:typing";
+export const EVENT_NAME_CONVERSATION_CHANGE = "conversation:change";
+export const EVENT_NAME_AGENT_SWITCH = "agent:switch";
+export const EVENT_NAME_MODEL_CHANGE = "model:change";
 
 // -- Settings defaults (shared by Agent, admin) ------
 export const SETTINGS_DEFAULTS = {
@@ -109,14 +108,14 @@ export const SETTINGS_DEFAULTS = {
 // -- Chart / UI color palette -------------------------------------
 /** Cycled by row index for provider charts, tables, and distribution bars. */
 export const PROVIDER_COLORS = [
-  "#6366f1",
-  "#a855f7",
-  "#ec4899",
-  "#f59e0b",
-  "#10b981",
-  "#3b82f6",
-  "#ef4444",
-  "#06b6d4",
+  "oklch(0.585 0.233 277.117)", // Indigo 500
+  "oklch(0.606 0.25 293.528)", // Purple 500
+  "oklch(0.627 0.265 325.612)", // Pink 500
+  "oklch(0.769 0.188 70.08)", // Amber 500
+  "oklch(0.705 0.191 165.574)", // Emerald 500
+  "oklch(0.588 0.158 241.966)", // Blue 500
+  "oklch(0.627 0.226 28.324)", // Red 500
+  "oklch(0.697 0.148 209.91)", // Cyan 500
 ];
 
 // -- Polling intervals (re-exported from utilities-library) -------

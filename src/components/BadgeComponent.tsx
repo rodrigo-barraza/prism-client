@@ -1,6 +1,6 @@
 "use client";
 
-import { AGENTLESS_AGENT, EV_USER_TYPING } from "@/constants";
+import { AGENTLESS_AGENT, EVENT_NAME_USER_TYPING } from "@/constants";
 
 import React, {
   useRef,
@@ -470,9 +470,9 @@ function useCoinAnimation({ agent, size }: { agent?: string | ClientAgent | null
       }, TYPING_IDLE_DELAY_MILLISECONDS);
     };
 
-    window.addEventListener(EV_USER_TYPING, handleTypingEvent);
+    window.addEventListener(EVENT_NAME_USER_TYPING, handleTypingEvent);
     return () => {
-      window.removeEventListener(EV_USER_TYPING, handleTypingEvent);
+      window.removeEventListener(EVENT_NAME_USER_TYPING, handleTypingEvent);
       if (typingDecayTimerId.current) clearTimeout(typingDecayTimerId.current);
       if (typingDecayRequestAnimationFrameId.current) cancelAnimationFrame(typingDecayRequestAnimationFrameId.current);
     };

@@ -12,7 +12,7 @@ import {
 import ProviderLogo from "./ProviderLogosComponent";
 import { formatFileSize, formatContextTokens } from "@rodrigo-barraza/utilities-library";
 import styles from "./ModelLoadConfigPanelComponent.module.css";
-import { LS_LM_STUDIO_LOAD_CONFIG_PREFIX as LS_KEY_PREFIX } from "../constants";
+import { LOCAL_STORAGE_KEY_LM_STUDIO_LOAD_CONFIG_PREFIX } from "../constants";
 
 interface ModelLoadConfig {
   contextLength: number;
@@ -73,7 +73,7 @@ const DEFAULT_ARCH_PARAMS = {
  */
 function loadPersistedConfig(modelKey: string): ModelLoadConfig | null {
   try {
-    const raw = localStorage.getItem(`${LS_KEY_PREFIX}${modelKey}`);
+    const raw = localStorage.getItem(`${LOCAL_STORAGE_KEY_LM_STUDIO_LOAD_CONFIG_PREFIX}${modelKey}`);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -85,7 +85,7 @@ function loadPersistedConfig(modelKey: string): ModelLoadConfig | null {
  */
 function savePersistedConfig(modelKey: string, config: ModelLoadConfig) {
   try {
-    localStorage.setItem(`${LS_KEY_PREFIX}${modelKey}`, JSON.stringify(config));
+    localStorage.setItem(`${LOCAL_STORAGE_KEY_LM_STUDIO_LOAD_CONFIG_PREFIX}${modelKey}`, JSON.stringify(config));
   } catch {
     // ignore quota errors
   }
@@ -194,7 +194,7 @@ export default function ModelLoadConfigPanel({
     } else {
       // Clear any persisted config
       try {
-        localStorage.removeItem(`${LS_KEY_PREFIX}${modelKey}`);
+        localStorage.removeItem(`${LOCAL_STORAGE_KEY_LM_STUDIO_LOAD_CONFIG_PREFIX}${modelKey}`);
       } catch {
         // ignore
       }

@@ -107,31 +107,31 @@ import { mergeUsedToolsWithSubAgents, toolCountsToUsedTools, resolveDefaultModel
 import {
   PROJECT_AGENT,
   SETTINGS_DEFAULTS,
-  SK_MODEL_MEMORY_AGENT,
-  SK_MODEL_MEMORY_AGENT_PREFIX,
+  STORAGE_KEY_MODEL_MEMORY_AGENT,
+  STORAGE_KEY_MODEL_MEMORY_AGENT_PREFIX,
   MAX_TOOL_ITERATIONS,
-  LS_FILE_VIEWER_WIDTH,
-  LS_CHAT_FILTERS,
-  LS_ADMIN_CHAT_FILTERS,
+  LOCAL_STORAGE_KEY_FILE_VIEWER_WIDTH,
+  LOCAL_STORAGE_KEY_CHAT_FILTERS,
+  LOCAL_STORAGE_KEY_ADMIN_CHAT_FILTERS,
   AGENT_IDS,
   AGENTLESS_AGENT,
-  LS_CRON_JOB_NOTIFICATIONS_COUNT,
-  LS_CRITIC_GATE_ENABLED,
+  LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
+  LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED,
   LOCAL_STORAGE_AUTO_APPROVE_ENABLED,
-  LS_AGENT_MAX_ITERATIONS,
-  LS_AGENT_MAX_SUB_AGENT_ITERATIONS,
-  LS_AGENT_MAX_RECURSION_DEPTH,
+  LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS,
+  LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS,
+  LOCAL_STORAGE_KEY_AGENT_MAX_RECURSION_DEPTH,
   DEFAULT_RECURSIVE_SPAWNING_DEPTH,
-  EV_SIDEBAR_TAB_CHANGE,
-  EV_SIDEBAR_TAB_BOTTOM_CHANGE,
-  EV_VIEW_MODE_CHANGE,
-  EV_USER_TYPING,
-  EV_CONVERSATION_CHANGE,
-  EV_AGENT_SWITCH,
-  EV_MODEL_CHANGE,
-  EV_CRON_JOB_SCHEDULED,
+  EVENT_NAME_SIDEBAR_TAB_CHANGE,
+  EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE,
+  EVENT_NAME_VIEW_MODE_CHANGE,
+  EVENT_NAME_USER_TYPING,
+  EVENT_NAME_CONVERSATION_CHANGE,
+  EVENT_NAME_AGENT_SWITCH,
+  EVENT_NAME_MODEL_CHANGE,
+  EVENT_NAME_CRON_JOB_SCHEDULED,
   FALLBACK_THINKING_PATTERNS,
-  LS_WORKSPACE_TOGGLE_PREFERENCE,
+  LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE,
 } from "../constants";
 import adminPageStyles from "../app/admin/chat/page.module.css";
 import requestsTableStyles from "./RequestsTableComponent.module.css";
@@ -665,7 +665,7 @@ export default function ChatConversationComponent({
   viewerOpenFilesRef.current = viewerOpenFiles;
   const [viewerWidth, setViewerWidth] = useState(() => {
     if (typeof window === "undefined") return 500;
-    const stored = localStorage.getItem(LS_FILE_VIEWER_WIDTH);
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY_FILE_VIEWER_WIDTH);
     return stored ? Math.max(300, Math.min(Number(stored), 1200)) : 500;
   });
   const [totalMemoriesCount, setTotalMemoriesCount] = useState(0);
@@ -706,7 +706,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (leftTab) {
       window.dispatchEvent(
-        new CustomEvent(EV_SIDEBAR_TAB_CHANGE, {
+        new CustomEvent(EVENT_NAME_SIDEBAR_TAB_CHANGE, {
           detail: { tab: leftTab },
         }),
       );
@@ -716,7 +716,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (leftTabBottom) {
       window.dispatchEvent(
-        new CustomEvent(EV_SIDEBAR_TAB_BOTTOM_CHANGE, {
+        new CustomEvent(EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE, {
           detail: { tabBottom: leftTabBottom },
         }),
       );
@@ -726,7 +726,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     const currentViewMode = chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean";
     window.dispatchEvent(
-      new CustomEvent(EV_VIEW_MODE_CHANGE, {
+      new CustomEvent(EVENT_NAME_VIEW_MODE_CHANGE, {
         detail: { viewMode: currentViewMode },
       }),
     );
@@ -804,8 +804,8 @@ export default function ChatConversationComponent({
   const [embeddingModelConfigured, setEmbeddingModelConfigured] = useState(false);
   const modelMemoryKey =
     agentId === AGENT_IDS.CODING
-      ? SK_MODEL_MEMORY_AGENT
-      : SK_MODEL_MEMORY_AGENT_PREFIX + agentId;
+      ? STORAGE_KEY_MODEL_MEMORY_AGENT
+      : STORAGE_KEY_MODEL_MEMORY_AGENT_PREFIX + agentId;
 
   const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn, resetToAllDisabled, restoreDisabledTools, enableSpecificTools } =
     useToolToggles(builtInTools, isCoreToolsLocked);
@@ -823,7 +823,7 @@ export default function ChatConversationComponent({
   >(() => {
     const persistedWorkspaceToggle =
       typeof window !== "undefined"
-        ? localStorage.getItem(LS_WORKSPACE_TOGGLE_PREFERENCE)
+        ? localStorage.getItem(LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE)
         : null;
     const workspaceEnabledPreference =
       persistedWorkspaceToggle !== null
@@ -881,11 +881,11 @@ export default function ChatConversationComponent({
       const parsed = Number(stored);
       return [10, 25, 50, 100].includes(parsed) ? parsed : null;
     };
-    const iter = parseStored(LS_AGENT_MAX_ITERATIONS);
+    const iter = parseStored(LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS);
     if (iter != null) setMaxIterations(iter);
-    const subAgentIter = parseStored(LS_AGENT_MAX_SUB_AGENT_ITERATIONS);
+    const subAgentIter = parseStored(LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS);
     if (subAgentIter != null) setMaxSubAgentIterations(subAgentIter);
-    const storedRecursionDepth = localStorage.getItem(LS_AGENT_MAX_RECURSION_DEPTH);
+    const storedRecursionDepth = localStorage.getItem(LOCAL_STORAGE_KEY_AGENT_MAX_RECURSION_DEPTH);
     if (storedRecursionDepth != null) {
       const parsedDepth = Number(storedRecursionDepth);
       if ([0, 1, 2, 3].includes(parsedDepth)) setMaxRecursionDepth(parsedDepth);
@@ -894,7 +894,7 @@ export default function ChatConversationComponent({
   const [planFirst, setPlanFirst] = useState(false);
   const [criticGateEnabled, setCriticGateEnabled] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem(LS_CRITIC_GATE_ENABLED) === "true";
+      return localStorage.getItem(LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED) === "true";
     }
     return false;
   });
@@ -1843,28 +1843,28 @@ export default function ChatConversationComponent({
   const adminLoadEntries = useCallback(async () => {
     if (!isAdmin) return;
     try {
-      const params: Record<string, string | number | boolean> = {
+      const parameters: Record<string, string | number | boolean> = {
         page: 1,
         limit: 200,
         sort: "updatedAt",
         order: "desc",
       };
       if (adminTraceFilter) {
-        params.trace = adminTraceFilter;
+        parameters.trace = adminTraceFilter;
       } else {
-        Object.assign(params, buildDateRangeParams(adminDateRange));
-        if (adminProjectFilter) params.project = adminProjectFilter;
+        Object.assign(parameters, buildDateRangeParams(adminDateRange));
+        if (adminProjectFilter) parameters.project = adminProjectFilter;
       }
-      if (adminProviderFilter) params.provider = adminProviderFilter;
-      if (adminModelFilter) params.model = adminModelFilter;
+      if (adminProviderFilter) parameters.provider = adminProviderFilter;
+      if (adminModelFilter) parameters.model = adminModelFilter;
 
       if (adminIsNoAgent) {
-        params.type = "direct";
+        parameters.type = "direct";
       } else if (adminIsAgentMode) {
-        params.agent = adminActiveAgentId;
+        parameters.agent = adminActiveAgentId;
       }
 
-      const data = await IrisService.getConversations(params);
+      const data = await IrisService.getConversations(parameters);
       const list = (data.data || []).map(
         (conversation: Conversation & { type?: string }) => ({
           ...conversation,
@@ -1939,28 +1939,28 @@ export default function ChatConversationComponent({
     try {
       setAdminEntriesLoading(true);
       const nextPage = adminEntriesPageRef.current + 1;
-      const params: Record<string, string | number | boolean> = {
+      const parameters: Record<string, string | number | boolean> = {
         page: nextPage,
         limit: 200,
         sort: "updatedAt",
         order: "desc",
       };
       if (adminTraceFilter) {
-        params.trace = adminTraceFilter;
+        parameters.trace = adminTraceFilter;
       } else {
-        Object.assign(params, buildDateRangeParams(adminDateRange));
-        if (adminProjectFilter) params.project = adminProjectFilter;
+        Object.assign(parameters, buildDateRangeParams(adminDateRange));
+        if (adminProjectFilter) parameters.project = adminProjectFilter;
       }
-      if (adminProviderFilter) params.provider = adminProviderFilter;
-      if (adminModelFilter) params.model = adminModelFilter;
+      if (adminProviderFilter) parameters.provider = adminProviderFilter;
+      if (adminModelFilter) parameters.model = adminModelFilter;
 
       if (adminIsNoAgent) {
-        params.type = "direct";
+        parameters.type = "direct";
       } else if (adminIsAgentMode) {
-        params.agent = adminActiveAgentId;
+        parameters.agent = adminActiveAgentId;
       }
 
-      const data = await IrisService.getConversations(params);
+      const data = await IrisService.getConversations(parameters);
       const newItems = (data.data || []).map(
         (conversation: Conversation & { type?: string }) => ({
           ...conversation,
@@ -2004,14 +2004,14 @@ export default function ChatConversationComponent({
       setAdminSelectedSource(source);
 
       // Update URL for deep-linking
-      const params = new URLSearchParams();
-      if (adminAgentParam) params.set("agent", adminAgentParam);
-      if (adminTraceFilter) params.set("trace", adminTraceFilter);
-      if (adminProjectFilter) params.set("project", adminProjectFilter);
-      if (adminProviderFilter) params.set("provider", adminProviderFilter);
-      if (adminModelFilter) params.set("model", adminModelFilter);
+      const parameters = new URLSearchParams();
+      if (adminAgentParam) parameters.set("agent", adminAgentParam);
+      if (adminTraceFilter) parameters.set("trace", adminTraceFilter);
+      if (adminProjectFilter) parameters.set("project", adminProjectFilter);
+      if (adminProviderFilter) parameters.set("provider", adminProviderFilter);
+      if (adminModelFilter) parameters.set("model", adminModelFilter);
 
-      const queryString = params.toString();
+      const queryString = parameters.toString();
       window.history.replaceState(
         null,
         "",
@@ -2252,13 +2252,13 @@ export default function ChatConversationComponent({
   const adminHandleAgentSelect = useCallback(
     (agentPickedId: string) => {
       if (!isAdmin) return;
-      const params = new URLSearchParams(adminSearchParams.toString());
+      const parameters = new URLSearchParams(adminSearchParams.toString());
       if (agentPickedId === "ALL") {
-        params.delete("agent");
+        parameters.delete("agent");
       } else {
-        params.set("agent", agentPickedId);
+        parameters.set("agent", agentPickedId);
       }
-      const queryString = params.toString();
+      const queryString = parameters.toString();
       adminRouter.replace(
         queryString ? `/admin/chat?${queryString}` : "/admin/chat",
         { scroll: false },
@@ -2969,7 +2969,7 @@ export default function ChatConversationComponent({
       if (!element) return;
       const value = serializeEditable(element);
       inputValueRef.current = value;
-      window.dispatchEvent(new CustomEvent(EV_USER_TYPING));
+      window.dispatchEvent(new CustomEvent(EVENT_NAME_USER_TYPING));
       const hasSlashBadges = element.querySelectorAll("[data-slash-command]").length > 0;
       const nowHasInput = value.trim().length > 0 || hasSlashBadges;
       setHasInput((previousHasInput) =>
@@ -3823,14 +3823,14 @@ export default function ChatConversationComponent({
               toolData.name === TOOL_NAMES.CREATE_CRON_JOB
             ) {
               const currentNotificationCount = parseInt(
-                localStorage.getItem(LS_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
+                localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
                 10,
               );
               localStorage.setItem(
-                LS_CRON_JOB_NOTIFICATIONS_COUNT,
+                LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
                 String(currentNotificationCount + 1),
               );
-              window.dispatchEvent(new CustomEvent(EV_CRON_JOB_SCHEDULED));
+              window.dispatchEvent(new CustomEvent(EVENT_NAME_CRON_JOB_SCHEDULED));
             }
 
             // Auto-refresh memories panel when save_memory completes
@@ -3990,14 +3990,14 @@ export default function ChatConversationComponent({
               toolData.name === TOOL_NAMES.CREATE_CRON_JOB
             ) {
               const currentNotificationCount = parseInt(
-                localStorage.getItem(LS_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
+                localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
                 10,
               );
               localStorage.setItem(
-                LS_CRON_JOB_NOTIFICATIONS_COUNT,
+                LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
                 String(currentNotificationCount + 1),
               );
-              window.dispatchEvent(new CustomEvent(EV_CRON_JOB_SCHEDULED));
+              window.dispatchEvent(new CustomEvent(EVENT_NAME_CRON_JOB_SCHEDULED));
             }
 
             // Auto-refresh workspace tree when FS-mutating tools complete (MCP path)
@@ -5050,7 +5050,7 @@ export default function ChatConversationComponent({
         const now = new Date().toISOString();
         setActiveId(conversationId);
         window.dispatchEvent(
-          new CustomEvent(EV_CONVERSATION_CHANGE, {
+          new CustomEvent(EVENT_NAME_CONVERSATION_CHANGE, {
             detail: { conversationId: conversationId },
           }),
         );
@@ -5240,7 +5240,7 @@ export default function ChatConversationComponent({
         // the backend agentic loop continues processing in the background.
         // Instead of showing "⚠️ Error", enter recovery polling mode to
         // re-fetch the conversation when the backend finishes.
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage = getErrorMessage(error);
         const isNetworkDisconnection =
           error instanceof TypeError ||
           errorMessage.includes("fetch") ||
@@ -5521,7 +5521,7 @@ export default function ChatConversationComponent({
       // whatever state the previous/loaded conversation had.
       const persistedWorkspaceToggle =
         typeof window !== "undefined"
-          ? localStorage.getItem(LS_WORKSPACE_TOGGLE_PREFERENCE)
+          ? localStorage.getItem(LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE)
           : null;
       const workspaceEnabledPreference =
         persistedWorkspaceToggle !== null
@@ -5558,7 +5558,7 @@ export default function ChatConversationComponent({
 
     // Clear conversation from URL
     window.dispatchEvent(
-      new CustomEvent(EV_CONVERSATION_CHANGE, {
+      new CustomEvent(EVENT_NAME_CONVERSATION_CHANGE, {
         detail: { conversationId: null },
       }),
     );
@@ -5706,7 +5706,7 @@ export default function ChatConversationComponent({
         setConversationId(full.id || generateUUID());
         setActiveId(full.id || null);
         window.dispatchEvent(
-          new CustomEvent(EV_CONVERSATION_CHANGE, {
+          new CustomEvent(EVENT_NAME_CONVERSATION_CHANGE, {
             detail: { conversationId: full.id },
           }),
         );
@@ -5822,7 +5822,7 @@ export default function ChatConversationComponent({
         }
 
         window.dispatchEvent(
-          new CustomEvent(EV_CONVERSATION_CHANGE, {
+          new CustomEvent(EVENT_NAME_CONVERSATION_CHANGE, {
             detail: { conversationId: full.id },
           }),
         );
@@ -5992,7 +5992,7 @@ export default function ChatConversationComponent({
         setPixelTransition("in");
       } catch (error: unknown) {
         const errorMessage =
-          error instanceof Error ? error.message : String(error);
+          getErrorMessage(error);
         const is404 =
           errorMessage.includes("404") || errorMessage.includes("not found");
         if (is404) {
@@ -6293,7 +6293,7 @@ export default function ChatConversationComponent({
     badgeState: newDataTabs.has(tabKey) ? "new" : "default",
   });
 
-  // -- Top panel group (settings, workspace, info, params) ------
+  // -- Top panel group (settings, workspace, info, parameters) ------
   const leftPanel = (
     <div
       style={{
@@ -6312,7 +6312,7 @@ export default function ChatConversationComponent({
             tooltip: "Settings",
           },
           {
-            key: "params",
+            key: "parameters",
             icon: <span className={tabBarStyles['tab-emoji-icon']}>🎚︎</span>,
             tooltip: "Parameters",
           },
@@ -6442,7 +6442,7 @@ export default function ChatConversationComponent({
                         setCriticGateEnabled((value) => {
                           const next = !value;
                           localStorage.setItem(
-                            LS_CRITIC_GATE_ENABLED,
+                            LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED,
                             String(next),
                           );
                           return next;
@@ -6463,7 +6463,7 @@ export default function ChatConversationComponent({
                         const next = steps[(index + 1) % steps.length];
                         setMaxIterations(next);
                         localStorage.setItem(
-                          LS_AGENT_MAX_ITERATIONS,
+                          LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS,
                           String(next),
                         );
                       },
@@ -6482,7 +6482,7 @@ export default function ChatConversationComponent({
                         const next = steps[(index + 1) % steps.length];
                         setMaxSubAgentIterations(next);
                         localStorage.setItem(
-                          LS_AGENT_MAX_SUB_AGENT_ITERATIONS,
+                          LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS,
                           String(next),
                         );
                       },
@@ -6501,7 +6501,7 @@ export default function ChatConversationComponent({
                         const next = steps[(index + 1) % steps.length];
                         setMaxRecursionDepth(next);
                         localStorage.setItem(
-                          LS_AGENT_MAX_RECURSION_DEPTH,
+                          LOCAL_STORAGE_KEY_AGENT_MAX_RECURSION_DEPTH,
                           String(next),
                         );
                       },
@@ -6790,7 +6790,7 @@ export default function ChatConversationComponent({
         </>
       )}
 
-      {leftTab === "params" && (
+      {leftTab === "parameters" && (
         <>
           <SidebarTabHeaderComponent icon="🎚︎" title="Parameters" />
           <ParametersPanelComponent
@@ -7885,7 +7885,7 @@ export default function ChatConversationComponent({
               width={viewerWidth}
               onWidthChange={(width: number) => {
                 setViewerWidth(width);
-                localStorage.setItem(LS_FILE_VIEWER_WIDTH, String(width));
+                localStorage.setItem(LOCAL_STORAGE_KEY_FILE_VIEWER_WIDTH, String(width));
               }}
               refreshKey={viewerRefreshKey}
               onMentionLines={handleMentionLines}
@@ -7916,7 +7916,7 @@ export default function ChatConversationComponent({
               hasMore={adminEntriesHasMore}
               loadingMore={adminEntriesLoading}
               onLoadMore={adminLoadMoreEntries}
-              filterStorageKey={LS_ADMIN_CHAT_FILTERS}
+              filterStorageKey={LOCAL_STORAGE_KEY_ADMIN_CHAT_FILTERS}
               dateRange={adminDateRange}
               onDateChange={adminHeaderContext.setDateRange}
               initialProviders={adminProviderFilter ? [adminProviderFilter] : undefined}
@@ -7940,7 +7940,7 @@ export default function ChatConversationComponent({
               hasMore={conversationsHasMore}
               loadingMore={conversationsLoading}
               onLoadMore={loadMoreConversations}
-              filterStorageKey={LS_CHAT_FILTERS}
+              filterStorageKey={LOCAL_STORAGE_KEY_CHAT_FILTERS}
             />
           )
         }
@@ -7967,7 +7967,7 @@ export default function ChatConversationComponent({
                   activeAgentId={agentId}
                   onSelect={(id: string) => {
                     window.dispatchEvent(
-                      new CustomEvent(EV_AGENT_SWITCH, {
+                      new CustomEvent(EVENT_NAME_AGENT_SWITCH, {
                         detail: { agentId: id },
                       }),
                     );
@@ -8012,7 +8012,7 @@ export default function ChatConversationComponent({
                 }
                 saveModel(provider, modelName);
                 window.dispatchEvent(
-                  new CustomEvent(EV_MODEL_CHANGE, {
+                  new CustomEvent(EVENT_NAME_MODEL_CHANGE, {
                     detail: { provider, model: modelName },
                   }),
                 );

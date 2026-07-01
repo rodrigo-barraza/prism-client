@@ -6,7 +6,7 @@ import {
   ButtonComponent,
 } from "@rodrigo-barraza/components-library";
 import StorageService from "../services/StorageService";
-import { SK_TOOL_MEMORY_AGENT_PREFIX, AGENT_IDS } from "../constants";
+import { STORAGE_KEY_TOOL_MEMORY_AGENT_PREFIX, AGENT_IDS } from "../constants";
 import {
   X,
   Play,
@@ -161,7 +161,7 @@ export default function ToolDetailModalComponent({
       (name: string) => name !== tool.name,
     );
     StorageService.set(
-      `${SK_TOOL_MEMORY_AGENT_PREFIX}${AGENT_IDS.NONE}`,
+      `${STORAGE_KEY_TOOL_MEMORY_AGENT_PREFIX}${AGENT_IDS.NONE}`,
       { disabledTools },
     );
     router.push("/chat?agent=NONE&fc=true&thinking=true");

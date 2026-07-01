@@ -17,7 +17,7 @@ import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
 
 import SoundService from "@/services/SoundService";
-import { LOCAL_PROVIDERS, EV_PANEL_DISMISS_SIDEBARS } from "../constants";
+import { LOCAL_PROVIDERS, EVENT_NAME_PANEL_DISMISS_SIDEBARS } from "../constants";
 import styles from "./ModelPickerPopoverComponent.module.css";
 import {
   CloseButtonComponent,
@@ -387,7 +387,7 @@ export default function ModelPickerPopoverComponent({
         (onSelectModel as (provider: string, model: string) => void)?.("", "");
         setOpen(false);
         setHighlightIndex(-1);
-        document.dispatchEvent(new CustomEvent(EV_PANEL_DISMISS_SIDEBARS));
+        document.dispatchEvent(new CustomEvent(EVENT_NAME_PANEL_DISMISS_SIDEBARS));
         return;
       }
 
@@ -396,7 +396,7 @@ export default function ModelPickerPopoverComponent({
         onLmStudioSelect(rawModel);
         setOpen(false);
         setHighlightIndex(-1);
-        document.dispatchEvent(new CustomEvent(EV_PANEL_DISMISS_SIDEBARS));
+        document.dispatchEvent(new CustomEvent(EVENT_NAME_PANEL_DISMISS_SIDEBARS));
         return;
       }
 
@@ -406,7 +406,7 @@ export default function ModelPickerPopoverComponent({
       );
       setOpen(false);
       setHighlightIndex(-1);
-      document.dispatchEvent(new CustomEvent(EV_PANEL_DISMISS_SIDEBARS));
+      document.dispatchEvent(new CustomEvent(EVENT_NAME_PANEL_DISMISS_SIDEBARS));
     },
     [
       onSelectModel,

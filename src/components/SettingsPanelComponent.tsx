@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_WORKFLOW_TITLE, FALLBACK_THINKING_PATTERNS, LS_WORKSPACE_TOGGLE_PREFERENCE } from "@/constants";
+import { DEFAULT_WORKFLOW_TITLE, FALLBACK_THINKING_PATTERNS, LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE } from "@/constants";
 import { useState, useEffect } from "react";
 import {
   Cpu,
@@ -1061,7 +1061,7 @@ export default function SettingsPanel({
                   checked={settings.agents?.workspaceEnabled !== false}
                   onChange={(checked: boolean) => {
                     if (typeof window !== "undefined") {
-                      localStorage.setItem(LS_WORKSPACE_TOGGLE_PREFERENCE, String(checked));
+                      localStorage.setItem(LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE, String(checked));
                     }
                     onChange({
                       agents: { ...settings.agents, workspaceEnabled: checked },

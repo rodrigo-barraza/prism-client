@@ -1,5 +1,5 @@
 "use client";
-import { AGENT_IDS, EV_PANEL_DISMISS_SIDEBARS } from "@/constants";
+import { AGENT_IDS, EVENT_NAME_PANEL_DISMISS_SIDEBARS } from "@/constants";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
@@ -148,7 +148,7 @@ export default function AgentPickerComponent({
       }
       setIsPopoverOpen(false);
       setHighlightedIndex(-1);
-      document.dispatchEvent(new CustomEvent(EV_PANEL_DISMISS_SIDEBARS));
+      document.dispatchEvent(new CustomEvent(EVENT_NAME_PANEL_DISMISS_SIDEBARS));
     },
     [activeAgentId, onSelect],
   );

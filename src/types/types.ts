@@ -436,6 +436,10 @@ export interface Conversation {
   providers?: string[];
   /** Backend-enriched: modality usage counts (textIn, imageOut, etc.) */
   modalities?: Record<string, number>;
+  /** Backend-enriched: authoritative input token count */
+  inputTokens?: number;
+  /** Backend-enriched: authoritative output token count */
+  outputTokens?: number;
   /** Backend-enriched: tool call counts by tool name */
   toolCounts?: Record<string, number>;
   /** Backend-enriched: parent agent conversation ID if spawned as sub-agent */

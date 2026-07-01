@@ -15,7 +15,7 @@ import {
 import PrismService from "../services/PrismService";
 import WorkspaceService from "../services/WorkspaceService";
 import type { PrismSettings } from "../types/types";
-import { EV_PRISM_SETTINGS_UPDATED } from "../constants";
+import { EVENT_NAME_PRISM_SETTINGS_UPDATED } from "../constants";
 import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
 import styles from "./SettingsSidebarNavigationComponent.module.css";
 
@@ -151,9 +151,9 @@ export default function SettingsSidebarNavigationComponent({
       }
     };
 
-    window.addEventListener(EV_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
+    window.addEventListener(EVENT_NAME_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     return () => {
-      window.removeEventListener(EV_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
+      window.removeEventListener(EVENT_NAME_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     };
   }, []);
 
