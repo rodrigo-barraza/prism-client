@@ -1,6 +1,6 @@
 "use client";
 
-import { Zap, Trash2 } from "lucide-react";
+import { Wrench, Trash2 } from "lucide-react";
 import MarkdownContent from "./MarkdownContentComponent";
 
 import { formatDuration } from "@rodrigo-barraza/utilities-library";
@@ -58,8 +58,8 @@ export default function SubAgentNotificationComponent({
 
   return (
     <div className={`sub-agent-notification-component ${styles['root']}`}>
-      <div className={styles['avatar']} style={{ color: statusColor }}>
-        <Zap size={16} />
+      <div className={styles['avatar']}>
+        <Wrench size={16} />
       </div>
       <div className={styles['content']}>
         <div className={styles['header']}>

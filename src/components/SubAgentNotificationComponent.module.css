@@ -25,19 +25,10 @@
   justify-content: center;
   font-size: var(--font-size-base);
   font-weight: 700;
-  box-shadow: 0 2px 8px oklch(0.0% 0.0 0.0 / 0.2);
-  background: color-mix(
-    in srgb,
-    var(--accent-primary, var(--color-indigo)) 10%,
-    transparent
-  );
-  color: var(--accent-primary, var(--color-indigo));
-  border: 1px solid
-    color-mix(
-      in srgb,
-      var(--accent-primary, var(--color-indigo)) 30%,
-      transparent
-    );
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.2);
+  background: oklch(0 0 0);
+  color: oklch(1 0 0);
+  border: 1px solid oklch(0.3 0 0);
 }
 
 /* ── Content column ── */
