@@ -42,6 +42,10 @@ import {
   getTotalInputTokens,
 } from "./utilities";
 import { PROVIDER_COLORS, BYTES_IN_KIB, KIB_IN_MIB, MIB_IN_GIB, MESSAGE_ROLES, CATEGORIES, EXECUTION_STATUS } from "../constants";
+import {
+  deriveAgentConversationState,
+  AGENT_CONVERSATION_STATE_COLORS,
+} from "./agentConversationStates";
 import styles from "../components/TableComponentsComponent.module.css";
 import type { TokenUsage } from "../types/types";
 
@@ -61,6 +65,8 @@ export interface TableRow {
   isGenerating?: boolean;
   isActive?: boolean;
   pendingBackgroundTasks?: number;
+  hasSubAgents?: boolean;
+  requestErrorCount?: number;
   modalities?: Record<string, boolean | number> | null;
   toolDisplayNames?: string[];
   toolApiNames?: string[];
@@ -667,38 +673,47 @@ export const conversationTitleColumn = ({
 });
 
 /**
- * Renders a StatusDotComponent driven by `isActive` and `isGenerating`:
- * — pulsing blue  → actively streaming (isGenerating)
- * — pulsing green → session open but not streaming (background tasks)
- * — muted/inactive → session closed (isActive === false)
+ * Renders a StatusDotComponent with a unique oklch color per conversation state.
+ *
+ * Colors are derived from the same PHASE_GRADIENT_STOPS palette as StatusBarComponent,
+ * ensuring a consistent visual language across all surfaces.
+ * State is derived from persisted MongoDB fields only — see agentConversationStates.ts.
  */
 export const activeStatusColumn = () => ({
   key: "isActive",
   label: "",
-  description: "Live session activity — blue: generating, green: active background tasks, muted: completed",
+  description: "Live session activity status derived from persisted conversation state",
   sortable: false,
   width: "32px",
   render: (conversation: TableRow) => {
-    const isGenerating = conversation.isGenerating;
-    const isSessionActive = conversation.isActive !== false;
+    const conversationState = deriveAgentConversationState({
+      isActive: conversation.isActive,
+      isGenerating: conversation.isGenerating,
+      pendingBackgroundTasks: conversation.pendingBackgroundTasks,
+      hasSubAgents: conversation.hasSubAgents,
+      requestErrorCount: conversation.requestErrorCount,
+    });
+    const { primary, glow, label, pulse } = AGENT_CONVERSATION_STATE_COLORS[conversationState];
 
-    if (!isSessionActive) {
-      return (
-        <TooltipComponent content="Completed" position="right">
-          <StatusDotComponent variant="inactive" size="size-small" pulse={false} />
-        </TooltipComponent>
-      );
-    }
-    if (isGenerating) {
-      return (
-        <TooltipComponent content="Generating..." position="right">
-          <StatusDotComponent variant="info" size="size-small" pulse={true} />
-        </TooltipComponent>
-      );
-    }
+    const tooltipContent = conversationState === "sub-agents-running" || conversationState === "background-tasks"
+      ? `${conversation.pendingBackgroundTasks} ${label}`
+      : conversationState === "completed-with-errors"
+        ? `Completed with ${conversation.requestErrorCount} error${conversation.requestErrorCount !== 1 ? "s" : ""}`
+        : label;
+
     return (
-      <TooltipComponent content="Active (background tasks)" position="right">
-        <StatusDotComponent variant="healthy" size="size-small" pulse={true} />
+      <TooltipComponent content={tooltipContent} position="right">
+        <StatusDotComponent
+          variant="inactive"
+          size="size-small"
+          pulse={pulse}
+          style={{
+            background: primary,
+            boxShadow: pulse
+              ? `0 0 6px ${glow}, 0 0 12px ${glow}`
+              : conversationState === "completed" ? "none" : `0 0 4px ${glow}`,
+          }}
+        />
       </TooltipComponent>
     );
   },

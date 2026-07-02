@@ -13,6 +13,10 @@ import BadgeComponent from "./BadgeComponent";
 import SoundService from "@/services/SoundService";
 import { IconButtonComponent } from "@rodrigo-barraza/components-library";
 import type { LucideIcon } from "lucide-react";
+import {
+  deriveAgentConversationState,
+  AGENT_CONVERSATION_STATE_COLORS,
+} from "../utils/agentConversationStates";
 
 interface HistoryItemTag {
   label: string;
@@ -40,6 +44,7 @@ interface HistoryItem {
   agent?: string | AgentRef;
   parentConversationId?: string | null;
   hasSubAgents?: boolean;
+  requestErrorCount?: number;
 }
 
 interface HistoryItemProps {
@@ -120,6 +125,14 @@ export default function HistoryItemComponent({
   onToggleSubAgents,
   conversationIsActive,
 }: HistoryItemProps) {
+  const conversationState = deriveAgentConversationState({
+    isActive: conversationIsActive,
+    isGenerating,
+    pendingBackgroundTasks,
+    hasSubAgents: item.hasSubAgents,
+    requestErrorCount: item.requestErrorCount,
+  });
+  const dotColors = AGENT_CONVERSATION_STATE_COLORS[conversationState];
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
   const hasModalities = modalities && Object.keys(modalities).length > 0;
@@ -260,6 +273,7 @@ export default function HistoryItemComponent({
           {conversationIsActive !== false && (
             <span
               className={`${styles['generating-dot']} ${isGenerating ? styles['generating-dot-is-animating'] : styles['generating-dot-is-idle']}`}
+              style={{ "--generating-dot-phase-color": dotColors.primary } as React.CSSProperties}
             />
           )}
           {item.title || "Untitled"}
