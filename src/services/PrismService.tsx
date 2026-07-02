@@ -1,6 +1,6 @@
 import { AGENT_IDS, EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS } from "@/constants";
 import { SERVER_SENT_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
-import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
+import { PRISM_SERVICE_URL, PRISM_WEBSOCKET_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { getErrorMessage } from "../utils/errorMessage";
@@ -1444,8 +1444,105 @@ export default class PrismService {
   }
 
   /**
-   * Generate an image from text.
+   * Subscribe to auto-response streaming via WebSocket.
+   *
+   * After the SSE stream closes (non-blocking subagent dispatch), the
+   * client has no channel to receive the server's auto-response chunks.
+   * This method opens a WebSocket to `/ws/chat`, sends a `subscribe`
+   * message with the conversation ID, and dispatches incoming events
+   * through the same SSE callback system used for the primary stream.
+   *
+   * Returns a cleanup function that closes the WebSocket.
+   */
+  static subscribeToAutoResponse(
+    conversationId: string,
+    callbacks: SSECallbacks,
+  ): () => void {
+    if (!PRISM_WEBSOCKET_URL) {
+      console.warn(
+        "[PrismService] No WebSocket URL configured — auto-response streaming unavailable",
+      );
+      return () => {};
+    }
 
+    const headers = getHeaders();
+    const websocketUrlParameters = new URLSearchParams({
+      project: headers["x-project"] || "any",
+      username: headers["x-username"] || "anonymous",
+    });
+    const websocketUrl = `${PRISM_WEBSOCKET_URL}/ws/chat?${websocketUrlParameters.toString()}`;
+
+    let websocket: WebSocket | null = null;
+    let isClosed = false;
+
+    try {
+      websocket = new WebSocket(websocketUrl);
+    } catch (connectionError: unknown) {
+      console.error(
+        "[PrismService] Failed to create WebSocket for auto-response:",
+        connectionError,
+      );
+      return () => {};
+    }
+
+    websocket.onopen = () => {
+      if (isClosed) {
+        websocket?.close();
+        return;
+      }
+      console.debug(
+        `[PrismService] WebSocket auto-response subscription opened for conversation ${conversationId}`,
+      );
+      websocket?.send(
+        JSON.stringify({ type: "subscribe", conversationId }),
+      );
+    };
+
+    websocket.onmessage = (messageEvent: MessageEvent) => {
+      try {
+        const data = JSON.parse(messageEvent.data as string) as SSEData;
+        if (data.type === "subscribed") {
+          console.debug(
+            `[PrismService] Auto-response subscription confirmed for conversation ${conversationId}`,
+          );
+          return;
+        }
+        PrismService._dispatchSSE(data, callbacks);
+      } catch (parseError: unknown) {
+        console.warn(
+          "[PrismService] Failed to parse WebSocket auto-response event:",
+          parseError,
+        );
+      }
+    };
+
+    websocket.onerror = (errorEvent: Event) => {
+      console.error(
+        "[PrismService] WebSocket auto-response error:",
+        errorEvent,
+      );
+    };
+
+    websocket.onclose = () => {
+      console.debug(
+        `[PrismService] WebSocket auto-response subscription closed for conversation ${conversationId}`,
+      );
+    };
+
+    return () => {
+      isClosed = true;
+      if (
+        websocket &&
+        websocket.readyState !== WebSocket.CLOSED &&
+        websocket.readyState !== WebSocket.CLOSING
+      ) {
+        websocket.close();
+      }
+    };
+  }
+
+  /**
+   * Generate an image from text.
    */
   static async generateImage(
     payload: ImageGenerationPayload,
