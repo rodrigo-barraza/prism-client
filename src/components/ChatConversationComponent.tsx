@@ -6036,6 +6036,28 @@ export default function ChatConversationComponent({
         } else {
           resetToAllDisabled();
         }
+
+        // Sync the authoritative isActive and pendingBackgroundTasks from
+        // the backend response to the conversations list entry. Without
+        // this, the status bar computation reads stale values from the list
+        // even though the backend document has already been updated.
+        const freshConversationRecord = full as unknown as Record<string, unknown>;
+        const freshIsActive = freshConversationRecord.isActive as boolean | undefined;
+        const freshPendingBackgroundTasks = freshConversationRecord.pendingBackgroundTasks as number | undefined;
+        if (freshIsActive !== undefined || freshPendingBackgroundTasks !== undefined) {
+          setConversations((previousConversations) =>
+            previousConversations.map((entry) => {
+              if (entry.id !== full.id) return entry;
+              return {
+                ...entry,
+                ...(freshIsActive !== undefined ? { isActive: freshIsActive } : {}),
+                ...(freshPendingBackgroundTasks !== undefined
+                  ? { pendingBackgroundTasks: freshPendingBackgroundTasks }
+                  : {}),
+              } as typeof entry;
+            }),
+          );
+        }
       }
     },
     [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools, resetToAllDisabled],
