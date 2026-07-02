@@ -7433,6 +7433,9 @@ export default function ChatConversationComponent({
         const pendingBackgroundTaskCount =
           (activeConversationEntry as Record<string, unknown> | undefined)?.pendingBackgroundTasks as number | undefined;
         const hasPendingBackgroundTasks = (pendingBackgroundTaskCount ?? 0) > 0;
+        // When the backend explicitly marks a conversation as done (isActive === false),
+        // suppress the status bar regardless of stale client-side state.
+        const conversationIsExplicitlyInactive = activeConversationEntry?.isActive === false;
 
         if (Object.keys(subAgentToolActivity).length > 0) {
           const subAgents = Object.values(subAgentToolActivity);
@@ -7568,7 +7571,9 @@ export default function ChatConversationComponent({
         // OR when sub-agents are still running after a non-blocking dispatch,
         // OR when any sub-agent hasn't reached a terminal state yet
         // (covers spawned/undefined-phase windows during create_subagents).
-        const isStatusBarActive = isGenerating || !!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks;
+        const isStatusBarActive =
+          !conversationIsExplicitlyInactive &&
+          (isGenerating || !!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks);
 
         if (!isStatusBarActive) return null;
 
