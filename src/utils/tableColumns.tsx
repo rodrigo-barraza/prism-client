@@ -28,7 +28,7 @@ import ProportionBarComponent from "../components/ProportionBarComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 
 import ToolIconComponent from "../components/ToolIconComponent";
-import { TooltipComponent } from "@rodrigo-barraza/components-library";
+import { TooltipComponent, StatusDotComponent } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "../components/BadgeComponent";
 import ProviderLogo from "../components/ProviderLogosComponent";
 import { resolveProviderLabel } from "../components/ProviderLogosComponent";
@@ -58,6 +58,9 @@ export interface TableRow {
   providerCount?: number;
   totalRequests?: number;
   requestCount?: number;
+  isGenerating?: boolean;
+  isActive?: boolean;
+  pendingBackgroundTasks?: number;
   modalities?: Record<string, boolean | number> | null;
   toolDisplayNames?: string[];
   toolApiNames?: string[];
@@ -661,6 +664,44 @@ export const conversationTitleColumn = ({
       {(conversation.title as string | undefined) || "Untitled"}
     </span>
   ),
+});
+
+/**
+ * Renders a StatusDotComponent driven by `isActive` and `isGenerating`:
+ * — pulsing blue  → actively streaming (isGenerating)
+ * — pulsing green → session open but not streaming (background tasks)
+ * — muted/inactive → session closed (isActive === false)
+ */
+export const activeStatusColumn = () => ({
+  key: "isActive",
+  label: "",
+  description: "Live session activity — blue: generating, green: active background tasks, muted: completed",
+  sortable: false,
+  width: "32px",
+  render: (conversation: TableRow) => {
+    const isGenerating = conversation.isGenerating;
+    const isSessionActive = conversation.isActive !== false;
+
+    if (!isSessionActive) {
+      return (
+        <TooltipComponent content="Completed" position="right">
+          <StatusDotComponent variant="inactive" size="size-small" pulse={false} />
+        </TooltipComponent>
+      );
+    }
+    if (isGenerating) {
+      return (
+        <TooltipComponent content="Generating..." position="right">
+          <StatusDotComponent variant="info" size="size-small" pulse={true} />
+        </TooltipComponent>
+      );
+    }
+    return (
+      <TooltipComponent content="Active (background tasks)" position="right">
+        <StatusDotComponent variant="healthy" size="size-small" pulse={true} />
+      </TooltipComponent>
+    );
+  },
 });
 
 /* ·· Project / User as inline badges (for Conversations) ·· */

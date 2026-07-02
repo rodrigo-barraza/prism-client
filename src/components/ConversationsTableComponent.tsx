@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { TableComponent } from "@rodrigo-barraza/components-library";
 import {
   conversationTitleColumn,
+  activeStatusColumn,
   projectBadgeColumn,
   userBadgeColumn,
   modalitiesColumn,
@@ -66,6 +67,7 @@ export default function ConversationsTableComponent({
 
   const columns = useMemo(
     () => [
+      activeStatusColumn(),
       conversationTitleColumn({ mini }),
       projectBadgeColumn({ mini }),
       userBadgeColumn({ mini }),

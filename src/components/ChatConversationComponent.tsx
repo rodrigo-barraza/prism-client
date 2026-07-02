@@ -7939,6 +7939,7 @@ export default function ChatConversationComponent({
               emptyText="No conversations found"
               searchText="Search conversations..."
               countLabel="conversations"
+              generatingConversationIds={generatingConversationIds as Set<string>}
               hasMore={adminEntriesHasMore}
               loadingMore={adminEntriesLoading}
               onLoadMore={adminLoadMoreEntries}
