@@ -16,6 +16,7 @@
   --messages-color: oklch(0.65 0.15 250);
   --system-color: oklch(0.7 0.12 180);
   --tools-color: oklch(0.6 0.16 300);
+  --draft-color: oklch(0.75 0.17 65);
 }
 
 @keyframes context-budget-fade-in {
@@ -59,7 +60,13 @@
 /* Tool schemas segment — purple */
 .segment-tool-schemas {
   background: var(--tools-color);
+}
+
+/* Draft input segment — amber, appears at end of bar */
+.segment-draft-input {
+  background: var(--draft-color);
   border-radius: 0 2px 2px 0;
+  opacity: 0.85;
 }
 
 /* ── Severity modifiers ────────────────────────────────────── */
@@ -112,6 +119,10 @@
 
 .legend-dot-tools {
   background-color: var(--tools-color);
+}
+
+.legend-dot-draft {
+  background-color: var(--draft-color);
 }
 
 /* ── Labels row ────────────────────────────────────────────── */

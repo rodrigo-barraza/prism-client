@@ -583,6 +583,7 @@ export default function ChatConversationComponent({
   );
   const inputValueRef = useRef<string>("");
   const [hasInput, setHasInput] = useState(false);
+  const [draftInputLength, setDraftInputLength] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [contextBudget, setContextBudget] = useState<ContextBudget | null>(null);
   const [toolActivity, setToolActivity] = useState<ToolCallEvent[]>([]);
@@ -1021,6 +1022,14 @@ export default function ChatConversationComponent({
     const activeEntry = conversations.find((entry) => entry.id === activeId);
     return (activeEntry as { pendingBackgroundTasks?: number } | undefined)
       ?.pendingBackgroundTasks ?? 0;
+  }, [activeId, conversations]);
+
+  const isActiveConversationSubAgent = useMemo(() => {
+    if (!activeId) return false;
+    const activeEntry = conversations.find((entry) => entry.id === activeId);
+    return !!(
+      activeEntry as { parentAgentConversationId?: string | null } | undefined
+    )?.parentAgentConversationId;
   }, [activeId, conversations]);
 
   useEffect(() => {
@@ -2980,6 +2989,7 @@ export default function ChatConversationComponent({
       if (!element) return;
       const value = serializeEditable(element);
       inputValueRef.current = value;
+      setDraftInputLength(value.length);
       window.dispatchEvent(new CustomEvent(EVENT_NAME_USER_TYPING));
       const hasSlashBadges = element.querySelectorAll("[data-slash-command]").length > 0;
       const nowHasInput = value.trim().length > 0 || hasSlashBadges;
@@ -3007,6 +3017,7 @@ export default function ChatConversationComponent({
   const setTextareaValue = useCallback((text: string) => {
     inputValueRef.current = text;
     setHasInput(text.trim().length > 0);
+    setDraftInputLength(text.length);
     if (textareaRef.current) {
       textareaRef.current.textContent = text;
     }
@@ -7594,10 +7605,13 @@ export default function ChatConversationComponent({
 
       {!isAdmin && (
       <div
-        className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model ? chatStyles['input-wrapper-disabled'] : ""}`}
+        className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model || isActiveConversationSubAgent ? chatStyles['input-wrapper-disabled'] : ""}`}
       >
         {contextBudget && (
-          <ContextBudgetIndicatorComponent contextBudget={contextBudget} />
+          <ContextBudgetIndicatorComponent
+            contextBudget={contextBudget}
+            estimatedDraftTokens={Math.ceil(draftInputLength / 4)}
+          />
         )}
         <form
           onSubmit={handleSend}

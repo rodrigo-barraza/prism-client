@@ -6,6 +6,7 @@ import styles from "./ContextBudgetIndicatorComponent.module.css";
 
 interface ContextBudgetIndicatorComponentProps {
   contextBudget: ContextBudget;
+  estimatedDraftTokens?: number;
 }
 
 function formatTokenCount(tokens: number): string {
@@ -17,6 +18,7 @@ function formatTokenCount(tokens: number): string {
 
 export default function ContextBudgetIndicatorComponent({
   contextBudget,
+  estimatedDraftTokens = 0,
 }: ContextBudgetIndicatorComponentProps) {
   const {
     contextWindow,
@@ -42,8 +44,9 @@ export default function ContextBudgetIndicatorComponent({
     const systemPercent = (systemPromptTokens / contextWindow) * 100;
     const toolsPercent = (toolSchemaTokens / contextWindow) * 100;
     const outputPercent = (availableOutputTokens / contextWindow) * 100;
-    return { messagesPercent, systemPercent, toolsPercent, outputPercent };
-  }, [messageTokens, systemPromptTokens, toolSchemaTokens, availableOutputTokens, contextWindow]);
+    const draftPercent = (estimatedDraftTokens / contextWindow) * 100;
+    return { messagesPercent, systemPercent, toolsPercent, outputPercent, draftPercent };
+  }, [messageTokens, systemPromptTokens, toolSchemaTokens, availableOutputTokens, contextWindow, estimatedDraftTokens]);
 
   const severityLevel = useMemo(() => {
     if (utilizationPercentage >= 85 || isClamped) return "critical";
@@ -74,6 +77,13 @@ export default function ContextBudgetIndicatorComponent({
           style={{ width: `${segmentPercentages.toolsPercent}%` }}
           title={`Tool schemas (${toolCount}): ${formatTokenCount(toolSchemaTokens)} tokens`}
         />
+        {estimatedDraftTokens > 0 && (
+          <div
+            className={styles["segment-draft-input"]}
+            style={{ width: `${segmentPercentages.draftPercent}%` }}
+            title={`Draft input (estimated): ~${formatTokenCount(estimatedDraftTokens)} tokens`}
+          />
+        )}
       </div>
 
       <div className={styles["context-budget-legend"]}>
@@ -91,6 +101,12 @@ export default function ContextBudgetIndicatorComponent({
           <div className={styles["legend-item"]}>
             <span className={`${styles["legend-dot"]} ${styles["legend-dot-tools"]}`} />
             <span>Tools ({toolCount}: {formatTokenCount(toolSchemaTokens)})</span>
+          </div>
+        )}
+        {estimatedDraftTokens > 0 && (
+          <div className={styles["legend-item"]}>
+            <span className={`${styles["legend-dot"]} ${styles["legend-dot-draft"]}`} />
+            <span>Draft (~{formatTokenCount(estimatedDraftTokens)})</span>
           </div>
         )}
       </div>

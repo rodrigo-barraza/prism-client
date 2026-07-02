@@ -1,11 +1,22 @@
 /**
  * Canonical agent conversation state color palette.
  *
- * All colors derive from the same curated oklch values used by StatusBarComponent's
- * PHASE_GRADIENT_STOPS — establishing a single visual language across:
+ * Colors are sourced from StatusBarComponent's `--phase-pulse` CSS tokens
+ * (the ambient glow / highlight color per phase), NOT the gradient fill stops.
+ * This is intentional — the gradient is the bar animation; --phase-pulse is the
+ * semantic "color signature" of each phase, used for glow, text, and background.
+ *
+ * StatusBar phase → our persisted state mapping:
+ *   generating  (--phase-pulse: oklch 0.807 0.2181 h:150.3)  → "generating"
+ *   delegating  (--phase-pulse: oklch 0.794 0.1289 h:216.3)  → "orchestrating" + "sub-agents-running"
+ *   executing   (--phase-pulse: oklch 0.783 0.178  h:41)      → "completed-with-errors"
+ *   starting    (--phase-pulse: oklch 0.709 0.0389 h:269.2)   → "active"
+ *   (synthesizing has no CSS pulse → use thinking green h:145) → "background-tasks"
+ *   (no phase)  → "completed" (achromatic)
+ *
+ * This ensures visual consistency across:
  *   - HistoryItemComponent sidebar dot  (--generating-dot-phase-color)
  *   - activeStatusColumn table dot      (style override on StatusDotComponent)
- *   - ChatConversationGraphComponent    (phaseColor state)
  *   - Any future surface that needs to express conversation activity state
  *
  * States are derived from PERSISTED MongoDB fields only (isActive, isGenerating,
@@ -24,9 +35,9 @@ export type AgentConversationState =
   | "active";
 
 export interface ConversationStateColors {
-  /** Primary dot / fill color (full-strength oklch) */
+  /** Primary dot / fill color — matches StatusBarComponent --phase-pulse for the nearest live phase */
   primary: string;
-  /** Lighter glow / shadow color (same hue, reduced chroma) */
+  /** Glow / box-shadow color (same hue, alpha reduced) */
   glow: string;
   /** Human-readable label for tooltips and aria */
   label: string;
@@ -67,56 +78,57 @@ export function deriveAgentConversationState({
 
 /**
  * oklch color tokens per conversation state.
- *
- * Color derivation rationale (aligned with StatusBarComponent):
- *   completed-with-errors  → executing palette orange->red  (h≈22-41)
- *   completed              → neutral muted                  (achromatic)
- *   generating             → generating palette violet      (h≈275-303)
- *   orchestrating          → delegating palette cyan-blue   (h≈252-300)
- *   sub-agents-running     → delegating palette cyan        (h≈215-254)
- *   background-tasks       → synthesizing palette green     (h≈145)
- *   active                 → starting/loading palette blue  (h≈257-262)
+ * Primary = StatusBarComponent --phase-pulse for the nearest phase.
+ * Glow = same oklch values with alpha applied for box-shadow.
  */
 export const AGENT_CONVERSATION_STATE_COLORS: Record<AgentConversationState, ConversationStateColors> = {
+  // No phase — achromatic, no glow
   "completed": {
     primary: "oklch(0.42 0 0)",
-    glow:    "oklch(0.42 0 0 / 0.35)",
+    glow:    "oklch(0.42 0 0 / 0)",
     label:   "Completed",
     pulse:   false,
   },
+  // Nearest phase: executing — orange (--phase-pulse: oklch 0.783 0.178 41)
   "completed-with-errors": {
-    primary: "oklch(0.646 0.222 22)",
-    glow:    "oklch(0.646 0.222 22 / 0.45)",
+    primary: "oklch(0.783 0.178 41)",
+    glow:    "oklch(0.783 0.178 41 / 0.45)",
     label:   "Completed with errors",
     pulse:   false,
   },
+  // Nearest phase: generating — green (--phase-pulse: oklch 0.807 0.2181 150.3)
   "generating": {
-    primary: "oklch(0.553 0.223 303)",
-    glow:    "oklch(0.553 0.223 303 / 0.55)",
+    primary: "oklch(0.807 0.2181 150.3)",
+    glow:    "oklch(0.807 0.2181 150.3 / 0.5)",
     label:   "Generating...",
     pulse:   true,
   },
+  // Nearest phase: delegating — cyan (--phase-pulse: oklch 0.794 0.1289 216.3), brighter for orchestrator distinction
   "orchestrating": {
-    primary: "oklch(0.714 0.168 300)",
-    glow:    "oklch(0.714 0.168 300 / 0.5)",
+    primary: "oklch(0.794 0.1289 216.3)",
+    glow:    "oklch(0.794 0.1289 216.3 / 0.55)",
     label:   "Orchestrator generating",
     pulse:   true,
   },
+  // Nearest phase: delegating — cyan (--phase-pulse: oklch 0.794 0.1289 216.3), slightly dimmed
   "sub-agents-running": {
-    primary: "oklch(0.790 0.090 252)",
-    glow:    "oklch(0.790 0.090 252 / 0.45)",
+    primary: "oklch(0.712 0.1208 221.2)",
+    glow:    "oklch(0.712 0.1208 221.2 / 0.45)",
     label:   "Sub-agents running",
     pulse:   true,
   },
+  // Nearest phase: thinking/synthesizing — green (--phase-pulse: oklch 0.709 0.2255 311.3 for thinking,
+  // or green h:145 from synthesizing gradient). Using synthesizing green for "tasks" semantic.
   "background-tasks": {
     primary: "oklch(0.723 0.191 145)",
     glow:    "oklch(0.723 0.191 145 / 0.5)",
     label:   "Tasks running",
     pulse:   true,
   },
+  // Nearest phase: starting — muted blue (--phase-pulse: oklch 0.709 0.0389 269.2)
   "active": {
-    primary: "oklch(0.588 0.158 262)",
-    glow:    "oklch(0.588 0.158 262 / 0.4)",
+    primary: "oklch(0.709 0.0389 269.2)",
+    glow:    "oklch(0.709 0.0389 269.2 / 0.35)",
     label:   "Active",
     pulse:   false,
   },
