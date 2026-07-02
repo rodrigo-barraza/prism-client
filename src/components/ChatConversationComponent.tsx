@@ -4955,6 +4955,22 @@ export default function ChatConversationComponent({
               setCurrentTurnStart(null);
               setPendingUserQuestion(null);
               fetchConversationStats(conversationId);
+
+              // Immediately patch the conversation entry to terminal state.
+              // The SSE `done` event definitively means the backend finished —
+              // clear pendingBackgroundTasks and isActive so the status bar
+              // resolves on the very next render instead of waiting for the
+              // async `loadConversations()` round-trip that races the re-render.
+              setConversations((previousConversations) =>
+                previousConversations.map((entry) => {
+                  if (entry.id !== conversationId) return entry;
+                  return {
+                    ...entry,
+                    pendingBackgroundTasks: 0,
+                    isActive: false,
+                  } as typeof entry;
+                }),
+              );
             }
             // ConversationSummarizer runs async after SSE stream closes —
             // poll every 2s for up to 20s until new memories are detected
@@ -5428,6 +5444,28 @@ export default function ChatConversationComponent({
           isClientDrivenGenerationRef.current = false;
           abortRef.current = null;
           setCurrentTurnStart(null);
+
+          // Force all active sub-agents to terminal state. The SSE stream
+          // may close before all "complete" events arrive (e.g. non-blocking
+          // dispatch), leaving stale non-terminal entries that keep
+          // hasNonTerminalSubAgents true and the status bar stuck.
+          setSubAgentToolActivity((previousSubAgentToolActivity) => {
+            const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
+            const hasActiveSubAgent = Object.values(previousSubAgentToolActivity).some(
+              (subAgent: SubAgentActivityEntry) =>
+                !subAgent.phase || !terminalPhases.has(subAgent.phase),
+            );
+            if (!hasActiveSubAgent) return previousSubAgentToolActivity;
+            const nextSubAgentToolActivity: Record<string, SubAgentActivityEntry> = {};
+            for (const [id, subAgent] of Object.entries(previousSubAgentToolActivity)) {
+              nextSubAgentToolActivity[id] =
+                !subAgent.phase || !terminalPhases.has(subAgent.phase)
+                  ? { ...subAgent, phase: "complete", currentTool: null }
+                  : subAgent;
+            }
+            return nextSubAgentToolActivity;
+          });
+
           setMessages((previousMessages) => {
             const last = previousMessages[previousMessages.length - 1];
             console.debug(
