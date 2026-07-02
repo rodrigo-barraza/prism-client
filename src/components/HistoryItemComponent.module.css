@@ -485,3 +485,45 @@
   border-color: oklch(0.5 0 0 / 0.07);
 }
 
+/* ── Inline Progress Bar (border-bottom style, active conversations) ── */
+
+.inline-progress-bar-track {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 5px;
+  overflow: hidden;
+  background: oklch(0.5 0 0 / 0.08);
+  z-index: 1;
+}
+
+.inline-progress-bar-fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 0%;
+  transition: width 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  background: linear-gradient(
+    90deg,
+    var(--inline-gradient-stop-1, oklch(0.55 0.04 257)) 0%,
+    var(--inline-gradient-stop-2, oklch(0.60 0.05 257)) 16%,
+    var(--inline-gradient-stop-3, oklch(0.55 0.04 257)) 33%,
+    var(--inline-gradient-stop-4, oklch(0.60 0.05 257)) 50%,
+    var(--inline-gradient-stop-5, oklch(0.55 0.04 257)) 66%,
+    var(--inline-gradient-stop-6, oklch(0.60 0.05 257)) 83%,
+    var(--inline-gradient-stop-7, oklch(0.55 0.04 257)) 100%
+  );
+  background-size: 300% 100%;
+  animation: inline-progress-gradient-flow 6s linear infinite;
+}
+
+@keyframes inline-progress-gradient-flow {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 0%;
+  }
+}
+

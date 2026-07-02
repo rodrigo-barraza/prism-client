@@ -370,20 +370,21 @@ interface SubAgentActivityEntry {
  * and SubAgentResultBuilder transforms "complete" → "completed" for tool results.
  * The frontend terminal-phase checks use "complete" | "failed".
  *
- * When hydrating sub-agent activity from persisted DB records (not live SSE),
- * a status of "running" is stale — the sub-agent already finished but the
- * record was captured before it completed. Map it to "complete" so the
- * StatusBarComponent renders the idle/done state instead of animating.
- * If the sub-agent is truly still active, the live SSE stream will override
- * this with the real phase ("generating", "thinking", etc.).
+ * "running" maps to "generating" so the StatusBarComponent shows active state.
+ * Non-blocking dispatch closes the parent SSE stream while sub-agents continue
+ * running — without this, the StatusBar would always show idle because no live
+ * SSE events reach the client to override the hydrated phase.
+ * If the sub-agent already completed before the hydration call, the next poll
+ * will return "complete" and resolve the StatusBar to idle.
  */
 function normalizeSubAgentStatusToPhase(backendStatus: string): string {
   switch (backendStatus) {
     case "completed":
     case "complete":
     case "stopped":
-    case "running":
       return "complete";
+    case "running":
+      return "generating";
     case "failed":
       return "failed";
     default:
@@ -1065,6 +1066,55 @@ export default function ChatConversationComponent({
 
     return () => clearInterval(backgroundTaskPollInterval);
   }, [activeId, isGenerating, pendingBackgroundTaskCountForPolling]);
+
+  // Poll sub-agent status when the parent SSE stream has closed (non-blocking
+  // dispatch) but sub-agents are still running in the background. The SSE
+  // stream is the primary delivery channel for live sub-agent events, but it
+  // closes when the parent generation ends. Without this poll, the StatusBar
+  // inside the tool call block would remain stuck on the hydrated state.
+  useEffect(() => {
+    if (!activeId || isGenerating || pendingBackgroundTaskCountForPolling <= 0) return;
+
+    const subAgentStatusPollInterval = setInterval(async () => {
+      try {
+        const result = await PrismService.getCoordinatorSubAgents(activeId);
+        const subAgentsList = result.subAgents || [];
+        setSubAgentsCount(subAgentsList.length);
+        setMaxSubAgentDepth(
+          subAgentsList.reduce(
+            (maximumDepth, subAgent) => Math.max(maximumDepth, subAgent.recursionDepth ?? 0),
+            0,
+          ),
+        );
+        setSubAgentToolActivity((previousSubAgentToolActivity) => {
+          const nextSubAgentToolActivity = { ...previousSubAgentToolActivity };
+          for (const subAgent of subAgentsList) {
+            const subAgentAgentId = subAgent.agentId || subAgent.id;
+            if (!subAgentAgentId) continue;
+            const normalizedPhase = normalizeSubAgentStatusToPhase(subAgent.status);
+            const existingEntry = nextSubAgentToolActivity[subAgentAgentId];
+            // Always update from the backend during background polling —
+            // the SSE stream is closed so no live data is arriving to conflict.
+            nextSubAgentToolActivity[subAgentAgentId] = {
+              toolCount: subAgent.toolCallCount || existingEntry?.toolCount || 0,
+              currentTool: existingEntry?.currentTool ?? null,
+              iteration: existingEntry?.iteration ?? 0,
+              toolNames: subAgent.toolNames || existingEntry?.toolNames || {},
+              description: subAgent.description,
+              phase: normalizedPhase,
+              conversationId: subAgent.id || existingEntry?.conversationId || undefined,
+            };
+          }
+          return nextSubAgentToolActivity;
+        });
+      } catch {
+        // Non-critical polling — silently ignore network failures
+      }
+    }, 3000);
+
+    return () => clearInterval(subAgentStatusPollInterval);
+  }, [activeId, isGenerating, pendingBackgroundTaskCountForPolling]);
+
 
   // Snapshot cache: stores UI state for conversations that are generating in the background
   // so the user can switch back without waiting for backend persistence.

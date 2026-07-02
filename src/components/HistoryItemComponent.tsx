@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
+
 import { AGENT_IDS, DEFAULT_USERNAME } from "@/constants";
 
 import { Download, Copy, Star, Trash2, ExternalLink } from "lucide-react";
@@ -17,6 +19,9 @@ import {
   deriveAgentConversationState,
   AGENT_CONVERSATION_STATE_COLORS,
 } from "../utils/agentConversationStates";
+import type { AgentConversationState } from "../utils/agentConversationStates";
+import { PHASE_TOKENS } from "../utils/statusBarPhaseTokens";
+import type { StatusBarPhase } from "../utils/statusBarPhaseTokens";
 
 interface HistoryItemTag {
   label: string;
@@ -98,6 +103,24 @@ interface HistoryItemProps {
  *   dataPanelClose — adds data-panel-close-trigger attr (for mobile drawer close)
  *   children      — optional extra content appended inside the row
  */
+/**
+ * Maps an AgentConversationState to the nearest StatusBarPhase
+ * so the inline progress bar reuses the same gradient palette.
+ */
+const CONVERSATION_STATE_TO_PHASE: Record<AgentConversationState, StatusBarPhase | null> = {
+  generating:              "generating",
+  orchestrating:           "delegating",
+  "sub-agents-running":    "delegating",
+  "background-tasks":      "synthesizing",
+  active:                  "starting",
+  "completed-with-errors": null,
+  completed:               null,
+};
+
+const INLINE_PROGRESS_ASYMPTOTIC_TIME_CONSTANT_MS = 15_000;
+const INLINE_PROGRESS_TICK_MS = 200;
+const INLINE_PROGRESS_MAX_SYNTHETIC = 0.99;
+
 export default function HistoryItemComponent({
   item,
   isActive = false,
@@ -133,6 +156,40 @@ export default function HistoryItemComponent({
     requestErrorCount: item.requestErrorCount,
   });
   const dotColors = AGENT_CONVERSATION_STATE_COLORS[conversationState];
+
+  /* ── Inline progress bar (asymptotic fill, no text) ── */
+  const inlineProgressPhase = CONVERSATION_STATE_TO_PHASE[conversationState];
+  const isInlineProgressActive = inlineProgressPhase !== null;
+
+  const [inlineProgressPercentage, setInlineProgressPercentage] = useState(0);
+  const inlineProgressStartRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isInlineProgressActive) {
+      setInlineProgressPercentage(0);
+      inlineProgressStartRef.current = null;
+      return;
+    }
+
+    if (inlineProgressStartRef.current === null) {
+      inlineProgressStartRef.current = performance.now();
+    }
+
+    const intervalId = setInterval(() => {
+      const elapsed = performance.now() - (inlineProgressStartRef.current ?? performance.now());
+      const synthetic = Math.min(
+        INLINE_PROGRESS_MAX_SYNTHETIC,
+        1 - Math.exp(-elapsed / INLINE_PROGRESS_ASYMPTOTIC_TIME_CONSTANT_MS),
+      );
+      setInlineProgressPercentage(Math.round(synthetic * 100));
+    }, INLINE_PROGRESS_TICK_MS);
+
+    return () => clearInterval(intervalId);
+  }, [isInlineProgressActive]);
+
+  const inlineProgressGradientStops = inlineProgressPhase
+    ? PHASE_TOKENS[inlineProgressPhase].gradientStops
+    : undefined;
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
   const hasModalities = modalities && Object.keys(modalities).length > 0;
@@ -419,6 +476,26 @@ export default function HistoryItemComponent({
           />
         )}
       </div>
+      {/* ── Inline progress bar (border-bottom style, no overlay) ── */}
+      {isInlineProgressActive && inlineProgressGradientStops && (
+        <div
+          className={styles['inline-progress-bar-track']}
+          style={{
+            "--inline-gradient-stop-1": inlineProgressGradientStops[0],
+            "--inline-gradient-stop-2": inlineProgressGradientStops[1],
+            "--inline-gradient-stop-3": inlineProgressGradientStops[2],
+            "--inline-gradient-stop-4": inlineProgressGradientStops[3],
+            "--inline-gradient-stop-5": inlineProgressGradientStops[4],
+            "--inline-gradient-stop-6": inlineProgressGradientStops[5],
+            "--inline-gradient-stop-7": inlineProgressGradientStops[6],
+          } as React.CSSProperties}
+        >
+          <div
+            className={styles['inline-progress-bar-fill']}
+            style={{ width: `${inlineProgressPercentage}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }
