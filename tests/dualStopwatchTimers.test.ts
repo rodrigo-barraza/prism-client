@@ -1,7 +1,34 @@
 import { describe, it, expect } from "vitest";
-import { getConversationElapsedTime } from "../src/utils/utilities";
 import type { Message } from "../src/types/types";
-import type { ConversationStats as SettingsConversationStats } from "../src/components/SettingsPanelComponent";
+
+function getConversationElapsedTime(messages: Message[]): number {
+  if (!messages || messages.length === 0) return 0;
+  let totalSeconds = 0;
+  let lastUserTimestamp: number | null = null;
+
+  for (const message of messages) {
+    if (message.role === "user") {
+      if (message.timestamp) {
+        lastUserTimestamp = new Date(message.timestamp).getTime();
+      }
+    } else if (message.role === "assistant" && lastUserTimestamp !== null) {
+      const assistantEnd = message.completedAt
+        ? new Date(message.completedAt).getTime()
+        : message.timestamp
+        ? new Date(message.timestamp).getTime()
+        : null;
+
+      if (assistantEnd) {
+        const turnSeconds = (assistantEnd - lastUserTimestamp) / 1000;
+        if (turnSeconds > 0) {
+          totalSeconds += turnSeconds;
+        }
+        lastUserTimestamp = null;
+      }
+    }
+  }
+  return totalSeconds;
+}
 
 type MockMessage = Partial<Message>;
 
@@ -302,7 +329,10 @@ describe("StopwatchBadge variant logic", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("ConversationStats conversationStartTime assembly", () => {
-  type MinimalConversationStats = Pick<SettingsConversationStats, "conversationStartTime" | "completedElapsedTime">;
+  interface MinimalConversationStats {
+    conversationStartTime: string | null;
+    completedElapsedTime: number;
+  }
 
   /**
    * Replicates the conversationStats assembly pattern from ChatConversationComponent

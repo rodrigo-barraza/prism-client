@@ -112,13 +112,12 @@ import {
   POLL_STANDARD,
 } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES, SERVER_SENT_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
-import { mergeUsedToolsWithSubAgents, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams } from "../utils/utilities";
+import { mergeUsedToolsWithSubAgents, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams, buildSettingsDefaults } from "../utils/utilities";
 import {
   MESSAGE_ROLES,
   EXECUTION_STATUS,
   APPROVAL_STATUS,
   PROJECT_AGENT,
-  SETTINGS_DEFAULTS,
   STORAGE_KEY_MODEL_MEMORY_AGENT,
   STORAGE_KEY_MODEL_MEMORY_AGENT_PREFIX,
   MAX_TOOL_ITERATIONS,
@@ -845,12 +844,11 @@ export default function ChatConversationComponent({
         : true;
 
     return {
-      ...SETTINGS_DEFAULTS,
       maxTokens: 64000,
       functionCallingEnabled: initialFcEnabled ? true : !isNoAgent,
       thinkingEnabled: initialThinkingEnabled
         ? true
-        : SETTINGS_DEFAULTS.thinkingEnabled || false,
+        : buildSettingsDefaults(config?.parameterDescriptors).thinkingEnabled || false,
       agents: {
         workspaceEnabled: workspaceEnabledPreference,
       },
@@ -2751,7 +2749,17 @@ export default function ChatConversationComponent({
     liveProcessingPhase,
     liveTtftSamples,
     liveGenProgress,
-  } = useConversationStats(messages);
+  } = useConversationStats(messages, {
+    modelNames: backendConversationStats?.models,
+    providers: backendConversationStats?.providers,
+    totalCost: backendConversationStats?.totalCost,
+    inputTokens: backendConversationStats?.totalInputTokens,
+    outputTokens: backendConversationStats?.totalOutputTokens,
+    toolCounts: backendConversationStats?.toolCounts,
+    modalities: backendConversationStats?.modalities,
+    totalElapsedTime: backendConversationStats?.totalElapsedTime,
+    requestCount: backendConversationStats?.requestCount,
+  } as any);
 
   // -- Live-patch sidebar conversation metadata ------------------
   // Keep the active conversation's entry in `conversations[]` in sync with the
@@ -5650,7 +5658,7 @@ export default function ChatConversationComponent({
           : true;
 
       return {
-        ...SETTINGS_DEFAULTS,
+        ...buildSettingsDefaults(config?.parameterDescriptors),
         provider: currentSettings.provider,
         model: currentSettings.model,
         agents: {

@@ -16,7 +16,7 @@ import {
   Settings2,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import { MESSAGE_ROLES, EXECUTION_STATUS, SETTINGS_DEFAULTS, STORAGE_KEY_MODEL_MEMORY_SYNTHESIS } from "../constants";
+import { MESSAGE_ROLES, EXECUTION_STATUS, STORAGE_KEY_MODEL_MEMORY_SYNTHESIS } from "../constants";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import SettingsPanel from "./SettingsPanelComponent";
@@ -43,7 +43,7 @@ import SynthesisHistoryPanel from "./SynthesisHistoryPanelComponent";
 import { Message, SynthesisRun, PrismConfig } from "../types/types";
 
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
-import { resolveDefaultModel } from "../utils/utilities";
+import { resolveDefaultModel, buildSettingsDefaults } from "../utils/utilities";
 import styles from "./SynthesisComponent.module.css";
 import useModelMemory from "../hooks/useModelMemory";
 
@@ -148,10 +148,42 @@ const CATEGORY_OPTIONS = [
 export default function SynthesisComponent() {
   // -- Config & model state --------------------------------------
   const [config, setConfig] = useState<PrismConfig | null>(null);
-  const [settings, setSettings] = useState({
-    ...SETTINGS_DEFAULTS,
+  const [settings, setSettings] = useState(() => ({
+    provider: "",
+    model: "",
+    temperature: 1.0,
+    thinkingEnabled: true,
+    reasoningEffort: "high",
+    thinkingLevel: "high",
+    thinkingBudget: "",
+    webSearchEnabled: false,
+    ...buildSettingsDefaults(config?.parameterDescriptors),
     maxTokens: 4096,
-  });
+  }));
+
+  // Update settings when config loads if they haven't been customized yet
+  useEffect(() => {
+    if (config?.parameterDescriptors) {
+      setSettings(prev => {
+        const baseSettings = {
+          provider: "",
+          model: "",
+          temperature: 1.0,
+          thinkingEnabled: true,
+          reasoningEffort: "high",
+          thinkingLevel: "high",
+          thinkingBudget: "",
+          webSearchEnabled: false,
+        };
+        const defaults = buildSettingsDefaults(config.parameterDescriptors);
+        return {
+          ...baseSettings,
+          ...defaults,
+          ...prev,
+        };
+      });
+    }
+  }, [config]);
   const [leftTab, setLeftTab] = useState("config"); // "config" | "output"
 
   // -- Model memory (persist last-used model per page) ----------

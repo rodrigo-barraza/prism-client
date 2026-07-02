@@ -26,7 +26,7 @@ export const STORAGE_KEY_MODEL_MEMORY_SYNTHESIS = "modelMemory:synthesis";
 export const STORAGE_KEY_MODEL_MEMORY_BENCHMARKS = "modelMemory:benchmarks";
 
 // -- Re-exports from utilities-library (single source of truth) ---
-export {
+import {
   AGENT_IDS,
   AGENTLESS_AGENT,
   DEFAULT_CONVERSATION_TITLE,
@@ -42,8 +42,38 @@ export {
   isLocalProvider,
   resolveProviderBaseType,
   THINKING_PATTERNS as FALLBACK_THINKING_PATTERNS,
+  MESSAGE_ROLES,
+  APPROVAL_STATUS,
+  SYSTEM_STATUSES,
 } from "@rodrigo-barraza/utilities-library/taxonomy";
-export type { ProviderType } from "@rodrigo-barraza/utilities-library/taxonomy";
+
+export {
+  AGENT_IDS,
+  AGENTLESS_AGENT,
+  DEFAULT_CONVERSATION_TITLE,
+  DEFAULT_WORKFLOW_TITLE,
+  DEFAULT_USERNAME,
+  MAX_TOOL_ITERATIONS,
+  DEFAULT_RECURSIVE_SPAWNING_DEPTH,
+  PROJECT_AGENT,
+  PROVIDERS,
+  PROVIDER_LIST,
+  LOCAL_PROVIDERS,
+  PROVIDER_LABELS,
+  isLocalProvider,
+  resolveProviderBaseType,
+  FALLBACK_THINKING_PATTERNS,
+  MESSAGE_ROLES,
+  APPROVAL_STATUS,
+  SYSTEM_STATUSES,
+};
+
+export type {
+  ProviderType,
+  MessageRole,
+  ApprovalStatusType,
+  SystemStatus,
+} from "@rodrigo-barraza/utilities-library/taxonomy";
 
 // -- Raw localStorage keys (no namespace prefix) -----------------
 export const LOCAL_STORAGE_KEY_PANEL_LEFT = "panel_left";
@@ -85,12 +115,6 @@ export const EVENT_NAME_AGENT_SWITCH = "agent:switch";
 export const EVENT_NAME_MODEL_CHANGE = "model:change";
 
 // -- Roles & Categories -------------------------------------------
-export const MESSAGE_ROLES = {
-  USER: "user",
-  ASSISTANT: "assistant",
-  SYSTEM: "system",
-  TOOL: "tool",
-} as const;
 
 export const CATEGORIES = {
   USER: "user",
@@ -123,24 +147,15 @@ export const TIMING = {
 } as const;
 
 // -- Execution & Lifecycle Statuses -------------------------------
+/**
+ * EXECUTION_STATUS — UI-specific execution phases.
+ * Extends the shared SYSTEM_STATUSES from the utilities library.
+ */
 export const EXECUTION_STATUS = {
-  PENDING: "pending",
+  ...SYSTEM_STATUSES,
   THINKING: "thinking",
   CALLING: "calling",
-  RUNNING: "running",
-  COMPLETED: "completed",
-  SUCCESS: "success",
-  FAILED: "failed",
-  ERROR: "error",
-  WARNING: "warning",
-  IN_PROGRESS: "in_progress",
-  DONE: "done",
-  IDLE: "idle",
-  ACTIVE: "active",
-  CANCELLED: "cancelled",
   STREAMING: "streaming",
-  COMPLETE: "complete",
-  STOPPED: "stopped",
   GENERATING: "generating",
   SYNTHESIZING: "synthesizing",
   PREFILLING: "prefilling",
@@ -150,12 +165,6 @@ export const EXECUTION_STATUS = {
   SPAWNED: "spawned",
   FIRED: "fired",
   EXPIRED: "expired",
-} as const;
-
-export const APPROVAL_STATUS = {
-  PENDING: "pending",
-  APPROVED: "approved",
-  REJECTED: "rejected",
 } as const;
 
 // -- HTTP & API ----------------------------------------------------
@@ -184,26 +193,6 @@ export const LOCAL_STORAGE_KEY_THEME = "prism:theme";
 export const LOCAL_STORAGE_KEY_AVATAR = "prism:avatar";
 export const LOCAL_STORAGE_KEY_CUSTOM_THEMES = "prism:custom-themes";
 
-// -- Settings defaults (shared by Agent, admin) ------
-export const SETTINGS_DEFAULTS = {
-  provider: "",
-  model: "",
-  systemPrompt: "",
-  temperature: 1.0,
-  maxTokens: 2048,
-  topP: 1,
-  topK: 0,
-  frequencyPenalty: 0,
-  presencePenalty: 0,
-  stopSequences: "",
-  thinkingEnabled: true,
-  reasoningEffort: "high",
-  thinkingLevel: "high",
-  thinkingBudget: "",
-  webSearchEnabled: false,
-  verbosity: "",
-  reasoningSummary: "",
-};
 
 // -- Chart / UI color palette -------------------------------------
 /** Cycled by row index for provider charts, tables, and distribution bars. */

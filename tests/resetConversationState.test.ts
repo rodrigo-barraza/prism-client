@@ -1,6 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { SETTINGS_DEFAULTS, FALLBACK_THINKING_PATTERNS } from "../src/constants";
-import type { ModelOption } from "../src/types/types";
+
+const MOCK_SETTINGS_DEFAULTS = {
+  provider: "",
+  model: "",
+  systemPrompt: "",
+  temperature: 1.0,
+  maxTokens: 2048,
+  topP: 1,
+  topK: 0,
+  frequencyPenalty: 0,
+  presencePenalty: 0,
+  stopSequences: "",
+  thinkingEnabled: true,
+  reasoningEffort: "high",
+  thinkingLevel: "high",
+  thinkingBudget: "",
+  webSearchEnabled: false,
+};
 
 describe("resetConversationState model parameter resetting", () => {
   it("should reset all model parameters to their defaults while keeping the current provider and model", () => {
@@ -74,7 +90,7 @@ describe("resetConversationState model parameter resetting", () => {
           : true;
 
       return {
-        ...SETTINGS_DEFAULTS,
+        ...MOCK_SETTINGS_DEFAULTS,
         provider: settings.provider,
         model: settings.model,
         agents: {
@@ -172,7 +188,7 @@ describe("resetConversationState model parameter resetting", () => {
       settings: { provider: string; model: string },
     ) => {
       return {
-        ...SETTINGS_DEFAULTS,
+        ...MOCK_SETTINGS_DEFAULTS,
         provider: settings.provider,
         model: settings.model,
         thinkingEnabled: true,

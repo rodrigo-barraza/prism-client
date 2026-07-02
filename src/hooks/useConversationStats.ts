@@ -1,12 +1,7 @@
 import { useMemo } from "react";
 import {
-  getUniqueModelNames,
-  getUniqueProviders,
-  getConversationCost,
-  computeConversationTokenMetrics,
-  getUsedTools,
-  computeConversationModalities,
-  getConversationElapsedTime,
+  toolCountsToUsedTools,
+  extractLiveStreamingMetrics,
 } from "../utils/utilities";
 
 import type { Message, Conversation } from "../types/types";
@@ -14,43 +9,34 @@ import type { Message, Conversation } from "../types/types";
 /**
  * useConversationStats — memoised session statistics from a messages array.
  *
- * Replaces the 5–6 line `useMemo` block that was copy-pasted across
- * ChatConversationComponent, AdminAgentViewerComponent, and
- * admin/conversations/page.
+ * Refactored to leverage authoritative server-persisted fields from the
+ * conversation document, falling back to lightweight streaming metrics
+ * only when necessary.
  */
 export default function useConversationStats(
   messages: Message[],
   conversation?: Conversation | null,
 ) {
-  const uniqueModels = useMemo(() => getUniqueModelNames(messages), [messages]);
+  const uniqueModels = useMemo(
+    () => conversation?.modelNames || [],
+    [conversation?.modelNames],
+  );
+
   const uniqueProviders = useMemo(
-    () => getUniqueProviders(messages),
-    [messages],
+    () => conversation?.providers || [],
+    [conversation?.providers],
   );
+
   const totalCost = useMemo(
-    () => conversation?.totalCost ?? getConversationCost(messages),
-    [messages, conversation?.totalCost],
+    () => conversation?.totalCost ?? 0,
+    [conversation?.totalCost],
   );
-  const {
-    totalTokens,
-    requestCount,
-    liveStreamingTokens,
-    liveStreamingStartTime,
-    liveStreamingLastChunkTime,
-    liveStreamingBurstTokens,
-    liveStreamingBurstElapsed,
-    subAgentGenerationProgress,
-    lastTimeToGeneration,
-    liveProcessingStartTime,
-    liveProcessingPhase,
-    liveTtftSamples,
-    liveGenProgress,
-  } = useMemo(
-    () => computeConversationTokenMetrics(messages),
+
+  const streamingMetrics = useMemo(
+    () => extractLiveStreamingMetrics(messages),
     [messages],
   );
 
-  // If we have authoritative token counts from the server, use them
   const authoritativeTotalTokens = useMemo(() => {
     if (conversation?.inputTokens != null && conversation?.outputTokens != null) {
       return {
@@ -59,23 +45,21 @@ export default function useConversationStats(
         total: conversation.inputTokens + conversation.outputTokens,
       };
     }
-    return totalTokens;
-  }, [conversation?.inputTokens, conversation?.outputTokens, totalTokens]);
+    return { input: 0, output: 0, total: 0 };
+  }, [conversation?.inputTokens, conversation?.outputTokens]);
 
   const usedTools = useMemo(() => {
-    // If we have authoritative tool counts from the server, we could use them,
-    // but getUsedTools also includes "Thinking" and "Tool Calling" capabilities
-    // which aren't currently stored in the toolCounts map.
-    return getUsedTools(messages);
-  }, [messages]);
+    return toolCountsToUsedTools(conversation?.toolCounts);
+  }, [conversation?.toolCounts]);
 
   const modalities = useMemo(
-    () => conversation?.modalities || computeConversationModalities(messages),
-    [messages, conversation?.modalities],
+    () => conversation?.modalities || {},
+    [conversation?.modalities],
   );
+
   const elapsedTime = useMemo(
-    () => getConversationElapsedTime(messages),
-    [messages],
+    () => (conversation as any)?.totalElapsedTime ?? 0,
+    [conversation],
   );
 
   return {
@@ -83,20 +67,10 @@ export default function useConversationStats(
     uniqueProviders,
     totalCost,
     totalTokens: authoritativeTotalTokens,
-    requestCount,
+    requestCount: (conversation as any)?.requestCount ?? 0,
     usedTools,
     modalities,
     elapsedTime,
-    liveStreamingTokens,
-    liveStreamingStartTime,
-    liveStreamingLastChunkTime,
-    liveStreamingBurstTokens,
-    liveStreamingBurstElapsed,
-    subAgentGenerationProgress,
-    lastTimeToGeneration,
-    liveProcessingStartTime,
-    liveProcessingPhase,
-    liveTtftSamples,
-    liveGenProgress,
+    ...streamingMetrics,
   };
 }
