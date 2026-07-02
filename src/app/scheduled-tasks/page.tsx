@@ -355,8 +355,8 @@ function CronJobDetailPanel({
                       </div>
                     </div>
                     <div className={styles["history-item-status"]}>
-                      {conv.isGenerating ? (
-                        <span className={styles["status-generating"]}>Running...</span>
+                      {conv.isActive !== false ? (
+                        <span className={styles["status-generating"]}>{conv.isGenerating ? "Generating..." : "Running..."}</span>
                       ) : (
                         <span className={styles["status-completed"]}>Completed</span>
                       )}
