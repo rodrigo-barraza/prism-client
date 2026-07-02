@@ -181,6 +181,7 @@
   flex-direction: column;
   gap: 24px;
   position: relative;
+  background-color: var(--background-base);
   animation: fade-in 0.2s ease-out;
 }
 
