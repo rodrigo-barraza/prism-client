@@ -1042,12 +1042,16 @@ export default function ChatConversationComponent({
         const freshPendingCount =
           (freshConversation as unknown as { pendingBackgroundTasks?: number })
             ?.pendingBackgroundTasks ?? 0;
+        const freshIsActive =
+          (freshConversation as unknown as { isActive?: boolean })
+            ?.isActive;
         setConversations((previousConversations) =>
           previousConversations.map((entry) => {
             if (entry.id !== activeId) return entry;
             return {
               ...entry,
               pendingBackgroundTasks: freshPendingCount,
+              ...(freshIsActive !== undefined ? { isActive: freshIsActive } : {}),
             } as typeof entry;
           }),
         );
@@ -4843,14 +4847,16 @@ export default function ChatConversationComponent({
           },
           onConversationStateUpdate: (data: SSEData) => {
             // Patch the conversations list entry with the updated counter
-            // so the status bar's hasPendingBackgroundTasks check resolves.
+            // and isActive flag so the status bar resolves correctly.
             const updatedPendingCount = (data.pendingBackgroundTasks as number) ?? 0;
+            const updatedIsActive = data.isActive as boolean | undefined;
             setConversations((previousConversations) =>
               previousConversations.map((entry) => {
                 if (entry.id !== conversationId) return entry;
                 return {
                   ...entry,
                   pendingBackgroundTasks: updatedPendingCount,
+                  ...(updatedIsActive !== undefined ? { isActive: updatedIsActive } : {}),
                 } as typeof entry;
               }),
             );
