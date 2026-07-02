@@ -1115,13 +1115,13 @@ export default function ChatConversationComponent({
       const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
       const hasActive = Object.values(previousSubAgentToolActivity).some(
         (subAgent: SubAgentActivityEntry) =>
-          subAgent.phase && !terminalPhases.has(subAgent.phase),
+          !subAgent.phase || !terminalPhases.has(subAgent.phase),
       );
       if (!hasActive) return previousSubAgentToolActivity;
       const next: Record<string, SubAgentActivityEntry> = {};
       for (const [id, subAgent] of Object.entries(previousSubAgentToolActivity)) {
         next[id] =
-          subAgent.phase && !terminalPhases.has(subAgent.phase)
+          !subAgent.phase || !terminalPhases.has(subAgent.phase)
             ? { ...subAgent, phase: "complete", currentTool: null }
             : subAgent;
       }
@@ -7453,13 +7453,17 @@ export default function ChatConversationComponent({
           const subAgents = Object.values(subAgentToolActivity);
 
           // Track whether ANY sub-agent hasn't reached a terminal state yet.
-          // This includes sub-agents in "spawned" phase, undefined phase
-          // (tool execution clears phase), or any other non-terminal state.
-          // Used to keep the status bar visible even when no sub-agent has
-          // a recognized active phase (e.g., all just spawned or executing tools).
+          // A sub-agent with no phase is only treated as non-terminal when the
+          // conversation is still actively running (generating or has pending
+          // background tasks). Once both are false the conversation is done and
+          // phase-less entries are considered stale residue that should not
+          // keep the status bar alive.
+          const conversationIsStillRunning = isGenerating || hasPendingBackgroundTasks;
           hasNonTerminalSubAgents = subAgents.some(
             (subAgent: SubAgentActivityEntry) =>
-              !subAgent.phase || !terminalSubAgentPhases.has(subAgent.phase),
+              subAgent.phase
+                ? !terminalSubAgentPhases.has(subAgent.phase)
+                : conversationIsStillRunning,
           );
 
           const activeSubAgents = subAgents.filter(
