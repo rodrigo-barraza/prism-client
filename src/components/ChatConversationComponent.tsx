@@ -3041,6 +3041,7 @@ export default function ChatConversationComponent({
       if (element) {
         inputValueRef.current = serializeEditable(element);
         setHasInput(inputValueRef.current.trim().length > 0);
+        setDraftInputLength(inputValueRef.current.length);
       }
     },
     [],

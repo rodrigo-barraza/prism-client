@@ -27,6 +27,7 @@ export interface MappedHistoryItem {
   hasSubAgents?: boolean;
   searchText?: string;
   requestErrorCount?: number;
+  pendingBackgroundTasks?: number;
   /** Persisted active-session flag from agent_conversations — false means the session explicitly ended */
   isActive?: boolean;
 }
@@ -107,6 +108,7 @@ export function mapConversationToHistoryItem(
     hasSubAgents: conversation.hasSubAgents || false,
     searchText: searchTextParts.join(" "),
     requestErrorCount: conversation.requestErrorCount || 0,
+    pendingBackgroundTasks: conversation.pendingBackgroundTasks,
     isActive: conversation.isActive,
   };
 }

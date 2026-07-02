@@ -270,7 +270,7 @@ export default function HistoryItemComponent({
 
         {/* Row 2: title */}
         <div className={styles['title']}>
-          {conversationIsActive !== false && (
+          {(conversationIsActive !== false || isGenerating) && (
             <span
               className={`${styles['generating-dot']} ${isGenerating ? styles['generating-dot-is-animating'] : styles['generating-dot-is-idle']}`}
               style={{ "--generating-dot-phase-color": dotColors.primary } as React.CSSProperties}
