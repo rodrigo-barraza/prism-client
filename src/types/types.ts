@@ -426,6 +426,8 @@ export interface Conversation {
   messageCount?: number;
   totalCost?: number;
   isGenerating?: boolean;
+  /** Persisted active-session flag from agent_conversations — false means the session explicitly ended */
+  isActive?: boolean;
   username?: string;
   /** Marker for synthetic / test conversations */
   synthetic?: boolean;
@@ -484,6 +486,8 @@ export interface AgentConversation {
   hasSubAgents?: boolean;
   /** Count of async background tasks in-flight (sub-agents, long-running tools, etc.) */
   pendingBackgroundTasks?: number;
+  /** Persisted active-session flag from agent_conversations — false means the session explicitly ended */
+  isActive?: boolean;
 }
 
 export interface AgentConversationListResponse {

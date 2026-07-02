@@ -67,6 +67,8 @@ interface HistoryItemProps {
   hasSpawnedSubAgents?: boolean;
   isSubAgentsCollapsed?: boolean;
   onToggleSubAgents?: () => void;
+  /** Persisted isActive from agent_conversations — if explicitly false, hides the activity dot */
+  conversationIsActive?: boolean;
 }
 
 /**
@@ -116,6 +118,7 @@ export default function HistoryItemComponent({
   hasSpawnedSubAgents = false,
   isSubAgentsCollapsed = false,
   onToggleSubAgents,
+  conversationIsActive,
 }: HistoryItemProps) {
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
@@ -254,8 +257,10 @@ export default function HistoryItemComponent({
 
         {/* Row 2: title */}
         <div className={styles['title']}>
-          {(isGenerating || (pendingBackgroundTasks !== undefined && pendingBackgroundTasks >= 0)) && (
-            <span className={styles['generating-dot']} />
+          {conversationIsActive !== false && (
+            <span
+              className={`${styles['generating-dot']} ${isGenerating ? styles['generating-dot-is-animating'] : styles['generating-dot-is-idle']}`}
+            />
           )}
           {item.title || "Untitled"}
           {isNew && <span className={styles['new-badge']}>NEW</span>}

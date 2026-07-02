@@ -115,9 +115,20 @@
   border-radius: 50%;
   flex-shrink: 0;
   background: var(--generating-dot-phase-color, oklch(0.65 0.15 270));
-  animation: generating-dot-glow-pulse 1.4s ease-in-out infinite;
   transition: background 0.4s ease;
   will-change: filter, box-shadow;
+}
+
+.generating-dot-is-idle {
+  opacity: 0.55;
+  box-shadow:
+    0 0 3px var(--generating-dot-phase-color, oklch(0.65 0.15 270)),
+    0 0 7px color-mix(in oklch, var(--generating-dot-phase-color, oklch(0.65 0.15 270)) 40%, transparent);
+}
+
+.generating-dot-is-animating {
+  animation: generating-dot-glow-pulse 1.4s ease-in-out infinite;
+  opacity: 1;
 }
 
 @keyframes generating-dot-glow-pulse {

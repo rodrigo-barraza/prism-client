@@ -38,6 +38,8 @@ interface HistoryListItem {
   hasSubAgents?: boolean;
   requestErrorCount?: number;
   pendingBackgroundTasks?: number;
+  /** Persisted active-session flag from agent_conversations — false means the session explicitly ended */
+  isActive?: boolean;
 }
 
 interface FilterItem {
@@ -705,6 +707,7 @@ export default function HistoryList({
                 subAgentDepth={item.parentConversationId ? 1 : null}
                 hasSpawnedSubAgents={parentConversationIds.has(item.id)}
                 pendingBackgroundTasks={item.pendingBackgroundTasks}
+                conversationIsActive={item.isActive}
               />
             );
           }
@@ -761,6 +764,7 @@ export default function HistoryList({
                           });
                         } : undefined}
                         pendingBackgroundTasks={treeNode.item.pendingBackgroundTasks}
+                        conversationIsActive={treeNode.item.isActive}
                       />
                       {nodeHasChildren && (
                         <div
@@ -819,6 +823,7 @@ export default function HistoryList({
                   });
                 }}
                 pendingBackgroundTasks={group.parent.pendingBackgroundTasks}
+                conversationIsActive={group.parent.isActive}
               />
               <div
                 className={`${styles['sub-agent-tree-collapsible']} ${collapsedClusterIds.has(group.parent.id) ? styles['sub-agent-tree-collapsible-is-collapsed'] : ''}`}
