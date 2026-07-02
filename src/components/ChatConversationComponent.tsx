@@ -86,7 +86,8 @@ import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ApprovalCardComponent from "./ApprovalCardComponent";
 import UserQuestionCardComponent from "./UserQuestionCardComponent";
 
-import StatusBarComponent, { type StatusBarPhase, PHASE_GRADIENT_STOPS } from "./StatusBarComponent";
+import StatusBarComponent, { type StatusBarPhase } from "./StatusBarComponent";
+import { PHASE_TOKENS } from "../utils/statusBarPhaseTokens";
 import PixelTransitionComponent from "./PixelTransitionComponent";
 import ChatConversationGraphComponent from "./ChatConversationGraphComponent";
 import useConversationGraphData from "../hooks/useConversationGraphData";
@@ -7531,11 +7532,10 @@ export default function ChatConversationComponent({
             ? "delegating"
             : null;
 
-        // Sync phase color to :root so the sidebar generating-dot can match the bar
-        const phaseGradientStops = phase ? PHASE_GRADIENT_STOPS[phase] : null;
-        const phaseRepresentativeColor = phaseGradientStops ? phaseGradientStops[3] : null;
-        if (phaseRepresentativeColor) {
-          document.documentElement.style.setProperty("--generating-dot-phase-color", phaseRepresentativeColor);
+        // Sync phase pulse color to :root so the sidebar generating-dot matches the live phase
+        const phasePulseColor = phase ? PHASE_TOKENS[phase as keyof typeof PHASE_TOKENS]?.overlay.pulse : null;
+        if (phasePulseColor) {
+          document.documentElement.style.setProperty("--generating-dot-phase-color", phasePulseColor);
         } else {
           document.documentElement.style.removeProperty("--generating-dot-phase-color");
         }

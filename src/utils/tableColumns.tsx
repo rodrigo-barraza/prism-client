@@ -675,7 +675,7 @@ export const conversationTitleColumn = ({
 /**
  * Renders a StatusDotComponent with a unique oklch color per conversation state.
  *
- * Colors are derived from the same PHASE_GRADIENT_STOPS palette as StatusBarComponent,
+ * Colors are derived from PHASE_TOKENS (statusBarPhaseTokens.ts), the single source of truth
  * ensuring a consistent visual language across all surfaces.
  * State is derived from persisted MongoDB fields only — see agentConversationStates.ts.
  */
