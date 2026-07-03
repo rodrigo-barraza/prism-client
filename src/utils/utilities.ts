@@ -302,23 +302,25 @@ export function computeConversationTokenMetrics(messages: Message[]): Conversati
  * Returns [{ name, count }] sorted by count.
  */
 
+export const CAPABILITIES = {
+  THINKING: "Thinking",
+  TOOL_CALLING: "Tool Calling",
+  WEB_SEARCH: "Web Search",
+  GOOGLE_SEARCH: "Google Search",
+  CODE_EXECUTION: "Code Execution",
+  COMPUTER_USE: "Computer Use",
+  FILE_SEARCH: "File Search",
+  URL_CONTEXT: "URL Context",
+  IMAGE_GENERATION: "Image Generation",
+} as const;
+
 /**
  * Tool names that represent provider capabilities rather than
  * function-level tool calls. Used to separate capability badges
  * (Thinking, Tool Calling, Web Search, etc.) from individual
  * tool-call badges (read_file, search_file_contents, etc.) in the stats UI.
  */
-export const CAPABILITY_TOOL_NAMES = new Set([
-  "Thinking",
-  "Tool Calling",
-  "Web Search",
-  "Google Search",
-  "Code Execution",
-  "Computer Use",
-  "File Search",
-  "URL Context",
-  "Image Generation",
-]);
+export const CAPABILITY_TOOL_NAMES: Set<string> = new Set(Object.values(CAPABILITIES));
 
 /**
  * Convert a backend toolCounts map ({ name: count }) into the
@@ -425,4 +427,40 @@ export function resolveDefaultModel(
   }
 
   return { provider: "", model: "", temperature: 1.0 };
+}
+
+/**
+ * Detects if a message is an assistant message that is actively generating
+ * but hasn't yet reported any token usage (even intermediate).
+ */
+export function isMessageUncounted(
+  message: Message | Partial<Message> | null | undefined,
+): boolean {
+  if (!message || message.role !== "assistant") return false;
+  return !message.usage && !message._intermediateUsage;
+}
+
+/**
+ * Resolve the total conversation cost by aggregating authoritative backend stats,
+ * background task usage, and any in-flight active message costs.
+ */
+export function resolveConversationCost(
+  backendStats: { totalCost?: number } | null | undefined,
+  backgroundUsage: { cost?: number } | null | undefined,
+  activeMessage: Message | Partial<Message> | null | undefined,
+  isStale: boolean,
+): number {
+  const backendCost = backendStats?.totalCost || 0;
+  const backgroundCost = backgroundUsage?.cost || 0;
+
+  // activeMessageCost is included only if backend stats are known to be stale
+  // (e.g. during or immediately after a turn before the next polling tick)
+  const activeMessageCost =
+    activeMessage?.role === "assistant" && isStale
+      ? activeMessage.estimatedCost ||
+        activeMessage._intermediateEstimatedCost ||
+        0
+      : 0;
+
+  return backendCost + backgroundCost + activeMessageCost;
 }

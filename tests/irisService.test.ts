@@ -1,5 +1,21 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import IrisService from "../src/services/IrisService";
+import IrisService, {
+  IrisRequestListResponse,
+  IrisRequestEntry,
+  IrisStatsResponse,
+  IrisTimelineResponse,
+  IrisConversationListResponse,
+  IrisPaginatedResponse,
+  IrisHealthResponse,
+} from "../src/services/IrisService";
+import {
+  AgentConversation,
+  Conversation,
+  ConversationStats,
+  IrisDashboardStats,
+  PrismConfig,
+  Workflow,
+} from "../src/types/types";
 import { PRISM_SERVICE_URL } from "../src/config";
 import { subscribe as mockSseSubscribe } from "../src/services/SSEManager";
 
@@ -23,7 +39,7 @@ describe("IrisService", () => {
   });
 
   it("should query requests with specified filters", async () => {
-    const mockRequestResponse = { data: [], total: 0, count: 0 };
+    const mockRequestResponse: IrisRequestListResponse = { data: [], total: 0, count: 0 };
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -47,7 +63,7 @@ describe("IrisService", () => {
   });
 
   it("should fetch request entry by ID", async () => {
-    const mockEntry = { _id: "request-1" };
+    const mockEntry: IrisRequestEntry = { _id: "request-1" } as unknown as IrisRequestEntry;
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -81,7 +97,7 @@ describe("IrisService", () => {
   });
 
   it("should fetch aggregated analytics stats", async () => {
-    const mockStats = { totalRequests: 15 };
+    const mockStats: IrisDashboardStats = { totalRequests: 15 } as unknown as IrisDashboardStats;
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -144,7 +160,7 @@ describe("IrisService", () => {
   });
 
   it("should fetch request timeline data with customized hours and granularity", async () => {
-    const mockTimeline = { data: [] };
+    const mockTimeline: IrisTimelineResponse = { data: [] };
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -165,7 +181,7 @@ describe("IrisService", () => {
   });
 
   it("should query cost stats summary", async () => {
-    const mockCostResponse = { totalCost: 1.25 };
+    const mockCostResponse: IrisStatsResponse = { totalCost: 1.25 };
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -182,7 +198,7 @@ describe("IrisService", () => {
   });
 
   it("should fetch all conversations", async () => {
-    const mockConversationsResponse = { data: [], total: 0, count: 0 };
+    const mockConversationsResponse: IrisConversationListResponse = { data: [], total: 0, count: 0 };
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -199,7 +215,7 @@ describe("IrisService", () => {
   });
 
   it("should fetch single conversation by ID", async () => {
-    const mockConversation = { id: "conv-1", messages: [] };
+    const mockConversation: Conversation = { id: "conv-1", messages: [] } as unknown as Conversation;
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -240,7 +256,7 @@ describe("IrisService", () => {
   });
 
   it("should fetch workflow records linked to a conversation", async () => {
-    const mockWorkflows = [{ id: "workflow-1" }];
+    const mockWorkflows: Workflow[] = [{ id: "workflow-1" } as unknown as Workflow];
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -347,7 +363,7 @@ describe("IrisService", () => {
   });
 
   it("should retrieve API server health status", async () => {
-    const mockHealth = { status: "ok" };
+    const mockHealth: IrisHealthResponse = { status: "ok" };
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -448,7 +464,7 @@ describe("IrisService", () => {
   });
 
   it("should list available workflows", async () => {
-    const mockWorkflows = { data: [], total: 0 };
+    const mockWorkflows: IrisPaginatedResponse<Workflow> = { data: [], total: 0 };
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -465,7 +481,7 @@ describe("IrisService", () => {
   });
 
   it("should fetch detailed workflow metadata by ID", async () => {
-    const mockWorkflow = { id: "wf-1", nodes: [] };
+    const mockWorkflow: Workflow = { id: "wf-1", nodes: [] } as unknown as Workflow;
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -482,7 +498,7 @@ describe("IrisService", () => {
   });
 
   it("should query trace lists", async () => {
-    const mockTraces = { data: [], total: 0 };
+    const mockTraces: IrisPaginatedResponse<IrisRequestEntry> = { data: [], total: 0 };
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -499,7 +515,7 @@ describe("IrisService", () => {
   });
 
   it("should retrieve single trace by ID", async () => {
-    const mockTrace = { _id: "trace-1" };
+    const mockTrace: IrisRequestEntry = { _id: "trace-1" } as unknown as IrisRequestEntry;
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -516,7 +532,7 @@ describe("IrisService", () => {
   });
 
   it("should query conversation statistics and requests", async () => {
-    const mockStats = { totalTokens: 100 };
+    const mockStats: ConversationStats = { totalTokens: 100 } as unknown as ConversationStats;
     const mockRequests = { requests: [] };
 
     mockFetch
@@ -547,7 +563,7 @@ describe("IrisService", () => {
   });
 
   it("should retrieve client configuration parameters", async () => {
-    const mockPrismConfig = { localProviders: [] };
+    const mockPrismConfig: PrismConfig = { localProviders: [] } as unknown as PrismConfig;
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,

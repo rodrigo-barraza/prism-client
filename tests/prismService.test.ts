@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import PrismService from "../src/services/PrismService";
+import type { SSEData } from "../src/types/types";
+import { MESSAGE_ROLES } from "../src/constants";
 
 describe("PrismService", () => {
   let fetchSpy: any;
@@ -160,7 +162,7 @@ describe("PrismService", () => {
       await PrismService.appendMessages("conv-123", [{ role: "user", content: "hi" }], "project-a", { title: "hi" });
       expect(lastUrl).toContain("/conversations/conv-123/messages?project=project-a");
       expect(JSON.parse(lastOptions?.body as string)).toEqual({
-        messages: [{ role: "user", content: "hi" }],
+        messages: [{ role: MESSAGE_ROLES.USER, content: "hi" }],
         conversationMeta: { title: "hi" },
       });
 
@@ -434,7 +436,7 @@ describe("PrismService", () => {
       expect(lastUrl).toContain("/chat?stream=false");
       expect(JSON.parse(lastOptions?.body as string)).toEqual({
         messages: [{
-          role: "user",
+          role: MESSAGE_ROLES.USER,
           content: "landscape",
           images: ["data:image/jpeg;base64,base64..."],
         }],
@@ -667,7 +669,7 @@ describe("PrismService", () => {
         onError: vi.fn(),
       };
 
-      const testEvents = [
+      const testEvents: SSEData[] = [
         { type: "chunk", content: "chunk-content", _sourceModel: "model-a", outputCharacters: 13 },
         { type: "thinking", content: "thinking-content", _sourceModel: "model-a", outputCharacters: 16 },
         { type: "image", data: "base64data", mimeType: "image/png", minioRef: "minio://img" },
@@ -697,7 +699,7 @@ describe("PrismService", () => {
       ];
 
       for (const event of testEvents) {
-        PrismService._dispatchSSE(event as any, callbacks);
+        PrismService._dispatchSSE(event, callbacks);
       }
 
       expect(callbacks.onChunk).toHaveBeenCalledWith("chunk-content", "model-a", 13);

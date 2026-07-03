@@ -33,7 +33,7 @@ function createMockConversation(
     createdAt: "2026-06-25T12:00:00Z",
     updatedAt: "2026-06-25T12:05:00Z",
     ...overrides,
-  };
+  } as AgentConversation;
 }
 
 function createMockRequest(
@@ -52,7 +52,7 @@ function createMockRequest(
     agentConversationId: TEST_AGENT_CONVERSATION_ID,
     conversationId: TEST_CONVERSATION_ID,
     ...overrides,
-  };
+  } as IrisRequestEntry;
 }
 
 function createMockStats(
@@ -65,7 +65,7 @@ function createMockStats(
     totalElapsedTime: 4500,
     models: ["gemini-2.5-pro"],
     ...overrides,
-  };
+  } as ConversationStats;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────

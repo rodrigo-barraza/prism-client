@@ -7,6 +7,7 @@ import {
   toolCountsToUsedTools,
   mergeUsedToolsWithSubAgents,
   CAPABILITY_TOOL_NAMES,
+  CAPABILITIES,
 } from "../src/utils/utilities.js";
 import type { TokenUsage } from "../src/types/types.js";
 
@@ -40,11 +41,11 @@ describe("toolCountsToUsedTools", () => {
 describe("mergeUsedToolsWithSubAgents", () => {
   it("preserves capabilities from client tools", () => {
     const clientTools = [
-      { name: "Thinking", count: 3 },
+      { name: CAPABILITIES.THINKING, count: 3 },
       { name: "read_file", count: 2 },
     ];
     const result = mergeUsedToolsWithSubAgents(clientTools, null, null);
-    expect(result[0]).toEqual({ name: "Thinking", count: 3 });
+    expect(result[0]).toEqual({ name: CAPABILITIES.THINKING, count: 3 });
     expect(result[1]).toEqual({ name: "read_file", count: 2 });
   });
 
@@ -57,7 +58,7 @@ describe("mergeUsedToolsWithSubAgents", () => {
   });
 
   it("merges sub-agent tool activity with max strategy", () => {
-    const clientTools = [{ name: "Thinking", count: 1 }];
+    const clientTools = [{ name: CAPABILITIES.THINKING, count: 1 }];
     const backendCounts = { read_file: 3 };
     const subAgentActivity = {
       subAgent1: { toolNames: { read_file: 5 } },
@@ -74,9 +75,9 @@ describe("mergeUsedToolsWithSubAgents", () => {
 
 describe("CAPABILITY_TOOL_NAMES", () => {
   it("contains expected capability names", () => {
-    expect(CAPABILITY_TOOL_NAMES.has("Thinking")).toBe(true);
-    expect(CAPABILITY_TOOL_NAMES.has("Tool Calling")).toBe(true);
-    expect(CAPABILITY_TOOL_NAMES.has("Web Search")).toBe(true);
+    expect(CAPABILITY_TOOL_NAMES.has(CAPABILITIES.THINKING)).toBe(true);
+    expect(CAPABILITY_TOOL_NAMES.has(CAPABILITIES.TOOL_CALLING)).toBe(true);
+    expect(CAPABILITY_TOOL_NAMES.has(CAPABILITIES.WEB_SEARCH)).toBe(true);
   });
 
   it("does not contain function-level tool names", () => {

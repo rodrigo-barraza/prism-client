@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import type { Message } from "../src/types/types";
+import { isMessageUncounted, resolveConversationCost } from "../src/utils/utilities";
 
 type MockMessage = Partial<Message>;
 
@@ -13,10 +14,7 @@ describe("Reactive Stats Badges helper logic", () => {
       role: "assistant",
       model: "gpt-5.4-mini",
     };
-    const hasActiveUncountedRequest1 =
-      activeUncountedLastMessage.role === "assistant" &&
-      !activeUncountedLastMessage.usage &&
-      !activeUncountedLastMessage._intermediateUsage;
+    const hasActiveUncountedRequest1 = isMessageUncounted(activeUncountedLastMessage);
     expect(hasActiveUncountedRequest1).toBe(true);
 
     // Scenario 2: Last message is assistant but has _intermediateUsage
@@ -24,10 +22,7 @@ describe("Reactive Stats Badges helper logic", () => {
       role: "assistant",
       _intermediateUsage: { inputTokens: 100, outputTokens: 50 },
     };
-    const hasActiveUncountedRequest2 =
-      intermediateLastMessage.role === "assistant" &&
-      !intermediateLastMessage.usage &&
-      !intermediateLastMessage._intermediateUsage;
+    const hasActiveUncountedRequest2 = isMessageUncounted(intermediateLastMessage);
     expect(hasActiveUncountedRequest2).toBe(false);
 
     // Scenario 3: Last message is assistant and is fully done (has usage)
@@ -35,10 +30,7 @@ describe("Reactive Stats Badges helper logic", () => {
       role: "assistant",
       usage: { inputTokens: 100, outputTokens: 50 },
     };
-    const hasActiveUncountedRequest3 =
-      completedLastMessage.role === "assistant" &&
-      !completedLastMessage.usage &&
-      !completedLastMessage._intermediateUsage;
+    const hasActiveUncountedRequest3 = isMessageUncounted(completedLastMessage);
     expect(hasActiveUncountedRequest3).toBe(false);
   });
 
@@ -75,27 +67,21 @@ describe("Session cost consistency between sidebar and settings panel", () => {
     const backendSessionStats = { totalCost: 0.50 };
     const totalCost = 0.65; // client-side fallback sum
 
-    // Calculate activeMessageCost
-    const activeMessageCost =
-      lastMessageActive.role === "assistant" && isBackendStatsStale
-        ? lastMessageActive.estimatedCost ||
-          lastMessageActive._intermediateEstimatedCost ||
-          0
-        : 0;
-
     // Sidebar cost (resolvedCost)
-    const resolvedCost = backendSessionStats
-      ? (backendSessionStats.totalCost || 0) +
-        (bgUsage.cost || 0) +
-        activeMessageCost
-      : totalCost;
+    const resolvedCost = resolveConversationCost(
+      backendSessionStats,
+      bgUsage,
+      lastMessageActive,
+      isBackendStatsStale,
+    );
 
     // Settings panel stats.totalCost
-    const statsTotalCost = backendSessionStats
-      ? (backendSessionStats.totalCost || 0) +
-        (bgUsage.cost || 0) +
-        activeMessageCost
-      : totalCost;
+    const statsTotalCost = resolveConversationCost(
+      backendSessionStats,
+      bgUsage,
+      lastMessageActive,
+      isBackendStatsStale,
+    );
 
     expect(resolvedCost).toBe(0.50 + 0.05 + 0.15);
     expect(statsTotalCost).toBe(0.50 + 0.05 + 0.15);
@@ -107,24 +93,19 @@ describe("Session cost consistency between sidebar and settings panel", () => {
     const backendSessionStats = { totalCost: 0.50 };
     const totalCost = 0.70;
 
-    const activeMessageCost =
-      lastMessageCompleted.role === "assistant" && isBackendStatsStale
-        ? lastMessageCompleted.estimatedCost ||
-          lastMessageCompleted._intermediateEstimatedCost ||
-          0
-        : 0;
+    const resolvedCost = resolveConversationCost(
+      backendSessionStats,
+      bgUsage,
+      lastMessageCompleted,
+      isBackendStatsStale,
+    );
 
-    const resolvedCost = backendSessionStats
-      ? (backendSessionStats.totalCost || 0) +
-        (bgUsage.cost || 0) +
-        activeMessageCost
-      : totalCost;
-
-    const statsTotalCost = backendSessionStats
-      ? (backendSessionStats.totalCost || 0) +
-        (bgUsage.cost || 0) +
-        activeMessageCost
-      : totalCost;
+    const statsTotalCost = resolveConversationCost(
+      backendSessionStats,
+      bgUsage,
+      lastMessageCompleted,
+      isBackendStatsStale,
+    );
 
     expect(resolvedCost).toBe(0.50 + 0.05 + 0.20);
     expect(statsTotalCost).toBe(0.50 + 0.05 + 0.20);
@@ -136,24 +117,19 @@ describe("Session cost consistency between sidebar and settings panel", () => {
     const backendSessionStats = { totalCost: 0.75 }; // now includes the turn's cost and background cost
     const totalCost = 0.70;
 
-    const activeMessageCost =
-      lastMessageCompleted.role === "assistant" && isBackendStatsStale
-        ? lastMessageCompleted.estimatedCost ||
-          lastMessageCompleted._intermediateEstimatedCost ||
-          0
-        : 0;
+    const resolvedCost = resolveConversationCost(
+      backendSessionStats,
+      bgUsage,
+      lastMessageCompleted,
+      isBackendStatsStale,
+    );
 
-    const resolvedCost = backendSessionStats
-      ? (backendSessionStats.totalCost || 0) +
-        (bgUsage.cost || 0) +
-        activeMessageCost
-      : totalCost;
-
-    const statsTotalCost = backendSessionStats
-      ? (backendSessionStats.totalCost || 0) +
-        (bgUsage.cost || 0) +
-        activeMessageCost
-      : totalCost;
+    const statsTotalCost = resolveConversationCost(
+      backendSessionStats,
+      bgUsage,
+      lastMessageCompleted,
+      isBackendStatsStale,
+    );
 
     expect(resolvedCost).toBe(0.75 + 0.05); // activeMessageCost is 0
     expect(statsTotalCost).toBe(0.75 + 0.05);
