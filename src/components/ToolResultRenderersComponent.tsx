@@ -68,6 +68,7 @@ export interface SubAgentActivity {
   description?: string;
   toolCalls?: import("../types/types").ToolCallEvent[];
   conversationId?: string;
+  initialElapsedMilliseconds?: number | null;
 }
 
 export interface ToolArgs {
@@ -2538,6 +2539,7 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
       idleIcon={<Users size={10} />}
       idleLabel={idleLabel}
       registryKey={activity.conversationId}
+      initialElapsedMilliseconds={activity.initialElapsedMilliseconds}
     />
   );
 }

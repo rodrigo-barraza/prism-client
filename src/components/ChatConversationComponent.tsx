@@ -6012,8 +6012,13 @@ export default function ChatConversationComponent({
         // Hydrate StatusBar state from the backend's live status registry
         // so the progress bar, phase, and iteration resume at the correct
         // position after a conversation switch or page refresh.
-        const fullRecord = full as unknown as Record<string, unknown>;
-        const liveStatus = fullRecord.liveStatus as {
+        interface SubStatus {
+          phase?: string;
+          label?: string | null;
+          startedAt?: string;
+          conversationId?: string;
+        }
+        interface LiveStatus {
           phase?: string;
           label?: string | null;
           iteration?: number;
@@ -6021,7 +6026,10 @@ export default function ChatConversationComponent({
           startedAt?: string;
           phaseStartedAt?: string;
           tokensPerSecond?: number | null;
-        } | undefined;
+          subAgents?: Record<string, SubStatus>;
+        }
+        const fullRecord = full as unknown as Record<string, unknown>;
+        const liveStatus = fullRecord.liveStatus as LiveStatus | undefined;
 
         if (liveStatus && (full.isGenerating || fullRecord.isActive)) {
           // Restore iteration progress
@@ -6055,9 +6063,32 @@ export default function ChatConversationComponent({
               } as ClientMessage;
             }
           }
+          // Hydrate sub-agent tool activity so their status bars and progress
+          // indicators in the chat also resume correctly.
+          if (liveStatus.subAgents && Object.keys(liveStatus.subAgents).length > 0) {
+            const hydratedSubAgentActivity: Record<string, any> = {};
+            for (const [subAgentId, subStatus] of Object.entries(liveStatus.subAgents)) {
+              let initialElapsedMs = null;
+              if (subStatus.startedAt) {
+                const elapsed = Date.now() - new Date(subStatus.startedAt).getTime();
+                initialElapsedMs = elapsed > 0 ? elapsed : null;
+              }
+
+              hydratedSubAgentActivity[subAgentId] = {
+                phase: subStatus.phase,
+                status: subStatus.label || undefined,
+                conversationId: subStatus.conversationId || undefined,
+                // Passing this through the activity state so the rendering
+                // pass can pick it up for the sub-agent's StatusBarComponent.
+                initialElapsedMilliseconds: initialElapsedMs,
+              };
+            }
+            setSubAgentToolActivity(hydratedSubAgentActivity);
+          }
         } else {
           setAgenticProgress(null);
           setStatusBarInitialElapsedMilliseconds(null);
+          setSubAgentToolActivity({});
         }
 
         // Load pending approvals from the enriched conversation response
