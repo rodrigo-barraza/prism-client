@@ -457,12 +457,16 @@ export default function HistoryList({
       }
     }
 
-    // Sort children within each cluster by creation time ascending (spawn order)
+    // Sort children within each cluster by creation time ascending (spawn order),
+    // with subAgentNumberMap as tiebreaker for identical timestamps (optimistic injection)
     for (const children of childrenByParent.values()) {
       children.sort((childConversationA, childConversationB) => {
         const timestampA = new Date(childConversationA.createdAt || childConversationA.updatedAt || "").getTime();
         const timestampB = new Date(childConversationB.createdAt || childConversationB.updatedAt || "").getTime();
-        return timestampA - timestampB;
+        if (timestampA !== timestampB) return timestampA - timestampB;
+        const numberA = subAgentNumberMap.get(childConversationA.id) ?? 0;
+        const numberB = subAgentNumberMap.get(childConversationB.id) ?? 0;
+        return numberA - numberB;
       });
     }
 
@@ -501,7 +505,7 @@ export default function HistoryList({
     }
 
     return groups;
-  }, [filtered, parentConversationIds]);
+  }, [filtered, parentConversationIds, subAgentNumberMap]);
 
 
   // -- Infinite scroll via IntersectionObserver -----------------
