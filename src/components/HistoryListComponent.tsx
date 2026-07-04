@@ -41,6 +41,8 @@ interface HistoryListItem {
   pendingBackgroundTasks?: number;
   /** Persisted active-session flag from agent_conversations — false means the session explicitly ended */
   isActive?: boolean;
+  /** Backend-authoritative zero-based spawn index within a team of sub-agents */
+  agentIndex?: number | null;
 }
 
 interface FilterItem {
@@ -332,6 +334,13 @@ export default function HistoryList({
     }
     for (const siblings of childrenByParent.values()) {
       siblings.sort((itemA, itemB) => {
+        /* Primary: backend-authoritative agentIndex (deterministic spawn order) */
+        const indexA = itemA.agentIndex;
+        const indexB = itemB.agentIndex;
+        if (indexA != null && indexB != null && indexA !== indexB) return indexA - indexB;
+        if (indexA != null && indexB == null) return -1;
+        if (indexA == null && indexB != null) return 1;
+        /* Fallback: createdAt timestamp */
         const timestampA = new Date(itemA.createdAt || itemA.updatedAt || "").getTime();
         const timestampB = new Date(itemB.createdAt || itemB.updatedAt || "").getTime();
         if (timestampA !== timestampB) return timestampA - timestampB;
@@ -457,10 +466,18 @@ export default function HistoryList({
       }
     }
 
-    // Sort children within each cluster by creation time ascending (spawn order),
-    // with subAgentNumberMap as tiebreaker for identical timestamps (optimistic injection)
+    // Sort children within each cluster by agentIndex (authoritative) first,
+    // then by creation time ascending (spawn order), with subAgentNumberMap as
+    // tiebreaker for identical timestamps (optimistic injection)
     for (const children of childrenByParent.values()) {
       children.sort((childConversationA, childConversationB) => {
+        /* Primary: backend-authoritative agentIndex */
+        const indexA = childConversationA.agentIndex;
+        const indexB = childConversationB.agentIndex;
+        if (indexA != null && indexB != null && indexA !== indexB) return indexA - indexB;
+        if (indexA != null && indexB == null) return -1;
+        if (indexA == null && indexB != null) return 1;
+        /* Fallback: createdAt timestamp */
         const timestampA = new Date(childConversationA.createdAt || childConversationA.updatedAt || "").getTime();
         const timestampB = new Date(childConversationB.createdAt || childConversationB.updatedAt || "").getTime();
         if (timestampA !== timestampB) return timestampA - timestampB;

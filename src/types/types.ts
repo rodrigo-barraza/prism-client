@@ -455,6 +455,8 @@ export interface Conversation {
   requestErrorCount?: number;
   /** Count of async background tasks in-flight (sub-agents, long-running tools, etc.) */
   pendingBackgroundTasks?: number;
+  /** Backend-authoritative zero-based spawn index within a team of sub-agents */
+  agentIndex?: number | null;
 }
 
 export interface ConversationListResponse {
@@ -488,6 +490,8 @@ export interface AgentConversation {
   pendingBackgroundTasks?: number;
   /** Persisted active-session flag from agent_conversations — false means the session explicitly ended */
   isActive?: boolean;
+  /** Backend-authoritative zero-based spawn index within a team of sub-agents */
+  agentIndex?: number | null;
 }
 
 export interface AgentConversationListResponse {

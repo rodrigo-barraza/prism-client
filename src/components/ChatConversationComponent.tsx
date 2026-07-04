@@ -4673,6 +4673,7 @@ export default function ChatConversationComponent({
                       createdAt: spawnTimestamp,
                       parentConversationId: subAgentParentConversationId || null,
                       isGenerating: true,
+                      agentIndex: typeof data.agentIndex === "number" ? data.agentIndex : null,
                       ...(data.model ? { modelNames: [data.model as string] } : {}),
                       ...(data.provider ? { providers: [data.provider as string] } : {}),
                     } as AgentConversation,

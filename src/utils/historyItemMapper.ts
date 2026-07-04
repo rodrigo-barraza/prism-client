@@ -30,6 +30,8 @@ export interface MappedHistoryItem {
   pendingBackgroundTasks?: number;
   /** Persisted active-session flag from agent_conversations — false means the session explicitly ended */
   isActive?: boolean;
+  /** Backend-authoritative zero-based spawn index within a team of sub-agents */
+  agentIndex?: number | null;
 }
 
 interface MapConversationOptions {
@@ -110,6 +112,7 @@ export function mapConversationToHistoryItem(
     requestErrorCount: conversation.requestErrorCount || 0,
     pendingBackgroundTasks: conversation.pendingBackgroundTasks,
     isActive: conversation.isActive,
+    agentIndex: conversation.agentIndex ?? null,
   };
 }
 
