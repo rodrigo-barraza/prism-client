@@ -1961,3 +1961,28 @@ export interface Prompt {
   color?: string;
 }
 
+export interface LiveSubAgentStatus {
+  phase: string;
+  label: string | null;
+  conversationId: string | null;
+  startedAt: string | null;
+}
+
+export interface LiveConversationStatus {
+  phase: string;
+  label: string | null;
+  iteration: number;
+  maxIterations: number;
+  startedAt: string;
+  phaseStartedAt: string;
+  tokensPerSecond: number | null;
+  activeRequests: number;
+  outputTokens: number;
+  inputTokens: number;
+  totalTokens: number;
+  subAgents: Record<string, LiveSubAgentStatus>;
+}
+
+export interface LiveConversationStatusResponse extends LiveConversationStatus {
+  active: boolean;
+}

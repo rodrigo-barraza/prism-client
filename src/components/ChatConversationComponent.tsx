@@ -951,6 +951,11 @@ export default function ChatConversationComponent({
     iteration: number;
     maxIterations: number;
   } | null>(null); // { iteration, maxIterations }
+  // Elapsed time offset (ms) from the backend's live status registry.
+  // Seeds the StatusBar's asymptotic timer so it resumes at the correct
+  // position after a conversation switch or page refresh.
+  const [statusBarInitialElapsedMilliseconds, setStatusBarInitialElapsedMilliseconds] =
+    useState<number | null>(null);
   const [_contextTruncated, setContextTruncated] = useState<{
     strategy: string;
     estimatedTokens?: number;
@@ -4316,6 +4321,9 @@ export default function ChatConversationComponent({
                 iteration: statusData.iteration ?? 0,
                 maxIterations: statusData.maxIterations ?? 0,
               });
+              // Clear the elapsed offset once live SSE events start flowing —
+              // the StatusBar's own timer is now tracking real-time progress.
+              setStatusBarInitialElapsedMilliseconds(null);
             } else if (statusData?.message === STATUS_MESSAGES.SKILLS_INJECTED) {
               setInjectedSkills(statusData.skills || []);
             } else if (statusData?.message === STATUS_MESSAGES.COMPACTION_STARTED) {
@@ -5248,6 +5256,7 @@ export default function ChatConversationComponent({
       setPendingUserQuestion(null);
       setPlanProposal(null);
       setAgenticProgress(null);
+      setStatusBarInitialElapsedMilliseconds(null);
       setInjectedSkills([]);
       setContextTruncated(null);
 
@@ -5999,6 +6008,57 @@ export default function ChatConversationComponent({
         setIsGenerating(!!full.isGenerating && !isGeneratingFlagStale);
         // Passive DB load — no active SSE connection for this generation
         isClientDrivenGenerationRef.current = false;
+
+        // Hydrate StatusBar state from the backend's live status registry
+        // so the progress bar, phase, and iteration resume at the correct
+        // position after a conversation switch or page refresh.
+        const fullRecord = full as unknown as Record<string, unknown>;
+        const liveStatus = fullRecord.liveStatus as {
+          phase?: string;
+          label?: string | null;
+          iteration?: number;
+          maxIterations?: number;
+          startedAt?: string;
+          phaseStartedAt?: string;
+          tokensPerSecond?: number | null;
+        } | undefined;
+
+        if (liveStatus && (full.isGenerating || fullRecord.isActive)) {
+          // Restore iteration progress
+          if (typeof liveStatus.iteration === "number") {
+            setAgenticProgress({
+              iteration: liveStatus.iteration,
+              maxIterations: liveStatus.maxIterations || 0,
+            });
+          }
+
+          // Compute how long the current phase has been running so the
+          // StatusBar asymptotic timer starts from the correct position.
+          const phaseStartedAt = liveStatus.phaseStartedAt || liveStatus.startedAt;
+          if (phaseStartedAt) {
+            const elapsedMilliseconds = Date.now() - new Date(phaseStartedAt).getTime();
+            setStatusBarInitialElapsedMilliseconds(
+              elapsedMilliseconds > 0 ? elapsedMilliseconds : null,
+            );
+          } else {
+            setStatusBarInitialElapsedMilliseconds(null);
+          }
+
+          // Set the phase on the last assistant message so the StatusBar
+          // phase derivation picks up the correct phase immediately.
+          if (liveStatus.phase && displayMessages.length > 0) {
+            const lastDisplayMessage = displayMessages[displayMessages.length - 1];
+            if (lastDisplayMessage?.role === "assistant") {
+              displayMessages[displayMessages.length - 1] = {
+                ...lastDisplayMessage,
+                statusPhase: liveStatus.phase,
+              } as ClientMessage;
+            }
+          }
+        } else {
+          setAgenticProgress(null);
+          setStatusBarInitialElapsedMilliseconds(null);
+        }
 
         // Load pending approvals from the enriched conversation response
         const pendingApprovalData = full.pendingApproval;
@@ -7853,6 +7913,7 @@ export default function ChatConversationComponent({
             maxIterations={
               Number.isFinite(maxIterations) ? maxIterations : undefined
             }
+            initialElapsedMilliseconds={statusBarInitialElapsedMilliseconds}
           />
         );
       })()}

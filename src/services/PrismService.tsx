@@ -62,6 +62,8 @@ import type {
   TopologyDefinition,
   ThoughtStructureDefinition,
   ContextBudget,
+  LiveConversationStatus,
+  LiveConversationStatusResponse,
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
@@ -331,6 +333,21 @@ export default class PrismService {
     return PrismService._request<ConversationTimer[]>(`/conversations/${id}/timers`, {
       method: HTTP_METHODS.GET,
     });
+  }
+
+  /**
+   * Fetch the real-time generation status from the backend's in-memory registry.
+   * Returns the live status object if the conversation is actively generating,
+   * or null if it is not.
+   */
+  static async getConversationLiveStatus(
+    conversationId: string,
+  ): Promise<LiveConversationStatus | null> {
+    const response = await PrismService._request<LiveConversationStatusResponse>(
+      `/conversations/${conversationId}/live-status`,
+      { method: HTTP_METHODS.GET },
+    );
+    return response.active ? response : null;
   }
 
   /**

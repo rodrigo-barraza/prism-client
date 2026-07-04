@@ -33,6 +33,11 @@ interface StatusBarProps {
   /** Unique key to write displayPercentage to the shared registry.
    *  Typically the sub-agent's conversationId. */
   registryKey?: string;
+  /** Optional time offset (ms) to backdate the asymptotic timer start.
+   *  Used when recovering a conversation that's been generating for
+   *  some time, so the progress bar resumes at the correct position
+   *  instead of restarting from 0%. */
+  initialElapsedMilliseconds?: number | null;
 }
 
 export default function StatusBarComponent({
@@ -48,6 +53,7 @@ export default function StatusBarComponent({
   idleIcon,
   idleLabel,
   registryKey,
+  initialElapsedMilliseconds,
 }: StatusBarProps) {
   const isSubAgent = variant === "subAgent";
 
@@ -96,7 +102,14 @@ export default function StatusBarComponent({
         return;
       }
 
-      syntheticStartRef.current = performance.now();
+      // Backdate the start time by the initial elapsed offset so the
+      // asymptotic curve picks up where the generation actually is,
+      // rather than restarting from 0%.
+      const elapsedOffset =
+        initialElapsedMilliseconds && initialElapsedMilliseconds > 0
+          ? initialElapsedMilliseconds
+          : 0;
+      syntheticStartRef.current = performance.now() - elapsedOffset;
       highWaterMarkRef.current = 0;
       setDisplayPercentage(0);
     }
