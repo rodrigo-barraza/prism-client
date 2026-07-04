@@ -2124,12 +2124,6 @@ export default function MessageList({
                             value={Math.ceil(message.content.length / 4)}
                             label="estimated"
                           />
-                          {message.timestamp && (
-                            <BadgeComponent
-                              type="dateTime"
-                              date={message.timestamp}
-                            />
-                          )}
                         </div>
                       )}
 
@@ -2150,12 +2144,6 @@ export default function MessageList({
                             value={Math.ceil(message.content.length / 4)}
                             label="estimated"
                           />
-                          {message.timestamp && (
-                            <BadgeComponent
-                              type="dateTime"
-                              date={message.timestamp}
-                            />
-                          )}
                         </div>
                       )}
 
@@ -2288,12 +2276,6 @@ export default function MessageList({
                                 cost={message.estimatedCost}
                               />
                             ) : null}
-                            {message.timestamp && (
-                              <BadgeComponent
-                                type="dateTime"
-                                date={message.timestamp}
-                              />
-                            )}
                           </div>
                         )}
 

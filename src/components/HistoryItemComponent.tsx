@@ -20,7 +20,6 @@ import {
   AGENT_CONVERSATION_STATE_COLORS,
 } from "../utils/agentConversationStates";
 import type { AgentConversationState } from "../utils/agentConversationStates";
-import { PHASE_TOKENS } from "../utils/statusBarPhaseTokens";
 import type { StatusBarPhase } from "../utils/statusBarPhaseTokens";
 
 interface HistoryItemTag {
@@ -187,9 +186,6 @@ export default function HistoryItemComponent({
     return () => clearInterval(intervalId);
   }, [isInlineProgressActive]);
 
-  const inlineProgressGradientStops = inlineProgressPhase
-    ? PHASE_TOKENS[inlineProgressPhase].gradientStops
-    : undefined;
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
   const hasModalities = modalities && Object.keys(modalities).length > 0;
@@ -477,19 +473,8 @@ export default function HistoryItemComponent({
         )}
       </div>
       {/* ── Inline progress bar (border-bottom style, no overlay) ── */}
-      {isInlineProgressActive && inlineProgressGradientStops && (
-        <div
-          className={styles['inline-progress-bar-track']}
-          style={{
-            "--inline-gradient-stop-1": inlineProgressGradientStops[0],
-            "--inline-gradient-stop-2": inlineProgressGradientStops[1],
-            "--inline-gradient-stop-3": inlineProgressGradientStops[2],
-            "--inline-gradient-stop-4": inlineProgressGradientStops[3],
-            "--inline-gradient-stop-5": inlineProgressGradientStops[4],
-            "--inline-gradient-stop-6": inlineProgressGradientStops[5],
-            "--inline-gradient-stop-7": inlineProgressGradientStops[6],
-          } as React.CSSProperties}
-        >
+      {isInlineProgressActive && (
+        <div className={styles['inline-progress-bar-track']}>
           <div
             className={styles['inline-progress-bar-fill']}
             style={{ width: `${inlineProgressPercentage}%` }}

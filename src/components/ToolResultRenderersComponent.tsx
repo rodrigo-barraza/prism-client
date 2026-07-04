@@ -2456,7 +2456,7 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
     Array.isArray(activity.toolCalls) &&
     activity.toolCalls.some(
       (toolCall) =>
-        toolCall.name === "create_subagents" &&
+        (toolCall.name === "create_subagents" || toolCall.name === "create_subagent") &&
         (toolCall.status === "calling" || toolCall.status === "streaming"),
     );
 
@@ -2562,7 +2562,7 @@ function SubSubAgentStatusBars({
   if (depth >= MAX_RECURSIVE_SUB_AGENT_DEPTH) return null;
 
   const createTeamCalls = toolCalls.filter(
-    (toolCall) => toolCall.name === "create_subagents",
+    (toolCall) => toolCall.name === "create_subagents" || toolCall.name === "create_subagent",
   );
 
   if (createTeamCalls.length === 0) return null;
@@ -2636,7 +2636,7 @@ function SubSubAgentStatusBars({
         const hasNestedCreateSubagents =
           Array.isArray(activityData?.toolCalls) &&
           activityData.toolCalls.some(
-            (toolCall) => toolCall.name === "create_subagents",
+            (toolCall) => toolCall.name === "create_subagents" || toolCall.name === "create_subagent",
           );
 
         return (
@@ -2830,7 +2830,7 @@ function TeamCreateRenderer({
           Array.isArray(activity?.toolCalls) &&
           activity!.toolCalls.some(
             (toolCall) =>
-              toolCall.name === "create_subagents" &&
+              (toolCall.name === "create_subagents" || toolCall.name === "create_subagent") &&
               (toolCall.status === "calling" || toolCall.status === "streaming"),
           );
 
@@ -2899,7 +2899,7 @@ function TeamCreateRenderer({
 
             {activity?.toolCalls &&
               activity.toolCalls.some(
-                (toolCall) => toolCall.name === "create_subagents",
+                (toolCall) => toolCall.name === "create_subagents" || toolCall.name === "create_subagent",
               ) && (
               <SubSubAgentStatusBars
                 toolCalls={activity.toolCalls}
@@ -3045,6 +3045,7 @@ const TOOL_RESULT_REGISTRY = {
   synthesize_speech_local: { Renderer: TextToSpeechRenderer },
 
   // Coordinator
+  create_subagent: { Renderer: TeamCreateRenderer },
   create_subagents: { Renderer: TeamCreateRenderer },
   send_subagent_message: { Renderer: SendMessageRenderer },
   stop_subagent: { Renderer: StopAgentRenderer },

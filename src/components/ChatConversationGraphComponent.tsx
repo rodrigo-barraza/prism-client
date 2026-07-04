@@ -517,7 +517,7 @@ export function buildGraphFromConversation(
 
       let linkedToTool = false;
       for (const parentRequest of parentAgentRequests) {
-        if (parentRequest.toolApiNames?.includes("create_subagents")) {
+        if (parentRequest.toolApiNames?.includes("create_subagents") || parentRequest.toolApiNames?.includes("create_subagent")) {
           // Link sub-agent from the request node that invoked create_subagents
           const requestNodeId = `request:${parentRequest._id || sortedRequests.indexOf(parentRequest)}`;
           if (nodeIdSet.has(requestNodeId)) {

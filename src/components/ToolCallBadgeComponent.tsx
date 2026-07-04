@@ -32,6 +32,7 @@ const TOOL_CALL_DISPLAY_NAMES: Record<string, string> = {
   [TOOL_NAMES.SUMMARIZE_PROJECT]: "Summary",
   [TOOL_NAMES.GENERATE_IMAGE]: "Image Gen",
   // Orchestrator subagent tools
+  [TOOL_NAMES.CREATE_SUBAGENT]: "Create Subagent",
   [TOOL_NAMES.CREATE_SUBAGENTS]: "Create Subagents",
   [TOOL_NAMES.DELETE_SUBAGENTS]: "Delete Subagents",
   [TOOL_NAMES.SLEEP]: "Sleep",

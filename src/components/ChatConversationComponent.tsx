@@ -7661,12 +7661,27 @@ export default function ChatConversationComponent({
             ? "delegating"
             : null;
 
-        // Sync phase pulse color to :root so the sidebar generating-dot matches the live phase
-        const phasePulseColor = phase ? PHASE_TOKENS[phase as keyof typeof PHASE_TOKENS]?.overlay.pulse : null;
+        // Sync phase tokens to :root so both the sidebar generating-dot
+        // and the HistoryItem inline progress bar match the live phase
+        const resolvedPhaseTokens = phase ? PHASE_TOKENS[phase as keyof typeof PHASE_TOKENS] : null;
+        const phasePulseColor = resolvedPhaseTokens?.overlay.pulse ?? null;
         if (phasePulseColor) {
           document.documentElement.style.setProperty("--generating-dot-phase-color", phasePulseColor);
         } else {
           document.documentElement.style.removeProperty("--generating-dot-phase-color");
+        }
+        const resolvedGradientStops = resolvedPhaseTokens?.gradientStops;
+        if (resolvedGradientStops) {
+          for (let stopIndex = 0; stopIndex < 7; stopIndex++) {
+            document.documentElement.style.setProperty(
+              `--live-phase-gradient-stop-${stopIndex + 1}`,
+              resolvedGradientStops[stopIndex],
+            );
+          }
+        } else {
+          for (let stopIndex = 0; stopIndex < 7; stopIndex++) {
+            document.documentElement.style.removeProperty(`--live-phase-gradient-stop-${stopIndex + 1}`);
+          }
         }
         const label = isGenerating
           ? isAwaitingApproval

@@ -61,7 +61,7 @@ export default function ToolCallsBlockComponent({
   const hasActiveSubAgents = (() => {
     if (!toolCalls || !subAgentToolActivity) return false;
     for (const toolCall of toolCalls) {
-      if (toolCall.name !== TOOL_NAMES.CREATE_SUBAGENTS) continue;
+      if (toolCall.name !== TOOL_NAMES.CREATE_SUBAGENTS && toolCall.name !== TOOL_NAMES.CREATE_SUBAGENT) continue;
       // Check result members for agent_ids with active tool activity
       const parsed = toolCall.result
         ? typeof toolCall.result === "string"
@@ -204,7 +204,7 @@ export default function ToolCallsBlockComponent({
                 )}
 
                 {/* Sub-agent tool badges — show which tools a spawned agent used */}
-                {(toolCall.name === TOOL_NAMES.CREATE_SUBAGENTS) &&
+                {(toolCall.name === TOOL_NAMES.CREATE_SUBAGENTS || toolCall.name === TOOL_NAMES.CREATE_SUBAGENT) &&
                   (() => {
                     const parsed = toolCall.result
                       ? typeof toolCall.result === "string"
