@@ -79,6 +79,8 @@ interface HistoryItemProps {
   onToggleSubAgents?: () => void;
   /** Persisted isActive from agent_conversations — if explicitly false, hides the activity dot */
   conversationIsActive?: boolean;
+  /** Live execution phase from subAgentToolActivity — overrides the static CONVERSATION_STATE_TO_PHASE mapping */
+  livePhase?: StatusBarPhase | null;
 }
 
 /**
@@ -156,6 +158,7 @@ export default function HistoryItemComponent({
   isSubAgentsCollapsed = false,
   onToggleSubAgents,
   conversationIsActive,
+  livePhase,
 }: HistoryItemProps) {
   const conversationState = deriveAgentConversationState({
     isActive: conversationIsActive,
@@ -165,6 +168,11 @@ export default function HistoryItemComponent({
     requestErrorCount: item.requestErrorCount,
   });
   const dotColors = AGENT_CONVERSATION_STATE_COLORS[conversationState];
+
+  /* When a livePhase is provided, override the generating-dot color with the
+     phase's pulse color so the sidebar dot matches the conversation-view bar. */
+  const livePhasePulseColor = livePhase ? PHASE_TOKENS[livePhase]?.overlay?.pulse : null;
+  const resolvedDotColor = livePhasePulseColor ?? dotColors.primary;
 
   /* ── Inline progress bar ──
      Active conversation: reads width + colors from :root CSS vars published by
@@ -208,8 +216,13 @@ export default function HistoryItemComponent({
   }, [needsLocalTimer]);
 
   /* Build inline styles only for non-active items (sub-agents).
-     Active items consume :root CSS vars — no inline styles needed. */
-  const inlineProgressPhase = CONVERSATION_STATE_TO_PHASE[conversationState];
+     Active items consume :root CSS vars — no inline styles needed.
+     When a livePhase is provided (from subAgentToolActivity), prefer it
+     over the static CONVERSATION_STATE_TO_PHASE mapping so the bar's
+     gradient palette matches the actual execution phase visible in the
+     conversation StatusBarComponent. */
+  const staticPhase = CONVERSATION_STATE_TO_PHASE[conversationState];
+  const inlineProgressPhase = livePhase ?? staticPhase;
   const phaseTokens = inlineProgressPhase ? PHASE_TOKENS[inlineProgressPhase] : undefined;
   const localGradientStops = phaseTokens?.gradientStops;
   const localPulseColor = phaseTokens?.overlay?.pulse;
@@ -373,7 +386,7 @@ export default function HistoryItemComponent({
           {(conversationIsActive !== false || isGenerating) && (
             <span
               className={`${styles['generating-dot']} ${isGenerating ? styles['generating-dot-is-animating'] : styles['generating-dot-is-idle']}`}
-              style={{ "--generating-dot-phase-color": dotColors.primary } as React.CSSProperties}
+              style={{ "--generating-dot-phase-color": resolvedDotColor } as React.CSSProperties}
             />
           )}
           {item.title || "Untitled"}

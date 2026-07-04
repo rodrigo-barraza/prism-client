@@ -18,6 +18,7 @@ import HistoryItemComponent from "./HistoryItemComponent";
 import styles from "./HistoryListComponent.module.css";
 import { LOCAL_STORAGE_KEY_DATE_RANGE } from "../constants";
 import type { LucideIcon } from "lucide-react";
+import type { StatusBarPhase } from "../utils/statusBarPhaseTokens";
 
 interface HistoryListItem {
   id: string;
@@ -91,6 +92,8 @@ interface HistoryListProps {
   dateRange?: { from: string; to: string };
   onDateChange?: (range: { from: string; to: string }) => void;
   filterStorageKey?: string;
+  /** Live sub-agent execution phases keyed by conversationId */
+  subAgentLivePhases?: Map<string, StatusBarPhase>;
 }
 
 /**
@@ -144,6 +147,7 @@ export default function HistoryList({
   dateRange: controlledDateRange,
   onDateChange: controlledOnDateChange,
   filterStorageKey,
+  subAgentLivePhases,
 }: HistoryListProps) {
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
 
@@ -708,6 +712,7 @@ export default function HistoryList({
                 hasSpawnedSubAgents={parentConversationIds.has(item.id)}
                 pendingBackgroundTasks={item.pendingBackgroundTasks}
                 conversationIsActive={item.isActive}
+                livePhase={subAgentLivePhases?.get(item.id) ?? null}
               />
             );
           }
@@ -765,6 +770,7 @@ export default function HistoryList({
                         } : undefined}
                         pendingBackgroundTasks={treeNode.item.pendingBackgroundTasks}
                         conversationIsActive={treeNode.item.isActive}
+                        livePhase={subAgentLivePhases?.get(treeNode.item.id) ?? null}
                       />
                       {nodeHasChildren && (
                         <div
@@ -824,6 +830,7 @@ export default function HistoryList({
                 }}
                 pendingBackgroundTasks={group.parent.pendingBackgroundTasks}
                 conversationIsActive={group.parent.isActive}
+                livePhase={subAgentLivePhases?.get(group.parent.id) ?? null}
               />
               <div
                 className={`${styles['sub-agent-tree-collapsible']} ${collapsedClusterIds.has(group.parent.id) ? styles['sub-agent-tree-collapsible-is-collapsed'] : ''}`}

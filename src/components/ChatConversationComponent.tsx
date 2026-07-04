@@ -807,6 +807,29 @@ export default function ChatConversationComponent({
     ).length;
     return (isGenerating ? 1 : 0) + activeSubAgents;
   }, [isGenerating, subAgentToolActivity]);
+
+  /* Maps each sub-agent's conversationId → live StatusBarPhase so the sidebar
+     HistoryItemComponent progress bars use the correct gradient palette that
+     matches the conversation-view StatusBarComponent. */
+  const subAgentLivePhases = useMemo(() => {
+    const phaseMap = new Map<string, StatusBarPhase>();
+    for (const entry of Object.values(subAgentToolActivity)) {
+      const subAgentEntry = entry as SubAgentActivityEntry;
+      if (subAgentEntry.conversationId && subAgentEntry.phase) {
+        const validPhases = new Set<string>([
+          "starting", "loading", "prefilling", "generating",
+          "thinking", "executing", "synthesizing", "delegating", "awaiting",
+        ]);
+        if (validPhases.has(subAgentEntry.phase)) {
+          phaseMap.set(
+            subAgentEntry.conversationId as string,
+            subAgentEntry.phase as StatusBarPhase,
+          );
+        }
+      }
+    }
+    return phaseMap;
+  }, [subAgentToolActivity]);
   const [tasksCount, setTasksCount] = useState(0);
   const [memoryConfigured, setMemoryConfigured] = useState(false);
   const [hasAnyMemoryModelSet, setHasAnyMemoryModelSet] = useState(false);
@@ -8194,6 +8217,7 @@ export default function ChatConversationComponent({
               initialProviders={adminProviderFilter ? [adminProviderFilter] : undefined}
               initialSearch={adminTraceFilter || undefined}
               knownParentConversationIds={knownParentConversationIds}
+              subAgentLivePhases={subAgentLivePhases}
             />
           ) : (
             <HistoryPanel
@@ -8213,6 +8237,7 @@ export default function ChatConversationComponent({
               loadingMore={conversationsLoading}
               onLoadMore={loadMoreConversations}
               filterStorageKey={LOCAL_STORAGE_KEY_CHAT_FILTERS}
+              subAgentLivePhases={subAgentLivePhases}
             />
           )
         }

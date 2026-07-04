@@ -10,6 +10,7 @@ import styles from "./HistoryPanelComponent.module.css";
 
 import type { Conversation } from "../types/types";
 import type { LucideIcon } from "lucide-react";
+import type { StatusBarPhase } from "../utils/statusBarPhaseTokens";
 
 export interface HistoryPanelProps {
   conversations?: Conversation[];
@@ -41,6 +42,8 @@ export interface HistoryPanelProps {
   onDateChange?: (range: { from: string; to: string }) => void;
   filterStorageKey?: string;
   className?: string;
+  /** Live sub-agent execution phases keyed by conversationId */
+  subAgentLivePhases?: Map<string, StatusBarPhase>;
 }
 
 export default function HistoryPanel({
@@ -73,6 +76,7 @@ export default function HistoryPanel({
   onDateChange,
   filterStorageKey,
   className,
+  subAgentLivePhases,
 }: HistoryPanelProps) {
   const items = useMemo(
     () =>
@@ -116,6 +120,7 @@ export default function HistoryPanel({
         onDateChange={onDateChange}
         filterStorageKey={filterStorageKey}
         knownParentConversationIds={knownParentConversationIds}
+        subAgentLivePhases={subAgentLivePhases}
       />
     </div>
   );
