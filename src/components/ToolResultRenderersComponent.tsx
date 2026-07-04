@@ -2537,6 +2537,7 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
       maxIterations={maxIterations}
       idleIcon={<Users size={10} />}
       idleLabel={idleLabel}
+      registryKey={activity.conversationId}
     />
   );
 }

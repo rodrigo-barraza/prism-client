@@ -12,6 +12,12 @@ const SYNTHETIC_TICK_MS = 150;
 const MAX_SYNTHETIC = 0.99;
 const PHASE_COMPLETION_FLASH_DURATION_MS = 280;
 
+/* Module-level progress registry: each sub-agent StatusBarComponent writes its
+   computed displayPercentage here (keyed by conversationId via `registryKey`).
+   The sidebar HistoryItemComponent reads from this same Map so both views share
+   a single source of truth — no independent asymptotic timers. */
+export const subAgentProgressRegistry = new Map<string, number>();
+
 interface StatusBarProps {
   active?: boolean;
   variant?: "orchestrator" | "subAgent";
@@ -24,6 +30,9 @@ interface StatusBarProps {
   maxIterations?: number;
   idleIcon?: React.ReactNode;
   idleLabel?: string;
+  /** Unique key to write displayPercentage to the shared registry.
+   *  Typically the sub-agent's conversationId. */
+  registryKey?: string;
 }
 
 export default function StatusBarComponent({
@@ -38,6 +47,7 @@ export default function StatusBarComponent({
   maxIterations,
   idleIcon,
   idleLabel,
+  registryKey,
 }: StatusBarProps) {
   const isSubAgent = variant === "subAgent";
 
@@ -129,6 +139,23 @@ export default function StatusBarComponent({
       document.documentElement.style.removeProperty("--live-status-bar-progress");
     }
   }, [active, displayPercentage, variant]);
+
+  /* Publish to the module-level progress registry so the sidebar
+     HistoryItemComponent can mirror this exact progress value. */
+  useEffect(() => {
+    if (registryKey) {
+      if (active) {
+        subAgentProgressRegistry.set(registryKey, displayPercentage);
+      } else {
+        subAgentProgressRegistry.delete(registryKey);
+      }
+    }
+    return () => {
+      if (registryKey) {
+        subAgentProgressRegistry.delete(registryKey);
+      }
+    };
+  }, [registryKey, active, displayPercentage]);
 
   const phaseTokens = phase ? PHASE_TOKENS[phase] : undefined;
 

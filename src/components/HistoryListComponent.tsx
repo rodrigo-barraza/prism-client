@@ -313,6 +313,15 @@ export default function HistoryList({
 
   const subAgentNumberMap = useMemo(() => {
     const numberMap = new Map<string, number>();
+    /* Build a stable ordering index from the items array so that when
+       createdAt timestamps are identical (optimistic injection), the
+       numbering follows the original SSE arrival order.  Items are
+       prepended on spawn, so the earliest-spawned item has the highest
+       index.  We invert here so spawnIndex=0 is the first-spawned. */
+    const insertionOrderMap = new Map<string, number>();
+    for (let index = 0; index < (items || []).length; index++) {
+      insertionOrderMap.set((items || [])[index].id, index);
+    }
     const childrenByParent = new Map<string, HistoryListItem[]>();
     for (const item of items || []) {
       if (item.parentConversationId) {
@@ -325,7 +334,10 @@ export default function HistoryList({
       siblings.sort((itemA, itemB) => {
         const timestampA = new Date(itemA.createdAt || itemA.updatedAt || "").getTime();
         const timestampB = new Date(itemB.createdAt || itemB.updatedAt || "").getTime();
-        return timestampA - timestampB;
+        if (timestampA !== timestampB) return timestampA - timestampB;
+        /* Stable tiebreaker: reverse insertion order (prepended items
+           have lower array index but were spawned later). */
+        return (insertionOrderMap.get(itemB.id) ?? 0) - (insertionOrderMap.get(itemA.id) ?? 0);
       });
       siblings.forEach((child, spawnIndex) => {
         numberMap.set(child.id, spawnIndex + 1);

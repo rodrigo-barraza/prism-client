@@ -22,6 +22,7 @@ import {
 import type { AgentConversationState } from "../utils/agentConversationStates";
 import { PHASE_TOKENS } from "../utils/statusBarPhaseTokens";
 import type { StatusBarPhase } from "../utils/statusBarPhaseTokens";
+import { subAgentProgressRegistry } from "./StatusBarComponent";
 
 interface HistoryItemTag {
   label: string;
@@ -187,13 +188,17 @@ export default function HistoryItemComponent({
 
      For non-active items (sub-agents visible in the sidebar while not selected),
      we need a local asymptotic timer + local gradient stops. */
-  const needsLocalTimer = isInlineProgressActive && !isActive;
+  const needsLocalProgress = isInlineProgressActive && !isActive;
 
   const [localProgressPercentage, setLocalProgressPercentage] = useState(0);
   const localProgressStartRef = useRef<number | null>(null);
 
+  /* Single polling loop that reads progress from the shared registry (single
+     source of truth from the conversation-view StatusBarComponent).  If no
+     registry entry exists yet (StatusBarComponent not mounted or not ticked),
+     fall back to a local asymptotic curve that uses the same formula. */
   useEffect(() => {
-    if (!needsLocalTimer) {
+    if (!needsLocalProgress) {
       setLocalProgressPercentage(0);
       localProgressStartRef.current = null;
       return;
@@ -204,6 +209,16 @@ export default function HistoryItemComponent({
     }
 
     const intervalId = setInterval(() => {
+      /* Prefer the registry value — this is the exact displayPercentage
+         from StatusBarComponent (single source of truth). */
+      const registryValue = subAgentProgressRegistry.get(item.id);
+      if (registryValue !== undefined) {
+        setLocalProgressPercentage(registryValue);
+        return;
+      }
+
+      /* Fallback: local asymptotic curve for sub-agents whose
+         StatusBarComponent isn't currently mounted. */
       const elapsed = performance.now() - (localProgressStartRef.current ?? performance.now());
       const synthetic = Math.min(
         FALLBACK_PROGRESS_MAX_SYNTHETIC,
@@ -213,7 +228,7 @@ export default function HistoryItemComponent({
     }, FALLBACK_PROGRESS_TICK_MS);
 
     return () => clearInterval(intervalId);
-  }, [needsLocalTimer]);
+  }, [needsLocalProgress, item.id]);
 
   /* Build inline styles only for non-active items (sub-agents).
      Active items consume :root CSS vars — no inline styles needed.
@@ -227,7 +242,7 @@ export default function HistoryItemComponent({
   const localGradientStops = phaseTokens?.gradientStops;
   const localPulseColor = phaseTokens?.overlay?.pulse;
 
-  const localFillStyle: React.CSSProperties | undefined = needsLocalTimer
+  const localFillStyle: React.CSSProperties | undefined = needsLocalProgress
     ? {
         width: `${localProgressPercentage}%`,
         ...(localGradientStops ? {
@@ -242,7 +257,7 @@ export default function HistoryItemComponent({
       } as React.CSSProperties
     : undefined;
 
-  const localTrackStyle: React.CSSProperties | undefined = needsLocalTimer && localPulseColor
+  const localTrackStyle: React.CSSProperties | undefined = needsLocalProgress && localPulseColor
     ? { "--phase-pulse": localPulseColor } as React.CSSProperties
     : undefined;
 
