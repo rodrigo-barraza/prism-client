@@ -2296,6 +2296,16 @@ export default function MessageList({
                             onReject={onPlanReject}
                           />
                         )}
+
+                      {/* Termination notice — surfaces why the agentic loop ended abnormally */}
+                      {message.role === "assistant" &&
+                        !isStreaming &&
+                        (message as unknown as { _terminationReason?: string })._terminationReason && (
+                          <div className={styles['termination-notice']}>
+                            <AlertTriangle size={14} />
+                            <span>{(message as unknown as { _terminationReason?: string })._terminationReason}</span>
+                          </div>
+                        )}
                     </div>
                   </div>
                 );

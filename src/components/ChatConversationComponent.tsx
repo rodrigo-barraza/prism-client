@@ -457,6 +457,8 @@ interface ClientMessage extends Message {
   synthetic?: boolean;
   /** UI-only status marker for in-flight messages (e.g. 'thinking', 'processing') */
   status?: string;
+  /** Populated when the agentic loop terminates for a non-standard reason (e.g. iteration limit, stall, cost limit) */
+  _terminationReason?: string;
 }
 
 export interface ChatConversationComponentProps {
@@ -4354,6 +4356,41 @@ export default function ChatConversationComponent({
                   };
                 }
                 return updated;
+              });
+            } else if (
+              statusData?.message === STATUS_MESSAGES.ITERATION_LIMIT_REACHED ||
+              statusData?.message === STATUS_MESSAGES.SEMANTIC_STALL_DETECTED ||
+              statusData?.message === STATUS_MESSAGES.COST_LIMIT_REACHED ||
+              statusData?.message === STATUS_MESSAGES.EMPTY_OUTPUT
+            ) {
+              // ── Loop termination events ──────────────────────────
+              // The agentic loop terminated for a non-standard reason.
+              // Surface this to the user as inline metadata on the last
+              // assistant message so ChatMessageComponent renders a notice.
+              const terminationLabels: Record<string, string> = {
+                [STATUS_MESSAGES.ITERATION_LIMIT_REACHED]:
+                  "The agent reached its maximum iteration limit before producing a final response.",
+                [STATUS_MESSAGES.SEMANTIC_STALL_DETECTED]:
+                  "The agent was stuck in a behavioral loop, calling the same tools repeatedly.",
+                [STATUS_MESSAGES.COST_LIMIT_REACHED]:
+                  "The generation was stopped because the cost limit was reached.",
+                [STATUS_MESSAGES.EMPTY_OUTPUT]:
+                  "The model produced an empty response with no text or tool calls.",
+              };
+              const terminationReason =
+                terminationLabels[statusData.message as string] ||
+                "The generation ended unexpectedly.";
+
+              setMessages((previousMessages) => {
+                const updatedMessages = [...previousMessages];
+                const lastMessage = updatedMessages[updatedMessages.length - 1];
+                if (lastMessage?.role === "assistant") {
+                  updatedMessages[updatedMessages.length - 1] = {
+                    ...lastMessage,
+                    _terminationReason: terminationReason,
+                  };
+                }
+                return updatedMessages;
               });
             } else if (statusData?.phase) {
               // LM Studio lifecycle status (loading, processing, generating)
