@@ -7825,9 +7825,15 @@ export default function ChatConversationComponent({
           // When sub-agents exist but none matched the priority phases
           // (all spawned, undefined phase from tool execution, etc.),
           // fall back to "delegating" to keep the status bar informative.
+          // Show the active tool name from any sub-agent that has one.
           if (!subAgentDerivedPhase && hasNonTerminalSubAgents) {
             subAgentDerivedPhase = "delegating";
-            subAgentDerivedLabel = "Awaiting Sub-Agents…";
+            const activeSubAgentTool = subAgents.find(
+              (subAgent: SubAgentActivityEntry) => subAgent.currentTool,
+            )?.currentTool;
+            subAgentDerivedLabel = activeSubAgentTool
+              ? `Awaiting ${renderToolName(activeSubAgentTool)}…`
+              : "Awaiting Sub-Agents…";
           }
         }
 
@@ -7891,7 +7897,14 @@ export default function ChatConversationComponent({
                 ? activeToolLabel
                 : rawLabel
           : subAgentDerivedPhase
-            ? subAgentDerivedLabel || "Awaiting Sub-Agents…"
+            ? subAgentDerivedLabel || (() => {
+                const fallbackToolName = Object.values(subAgentToolActivity).find(
+                  (subAgent) => subAgent.currentTool,
+                )?.currentTool;
+                return fallbackToolName
+                  ? `Awaiting ${renderToolName(fallbackToolName)}…`
+                  : "Awaiting Sub-Agents…";
+              })()
             : conversationIsExplicitlyActive
               ? "Synthesizing…"
               : undefined;

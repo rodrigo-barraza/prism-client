@@ -2487,8 +2487,11 @@ function SubAgentStatusBar({ activity }: { activity: SubAgentActivity | null }) 
           ? null
           : phase;
   // Show delegation label, tool name, or phase progress label
+  const subSubAgentToolLabel = hasActiveSubSubAgents && currentTool
+    ? `Awaiting ${renderToolName(currentTool)}…`
+    : "Awaiting Sub-Agents…";
   const label = hasActiveSubSubAgents
-    ? "Awaiting Sub-Agents…"
+    ? subSubAgentToolLabel
     : isToolActive
       ? toolLabel
       : activity.phaseLabel || undefined;
