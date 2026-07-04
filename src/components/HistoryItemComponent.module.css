@@ -485,7 +485,12 @@
   border-color: oklch(0.5 0 0 / 0.07);
 }
 
-/* ── Inline Progress Bar (border-bottom style, active conversations) ── */
+/* ── Inline Progress Bar (border-bottom style, active conversations) ──
+   Two modes:
+   1. Default: reads gradient-stop-{1..7}, --phase-pulse, and width from inline
+      style props (used by non-active items like sub-agents with local timers).
+   2. Active-conversation modifier: overrides width + gradient stops from :root
+      CSS vars published by StatusBarComponent (single source of truth). */
 
 .inline-progress-bar-track {
   position: absolute;
@@ -502,6 +507,11 @@
     0 0 14px -4px
       color-mix(in oklch, var(--phase-pulse, oklch(0.774 0.1784 79.8)) 10%, transparent);
   transition: box-shadow 0.3s ease;
+}
+
+/* Active conversation: read pulse color from :root instead of inline style */
+.inline-progress-bar-track-is-active-conversation {
+  --phase-pulse: var(--generating-dot-phase-color, oklch(0.708 0.1868 53.3));
 }
 
 .inline-progress-bar-fill {
@@ -528,6 +538,19 @@
   animation: inline-progress-gradient-flow 6s linear infinite;
 }
 
+/* Active conversation: read gradient stops + width from :root CSS vars
+   published by StatusBarComponent — single source of truth */
+.inline-progress-bar-fill-is-active-conversation {
+  width: var(--live-status-bar-progress, 0%);
+  --gradient-stop-1: var(--live-phase-gradient-stop-1, oklch(0.55 0.04 257));
+  --gradient-stop-2: var(--live-phase-gradient-stop-2, oklch(0.60 0.05 257));
+  --gradient-stop-3: var(--live-phase-gradient-stop-3, oklch(0.55 0.04 257));
+  --gradient-stop-4: var(--live-phase-gradient-stop-4, oklch(0.60 0.05 257));
+  --gradient-stop-5: var(--live-phase-gradient-stop-5, oklch(0.55 0.04 257));
+  --gradient-stop-6: var(--live-phase-gradient-stop-6, oklch(0.60 0.05 257));
+  --gradient-stop-7: var(--live-phase-gradient-stop-7, oklch(0.55 0.04 257));
+}
+
 @keyframes inline-progress-gradient-flow {
   from {
     background-position: 0% 0%;
@@ -536,4 +559,3 @@
     background-position: 100% 0%;
   }
 }
-

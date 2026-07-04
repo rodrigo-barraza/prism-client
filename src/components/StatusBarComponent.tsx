@@ -116,6 +116,20 @@ export default function StatusBarComponent({
     return () => clearCompletionTimer();
   }, [clearCompletionTimer]);
 
+  /* Publish the live progress percentage to :root so that the sidebar
+     HistoryItemComponent inline-progress-bar reads the exact same value
+     rather than computing its own independent asymptotic curve. */
+  useEffect(() => {
+    if (active && variant === "orchestrator") {
+      document.documentElement.style.setProperty(
+        "--live-status-bar-progress",
+        `${displayPercentage}%`,
+      );
+    } else if (variant === "orchestrator") {
+      document.documentElement.style.removeProperty("--live-status-bar-progress");
+    }
+  }, [active, displayPercentage, variant]);
+
   const phaseTokens = phase ? PHASE_TOKENS[phase] : undefined;
 
   const rawLabel = label || phaseTokens?.label || "Starting...";

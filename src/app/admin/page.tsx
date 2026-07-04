@@ -128,17 +128,7 @@ export default function DashboardPage() {
       if (modelFilter) filterParams.model = modelFilter;
       if (workspaceFilter) filterParams.workspace = workspaceFilter;
 
-      const [
-        statsData,
-        projects,
-        models,
-        agents,
-        timelineData,
-        requestsData,
-        tracesData,
-        conversationsData,
-        prismConfig,
-      ] = await Promise.all([
+      const results = await Promise.allSettled([
         IrisService.getStats(filterParams),
         IrisService.getProjectStats(filterParams),
         IrisService.getModelStats(filterParams),
@@ -167,12 +157,75 @@ export default function DashboardPage() {
         PrismService.getConfigWithLocalModels().catch(() => null),
       ]);
 
-      setStats(statsData);
-      setProjectStats(projects);
-      setModelStats(models);
-      setAgentStats(agents);
+      const [
+        statsResult,
+        projectsResult,
+        modelsResult,
+        agentsResult,
+        timelineResult,
+        requestsResult,
+        tracesResult,
+        conversationsResult,
+        prismConfigResult,
+      ] = results;
+
+      const fulfilledCount = results.filter(
+        (settledResult) => settledResult.status === "fulfilled",
+      ).length;
+      const rejectedResults = results.filter(
+        (settledResult) => settledResult.status === "rejected",
+      ) as PromiseRejectedResult[];
+
+      // Only show error if ALL fetches failed (total outage)
+      if (fulfilledCount === 0 && rejectedResults.length > 0) {
+        setError(getErrorMessage(rejectedResults[0].reason));
+      } else {
+        setError(null);
+      }
+
+      // Apply fulfilled results with safe fallbacks for rejected ones
+      setStats(
+        statsResult.status === "fulfilled" ? statsResult.value : null,
+      );
+      setProjectStats(
+        projectsResult.status === "fulfilled" ? projectsResult.value : [],
+      );
+      setModelStats(
+        modelsResult.status === "fulfilled" ? modelsResult.value : [],
+      );
+      setAgentStats(
+        agentsResult.status === "fulfilled" ? agentsResult.value : [],
+      );
+
+      if (timelineResult.status === "fulfilled") {
+        const timelineData = timelineResult.value;
+        setTimeline(timelineData.data || timelineData);
+        setActiveGranularity(timelineData.granularity || undefined);
+        setDefaultGranularity(timelineData.defaultGranularity || undefined);
+        setValidGranularities(timelineData.validGranularities || []);
+      }
+
+      setRecentRequests(
+        requestsResult.status === "fulfilled"
+          ? requestsResult.value.data || []
+          : [],
+      );
+      setRecentTraces(
+        tracesResult.status === "fulfilled"
+          ? tracesResult.value.data || []
+          : [],
+      );
+      setRecentConversations(
+        conversationsResult.status === "fulfilled"
+          ? ((conversationsResult.value.data || []) as Conversation[])
+          : [],
+      );
 
       // Build model→tools lookup from Prism config
+      const prismConfig =
+        prismConfigResult.status === "fulfilled"
+          ? prismConfigResult.value
+          : null;
       if (prismConfig?.textToText?.models) {
         const buildLookup = (config: PrismConfig) => {
           const lookup: Record<string, string[]> = {};
@@ -188,14 +241,6 @@ export default function DashboardPage() {
         };
         setConfigModels(buildLookup(prismConfig));
       }
-
-      setTimeline(timelineData.data || timelineData);
-      setActiveGranularity(timelineData.granularity || undefined);
-      setDefaultGranularity(timelineData.defaultGranularity || undefined);
-      setValidGranularities(timelineData.validGranularities || []);
-      setRecentRequests(requestsData.data || []);
-      setRecentTraces(tracesData.data || []);
-      setRecentConversations((conversationsData.data || []) as Conversation[]);
     } catch (error: unknown) {
       setError(getErrorMessage(error));
     } finally {

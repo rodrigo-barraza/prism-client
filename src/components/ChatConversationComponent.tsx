@@ -982,6 +982,7 @@ export default function ChatConversationComponent({
   const scrollBehaviorRef = useRef<ScrollBehavior>("smooth"); // "smooth" for streaming, "instant" for history loads
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesListRef = useRef<HTMLDivElement>(null);
+  const loadConversationsRef = useRef<(() => Promise<void>) | null>(null);
 
   // -- Message navigation (up/down chevron buttons in header) --
   const [canNavigateUp, setCanNavigateUp] = useState(false);
@@ -1033,6 +1034,24 @@ export default function ChatConversationComponent({
       activeEntry as { parentAgentConversationId?: string | null } | undefined
     )?.parentAgentConversationId;
   }, [activeId, conversations]);
+
+  // Whether the backend explicitly marks this conversation as still running
+  // (isActive === true). Survives page refresh — unlike isGenerating which
+  // is client-side SSE state that gets lost when the stream is interrupted.
+  const isActiveConversationExplicitlyActive = useMemo(() => {
+    if (!activeId) return false;
+    const activeEntry = conversations.find((entry) => entry.id === activeId);
+    return activeEntry?.isActive === true;
+  }, [activeId, conversations]);
+
+  // Unified "is the conversation still doing work" flag — used for the
+  // stop/send button toggle and the input-box generating class.
+  // True when the client is streaming (isGenerating), OR the backend
+  // reports the session as active (isActive), OR background tasks remain.
+  const isConversationRunning =
+    isGenerating ||
+    isActiveConversationExplicitlyActive ||
+    pendingBackgroundTaskCountForPolling > 0;
 
   useEffect(() => {
     if (!activeId || isGenerating || pendingBackgroundTaskCountForPolling <= 0) return;
@@ -1190,6 +1209,14 @@ export default function ChatConversationComponent({
         () => {},
       );
     }
+
+    // Reload the conversation list so isActive / pendingBackgroundTasks
+    // refresh and isConversationRunning flips to false once the backend
+    // processes the stop request. Use setTimeout to give the backend a
+    // brief window to persist the stopped state before we re-fetch.
+    setTimeout(() => {
+      loadConversationsRef.current?.();
+    }, 500);
   }, [isNoAgent]);
 
   // -- Filtered config: only tool-calling models for agents; all text models for Direct Chat ------------
@@ -1668,6 +1695,24 @@ export default function ChatConversationComponent({
         }
         return mergedConversations;
       });
+
+      // Seed generatingConversationIds from DB-persisted flags so that
+      // after a page refresh, sidebar items correctly show generating state
+      // for conversations the backend still considers active.
+      const activeConversationIds = result.items
+        .filter((entry) => {
+          const record = entry as unknown as Record<string, unknown>;
+          return record.isActive === true || record.isGenerating === true;
+        })
+        .map((entry) => entry.id || String(entry._id));
+      if (activeConversationIds.length > 0) {
+        setGeneratingConversationIds((previousIds) => {
+          const next = new Set(previousIds);
+          for (const conversationId of activeConversationIds) next.add(conversationId);
+          return next;
+        });
+      }
+
       conversationsCursorRef.current = result.nextCursor;
       setConversationsHasMore(result.hasMore);
     } catch (error: unknown) {
@@ -1676,6 +1721,7 @@ export default function ChatConversationComponent({
       setConversationsLoading(false);
     }
   }, [agentProject, agentId, isNoAgent]);
+  loadConversationsRef.current = loadConversations;
 
   const loadMoreConversations = useCallback(async () => {
     if (!conversationsCursorRef.current || conversationsLoading) return;
@@ -5118,7 +5164,7 @@ export default function ChatConversationComponent({
 
       const { isQueueing = false, overridePayload = null } = fetchOptions;
 
-      if (isGenerating && !isQueueing && !overridePayload) {
+      if (isConversationRunning && !isQueueing && !overridePayload) {
         handleStop();
         return;
       }
@@ -5539,7 +5585,7 @@ export default function ChatConversationComponent({
     },
     [
       handleStop,
-      isGenerating,
+      isConversationRunning,
       isNoAgent,
       setTextareaValue,
       runOrchestrationLoop,
@@ -5591,7 +5637,7 @@ export default function ChatConversationComponent({
       }
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        if (isGenerating) {
+        if (isConversationRunning) {
           handleSend(null, { isQueueing: true });
         } else {
           handleSend();
@@ -7603,17 +7649,13 @@ export default function ChatConversationComponent({
         // Check if the conversation has pending background tasks (sub-agents,
         // long-running tools) that outlive the SSE stream. This counter is
         // persisted in MongoDB and fetched with the conversation list.
-        const activeConversationEntry = conversations.find((entry) => entry.id === activeId);
-        const pendingBackgroundTaskCount =
-          (activeConversationEntry as Record<string, unknown> | undefined)?.pendingBackgroundTasks as number | undefined;
-        const hasPendingBackgroundTasks = (pendingBackgroundTaskCount ?? 0) > 0;
-        // When the backend explicitly marks a conversation as done (isActive === false),
-        // suppress the status bar regardless of stale client-side state.
-        const conversationIsExplicitlyInactive = activeConversationEntry?.isActive === false;
-        // When isActive === true, the conversation is still running — keep the
-        // status bar alive even if no generation/delegation signals are present
-        // (e.g. gap between sub-agent completion and model synthesis).
-        const conversationIsExplicitlyActive = activeConversationEntry?.isActive === true;
+        // Reuse the component-level memos instead of re-deriving from conversations[].
+        const hasPendingBackgroundTasks = pendingBackgroundTaskCountForPolling > 0;
+        const conversationIsExplicitlyInactive =
+          !isActiveConversationExplicitlyActive &&
+          activeId != null &&
+          conversations.find((entry) => entry.id === activeId)?.isActive === false;
+        const conversationIsExplicitlyActive = isActiveConversationExplicitlyActive;
 
         if (Object.keys(subAgentToolActivity).length > 0) {
           const subAgents = Object.values(subAgentToolActivity);
@@ -7804,7 +7846,7 @@ export default function ChatConversationComponent({
         )}
         <form
           onSubmit={handleSend}
-          className={`${chatStyles['input-box']} ${isDragging ? chatStyles['input-box-drag-is-active-state'] : ""} ${isGenerating ? chatStyles['input-box-generating'] : ""}`}
+          className={`${chatStyles['input-box']} ${isDragging ? chatStyles['input-box-drag-is-active-state'] : ""} ${isConversationRunning ? chatStyles['input-box-generating'] : ""}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -8015,7 +8057,7 @@ export default function ChatConversationComponent({
                 </div>
               </div>
             )}
-            {isGenerating && (
+            {isConversationRunning && (
               <ChatInputButton
                 variant="button"
                 onClick={() => handleSend(null, { isQueueing: true })}
@@ -8026,14 +8068,14 @@ export default function ChatConversationComponent({
             )}
             <ButtonComponent
               variant="submit"
-              icon={isGenerating ? Square : Send}
-              isGenerating={isGenerating}
+              icon={isConversationRunning ? Square : Send}
+              isGenerating={isConversationRunning}
               disabled={
-                isGenerating
+                isConversationRunning
                   ? false
                   : !hasInput && pendingImages.length === 0 && pendingFiles.length === 0
               }
-              aria-label={isGenerating ? "Stop" : "Send"}
+              aria-label={isConversationRunning ? "Stop" : "Send"}
             />
           </div>
         </form>

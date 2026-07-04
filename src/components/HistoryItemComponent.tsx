@@ -103,9 +103,18 @@ interface HistoryItemProps {
  *   dataPanelClose — adds data-panel-close-trigger attr (for mobile drawer close)
  *   children      — optional extra content appended inside the row
  */
+/* Active conversation states that should show the inline progress bar. */
+const ACTIVE_CONVERSATION_STATES = new Set<AgentConversationState>([
+  "generating",
+  "orchestrating",
+  "sub-agents-running",
+  "background-tasks",
+  "active",
+]);
+
 /**
  * Maps an AgentConversationState to the nearest StatusBarPhase
- * so the inline progress bar reuses the same gradient palette.
+ * so non-active items (sub-agents) derive the correct gradient palette.
  */
 const CONVERSATION_STATE_TO_PHASE: Record<AgentConversationState, StatusBarPhase | null> = {
   generating:              "generating",
@@ -117,9 +126,9 @@ const CONVERSATION_STATE_TO_PHASE: Record<AgentConversationState, StatusBarPhase
   completed:               null,
 };
 
-const INLINE_PROGRESS_ASYMPTOTIC_TIME_CONSTANT_MS = 15_000;
-const INLINE_PROGRESS_TICK_MS = 200;
-const INLINE_PROGRESS_MAX_SYNTHETIC = 0.99;
+const FALLBACK_PROGRESS_ASYMPTOTIC_TIME_CONSTANT_MS = 15_000;
+const FALLBACK_PROGRESS_TICK_MS = 150;
+const FALLBACK_PROGRESS_MAX_SYNTHETIC = 0.99;
 
 export default function HistoryItemComponent({
   item,
@@ -157,54 +166,72 @@ export default function HistoryItemComponent({
   });
   const dotColors = AGENT_CONVERSATION_STATE_COLORS[conversationState];
 
-  /* ── Inline progress bar (asymptotic fill, no text) ── */
-  const inlineProgressPhase = CONVERSATION_STATE_TO_PHASE[conversationState];
-  const isInlineProgressActive = inlineProgressPhase !== null;
+  /* ── Inline progress bar ──
+     Active conversation: reads width + colors from :root CSS vars published by
+     StatusBarComponent (single source of truth, zero duplication).
+     Non-active running items (sub-agents): run their own asymptotic timer and
+     derive gradient colors from PHASE_TOKENS via conversation state. */
+  const isInlineProgressActive = ACTIVE_CONVERSATION_STATES.has(conversationState);
 
-  const [inlineProgressPercentage, setInlineProgressPercentage] = useState(0);
-  const inlineProgressStartRef = useRef<number | null>(null);
+  /* For the currently-active conversation, the StatusBar already publishes
+     --live-status-bar-progress and --live-phase-gradient-stop-{1-7} to :root.
+     The CSS will consume them directly — no JS state needed.
+
+     For non-active items (sub-agents visible in the sidebar while not selected),
+     we need a local asymptotic timer + local gradient stops. */
+  const needsLocalTimer = isInlineProgressActive && !isActive;
+
+  const [localProgressPercentage, setLocalProgressPercentage] = useState(0);
+  const localProgressStartRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!isInlineProgressActive) {
-      setInlineProgressPercentage(0);
-      inlineProgressStartRef.current = null;
+    if (!needsLocalTimer) {
+      setLocalProgressPercentage(0);
+      localProgressStartRef.current = null;
       return;
     }
 
-    if (inlineProgressStartRef.current === null) {
-      inlineProgressStartRef.current = performance.now();
+    if (localProgressStartRef.current === null) {
+      localProgressStartRef.current = performance.now();
     }
 
     const intervalId = setInterval(() => {
-      const elapsed = performance.now() - (inlineProgressStartRef.current ?? performance.now());
+      const elapsed = performance.now() - (localProgressStartRef.current ?? performance.now());
       const synthetic = Math.min(
-        INLINE_PROGRESS_MAX_SYNTHETIC,
-        1 - Math.exp(-elapsed / INLINE_PROGRESS_ASYMPTOTIC_TIME_CONSTANT_MS),
+        FALLBACK_PROGRESS_MAX_SYNTHETIC,
+        1 - Math.exp(-elapsed / FALLBACK_PROGRESS_ASYMPTOTIC_TIME_CONSTANT_MS),
       );
-      setInlineProgressPercentage(Math.round(synthetic * 100));
-    }, INLINE_PROGRESS_TICK_MS);
+      setLocalProgressPercentage(Math.round(synthetic * 100));
+    }, FALLBACK_PROGRESS_TICK_MS);
 
     return () => clearInterval(intervalId);
-  }, [isInlineProgressActive]);
+  }, [needsLocalTimer]);
 
+  /* Build inline styles only for non-active items (sub-agents).
+     Active items consume :root CSS vars — no inline styles needed. */
+  const inlineProgressPhase = CONVERSATION_STATE_TO_PHASE[conversationState];
   const phaseTokens = inlineProgressPhase ? PHASE_TOKENS[inlineProgressPhase] : undefined;
-  const gradientStops = phaseTokens?.gradientStops;
-  const inlineProgressBarStyle: React.CSSProperties = {
-    width: `${inlineProgressPercentage}%`,
-    ...(gradientStops ? {
-      "--gradient-stop-1": gradientStops[0],
-      "--gradient-stop-2": gradientStops[1],
-      "--gradient-stop-3": gradientStops[2],
-      "--gradient-stop-4": gradientStops[3],
-      "--gradient-stop-5": gradientStops[4],
-      "--gradient-stop-6": gradientStops[5],
-      "--gradient-stop-7": gradientStops[6],
-    } : {})
-  } as React.CSSProperties;
+  const localGradientStops = phaseTokens?.gradientStops;
+  const localPulseColor = phaseTokens?.overlay?.pulse;
 
-  const inlineProgressTrackStyle: React.CSSProperties = phaseTokens?.overlay?.pulse
-    ? { "--phase-pulse": phaseTokens.overlay.pulse } as React.CSSProperties
-    : {};
+  const localFillStyle: React.CSSProperties | undefined = needsLocalTimer
+    ? {
+        width: `${localProgressPercentage}%`,
+        ...(localGradientStops ? {
+          "--gradient-stop-1": localGradientStops[0],
+          "--gradient-stop-2": localGradientStops[1],
+          "--gradient-stop-3": localGradientStops[2],
+          "--gradient-stop-4": localGradientStops[3],
+          "--gradient-stop-5": localGradientStops[4],
+          "--gradient-stop-6": localGradientStops[5],
+          "--gradient-stop-7": localGradientStops[6],
+        } : {}),
+      } as React.CSSProperties
+    : undefined;
+
+  const localTrackStyle: React.CSSProperties | undefined = needsLocalTimer && localPulseColor
+    ? { "--phase-pulse": localPulseColor } as React.CSSProperties
+    : undefined;
 
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
@@ -492,12 +519,15 @@ export default function HistoryItemComponent({
           />
         )}
       </div>
-      {/* ── Inline progress bar (border-bottom style, no overlay) ── */}
+      {/* ── Inline progress bar ── */}
       {isInlineProgressActive && (
-        <div className={styles['inline-progress-bar-track']} style={inlineProgressTrackStyle}>
+        <div
+          className={`${styles['inline-progress-bar-track']}${isActive ? ` ${styles['inline-progress-bar-track-is-active-conversation']}` : ''}`}
+          style={localTrackStyle}
+        >
           <div
-            className={styles['inline-progress-bar-fill']}
-            style={inlineProgressBarStyle}
+            className={`${styles['inline-progress-bar-fill']}${isActive ? ` ${styles['inline-progress-bar-fill-is-active-conversation']}` : ''}`}
+            style={localFillStyle}
           />
         </div>
       )}
