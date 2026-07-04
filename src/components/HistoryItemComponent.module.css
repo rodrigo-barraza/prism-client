@@ -493,8 +493,15 @@
   bottom: 0;
   height: 5px;
   overflow: hidden;
-  background: oklch(0.5 0 0 / 0.08);
+  background: var(--background-elevated);
+  border-radius: 0;
   z-index: 1;
+  box-shadow:
+    0 0 8px -2px
+      color-mix(in oklch, var(--phase-pulse, oklch(0.708 0.1868 53.3)) 20%, transparent),
+    0 0 14px -4px
+      color-mix(in oklch, var(--phase-pulse, oklch(0.774 0.1784 79.8)) 10%, transparent);
+  transition: box-shadow 0.3s ease;
 }
 
 .inline-progress-bar-fill {
@@ -502,6 +509,9 @@
   inset-block: 0;
   inset-inline-start: 0;
   width: 0%;
+  border-radius: 0;
+  pointer-events: none;
+  z-index: 1;
   transition: width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
 
   background: linear-gradient(

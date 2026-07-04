@@ -202,6 +202,10 @@ export default function HistoryItemComponent({
     } : {})
   } as React.CSSProperties;
 
+  const inlineProgressTrackStyle: React.CSSProperties = phaseTokens?.overlay?.pulse
+    ? { "--phase-pulse": phaseTokens.overlay.pulse } as React.CSSProperties
+    : {};
+
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
   const hasModalities = modalities && Object.keys(modalities).length > 0;
@@ -490,7 +494,7 @@ export default function HistoryItemComponent({
       </div>
       {/* ── Inline progress bar (border-bottom style, no overlay) ── */}
       {isInlineProgressActive && (
-        <div className={styles['inline-progress-bar-track']}>
+        <div className={styles['inline-progress-bar-track']} style={inlineProgressTrackStyle}>
           <div
             className={styles['inline-progress-bar-fill']}
             style={inlineProgressBarStyle}
