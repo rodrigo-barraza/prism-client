@@ -7573,6 +7573,10 @@ export default function ChatConversationComponent({
         // When the backend explicitly marks a conversation as done (isActive === false),
         // suppress the status bar regardless of stale client-side state.
         const conversationIsExplicitlyInactive = activeConversationEntry?.isActive === false;
+        // When isActive === true, the conversation is still running — keep the
+        // status bar alive even if no generation/delegation signals are present
+        // (e.g. gap between sub-agent completion and model synthesis).
+        const conversationIsExplicitlyActive = activeConversationEntry?.isActive === true;
 
         if (Object.keys(subAgentToolActivity).length > 0) {
           const subAgents = Object.values(subAgentToolActivity);
@@ -7659,7 +7663,9 @@ export default function ChatConversationComponent({
               (isToolGenerating ? "generating" : hasActiveTools ? "executing" : rawPhase)
           : subAgentDerivedPhase
             ? "delegating"
-            : null;
+            : conversationIsExplicitlyActive
+              ? "synthesizing"
+              : null;
 
         // Sync phase tokens to :root so both the sidebar generating-dot
         // and the HistoryItem inline progress bar match the live phase
@@ -7693,7 +7699,9 @@ export default function ChatConversationComponent({
                 : rawLabel
           : subAgentDerivedPhase
             ? subAgentDerivedLabel || "Awaiting Sub-Agents…"
-            : undefined;
+            : conversationIsExplicitlyActive
+              ? "Synthesizing…"
+              : undefined;
         // Structured progress (0-1) from LM Studio prompt prefilling / model loading
         const progress =
           phase === "prefilling" || phase === "loading"
@@ -7728,7 +7736,7 @@ export default function ChatConversationComponent({
         // (covers spawned/undefined-phase windows during create_subagents).
         const isStatusBarActive =
           !conversationIsExplicitlyInactive &&
-          (isGenerating || !!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks);
+          (isGenerating || !!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks || conversationIsExplicitlyActive);
 
         if (!isStatusBarActive) return null;
 
