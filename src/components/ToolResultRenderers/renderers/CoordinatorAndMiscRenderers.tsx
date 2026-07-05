@@ -458,7 +458,7 @@ export function TeamCreateRenderer({
               <ToolBadgeRow
                 tools={subAgentToolNames}
                 activeTool={!isMemberTerminal ? subAgentActivity?.currentTool : null}
-                variant="compact"
+                variant="condensed"
               />
             )}
 
