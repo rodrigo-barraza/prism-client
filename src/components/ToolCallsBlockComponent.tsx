@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { TOOL_EMOJI_MAP } from "./WorkflowNodeConstantsComponent";
+import { resolveToolEmoji } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderers";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 
@@ -145,7 +145,7 @@ export default function ToolCallsBlockComponent({
         }}
       >
         <span className={styles['tool-calls-toggle-emoji']}>
-          {TOOL_EMOJI_MAP[toolCall.name] || "\uD83D\uDEE0\uFE0F"}
+          {resolveToolEmoji(toolCall.name)}
         </span>
         <span>{headerLabelText}</span>
         {isHeaderCollapsed ? (

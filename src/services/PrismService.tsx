@@ -5,6 +5,7 @@ import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { getErrorMessage } from "../utils/errorMessage";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
+import { hydrateToolEmojiCache } from "../components/WorkflowNodeConstantsComponent";
 import type {
   PrismConfig,
   ModelOption,
@@ -196,9 +197,11 @@ export default class PrismService {
    */
   static async getBuiltInToolSchemas(agent?: string): Promise<ToolSchema[]> {
     const queryString = agent ? `?agent=${encodeURIComponent(agent)}` : "";
-    return PrismService._request<ToolSchema[]>(`/config/tools${queryString}`, {
+    const schemas = await PrismService._request<ToolSchema[]>(`/config/tools${queryString}`, {
       method: HTTP_METHODS.GET,
     });
+    hydrateToolEmojiCache(schemas);
+    return schemas;
   }
 
   /**

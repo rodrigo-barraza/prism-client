@@ -100,6 +100,7 @@ import {
   applyToolExecutionToActivity,
   applyToolCallToMessages,
 } from "../utils/toolCallStateUpdaters";
+import { cacheToolEmoji } from "./WorkflowNodeConstantsComponent";
 
 import useConversationStats from "../hooks/useConversationStats";
 import { 
@@ -1976,7 +1977,9 @@ export default function ChatConversationComponent({
         .catch(() => {});
     } else {
       PrismService.getBuiltInToolSchemas(adminTargetAgentId)
-        .then((tools: ToolSchema[]) => setBuiltInTools(tools))
+        .then((tools: ToolSchema[]) => {
+          setBuiltInTools(tools);
+        })
         .catch(() => {});
     }
 
@@ -3899,6 +3902,7 @@ export default function ChatConversationComponent({
             if (isStale()) return;
             const toolData = data.tool;
             if (!toolData) return;
+            if (data.toolEmoji && toolData.name) cacheToolEmoji(toolData.name as string, data.toolEmoji as string);
             const resolvedId =
               toolData.id || `tc-${Date.now()}-${Math.random()}`;
             console.debug(
@@ -4532,6 +4536,7 @@ export default function ChatConversationComponent({
               };
               const toolData = data.tool;
               if (!toolData) return previousSubAgentToolActivity;
+              if (data.toolEmoji && toolData.name) cacheToolEmoji(toolData.name as string, data.toolEmoji as string);
 
               let updatedCalls = [...entry.toolCalls];
               if (data.status === "streaming" || data.status === "calling") {
