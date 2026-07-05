@@ -38,7 +38,7 @@ import {
 import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import { buildDateRangeParams } from "../utils/utilities";
 import styles from "./MediaPageComponent.module.css";
-import { LOCAL_STORAGE_KEY_DATE_RANGE } from "../constants";
+import { LOCAL_STORAGE_KEY_DATE_RANGE, LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE } from "../constants";
 
 const ORIGIN_FILTERS = [
   { key: "user", label: "Uploaded", icon: User },
@@ -483,7 +483,13 @@ export default function MediaPageComponent({
                       }
                     : undefined
                 }
-                dateStorageKey={!externalDateRange ? LOCAL_STORAGE_KEY_DATE_RANGE : undefined}
+                dateStorageKey={
+                  !externalDateRange
+                    ? isAdmin
+                      ? LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE
+                      : LOCAL_STORAGE_KEY_DATE_RANGE
+                    : undefined
+                }
               />
 
               {isAdmin && externalProject === undefined && (
@@ -676,7 +682,13 @@ export default function MediaPageComponent({
                     }
                   : undefined
               }
-              dateStorageKey={!externalDateRange ? LOCAL_STORAGE_KEY_DATE_RANGE : undefined}
+              dateStorageKey={
+                !externalDateRange
+                  ? isAdmin
+                    ? LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE
+                    : LOCAL_STORAGE_KEY_DATE_RANGE
+                  : undefined
+              }
             />
 
             {isAdmin && externalProject === undefined && (

@@ -125,6 +125,8 @@ import {
   LOCAL_STORAGE_KEY_FILE_VIEWER_WIDTH,
   LOCAL_STORAGE_KEY_CHAT_FILTERS,
   LOCAL_STORAGE_KEY_ADMIN_CHAT_FILTERS,
+  LOCAL_STORAGE_KEY_DATE_RANGE,
+  LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE,
   AGENT_IDS,
   AGENTLESS_AGENT,
   LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
@@ -8365,6 +8367,7 @@ export default function ChatConversationComponent({
               loadingMore={adminEntriesLoading}
               onLoadMore={adminLoadMoreEntries}
               filterStorageKey={LOCAL_STORAGE_KEY_ADMIN_CHAT_FILTERS}
+              dateStorageKey={LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE}
               dateRange={adminDateRange}
               onDateChange={adminHeaderContext.setDateRange}
               initialProviders={adminProviderFilter ? [adminProviderFilter] : undefined}
@@ -8390,6 +8393,7 @@ export default function ChatConversationComponent({
               loadingMore={conversationsLoading}
               onLoadMore={loadMoreConversations}
               filterStorageKey={LOCAL_STORAGE_KEY_CHAT_FILTERS}
+              dateStorageKey={LOCAL_STORAGE_KEY_DATE_RANGE}
               subAgentLivePhases={subAgentLivePhases}
             />
           )

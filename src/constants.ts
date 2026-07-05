@@ -85,6 +85,7 @@ export const LOCAL_STORAGE_KEY_WORKFLOW_EXPANDED_NODES = "workflow-expanded-node
 export const LOCAL_STORAGE_KEY_WORKFLOW_VIEWS = "workflow-views";
 export const LOCAL_STORAGE_KEY_ADMIN_PROJECT_FILTER = "admin:projectFilter";
 export const LOCAL_STORAGE_KEY_DATE_RANGE = "prism-date-range";
+export const LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE = "prism-admin-date-range";
 export const LOCAL_STORAGE_KEY_CHAT_FILTERS = "prism:chat-filters";
 export const LOCAL_STORAGE_KEY_ADMIN_CHAT_FILTERS = "prism:admin-chat-filters";
 export const LOCAL_STORAGE_KEY_WORKSPACE_ROOT = "prism:workspace";

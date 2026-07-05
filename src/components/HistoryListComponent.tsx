@@ -93,6 +93,7 @@ interface HistoryListProps {
   onSearchChange?: (query: string) => void;
   dateRange?: { from: string; to: string };
   onDateChange?: (range: { from: string; to: string }) => void;
+  dateStorageKey?: string;
   filterStorageKey?: string;
   /** Live sub-agent execution phases keyed by conversationId */
   subAgentLivePhases?: Map<string, StatusBarPhase>;
@@ -148,6 +149,7 @@ export default function HistoryList({
   onSearchChange,
   dateRange: controlledDateRange,
   onDateChange: controlledOnDateChange,
+  dateStorageKey,
   filterStorageKey,
   subAgentLivePhases,
 }: HistoryListProps) {
@@ -700,7 +702,7 @@ export default function HistoryList({
         }
         dateRange={dateRange}
         onDateChange={setDateRange}
-        dateStorageKey={LOCAL_STORAGE_KEY_DATE_RANGE}
+        dateStorageKey={dateStorageKey || LOCAL_STORAGE_KEY_DATE_RANGE}
       />
 
       {countLabel && (

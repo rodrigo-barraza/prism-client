@@ -40,6 +40,7 @@ export interface HistoryPanelProps {
   onLoadMore?: () => Promise<void> | void;
   dateRange?: { from: string; to: string };
   onDateChange?: (range: { from: string; to: string }) => void;
+  dateStorageKey?: string;
   filterStorageKey?: string;
   className?: string;
   /** Live sub-agent execution phases keyed by conversationId */
@@ -74,6 +75,7 @@ export default function HistoryPanel({
   onLoadMore,
   dateRange,
   onDateChange,
+  dateStorageKey,
   filterStorageKey,
   className,
   subAgentLivePhases,
@@ -118,6 +120,7 @@ export default function HistoryPanel({
         onLoadMore={onLoadMore}
         dateRange={dateRange}
         onDateChange={onDateChange}
+        dateStorageKey={dateStorageKey}
         filterStorageKey={filterStorageKey}
         knownParentConversationIds={knownParentConversationIds}
         subAgentLivePhases={subAgentLivePhases}
