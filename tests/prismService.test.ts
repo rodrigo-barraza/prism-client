@@ -7,7 +7,7 @@ describe("PrismService", () => {
   let fetchSpy: any;
   let lastUrl = "";
   let lastOptions: RequestInit | undefined = undefined;
-  let fetchResult: any = { ok: true, json: async () => ({}) };
+  let fetchResult: any = { ok: true, json: async () => ([]) };
 
   beforeEach(() => {
     fetchSpy = vi.spyOn(global, "fetch").mockImplementation(async (url: any, options: any) => {
@@ -22,7 +22,7 @@ describe("PrismService", () => {
 
   afterEach(() => {
     fetchSpy.mockRestore();
-    fetchResult = { ok: true, json: async () => ({}) };
+    fetchResult = { ok: true, json: async () => ([]) };
     lastUrl = "";
     lastOptions = undefined;
   });

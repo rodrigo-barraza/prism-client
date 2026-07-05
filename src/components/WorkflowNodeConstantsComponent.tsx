@@ -147,6 +147,10 @@ export function resolveToolEmoji(toolName: string): string {
  * Call this after fetching schemas via PrismService.getBuiltInToolSchemas().
  */
 export function hydrateToolEmojiCache(toolSchemas: Array<{ name: string; emoji?: string | string[] }>): void {
+  if (!Array.isArray(toolSchemas)) {
+    console.warn("[hydrateToolEmojiCache] Expected array but received:", toolSchemas);
+    return;
+  }
   for (const toolSchema of toolSchemas) {
     if (toolSchema.emoji) {
       const resolvedEmoji = Array.isArray(toolSchema.emoji)

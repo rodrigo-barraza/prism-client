@@ -47,6 +47,8 @@ vi.mock("../src/components/WorkflowNodeConstantsComponent", () => ({
     color: "#ff9900",
     emoji: "🛠️",
   }),
+  resolveToolEmoji: (name: string) => "🛠️",
+  hydrateToolEmojiCache: vi.fn(),
 }));
 
 // Mock ToolResultRenderers
