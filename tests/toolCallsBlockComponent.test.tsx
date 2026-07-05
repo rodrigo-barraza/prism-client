@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import React from "react";
 
@@ -438,6 +438,100 @@ describe("ToolCallsBlockComponent", () => {
 
       // Non-create_subagents tool calls should not care about subAgentToolActivity
       expect(isBlockCollapsed()).toBe(true);
+    });
+  });
+
+  describe("subagent wall-clock duration capture", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("shows wall-clock duration instead of dispatch durationMs when subagents finish", () => {
+      const toolCallTimestamp = Date.now();
+      const dispatchDurationMs = 150; // Server reports < 1 second dispatch time
+
+      const { rerender } = render(
+        <ToolCallsBlockComponent
+          toolCall={makeCreateTeamToolCall({
+            status: "done",
+            timestamp: toolCallTimestamp,
+            durationMs: dispatchDurationMs,
+          })}
+          subAgentToolActivity={{
+            "agent-1": { phase: "generating", currentTool: "read_file", description: "Manager 1" },
+            "agent-2": { phase: "generating", currentTool: null, description: "Manager 2" },
+          }}
+        />,
+      );
+
+      // Block is active because subagents are running
+      expect(isBlockExpanded()).toBe(true);
+      expect(getHeaderText()).toContain("Calling");
+
+      // Advance time by 15 seconds (simulating subagent execution time)
+      act(() => {
+        vi.advanceTimersByTime(15000);
+      });
+
+      // Subagents complete
+      act(() => {
+        rerender(
+          <ToolCallsBlockComponent
+            toolCall={makeCreateTeamToolCall({
+              status: "done",
+              timestamp: toolCallTimestamp,
+              durationMs: dispatchDurationMs,
+            })}
+            subAgentToolActivity={{
+              "agent-1": { phase: "complete", currentTool: null, description: "Manager 1" },
+              "agent-2": { phase: "complete", currentTool: null, description: "Manager 2" },
+            }}
+          />,
+        );
+      });
+
+      // Should show ~15 seconds, NOT "<1 second" from the dispatch durationMs
+      const headerText = getHeaderText();
+      expect(headerText).toContain("15 seconds");
+      expect(headerText).not.toContain("<1 second");
+    });
+
+    it("uses toolCall.durationMs for non-subagent tools", () => {
+      render(
+        <ToolCallsBlockComponent
+          toolCall={makeToolCall({
+            name: "read_file",
+            status: "done",
+            durationMs: 2500,
+          })}
+        />,
+      );
+
+      // Non-subagent tools should use durationMs directly
+      expect(getHeaderText()).toContain("3 seconds");
+    });
+
+    it("falls back to toolCall.durationMs for subagent tools loaded from history (no active transition)", () => {
+      render(
+        <ToolCallsBlockComponent
+          toolCall={makeCreateTeamToolCall({
+            status: "done",
+            durationMs: 400,
+          })}
+          subAgentToolActivity={{
+            "agent-1": { phase: "complete", currentTool: null, description: "Manager 1" },
+            "agent-2": { phase: "complete", currentTool: null, description: "Manager 2" },
+          }}
+        />,
+      );
+
+      // When loaded from history (no active→inactive transition observed),
+      // falls back to toolCall.durationMs (400ms rounds to 0s → "<1 second")
+      expect(getHeaderText()).toContain("<1 second");
     });
   });
 });

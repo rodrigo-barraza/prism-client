@@ -45,6 +45,8 @@ export default function ToolCallsBlockComponent({
   const hasActiveSubAgents = detectActiveSubAgents(toolCall, subAgentToolActivity);
   const isBlockActive = isCurrentlyCalling || hasActiveSubAgents;
 
+  const isSubAgentTool = toolCall.name === TOOL_NAMES.CREATE_SUBAGENTS || toolCall.name === TOOL_NAMES.CREATE_SUBAGENT;
+
   const toolDisplayName = toolCall.name === TOOL_NAMES.GOOGLE_SEARCH
     ? "Google Search"
     : renderToolName(toolCall.name);
@@ -59,6 +61,11 @@ export default function ToolCallsBlockComponent({
     isBlockActive ? computeElapsedSeconds() : 0,
   );
 
+  // For subagent tools, capture the true wall-clock duration when all subagents finish,
+  // since toolCall.durationMs only reflects the instant dispatch time.
+  const [capturedSubAgentDurationMs, setCapturedSubAgentDurationMs] = useState<number | null>(null);
+  const previousIsBlockActiveForDuration = useRef(isBlockActive);
+
   useEffect(() => {
     if (isBlockActive) {
       setLiveToolElapsedSeconds(computeElapsedSeconds());
@@ -70,21 +77,32 @@ export default function ToolCallsBlockComponent({
     setLiveToolElapsedSeconds(0);
   }, [isBlockActive, toolCall.timestamp]);
 
+  useEffect(() => {
+    if (previousIsBlockActiveForDuration.current && !isBlockActive && isSubAgentTool && toolCall.timestamp) {
+      setCapturedSubAgentDurationMs(Date.now() - toolCall.timestamp);
+    }
+    previousIsBlockActiveForDuration.current = isBlockActive;
+  }, [isBlockActive, isSubAgentTool, toolCall.timestamp]);
+
+  const effectiveDurationMs = isSubAgentTool
+    ? (capturedSubAgentDurationMs ?? toolCall.durationMs)
+    : toolCall.durationMs;
+
   const headerLabelText = useMemo(() => {
     if (isBlockActive) {
       return liveToolElapsedSeconds > 0
         ? `Calling ${toolDisplayName} for ${liveToolElapsedSeconds}s\u2026`
         : `Calling ${toolDisplayName}\u2026`;
     }
-    if (toolCall.durationMs != null && toolCall.durationMs > 0) {
-      const totalDurationSeconds = Math.round(toolCall.durationMs / 1000);
+    if (effectiveDurationMs != null && effectiveDurationMs > 0) {
+      const totalDurationSeconds = Math.round(effectiveDurationMs / 1000);
       const durationFormattedLabel = totalDurationSeconds < 1
         ? "<1 second"
         : `${totalDurationSeconds} second${totalDurationSeconds === 1 ? "" : "s"}`;
       return `${toolDisplayName} for ${durationFormattedLabel}`;
     }
     return toolDisplayName;
-  }, [isBlockActive, liveToolElapsedSeconds, toolDisplayName, toolCall.durationMs]);
+  }, [isBlockActive, liveToolElapsedSeconds, toolDisplayName, effectiveDurationMs]);
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(!isBlockActive);
   const wasHeaderManuallyExpanded = useRef(false);

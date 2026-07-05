@@ -104,6 +104,7 @@
   gap: 0;
   min-height: 0;
   overflow: hidden;
+  transition: padding 0.25s ease;
 }
 
 /* ── Disclosure wrapper for smooth collapse/expand ── */
@@ -116,6 +117,10 @@
 .tool-calls-disclosure-collapsed {
   grid-template-rows: 0fr;
   overflow: hidden;
+
+  & .tool-calls-content {
+    padding: 0;
+  }
 }
 
 .tool-call-item {
