@@ -97,6 +97,16 @@
   }
 }
 
+/* ── Chevron rotation ── */
+.tool-calls-chevron {
+  transition: rotate 0.25s ease;
+  rotate: 0deg;
+}
+
+.tool-calls-chevron-collapsed {
+  rotate: -90deg;
+}
+
 .tool-calls-content {
   padding: 2px 10px 6px;
   display: flex;

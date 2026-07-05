@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { resolveToolEmoji } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderers";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
@@ -148,11 +148,7 @@ export default function ToolCallsBlockComponent({
           {resolveToolEmoji(toolCall.name)}
         </span>
         <span>{headerLabelText}</span>
-        {isHeaderCollapsed ? (
-          <ChevronRight size={14} />
-        ) : (
-          <ChevronDown size={14} />
-        )}
+        <ChevronDown size={14} className={`${styles['tool-calls-chevron']}${isHeaderCollapsed ? ` ${styles['tool-calls-chevron-collapsed']}` : ''}`} />
       </button>
 
       <div className={`${styles['tool-calls-disclosure']}${isHeaderCollapsed ? ` ${styles['tool-calls-disclosure-collapsed']}` : ''}`}>

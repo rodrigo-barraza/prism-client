@@ -10,7 +10,6 @@ import React, {
 import {
   ChevronDown,
   ChevronRight,
-  Brain,
   Check,
   Clock,
   FileText,
@@ -362,11 +361,11 @@ function ThinkingBlock({
       className={`${styles['thinking-block']}${isStreaming ? ` ${styles['thinking-streaming']}` : ""}`}
     >
       <button className={styles['thinking-toggle']} onClick={handleToggle}>
-        <Brain size={14} />
+        <span className={styles['thinking-toggle-emoji']}>🧠</span>
         <span>{thinkingLabel}</span>
-        {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+        <ChevronDown size={14} className={`${styles['thinking-chevron']}${collapsed ? ` ${styles['thinking-chevron-collapsed']}` : ''}`} />
       </button>
-      {!collapsed && (
+      <div className={`${styles['thinking-disclosure']}${collapsed ? ` ${styles['thinking-disclosure-collapsed']}` : ''}`}>
         <div className={styles['thinking-content']} ref={contentRef}>
           {thinking?.trim() ? (
             <MarkdownContent content={thinking}>
@@ -379,7 +378,7 @@ function ThinkingBlock({
           )}
           {children}
         </div>
-      )}
+      </div>
     </div>
   );
 }
