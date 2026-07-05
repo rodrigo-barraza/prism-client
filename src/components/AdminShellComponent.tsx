@@ -247,10 +247,14 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Initial loads
-    fetchConversations();
-    fetchSessions();
-    fetchRequests();
+    // Initial loads — skip on dashboard root since page.tsx loadDashboard()
+    // already fetches the same conversations, traces, and requests data.
+    const isOnDashboardRoot = pathname === "/admin" || pathname === "/admin/";
+    if (!isOnDashboardRoot) {
+      fetchConversations();
+      fetchSessions();
+      fetchRequests();
+    }
     fetchMedia();
     fetchText();
     fetchHealth();

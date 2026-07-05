@@ -154,7 +154,7 @@ export default function DashboardPage() {
           order: "desc",
           ...filterParams,
         }),
-        PrismService.getConfigWithLocalModels().catch(() => null),
+        PrismService.getConfig().catch(() => null),
       ]);
 
       const [
