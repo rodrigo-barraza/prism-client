@@ -2,7 +2,7 @@
 
 import React from "react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
-import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
+import { resolveToolVisuals, isEmojiImageUrl } from "./WorkflowNodeConstantsComponent";
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import styles from "./ToolCallBadgeComponent.module.css";
@@ -125,7 +125,9 @@ export default function ToolCallBadgeComponent({
       }}
     >
       {resolvedEmoji
-        ? <span className={styles['badge-emoji']}>{resolvedEmoji}</span>
+        ? isEmojiImageUrl(resolvedEmoji)
+          ? <img src={resolvedEmoji} alt="" className={styles['badge-emoji-image']} />
+          : <span className={styles['badge-emoji']}>{resolvedEmoji}</span>
         : <Icon size={size} />
       }
       <span className={styles['label']}>{displayName}</span>

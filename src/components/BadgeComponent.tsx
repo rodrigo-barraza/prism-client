@@ -36,7 +36,7 @@ import { renderAgentIcon } from "./AgentPickerComponent";
 import ThreeCanvasComponent from "./ThreeCanvasComponent";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import { formatCost, formatElapsedTime, renderToolName } from "@rodrigo-barraza/utilities-library";
-import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
+import { resolveToolVisuals, isEmojiImageUrl } from "./WorkflowNodeConstantsComponent";
 
 // Scoped Stylesheets from individual components
 import costStyles from "./CostBadgeComponent.module.css";
@@ -1263,7 +1263,9 @@ export default function BadgeComponent(props: BadgeProps) {
           }}
         >
           {resolvedEmoji
-            ? <span className={toolItemStyles['badge-emoji']}>{resolvedEmoji}</span>
+            ? isEmojiImageUrl(resolvedEmoji)
+              ? <img src={resolvedEmoji} alt="" className={toolItemStyles['badge-emoji-image']} />
+              : <span className={toolItemStyles['badge-emoji']}>{resolvedEmoji}</span>
             : <Icon size={10} />
           }
           {!isCompact && (

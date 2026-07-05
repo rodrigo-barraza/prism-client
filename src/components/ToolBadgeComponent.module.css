@@ -46,6 +46,14 @@
   font-style: normal;
 }
 
+/* ── Image-based emoji icon (e.g. Emoji Kitchen PNGs) ── */
+.badge-emoji-image {
+  flex-shrink: 0;
+  inline-size: 11px;
+  block-size: 11px;
+  border-radius: 2px;
+  object-fit: contain;
+}
 /* ── Label text ── */
 .label {
   opacity: 0.85;
@@ -69,7 +77,8 @@
 }
 
 .badge-is-active-state svg,
-.badge-is-active-state .badge-emoji {
+.badge-is-active-state .badge-emoji,
+.badge-is-active-state .badge-emoji-image {
   animation: tool-badge-pulse 1.2s ease-in-out infinite;
 }
 

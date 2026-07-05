@@ -50,7 +50,19 @@
   transition: opacity 0.2s;
 }
 
-.badge:hover .badge-emoji {
+/* ── Image-based emoji icon (e.g. Emoji Kitchen PNGs) ── */
+.badge-emoji-image {
+  flex-shrink: 0;
+  inline-size: 11px;
+  block-size: 11px;
+  border-radius: 2px;
+  object-fit: contain;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.badge:hover .badge-emoji,
+.badge:hover .badge-emoji-image {
   opacity: 1;
 }
 
@@ -72,7 +84,8 @@
 }
 
 .badge-is-active-state svg,
-.badge-is-active-state .badge-emoji {
+.badge-is-active-state .badge-emoji,
+.badge-is-active-state .badge-emoji-image {
   opacity: 1;
   animation: tool-call-pulse 1.2s ease-in-out infinite;
 }

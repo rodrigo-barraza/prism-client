@@ -169,6 +169,14 @@ export function cacheToolEmoji(toolName: string, emoji: string): void {
   if (toolName && emoji) backendToolEmojiCache.set(toolName, emoji);
 }
 
+/**
+ * Detect whether an emoji value is actually an image URL (e.g. Emoji Kitchen PNGs)
+ * rather than a raw Unicode emoji character. Used by rendering sites to decide
+ * between <span> text and <img> tag output.
+ */
+export function isEmojiImageUrl(emoji: string | null | undefined): boolean {
+  return typeof emoji === "string" && emoji.startsWith("http");
+}
 
 export interface ToolVisuals {
   Icon: ComponentType<{ size?: number; className?: string }>;

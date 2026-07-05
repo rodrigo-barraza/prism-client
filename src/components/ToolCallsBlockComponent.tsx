@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { ChevronDown } from "lucide-react";
-import { resolveToolEmoji } from "./WorkflowNodeConstantsComponent";
+import { resolveToolEmoji, isEmojiImageUrl } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderers";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 
@@ -145,7 +145,12 @@ export default function ToolCallsBlockComponent({
         }}
       >
         <span className={styles['tool-calls-toggle-emoji']}>
-          {resolveToolEmoji(toolCall.name)}
+          {(() => {
+            const emoji = resolveToolEmoji(toolCall.name);
+            return isEmojiImageUrl(emoji)
+              ? <img src={emoji} alt="" className={styles['tool-calls-toggle-emoji-image']} />
+              : emoji;
+          })()}
         </span>
         <span>{headerLabelText}</span>
         <ChevronDown size={14} className={`${styles['tool-calls-chevron']}${isHeaderCollapsed ? ` ${styles['tool-calls-chevron-collapsed']}` : ''}`} />

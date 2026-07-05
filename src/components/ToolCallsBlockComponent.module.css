@@ -95,6 +95,14 @@
     line-height: 1;
     filter: drop-shadow(0 0 3px oklch(70.5% 0.1867 47.6 / 0.4));
   }
+
+  & .tool-calls-toggle-emoji-image {
+    inline-size: 14px;
+    block-size: 14px;
+    border-radius: 2px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 3px oklch(70.5% 0.1867 47.6 / 0.4));
+  }
 }
 
 /* ── Chevron rotation ── */
