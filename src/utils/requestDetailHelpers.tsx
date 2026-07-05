@@ -436,112 +436,77 @@ export function buildRequestDetailSections(
 
 /* -- Chat message reconstruction --------------------------------- */
 
+interface CanonicalResponsePayload {
+  text?: string;
+  thinking?: string;
+  toolCalls?: Array<{
+    name: string;
+    id: string;
+    args?: Record<string, unknown>;
+    result?: unknown;
+    status?: string;
+  }>;
+  images?: string[];
+}
+
 /**
- * Reconstruct a displayable chat message array from the raw
+ * Reconstruct a displayable chat message array from the canonical
  * request/response payloads stored in a request log document.
  *
- * Returns { messages, systemPrompt } or null if there's nothing
- * to display.
+ * The backend's RequestLogger normalizes all provider responses into a
+ * canonical `{ text, thinking, toolCalls, images }` shape before persisting,
+ * so no multi-provider format detection is needed here.
+ *
+ * Returns `{ messages, systemPrompt }` or `null` if there's nothing to display.
  */
 export function reconstructChatMessages(
   selectedRequest: TransformedRequestItem | null | undefined,
 ) {
   if (!selectedRequest) return null;
+
   const requestPayload = selectedRequest.requestPayload as
     | { messages?: Message[] }
     | undefined;
   const responsePayload = selectedRequest.responsePayload as
-    | {
-        text?: string;
-        content?: string;
-        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-        choices?: Array<{ message?: { content?: string; tool_calls?: JsonValue[] } }>;
-        toolCalls?: JsonValue[];
-        images?: string[];
-        thinking?: string;
-      }
-    | string
+    | CanonicalResponsePayload
     | undefined;
 
   if (!requestPayload?.messages?.length) return null;
 
-  // Start with the prompt messages from the request
   const chatMessages = [...requestPayload.messages];
 
-  // Append the assistant response
   if (responsePayload) {
     const assistantMessage: Message = {
       role: MESSAGE_ROLES.ASSISTANT,
-      content: "",
+      content: responsePayload.text || "",
       model: selectedRequest.model,
       provider: selectedRequest.provider,
     };
 
-    // Handle different response formats
-    if (typeof responsePayload === "string") {
-      assistantMessage.content = responsePayload;
-    } else if (responsePayload.text) {
-      // Prism standardized format
-      assistantMessage.content = responsePayload.text;
-    } else if (responsePayload.content) {
-      assistantMessage.content = responsePayload.content;
-    } else if (Array.isArray(responsePayload.candidates?.[0]?.content?.parts)) {
-      // Google format
-      assistantMessage.content = responsePayload.candidates[0].content.parts
-        .map((part: { text?: string }) => part.text || "")
-        .join("");
-    } else if (responsePayload.choices?.[0]?.message?.content) {
-      // OpenAI format
-      assistantMessage.content = responsePayload.choices[0].message.content as string;
-    }
-
-    // Extract tool calls if present
-    const toolCalls =
-      typeof responsePayload === "object" && responsePayload
-        ? responsePayload.choices?.[0]?.message?.tool_calls || responsePayload.toolCalls
-        : undefined;
-    if (Array.isArray(toolCalls) && toolCalls.length) {
-      assistantMessage.toolCalls = (toolCalls as Array<Record<string, unknown>>).map(
-        (toolCall) => ({
-          id: String(toolCall.id || ""),
-          name: String(
-            (toolCall.function as Record<string, unknown> | undefined)?.name ||
-            toolCall.name || ""
-          ),
-          args:
-            typeof (toolCall.function as Record<string, unknown> | undefined)?.arguments === "string"
-              ? JSON.parse((toolCall.function as Record<string, string>).arguments)
-              : (toolCall.function as Record<string, unknown> | undefined)?.arguments || toolCall.args || {},
-          result: toolCall.result,
-          status: toolCall.status as string | undefined,
-        }),
-      );
-    }
-
-    // Extract generated images
-    if (
-      typeof responsePayload === "object" &&
-      responsePayload &&
-      Array.isArray(responsePayload.images) &&
-      responsePayload.images.length
-    ) {
-      assistantMessage.images = responsePayload.images;
-    }
-
-    // Extract thinking content
-    if (
-      typeof responsePayload === "object" &&
-      responsePayload &&
-      typeof responsePayload.thinking === "string"
-    ) {
+    if (responsePayload.thinking) {
       assistantMessage.thinking = responsePayload.thinking;
     }
 
-    if (
+    if (Array.isArray(responsePayload.toolCalls) && responsePayload.toolCalls.length) {
+      assistantMessage.toolCalls = responsePayload.toolCalls.map((toolCall) => ({
+        id: toolCall.id,
+        name: toolCall.name,
+        args: toolCall.args || {},
+        result: toolCall.result,
+        status: toolCall.status,
+      }));
+    }
+
+    if (Array.isArray(responsePayload.images) && responsePayload.images.length) {
+      assistantMessage.images = responsePayload.images;
+    }
+
+    const hasDisplayableContent =
       assistantMessage.content ||
       assistantMessage.toolCalls?.length ||
-      assistantMessage.images?.length
-    ) {
+      assistantMessage.images?.length;
+
+    if (hasDisplayableContent) {
       chatMessages.push(assistantMessage);
     }
   }

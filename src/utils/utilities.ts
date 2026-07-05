@@ -336,50 +336,53 @@ export function toolCountsToUsedTools(
 }
 
 /**
- * Merge multiple tool-count sources into a single usedTools array
- * for display in the stats badges. Handles three layers:
+ * Build a unified usedTools array from an authoritative base and an
+ * optional live SSE overlay.
  *
- * 1. **clientTools** — from getUsedTools(messages), includes both
- *    capability-level entries (Thinking, Tool Calling) and
- *    coordinator function-level entries (read_file, etc.)
- * 2. **backendToolCounts** — optional { name: count } map from
- *    backend conversation stats (authoritative post-completion)
- * 3. **subAgentToolActivity** — optional { [subAgentId]: { toolNames: { name: count } } }
- *    from live SSE events (real-time during generation)
+ * Architecture note: The backend's `getConversationStats` already
+ * aggregates `toolApiNames` across ALL descendant conversation IDs
+ * (main agent + sub-agents) via `discoverDescendantConversationIds`.
+ * This means `backendToolCounts` is a fully-merged, authoritative
+ * count — there is no need for the frontend to re-aggregate sub-agent
+ * tool activity on top of it for persisted requests.
  *
- * When both backend and live sub-agent counts exist for the same tool,
- * the higher count wins (prevents badges from appearing to decrease
- * as backend catches up).
+ * The live SSE overlay is only needed for inflight requests whose tool
+ * calls have not yet been persisted to the requests collection. During
+ * active generation, the `Math.max` merge prevents badges from
+ * appearing to decrease as the backend catches up.
+ *
+ * @param clientCapabilities  Capability-level entries (Thinking, Tool Calling, etc.)
+ *                             extracted from the client message stream — these are
+ *                             UI-only annotations that have no backend equivalent.
+ * @param authoritativeToolCounts  Either `backendConversationStats.toolCounts` (preferred)
+ *                                  or client-derived function-level tool counts as fallback.
+ * @param liveSubAgentToolActivity  Optional live SSE sub-agent tool counts for inflight
+ *                                   requests not yet reflected in the authoritative base.
  */
-export function mergeUsedToolsWithSubAgents(
-  clientTools: Array<{ name: string; count: number }>,
-  backendToolCounts: Record<string, number> | null | undefined,
-  subAgentToolActivity:
+export function buildUnifiedToolCounts(
+  clientCapabilities: Array<{ name: string; count: number }>,
+  authoritativeToolCounts: Record<string, number> | null | undefined,
+  liveSubAgentToolActivity:
     | Record<string, { toolNames?: Record<string, number> }>
     | null
     | undefined,
 ): Array<{ name: string; count: number }> {
-  // Separate capabilities from function-level tool calls
-  const capabilities = clientTools.filter((clientTool) =>
-    CAPABILITY_TOOL_NAMES.has(clientTool.name),
+  const capabilities = clientCapabilities.filter((entry) =>
+    CAPABILITY_TOOL_NAMES.has(entry.name),
   );
 
-  // Start with authoritative source (backend if available, else client function-level)
   const merged = new Map<string, number>();
-  if (backendToolCounts) {
-    for (const toolEntry of toolCountsToUsedTools(backendToolCounts)) {
-      merged.set(toolEntry.name, toolEntry.count);
-    }
-  } else {
-    for (const tool of clientTools) {
-      if (CAPABILITY_TOOL_NAMES.has(tool.name)) continue;
-      merged.set(tool.name, (merged.get(tool.name) || 0) + tool.count);
+
+  if (authoritativeToolCounts) {
+    for (const [name, count] of Object.entries(authoritativeToolCounts)) {
+      merged.set(name, count);
     }
   }
 
-  // Overlay live sub-agent tool counts (real-time during generation)
-  if (subAgentToolActivity) {
-    for (const subAgent of Object.values(subAgentToolActivity)) {
+  // Overlay live sub-agent tool counts for inflight requests only.
+  // Uses Math.max so badges never decrease while SSE and backend converge.
+  if (liveSubAgentToolActivity) {
+    for (const subAgent of Object.values(liveSubAgentToolActivity)) {
       if (!subAgent.toolNames) continue;
       for (const [name, count] of Object.entries(subAgent.toolNames)) {
         if (CAPABILITY_TOOL_NAMES.has(name)) continue;
@@ -390,10 +393,11 @@ export function mergeUsedToolsWithSubAgents(
 
   const mergedTools = [...merged.entries()]
     .map(([name, count]) => ({ name, count }))
-    .sort((agent, current) => current.count - agent.count);
+    .sort((toolA, toolB) => toolB.count - toolA.count);
 
   return [...capabilities, ...mergedTools];
 }
+
 
 /**
  * Resolve the best default model for new conversations.

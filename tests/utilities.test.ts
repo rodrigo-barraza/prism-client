@@ -5,7 +5,7 @@ import {
   getTotalInputTokens,
   buildLmStudioLoadBody,
   toolCountsToUsedTools,
-  mergeUsedToolsWithSubAgents,
+  buildUnifiedToolCounts,
   CAPABILITY_TOOL_NAMES,
   CAPABILITIES,
 } from "../src/utils/utilities.js";
@@ -35,37 +35,75 @@ describe("toolCountsToUsedTools", () => {
 });
 
 // ═════════════════════════════════════════════════════════════════
-// mergeUsedToolsWithSubAgents
+// buildUnifiedToolCounts
 // ═════════════════════════════════════════════════════════════════
 
-describe("mergeUsedToolsWithSubAgents", () => {
-  it("preserves capabilities from client tools", () => {
-    const clientTools = [
-      { name: CAPABILITIES.THINKING, count: 3 },
-      { name: "read_file", count: 2 },
-    ];
-    const result = mergeUsedToolsWithSubAgents(clientTools, null, null);
+describe("buildUnifiedToolCounts", () => {
+  it("preserves capability entries at the front of the result", () => {
+    const capabilities = [{ name: CAPABILITIES.THINKING, count: 3 }];
+    const authoritativeCounts = { read_file: 2 };
+    const result = buildUnifiedToolCounts(capabilities, authoritativeCounts, null);
     expect(result[0]).toEqual({ name: CAPABILITIES.THINKING, count: 3 });
     expect(result[1]).toEqual({ name: "read_file", count: 2 });
   });
 
-  it("uses backend tool counts over client when available", () => {
-    const clientTools = [{ name: "read_file", count: 2 }];
-    const backendCounts = { read_file: 10, grep_search: 5 };
-    const result = mergeUsedToolsWithSubAgents(clientTools, backendCounts, null);
-    const readFile = result.find((entry) => entry.name === "read_file");
+  it("uses authoritative tool counts as the base", () => {
+    const authoritativeCounts = { read_file: 10, grep_search: 5 };
+    const result = buildUnifiedToolCounts([], authoritativeCounts, null);
+    const readFile = result.find((entry: { name: string }) => entry.name === "read_file");
     expect(readFile?.count).toBe(10);
   });
 
-  it("merges sub-agent tool activity with max strategy", () => {
-    const clientTools = [{ name: CAPABILITIES.THINKING, count: 1 }];
-    const backendCounts = { read_file: 3 };
-    const subAgentActivity = {
+  it("overlays live sub-agent tool counts with max strategy", () => {
+    const capabilities = [{ name: CAPABILITIES.THINKING, count: 1 }];
+    const authoritativeCounts = { read_file: 3 };
+    const liveSubAgentActivity = {
       subAgent1: { toolNames: { read_file: 5 } },
-    } as any;
-    const result = mergeUsedToolsWithSubAgents(clientTools, backendCounts, subAgentActivity);
-    const readFile = result.find((entry) => entry.name === "read_file");
+    };
+    const result = buildUnifiedToolCounts(capabilities, authoritativeCounts, liveSubAgentActivity);
+    const readFile = result.find((entry: { name: string }) => entry.name === "read_file");
     expect(readFile?.count).toBe(5);
+  });
+
+  it("does not decrease counts when backend catches up to SSE", () => {
+    const authoritativeCounts = { read_file: 8 };
+    const liveSubAgentActivity = {
+      subAgent1: { toolNames: { read_file: 3 } },
+    };
+    const result = buildUnifiedToolCounts([], authoritativeCounts, liveSubAgentActivity);
+    const readFile = result.find((entry: { name: string }) => entry.name === "read_file");
+    expect(readFile?.count).toBe(8);
+  });
+
+  it("adds new tools from sub-agents not yet in authoritative base", () => {
+    const authoritativeCounts = { read_file: 2 };
+    const liveSubAgentActivity = {
+      subAgent1: { toolNames: { web_search: 4 } },
+    };
+    const result = buildUnifiedToolCounts([], authoritativeCounts, liveSubAgentActivity);
+    const webSearch = result.find((entry: { name: string }) => entry.name === "web_search");
+    expect(webSearch?.count).toBe(4);
+  });
+
+  it("returns empty tools array when no sources provided", () => {
+    const result = buildUnifiedToolCounts([], null, null);
+    expect(result).toEqual([]);
+  });
+
+  it("excludes capability names from sub-agent overlay", () => {
+    const liveSubAgentActivity = {
+      subAgent1: { toolNames: { [CAPABILITIES.THINKING]: 10, read_file: 2 } },
+    };
+    const result = buildUnifiedToolCounts([], null, liveSubAgentActivity);
+    const thinkingEntry = result.find((entry: { name: string }) => entry.name === CAPABILITIES.THINKING);
+    expect(thinkingEntry).toBeUndefined();
+    expect(result).toEqual([{ name: "read_file", count: 2 }]);
+  });
+
+  it("sorts merged tools by count descending", () => {
+    const authoritativeCounts = { alpha: 1, bravo: 10, charlie: 5 };
+    const result = buildUnifiedToolCounts([], authoritativeCounts, null);
+    expect(result.map((entry: { name: string }) => entry.name)).toEqual(["bravo", "charlie", "alpha"]);
   });
 });
 
@@ -85,5 +123,3 @@ describe("CAPABILITY_TOOL_NAMES", () => {
     expect(CAPABILITY_TOOL_NAMES.has("grep_search")).toBe(false);
   });
 });
-
-

@@ -461,6 +461,8 @@ export interface Conversation {
   pendingBackgroundTasks?: number;
   /** Backend-authoritative zero-based spawn index within a team of sub-agents */
   agentIndex?: number | null;
+  /** Backend-serialized display-ready messages (tool results merged, empty stubs filtered) */
+  displayMessages?: Message[];
 }
 
 export interface ConversationListResponse {
@@ -496,6 +498,8 @@ export interface AgentConversation {
   isActive?: boolean;
   /** Backend-authoritative zero-based spawn index within a team of sub-agents */
   agentIndex?: number | null;
+  /** Backend-serialized display-ready messages (tool results merged, empty stubs filtered) */
+  displayMessages?: Message[];
 }
 
 export interface AgentConversationListResponse {
