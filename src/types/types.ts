@@ -1277,6 +1277,7 @@ export interface BenchmarkRunResult {
     result?: unknown;
     status?: string;
   }>;
+  toolNames?: string[];
   thinkingEnabled?: boolean;
   toolsEnabled?: boolean;
   agent?: string;

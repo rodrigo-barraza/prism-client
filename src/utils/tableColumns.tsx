@@ -95,6 +95,7 @@ export interface TableRow {
   _progress?: number;
   toolsEnabled?: boolean;
   toolCalls?: Array<{ name?: string }>;
+  toolNames?: string[];
   conversations?: TableRow[];
   endpoint?: string;
   operation?: string;
@@ -907,12 +908,13 @@ export const benchmarkToolsColumn = () => ({
   defaultHidden: true,
   render: (row: TableRow) => {
     if (!row.toolsEnabled) return emptyDash();
-    const rawToolCalls = row.toolCalls as Array<{ name?: string }> | undefined;
-    const toolNames = rawToolCalls?.length
-      ? ([
-          ...new Set(rawToolCalls.map((toolCall) => toolCall.name).filter(Boolean)),
-        ] as string[])
-      : null;
+    const toolNames = row.toolNames?.length
+      ? row.toolNames
+      : row.toolCalls?.length
+        ? ([
+            ...new Set(row.toolCalls.map((toolCall) => toolCall.name).filter(Boolean)),
+          ] as string[])
+        : null;
     const badge = (
       <BadgeComponent variant="warning" mini>
         <Wrench size={10} /> Tools{toolNames ? ` (${toolNames.length})` : ""}
