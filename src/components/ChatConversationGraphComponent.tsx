@@ -42,51 +42,18 @@ import graphStyles from "./ConversationGraphPageComponent.module.css";
 import styles from "./ChatConversationGraphComponent.module.css";
 
 /* ═══════════════════════════════════════════════════════════════════
-   Node Graph Data Structures (mirrored from ConversationGraphPageComponent)
+   Node Graph Data Structures — imported from shared library
    ═══════════════════════════════════════════════════════════════════ */
 
-export type NodeCategory =
-  | "session"
-  | "tool"
-  | "request"
-  | "user"
-  | "project"
-  | "agent"
-  | "subagent"
-  | "turn";
+export type {
+  NodeCategory,
+  GraphNode,
+  GraphEdge,
+  SubAgentTreeNode,
+  GraphData,
+} from "@rodrigo-barraza/utilities-library/graph";
 
-export interface GraphNode {
-  id: string;
-  label: string;
-  category: NodeCategory;
-  radius: number;
-  x: number;
-  y: number;
-  velocityX: number;
-  velocityY: number;
-  sequenceNumber?: number;
-  metadata?: Record<string, unknown>;
-  depth?: number;
-}
-
-export interface GraphEdge {
-  source: string;
-  target: string;
-  strength?: number;
-  isCurved?: boolean;
-}
-
-interface SubAgentTreeNode {
-  nodeId: string;
-  agentConversationId: string;
-  children: SubAgentTreeNode[];
-}
-
-export interface GraphData {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-  subAgentTree: SubAgentTreeNode[];
-}
+import type { NodeCategory, GraphNode, GraphEdge, SubAgentTreeNode, GraphData } from "@rodrigo-barraza/utilities-library/graph";
 
 const NODE_COLORS: Record<NodeCategory, string> = {
   project: "oklch(0.72 0.15 120)",

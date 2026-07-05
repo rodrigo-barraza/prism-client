@@ -304,69 +304,104 @@ export default function DashboardPage() {
     setTimelineGranularity(value);
   }, []);
 
-  // Build provider distribution from model stats
-  const providerAgg: Record<string, ProviderAggregation> = {};
-  modelStats.forEach((modelStat) => {
-    if (!providerAgg[modelStat.provider]) {
-      providerAgg[modelStat.provider] = {
-        provider: modelStat.provider,
-        totalRequests: 0,
-        totalInputTokens: 0,
-        totalOutputTokens: 0,
-        totalCost: 0,
-        latencySum: 0,
-        tpsSum: 0,
-        tpsCount: 0,
-        modelCount: 0,
-        models: [] as string[],
-        conversationCount: 0,
-        workflowCount: 0,
-        agentConversationCount: 0,
-      };
+  // Build provider distribution and model stats (Memoized & Single-pass)
+  const {
+    providerData,
+    totalProviderRequests,
+    totalProviderCost,
+    topModels,
+    totalModelRequests,
+    totalModelCost,
+  } = useMemo(() => {
+    const providerAgg: Record<string, ProviderAggregation> = {};
+    let modelRequestsSum = 0;
+    let modelCostSum = 0;
+
+    for (const modelStat of modelStats) {
+      // 1. Accumulate model totals
+      modelRequestsSum += modelStat.totalRequests;
+      modelCostSum += modelStat.totalCost || 0;
+
+      // 2. Accumulate provider groups
+      if (!providerAgg[modelStat.provider]) {
+        providerAgg[modelStat.provider] = {
+          provider: modelStat.provider,
+          totalRequests: 0,
+          totalInputTokens: 0,
+          totalOutputTokens: 0,
+          totalCost: 0,
+          latencySum: 0,
+          tpsSum: 0,
+          tpsCount: 0,
+          modelCount: 0,
+          models: [] as string[],
+          conversationCount: 0,
+          workflowCount: 0,
+          agentConversationCount: 0,
+        };
+      }
+      const providerDataVal = providerAgg[modelStat.provider];
+      providerDataVal.totalRequests += modelStat.totalRequests;
+      providerDataVal.totalInputTokens += modelStat.totalInputTokens || 0;
+      providerDataVal.totalOutputTokens += modelStat.totalOutputTokens || 0;
+      providerDataVal.totalCost += modelStat.totalCost || 0;
+      providerDataVal.latencySum += (modelStat.avgLatency || 0) * modelStat.totalRequests;
+      providerDataVal.modelCount += 1;
+      if (modelStat.model) providerDataVal.models.push(modelStat.model);
+      providerDataVal.conversationCount += modelStat.conversationCount || 0;
+      providerDataVal.workflowCount += modelStat.workflowCount || 0;
+      providerDataVal.agentConversationCount += modelStat.agentConversationCount || 0;
+      if (modelStat.avgTokensPerSec) {
+        providerDataVal.tpsSum += modelStat.avgTokensPerSec * modelStat.totalRequests;
+        providerDataVal.tpsCount += modelStat.totalRequests;
+      }
     }
-    const providerData = providerAgg[modelStat.provider];
-    providerData.totalRequests += modelStat.totalRequests;
-    providerData.totalInputTokens += modelStat.totalInputTokens || 0;
-    providerData.totalOutputTokens += modelStat.totalOutputTokens || 0;
-    providerData.totalCost += modelStat.totalCost || 0;
-    providerData.latencySum += (modelStat.avgLatency || 0) * modelStat.totalRequests;
-    providerData.modelCount += 1;
-    if (modelStat.model) providerData.models.push(modelStat.model);
-    providerData.conversationCount += modelStat.conversationCount || 0;
-    providerData.workflowCount += modelStat.workflowCount || 0;
-    providerData.agentConversationCount += modelStat.agentConversationCount || 0;
-    if (modelStat.avgTokensPerSec) {
-      providerData.tpsSum += modelStat.avgTokensPerSec * modelStat.totalRequests;
-      providerData.tpsCount += modelStat.totalRequests;
+
+    // Compute averages and sort providers
+    const providerDataList: ProviderAggregationComputed[] = Object.values(providerAgg)
+      .map((providerAggItem) => ({
+        ...providerAggItem,
+        avgLatency: providerAggItem.totalRequests > 0 ? providerAggItem.latencySum / providerAggItem.totalRequests : 0,
+        avgTokensPerSec: providerAggItem.tpsCount > 0 ? providerAggItem.tpsSum / providerAggItem.tpsCount : null,
+      }))
+      .sort((providerA, providerB) => providerB.totalRequests - providerA.totalRequests);
+
+    // Compute provider totals in a single pass
+    let providerRequestsSum = 0;
+    let providerCostSum = 0;
+    for (const provider of providerDataList) {
+      providerRequestsSum += provider.totalRequests;
+      providerCostSum += provider.totalCost;
     }
-  });
-  const providerData: ProviderAggregationComputed[] = Object.values(providerAgg)
-    .map((providerAggItem) => ({
-      ...providerAggItem,
-      avgLatency: providerAggItem.totalRequests > 0 ? providerAggItem.latencySum / providerAggItem.totalRequests : 0,
-      avgTokensPerSec: providerAggItem.tpsCount > 0 ? providerAggItem.tpsSum / providerAggItem.tpsCount : null,
-    }))
-    .sort((providerA, providerB) => providerB.totalRequests - providerA.totalRequests);
-  const totalProviderRequests =
-    providerData.reduce((sum, provider) => sum + provider.totalRequests, 0) || 1;
-  const totalProviderCost =
-    providerData.reduce((sum, provider) => sum + provider.totalCost, 0) || 1;
 
-  // Top 10 models
-  const topModels = [...modelStats].sort(
-    (modelA, modelB) => modelB.totalRequests - modelA.totalRequests,
-  );
+    // Top models sorted
+    const topModelsList = [...modelStats].sort(
+      (modelA, modelB) => modelB.totalRequests - modelA.totalRequests,
+    );
 
-  const totalModelRequests =
-    modelStats.reduce((sum, model) => sum + model.totalRequests, 0) || 1;
-  const totalModelCost =
-    modelStats.reduce((sum, model) => sum + (model.totalCost || 0), 0) || 1;
+    return {
+      providerData: providerDataList,
+      totalProviderRequests: providerRequestsSum || 1,
+      totalProviderCost: providerCostSum || 1,
+      topModels: topModelsList,
+      totalModelRequests: modelRequestsSum || 1,
+      totalModelCost: modelCostSum || 1,
+    };
+  }, [modelStats]);
 
-  // Project totals for proportion bars
-  const totalProjectRequests =
-    projectStats.reduce((sum, project) => sum + project.totalRequests, 0) || 1;
-  const totalProjectCost =
-    projectStats.reduce((sum, project) => sum + (project.totalCost || 0), 0) || 1;
+  // Project totals for proportion bars (Memoized & Single-pass)
+  const { totalProjectRequests, totalProjectCost } = useMemo(() => {
+    let requestsSum = 0;
+    let costSum = 0;
+    for (const project of projectStats) {
+      requestsSum += project.totalRequests;
+      costSum += project.totalCost || 0;
+    }
+    return {
+      totalProjectRequests: requestsSum || 1,
+      totalProjectCost: costSum || 1,
+    };
+  }, [projectStats]);
 
   // Recharts-friendly timeline data — convert UTC keys to local timezone labels
   const chartData = useMemo(() => {

@@ -9,9 +9,8 @@ import IrisService, {
 import PrismService from "../services/PrismService";
 import { EXECUTION_STATUS, LAYOUT, TIMING } from "../constants";
 import type { AgentConversation, ConversationStats, ToolSchema } from "../types/types";
+import type { GraphData, GraphNode } from "@rodrigo-barraza/utilities-library/graph";
 import {
-  type GraphData,
-  type GraphNode,
   PROACTIVE_PENDING_REQUEST_NODE_ID,
   PROACTIVE_PENDING_TURN_NODE_ID,
 } from "../components/ChatConversationGraphComponent";
@@ -83,6 +82,12 @@ export default function useConversationGraphData(
   const requestCountAtGenerationStartRef = useRef<number>(0);
   const previousIsGeneratingRef = useRef(false);
 
+  // Throttle state for incrementalGraphRebuild — prevents hammering the
+  // graph API at 5-10 calls/sec during active orchestrator runs.
+  const lastGraphRebuildTimestampRef = useRef<number>(0);
+  const graphRebuildThrottleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const graphRebuildInFlightRef = useRef(false);
+
   // -- Ref sync ---------------------------------------------------
   useEffect(() => { conversationRef.current = conversation; }, [conversation]);
   useEffect(() => {
@@ -117,15 +122,17 @@ export default function useConversationGraphData(
     return () => { isCancelled = true; };
   }, []);
 
-  // -- Incremental rebuild (backend-driven) -----------------------
-  const incrementalGraphRebuild = useCallback(async (
+  // -- Incremental rebuild (backend-driven, throttled) -------------
+  // The inner function performs the actual API call and graph state update.
+  // It is wrapped by the throttled callback below to prevent excessive
+  // network requests during active orchestrator runs with parallel sub-agents.
+  const executeGraphRebuild = useCallback(async (
     activeConversation: AgentConversation,
-    _updatedStats: ConversationStats | null,
-    _updatedRequests: IrisRequestEntry[],
   ) => {
     const activeConversationId = activeConversation.id || activeConversation._id;
     if (!activeConversationId) return;
 
+    graphRebuildInFlightRef.current = true;
     try {
       const graph = await IrisService.getConversationGraph(
         activeConversationId,
@@ -277,8 +284,47 @@ export default function useConversationGraphData(
       });
     } catch {
       // Graph API failed — silently degrade
+    } finally {
+      graphRebuildInFlightRef.current = false;
+      lastGraphRebuildTimestampRef.current = Date.now();
     }
   }, []);
+
+  // Throttled wrapper: ensures at most one graph API call per throttle window.
+  // If called while in-flight or within the cooldown, schedules a single
+  // trailing call so the latest data is always rendered.
+  const incrementalGraphRebuild = useCallback((
+    activeConversation: AgentConversation,
+  ) => {
+    // Cancel any previously scheduled trailing call
+    if (graphRebuildThrottleTimerRef.current) {
+      clearTimeout(graphRebuildThrottleTimerRef.current);
+      graphRebuildThrottleTimerRef.current = null;
+    }
+
+    // If a rebuild is already in-flight, defer until it finishes + cooldown
+    if (graphRebuildInFlightRef.current) {
+      graphRebuildThrottleTimerRef.current = setTimeout(
+        () => { graphRebuildThrottleTimerRef.current = null; executeGraphRebuild(activeConversation); },
+        TIMING.GRAPH_REBUILD_THROTTLE_MILLISECONDS,
+      );
+      return;
+    }
+
+    const elapsedSinceLastRebuild = Date.now() - lastGraphRebuildTimestampRef.current;
+    const remainingCooldown = TIMING.GRAPH_REBUILD_THROTTLE_MILLISECONDS - elapsedSinceLastRebuild;
+
+    if (remainingCooldown > 0) {
+      // Within throttle window — schedule trailing call
+      graphRebuildThrottleTimerRef.current = setTimeout(
+        () => { graphRebuildThrottleTimerRef.current = null; executeGraphRebuild(activeConversation); },
+        remainingCooldown,
+      );
+    } else {
+      // Throttle window has passed — fire immediately
+      executeGraphRebuild(activeConversation);
+    }
+  }, [executeGraphRebuild]);
 
   // -- Load session graph -----------------------------------------
   useEffect(() => {
@@ -442,7 +488,7 @@ export default function useConversationGraphData(
           setConversationStats(updatedStats);
           setConversationRequests(updatedRequests);
           ssePopulatedForConversationRef.current = activeConversationId;
-          incrementalGraphRebuild(resolvedConversation, updatedStats, updatedRequests);
+          incrementalGraphRebuild(resolvedConversation);
         } else if (updatedStats) {
           setConversationStats(updatedStats);
         }
@@ -574,7 +620,7 @@ export default function useConversationGraphData(
         setConversationStats(updatedStats);
         setConversationRequests(updatedRequests);
         ssePopulatedForConversationRef.current = conversationId;
-        incrementalGraphRebuild(resolvedConversation, updatedStats, updatedRequests);
+        incrementalGraphRebuild(resolvedConversation);
       } catch {
         await performFullRefresh();
       }
@@ -635,6 +681,10 @@ export default function useConversationGraphData(
       if (pollInterval) clearInterval(pollInterval);
       if (batchFlushTimer) clearTimeout(batchFlushTimer);
       if (conversationDocRefreshTimer) clearTimeout(conversationDocRefreshTimer);
+      if (graphRebuildThrottleTimerRef.current) {
+        clearTimeout(graphRebuildThrottleTimerRef.current);
+        graphRebuildThrottleTimerRef.current = null;
+      }
     };
   }, [conversationId, incrementalGraphRebuild]);
 
