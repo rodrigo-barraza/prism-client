@@ -14,10 +14,39 @@ export function prepareDisplayMessages(
 ): Message[] {
   if (!rawMessages || rawMessages.length === 0) return [];
 
+  const normalizedMessages = rawMessages.map((message) => {
+    if (!message.toolCalls && message.tool_calls) {
+      const normalizedToolCalls: ToolCallEvent[] = message.tool_calls.map((toolCall) => {
+        const name = toolCall.name || toolCall.function?.name || "";
+        const rawArguments = toolCall.args !== undefined ? toolCall.args : toolCall.function?.arguments;
+        let resolvedArguments: Record<string, unknown> = {};
+        if (rawArguments !== undefined && rawArguments !== null) {
+          if (typeof rawArguments === "object") {
+            resolvedArguments = rawArguments as Record<string, unknown>;
+          } else if (typeof rawArguments === "string") {
+            try {
+              resolvedArguments = JSON.parse(rawArguments);
+            } catch {
+              resolvedArguments = {};
+            }
+          }
+        }
+        return {
+          id: toolCall.id,
+          name,
+          args: resolvedArguments,
+          status: toolCall.status,
+        };
+      });
+      return { ...message, toolCalls: normalizedToolCalls };
+    }
+    return message;
+  });
+
   // Pass 1: collect tool results keyed by tool_call_id
   const toolResults: Record<string, string> = {};
   const toolDurations: Record<string, number> = {};
-  for (const message of rawMessages) {
+  for (const message of normalizedMessages) {
     if (message.role === "tool") {
       const identifier = message.tool_call_id || message.toolCallId;
       if (identifier) {
@@ -34,7 +63,7 @@ export function prepareDisplayMessages(
   const hasToolDurations = Object.keys(toolDurations).length > 0;
 
   // Pass 2: filter and enrich
-  return rawMessages
+  const result = normalizedMessages
     .filter((message) => {
       if (message.role === "tool") return false;
       const isEmptyAssistant =
@@ -63,10 +92,10 @@ export function prepareDisplayMessages(
               toolResults[toolCall.tool_call_id || ""] ||
               null,
             ...(toolDurations[toolCall.id] != null && {
-              durationMs: toolDurations[toolCall.id],
+               durationMs: toolDurations[toolCall.id],
             }),
             ...(toolDurations[toolCall.tool_call_id || ""] != null && {
-              durationMs: toolDurations[toolCall.tool_call_id || ""],
+               durationMs: toolDurations[toolCall.tool_call_id || ""],
             }),
           }),
         );
@@ -124,4 +153,13 @@ export function prepareDisplayMessages(
       }
       return message;
     });
+
+  if (result.length === 0) {
+    console.debug(
+      `[prepareDisplayMessages] output: 0 messages`,
+      "⚠️ ALL MESSAGES FILTERED — this will empty the chat!",
+    );
+  }
+
+  return result;
 }
