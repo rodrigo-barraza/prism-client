@@ -1,36 +1,13 @@
 import { describe, it, expect } from "vitest";
 import type { Message } from "../src/types/types";
-
-function getConversationElapsedTime(messages: Message[]): number {
-  if (!messages || messages.length === 0) return 0;
-  let totalSeconds = 0;
-  let lastUserTimestamp: number | null = null;
-
-  for (const message of messages) {
-    if (message.role === "user") {
-      if (message.timestamp) {
-        lastUserTimestamp = new Date(message.timestamp).getTime();
-      }
-    } else if (message.role === "assistant" && lastUserTimestamp !== null) {
-      const assistantEnd = message.completedAt
-        ? new Date(message.completedAt).getTime()
-        : message.timestamp
-        ? new Date(message.timestamp).getTime()
-        : null;
-
-      if (assistantEnd) {
-        const turnSeconds = (assistantEnd - lastUserTimestamp) / 1000;
-        if (turnSeconds > 0) {
-          totalSeconds += turnSeconds;
-        }
-        lastUserTimestamp = null;
-      }
-    }
-  }
-  return totalSeconds;
-}
+import { MESSAGE_ROLES } from "../src/constants";
+import { 
+  getConversationElapsedTime, 
+  deriveConversationStartTime 
+} from "../src/utils/timers";
 
 type MockMessage = Partial<Message>;
+
 
 // ═══════════════════════════════════════════════════════════════════════
 // 1. Processing Timer — getConversationElapsedTime
@@ -44,17 +21,17 @@ describe("Processing timer (getConversationElapsedTime)", () => {
 
   it("returns 0 when there are only user messages with no assistant replies", () => {
     const messages: MockMessage[] = [
-      { role: "user", content: "Hello", timestamp: "2026-05-31T10:00:00Z" },
-      { role: "user", content: "Anyone?", timestamp: "2026-05-31T10:01:00Z" },
+      { role: MESSAGE_ROLES.USER, content: "Hello", timestamp: "2026-05-31T10:00:00Z" },
+      { role: MESSAGE_ROLES.USER, content: "Anyone?", timestamp: "2026-05-31T10:01:00Z" },
     ];
     expect(getConversationElapsedTime(messages as Message[])).toBe(0);
   });
 
   it("computes a single turn correctly using completedAt", () => {
     const messages: MockMessage[] = [
-      { role: "user", content: "Hi", timestamp: "2026-05-31T10:00:00Z" },
+      { role: MESSAGE_ROLES.USER, content: "Hi", timestamp: "2026-05-31T10:00:00Z" },
       {
-        role: "assistant",
+        role: MESSAGE_ROLES.ASSISTANT,
         content: "Hello!",
         timestamp: "2026-05-31T10:00:01Z",
         completedAt: "2026-05-31T10:00:05Z",
@@ -208,14 +185,10 @@ describe("Processing timer (getConversationElapsedTime)", () => {
 //    wall-clock conversation timer.
 // ═══════════════════════════════════════════════════════════════════════
 
+// Reimplementation removed - using deriveConversationStartTime from ../src/utils/timers
+
 describe("Conversation timer (conversationStartTime derivation)", () => {
-  /**
-   * Replicates the exact derivation logic from ChatSessionComponent:
-   *   conversationStartTime: messages.length > 0 ? messages[0]?.timestamp : null
-   */
-  function deriveConversationStartTime(messages: MockMessage[]): string | null {
-    return messages.length > 0 ? (messages[0]?.timestamp ?? null) : null;
-  }
+
 
   it("returns null for empty messages", () => {
     expect(deriveConversationStartTime([])).toBeNull();
