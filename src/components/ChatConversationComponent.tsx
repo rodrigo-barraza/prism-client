@@ -1851,6 +1851,22 @@ export default function ChatConversationComponent({
           if (full.systemPrompt != null) {
             nextSettings.systemPrompt = full.systemPrompt;
           }
+          const urlThinkingEnabled = urlLoadConversationSettings?.thinkingEnabled;
+          if (urlThinkingEnabled !== undefined) {
+            nextSettings.thinkingEnabled = Boolean(urlThinkingEnabled);
+          }
+          const urlThinkingBudget = urlLoadConversationSettings?.thinkingBudget;
+          if (urlThinkingBudget !== undefined) {
+            nextSettings.thinkingBudget = String(urlThinkingBudget);
+          }
+          const urlThinkingLevel = urlLoadConversationSettings?.thinkingLevel as string | undefined;
+          if (urlThinkingLevel) {
+            nextSettings.thinkingLevel = urlThinkingLevel;
+          }
+          const urlReasoningEffort = urlLoadConversationSettings?.reasoningEffort as string | undefined;
+          if (urlReasoningEffort) {
+            nextSettings.reasoningEffort = urlReasoningEffort;
+          }
           const urlHarness = urlLoadConversationSettings?.harness as string | undefined;
           const urlTopology = urlLoadConversationSettings?.topology as string | undefined;
           const urlThoughtStructure = urlLoadConversationSettings?.thoughtStructure as string | undefined;
@@ -6209,10 +6225,27 @@ export default function ChatConversationComponent({
           if (conversationSettings?.temperature !== undefined) {
             nextSettings.temperature = conversationSettings.temperature;
           }
-          const conversationHarness = (conversationSettings as Record<string, unknown>)?.harness as string | undefined;
-          const conversationTopology = (conversationSettings as Record<string, unknown>)?.topology as string | undefined;
-          const conversationThoughtStructure = (conversationSettings as Record<string, unknown>)?.thoughtStructure as string | undefined;
-          const conversationLocale = (conversationSettings as Record<string, unknown>)?.locale as string | undefined;
+          const conversationSettingsRecord = conversationSettings as Record<string, unknown> | undefined;
+          const conversationThinkingEnabled = conversationSettingsRecord?.thinkingEnabled;
+          if (conversationThinkingEnabled !== undefined) {
+            nextSettings.thinkingEnabled = Boolean(conversationThinkingEnabled);
+          }
+          const conversationThinkingBudget = conversationSettingsRecord?.thinkingBudget;
+          if (conversationThinkingBudget !== undefined) {
+            nextSettings.thinkingBudget = String(conversationThinkingBudget);
+          }
+          const conversationThinkingLevel = conversationSettingsRecord?.thinkingLevel as string | undefined;
+          if (conversationThinkingLevel) {
+            nextSettings.thinkingLevel = conversationThinkingLevel;
+          }
+          const conversationReasoningEffort = conversationSettingsRecord?.reasoningEffort as string | undefined;
+          if (conversationReasoningEffort) {
+            nextSettings.reasoningEffort = conversationReasoningEffort;
+          }
+          const conversationHarness = conversationSettingsRecord?.harness as string | undefined;
+          const conversationTopology = conversationSettingsRecord?.topology as string | undefined;
+          const conversationThoughtStructure = conversationSettingsRecord?.thoughtStructure as string | undefined;
+          const conversationLocale = conversationSettingsRecord?.locale as string | undefined;
           if (
             conversationHarness ||
             conversationTopology ||
