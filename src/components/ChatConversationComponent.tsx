@@ -5067,6 +5067,8 @@ export default function ChatConversationComponent({
                     tokensPerSec: data.tokensPerSec,
                     estimatedCost: data.estimatedCost,
                     timeToGeneration: data.timeToGeneration,
+                    thinkingDurationSeconds: (data.thinkingDurationSeconds as number | undefined),
+                    contentDurationSeconds: (data.contentDurationSeconds as number | undefined),
                     completedAt: new Date().toISOString(),
                     status: undefined,
                     statusPhase: undefined,

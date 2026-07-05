@@ -225,10 +225,4 @@
   }
 }
 
-.tool-call-latency {
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
-  margin-inline-start: 4px;
-  font-weight: normal;
-}
 

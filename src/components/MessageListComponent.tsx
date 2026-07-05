@@ -230,12 +230,51 @@ function getMimeCategory(ref: string | undefined | null) {
   return type;
 }
 
+/* -- Message time formatter ------------------------------------
+ * Produces a short clock-time string (e.g. "7:15 PM") from an
+ * ISO timestamp, and a full date-time string for the tooltip.  */
+
+const MESSAGE_TIME_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+});
+
+const MESSAGE_TOOLTIP_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: true,
+});
+
+function formatMessageTime(isoTimestamp: string | undefined | null): {
+  shortTime: string;
+  fullDateTime: string;
+} | null {
+  if (!isoTimestamp) return null;
+  try {
+    const parsedDate = new Date(isoTimestamp);
+    if (isNaN(parsedDate.getTime())) return null;
+    return {
+      shortTime: MESSAGE_TIME_FORMATTER.format(parsedDate),
+      fullDateTime: MESSAGE_TOOLTIP_FORMATTER.format(parsedDate),
+    };
+  } catch {
+    return null;
+  }
+}
+
 /* -- Sub-components -------------------------------------------- */
 
 interface ThinkingBlockProps {
   thinking?: string;
   isStreaming?: boolean;
   streamKeepVisible?: boolean;
+  thinkingDurationSeconds?: number;
   children?: React.ReactNode;
 }
 
@@ -243,6 +282,7 @@ function ThinkingBlock({
   thinking,
   isStreaming,
   streamKeepVisible,
+  thinkingDurationSeconds,
   children,
 }: ThinkingBlockProps) {
   // User can manually toggle after streaming has finished
@@ -250,6 +290,30 @@ function ThinkingBlock({
   // User can temporarily close during streaming
   const [streamClosed, setStreamClosed] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
+
+  // Live counter for streaming — track elapsed seconds in real-time
+  const streamingStartRef = useRef<number | null>(null);
+  const [liveElapsedSeconds, setLiveElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (isStreaming && thinking) {
+      if (streamingStartRef.current === null) {
+        streamingStartRef.current = performance.now();
+      }
+      const intervalId = setInterval(() => {
+        if (streamingStartRef.current !== null) {
+          setLiveElapsedSeconds(
+            Math.round((performance.now() - streamingStartRef.current) / 1000),
+          );
+        }
+      }, 1000);
+      return () => clearInterval(intervalId);
+    }
+    if (!isStreaming) {
+      streamingStartRef.current = null;
+      setLiveElapsedSeconds(0);
+    }
+  }, [isStreaming, thinking]);
 
   // Derive collapsed state:
   // - Streaming: expanded unless user explicitly closed it
@@ -280,13 +344,26 @@ function ThinkingBlock({
 
   if (!isStreaming && !streamKeepVisible && !thinking?.trim() && !children) return null;
 
+  // Determine the label text based on streaming state and available duration
+  const thinkingLabel = (() => {
+    if (isStreaming) {
+      return liveElapsedSeconds > 0
+        ? `Thinking for ${liveElapsedSeconds}s…`
+        : "Thinking…";
+    }
+    if (thinkingDurationSeconds != null && thinkingDurationSeconds > 0) {
+      return `Thought for ${thinkingDurationSeconds < 1 ? "<1" : Math.round(thinkingDurationSeconds)} second${Math.round(thinkingDurationSeconds) === 1 ? "" : "s"}`;
+    }
+    return "Thoughts";
+  })();
+
   return (
     <div
       className={`${styles['thinking-block']}${isStreaming ? ` ${styles['thinking-streaming']}` : ""}`}
     >
       <button className={styles['thinking-toggle']} onClick={handleToggle}>
         <Brain size={14} />
-        <span>Thoughts</span>
+        <span>{thinkingLabel}</span>
         {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
       </button>
       {!collapsed && (
@@ -1374,6 +1451,7 @@ export default function MessageList({
                                     <ThinkingBlock
                                       thinking={groupMessage.thinking}
                                       isStreaming={false}
+                                      thinkingDurationSeconds={groupMessage.thinkingDurationSeconds}
                                     />
                                   )}
                                   {groupMessage.toolCalls &&
@@ -1381,7 +1459,7 @@ export default function MessageList({
                                     groupMessage.toolCalls.map((singleToolCall: ToolCallEvent, toolCallIndex: number) => (
                                       <ToolCallsBlockComponent
                                         key={`group-tool-${toolCallIndex}`}
-                                        toolCalls={[singleToolCall]}
+                                        toolCall={singleToolCall}
                                         subAgentToolActivity={subAgentToolActivity}
                                       />
                                     ))}
@@ -1538,12 +1616,18 @@ export default function MessageList({
                               : message.role === "system"
                                 ? "System"
                                 : activeAgent?.name || "Model"}
-                            {message.timestamp && (
-                              <BadgeComponent
-                                type="dateTime"
-                                date={message.timestamp}
-                              />
-                            )}
+                            {(() => {
+                              const formattedTime = formatMessageTime(message.timestamp);
+                              if (!formattedTime) return null;
+                              return (
+                                <span
+                                  className={styles['message-timestamp']}
+                                  title={formattedTime.fullDateTime}
+                                >
+                                  {formattedTime.shortTime}
+                                </span>
+                              );
+                            })()}
                           </div>
                           {!readOnly && (
                             <div className={styles['message-actions']}>
@@ -1665,7 +1749,7 @@ export default function MessageList({
                               return segmentTools.map((singleToolCall: ToolCallEvent, toolCallIndex: number) => (
                                 <ToolCallsBlockComponent
                                   key={`seg-t-${si}-${toolCallIndex}`}
-                                  toolCalls={[singleToolCall]}
+                                  toolCall={singleToolCall}
                                   streamingOutputs={streamingOutputs}
                                   subAgentToolActivity={subAgentToolActivity}
                                   isAutoCollapsed={opts.isAutoCollapsed}
@@ -1751,6 +1835,7 @@ export default function MessageList({
                                           key={`edit-think-${segmentIndex}`}
                                           isStreaming={false}
                                           thinking={fragment}
+                                          thinkingDurationSeconds={message.thinkingDurationSeconds}
                                         />
                                       );
                                     })}
@@ -1834,6 +1919,7 @@ export default function MessageList({
                                           isStreaming && isLastThinkingSegment
                                         }
                                         thinking={fragment}
+                                        thinkingDurationSeconds={message.thinkingDurationSeconds}
                                       />
                                     );
                                   }
@@ -1897,6 +1983,7 @@ export default function MessageList({
                                 !!message.thinking &&
                                 !message.content
                               }
+                              thinkingDurationSeconds={message.thinkingDurationSeconds}
                             />
                           )}
 
@@ -1906,7 +1993,7 @@ export default function MessageList({
                             message.toolCalls.map((singleToolCall: ToolCallEvent, toolCallIndex: number) => (
                               <ToolCallsBlockComponent
                                 key={`fallback-tool-${toolCallIndex}`}
-                                toolCalls={[singleToolCall]}
+                                toolCall={singleToolCall}
                                 streamingOutputs={streamingOutputs}
                                 subAgentToolActivity={subAgentToolActivity}
                               />

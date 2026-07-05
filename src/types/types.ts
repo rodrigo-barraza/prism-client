@@ -387,6 +387,10 @@ export interface Message {
   error?: string;
   totalTime?: number;
   tokensPerSec?: number;
+  /** Accumulated thinking phase duration in seconds (from backend). */
+  thinkingDurationSeconds?: number;
+  /** Accumulated content generation phase duration in seconds (from backend). */
+  contentDurationSeconds?: number;
   voice?: string;
   tool_call_id?: string;
   toolCallId?: string;

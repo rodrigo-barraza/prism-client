@@ -122,10 +122,10 @@ function getHeaderText(): string {
 describe("ToolCallsBlockComponent", () => {
 
   describe("baseline collapse/expand behavior", () => {
-    it("renders collapsed when all tool calls are done", () => {
+    it("renders collapsed when tool call is done", () => {
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeToolCall({ status: "done" })]}
+          toolCall={makeToolCall({ status: "done" })}
         />,
       );
       expect(isBlockCollapsed()).toBe(true);
@@ -135,7 +135,7 @@ describe("ToolCallsBlockComponent", () => {
     it("renders expanded when a tool call is actively calling", () => {
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeToolCall({ status: "calling" })]}
+          toolCall={makeToolCall({ status: "calling" })}
         />,
       );
       expect(isBlockExpanded()).toBe(true);
@@ -146,7 +146,7 @@ describe("ToolCallsBlockComponent", () => {
     it("renders expanded when a tool call is streaming", () => {
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeToolCall({ status: "streaming" })]}
+          toolCall={makeToolCall({ status: "streaming" })}
         />,
       );
       expect(isBlockExpanded()).toBe(true);
@@ -156,7 +156,7 @@ describe("ToolCallsBlockComponent", () => {
     it("can be manually toggled open and closed", () => {
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeToolCall({ status: "done" })]}
+          toolCall={makeToolCall({ status: "done" })}
         />,
       );
       expect(isBlockCollapsed()).toBe(true);
@@ -180,7 +180,7 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+          toolCall={makeCreateTeamToolCall({ status: "done" })}
           subAgentToolActivity={subAgentToolActivity}
         />,
       );
@@ -198,7 +198,7 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+          toolCall={makeCreateTeamToolCall({ status: "done" })}
           subAgentToolActivity={subAgentToolActivity}
         />,
       );
@@ -215,7 +215,7 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+          toolCall={makeCreateTeamToolCall({ status: "done" })}
           subAgentToolActivity={subAgentToolActivity}
         />,
       );
@@ -232,7 +232,7 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+          toolCall={makeCreateTeamToolCall({ status: "done" })}
           subAgentToolActivity={subAgentToolActivity}
         />,
       );
@@ -259,7 +259,7 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done", result: objectResult })]}
+          toolCall={makeCreateTeamToolCall({ status: "done", result: objectResult })}
           subAgentToolActivity={subAgentToolActivity}
         />,
       );
@@ -286,12 +286,12 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "calling", result: undefined })]}
+          toolCall={makeCreateTeamToolCall({ status: "calling", result: undefined })}
           subAgentToolActivity={subAgentToolActivity}
         />,
       );
 
-      // The tool call itself is "calling", so hasActiveCalls is true — block must be expanded
+      // The tool call itself is "calling", so isCalling is true — block must be expanded
       expect(isBlockExpanded()).toBe(true);
       expect(hasStreamingClass()).toBe(true);
     });
@@ -307,7 +307,7 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done", result: undefined })]}
+          toolCall={makeCreateTeamToolCall({ status: "done", result: undefined })}
           subAgentToolActivity={subAgentToolActivity}
         />,
       );
@@ -321,7 +321,7 @@ describe("ToolCallsBlockComponent", () => {
     it("expands when sub-agents become active after initial render", () => {
       const { rerender } = render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+          toolCall={makeCreateTeamToolCall({ status: "done" })}
           subAgentToolActivity={{}}
         />,
       );
@@ -333,7 +333,7 @@ describe("ToolCallsBlockComponent", () => {
       act(() => {
         rerender(
           <ToolCallsBlockComponent
-            toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+            toolCall={makeCreateTeamToolCall({ status: "done" })}
             subAgentToolActivity={{
               "agent-1": { phase: "generating", currentTool: null, description: "Manager 1" },
             }}
@@ -348,7 +348,7 @@ describe("ToolCallsBlockComponent", () => {
     it("stays expanded when sub-agents finish (does NOT auto-collapse)", () => {
       const { rerender } = render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+          toolCall={makeCreateTeamToolCall({ status: "done" })}
           subAgentToolActivity={{
             "agent-1": { phase: "generating", currentTool: "read_file", description: "Manager 1" },
           }}
@@ -362,7 +362,7 @@ describe("ToolCallsBlockComponent", () => {
       act(() => {
         rerender(
           <ToolCallsBlockComponent
-            toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+            toolCall={makeCreateTeamToolCall({ status: "done" })}
             subAgentToolActivity={{
               "agent-1": { phase: "complete", currentTool: null, description: "Manager 1" },
             }}
@@ -384,7 +384,7 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+          toolCall={makeCreateTeamToolCall({ status: "done" })}
           subAgentToolActivity={subAgentToolActivity}
           isAutoCollapsed={true}
         />,
@@ -401,7 +401,7 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeCreateTeamToolCall({ status: "done" })]}
+          toolCall={makeCreateTeamToolCall({ status: "done" })}
           subAgentToolActivity={subAgentToolActivity}
           isAutoCollapsed={true}
         />,
@@ -419,7 +419,7 @@ describe("ToolCallsBlockComponent", () => {
 
       render(
         <ToolCallsBlockComponent
-          toolCalls={[makeToolCall({ name: "read_file", status: "done" })]}
+          toolCall={makeToolCall({ name: "read_file", status: "done" })}
           subAgentToolActivity={subAgentToolActivity}
         />,
       );

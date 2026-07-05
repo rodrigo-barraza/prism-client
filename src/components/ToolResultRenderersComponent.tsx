@@ -45,7 +45,6 @@ import {
 } from "./MessageListComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 import StatusBarComponent from "./StatusBarComponent";
-import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import PrismService from "../services/PrismService";
 import { EXECUTION_STATUS } from "../constants";
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
