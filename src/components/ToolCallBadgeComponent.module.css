@@ -40,6 +40,20 @@
   opacity: 1;
 }
 
+/* ── Emoji icon ── */
+.badge-emoji {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  line-height: 1;
+  font-style: normal;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.badge:hover .badge-emoji {
+  opacity: 1;
+}
+
 /* ── Label text ── */
 .label {
   opacity: 0.75;
@@ -57,7 +71,8 @@
   box-shadow: 0 0 6px -1px color-mix(in oklch, currentColor 30%, transparent);
 }
 
-.badge-is-active-state svg {
+.badge-is-active-state svg,
+.badge-is-active-state .badge-emoji {
   opacity: 1;
   animation: tool-call-pulse 1.2s ease-in-out infinite;
 }

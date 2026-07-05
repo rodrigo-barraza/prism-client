@@ -1135,6 +1135,8 @@ export interface CoordinatorSubAgent {
   branchName?: string;
   files?: string[];
   recursionDepth?: number;
+  /** Backend-assigned conversation-scoped sequential spawn index (0-based). */
+  globalSpawnIndex?: number;
   toolNames?: Record<string, number>;
 }
 

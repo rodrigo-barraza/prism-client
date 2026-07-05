@@ -1251,7 +1251,7 @@ export default function BadgeComponent(props: BadgeProps) {
       const { name, count, active, variant = "default", tooltip } = props;
       const isCompact = variant === "compact";
       const displayName = resolveDisplayName(name, variant);
-      const { Icon, color } = resolveToolVisuals(name) as { Icon: React.ComponentType<{ size?: number; className?: string }>; color: string };
+      const { Icon, color, emoji: resolvedEmoji } = resolveToolVisuals(name) as { Icon: React.ComponentType<{ size?: number; className?: string }>; color: string; emoji: string | null };
       const tooltipLabel = tooltip || name;
 
       const badge = (
@@ -1262,7 +1262,10 @@ export default function BadgeComponent(props: BadgeProps) {
             borderColor: `color-mix(in srgb, ${color} 30%, transparent)`,
           }}
         >
-          <Icon size={10} />
+          {resolvedEmoji
+            ? <span className={toolItemStyles['badge-emoji']}>{resolvedEmoji}</span>
+            : <Icon size={10} />
+          }
           {!isCompact && (
             <span className={toolItemStyles['label']}>{displayName}</span>
           )}

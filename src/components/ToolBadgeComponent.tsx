@@ -24,7 +24,7 @@ const TOOL_DISPLAY_NAMES: Record<string, string> = {
   "Computer Use": "Computer Use",
   "File Search": "File Search",
   "URL Context": "URL Context",
-  "Image Generation": "Image Gen",
+  "Image Generation": "Image Generation",
 };
 
 /**
@@ -66,6 +66,7 @@ export interface ToolBadgeProps {
   active?: boolean;
   variant?: "default" | "compact" | "condensed";
   tooltip?: string;
+  emoji?: string;
 }
 
 /**
@@ -84,10 +85,12 @@ export default function ToolBadgeComponent({
   active,
   variant = "default",
   tooltip,
+  emoji: emojiOverride,
 }: ToolBadgeProps) {
   const isCompact = variant === "compact";
   const displayName = resolveDisplayName(name, variant);
-  const { Icon, color } = resolveToolVisuals(name);
+  const { Icon, color, emoji: resolvedEmoji } = resolveToolVisuals(name);
+  const badgeEmoji = emojiOverride || resolvedEmoji;
   const tooltipLabel = tooltip || name;
 
   const badge = (
@@ -98,7 +101,10 @@ export default function ToolBadgeComponent({
         borderColor: `color-mix(in srgb, ${color} 30%, transparent)`,
       }}
     >
-      <Icon size={10} />
+      {badgeEmoji
+        ? <span className={styles['badge-emoji']}>{badgeEmoji}</span>
+        : <Icon size={10} />
+      }
       {!isCompact && <span className={styles['label']}>{displayName}</span>}
       {count != null && count > 1 && (
         <span className={styles['count']}>×{count}</span>

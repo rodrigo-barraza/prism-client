@@ -294,6 +294,8 @@ export interface RendererProps {
     string,
     SubAgentActivity | SubAgentToolActivityItem
   > | null;
+  /** Cumulative offset from prior create_subagents calls so numbering is global */
+  subAgentStartIndex?: number;
 }
 
 export interface ToolResultViewProps {
@@ -310,6 +312,8 @@ export interface ToolResultViewProps {
     SubAgentActivity | SubAgentToolActivityItem
   > | null;
   hideToggles?: boolean;
+  /** Cumulative offset from prior create_subagents calls so numbering is global */
+  subAgentStartIndex?: number;
 }
 
 // --- Helpers ----------------------------------------------------------
@@ -2669,6 +2673,7 @@ function TeamCreateRenderer({
   result,
   args,
   subAgentToolActivity,
+  subAgentStartIndex = 0,
 }: RendererProps) {
 
   const parsed = tryParse(result);
@@ -2848,7 +2853,7 @@ function TeamCreateRenderer({
           >
             <div className={styles['renderer-header']}>
               <span className={styles['renderer-title']}>
-                Sub-Agent {index + 1}: <strong>{member.description}</strong>
+                Sub-Agent {subAgentStartIndex + index + 1}: <strong>{member.description}</strong>
               </span>
               {tokensPerSecond !== null && (
                 <span className={styles['sub-agent-speed-badge']}>
@@ -3082,6 +3087,7 @@ export function ToolResultView({
   streamingOutput,
   subAgentToolActivity,
   hideToggles = false,
+  subAgentStartIndex,
 }: ToolResultViewProps) {
   const { Renderer, language } = resolveToolResultRenderer(toolCall.name);
 
@@ -3094,6 +3100,7 @@ export function ToolResultView({
         streamingOutput={streamingOutput}
         language={language}
         subAgentToolActivity={subAgentToolActivity}
+        subAgentStartIndex={subAgentStartIndex}
       />
       {!hideToggles && <OutputResultToggle result={toolCall.result} />}
     </>

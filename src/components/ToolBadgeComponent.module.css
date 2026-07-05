@@ -38,6 +38,14 @@
   flex-shrink: 0;
 }
 
+/* ── Emoji icon (replaces lucide icon when available) ── */
+.badge-emoji {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  line-height: 1;
+  font-style: normal;
+}
+
 /* ── Label text ── */
 .label {
   opacity: 0.85;
@@ -60,7 +68,8 @@
     color-mix(in oklch, var(--accent-primary) 40%, transparent);
 }
 
-.badge-is-active-state svg {
+.badge-is-active-state svg,
+.badge-is-active-state .badge-emoji {
   animation: tool-badge-pulse 1.2s ease-in-out infinite;
 }
 

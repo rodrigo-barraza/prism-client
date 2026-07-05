@@ -29,9 +29,11 @@ vi.mock("lucide-react", () => ({
 
 // Mock WorkflowNodeConstantsComponent
 vi.mock("../src/components/WorkflowNodeConstantsComponent", () => ({
+  TOOL_EMOJI_MAP: {},
   resolveToolVisuals: () => ({
     Icon: ({ size }: { size: number }) => <span data-testid="tool-icon" data-size={size} />,
     color: "#ff9900",
+    emoji: "🛠️",
   }),
 }));
 
@@ -127,7 +129,7 @@ describe("ToolCallsBlockComponent", () => {
         />,
       );
       expect(isBlockCollapsed()).toBe(true);
-      expect(getHeaderText()).toContain("Used tool:");
+      expect(getHeaderText()).toContain("Read File");
     });
 
     it("renders expanded when a tool call is actively calling", () => {
@@ -237,7 +239,7 @@ describe("ToolCallsBlockComponent", () => {
 
       expect(isBlockCollapsed()).toBe(true);
       expect(hasStreamingClass()).toBe(false);
-      expect(getHeaderText()).toContain("Used tool:");
+      expect(getHeaderText()).toContain("Create Subagents");
     });
   });
 

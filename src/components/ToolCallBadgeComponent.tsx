@@ -112,7 +112,7 @@ export default function ToolCallBadgeComponent({
   tooltip,
 }: ToolCallBadgeProps) {
   const displayName = resolveDisplayName(name);
-  const { Icon, color } = resolveToolVisuals(name);
+  const { Icon, color, emoji: resolvedEmoji } = resolveToolVisuals(name);
   const tooltipLabel = tooltip || name;
 
   const badge = (
@@ -124,7 +124,10 @@ export default function ToolCallBadgeComponent({
         background: `color-mix(in srgb, ${color} 4%, var(--background-elevated))`,
       }}
     >
-      <Icon size={size} />
+      {resolvedEmoji
+        ? <span className={styles['badge-emoji']}>{resolvedEmoji}</span>
+        : <Icon size={size} />
+      }
       <span className={styles['label']}>{displayName}</span>
       {count != null && count > 1 && (
         <span className={styles['count']}>×{count}</span>

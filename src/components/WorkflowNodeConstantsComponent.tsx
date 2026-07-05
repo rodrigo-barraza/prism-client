@@ -90,26 +90,252 @@ export const TOOL_ICON_MAP: Record<string, ComponentType<{ size?: number; classN
   "Image Generation": ImagePlus,
 };
 
+// -- Tool Emoji Map (primary emoji for each tool function name) --
+export const TOOL_EMOJI_MAP: Record<string, string> = {
+  // Capability-level names
+  Thinking: "🧠",
+  "Tool Calling": "🛠️",
+  "Web Search": "🌐",
+  "Google Search": "🌐",
+  googleSearch: "🌐",
+  "Web Fetch": "🌐",
+  "Code Execution": "⚡",
+  "Computer Use": "🖥️",
+  "File Search": "🔍",
+  "URL Context": "🔗",
+  "Image Generation": "🖼️",
+
+  // File operations
+  read_file: "📄",
+  write_file: "✏️",
+  replace_in_file: "🔧",
+  replace_file_block: "🧱",
+  replace_file_regions: "🩹",
+  patch_file: "🩹",
+  read_files: "📑",
+  get_file_info: "📄",
+  diff_files: "🔀",
+  move_file: "📂",
+  delete_file: "🗑️",
+  edit_notebook: "📓",
+  list_directory: "📁",
+  search_file_contents: "🔍",
+  find_files: "🔎",
+  summarize_project: "📋",
+
+  // Web
+  read_web_page: "🌐",
+  read_url: "🌐",
+  search_web: "🔍",
+  get_web_content: "🌐",
+  read_pdf: "📕",
+  read_docx: "📝",
+  read_spreadsheet: "📊",
+  read_rss_feed: "📡",
+
+  // Execution
+  execute_command: "▶️",
+  execute_shell: "🖥️",
+  execute_python: "🐍",
+  execute_javascript: "⚡",
+  execute_code: "💻",
+  run_git: "📦",
+  control_browser: "🖱️",
+  execute_browser_script: "📜",
+
+  // Task & Memory
+  create_task: "➕",
+  get_task: "📋",
+  list_tasks: "📝",
+  update_task: "✏️",
+  save_memory: "🧠",
+  extract_memories: "🧠",
+  consolidate_memories: "🧠",
+  search_memories: "🔍",
+  search_conversations: "🔍",
+  write_todo: "📌",
+  summarize_conversation: "💬",
+
+  // Planning
+  enter_plan_mode: "📝",
+  exit_plan_mode: "🚀",
+  think: "🧠",
+  sleep: "💤",
+  emit_structured_output: "📝",
+
+  // Tool management
+  enable_tools: "🔓",
+  disable_tools: "🔒",
+  discover_and_enable_tools: "🔍",
+  search_tools: "🛠️",
+  ask_user: "💬",
+
+  // Orchestrator (Subagent)
+  create_subagent: "🤖",
+  create_subagents: "👥",
+  send_subagent_message: "💬",
+  stop_subagent: "⏹️",
+  get_subagent_output: "📥",
+  delete_subagents: "🗑️",
+  resume_subagent: "🔄",
+
+  // Skills
+  create_skill: "🪄",
+  execute_skill: "⚡",
+  list_skills: "📋",
+  delete_skill: "🗑️",
+
+  // Worktree
+  enter_worktree: "🌳",
+  exit_worktree: "🚪",
+
+  // Timers
+  set_timer: "⏰",
+  list_timers: "⏱️",
+  cancel_timer: "❌",
+
+  // MCP
+  list_mcp_resources: "🔌",
+  read_mcp_resource: "🔌",
+  authenticate_mcp_server: "🔐",
+
+  // Cron
+  create_cron: "⏰",
+  remote_trigger: "📡",
+  create_cron_job: "🗓️",
+  list_cron_jobs: "⏰",
+  delete_cron_job: "🗑️",
+  trigger_cron_job: "🚀",
+
+  // Creative
+  generate_image: "🖼️",
+  describe_image: "👁️",
+  manipulate_image: "🎨",
+  convert_image_to_ascii: "🎨",
+  convert_video_to_gif: "🎬",
+  create_vector_animation: "🎬",
+  get_emoji_combination: "🍳",
+  get_emoji_combinations: "🧑‍🍳",
+  synthesize_speech: "🔊",
+  generate_audio: "🎵",
+  transcribe_audio: "🎤",
+  draw_turtle_graphics: "🐢",
+  create_3d_mesh: "🔺",
+  create_3d_scene: "🌐",
+  create_3d_model: "🧊",
+  create_3d_voxel: "🧱",
+
+  // Weather & Environment
+  get_weather: "🌤️",
+  get_weather_forecast: "🌤️",
+  get_local_environment: "🌍",
+  get_earthquakes: "🌋",
+  get_solar_activity: "☀️",
+  get_wildfires: "🔥",
+  get_iss_location: "🛸",
+  get_near_earth_objects: "☄️",
+  get_nasa_apod: "🔭",
+
+  // Knowledge
+  get_wikipedia_summary: "📘",
+  get_on_this_day: "🕰️",
+  define_word: "📖",
+  search_papers: "🎓",
+  get_youtube_video: "▶️",
+  get_package_info: "📦",
+  get_anime: "🎌",
+  get_element: "⚛️",
+  get_country: "🌐",
+  get_exoplanet: "🪐",
+
+  // Commerce & Markets
+  get_events: "🎟️",
+  get_trends: "📈",
+  search_products: "🛒",
+  get_trending_products: "🔥",
+  get_stock: "💹",
+  get_commodities: "📦",
+  get_earnings_calendar: "💰",
+  get_market_news: "📰",
+
+  // Health & Nutrition
+  search_usda_nutrition: "🍎",
+  search_gym_exercises: "🏋️",
+  search_drugs: "💊",
+  calculate_caloric_needs: "🔢",
+  build_meal_plan: "🍽️",
+
+  // Utilities
+  evaluate_expression: "🧮",
+  convert_units: "📐",
+  convert_currency: "💱",
+  get_time_in_timezone: "🕐",
+  generate_qr_code: "📱",
+  render_latex: "📐",
+  generate_diagram: "📊",
+  generate_chart: "📊",
+  generate_map: "🗺️",
+  generate_csv: "📋",
+
+  // Transit
+  get_next_bus: "🚌",
+  get_transit_stop_info: "🚏",
+
+  // Communication
+  send_sms: "💬",
+  lookup_phone_number: "📞",
+
+  // Smart Home
+  list_lights: "💡",
+  set_light_state: "🎚️",
+  toggle_light_power: "🔌",
+  stop_light_effects: "⏹️",
+
+  // Media
+  search_media: "🎬",
+  get_media_details: "🎥",
+  get_trending_media: "🔥",
+
+  // Async Tasks
+  create_async_task: "⚡",
+  list_async_tasks: "📋",
+  stop_async_task: "⏹️",
+
+  // Discord
+  search_discord_messages: "💬",
+  get_discord_server_activity: "📈",
+
+  // Git
+  git_status: "📦",
+  git_diff: "🔀",
+  git_log: "📜",
+};
+
+
 export interface ToolVisuals {
   Icon: ComponentType<{ size?: number; className?: string }>;
   color: string;
+  emoji: string;
 }
 
 /**
- * Resolve a tool name to its icon component and color.
+ * Resolve a tool name to its icon component, color, and emoji.
  * Falls back to Wrench / "Tool Calling" amber for unknown tools.
  */
 export function resolveToolVisuals(name: string): ToolVisuals {
+  const resolvedEmoji = TOOL_EMOJI_MAP[name] || "🛠️";
   const resolvedIcon = TOOL_ICON_MAP[name];
   if (resolvedIcon) {
     return {
       Icon: resolvedIcon,
       color: TOOL_COLORS[name] || "oklch(0.769 0.188 70.08)",
+      emoji: resolvedEmoji,
     };
   }
   return {
     Icon: TOOL_ICON_MAP["Tool Calling"] || Wrench,
     color: TOOL_COLORS["Tool Calling"] || "oklch(0.692 0.218 36.634)",
+    emoji: resolvedEmoji,
   };
 }
 

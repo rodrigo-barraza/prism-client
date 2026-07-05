@@ -90,7 +90,9 @@
     color: var(--color-warning-light);
   }
 
-  & svg:first-child {
+  & .tool-calls-toggle-emoji {
+    font-size: 14px;
+    line-height: 1;
     filter: drop-shadow(0 0 3px oklch(70.5% 0.1867 47.6 / 0.4));
   }
 }

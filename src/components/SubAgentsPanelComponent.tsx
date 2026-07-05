@@ -50,11 +50,6 @@ const CARD_CLASS: Record<string, string> = {
   stopped: "sub-agent-card-stopped",
 };
 
-function getAgentNumber(agentId: string | undefined) {
-  const match =
-    typeof agentId === "string" ? agentId.match(/agent-([a-zA-Z0-9_]+)/) : null;
-  return match ? match[1].toUpperCase() : agentId;
-}
 
 export default function SubAgentsPanel({
   conversationId,
@@ -185,7 +180,7 @@ export default function SubAgentsPanel({
       )}
 
       {/* -- Sub-agent list ------------------------------------ */}
-      {subAgents.map((subAgent) => {
+      {subAgents.map((subAgent, subAgentIndex) => {
         const statusLabel = STATUS_LABEL[subAgent.status] || subAgent.status;
         const statusClass = STATUS_CLASS[subAgent.status] || "status-pending";
         const cardClass = CARD_CLASS[subAgent.status] || "";
@@ -203,7 +198,7 @@ export default function SubAgentsPanel({
             {/* -- Title row (HistoryItem-style) --------------- */}
             <div className={styles['title-layout-row']}>
               <span className={styles['agent-badge']}>
-                Agent {getAgentNumber(subAgent.agentId)}
+                Agent {subAgent.globalSpawnIndex != null ? subAgent.globalSpawnIndex + 1 : subAgentIndex + 1}
               </span>
               {typeof subAgent.recursionDepth === "number" && subAgent.recursionDepth > 0 && (
                 <span className={styles['depth-badge']}>

@@ -3,11 +3,10 @@ import {
   ChevronDown,
   ChevronRight,
   Check,
-  Zap,
   AlertTriangle,
   Loader,
 } from "lucide-react";
-import { resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
+import { TOOL_EMOJI_MAP, resolveToolVisuals } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderersComponent";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 
@@ -131,7 +130,7 @@ export default function ToolCallsBlockComponent({
           ? "Google Search"
           : renderToolName(toolCalls[0].name);
       if (isBlockActive) return `Calling ${name}…`;
-      return `Used tool: ${name}`;
+      return name;
     }
     if (isBlockActive) {
       const progress =
@@ -156,7 +155,11 @@ export default function ToolCallsBlockComponent({
           });
         }}
       >
-        <Zap size={13} />
+        <span className={styles['tool-calls-toggle-emoji']}>
+          {toolCalls.length === 1
+            ? (TOOL_EMOJI_MAP[toolCalls[0].name] || "🛠️")
+            : "🛠️"}
+        </span>
         <span>{headerText}</span>
         {headerCollapsed ? (
           <ChevronRight size={14} />
@@ -168,12 +171,39 @@ export default function ToolCallsBlockComponent({
       {/* -- Collapsible tool cards (CSS grid disclosure for smooth animation) -- */}
       <div className={`${styles['tool-calls-disclosure']}${headerCollapsed ? ` ${styles['tool-calls-disclosure-collapsed']}` : ''}`}>
         <div className={styles['tool-calls-content']}>
-          {toolCalls.map((toolCall, j) => {
+          {(() => {
+            // Compute cumulative sub-agent member offsets so numbering
+            // continues across multiple create_subagents calls.
+            let cumulativeSubAgentCount = 0;
+            const subAgentStartIndexByToolIndex: number[] = [];
+            for (const currentToolCall of toolCalls) {
+              subAgentStartIndexByToolIndex.push(cumulativeSubAgentCount);
+              if (
+                currentToolCall.name === TOOL_NAMES.CREATE_SUBAGENTS ||
+                currentToolCall.name === TOOL_NAMES.CREATE_SUBAGENT
+              ) {
+                const parsedToolResult = currentToolCall.result
+                  ? typeof currentToolCall.result === "string"
+                    ? (() => { try { return JSON.parse(currentToolCall.result); } catch { return null; } })()
+                    : currentToolCall.result
+                  : null;
+                const resultMembersList = Array.isArray(parsedToolResult)
+                  ? parsedToolResult
+                  : (parsedToolResult as { members?: unknown[]; agents?: unknown[] })?.members
+                    ?? (parsedToolResult as { agents?: unknown[] })?.agents
+                    ?? [];
+                const memberCount = Array.isArray(resultMembersList) ? resultMembersList.length : 0;
+                // Use args member count as fallback when result hasn't arrived yet
+                const argMembersList = (currentToolCall.args as { members?: unknown[] })?.members;
+                cumulativeSubAgentCount += memberCount || (Array.isArray(argMembersList) ? argMembersList.length : 0);
+              }
+            }
+            return toolCalls.map((toolCall, j) => {
             const name =
               toolCall.name === TOOL_NAMES.GOOGLE_SEARCH
                 ? "Google Search"
                 : renderToolName(toolCall.name);
-            const { Icon, color } = resolveToolVisuals(toolCall.name);
+            const { Icon, color, emoji: resolvedEmoji } = resolveToolVisuals(toolCall.name);
 
             const isCalling = toolCall.status === "calling" || toolCall.status === "streaming";
             const isError = toolCall.status === "error";
@@ -194,7 +224,10 @@ export default function ToolCallsBlockComponent({
                 </span>
 
                 <span className={styles['tool-call-icon']} style={{ color }}>
-                  <Icon size={13} />
+                  {resolvedEmoji
+                    ? <span style={{ fontSize: '13px', lineHeight: 1 }}>{resolvedEmoji}</span>
+                    : <Icon size={13} />
+                  }
                 </span>
                 <span className={styles['tool-call-name']}>{name}</span>
                 {toolCall.durationMs != null && toolCall.durationMs > 0 && (
@@ -306,10 +339,12 @@ export default function ToolCallsBlockComponent({
                   toolCall={toolCall}
                   streamingOutput={streamingOutputs?.get(toolCall.id)}
                   subAgentToolActivity={subAgentToolActivity}
+                  subAgentStartIndex={subAgentStartIndexByToolIndex[j]}
                 />
               </div>
             );
-          })}
+          });
+          })()}
         </div>
       </div>
     </div>
