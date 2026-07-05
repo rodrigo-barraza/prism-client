@@ -135,9 +135,9 @@ function copyViaLegacyExecCommand(text: string): boolean {
  * Used at conversation initialization to ensure the client uses authoritative defaults.
  */
 export function buildSettingsDefaults(
-  parameterDescriptors: Array<{ key: string; defaultValue: any }> | null | undefined,
-): Record<string, any> {
-  const defaults: Record<string, any> = {};
+  parameterDescriptors: Array<{ key: string; defaultValue: unknown }> | null | undefined,
+): Record<string, unknown> {
+  const defaults: Record<string, unknown> = {};
   if (!parameterDescriptors) return defaults;
   for (const descriptor of parameterDescriptors) {
     defaults[descriptor.key] = descriptor.defaultValue;

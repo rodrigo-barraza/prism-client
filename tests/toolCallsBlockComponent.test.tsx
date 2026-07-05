@@ -15,6 +15,18 @@ vi.mock(
   }),
 );
 
+vi.mock(
+  "../src/components/ToolResultRenderers/ToolResultRenderersComponent.module.css",
+  () => ({
+    default: new Proxy(
+      {},
+      {
+        get: (_target, property: string) => property,
+      },
+    ),
+  }),
+);
+
 // Mock lucide-react icons as simple spans
 vi.mock("lucide-react", () => ({
   ChevronDown: ({ size }: { size: number }) => <span data-testid="chevron-down" data-size={size} />,
@@ -37,8 +49,8 @@ vi.mock("../src/components/WorkflowNodeConstantsComponent", () => ({
   }),
 }));
 
-// Mock ToolResultRenderersComponent
-vi.mock("../src/components/ToolResultRenderersComponent", () => ({
+// Mock ToolResultRenderers
+vi.mock("../src/components/ToolResultRenderers", () => ({
   ToolResultView: () => <div data-testid="tool-result-view" />,
 }));
 

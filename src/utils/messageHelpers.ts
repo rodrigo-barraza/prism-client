@@ -52,10 +52,17 @@ export function prepareDisplayMessages(
   // First pass: collect tool results keyed by tool_call_id
   // Support both snake_case (API) and camelCase (normalized) property names
   const toolResults: Record<string, string> = {};
+  const toolDurations: Record<string, number> = {};
   for (const message of normalizedMessages) {
     if (message.role === "tool") {
       const id = message.tool_call_id || message.toolCallId;
-      if (id) toolResults[id] = message.content || "";
+      if (id) {
+        toolResults[id] = message.content || "";
+        const persistedDuration = (message as unknown as Record<string, unknown>).durationMilliseconds as number | undefined;
+        if (persistedDuration != null) {
+          toolDurations[id] = persistedDuration;
+        }
+      }
     }
   }
 
@@ -87,10 +94,12 @@ export function prepareDisplayMessages(
     .map((message) => {
       // Merge tool results into toolCalls
       let enrichedCalls = message.toolCalls;
+      const hasToolResults = Object.keys(toolResults).length > 0;
+      const hasToolDurations = Object.keys(toolDurations).length > 0;
       if (
         message.toolCalls &&
         message.toolCalls.length > 0 &&
-        Object.keys(toolResults).length > 0
+        (hasToolResults || hasToolDurations)
       ) {
         enrichedCalls = message.toolCalls.map(
           (toolCall: ToolCallEvent) => ({
@@ -100,6 +109,12 @@ export function prepareDisplayMessages(
               toolResults[toolCall.id] ||
               toolResults[toolCall.tool_call_id || ""] ||
               null,
+            ...(toolDurations[toolCall.id] != null && {
+              durationMs: toolDurations[toolCall.id],
+            }),
+            ...(toolDurations[toolCall.tool_call_id || ""] != null && {
+              durationMs: toolDurations[toolCall.tool_call_id || ""],
+            }),
           }),
         );
       }

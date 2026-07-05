@@ -27,6 +27,7 @@ export interface ToolExecutionInput {
   result?: unknown;
   status: string; // "calling" | "done" | "error"
   durationMs?: number;
+  timestamp?: number;
 }
 
 // --- Snapshot helpers passed from the streaming closure ----------
@@ -88,7 +89,7 @@ export function applyToolExecutionToMessages(
           name: toolInput.name || "unknown",
           args: toolInput.args || {},
           status: toolInput.status,
-          timestamp: Date.now(),
+          timestamp: toolInput.timestamp || Date.now(),
         },
       ];
     }
@@ -177,7 +178,7 @@ export function applyToolExecutionToActivity(
         name: toolInput.name || "unknown",
         args: toolInput.args || {},
         status: toolInput.status,
-        timestamp: Date.now(),
+        timestamp: toolInput.timestamp || Date.now(),
       },
     ];
   } else {

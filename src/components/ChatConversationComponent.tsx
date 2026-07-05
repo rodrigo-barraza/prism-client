@@ -873,7 +873,7 @@ export default function ChatConversationComponent({
       functionCallingEnabled: initialFcEnabled ? true : !isNoAgent,
       thinkingEnabled: initialThinkingEnabled
         ? true
-        : buildSettingsDefaults(config?.parameterDescriptors).thinkingEnabled || false,
+        : (buildSettingsDefaults(config?.parameterDescriptors).thinkingEnabled as boolean) || false,
       agents: {
         workspaceEnabled: workspaceEnabledPreference,
       },
@@ -3916,7 +3916,8 @@ export default function ChatConversationComponent({
                   args: toolData.args,
                   status: data.status as string,
                   result: toolData.result,
-                  durationMs: toolData.durationMs,
+                  durationMs: toolData.durationMs || (toolData as Record<string, unknown>).durationMilliseconds as number | undefined,
+                  timestamp: data.timestamp as number | undefined,
                 },
               );
               return next ?? previousToolActivity;
@@ -3960,7 +3961,8 @@ export default function ChatConversationComponent({
                   args: toolData.args,
                   status: data.status as string,
                   result: toolData.result,
-                  durationMs: toolData.durationMs,
+                  durationMs: toolData.durationMs || (toolData as Record<string, unknown>).durationMilliseconds as number | undefined,
+                  timestamp: data.timestamp as number | undefined,
                 },
                 execSnapshot,
               ) as ClientMessage[];
@@ -4596,7 +4598,7 @@ export default function ChatConversationComponent({
                       ...toolCall,
                       status: data.status === "done" ? "done" : "error",
                       result: toolData.result,
-                      durationMs: toolData.durationMs,
+                      durationMs: toolData.durationMs || (toolData as Record<string, unknown>).durationMilliseconds as number | undefined,
                     };
                   }
                   return toolCall;

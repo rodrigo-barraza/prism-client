@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { TOOL_EMOJI_MAP } from "./WorkflowNodeConstantsComponent";
-import { ToolResultView } from "./ToolResultRenderersComponent";
+import { ToolResultView } from "./ToolResultRenderers";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { ToolCallEvent } from "../types/types";
 import type { SubAgentToolActivityItem } from "./MessageListComponent";
+import { detectActiveSubAgents, parseTeamToolResult, aggregateTeamToolUsage } from "./ToolCallsBlock/SubAgentParsingUtils";
 import styles from "./ToolCallsBlockComponent.module.css";
 
 interface ToolCallsBlockProps {
@@ -43,241 +41,114 @@ export default function ToolCallsBlockComponent({
   subAgentToolActivity,
   isAutoCollapsed,
 }: ToolCallsBlockProps) {
-  const isCalling = toolCall.status === "calling" || toolCall.status === "streaming";
+  const isCurrentlyCalling = toolCall.status === "calling" || toolCall.status === "streaming";
+  const hasActiveSubAgents = detectActiveSubAgents(toolCall, subAgentToolActivity);
+  const isBlockActive = isCurrentlyCalling || hasActiveSubAgents;
 
-  // Detect sub-agents still running after the tool call status flips to "done".
-  // A sub-agent is active unless it reached a terminal phase (complete/failed) or has no phase at all.
-  const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
-  const isSubAgentActive = (activity: SubAgentToolActivityItem | null | undefined): boolean =>
-    !!activity && (!!activity.currentTool || (!!activity.phase && !terminalPhases.has(activity.phase)));
-
-  const hasActiveSubAgents = (() => {
-    if (!subAgentToolActivity) return false;
-    if (toolCall.name !== TOOL_NAMES.CREATE_SUBAGENTS && toolCall.name !== TOOL_NAMES.CREATE_SUBAGENT) return false;
-    const parsed = toolCall.result
-      ? typeof toolCall.result === "string"
-        ? (() => { try { return JSON.parse(toolCall.result); } catch { return null; } })()
-        : toolCall.result
-      : null;
-    const rawMembers = Array.isArray(parsed)
-      ? parsed
-      : (parsed as { members?: Array<{ agent_id?: string }>; agents?: Array<{ agent_id?: string }> })?.members
-        ?? (parsed as { agents?: Array<{ agent_id?: string }> })?.agents
-        ?? [];
-    const members: Array<{ agent_id?: string }> = Array.isArray(rawMembers) ? rawMembers : [];
-    for (const member of members) {
-      if (isSubAgentActive(member.agent_id ? subAgentToolActivity[member.agent_id] : null)) return true;
-    }
-    // Fallback: match by description during calling state (before result arrives).
-    // Skip when a result already exists — error-only results would incorrectly
-    // match agents from a separate, successful tool call.
-    const toolCallArguments = toolCall.args as { members?: Array<{ description?: string }> };
-    if (!parsed && Array.isArray(toolCallArguments?.members)) {
-      for (const argumentMember of toolCallArguments.members) {
-        const match = Object.values(subAgentToolActivity).find(
-          (value) => value.description && argumentMember.description && value.description.includes(argumentMember.description),
-        );
-        if (isSubAgentActive(match)) return true;
-      }
-    }
-    return false;
-  })();
-
-  const isBlockActive = isCalling || hasActiveSubAgents;
-
-  const toolDisplayName =
-    toolCall.name === TOOL_NAMES.GOOGLE_SEARCH
-      ? "Google Search"
-      : renderToolName(toolCall.name);
+  const toolDisplayName = toolCall.name === TOOL_NAMES.GOOGLE_SEARCH
+    ? "Google Search"
+    : renderToolName(toolCall.name);
 
   // Live counter for active tool execution
-  const toolStartTimeRef = useRef<number | null>(null);
-  const [liveToolElapsedSeconds, setLiveToolElapsedSeconds] = useState(0);
+  const computeElapsedSeconds = (): number => {
+    if (!toolCall.timestamp) return 0;
+    return Math.round((Date.now() - toolCall.timestamp) / 1000);
+  };
+
+  const [liveToolElapsedSeconds, setLiveToolElapsedSeconds] = useState(() =>
+    isBlockActive ? computeElapsedSeconds() : 0,
+  );
 
   useEffect(() => {
     if (isBlockActive) {
-      if (toolStartTimeRef.current === null) {
-        toolStartTimeRef.current = performance.now();
-      }
-      const intervalId = setInterval(() => {
-        if (toolStartTimeRef.current !== null) {
-          setLiveToolElapsedSeconds(
-            Math.round((performance.now() - toolStartTimeRef.current) / 1000),
-          );
-        }
+      setLiveToolElapsedSeconds(computeElapsedSeconds());
+      const timerIntervalId = setInterval(() => {
+        setLiveToolElapsedSeconds(computeElapsedSeconds());
       }, 1000);
-      return () => clearInterval(intervalId);
+      return () => clearInterval(timerIntervalId);
     }
-    toolStartTimeRef.current = null;
     setLiveToolElapsedSeconds(0);
-  }, [isBlockActive]);
+  }, [isBlockActive, toolCall.timestamp]);
 
-  // Build header text with integrated duration
-  const headerText = (() => {
+  const headerLabelText = useMemo(() => {
     if (isBlockActive) {
       return liveToolElapsedSeconds > 0
         ? `Calling ${toolDisplayName} for ${liveToolElapsedSeconds}s\u2026`
         : `Calling ${toolDisplayName}\u2026`;
     }
     if (toolCall.durationMs != null && toolCall.durationMs > 0) {
-      const durationSeconds = Math.round(toolCall.durationMs / 1000);
-      const durationLabel = durationSeconds < 1
+      const totalDurationSeconds = Math.round(toolCall.durationMs / 1000);
+      const durationFormattedLabel = totalDurationSeconds < 1
         ? "<1 second"
-        : `${durationSeconds} second${durationSeconds === 1 ? "" : "s"}`;
-      return `${toolDisplayName} for ${durationLabel}`;
+        : `${totalDurationSeconds} second${totalDurationSeconds === 1 ? "" : "s"}`;
+      return `${toolDisplayName} for ${durationFormattedLabel}`;
     }
     return toolDisplayName;
-  })();
+  }, [isBlockActive, liveToolElapsedSeconds, toolDisplayName, toolCall.durationMs]);
 
-  const [headerCollapsed, setHeaderCollapsed] = useState(!isBlockActive);
-  const wasManuallyExpanded = useRef(false);
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(!isBlockActive);
+  const wasHeaderManuallyExpanded = useRef(false);
   const previousIsBlockActive = useRef(isBlockActive);
 
   useEffect(() => {
-    if (isAutoCollapsed && !isBlockActive && !wasManuallyExpanded.current) {
-      setHeaderCollapsed(true);
+    if (isAutoCollapsed && !isBlockActive && !wasHeaderManuallyExpanded.current) {
+      setIsHeaderCollapsed(true);
     }
   }, [isAutoCollapsed, isBlockActive]);
 
-  // Force-expand when sub-agents become active.
-  // Do NOT auto-collapse when they finish \u2014 the card stays open until
-  // the user manually closes it or isAutoCollapsed kicks in.
   useEffect(() => {
     if (isBlockActive && !previousIsBlockActive.current) {
-      setHeaderCollapsed(false);
+      setIsHeaderCollapsed(false);
     }
     previousIsBlockActive.current = isBlockActive;
   }, [isBlockActive]);
+
+  const teamMembers = useMemo(() => parseTeamToolResult(toolCall.result), [toolCall.result]);
+  const teamToolActivity = useMemo(() => 
+    aggregateTeamToolUsage(
+      teamMembers, 
+      subAgentToolActivity, 
+      toolCall.args as { members?: Array<{ description?: string }> }
+    ),
+  [teamMembers, subAgentToolActivity, toolCall.args]);
 
   return (
     <div
       className={`tool-calls-block-component ${styles['tool-calls-block']}${isBlockActive ? ` ${styles['tool-calls-streaming']}` : ""}`}
     >
-      {/* -- Header toggle -- */}
       <button
         className={styles['tool-calls-toggle']}
         onClick={() => {
-          setHeaderCollapsed((previous) => {
-            const willCollapse = !previous;
-            wasManuallyExpanded.current = willCollapse ? false : true;
-            return !previous;
+          setIsHeaderCollapsed((isCurrentlyCollapsed) => {
+            const willBeCollapsed = !isCurrentlyCollapsed;
+            wasHeaderManuallyExpanded.current = !willBeCollapsed;
+            return willBeCollapsed;
           });
         }}
       >
         <span className={styles['tool-calls-toggle-emoji']}>
           {TOOL_EMOJI_MAP[toolCall.name] || "\uD83D\uDEE0\uFE0F"}
         </span>
-        <span>{headerText}</span>
-        {headerCollapsed ? (
+        <span>{headerLabelText}</span>
+        {isHeaderCollapsed ? (
           <ChevronRight size={14} />
         ) : (
           <ChevronDown size={14} />
         )}
       </button>
 
-      {/* -- Collapsible content (CSS grid disclosure for smooth animation) -- */}
-      <div className={`${styles['tool-calls-disclosure']}${headerCollapsed ? ` ${styles['tool-calls-disclosure-collapsed']}` : ''}`}>
+      <div className={`${styles['tool-calls-disclosure']}${isHeaderCollapsed ? ` ${styles['tool-calls-disclosure-collapsed']}` : ''}`}>
         <div className={styles['tool-calls-content']}>
-          {/* Sub-agent tool badges — show which tools a spawned agent used */}
-          {(toolCall.name === TOOL_NAMES.CREATE_SUBAGENTS || toolCall.name === TOOL_NAMES.CREATE_SUBAGENT) &&
-            (() => {
-              const parsed = toolCall.result
-                ? typeof toolCall.result === "string"
-                  ? (() => {
-                      try {
-                        return JSON.parse(toolCall.result);
-                      } catch {
-                        return null;
-                      }
-                    })()
-                  : toolCall.result
-                : null;
-              const members =
-                (
-                  parsed as {
-                    members?: Array<{
-                      agent_id?: string;
-                      toolUses?: number;
-                    }>;
-                    agents?: Array<{
-                      agent_id?: string;
-                      toolUses?: number;
-                    }>;
-                  }
-                )?.members
-                ?? (parsed as { agents?: Array<{ agent_id?: string; toolUses?: number }> })?.agents
-                ?? [];
-              // Aggregate tool activity from all team members
-              const allToolNames: Record<string, number> = {};
-              let activeTool: string | null = null;
-              for (const member of members) {
-                const activity =
-                  member.agent_id && subAgentToolActivity
-                    ? subAgentToolActivity[member.agent_id]
-                    : null;
-                if (activity?.toolNames) {
-                  for (const [name, count] of Object.entries(
-                    activity.toolNames,
-                  )) {
-                    allToolNames[name] =
-                      (allToolNames[name] || 0) + count;
-                  }
-                  if (activity.currentTool)
-                    activeTool = activity.currentTool;
-                }
-              }
-              // Fallback: match by description during calling state (before result arrives)
-              const toolCallArgs = toolCall.args as {
-                members?: Array<{ description?: string }>;
-              };
-              if (
-                Object.keys(allToolNames).length === 0 &&
-                subAgentToolActivity &&
-                Array.isArray(toolCallArgs?.members)
-              ) {
-                for (const argMember of toolCallArgs.members) {
-                  const match = Object.values(subAgentToolActivity).find(
-                    (value) =>
-                      value.description &&
-                      argMember.description &&
-                      value.description.includes(argMember.description),
-                  );
-                  if (match?.toolNames) {
-                    for (const [name, count] of Object.entries(
-                      match.toolNames,
-                    )) {
-                      allToolNames[name] =
-                        (allToolNames[name] || 0) + count;
-                    }
-                    if (match.currentTool) activeTool = match.currentTool;
-                  }
-                }
-              }
-              if (Object.keys(allToolNames).length > 0)
-                return (
-                  <ToolBadgeRow
-                    tools={allToolNames}
-                    activeTool={activeTool}
-                  />
-                );
-              // Static badge from completed result
-              const totalToolUses = members.reduce(
-                (sum, model) => sum + (model.toolUses || 0),
-                0,
-              );
-              if (totalToolUses > 0)
-                return (
-                  <ToolBadgeRow
-                    tools={{ "Tool Calling": totalToolUses }}
-                  />
-                );
-              return null;
-            })()}
+          {Object.keys(teamToolActivity.toolCounts).length > 0 && (
+            <ToolBadgeRow
+              tools={teamToolActivity.toolCounts}
+              activeTool={teamToolActivity.activeTool}
+            />
+          )}
 
-          {/* Tool-specific result renderer (registry pattern) */}
           <ToolResultView
             toolCall={toolCall}
-            streamingOutput={streamingOutputs?.get(toolCall.id)}
+            streamingOutput={streamingOutputs?.get(toolCall.id || "")}
             subAgentToolActivity={subAgentToolActivity}
             subAgentStartIndex={0}
           />

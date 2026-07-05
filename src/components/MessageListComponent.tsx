@@ -27,7 +27,7 @@ import {
   Terminal,
 } from "lucide-react";
 import ToolCallsBlockComponent, { VISUAL_TOOL_NAMES } from "./ToolCallsBlockComponent";
-import { ToolResultView } from "./ToolResultRenderersComponent";
+import { ToolResultView } from "./ToolResultRenderers";
 import MarkdownContent from "./MarkdownContentComponent";
 import StreamingCursorComponent from "./StreamingCursorComponent";
 

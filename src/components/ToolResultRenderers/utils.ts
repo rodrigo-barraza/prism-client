@@ -1,0 +1,103 @@
+import { ParsedToolResult } from "./types";
+
+export function basename(filePath: string | null | undefined): string {
+  if (!filePath) return "";
+  return filePath.split("/").pop() || filePath;
+}
+
+export function extensionOf(filePath: string | null | undefined): string {
+  const base = basename(filePath);
+  const dot = base.lastIndexOf(".");
+  return dot > 0 ? base.substring(dot + 1).toLowerCase() : "";
+}
+
+export function tryParse(result: unknown): ParsedToolResult | null {
+  if (typeof result === "object" && result !== null) {
+    return result as ParsedToolResult;
+  }
+  if (typeof result === "string") {
+    try {
+      const parsed = JSON.parse(result);
+      if (typeof parsed === "object" && parsed !== null) {
+        return parsed as ParsedToolResult;
+      }
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Language hint for syntax highlighting based on file extension.
+ */
+export const EXT_LANG: Record<string, string> = {
+  js: "javascript",
+  jsx: "javascript",
+  ts: "typescript",
+  tsx: "typescript",
+  py: "python",
+  rb: "ruby",
+  go: "go",
+  rs: "rust",
+  java: "java",
+  css: "css",
+  scss: "scss",
+  html: "html",
+  json: "json",
+  yaml: "yaml",
+  yml: "yaml",
+  md: "markdown",
+  sh: "bash",
+  bash: "bash",
+  sql: "sql",
+  xml: "xml",
+  toml: "toml",
+  lua: "lua",
+  c: "c",
+  cpp: "cpp",
+  h: "c",
+};
+
+// -- ANSI escape-code → React span parser utilities ----------------------
+export const ANSI_RE = /\x1b\[([0-9;]*)m/g;
+
+export const ANSI_COLORS = [
+  null, // 0 – default
+  "oklch(0.585 0.22 25)", // 1 – red
+  "oklch(0.7 0.17 145)", // 2 – green
+  "oklch(0.769 0.177 90.046)", // 3 – yellow
+  "oklch(0.588 0.158 241.966)", // 4 – blue
+  "oklch(0.6 0.23 290)", // 5 – magenta
+  "oklch(0.7 0.15 195)", // 6 – cyan
+  "oklch(0.85 0.01 260)", // 7 – white
+];
+
+export const ANSI_BRIGHT_COLORS = [
+  "oklch(0.5 0.01 260)", // 0 – bright black (gray)
+  "oklch(0.65 0.15 25)", // 1 – bright red
+  "oklch(0.8 0.15 145)", // 2 – bright green
+  "oklch(0.9 0.15 90)", // 3 – bright yellow
+  "oklch(0.7 0.13 245)", // 4 – bright blue
+  "oklch(0.7 0.18 290)", // 5 – bright magenta
+  "oklch(0.8 0.13 195)", // 6 – bright cyan
+  "oklch(1 0 0)", // 7 – bright white
+];
+
+export function ansi256ToHex(colorCode: number): string | null | undefined {
+  if (colorCode < 8) return ANSI_COLORS[colorCode];
+  if (colorCode < 16) return ANSI_BRIGHT_COLORS[colorCode - 8];
+  if (colorCode < 232) {
+    const index = colorCode - 16;
+    const result = Math.floor(index / 36) * 51;
+    const group = (Math.floor(index / 6) % 6) * 51;
+    const current = (index % 6) * 51;
+    return `#${result.toString(16).padStart(2, "0")}${group.toString(16).padStart(2, "0")}${current.toString(16).padStart(2, "0")}`;
+  }
+  const grayscaleValue = (colorCode - 232) * 10 + 8;
+  return `#${grayscaleValue.toString(16).padStart(2, "0")}${grayscaleValue.toString(16).padStart(2, "0")}${grayscaleValue.toString(16).padStart(2, "0")}`;
+}
+
+export function stripAnsi(text: string): string {
+  return text.replace(/\x1b\[[0-9;]*m/g, "");
+}
