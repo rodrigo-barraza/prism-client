@@ -7841,7 +7841,10 @@ export default function ChatConversationComponent({
         // Fallback: if no live SSE sub-agent activity but pendingBackgroundTasks > 0,
         // the SSE stream has closed but async work is still running in the background.
         // Show a delegating phase so the status bar stays alive.
-        if (!subAgentDerivedPhase && hasPendingBackgroundTasks) {
+        // Guard: only activate when the orchestrator is NOT generating — when
+        // isGenerating is true the SSE stream is still open and the actual
+        // generation phase (generating/thinking/etc.) should take priority.
+        if (!subAgentDerivedPhase && hasPendingBackgroundTasks && !isGenerating) {
           subAgentDerivedPhase = "delegating";
           subAgentDerivedLabel = "Awaiting Background Tasks…";
         }

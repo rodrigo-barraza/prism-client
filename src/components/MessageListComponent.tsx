@@ -1377,12 +1377,14 @@ export default function MessageList({
                                     />
                                   )}
                                   {groupMessage.toolCalls &&
-                                    groupMessage.toolCalls.length > 0 && (
+                                    groupMessage.toolCalls.length > 0 &&
+                                    groupMessage.toolCalls.map((singleToolCall: ToolCallEvent, toolCallIndex: number) => (
                                       <ToolCallsBlockComponent
-                                        toolCalls={groupMessage.toolCalls}
+                                        key={`group-tool-${toolCallIndex}`}
+                                        toolCalls={[singleToolCall]}
                                         subAgentToolActivity={subAgentToolActivity}
                                       />
-                                    )}
+                                    ))}
                                   {groupMessage.images && groupMessage.images.length > 0 && (
                                     <div className={styles['image-preview-layout-row']}>
                                       {groupMessage.images.map(
@@ -1660,15 +1662,15 @@ export default function MessageList({
                                 },
                               );
                               if (segmentTools.length === 0) return null;
-                              return (
+                              return segmentTools.map((singleToolCall: ToolCallEvent, toolCallIndex: number) => (
                                 <ToolCallsBlockComponent
-                                  key={`seg-t-${si}`}
-                                  toolCalls={segmentTools}
+                                  key={`seg-t-${si}-${toolCallIndex}`}
+                                  toolCalls={[singleToolCall]}
                                   streamingOutputs={streamingOutputs}
                                   subAgentToolActivity={subAgentToolActivity}
                                   isAutoCollapsed={opts.isAutoCollapsed}
                                 />
-                              );
+                              ));
                             }
                             if (seg.type === "text") {
                               const fragmentText =
@@ -1900,13 +1902,15 @@ export default function MessageList({
 
                           {/* Tool calls (persisted conversations without segments) */}
                           {message.toolCalls &&
-                            message.toolCalls.length > 0 && (
+                            message.toolCalls.length > 0 &&
+                            message.toolCalls.map((singleToolCall: ToolCallEvent, toolCallIndex: number) => (
                               <ToolCallsBlockComponent
-                                toolCalls={message.toolCalls}
+                                key={`fallback-tool-${toolCallIndex}`}
+                                toolCalls={[singleToolCall]}
                                 streamingOutputs={streamingOutputs}
                                 subAgentToolActivity={subAgentToolActivity}
                               />
-                            )}
+                            ))}
 
                           {/* Text content */}
                           {message.role === "user" && !readOnly ? (
