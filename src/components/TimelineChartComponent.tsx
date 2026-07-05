@@ -182,11 +182,11 @@ function SparseTick({ x, y, payload, data }: RechartsTickProps & { data?: Timeli
       <text
         x={0}
         y={0}
-        dy={16}
+        dy={20}
         textAnchor="end"
         fill="oklch(0.45 0.05 260)"
         fontSize={10}
-        transform="rotate(-45)"
+        transform="rotate(-65)"
       >
         {text}
       </text>
@@ -328,7 +328,7 @@ export default function TimelineChartComponent({
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
-              margin={{ top: 8, right: 12, bottom: 48, left: -12 }}
+              margin={{ top: 8, right: 12, bottom: 60, left: -12 }}
             >
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -353,9 +353,9 @@ export default function TimelineChartComponent({
                     : {
                         fill: "oklch(0.45 0.05 260)",
                         fontSize: 10,
-                        angle: -45,
+                        angle: -65,
                         textAnchor: "end",
-                        dy: 8,
+                        dy: 12,
                       }
                 }
                 axisLine={{ stroke: "rgba(255,255,255,0.06)" }}
