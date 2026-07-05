@@ -3,7 +3,7 @@ import { ChevronRight, Check, XCircle, FileText } from "lucide-react";
 import MarkdownContent from "../MarkdownContentComponent";
 import JsonViewerComponent from "../JsonViewerComponent";
 import { ToolArgs } from "./types";
-import styles from "../ToolResultRenderersComponent.module.css";
+import styles from "./ToolResultRenderersComponent.module.css";
 
 // --- Status Badge -----------------------------------------------------
 
