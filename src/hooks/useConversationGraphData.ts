@@ -10,10 +10,8 @@ import PrismService from "../services/PrismService";
 import { EXECUTION_STATUS, LAYOUT, TIMING } from "../constants";
 import type { AgentConversation, ConversationStats, ToolSchema } from "../types/types";
 import {
-  buildGraphFromConversation,
   type GraphData,
   type GraphNode,
-  applyTopologyLayout,
   PROACTIVE_PENDING_REQUEST_NODE_ID,
   PROACTIVE_PENDING_TURN_NODE_ID,
 } from "../components/ChatConversationGraphComponent";
@@ -119,168 +117,167 @@ export default function useConversationGraphData(
     return () => { isCancelled = true; };
   }, []);
 
-  // -- Incremental rebuild ----------------------------------------
-  const incrementalGraphRebuild = useCallback((
+  // -- Incremental rebuild (backend-driven) -----------------------
+  const incrementalGraphRebuild = useCallback(async (
     activeConversation: AgentConversation,
-    updatedStats: ConversationStats | null,
-    updatedRequests: IrisRequestEntry[],
+    _updatedStats: ConversationStats | null,
+    _updatedRequests: IrisRequestEntry[],
   ) => {
-    setGraphData((previousGraphData) => {
-      const existingPositions = new Map<string, { x: number; y: number }>();
-      const existingNodeIds = new Set<string>();
+    const activeConversationId = activeConversation.id || activeConversation._id;
+    if (!activeConversationId) return;
 
-      if (previousGraphData) {
-        for (const node of previousGraphData.nodes) {
-          existingPositions.set(node.id, { x: node.x, y: node.y });
-          existingNodeIds.add(node.id);
+    try {
+      const graph = await IrisService.getConversationGraph(
+        activeConversationId,
+        CANONICAL_LAYOUT_WIDTH,
+        CANONICAL_LAYOUT_HEIGHT,
+      );
+
+      setGraphData((previousGraphData) => {
+        const existingPositions = new Map<string, { x: number; y: number }>();
+        const existingNodeIds = new Set<string>();
+
+        if (previousGraphData) {
+          for (const node of previousGraphData.nodes) {
+            existingPositions.set(node.id, { x: node.x, y: node.y });
+            existingNodeIds.add(node.id);
+          }
         }
-      }
 
-      const graph = buildGraphFromConversation(activeConversation, updatedStats, updatedRequests);
-      const newNodeIds = new Set<string>();
-      for (const node of graph.nodes) {
-        if (!existingNodeIds.has(node.id)) newNodeIds.add(node.id);
-      }
-
-      const topology = activeConversation.settings?.agents?.topology || "hierarchical";
-      applyTopologyLayout(graph, CANONICAL_LAYOUT_WIDTH, CANONICAL_LAYOUT_HEIGHT, topology);
-
-      // When new sub-agent nodes appear, the graph topology has changed
-      // significantly — the layout algorithm computes sub-agent branch
-      // positions relative to the main chain, so preserving old positions
-      // would place new nodes at coordinates relative to a stale grid.
-      // Only preserve positions for simple request-chain appends (same topology).
-      const hasNewSubAgentNodes = [...newNodeIds].some((nodeId) => {
-        const node = graph.nodes.find((graphNode) => graphNode.id === nodeId);
-        if (!node) return false;
-        // Sub-agent agent nodes themselves
-        if (node.category === "subagent") return true;
-        // Sub-agent request nodes (agentDepth > 0 means they belong to a sub-agent branch)
-        if (node.category === "request" && ((node.metadata?.agentDepth as number) ?? 0) > 0) return true;
-        return false;
-      });
-
-      if (!hasNewSubAgentNodes) {
-        // Preserve positions for ALL pre-existing nodes. Only truly new
-        // nodes receive their fresh layout coordinates. This prevents
-        // existing turn/request nodes from shifting when new nodes arrive.
+        const newNodeIds = new Set<string>();
         for (const node of graph.nodes) {
-          if (newNodeIds.has(node.id)) continue;
-          const previousPosition = existingPositions.get(node.id);
-          if (previousPosition) {
-            node.x = previousPosition.x;
-            node.y = previousPosition.y;
+          if (!existingNodeIds.has(node.id)) newNodeIds.add(node.id);
+        }
+
+        // When new sub-agent nodes appear, the graph topology has changed
+        // significantly — the layout algorithm computes sub-agent branch
+        // positions relative to the main chain, so preserving old positions
+        // would place new nodes at coordinates relative to a stale grid.
+        const hasNewSubAgentNodes = [...newNodeIds].some((nodeId) => {
+          const node = graph.nodes.find((graphNode) => graphNode.id === nodeId);
+          if (!node) return false;
+          if (node.category === "subagent") return true;
+          if (node.category === "request" && ((node.metadata?.agentDepth as number) ?? 0) > 0) return true;
+          return false;
+        });
+
+        if (!hasNewSubAgentNodes) {
+          for (const node of graph.nodes) {
+            if (newNodeIds.has(node.id)) continue;
+            const previousPosition = existingPositions.get(node.id);
+            if (previousPosition) {
+              node.x = previousPosition.x;
+              node.y = previousPosition.y;
+            }
           }
         }
-      }
 
-      // Re-inject the proactive pending node when generation is still active
-      const hadProactiveRequest = previousGraphData?.nodes.some(
-        (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
-      );
-      const hadProactiveTurn = previousGraphData?.nodes.some(
-        (node) => node.id === PROACTIVE_PENDING_TURN_NODE_ID,
-      );
-      const previousRealRequestCount = previousGraphData
-        ? previousGraphData.nodes.filter(
-            (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-          ).length
-        : 0;
-      const currentRealRequestCount = graph.nodes.filter(
-        (node) => node.category === "request",
-      ).length;
+        // Re-inject the proactive pending node when generation is still active
+        const hadProactiveRequest = previousGraphData?.nodes.some(
+          (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
+        );
+        const hadProactiveTurn = previousGraphData?.nodes.some(
+          (node) => node.id === PROACTIVE_PENDING_TURN_NODE_ID,
+        );
+        const previousRealRequestCount = previousGraphData
+          ? previousGraphData.nodes.filter(
+              (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
+            ).length
+          : 0;
+        const currentRealRequestCount = graph.nodes.filter(
+          (node) => node.category === "request",
+        ).length;
 
-      const hasNewRealRequestsArrived = currentRealRequestCount > requestCountAtGenerationStartRef.current;
+        const hasNewRealRequestsArrived = currentRealRequestCount > requestCountAtGenerationStartRef.current;
 
-      // Find the tail of the main-agent chain (last request or turn node)
-      const findChainTail = () => {
-        const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
-        const lastRealRequest = realRequestNodes
-          .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
-          .at(-1);
-        // Check if the last node in the chain is actually a turn node
-        // (i.e., a turn node exists that has no outgoing edge to a request)
-        const turnNodes = graph.nodes.filter((node) => node.category === "turn");
-        const lastTurnNode = turnNodes.at(-1);
-        if (lastTurnNode) {
-          const turnHasRequestChild = graph.edges.some(
-            (edge) => edge.source === lastTurnNode.id && graph.nodes.some(
-              (node) => node.id === edge.target && node.category === "request",
-            ),
-          );
-          if (!turnHasRequestChild) return lastTurnNode;
-        }
-        return lastRealRequest;
-      };
-
-      if ((hadProactiveRequest || hadProactiveTurn) && currentRealRequestCount > previousRealRequestCount) {
-        if (isGeneratingRef.current) {
-          const chainTail = findChainTail();
-          const agentNode = graph.nodes.find((node) => node.category === "agent");
-          const lastRealRequest = graph.nodes
-            .filter((node) => node.category === "request")
+        const findChainTail = () => {
+          const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
+          const lastRealRequest = realRequestNodes
             .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
             .at(-1);
+          const turnNodes = graph.nodes.filter((node) => node.category === "turn");
+          const lastTurnNode = turnNodes.at(-1);
+          if (lastTurnNode) {
+            const turnHasRequestChild = graph.edges.some(
+              (edge) => edge.source === lastTurnNode.id && graph.nodes.some(
+                (node) => node.id === edge.target && node.category === "request",
+              ),
+            );
+            if (!turnHasRequestChild) return lastTurnNode;
+          }
+          return lastRealRequest;
+        };
 
-          const cascadingProactiveNode: GraphNode = {
-            id: PROACTIVE_PENDING_REQUEST_NODE_ID,
-            label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
-            category: "request",
-            radius: LAYOUT.NODE_RADIUS,
-            x: chainTail?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X,
-            y: chainTail ? chainTail.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y),
-            velocityX: 0,
-            velocityY: 0,
-            sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
-            metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
-          };
+        if ((hadProactiveRequest || hadProactiveTurn) && currentRealRequestCount > previousRealRequestCount) {
+          if (isGeneratingRef.current) {
+            const chainTail = findChainTail();
+            const agentNode = graph.nodes.find((node) => node.category === "agent");
+            const lastRealRequest = graph.nodes
+              .filter((node) => node.category === "request")
+              .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
+              .at(-1);
 
-          graph.nodes.push(cascadingProactiveNode);
-          if (chainTail) {
-            graph.edges.push({ source: chainTail.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+            const cascadingProactiveNode: GraphNode = {
+              id: PROACTIVE_PENDING_REQUEST_NODE_ID,
+              label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
+              category: "request",
+              radius: LAYOUT.NODE_RADIUS,
+              x: chainTail?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X,
+              y: chainTail ? chainTail.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y),
+              velocityX: 0,
+              velocityY: 0,
+              sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
+              metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
+            };
+
+            graph.nodes.push(cascadingProactiveNode);
+            if (chainTail) {
+              graph.edges.push({ source: chainTail.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+            }
+          }
+        } else if ((hadProactiveRequest || hadProactiveTurn) && !isGeneratingRef.current && hasNewRealRequestsArrived) {
+          // Generation stopped and real requests have arrived — don't re-inject
+        } else if (hadProactiveRequest || hadProactiveTurn) {
+          if (isGeneratingRef.current) {
+            const chainTail = findChainTail();
+            const agentNode = graph.nodes.find((node) => node.category === "agent");
+            const lastRealRequest = graph.nodes
+              .filter((node) => node.category === "request")
+              .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
+              .at(-1);
+
+            const reinjectedNode: GraphNode = {
+              id: PROACTIVE_PENDING_REQUEST_NODE_ID,
+              label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
+              category: "request",
+              radius: LAYOUT.NODE_RADIUS,
+              x: chainTail?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X,
+              y: chainTail ? chainTail.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y),
+              velocityX: 0,
+              velocityY: 0,
+              sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
+              metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
+            };
+
+            graph.nodes.push(reinjectedNode);
+            if (chainTail) {
+              graph.edges.push({ source: chainTail.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+            }
           }
         }
-      } else if ((hadProactiveRequest || hadProactiveTurn) && !isGeneratingRef.current && hasNewRealRequestsArrived) {
-        // Generation stopped and real requests have arrived — don't re-inject
-      } else if (hadProactiveRequest || hadProactiveTurn) {
-        if (isGeneratingRef.current) {
-          const chainTail = findChainTail();
-          const agentNode = graph.nodes.find((node) => node.category === "agent");
-          const lastRealRequest = graph.nodes
-            .filter((node) => node.category === "request")
-            .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
-            .at(-1);
 
-          const reinjectedNode: GraphNode = {
-            id: PROACTIVE_PENDING_REQUEST_NODE_ID,
-            label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
-            category: "request",
-            radius: LAYOUT.NODE_RADIUS,
-            x: chainTail?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X,
-            y: chainTail ? chainTail.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y),
-            velocityX: 0,
-            velocityY: 0,
-            sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
-            metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
-          };
+        nodesRef.current = graph.nodes;
 
-          graph.nodes.push(reinjectedNode);
-          if (chainTail) {
-            graph.edges.push({ source: chainTail.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
-          }
+        if (newNodeIds.size > 0) {
+          setEnteringNodeIds(newNodeIds);
+          setTimeout(() => setEnteringNodeIds(new Set()), TIMING.ANIMATION_DURATION);
         }
-      }
 
-      // Eagerly synchronize nodesRef so consumers read correct positions
-      nodesRef.current = graph.nodes;
-
-      if (newNodeIds.size > 0) {
-        setEnteringNodeIds(newNodeIds);
-        setTimeout(() => setEnteringNodeIds(new Set()), TIMING.ANIMATION_DURATION);
-      }
-
-      return graph;
-    });
+        return graph;
+      });
+    } catch {
+      // Graph API failed — silently degrade
+    }
   }, []);
 
   // -- Load session graph -----------------------------------------
@@ -308,9 +305,10 @@ export default function useConversationGraphData(
           return;
         }
 
-        const [statsResponse, requestsResponse] = await Promise.all([
+        const [statsResponse, requestsResponse, graphResponse] = await Promise.all([
           IrisService.getConversationRunStats(conversationId).catch(() => null),
           IrisService.getConversationRequests(conversationId).catch(() => ({ requests: [] })),
+          IrisService.getConversationGraph(conversationId, CANONICAL_LAYOUT_WIDTH, CANONICAL_LAYOUT_HEIGHT).catch(() => null),
         ]);
 
         if (isCancelled) return;
@@ -325,11 +323,10 @@ export default function useConversationGraphData(
         const requestsList = requestsResponse.requests || [];
         setConversationRequests(requestsList);
 
-        const graph = buildGraphFromConversation(fetchedConversation, statsResponse, requestsList);
-        const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
-        applyTopologyLayout(graph, CANONICAL_LAYOUT_WIDTH, CANONICAL_LAYOUT_HEIGHT, topology);
-        nodesRef.current = graph.nodes;
-        setGraphData(graph);
+        if (graphResponse) {
+          nodesRef.current = graphResponse.nodes;
+          setGraphData(graphResponse);
+        }
         setIsLoading(false);
       } catch {
         if (!isCancelled) setIsLoading(false);
@@ -381,11 +378,17 @@ export default function useConversationGraphData(
         setConversationStats(bootstrapStats);
         setConversationRequests(bootstrapRequests);
 
-        const graph = buildGraphFromConversation(fetchedConversation, bootstrapStats, bootstrapRequests);
-        const topology = fetchedConversation.settings?.agents?.topology || "hierarchical";
-        applyTopologyLayout(graph, CANONICAL_LAYOUT_WIDTH, CANONICAL_LAYOUT_HEIGHT, topology);
-        nodesRef.current = graph.nodes;
-        setGraphData(graph);
+        const graphResponse = await IrisService.getConversationGraph(
+          conversationId,
+          CANONICAL_LAYOUT_WIDTH,
+          CANONICAL_LAYOUT_HEIGHT,
+        ).catch(() => null);
+        if (isCancelled) return;
+
+        if (graphResponse) {
+          nodesRef.current = graphResponse.nodes;
+          setGraphData(graphResponse);
+        }
         setIsLoading(false);
         ssePopulatedForConversationRef.current = conversationId;
       } catch {

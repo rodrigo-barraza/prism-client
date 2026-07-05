@@ -1,4 +1,5 @@
 import { PRISM_SERVICE_URL } from "@/config";
+import type { GraphData } from "@rodrigo-barraza/utilities-library/graph";
 import { getBaseHeaders } from "./serviceHeaders";
 import { subscribe as sseSubscribe } from "./SSEManager";
 import { buildLmStudioLoadBody } from "../utils/utilities";
@@ -440,6 +441,16 @@ export default class IrisService {
   ): Promise<{ requests: IrisRequestEntry[] }> {
     return fetchJSON<{ requests: IrisRequestEntry[] }>(
       `/agent-conversations/${agentConversationId}/requests`,
+    );
+  }
+
+  static async getConversationGraph(
+    agentConversationId: string,
+    canvasWidth: number,
+    canvasHeight: number,
+  ): Promise<GraphData> {
+    return fetchJSON<GraphData>(
+      `/agent-conversations/${agentConversationId}/graph?width=${canvasWidth}&height=${canvasHeight}`,
     );
   }
 
