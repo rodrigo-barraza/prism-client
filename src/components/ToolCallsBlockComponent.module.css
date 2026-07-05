@@ -115,6 +115,7 @@
 
 .tool-calls-disclosure-collapsed {
   grid-template-rows: 0fr;
+  overflow: hidden;
 }
 
 .tool-call-item {
