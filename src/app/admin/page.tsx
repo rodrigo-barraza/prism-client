@@ -421,7 +421,7 @@ export default function DashboardPage() {
         } else {
           // All sub-day bins: parse as UTC
           // Key formats: "2026-04-02T22:05:31" (1s/5s/15s/30s), "2026-04-02T22:05" (1min/5min/15min), "2026-04-02T14" (1hr/4hr)
-          const timePart = key.slice(11); // "22:05:31", "22:05", "14:0", "14", "06"
+          const timePart = key.slice(11); // "22:05:31", "22:05", "14"
           const colonCount = (timePart.match(/:/g) || []).length;
 
           if (colonCount >= 2) {
@@ -430,37 +430,44 @@ export default function DashboardPage() {
               .split(":")
               .map((part) => part.padStart(2, "0"));
             const date = new Date(`${key.slice(0, 10)}T${hoursString}:${minutesString}:${secondsString}Z`);
-            const localHours = String(date.getHours()).padStart(2, "0");
-            const localMinutes = String(date.getMinutes()).padStart(2, "0");
-            const localSeconds = String(date.getSeconds()).padStart(2, "0");
-            label = `${localHours}:${localMinutes}:${localSeconds}`;
+            label = date.toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: true,
+            });
             // Tick label every 30 seconds for readability at high density
-            const secondsNumber = parseInt(localSeconds, 10);
-            tickLabel = secondsNumber % 30 === 0 ? `${localHours}:${localMinutes}:${localSeconds}` : "";
+            const secondsNumber = date.getSeconds();
+            tickLabel = secondsNumber % 30 === 0 ? label : "";
           } else if (colonCount === 1) {
-            // Has minutes: 1min, 5min, or 15min bins — "22:05", "14:0"
-            const [, minutesString] = timePart.split(":");
+            // Has minutes: 1min, 5min, or 15min bins — "22:05"
+            const [hoursString, minutesString] = timePart.split(":");
             const paddedKey = key.slice(0, 14) + (minutesString || "0").padStart(2, "0");
             const date = new Date(paddedKey + ":00Z");
-            const localHours = String(date.getHours()).padStart(2, "0");
-            const localMinutes = String(date.getMinutes()).padStart(2, "0");
-            label = `${localHours}:${localMinutes}`;
+            label = date.toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            });
             // Tick on hour marks or every 15 minutes
-            const minutesNumber = parseInt(localMinutes, 10);
+            const minutesNumber = date.getMinutes();
             tickLabel =
-              minutesNumber === 0 ? `${localHours}h` : minutesNumber % 15 === 0 ? `${localHours}:${localMinutes}` : "";
+              minutesNumber === 0 || minutesNumber % 15 === 0 ? label : "";
           } else {
             // Hourly or 4-hour bin: "14", "06"
             const hourString = timePart.padStart(2, "0");
             const date = new Date(`${key.slice(0, 10)}T${hourString}:00:00Z`);
-            const localHours = String(date.getHours()).padStart(2, "0");
             const dayLabel = date.toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
             });
-            label = `${localHours}h`;
+            label = date.toLocaleTimeString("en-US", {
+              hour: "numeric",
+              hour12: true,
+            });
+            const localHours = date.getHours();
             // For 6h bins across multi-day spans, show day at midnight
-            tickLabel = localHours === "00" ? dayLabel : `${localHours}h`;
+            tickLabel = localHours === 0 ? dayLabel : label;
           }
         }
       }

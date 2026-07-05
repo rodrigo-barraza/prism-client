@@ -76,10 +76,10 @@ export function buildDateRangeParams(
 ): Record<string, string> {
   const params: Record<string, string> = {};
   if (dateRange?.from) {
-    // ISO datetime (sub-day presets) passes through; day-only gets midnight
+    // ISO datetime (sub-day presets) passes through; day-only gets local midnight
     params.from = dateRange.from.includes("T")
       ? dateRange.from
-      : new Date(dateRange.from).toISOString();
+      : new Date(dateRange.from + "T00:00:00").toISOString();
   }
   if (dateRange?.to) {
     params.to = dateRange.to.includes("T")

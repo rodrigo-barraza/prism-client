@@ -178,9 +178,19 @@ function SparseTick({ x, y, payload, data }: RechartsTickProps & { data?: Timeli
   const text = entry?.tickLabel;
   if (!text) return null;
   return (
-    <text x={x} y={Number(y) + 12} textAnchor="middle" fill="oklch(0.45 0.05 260)" fontSize={11}>
-      {text}
-    </text>
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        dy={16}
+        textAnchor="end"
+        fill="oklch(0.45 0.05 260)"
+        fontSize={10}
+        transform="rotate(-45)"
+      >
+        {text}
+      </text>
+    </g>
   );
 }
 
@@ -307,6 +317,7 @@ export default function TimelineChartComponent({
               placeholder="Auto"
               icon={<Clock size={13} />}
               compact
+              searchable
             />
           </div>
         )}
@@ -317,7 +328,7 @@ export default function TimelineChartComponent({
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
-              margin={{ top: 8, right: 12, bottom: 0, left: -12 }}
+              margin={{ top: 8, right: 12, bottom: 48, left: -12 }}
             >
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -335,10 +346,17 @@ export default function TimelineChartComponent({
               )}
               <XAxis
                 dataKey="label"
+                height={60}
                 tick={
                   hasSubHourBins
                     ? renderTick
-                    : { fill: "oklch(0.45 0.05 260)", fontSize: 11 }
+                    : {
+                        fill: "oklch(0.45 0.05 260)",
+                        fontSize: 10,
+                        angle: -45,
+                        textAnchor: "end",
+                        dy: 8,
+                      }
                 }
                 axisLine={{ stroke: "rgba(255,255,255,0.06)" }}
                 tickLine={false}
