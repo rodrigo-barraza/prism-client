@@ -263,7 +263,6 @@
   scrollbar-gutter: stable;
   border-top: 1px solid var(--calculated-border-color);
   min-height: 0;
-  overflow: hidden;
   transition: padding 0.25s ease;
 }
 
