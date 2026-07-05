@@ -121,11 +121,15 @@
 .tool-calls-disclosure {
   display: grid;
   grid-template-rows: 1fr;
-  transition: grid-template-rows 0.25s ease;
+  padding: 8px;
+  transition:
+    grid-template-rows 0.25s ease,
+    padding 0.25s ease;
 }
 
 .tool-calls-disclosure-collapsed {
   grid-template-rows: 0fr;
+  padding: 0 8px;
   overflow: hidden;
 
   & .tool-calls-content {
