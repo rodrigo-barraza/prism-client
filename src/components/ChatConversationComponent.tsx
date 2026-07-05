@@ -2665,7 +2665,7 @@ export default function ChatConversationComponent({
   ]);
 
   useEffect(() => {
-    if (!showRaw || messages.length > 0 || isNoAgent) {
+    if (!showRaw || isNoAgent) {
       setPreviewSystemPrompt(null);
       return;
     }
@@ -2695,7 +2695,6 @@ export default function ChatConversationComponent({
     return () => clearTimeout(debounceTimer);
   }, [
     showRaw,
-    messages.length,
     isNoAgent,
     agentId,
     disabledTools,
