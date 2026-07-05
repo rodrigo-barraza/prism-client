@@ -210,26 +210,31 @@ export default function ToolCallsBlockComponent({
 
             return (
               <div key={j} className={styles['tool-call-item']}>
-                {/* Status indicator */}
-                <span
-                  className={`${styles['tool-call-status-icon']}${isCalling ? ` ${styles['tool-call-status-calling']}` : ""}${isError ? ` ${styles['tool-call-status-error']}` : ""}`}
-                >
-                  {isCalling ? (
-                    <Loader size={12} className={styles['tool-call-spinner']} />
-                  ) : isError ? (
-                    <AlertTriangle size={12} />
-                  ) : (
-                    <Check size={12} />
-                  )}
-                </span>
+                {/* Status indicator + tool name — hidden for single-tool blocks
+                   because the block header already displays the tool identity */}
+                {toolCalls.length > 1 && (
+                  <>
+                    <span
+                      className={`${styles['tool-call-status-icon']}${isCalling ? ` ${styles['tool-call-status-calling']}` : ""}${isError ? ` ${styles['tool-call-status-error']}` : ""}`}
+                    >
+                      {isCalling ? (
+                        <Loader size={12} className={styles['tool-call-spinner']} />
+                      ) : isError ? (
+                        <AlertTriangle size={12} />
+                      ) : (
+                        <Check size={12} />
+                      )}
+                    </span>
 
-                <span className={styles['tool-call-icon']} style={{ color }}>
-                  {resolvedEmoji
-                    ? <span style={{ fontSize: '13px', lineHeight: 1 }}>{resolvedEmoji}</span>
-                    : <Icon size={13} />
-                  }
-                </span>
-                <span className={styles['tool-call-name']}>{name}</span>
+                    <span className={styles['tool-call-icon']} style={{ color }}>
+                      {resolvedEmoji
+                        ? <span style={{ fontSize: '13px', lineHeight: 1 }}>{resolvedEmoji}</span>
+                        : <Icon size={13} />
+                      }
+                    </span>
+                    <span className={styles['tool-call-name']}>{name}</span>
+                  </>
+                )}
                 {toolCall.durationMs != null && toolCall.durationMs > 0 && (
                   <span className={styles["tool-call-latency"]}>
                     ({formatLatencyMilliseconds(toolCall.durationMs)})
