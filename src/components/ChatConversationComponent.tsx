@@ -81,6 +81,7 @@ import WorkspaceSwitcherButtonComponent from "./WorkspaceSwitcherButtonComponent
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
 import MessageList, { type QueuedNextTurn } from "./MessageListComponent";
+import { prepareDisplayMessages, resolveDisplayMessages } from "../utils/messageHelpers";
 import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 
@@ -322,6 +323,7 @@ const ADMIN_NONE_AGENT = {
 type UnifiedEntry = (Conversation | AgentConversation) & {
   _source?: "conversation" | "agent_conversation";
 };
+
 
 interface EmptyStateConfig {
   title: string;
@@ -1808,7 +1810,7 @@ export default function ChatConversationComponent({
         // selection highlight in the sidebar.
         if (conversationIdRef.current !== conversationIdAtLoadStart) return;
 
-        const displayMessages = full.displayMessages || [];
+        const displayMessages = resolveDisplayMessages(full);
         console.debug(
           `[URL conversation load] id=${initialConversationId}, displayMessages=${displayMessages.length}`,
         );
@@ -2207,7 +2209,7 @@ export default function ChatConversationComponent({
             ? await IrisService.getAgentConversation(id)
             : await IrisService.getConversation(id);
         const fullEntry = detail as UnifiedEntry;
-        const displayMessages = fullEntry.displayMessages || [];
+        const displayMessages = resolveDisplayMessages(fullEntry);
         setMessages(displayMessages);
         setConversationId(fullEntry.id || generateUUID());
         setTitle(fullEntry.title || "Untitled");
@@ -2258,7 +2260,7 @@ export default function ChatConversationComponent({
           source === "agent_conversation"
             ? ((await IrisService.getAgentConversation(id)) as UnifiedEntry)
             : ((await IrisService.getConversation(id)) as UnifiedEntry);
-        const displayMessages = full.displayMessages || [];
+        const displayMessages = resolveDisplayMessages(full);
         setMessages(displayMessages);
         setBackendConversationStats(full.stats || null);
       } catch (error: unknown) {
@@ -2280,7 +2282,7 @@ export default function ChatConversationComponent({
         setActiveId(conversationEntry.id || initialId);
         setConversationId(conversationEntry.id || generateUUID());
         setTitle(conversationEntry.title || "Untitled");
-        const displayMessages = conversationEntry.displayMessages || [];
+        const displayMessages = resolveDisplayMessages(conversationEntry);
         setMessages(displayMessages);
         setBackendConversationStats(conversationEntry.stats || null);
         setConversations((previousConversations) => [conversationEntry as AgentConversation | Conversation, ...previousConversations]);
@@ -5424,8 +5426,8 @@ export default function ChatConversationComponent({
               `[PostStream refresh] attempt=${attempt} full?.messages?.length=${full?.messages?.length},`,
               `conversationMatch=${conversationIdRef.current === genId}`,
             );
-            if (full && full.displayMessages && conversationIdRef.current === genId) {
-              const displayMessages = full.displayMessages;
+            if (full && (full.displayMessages || full.messages) && conversationIdRef.current === genId) {
+              const displayMessages = resolveDisplayMessages(full);
               const currentCount = messagesRef.current.length;
               console.debug(
                 `[PostStream setMessages] attempt=${attempt} display=${displayMessages.length}, currentStreaming=${currentCount}`,
@@ -5548,10 +5550,10 @@ export default function ChatConversationComponent({
 
                 if (
                   recoveredConversation &&
-                  recoveredConversation.displayMessages &&
+                  (recoveredConversation.displayMessages || recoveredConversation.messages) &&
                   conversationIdRef.current === genId
                 ) {
-                  const displayMessages = recoveredConversation.displayMessages;
+                  const displayMessages = resolveDisplayMessages(recoveredConversation);
                   setMessages(displayMessages);
 
                   // Check if generation completed (last message is assistant with content)
@@ -6023,7 +6025,7 @@ export default function ChatConversationComponent({
         backgroundConversationsRef.current.delete(full.id || "");
       } else {
         // Normal backend-loaded conversation
-        const displayMessages = full.displayMessages || [];
+        const displayMessages = resolveDisplayMessages(full);
         console.debug(
           `[Conversation switch] id=${full.id}, displayMessages=${displayMessages.length}`,
         );

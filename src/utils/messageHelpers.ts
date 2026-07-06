@@ -167,3 +167,18 @@ export function prepareDisplayMessages(
 
   return result;
 }
+
+/**
+ * Resolves display-ready messages from a conversation API response.
+ * Prefers the backend-serialized `displayMessages` field (tool results
+ * pre-merged, empty stubs filtered). Falls back to client-side
+ * `prepareDisplayMessages` when the backend field is absent or empty.
+ */
+export function resolveDisplayMessages(
+  entry: { displayMessages?: Message[]; messages?: Message[] },
+): Message[] {
+  if (entry.displayMessages && entry.displayMessages.length > 0) {
+    return entry.displayMessages;
+  }
+  return prepareDisplayMessages(entry.messages);
+}
