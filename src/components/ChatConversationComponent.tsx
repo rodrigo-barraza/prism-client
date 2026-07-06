@@ -70,6 +70,7 @@ import ToolSelectionComponent from "./ToolSelectionComponent";
 import RulesPanel from "./RulesPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
+import WorkflowMemoriesPanel from "./WorkflowMemoriesPanelComponent";
 
 import SubAgentsPanel from "./SubAgentsPanelComponent";
 import ParametersPanelComponent from "./ParametersPanelComponent";
@@ -697,6 +698,9 @@ export default function ChatConversationComponent({
     useState<ReactNode>(null);
   const [rulesHeaderActions, setRulesHeaderActions] = useState<ReactNode>(null);
   const [tasksHeaderActions, setTasksHeaderActions] = useState<ReactNode>(null);
+  const [workflowMemoriesCount, setWorkflowMemoriesCount] = useState(0);
+  const [workflowMemoriesHeaderActions, setWorkflowMemoriesHeaderActions] =
+    useState<ReactNode>(null);
   const [workspaceTreeStats, setWorkspaceTreeStats] = useState<{
     totalEntries: number;
     truncated: boolean;
@@ -2780,6 +2784,9 @@ export default function ChatConversationComponent({
     if (isAdmin) return;
     PrismService.getAgentMemories(agentProject, 1, agentId)
       .then((result) => setTotalMemoriesCount(result.total || 0))
+      .catch(() => {});
+    PrismService.getWorkflowMemories(agentProject, 1, agentId)
+      .then((result) => setWorkflowMemoriesCount(result.total || 0))
       .catch(() => {});
   }, [agentProject, agentId, isAdmin]);
 
@@ -7339,6 +7346,16 @@ export default function ChatConversationComponent({
                       },
                     ]
                   : []),
+                ...(hasAnyMemoryModelSet
+                  ? [
+                      {
+                        key: "workflows",
+                        icon: <span className={tabBarStyles['tab-emoji-icon']}>⚡</span>,
+                        ...badgeProps(workflowMemoriesCount, "workflows"),
+                        tooltip: "Workflows",
+                      },
+                    ]
+                  : []),
                 {
                   key: "tasks",
                   icon: <span className={tabBarStyles['tab-emoji-icon']}>✅</span>,
@@ -7428,6 +7445,18 @@ export default function ChatConversationComponent({
             onCountChange={setTotalMemoriesCount}
             onActionsChange={setMemoriesHeaderActions}
             memoryConfigured={memoryConfigured}
+          />
+        </>
+      )}
+
+      {leftTabBottom === "workflows" && hasAnyMemoryModelSet && (
+        <>
+          <SidebarTabHeaderComponent icon="⚡" title="Workflows" count={workflowMemoriesCount} actions={workflowMemoriesHeaderActions} />
+          <WorkflowMemoriesPanel
+            project={agentProject}
+            agent={agentId}
+            onCountChange={setWorkflowMemoriesCount}
+            onActionsChange={setWorkflowMemoriesHeaderActions}
           />
         </>
       )}

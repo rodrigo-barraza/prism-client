@@ -1008,6 +1008,33 @@ export interface ConsolidateResult {
 
 export type MemoryType = "user" | "feedback" | "project" | "reference";
 
+// --- Workflow Memories (AWM) --------------------------------
+
+export interface WorkflowStep {
+  toolName: string;
+  isSuccess: boolean;
+  keyArguments: Record<string, string>;
+}
+
+export interface WorkflowMemory {
+  _id: ObjectId;
+  conversationId: string;
+  agentConversationId: string;
+  project: string;
+  username: string;
+  agent: string;
+  userRequest: string;
+  stepCount: number;
+  steps: WorkflowStep[];
+  summary: string;
+  createdAt: string;
+}
+
+export interface WorkflowMemoryListResponse {
+  workflows: WorkflowMemory[];
+  total: number;
+}
+
 // --- Settings -----------------------------------------------
 
 export interface MemoryConfig {

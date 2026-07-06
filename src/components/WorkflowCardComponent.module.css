@@ -1,0 +1,255 @@
+/* ============================================================
+   WorkflowCardComponent — Individual workflow memory card
+   Displays a procedural trajectory extracted from a successful
+   agentic session, with expandable step list.
+   ============================================================ */
+
+.workflow-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: 4px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--color-teal) 30%,
+      var(--calculated-border-color)
+    );
+    box-shadow: 0 2px 8px
+      color-mix(in srgb, var(--color-teal) 6%, transparent);
+  }
+}
+
+/* ── Card Header ───────────────────────────────────────────── */
+
+.workflow-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.workflow-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--color-teal) 12%, transparent);
+  color: var(--color-teal);
+}
+
+/* ── Workflow Info ──────────────────────────────────────────── */
+
+.workflow-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.workflow-request-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.workflow-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.step-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-teal) 12%, transparent);
+  color: var(--color-teal);
+}
+
+.success-ratio {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ── Steps Toggle Button ───────────────────────────────────── */
+
+.steps-toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-secondary);
+    border-color: var(--calculated-border-color);
+    background: var(--background-elevated);
+  }
+}
+
+.steps-toggle-chevron {
+  transition: transform 0.2s ease;
+}
+
+.steps-toggle-chevron-expanded {
+  transform: rotate(180deg);
+}
+
+/* ── Steps List ────────────────────────────────────────────── */
+
+.steps-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
+  border-radius: 4px;
+  animation: steps-slide-in 0.15s ease-out;
+}
+
+@keyframes steps-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+}
+
+.step-status-marker {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.625rem;
+}
+
+.step-status-success {
+  color: var(--color-success);
+}
+
+.step-status-failure {
+  color: var(--color-rose);
+}
+
+.step-tool-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.step-arguments {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Delete Button ─────────────────────────────────────────── */
+
+.delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.15s ease;
+
+  .workflow-card:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    color: var(--color-rose);
+    background: color-mix(in srgb, var(--color-rose) 12%, transparent);
+  }
+}
+
+/* ── Confirm Delete Row ────────────────────────────────────── */
+
+.confirm-layout-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.confirm-label {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  color: var(--color-rose);
+  font-weight: 500;
+}
+
+.confirm-button {
+  composes: confirm-button from "./PanelShared.module.css";
+}
+
+.confirm-button-yes {
+  background: color-mix(in srgb, var(--color-rose) 15%, transparent);
+  color: var(--color-rose);
+  border-color: color-mix(in srgb, var(--color-rose) 30%, transparent);
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-rose) 25%, transparent);
+  }
+}
+
+.confirm-button-no {
+  background: transparent;
+  color: var(--text-muted);
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}

@@ -65,6 +65,7 @@ import type {
   ContextBudget,
   LiveConversationStatus,
   LiveConversationStatusResponse,
+  WorkflowMemoryListResponse,
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
@@ -765,6 +766,50 @@ export default class PrismService {
 
   // ---------------------------------------------------------------------------
   // Settings
+  // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // Workflow Memories (AWM)
+  // ---------------------------------------------------------------------------
+
+  static async getWorkflowMemories(
+    project?: string,
+    limit = 20,
+    agent?: string,
+    skip = 0,
+  ): Promise<WorkflowMemoryListResponse> {
+    const queryString = new URLSearchParams();
+    if (project) queryString.set("project", project);
+    if (limit) queryString.set("limit", String(limit));
+    if (agent) queryString.set("agent", agent);
+    if (skip) queryString.set("skip", String(skip));
+    return PrismService._request<WorkflowMemoryListResponse>(
+      `/workflow-memories?${queryString}`,
+      { method: HTTP_METHODS.GET },
+    );
+  }
+
+  static async deleteWorkflowMemory(
+    id: string,
+  ): Promise<{ success: boolean }> {
+    return PrismService._request<{ success: boolean }>(
+      `/workflow-memories/${id}`,
+      { method: HTTP_METHODS.DELETE },
+    );
+  }
+
+  static async deleteAllWorkflowMemories(
+    project?: string,
+    agent?: string,
+  ): Promise<{ success: boolean; deletedCount: number }> {
+    const queryString = new URLSearchParams();
+    if (project) queryString.set("project", project);
+    if (agent) queryString.set("agent", agent);
+    return PrismService._request<{ success: boolean; deletedCount: number }>(
+      `/workflow-memories/all?${queryString}`,
+      { method: HTTP_METHODS.DELETE },
+    );
+  }
   // ---------------------------------------------------------------------------
 
   /**
