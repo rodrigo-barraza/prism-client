@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { prepareDisplayMessages } from "../src/utils/messageHelpers";
+import { prepareDisplayMessages, resolveDisplayMessages } from "../src/utils/messageHelpers";
 import type { Message, ToolCallEvent } from "../src/types/types";
 
 describe("messageHelpers - prepareDisplayMessages", () => {
@@ -230,5 +230,256 @@ describe("messageHelpers - prepareDisplayMessages", () => {
     const result = prepareDisplayMessages(rawMessages);
     expect(result[0].toolCalls![0].result).toBe("not-json-content");
     expect(result[0].audio).toBeUndefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// resolveDisplayMessages — ensures conversations always produce messages
+// regardless of whether the backend provides displayMessages or not.
+//
+// This test suite exists because a regression blanked the /admin/chat view
+// when the client stopped calling client-side prepareDisplayMessages and
+// depended solely on the backend field.
+// ─────────────────────────────────────────────────────────────────────────
+
+describe("messageHelpers - resolveDisplayMessages", () => {
+  // ── Happy path: backend provides displayMessages ─────────────────────
+
+  it("should return backend-provided displayMessages when present and non-empty", () => {
+    const backendDisplayMessages: Message[] = [
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "Hi there!" },
+    ];
+    const result = resolveDisplayMessages({
+      displayMessages: backendDisplayMessages,
+      messages: [
+        { role: "user", content: "Hello" },
+        { role: "tool", content: "tool result" },
+        { role: "assistant", content: "Hi there!" },
+      ],
+    });
+    expect(result).toBe(backendDisplayMessages);
+    expect(result).toHaveLength(2);
+  });
+
+  it("should return exact backend reference without re-processing when displayMessages exists", () => {
+    const backendDisplayMessages: Message[] = [
+      { role: "user", content: "test" },
+    ];
+    const result = resolveDisplayMessages({ displayMessages: backendDisplayMessages });
+    expect(result).toBe(backendDisplayMessages);
+  });
+
+  // ── Fallback: backend omits displayMessages entirely ─────────────────
+
+  it("should fall back to client-side prepareDisplayMessages when displayMessages is undefined", () => {
+    const result = resolveDisplayMessages({
+      messages: [
+        { role: "user", content: "What is 2+2?" },
+        { role: "assistant", content: "4" },
+      ],
+    });
+    expect(result).toHaveLength(2);
+    expect(result[0].role).toBe("user");
+    expect(result[0].content).toBe("What is 2+2?");
+    expect(result[1].role).toBe("assistant");
+    expect(result[1].content).toBe("4");
+  });
+
+  it("should fall back to client-side prepareDisplayMessages when displayMessages is null-ish", () => {
+    const result = resolveDisplayMessages({
+      displayMessages: undefined,
+      messages: [
+        { role: "user", content: "hi" },
+        { role: "assistant", content: "hello" },
+      ],
+    });
+    expect(result).toHaveLength(2);
+    expect(result[0].content).toBe("hi");
+    expect(result[1].content).toBe("hello");
+  });
+
+  it("should fall back when displayMessages is an empty array", () => {
+    const result = resolveDisplayMessages({
+      displayMessages: [],
+      messages: [
+        { role: "user", content: "test" },
+        { role: "assistant", content: "response" },
+      ],
+    });
+    expect(result).toHaveLength(2);
+    expect(result[0].content).toBe("test");
+    expect(result[1].content).toBe("response");
+  });
+
+  // ── Fallback correctly processes raw messages (tool filtering) ───────
+
+  it("should filter tool-role messages from raw messages during fallback", () => {
+    const result = resolveDisplayMessages({
+      messages: [
+        { role: "user", content: "Search for X" },
+        {
+          role: "assistant",
+          content: "",
+          toolCalls: [{ id: "tc-1", name: "web_search", args: { query: "X" } }],
+        },
+        { role: "tool", content: "Search results for X", toolCallId: "tc-1" },
+        { role: "assistant", content: "Here are the results for X" },
+      ],
+    });
+    expect(result).toHaveLength(3);
+    expect(result.every((message) => message.role !== "tool")).toBe(true);
+    expect(result[0].role).toBe("user");
+    expect(result[1].role).toBe("assistant");
+    expect(result[1].toolCalls![0].result).toBe("Search results for X");
+    expect(result[2].content).toBe("Here are the results for X");
+  });
+
+  it("should filter empty assistant stubs from raw messages during fallback", () => {
+    const result = resolveDisplayMessages({
+      messages: [
+        { role: "user", content: "Hello" },
+        { role: "assistant", content: "" },
+        { role: "assistant", content: "Real response" },
+      ],
+    });
+    expect(result).toHaveLength(2);
+    expect(result[0].content).toBe("Hello");
+    expect(result[1].content).toBe("Real response");
+  });
+
+  // ── Edge cases ───────────────────────────────────────────────────────
+
+  it("should return empty array when both displayMessages and messages are undefined", () => {
+    const result = resolveDisplayMessages({});
+    expect(result).toEqual([]);
+  });
+
+  it("should return empty array when both displayMessages and messages are empty", () => {
+    const result = resolveDisplayMessages({
+      displayMessages: [],
+      messages: [],
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("should return empty array when entry has no message fields at all", () => {
+    const result = resolveDisplayMessages({
+      displayMessages: undefined,
+      messages: undefined,
+    });
+    expect(result).toEqual([]);
+  });
+
+  // ── Admin chat regression: conversation with only raw messages ──────
+
+  it("should produce non-empty output for a typical admin conversation with only raw messages (regression test)", () => {
+    const typicalAgentConversation = {
+      displayMessages: undefined,
+      messages: [
+        { role: "system" as const, content: "You are a helpful assistant." },
+        { role: "user" as const, content: "What is the nutritional difference between yellow and green bananas?" },
+        {
+          role: "assistant" as const,
+          content: "",
+          toolCalls: [
+            { id: "call-1", name: "web_search", args: { query: "yellow vs green banana nutrition" } },
+          ],
+        },
+        { role: "tool" as const, content: "Yellow bananas have more sugar...", toolCallId: "call-1" },
+        { role: "assistant" as const, content: "Yellow bananas are riper and have more sugar, while green bananas have more resistant starch." },
+      ],
+    };
+    const result = resolveDisplayMessages(typicalAgentConversation);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.some((message) => message.role === "user")).toBe(true);
+    expect(result.some((message) => message.role === "assistant" && (message.content?.length ?? 0) > 0)).toBe(true);
+    expect(result.every((message) => message.role !== "tool")).toBe(true);
+  });
+
+  it("should produce non-empty output for a direct conversation with only raw messages (regression test)", () => {
+    const typicalDirectConversation = {
+      displayMessages: undefined,
+      messages: [
+        { role: "user" as const, content: "Can we research what is stronger, popeye or goku?" },
+        { role: "assistant" as const, content: "Great question! Goku is vastly more powerful..." },
+      ],
+    };
+    const result = resolveDisplayMessages(typicalDirectConversation);
+    expect(result).toHaveLength(2);
+    expect(result[0].content).toContain("popeye");
+    expect(result[1].content).toContain("Goku");
+  });
+
+  // ── Backend provides displayMessages — should NOT re-process ────────
+
+  it("should not filter or modify backend-provided displayMessages even if they contain tool-role messages", () => {
+    const backendMessages: Message[] = [
+      { role: "user", content: "test" },
+      { role: "tool", content: "tool-result" },
+      { role: "assistant", content: "response" },
+    ];
+    const result = resolveDisplayMessages({ displayMessages: backendMessages });
+    expect(result).toBe(backendMessages);
+    expect(result).toHaveLength(3);
+  });
+
+  // ── Priority verification ──────────────────────────────────────────
+
+  it("should prefer displayMessages over messages when both are present and non-empty", () => {
+    const backendDisplayMessages: Message[] = [
+      { role: "user", content: "processed-user" },
+      { role: "assistant", content: "processed-assistant" },
+    ];
+    const rawMessages: Message[] = [
+      { role: "user", content: "raw-user" },
+      { role: "tool", content: "raw-tool" },
+      { role: "assistant", content: "raw-assistant" },
+    ];
+    const result = resolveDisplayMessages({
+      displayMessages: backendDisplayMessages,
+      messages: rawMessages,
+    });
+    expect(result).toBe(backendDisplayMessages);
+    expect(result[0].content).toBe("processed-user");
+  });
+
+  // ── Agent conversation shape (type: "agent") ──────────────────────
+
+  it("should handle agent conversation API response shape correctly", () => {
+    const agentConversationResponse = {
+      id: "conv-123",
+      type: "agent",
+      title: "Test Agent Conversation",
+      messages: [
+        { role: "system" as const, content: "System prompt" },
+        { role: "user" as const, content: "Do something" },
+        {
+          role: "assistant" as const,
+          content: "I'll help with that",
+          toolCalls: [{ id: "tc-1", name: "execute_code", args: { code: "print('hi')" } }],
+        },
+        { role: "tool" as const, content: "hi", toolCallId: "tc-1" },
+        { role: "assistant" as const, content: "Done! The code printed 'hi'" },
+      ],
+    };
+    const result = resolveDisplayMessages(agentConversationResponse);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.some((message) => message.role === "user")).toBe(true);
+    expect(result.some((message) => message.content?.includes("Done!"))).toBe(true);
+    expect(result.every((message) => message.role !== "tool")).toBe(true);
+  });
+
+  // ── Messages with thinking field should be preserved ───────────────
+
+  it("should preserve assistant messages that have thinking content during fallback", () => {
+    const result = resolveDisplayMessages({
+      messages: [
+        { role: "user", content: "Think about this" },
+        { role: "assistant", content: "", thinking: "Let me think step by step..." },
+      ],
+    });
+    expect(result).toHaveLength(2);
+    expect(result[1].thinking).toBe("Let me think step by step...");
   });
 });

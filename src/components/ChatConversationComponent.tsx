@@ -81,7 +81,7 @@ import WorkspaceSwitcherButtonComponent from "./WorkspaceSwitcherButtonComponent
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
 import MessageList, { type QueuedNextTurn } from "./MessageListComponent";
-import { prepareDisplayMessages, resolveDisplayMessages } from "../utils/messageHelpers";
+import { resolveDisplayMessages } from "../utils/messageHelpers";
 import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 
