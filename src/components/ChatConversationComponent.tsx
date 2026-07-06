@@ -57,6 +57,7 @@ import {
   TransformedRequestItem,
   LlamaCppServerProps,
   ContextBudget,
+  LiveConversationStatus,
 } from "../types/types";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -6482,6 +6483,21 @@ export default function ChatConversationComponent({
     };
 
     const onCollectionChange = (event: IrisCollectionChangeEvent) => {
+      // Handle requests collection events — when a request is
+      // inserted/updated for the currently viewed conversation, trigger
+      // a full refresh to pick up new messages. This provides immediate
+      // message updates at agentic loop iteration boundaries for
+      // sub-agent conversations being viewed directly.
+      if (event.collection === "requests") {
+        if (
+          event.conversationId &&
+          event.conversationId === conversationIdRef.current
+        ) {
+          refreshActiveConversation(event.conversationId);
+        }
+        return;
+      }
+
       if (
         event.collection !== "agent_conversations" &&
         event.collection !== "model_conversations"
@@ -6515,6 +6531,130 @@ export default function ChatConversationComponent({
       if (listRefreshTimer) clearTimeout(listRefreshTimer);
     };
   }, [refreshActiveConversation, loadConversations]);
+
+  // ── Live-status poll for viewed sub-agent conversations ──────────
+  // When the user is directly viewing a sub-agent conversation that is
+  // still actively running, poll the lightweight in-memory live-status
+  // endpoint (no DB query) to keep the StatusBar phase, iteration, and
+  // elapsed time indicators updated in real-time. The poll stops when
+  // the conversation is no longer active.
+  //
+  // This is complementary to the change-stream refresh path (which
+  // handles full message list updates at iteration boundaries). Between
+  // iteration boundaries, the live-status poll ensures the user sees
+  // phase transitions (thinking → generating → tool_execution) live.
+  useEffect(() => {
+    if (!activeId) return;
+    if (!isActiveConversationSubAgent) return;
+    // Only poll when the conversation is running but NOT driven by a
+    // local SSE stream (which would already be updating state directly).
+    if (isClientDrivenGenerationRef.current) return;
+    if (!isConversationRunning) return;
+
+    const SUB_AGENT_LIVE_STATUS_POLL_INTERVAL_MILLISECONDS = 2000;
+
+    const subAgentLiveStatusPollInterval = setInterval(async () => {
+      try {
+        const liveStatus: LiveConversationStatus | null =
+          await PrismService.getConversationLiveStatus(activeId);
+
+        if (!liveStatus) {
+          // Conversation is no longer actively generating — do a final
+          // full refresh to pick up completed messages, then stop.
+          clearInterval(subAgentLiveStatusPollInterval);
+          try {
+            const finalConversation = isNoAgent
+              ? await PrismService.getConversation(activeId)
+              : await PrismService.getAgentConversation(activeId, agentProject!);
+            if (finalConversation && finalConversation.id === conversationIdRef.current) {
+              applyConversationData(finalConversation);
+            }
+          } catch {
+            // Non-critical — the change stream will catch up
+          }
+          return;
+        }
+
+        // Guard: user navigated away while the poll was in flight
+        if (activeId !== conversationIdRef.current) return;
+
+        // Update iteration progress
+        if (typeof liveStatus.iteration === "number") {
+          setAgenticProgress({
+            iteration: liveStatus.iteration,
+            maxIterations: liveStatus.maxIterations || 0,
+          });
+        }
+
+        // Update StatusBar elapsed time from the phase start timestamp
+        const phaseStartedAt = liveStatus.phaseStartedAt || liveStatus.startedAt;
+        if (phaseStartedAt) {
+          const elapsedMilliseconds = Date.now() - new Date(phaseStartedAt).getTime();
+          setStatusBarInitialElapsedMilliseconds(
+            elapsedMilliseconds > 0 ? elapsedMilliseconds : null,
+          );
+        }
+
+        // Patch the statusPhase on the last assistant message so the
+        // StatusBar phase indicator reflects the live backend state.
+        if (liveStatus.phase) {
+          setMessages((previousMessages) => {
+            if (previousMessages.length === 0) return previousMessages;
+            const lastMessage = previousMessages[previousMessages.length - 1];
+            if (lastMessage?.role !== "assistant") return previousMessages;
+            if ((lastMessage as ClientMessage).statusPhase === liveStatus.phase) {
+              return previousMessages;
+            }
+            const updatedMessages = [...previousMessages];
+            updatedMessages[updatedMessages.length - 1] = {
+              ...lastMessage,
+              statusPhase: liveStatus.phase,
+            } as ClientMessage;
+            return updatedMessages;
+          });
+        }
+
+        // Hydrate sub-agent activity if this sub-agent itself spawned
+        // sub-sub-agents (recursive orchestration)
+        if (liveStatus.subAgents && Object.keys(liveStatus.subAgents).length > 0) {
+          setSubAgentToolActivity((previousActivity) => {
+            const nextActivity = { ...previousActivity };
+            let hasChanges = false;
+            for (const [subAgentId, subStatus] of Object.entries(liveStatus.subAgents)) {
+              const existing = nextActivity[subAgentId];
+              if (existing?.phase === subStatus.phase) continue;
+              hasChanges = true;
+              let initialElapsedMilliseconds = null;
+              if (subStatus.startedAt) {
+                const elapsed = Date.now() - new Date(subStatus.startedAt).getTime();
+                initialElapsedMilliseconds = elapsed > 0 ? elapsed : null;
+              }
+              nextActivity[subAgentId] = {
+                ...existing,
+                phase: subStatus.phase,
+                status: subStatus.label || undefined,
+                conversationId: subStatus.conversationId || undefined,
+                initialElapsedMilliseconds,
+              };
+            }
+            return hasChanges ? nextActivity : previousActivity;
+          });
+        }
+      } catch {
+        // Non-critical polling — silently ignore network failures
+      }
+    }, SUB_AGENT_LIVE_STATUS_POLL_INTERVAL_MILLISECONDS);
+
+    return () => clearInterval(subAgentLiveStatusPollInterval);
+  }, [
+    activeId,
+    isActiveConversationSubAgent,
+    isConversationRunning,
+    isNoAgent,
+    agentProject,
+    applyConversationData,
+  ]);
+
 
   // -- Visibility Recovery (Mobile Screen Lock) -------------------
   // When the user returns to the tab after the browser suspended it
