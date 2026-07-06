@@ -84,20 +84,24 @@ export function prepareDisplayMessages(
         (hasToolResults || hasToolDurations)
       ) {
         enrichedCalls = message.toolCalls.map(
-          (toolCall: ToolCallEvent) => ({
-            ...toolCall,
-            result:
-              toolCall.result ||
-              toolResults[toolCall.id] ||
-              toolResults[toolCall.tool_call_id || ""] ||
-              null,
-            ...(toolDurations[toolCall.id] != null && {
-               durationMs: toolDurations[toolCall.id],
-            }),
-            ...(toolDurations[toolCall.tool_call_id || ""] != null && {
-               durationMs: toolDurations[toolCall.tool_call_id || ""],
-            }),
-          }),
+          (toolCall: ToolCallEvent) => {
+            const resolvedDurationMs =
+              toolDurations[toolCall.id] ??
+              toolDurations[toolCall.tool_call_id || ""] ??
+              (toolCall as unknown as Record<string, unknown>).durationMilliseconds as number | undefined ??
+              toolCall.durationMs;
+            return {
+              ...toolCall,
+              result:
+                toolCall.result ||
+                toolResults[toolCall.id] ||
+                toolResults[toolCall.tool_call_id || ""] ||
+                null,
+              ...(resolvedDurationMs != null && {
+                durationMs: resolvedDurationMs,
+              }),
+            };
+          },
         );
       }
 
