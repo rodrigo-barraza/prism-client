@@ -1367,7 +1367,8 @@
   overflow: hidden;
   border: 1px solid var(--calculated-border-color);
   background: var(--background-surface);
-  max-width: 480px;
+  max-width: 100%;
+  width: fit-content;
   box-shadow: 0 4px 16px oklch(0% 0 0 / 0.12);
   animation: three-dimensional-mesh-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   transition:
@@ -1380,20 +1381,11 @@
   box-shadow: 0 6px 24px oklch(0% 0 0 / 0.2);
 }
 
-.visual-tool-image-container-full-width {
-  max-width: 100%;
-
-  & .visual-tool-image {
-    max-height: none;
-  }
-}
-
 .visual-tool-image {
   display: block;
-  width: 100%;
+  max-width: 100%;
   height: auto;
   object-fit: contain;
-  max-height: 480px;
 }
 
 .visual-tool-embed-wrapper {
