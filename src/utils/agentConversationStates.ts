@@ -46,8 +46,13 @@ export interface ConversationStateColors {
 
 /**
  * Derive the persisted conversation state from document fields.
- * Evaluates in priority order: done → error → generating → orchestrating →
- * sub-agents → background-tasks → active.
+ * Evaluates in priority order: generating → orchestrating →
+ * done → error → sub-agents → background-tasks → active.
+ *
+ * isGenerating takes priority over isActive === false because the client-side
+ * SSE streaming state is always more authoritative than the persisted isActive
+ * flag, which may be stale during the window between handleSend() and the
+ * backend's markGenerating(true) propagating via change stream.
  */
 export function deriveAgentConversationState({
   isActive,
@@ -62,11 +67,11 @@ export function deriveAgentConversationState({
   hasSubAgents?: boolean;
   requestErrorCount?: number;
 }): AgentConversationState {
-  if (isActive === false) {
-    return (requestErrorCount ?? 0) > 0 ? "completed-with-errors" : "completed";
-  }
   if (isGenerating) {
     return hasSubAgents ? "orchestrating" : "generating";
+  }
+  if (isActive === false) {
+    return (requestErrorCount ?? 0) > 0 ? "completed-with-errors" : "completed";
   }
   const taskCount = pendingBackgroundTasks ?? 0;
   if (taskCount > 0) {

@@ -5314,6 +5314,15 @@ export default function ChatConversationComponent({
         ]);
       }
 
+      // Optimistically mark the active conversation entry as isActive: true
+      // so the status bar doesn't flicker while waiting for the backend's
+      // markGenerating(true) to propagate via change stream / list refresh.
+      setConversations((previousConversations) =>
+        previousConversations.map((entry) =>
+          entry.id === genId ? { ...entry, isActive: true } as typeof entry : entry,
+        ),
+      );
+
       setCurrentTurnStart(Date.now());
       setIsBackendStatsStale(true);
       // Prepend active rules to user message (Claude Code pattern)
@@ -7990,9 +7999,14 @@ export default function ChatConversationComponent({
         // OR when sub-agents are still running after a non-blocking dispatch,
         // OR when any sub-agent hasn't reached a terminal state yet
         // (covers spawned/undefined-phase windows during create_subagents).
+        //
+        // isGenerating (client-side SSE state) overrides conversationIsExplicitlyInactive
+        // because the conversations array may contain a stale isActive: false from
+        // the prior completed generation that hasn't been refreshed yet.
         const isStatusBarActive =
-          !conversationIsExplicitlyInactive &&
-          (isGenerating || !!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks || conversationIsExplicitlyActive);
+          isGenerating ||
+          (!conversationIsExplicitlyInactive &&
+           (!!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks || conversationIsExplicitlyActive));
 
         if (!isStatusBarActive) return null;
 
