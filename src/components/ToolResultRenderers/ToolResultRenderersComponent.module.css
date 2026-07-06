@@ -1380,6 +1380,14 @@
   box-shadow: 0 6px 24px oklch(0% 0 0 / 0.2);
 }
 
+.visual-tool-image-container-full-width {
+  max-width: 100%;
+
+  & .visual-tool-image {
+    max-height: none;
+  }
+}
+
 .visual-tool-image {
   display: block;
   width: 100%;

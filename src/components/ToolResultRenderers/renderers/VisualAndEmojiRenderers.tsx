@@ -270,7 +270,7 @@ export function ImageManipulationRenderer({ result }: RendererProps) {
       </div>
       {hasImageError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasImageError && manipulatedImageUrl && (
-        <div className={styles['visual-tool-image-container']}>
+        <div className={`${styles['visual-tool-image-container']} ${styles['visual-tool-image-container-full-width']}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={manipulatedImageUrl}
@@ -314,7 +314,7 @@ export function VideoToGifRenderer({ result }: RendererProps) {
       </div>
       {hasConversionError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasConversionError && gifImageUrl && (
-        <div className={styles['visual-tool-image-container']}>
+        <div className={`${styles['visual-tool-image-container']} ${styles['visual-tool-image-container-full-width']}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={gifImageUrl}
@@ -383,7 +383,7 @@ export function ChartRenderer({ result }: RendererProps) {
       </div>
       {hasChartError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasChartError && chartImageUrl && (
-        <div className={styles['visual-tool-image-container']}>
+        <div className={`${styles['visual-tool-image-container']} ${styles['visual-tool-image-container-full-width']}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={chartImageUrl}
