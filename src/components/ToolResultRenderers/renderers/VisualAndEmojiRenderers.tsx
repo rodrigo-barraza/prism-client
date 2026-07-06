@@ -170,7 +170,7 @@ export function QrCodeRenderer({ result }: RendererProps) {
       </div>
       {hasQrError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasQrError && qrCodeImageUrl && (
-        <div className={styles['visual-tool-image-container']}>
+        <div className={`${styles['visual-tool-image-container']} ${styles['visual-tool-image-container-full-width']}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrCodeImageUrl}
