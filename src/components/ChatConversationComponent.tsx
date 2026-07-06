@@ -6657,6 +6657,240 @@ export default function ChatConversationComponent({
     applyConversationData,
   ]);
 
+  // ── Live WebSocket stream for viewed sub-agent conversations ──────
+  // When the user navigates directly to a sub-agent conversation that
+  // is still actively running, open a WebSocket subscription to receive
+  // the raw SSE events (chunk, thinking, tool_execution, tool_output,
+  // status, done) that the sub-agent's agentic loop emits. This makes
+  // the conversation stream live — text appears as it's generated,
+  // thinking blocks expand, and tool activity renders in real-time.
+  //
+  // The backend's SubAgentTelemetryEmitter broadcasts these events to
+  // any WebSocket subscriber registered for the sub-agent's own
+  // conversationId via WebSocketConnectionRegistry.
+  useEffect(() => {
+    if (!activeId) return;
+    if (!isActiveConversationSubAgent) return;
+    if (isClientDrivenGenerationRef.current) return;
+    if (!isConversationRunning) return;
+
+    // Mutable streaming state (avoids stale closures in callbacks)
+    let streamedText = "";
+    let streamedThinking = "";
+    let isSubscriptionActive = true;
+
+    // Mark this conversation as "generating" so the UI shows the active state
+    setIsGenerating(true);
+
+    const cleanupWebSocket = PrismService.subscribeToAutoResponse(
+      activeId,
+      {
+        onChunk: (content: string) => {
+          if (!isSubscriptionActive) return;
+          streamedText += content;
+          const trimmedText = streamedText.trim();
+
+          setMessages((previousMessages) => {
+            const updated = [...previousMessages];
+            const lastMessage = updated[updated.length - 1];
+            if (lastMessage?.role === "assistant") {
+              updated[updated.length - 1] = {
+                ...lastMessage,
+                content: trimmedText,
+              };
+            } else {
+              updated.push({
+                role: MESSAGE_ROLES.ASSISTANT,
+                content: trimmedText,
+              } as ClientMessage);
+            }
+            return updated;
+          });
+        },
+
+        onThinking: (content: string) => {
+          if (!isSubscriptionActive) return;
+          streamedThinking += content;
+
+          setMessages((previousMessages) => {
+            const updated = [...previousMessages];
+            const lastMessage = updated[updated.length - 1];
+            if (lastMessage?.role === "assistant") {
+              updated[updated.length - 1] = {
+                ...lastMessage,
+                thinking: streamedThinking,
+                statusPhase: "thinking",
+              } as ClientMessage;
+            } else {
+              updated.push({
+                role: MESSAGE_ROLES.ASSISTANT,
+                content: "",
+                thinking: streamedThinking,
+                statusPhase: "thinking",
+              } as ClientMessage);
+            }
+            return updated;
+          });
+        },
+
+        onToolExecution: (data: SSEData) => {
+          if (!isSubscriptionActive) return;
+          const toolData = data.tool as Record<string, unknown> | undefined;
+          if (!toolData) return;
+          if (data.toolEmoji && toolData.name) {
+            cacheToolEmoji(toolData.name as string, data.toolEmoji as string);
+          }
+          const resolvedToolId =
+            (toolData.id as string) || `tc-${Date.now()}-${Math.random()}`;
+
+          setToolActivity((previousToolActivity: ToolCallEvent[]) => {
+            const next = applyToolExecutionToActivity(
+              previousToolActivity,
+              resolvedToolId,
+              {
+                id: toolData.id as string | undefined,
+                name: toolData.name as string | undefined,
+                args: toolData.args as Record<string, unknown> | undefined,
+                status: data.status as string,
+                result: toolData.result,
+                durationMs: (toolData.durationMs || toolData.durationMilliseconds) as number | undefined,
+                timestamp: data.timestamp as number | undefined,
+              },
+            );
+            return next ?? previousToolActivity;
+          });
+
+          setMessages((previousMessages: ClientMessage[]) => {
+            const emptySegmentSnapshot = {
+              contentSegments: [],
+              textFragments: [],
+              thinkingFragments: [],
+            };
+            const next = applyToolExecutionToMessages(
+              previousMessages,
+              resolvedToolId,
+              {
+                id: toolData.id as string | undefined,
+                name: toolData.name as string | undefined,
+                args: toolData.args as Record<string, unknown> | undefined,
+                status: data.status as string,
+                result: toolData.result,
+                durationMs: (toolData.durationMs || toolData.durationMilliseconds) as number | undefined,
+                timestamp: data.timestamp as number | undefined,
+              },
+              emptySegmentSnapshot,
+            );
+            return (next ?? previousMessages) as ClientMessage[];
+          });
+        },
+
+        onToolOutput: (data: SSEData) => {
+          if (!isSubscriptionActive) return;
+          const toolCallId = data.toolCallId as string | undefined;
+          if (!toolCallId) return;
+
+          setMessages((previousMessages: ClientMessage[]) => {
+            const emptySegmentSnapshot = {
+              contentSegments: [],
+              textFragments: [],
+              thinkingFragments: [],
+            };
+            const next = applyToolCallToMessages(
+              previousMessages,
+              toolCallId,
+              {
+                id: toolCallId,
+                name: data.name as string,
+                args: {},
+                result: data.data,
+                status: "complete",
+              },
+              emptySegmentSnapshot,
+            );
+            return (next ?? previousMessages) as ClientMessage[];
+          });
+        },
+
+        onStatus: (data: SSEData) => {
+          if (!isSubscriptionActive) return;
+          const statusMessage = data.message as string | undefined;
+
+          // Update iteration progress
+          if (statusMessage === "iteration_progress") {
+            const iteration = data.iteration as number | undefined;
+            const maxIterations = data.maxIterations as number | undefined;
+            if (typeof iteration === "number") {
+              setAgenticProgress({
+                iteration,
+                maxIterations: maxIterations || 0,
+              });
+            }
+          }
+
+          // Update phase on last assistant message
+          const phase = data.phase as string | undefined;
+          if (phase) {
+            setMessages((previousMessages) => {
+              if (previousMessages.length === 0) return previousMessages;
+              const lastMessage = previousMessages[previousMessages.length - 1];
+              if (lastMessage?.role !== "assistant") return previousMessages;
+              if ((lastMessage as ClientMessage).statusPhase === phase) {
+                return previousMessages;
+              }
+              const updatedMessages = [...previousMessages];
+              updatedMessages[updatedMessages.length - 1] = {
+                ...lastMessage,
+                statusPhase: phase,
+              } as ClientMessage;
+              return updatedMessages;
+            });
+          }
+        },
+
+        onDone: () => {
+          if (!isSubscriptionActive) return;
+          // Generation finished — do a final full refresh from DB
+          // to get the canonical message state with all metadata.
+          setIsGenerating(false);
+          streamedText = "";
+          streamedThinking = "";
+
+          (async () => {
+            try {
+              const finalConversation = isNoAgent
+                ? await PrismService.getConversation(activeId)
+                : await PrismService.getAgentConversation(activeId, agentProject!);
+              if (finalConversation && finalConversation.id === conversationIdRef.current) {
+                applyConversationData(finalConversation);
+              }
+            } catch {
+              // Non-critical — the change stream will catch up
+            }
+          })();
+        },
+
+        onError: () => {
+          if (!isSubscriptionActive) return;
+          // WebSocket error — fall back to change-stream updates
+          setIsGenerating(false);
+        },
+      },
+    );
+
+    return () => {
+      isSubscriptionActive = false;
+      cleanupWebSocket();
+      // Don't reset isGenerating here — the conversation might still
+      // be running; the live-status poll or change stream will handle it.
+    };
+  }, [
+    activeId,
+    isActiveConversationSubAgent,
+    isConversationRunning,
+    isNoAgent,
+    agentProject,
+    applyConversationData,
+  ]);
 
   // -- Visibility Recovery (Mobile Screen Lock) -------------------
   // When the user returns to the tab after the browser suspended it
