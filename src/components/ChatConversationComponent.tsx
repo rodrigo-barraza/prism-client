@@ -1040,6 +1040,7 @@ export default function ChatConversationComponent({
   // from server-initiated generation (timer/scheduled task, passive DB load).
   // Change-stream refresh is safe to skip only for client-driven generation.
   const isClientDrivenGenerationRef = useRef<boolean>(false);
+  const isWebSocketStreamingRef = useRef<boolean>(false);
   const previousModelRef = useRef<string | null>(null);
   // Track which conversations have active background generation (for history indicator)
   const [generatingConversationIds, setGeneratingConversationIds] = useState(
@@ -6549,8 +6550,9 @@ export default function ChatConversationComponent({
     if (!activeId) return;
     if (!isActiveConversationSubAgent) return;
     // Only poll when the conversation is running but NOT driven by a
-    // local SSE stream (which would already be updating state directly).
-    if (isClientDrivenGenerationRef.current) return;
+    // local SSE stream (which would already be updating state directly),
+    // and NOT already being streamed via WebSocket.
+    if (isClientDrivenGenerationRef.current || isWebSocketStreamingRef.current) return;
     if (!isConversationRunning) return;
 
     const SUB_AGENT_LIVE_STATUS_POLL_INTERVAL_MILLISECONDS = 2000;
@@ -6674,214 +6676,236 @@ export default function ChatConversationComponent({
     if (isClientDrivenGenerationRef.current) return;
     if (!isConversationRunning) return;
 
+    // Coordination with other effects and the change-stream guard
+    isWebSocketStreamingRef.current = true;
+    isClientDrivenGenerationRef.current = true;
+
     // Mutable streaming state (avoids stale closures in callbacks)
-    let streamedText = "";
-    let streamedThinking = "";
+    // Initialize from existing message if it exists to prevent overwriting content
+    const existingAssistantMessage = [...messagesRef.current]
+      .reverse()
+      .find((message) => message.role === "assistant") as ClientMessage | undefined;
+
+    let streamedText = existingAssistantMessage?.content || "";
+    let streamedThinking = existingAssistantMessage?.thinking || "";
     let isSubscriptionActive = true;
 
     // Mark this conversation as "generating" so the UI shows the active state
     setIsGenerating(true);
 
-    const cleanupWebSocket = PrismService.subscribeToAutoResponse(
-      activeId,
-      {
-        onChunk: (content: string) => {
-          if (!isSubscriptionActive) return;
-          streamedText += content;
-          const trimmedText = streamedText.trim();
+    const cleanupWebSocket = PrismService.subscribeToAutoResponse(activeId, {
+      onChunk: (content: string) => {
+        if (!isSubscriptionActive) return;
+        streamedText += content;
+        const trimmedText = streamedText.trim();
 
-          setMessages((previousMessages) => {
-            const updated = [...previousMessages];
-            const lastMessage = updated[updated.length - 1];
-            if (lastMessage?.role === "assistant") {
-              updated[updated.length - 1] = {
-                ...lastMessage,
-                content: trimmedText,
-              };
-            } else {
-              updated.push({
-                role: MESSAGE_ROLES.ASSISTANT,
-                content: trimmedText,
-              } as ClientMessage);
-            }
-            return updated;
-          });
-        },
-
-        onThinking: (content: string) => {
-          if (!isSubscriptionActive) return;
-          streamedThinking += content;
-
-          setMessages((previousMessages) => {
-            const updated = [...previousMessages];
-            const lastMessage = updated[updated.length - 1];
-            if (lastMessage?.role === "assistant") {
-              updated[updated.length - 1] = {
-                ...lastMessage,
-                thinking: streamedThinking,
-                statusPhase: "thinking",
-              } as ClientMessage;
-            } else {
-              updated.push({
-                role: MESSAGE_ROLES.ASSISTANT,
-                content: "",
-                thinking: streamedThinking,
-                statusPhase: "thinking",
-              } as ClientMessage);
-            }
-            return updated;
-          });
-        },
-
-        onToolExecution: (data: SSEData) => {
-          if (!isSubscriptionActive) return;
-          const toolData = data.tool as Record<string, unknown> | undefined;
-          if (!toolData) return;
-          if (data.toolEmoji && toolData.name) {
-            cacheToolEmoji(toolData.name as string, data.toolEmoji as string);
-          }
-          const resolvedToolId =
-            (toolData.id as string) || `tc-${Date.now()}-${Math.random()}`;
-
-          setToolActivity((previousToolActivity: ToolCallEvent[]) => {
-            const next = applyToolExecutionToActivity(
-              previousToolActivity,
-              resolvedToolId,
-              {
-                id: toolData.id as string | undefined,
-                name: toolData.name as string | undefined,
-                args: toolData.args as Record<string, unknown> | undefined,
-                status: data.status as string,
-                result: toolData.result,
-                durationMs: (toolData.durationMs || toolData.durationMilliseconds) as number | undefined,
-                timestamp: data.timestamp as number | undefined,
-              },
-            );
-            return next ?? previousToolActivity;
-          });
-
-          setMessages((previousMessages: ClientMessage[]) => {
-            const emptySegmentSnapshot = {
-              contentSegments: [],
-              textFragments: [],
-              thinkingFragments: [],
+        setMessages((previousMessages) => {
+          const updated = [...previousMessages];
+          const lastMessage = updated[updated.length - 1];
+          if (lastMessage?.role === "assistant") {
+            updated[updated.length - 1] = {
+              ...lastMessage,
+              content: trimmedText,
             };
-            const next = applyToolExecutionToMessages(
-              previousMessages,
-              resolvedToolId,
-              {
-                id: toolData.id as string | undefined,
-                name: toolData.name as string | undefined,
-                args: toolData.args as Record<string, unknown> | undefined,
-                status: data.status as string,
-                result: toolData.result,
-                durationMs: (toolData.durationMs || toolData.durationMilliseconds) as number | undefined,
-                timestamp: data.timestamp as number | undefined,
-              },
-              emptySegmentSnapshot,
-            );
-            return (next ?? previousMessages) as ClientMessage[];
-          });
-        },
-
-        onToolOutput: (data: SSEData) => {
-          if (!isSubscriptionActive) return;
-          const toolCallId = data.toolCallId as string | undefined;
-          if (!toolCallId) return;
-
-          setMessages((previousMessages: ClientMessage[]) => {
-            const emptySegmentSnapshot = {
-              contentSegments: [],
-              textFragments: [],
-              thinkingFragments: [],
-            };
-            const next = applyToolCallToMessages(
-              previousMessages,
-              toolCallId,
-              {
-                id: toolCallId,
-                name: data.name as string,
-                args: {},
-                result: data.data,
-                status: "complete",
-              },
-              emptySegmentSnapshot,
-            );
-            return (next ?? previousMessages) as ClientMessage[];
-          });
-        },
-
-        onStatus: (data: SSEData) => {
-          if (!isSubscriptionActive) return;
-          const statusMessage = data.message as string | undefined;
-
-          // Update iteration progress
-          if (statusMessage === "iteration_progress") {
-            const iteration = data.iteration as number | undefined;
-            const maxIterations = data.maxIterations as number | undefined;
-            if (typeof iteration === "number") {
-              setAgenticProgress({
-                iteration,
-                maxIterations: maxIterations || 0,
-              });
-            }
+          } else {
+            updated.push({
+              role: MESSAGE_ROLES.ASSISTANT,
+              content: trimmedText,
+            } as ClientMessage);
           }
+          return updated;
+        });
+      },
 
-          // Update phase on last assistant message
-          const phase = data.phase as string | undefined;
-          if (phase) {
-            setMessages((previousMessages) => {
-              if (previousMessages.length === 0) return previousMessages;
-              const lastMessage = previousMessages[previousMessages.length - 1];
-              if (lastMessage?.role !== "assistant") return previousMessages;
-              if ((lastMessage as ClientMessage).statusPhase === phase) {
-                return previousMessages;
-              }
-              const updatedMessages = [...previousMessages];
-              updatedMessages[updatedMessages.length - 1] = {
-                ...lastMessage,
-                statusPhase: phase,
-              } as ClientMessage;
-              return updatedMessages;
+      onThinking: (content: string) => {
+        if (!isSubscriptionActive) return;
+        streamedThinking += content;
+
+        setMessages((previousMessages) => {
+          const updated = [...previousMessages];
+          const lastMessage = updated[updated.length - 1];
+          if (lastMessage?.role === "assistant") {
+            updated[updated.length - 1] = {
+              ...lastMessage,
+              thinking: streamedThinking,
+              statusPhase: "thinking",
+            } as ClientMessage;
+          } else {
+            updated.push({
+              role: MESSAGE_ROLES.ASSISTANT,
+              content: "",
+              thinking: streamedThinking,
+              statusPhase: "thinking",
+            } as ClientMessage);
+          }
+          return updated;
+        });
+      },
+
+      onToolExecution: (data: SSEData) => {
+        if (!isSubscriptionActive) return;
+        const toolData = data.tool as Record<string, unknown> | undefined;
+        if (!toolData) return;
+        if (data.toolEmoji && toolData.name) {
+          cacheToolEmoji(toolData.name as string, data.toolEmoji as string);
+        }
+        const resolvedToolId =
+          (toolData.id as string) || `tc-${Date.now()}-${Math.random()}`;
+
+        setToolActivity((previousToolActivity: ToolCallEvent[]) => {
+          const next = applyToolExecutionToActivity(
+            previousToolActivity,
+            resolvedToolId,
+            {
+              id: toolData.id as string | undefined,
+              name: toolData.name as string | undefined,
+              args: toolData.args as Record<string, unknown> | undefined,
+              status: data.status as string,
+              result: toolData.result,
+              durationMs: (toolData.durationMs ||
+                toolData.durationMilliseconds) as number | undefined,
+              timestamp: data.timestamp as number | undefined,
+            },
+          );
+          return next ?? previousToolActivity;
+        });
+
+        setMessages((previousMessages: ClientMessage[]) => {
+          const lastAssistant = [...previousMessages]
+            .reverse()
+            .find((m) => m.role === "assistant");
+          const snapshot = {
+            contentSegments: lastAssistant?.contentSegments || [],
+            textFragments: lastAssistant?.textFragments || [],
+            thinkingFragments: lastAssistant?.thinkingFragments || [],
+          };
+          const next = applyToolExecutionToMessages(
+            previousMessages,
+            resolvedToolId,
+            {
+              id: toolData.id as string | undefined,
+              name: toolData.name as string | undefined,
+              args: toolData.args as Record<string, unknown> | undefined,
+              status: data.status as string,
+              result: toolData.result,
+              durationMs: (toolData.durationMs ||
+                toolData.durationMilliseconds) as number | undefined,
+              timestamp: data.timestamp as number | undefined,
+            },
+            snapshot,
+          );
+          return (next ?? previousMessages) as ClientMessage[];
+        });
+      },
+
+      onToolOutput: (data: SSEData) => {
+        if (!isSubscriptionActive) return;
+        const toolCallId = data.toolCallId as string | undefined;
+        if (!toolCallId) return;
+
+        setMessages((previousMessages: ClientMessage[]) => {
+          const lastAssistant = [...previousMessages]
+            .reverse()
+            .find((m) => m.role === "assistant");
+          const snapshot = {
+            contentSegments: lastAssistant?.contentSegments || [],
+            textFragments: lastAssistant?.textFragments || [],
+            thinkingFragments: lastAssistant?.thinkingFragments || [],
+          };
+          const next = applyToolCallToMessages(
+            previousMessages,
+            toolCallId,
+            {
+              id: toolCallId,
+              name: data.name as string,
+              args: {},
+              result: data.data,
+              status: "complete",
+            },
+            snapshot,
+          );
+          return (next ?? previousMessages) as ClientMessage[];
+        });
+      },
+
+      onStatus: (data: SSEData) => {
+        if (!isSubscriptionActive) return;
+        const statusMessage = data.message as string | undefined;
+
+        // Update iteration progress
+        if (statusMessage === "iteration_progress") {
+          const iteration = data.iteration as number | undefined;
+          const maxIterations = data.maxIterations as number | undefined;
+          if (typeof iteration === "number") {
+            setAgenticProgress({
+              iteration,
+              maxIterations: maxIterations || 0,
             });
           }
-        },
+        }
 
-        onDone: () => {
-          if (!isSubscriptionActive) return;
-          // Generation finished — do a final full refresh from DB
-          // to get the canonical message state with all metadata.
-          setIsGenerating(false);
-          streamedText = "";
-          streamedThinking = "";
-
-          (async () => {
-            try {
-              const finalConversation = isNoAgent
-                ? await PrismService.getConversation(activeId)
-                : await PrismService.getAgentConversation(activeId, agentProject!);
-              if (finalConversation && finalConversation.id === conversationIdRef.current) {
-                applyConversationData(finalConversation);
-              }
-            } catch {
-              // Non-critical — the change stream will catch up
+        // Update phase on last assistant message
+        const phase = data.phase as string | undefined;
+        if (phase) {
+          setMessages((previousMessages) => {
+            if (previousMessages.length === 0) return previousMessages;
+            const lastMessage = previousMessages[previousMessages.length - 1];
+            if (lastMessage?.role !== "assistant") return previousMessages;
+            if ((lastMessage as ClientMessage).statusPhase === phase) {
+              return previousMessages;
             }
-          })();
-        },
-
-        onError: () => {
-          if (!isSubscriptionActive) return;
-          // WebSocket error — fall back to change-stream updates
-          setIsGenerating(false);
-        },
+            const updatedMessages = [...previousMessages];
+            updatedMessages[updatedMessages.length - 1] = {
+              ...lastMessage,
+              statusPhase: phase,
+            } as ClientMessage;
+            return updatedMessages;
+          });
+        }
       },
-    );
+
+      onDone: (data?: SSEData) => {
+        if (!isSubscriptionActive) return;
+        // Generation finished — do a final full refresh from DB
+        // to get the canonical message state with all metadata.
+        setIsGenerating(false);
+        isClientDrivenGenerationRef.current = false;
+        isWebSocketStreamingRef.current = false;
+        streamedText = "";
+        streamedThinking = "";
+
+        (async () => {
+          try {
+            const finalConversation = isNoAgent
+              ? await PrismService.getConversation(activeId)
+              : await PrismService.getAgentConversation(activeId, agentProject!);
+            if (
+              finalConversation &&
+              finalConversation.id === conversationIdRef.current
+            ) {
+              applyConversationData(finalConversation);
+            }
+          } catch {
+            // Non-critical — the change stream will catch up
+          }
+        })();
+      },
+
+      onError: () => {
+        if (!isSubscriptionActive) return;
+        // WebSocket error — fall back to change-stream updates
+        setIsGenerating(false);
+        isClientDrivenGenerationRef.current = false;
+        isWebSocketStreamingRef.current = false;
+      },
+    });
 
     return () => {
       isSubscriptionActive = false;
       cleanupWebSocket();
-      // Don't reset isGenerating here — the conversation might still
-      // be running; the live-status poll or change stream will handle it.
+      isWebSocketStreamingRef.current = false;
+      isClientDrivenGenerationRef.current = false;
+      setIsGenerating(false);
     };
   }, [
     activeId,
