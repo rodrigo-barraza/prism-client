@@ -377,7 +377,9 @@ export function TeamCreateRenderer({
               ? "running"
               : areAllMembersDone
                 ? `${succeededMembersCount} done${failedMembersCount ? `, ${failedMembersCount} failed` : ""}`
-                : "running"
+                : hasActiveSubAgentsInTeam
+                  ? "running"
+                  : `${succeededMembersCount} done${failedMembersCount ? `, ${failedMembersCount} failed` : ""}`
           }
         />
       </div>

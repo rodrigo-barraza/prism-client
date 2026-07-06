@@ -533,8 +533,32 @@ describe("ToolCallsBlockComponent", () => {
       );
 
       // When loaded from history (no active→inactive transition observed),
-      // falls back to toolCall.durationMs (400ms rounds to 0s → "<1 second")
+      // and members have no durationMilliseconds, falls back to toolCall.durationMs
+      // (400ms rounds to 0s → "<1 second")
       expect(getHeaderText()).toContain("<1 second");
+    });
+
+    it("derives wall-clock duration from member durationMilliseconds for persisted subagent tools", () => {
+      render(
+        <ToolCallsBlockComponent
+          toolCall={makeCreateTeamToolCall({
+            status: "done",
+            durationMs: 400,
+            result: JSON.stringify([
+              { agent_id: "agent-1", description: "Manager 1", toolUses: 5, durationMilliseconds: 45000 },
+              { agent_id: "agent-2", description: "Manager 2", toolUses: 3, durationMilliseconds: 52000 },
+            ]),
+          })}
+          subAgentToolActivity={{
+            "agent-1": { phase: "complete", currentTool: null, description: "Manager 1" },
+            "agent-2": { phase: "complete", currentTool: null, description: "Manager 2" },
+          }}
+        />,
+      );
+
+      // Members run in parallel, so the wall-clock duration is the max (52s),
+      // overriding the instant dispatch durationMs (400ms)
+      expect(getHeaderText()).toContain("52 seconds");
     });
   });
 });

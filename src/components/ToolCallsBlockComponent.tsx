@@ -84,8 +84,28 @@ export default function ToolCallsBlockComponent({
     previousIsBlockActiveForDuration.current = isBlockActive;
   }, [isBlockActive, isSubAgentTool, toolCall.timestamp]);
 
+  // For completed subagent tools loaded from persistence (block was never active
+  // during this mount), derive the wall-clock duration from the member results.
+  // Members run in parallel, so the total duration is the max across all members.
+  const persistedSubAgentDurationMs = useMemo(() => {
+    if (!isSubAgentTool || !toolCall.result) return null;
+    const members = parseTeamToolResult(toolCall.result);
+    if (members.length === 0) return null;
+    let maximumMemberDuration = 0;
+    for (const member of members) {
+      const memberDuration =
+        (member as Record<string, unknown>).durationMilliseconds as number | undefined ??
+        (member as Record<string, unknown>).durationMs as number | undefined ??
+        0;
+      if (memberDuration > maximumMemberDuration) {
+        maximumMemberDuration = memberDuration;
+      }
+    }
+    return maximumMemberDuration > 0 ? maximumMemberDuration : null;
+  }, [isSubAgentTool, toolCall.result]);
+
   const effectiveDurationMs = isSubAgentTool
-    ? (capturedSubAgentDurationMs ?? toolCall.durationMs)
+    ? (capturedSubAgentDurationMs ?? persistedSubAgentDurationMs ?? toolCall.durationMs)
     : toolCall.durationMs;
 
   const headerLabelText = useMemo(() => {
