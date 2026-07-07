@@ -1325,7 +1325,7 @@
   border: 1px solid var(--calculated-border-color);
   background: oklch(100% 0 0);
   width: 100%;
-  max-width: 640px;
+  max-width: 100%;
   aspect-ratio: 16 / 9;
   box-shadow: 0 4px 20px oklch(0% 0 0 / 0.15);
   animation: three-dimensional-mesh-fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -1395,7 +1395,7 @@
   border: 1px solid var(--calculated-border-color);
   background: oklch(13% 0.01 263);
   width: 100%;
-  max-width: 800px;
+  max-width: 100%;
   box-shadow: 0 4px 20px oklch(0% 0 0 / 0.15);
   animation: three-dimensional-mesh-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   transition:
