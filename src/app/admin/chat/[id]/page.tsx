@@ -1,14 +1,13 @@
 "use client";
 
-import { Suspense, use } from "react";
+import { Suspense } from "react";
+import { useParams } from "next/navigation";
 import ChatConversationComponent from "../../../../components/ChatConversationComponent";
 
-export default function AdminChatDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function AdminChatDetailPage() {
+  const params = useParams();
+  const rawId = params?.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
   return (
     <Suspense>
       <ChatConversationComponent isAdmin initialId={id} />

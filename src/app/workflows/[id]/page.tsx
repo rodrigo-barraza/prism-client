@@ -1,13 +1,11 @@
 "use client";
 
-import { use } from "react";
+import { useParams } from "next/navigation";
 import WorkflowsPage from "../page";
 
-interface WorkflowByIdPageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default function WorkflowByIdPage({ params }: WorkflowByIdPageProps) {
-  const { id } = use(params);
+export default function WorkflowByIdPage() {
+  const params = useParams();
+  const rawId = params?.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
   return <WorkflowsPage initialWorkflowId={id} />;
 }
