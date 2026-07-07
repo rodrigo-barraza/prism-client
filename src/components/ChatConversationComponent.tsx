@@ -6304,12 +6304,18 @@ export default function ChatConversationComponent({
         // Restore tool toggle state from the conversation's persisted toolConfig.
         // Legacy conversations without toolConfig default to all tools disabled.
         const conversationToolConfig = (conversationSettings as Record<string, unknown>)?.toolConfig as
-          | { disabledTools?: string[] }
+          | { disabledTools?: string[]; dynamicEnabledTools?: string[] }
           | undefined;
         if (conversationToolConfig && conversationToolConfig.disabledTools !== undefined) {
           restoreDisabledTools(conversationToolConfig.disabledTools);
         } else {
           resetToAllDisabled();
+        }
+        // Re-enable tools the agent dynamically activated mid-generation
+        // (via enable_tools / discover_and_enable_tools). This mirrors
+        // the live SSE TOOL_SET_CHANGED → enableSpecificTools() path.
+        if (conversationToolConfig?.dynamicEnabledTools?.length) {
+          enableSpecificTools(conversationToolConfig.dynamicEnabledTools);
         }
 
         // Sync the authoritative isActive and pendingBackgroundTasks from
@@ -6335,7 +6341,7 @@ export default function ChatConversationComponent({
         }
       }
     },
-    [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools, resetToAllDisabled],
+    [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools, resetToAllDisabled, enableSpecificTools],
   );
 
   const handleSelectConversation = useCallback(
