@@ -1973,7 +1973,7 @@ export default function ChatConversationComponent({
     if (!selectedEntry) return null;
     const conversationSettings = (selectedEntry as Conversation)?.settings as Record<string, unknown> | undefined;
     return conversationSettings?.toolConfig as
-      | { availableTools?: string[]; enabledTools?: string[]; disabledTools?: string[] }
+      | { availableTools?: string[]; disabledTools?: string[]; dynamicEnabledTools?: string[] }
       | undefined
       ?? null;
   }, [isAdmin, activeId, conversations]);
