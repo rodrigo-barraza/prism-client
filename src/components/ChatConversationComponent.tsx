@@ -595,6 +595,7 @@ export default function ChatConversationComponent({
   const [hasInput, setHasInput] = useState(false);
   const [draftInputLength, setDraftInputLength] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isUserExplicitlyStopped, setIsUserExplicitlyStopped] = useState(false);
   const [contextBudget, setContextBudget] = useState<ContextBudget | null>(null);
   const [toolActivity, setToolActivity] = useState<ToolCallEvent[]>([]);
   const [streamingOutputs, setStreamingOutputs] = useState<Map<string, string>>(
@@ -1087,10 +1088,13 @@ export default function ChatConversationComponent({
   // stop/send button toggle and the input-box generating class.
   // True when the client is streaming (isGenerating), OR the backend
   // reports the session as active (isActive), OR background tasks remain.
+  // Immediately false when the user explicitly pressed stop, bypassing
+  // stale backend state that hasn't refreshed yet.
   const isConversationRunning =
-    isGenerating ||
+    !isUserExplicitlyStopped &&
+    (isGenerating ||
     isActiveConversationExplicitlyActive ||
-    pendingBackgroundTaskCountForPolling > 0;
+    pendingBackgroundTaskCountForPolling > 0);
 
   useEffect(() => {
     if (!activeId || isGenerating || pendingBackgroundTaskCountForPolling <= 0) return;
@@ -1184,6 +1188,7 @@ export default function ChatConversationComponent({
       abortRef.current = null;
     }
     setIsGenerating(false);
+    setIsUserExplicitlyStopped(true);
     setPlanProposal(null);
 
     // Explicitly stop the backend agentic session — decoupled from
@@ -5262,6 +5267,7 @@ export default function ChatConversationComponent({
         setPendingFiles([]);
       }
 
+      setIsUserExplicitlyStopped(false);
       setIsGenerating(true);
       SoundService.playGenerationStart();
       isClientDrivenGenerationRef.current = true;
@@ -6020,6 +6026,7 @@ export default function ChatConversationComponent({
           resetToAllDisabled();
         }
         // Re-attach: mark as generating so the UI shows the active state
+        setIsUserExplicitlyStopped(false);
         setIsGenerating(true);
         // Remove the snapshot — the SSE callbacks will resume updating React state
         // now that conversationIdRef matches again (isStale() → false)
@@ -6050,6 +6057,7 @@ export default function ChatConversationComponent({
             `[Conversation switch] Stale isGenerating flag detected for conversation ${full.id} — clearing locally`,
           );
         }
+        setIsUserExplicitlyStopped(false);
         setIsGenerating(!!full.isGenerating && !isGeneratingFlagStale);
         // Passive DB load — no active SSE connection for this generation
         isClientDrivenGenerationRef.current = false;
@@ -8343,7 +8351,9 @@ export default function ChatConversationComponent({
           liveGenProgress &&
           ((liveGenProgress.activeRequests ?? 0) > 0 || (liveGenProgress.tokensPerSecond ?? 0) > 0);
 
-        const phase = isGenerating
+        const phase = isUserExplicitlyStopped
+          ? null
+          : isGenerating
           ? isAwaitingApproval
             ? "awaiting"
             : subAgentDerivedPhase ||
@@ -8433,9 +8443,10 @@ export default function ChatConversationComponent({
         // because the conversations array may contain a stale isActive: false from
         // the prior completed generation that hasn't been refreshed yet.
         const isStatusBarActive =
-          isGenerating ||
+          !isUserExplicitlyStopped &&
+          (isGenerating ||
           (!conversationIsExplicitlyInactive &&
-           (!!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks || conversationIsExplicitlyActive));
+           (!!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks || conversationIsExplicitlyActive)));
 
         if (!isStatusBarActive) return null;
 
