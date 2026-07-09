@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -10,6 +10,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import styles from "./MarkdownContentComponent.module.css";
+import { sanitizeInlineLatex } from "../utils/latexSanitizer";
 import { CopyButtonComponent } from "@rodrigo-barraza/components-library";
 
 interface FencedCodeBlockProps {
@@ -218,6 +219,8 @@ export default function MarkdownContent({
   className,
   children,
 }: MarkdownContentProps) {
+  const sanitizedContent = useMemo(() => sanitizeInlineLatex(content || ""), [content]);
+
   if (!content) return null;
   return (
     <div className={`markdown-content-component ${styles['text']} ${className || ""}`}>
@@ -226,7 +229,7 @@ export default function MarkdownContent({
         rehypePlugins={[rehypeKatex]}
         components={{ code: CodeBlock, img: ImageOrEmbed }}
       >
-        {content}
+        {sanitizedContent}
       </ReactMarkdown>
       {children}
     </div>
