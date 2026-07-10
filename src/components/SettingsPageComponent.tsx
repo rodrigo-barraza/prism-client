@@ -1369,17 +1369,21 @@ export default function SettingsPageComponent() {
                   {/* Roots served by this agent */}
                   {agent.roots && agent.roots.length > 0 && (
                     <div className={styles["agent-roots"]}>
-                      {agent.roots.map(
-                        (root: { path: string; isAgentServed?: boolean }) => (
+                      {agent.roots.map((root: unknown) => {
+                        const pathString =
+                          typeof root === "string"
+                            ? root
+                            : (root as { path: string })?.path || "";
+                        return (
                           <div
-                            key={root.path}
+                            key={pathString}
                             className={styles["agent-root-item"]}
                           >
                             <FolderOpen size={13} />
-                            {root.path}
+                            {pathString}
                           </div>
-                        ),
-                      )}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
