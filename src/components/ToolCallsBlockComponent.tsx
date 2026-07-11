@@ -108,25 +108,34 @@ export default function ToolCallsBlockComponent({
     ? (capturedSubAgentDurationMs ?? persistedSubAgentDurationMs ?? toolCall.durationMs)
     : toolCall.durationMs;
 
-  const headerLabelText = useMemo(() => {
-    const activeContextualSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: true });
-    const completedContextualSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: false });
+  const headerLabelContent = useMemo(() => {
+    const activeSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: true });
+    const completedSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: false });
 
     if (isBlockActive) {
-      const activeLabel = activeContextualSummary ?? `Calling ${toolDisplayName}`;
-      return liveToolElapsedSeconds > 0
-        ? `${activeLabel} for ${liveToolElapsedSeconds}s\u2026`
-        : `${activeLabel}\u2026`;
+      const durationSuffix = liveToolElapsedSeconds > 0
+        ? ` for ${liveToolElapsedSeconds}s\u2026`
+        : "\u2026";
+
+      if (activeSummary) {
+        return <>{activeSummary.verb} <span className={styles['tool-calls-toggle-subject']}>{activeSummary.subject}</span>{durationSuffix}</>;
+      }
+      return <>Calling {toolDisplayName}{durationSuffix}</>;
     }
-    if (effectiveDurationMs != null && effectiveDurationMs > 0) {
-      const totalDurationSeconds = Math.round(effectiveDurationMs / 1000);
-      const durationFormattedLabel = totalDurationSeconds < 1
-        ? "<1 second"
-        : `${totalDurationSeconds} second${totalDurationSeconds === 1 ? "" : "s"}`;
-      const completedLabel = completedContextualSummary ?? toolDisplayName;
-      return `${completedLabel} for ${durationFormattedLabel}`;
+
+    const durationLabel = effectiveDurationMs != null && effectiveDurationMs > 0
+      ? (() => {
+          const totalDurationSeconds = Math.round(effectiveDurationMs / 1000);
+          return totalDurationSeconds < 1
+            ? " for <1 second"
+            : ` for ${totalDurationSeconds} second${totalDurationSeconds === 1 ? "" : "s"}`;
+        })()
+      : "";
+
+    if (completedSummary) {
+      return <>{completedSummary.verb} <span className={styles['tool-calls-toggle-subject']}>{completedSummary.subject}</span>{durationLabel}</>;
     }
-    return completedContextualSummary ?? toolDisplayName;
+    return <>{toolDisplayName}{durationLabel}</>;
   }, [isBlockActive, liveToolElapsedSeconds, toolDisplayName, effectiveDurationMs, toolCall.name, toolCall.args]);
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(!isBlockActive);
@@ -177,7 +186,7 @@ export default function ToolCallsBlockComponent({
               : emoji;
           })()}
         </span>
-        <span>{headerLabelText}</span>
+        <span>{headerLabelContent}</span>
         <ChevronDown size={14} className={`${styles['tool-calls-chevron']}${isHeaderCollapsed ? ` ${styles['tool-calls-chevron-collapsed']}` : ''}`} />
       </button>
 
