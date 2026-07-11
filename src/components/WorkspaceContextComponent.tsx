@@ -83,7 +83,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     refreshWorkspaces();
   }, [refreshWorkspaces]);
 
-  // Poll every 30s to detect agent reconnections (e.g. after reboot)
+  // Poll every 30s to detect host reconnections (e.g. after reboot)
   useEffect(() => {
     if (!mounted) return;
     const WORKSPACE_POLL_INTERVAL_MILLISECONDS = 30_000;

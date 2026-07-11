@@ -104,7 +104,7 @@ interface LocalAgent {
  * SettingsPageComponent — server-side settings management.
  *
  * Exposes:
- *   - "Workspaces" section with agent connection status + workspace management
+ *   - "Workspaces" section with host connection status + workspace management
  *   - "Memory Models" section for extraction, consolidation, and embedding
  *   - "Harness Models" section for sub-agent and critic model configuration
  */
@@ -1249,77 +1249,77 @@ export default function SettingsPageComponent() {
         <CardComponent.Header
           icon={FolderOpen}
           title="Workspaces"
-          subtitle="Directories accessible to the agent for file operations"
+          subtitle="Directories accessible to Prism for file operations"
         />
 
         <CardComponent.Body>
-          {/* Agent status banner */}
-          <div className={styles["agent-status-banner"]}>
+          {/* Host status banner */}
+          <div className={styles["host-status-banner"]}>
             <div
-              className={`${styles["agent-status-dot"]} ${hasAgents ? styles["connected"] : styles["disconnected"]}`}
+              className={`${styles["host-status-dot"]} ${hasAgents ? styles["connected"] : styles["disconnected"]}`}
             />
-            <span className={styles["agent-status-text"]}>
+            <span className={styles["host-status-text"]}>
               {hasAgents ? (
                 <>
-                  <strong>{wsAgents.length}</strong> workspace agent
+                  <strong>{wsAgents.length}</strong> host
                   {wsAgents.length !== 1 ? "s" : ""} connected
                 </>
               ) : (
-                "No workspace agents connected"
+                "No hosts connected"
               )}
             </span>
-            <span className={styles["agent-status-meta"]}>
+            <span className={styles["host-status-meta"]}>
               {wsWorkspaces.length} root{wsWorkspaces.length !== 1 ? "s" : ""}{" "}
               total
             </span>
           </div>
 
-          {/* Connected Agents */}
+          {/* Connected Hosts */}
           {hasAgents && (
             <>
               <div className={styles["section-label"]}>
                 <Server size={10} />
-                Remote Agents
+                Remote Hosts
               </div>
               {wsAgents.map((agent: LocalAgent) => (
-                <div key={agent.id} className={styles["agent-card"]}>
-                  <div className={styles["agent-card-header"]}>
-                    <div className={styles["agent-icon"]}>
+                <div key={agent.id} className={styles["host-card"]}>
+                  <div className={styles["host-card-header"]}>
+                    <div className={styles["host-icon"]}>
                       <Wifi size={16} />
                     </div>
-                    <div className={styles["agent-info"]}>
-                      <div className={styles["agent-name-layout-row"]}>
-                        <span className={styles["agent-name"]}>
+                    <div className={styles["host-info"]}>
+                      <div className={styles["host-name-layout-row"]}>
+                        <span className={styles["host-name"]}>
                           {agent.hostInfo?.hostname || agent.name}
                         </span>
                         {agent.version && (
-                          <span className={styles["agent-version"]}>
+                          <span className={styles["host-version"]}>
                             v{agent.version}
                           </span>
                         )}
                       </div>
-                      <div className={styles["agent-meta"]}>
-                        <span className={styles["agent-meta-item"]}>
+                      <div className={styles["host-meta"]}>
+                        <span className={styles["host-meta-item"]}>
                           {agent.clientIp}
                         </span>
                         {agent.hostInfo?.platform && (
                           <>
-                            <span className={styles["agent-meta-separator"]} />
-                            <span className={styles["agent-meta-item"]}>
+                            <span className={styles["host-meta-separator"]} />
+                            <span className={styles["host-meta-item"]}>
                               {formatPlatformLabel(agent.hostInfo)}
                             </span>
                           </>
                         )}
-                        <span className={styles["agent-meta-separator"]} />
+                        <span className={styles["host-meta-separator"]} />
                         {agent.connectedAt && (
-                          <span className={styles["agent-meta-item"]}>
+                          <span className={styles["host-meta-item"]}>
                             up {formatUptime(agent.connectedAt)}
                           </span>
                         )}
                         {(agent.pendingRpcs ?? 0) > 0 && (
                           <>
-                            <span className={styles["agent-meta-separator"]} />
-                            <span className={styles["agent-meta-item"]}>
+                            <span className={styles["host-meta-separator"]} />
+                            <span className={styles["host-meta-item"]}>
                               {agent.pendingRpcs} pending
                             </span>
                           </>
@@ -1357,7 +1357,7 @@ export default function SettingsPageComponent() {
                         </div>
                       )}
                     </div>
-                    <div className={styles["agent-capabilities"]}>
+                    <div className={styles["host-capabilities"]}>
                       {(agent.capabilities || []).map((cap: string) => (
                         <span key={cap} className={styles["capability-tag"]}>
                           {cap}
@@ -1368,7 +1368,7 @@ export default function SettingsPageComponent() {
 
                   {/* Roots served by this agent */}
                   {agent.roots && agent.roots.length > 0 && (
-                    <div className={styles["agent-roots"]}>
+                    <div className={styles["host-roots"]}>
                       {agent.roots.map((root: unknown) => {
                         const pathString =
                           typeof root === "string"
@@ -1377,7 +1377,7 @@ export default function SettingsPageComponent() {
                         return (
                           <div
                             key={pathString}
-                            className={styles["agent-root-item"]}
+                            className={styles["host-root-item"]}
                           >
                             <FolderOpen size={13} />
                             {pathString}
@@ -1391,13 +1391,13 @@ export default function SettingsPageComponent() {
             </>
           )}
 
-          {/* Agent-served workspace roots (managed by connected agents) */}
+          {/* Host-served workspace roots (managed by connected hosts) */}
           {agentServedRoots.length > 0 && (
             <>
               <div className={styles["workspace-divider"]} />
               <div className={styles["section-label"]}>
                 <FolderTree size={10} />
-                Agent Workspaces
+                Connected Workspaces
               </div>
               {agentServedRoots.map((workspace: LocalWorkspace) => {
                 const servingAgent = findAgentForRoot(workspace.path);
@@ -1414,7 +1414,7 @@ export default function SettingsPageComponent() {
                           {workspace.name}
                           <span className={styles["static-badge"]}>
                             <Wifi size={8} />
-                            Agent
+                            Remote
                           </span>
                         </span>
                         <span className={styles["workspace-item-path"]}>
@@ -1444,7 +1444,7 @@ export default function SettingsPageComponent() {
             </>
           )}
 
-          {/* Local static roots (from env config, not agent-served) */}
+          {/* Local static roots (from env config, not host-served) */}
           {localStaticRoots.length > 0 && (
             <>
               <div className={styles["workspace-divider"]} />
@@ -1634,7 +1634,7 @@ export default function SettingsPageComponent() {
                 Workspace Setup Guide
               </span>
               <span className={styles["setup-guide-subtitle"]}>
-                Connect a workspace agent to give Prism file, git, and shell
+                Connect a workspace connector to give Prism file, git, and shell
                 access
               </span>
             </div>
@@ -1822,8 +1822,8 @@ export default function SettingsPageComponent() {
                       <code className={styles["inline-code"]}>
                         Server confirmed registration
                       </code>{" "}
-                      in the output. The agent will appear in this settings
-                      panel under Remote Agents.
+                      in the output. The host will appear in this settings
+                      panel under Remote Hosts.
                     </span>
                   </div>
                 </div>
@@ -1989,12 +1989,12 @@ export default function SettingsPageComponent() {
                     </span>
                     <span className={styles["step-hint"]}>
                       Right-click the system tray icon to see the connection
-                      status. The agent will appear in this settings panel under
-                      Remote Agents. Enable{" "}
+                      status. The host will appear in this settings panel under
+                      Remote Hosts. Enable{" "}
                       <code className={styles["inline-code"]}>
                         Launch at login
                       </code>{" "}
-                      in the tray menu to keep the agent running across
+                      in the tray menu to keep the connector running across
                       restarts.
                     </span>
                   </div>
@@ -2037,7 +2037,7 @@ export default function SettingsPageComponent() {
                     <span
                       className={styles["single-file-explainer-description"]}
                     >
-                      The Workspace Agent is a single file that bridges your
+                      The Workspace Connector is a single file that bridges your
                       local project files to Prism&apos;s AI tools over
                       WebSocket. Nothing is uploaded — all file access stays on
                       your device. Works on Windows, macOS, and Linux.
@@ -2049,7 +2049,7 @@ export default function SettingsPageComponent() {
                   <span className={styles["step-number"]}>1</span>
                   <div className={styles["step-body"]}>
                     <span className={styles["step-title"]}>
-                      Download the agent
+                      Download the connector
                     </span>
                     <a
                       className={styles["single-file-download-button"]}
@@ -2098,7 +2098,7 @@ export default function SettingsPageComponent() {
                     </div>
                     <span className={styles["step-hint"]}>
                       Replace the backend URL, workspace path, and secret with
-                      your own values. Leave the terminal running — the agent
+                      your own values. Leave the terminal running — the connector
                       reconnects automatically if interrupted.
                     </span>
                   </div>
@@ -2119,8 +2119,8 @@ export default function SettingsPageComponent() {
                       <code className={styles["inline-code"]}>
                         Server confirmed registration
                       </code>{" "}
-                      in the output. The agent will appear in this settings
-                      panel under Remote Agents.
+                      in the output. The host will appear in this settings
+                      panel under Remote Hosts.
                     </span>
                   </div>
                 </div>
@@ -2511,8 +2511,8 @@ export default function SettingsPageComponent() {
                       <code className={styles["inline-code"]}>
                         Server confirmed registration
                       </code>{" "}
-                      in the output. The agent will appear in this settings
-                      panel under Remote Agents.
+                      in the output. The host will appear in this settings
+                      panel under Remote Hosts.
                     </span>
                   </div>
                 </div>
@@ -2563,7 +2563,7 @@ export default function SettingsPageComponent() {
 
             <div className={styles["guide-footnote"]}>
               <span>
-                Multiple agents can run simultaneously — each registers with a
+                Multiple hosts can connect simultaneously — each registers with a
                 unique ID and routes automatically.
               </span>
             </div>

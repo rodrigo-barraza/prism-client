@@ -425,7 +425,7 @@ export default function WorkspaceTreePanelComponent({
                       <span className={styles['switcher-item-path']}>{workspace.path}</span>
                     </div>
                     {workspace.isAgentServed && (
-                      <span className={styles['switcher-item-agent-badge']}>remote</span>
+                      <span className={styles['switcher-item-remote-badge']}>remote</span>
                     )}
                     {isActive && (
                       <Check size={10} className={styles['switcher-item-check']} />

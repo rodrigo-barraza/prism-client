@@ -136,9 +136,9 @@
   opacity: 1;
 }
 
-/* ── Agent status banner ─────────────────────────────────────────── */
+/* ── Host status banner ──────────────────────────────────────────── */
 
-.agent-status-banner {
+.host-status-banner {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -147,14 +147,14 @@
   font-size: var(--font-size-sm);
 }
 
-.agent-status-dot {
+.host-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.agent-status-dot.connected {
+.host-status-dot.connected {
   background: var(--color-success, var(--color-success-bright));
   box-shadow: 0 0 6px
     color-mix(
@@ -165,7 +165,7 @@
   animation: status-pulse 2s ease-in-out infinite;
 }
 
-.agent-status-dot.disconnected {
+.host-status-dot.disconnected {
   background: var(--text-muted);
   opacity: 0.5;
 }
@@ -180,17 +180,17 @@
   }
 }
 
-.agent-status-text {
+.host-status-text {
   color: var(--text-secondary);
   font-weight: 500;
 }
 
-.agent-status-text strong {
+.host-status-text strong {
   color: var(--text-primary);
   font-weight: 600;
 }
 
-.agent-status-meta {
+.host-status-meta {
   margin-left: auto;
   color: var(--text-muted);
   font-size: var(--font-size-xs);
@@ -210,28 +210,28 @@
   color: var(--text-muted);
 }
 
-/* ── Agent card ──────────────────────────────────────────────────── */
+/* ── Host card ───────────────────────────────────────────────────── */
 
-.agent-card {
+.host-card {
   padding: 14px 24px;
   transition: background var(--transition-fast);
 }
 
-.agent-card:hover {
+.host-card:hover {
   background: color-mix(in oklch, var(--accent-primary) 2%, transparent);
 }
 
-.agent-card + .agent-card {
+.host-card + .host-card {
   border-top: 1px solid var(--calculated-border-subtle);
 }
 
-.agent-card-header {
+.host-card-header {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.agent-icon {
+.host-icon {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -243,7 +243,7 @@
   color: var(--accent-primary);
 }
 
-.agent-info {
+.host-info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -251,19 +251,19 @@
   gap: 2px;
 }
 
-.agent-name-layout-row {
+.host-name-layout-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.agent-name {
+.host-name {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.agent-version {
+.host-version {
   font-size: 0.625rem;
   font-weight: 500;
   padding: 1px 5px;
@@ -273,7 +273,7 @@
   letter-spacing: 0.2px;
 }
 
-.agent-meta {
+.host-meta {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -281,13 +281,13 @@
   color: var(--text-tertiary);
 }
 
-.agent-meta-item {
+.host-meta-item {
   display: inline-flex;
   align-items: center;
   gap: 3px;
 }
 
-.agent-meta-separator {
+.host-meta-separator {
   width: 3px;
   height: 3px;
   border-radius: 50%;
@@ -295,9 +295,9 @@
   opacity: 0.4;
 }
 
-/* ── Agent capability tags ───────────────────────────────────────── */
+/* ── Host capability tags ────────────────────────────────────────── */
 
-.agent-capabilities {
+.host-capabilities {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -315,9 +315,9 @@
   text-transform: lowercase;
 }
 
-/* ── Agent roots list ────────────────────────────────────────────── */
+/* ── Host roots list ─────────────────────────────────────────────── */
 
-.agent-roots {
+.host-roots {
   margin-top: 10px;
   padding-left: 42px;
   display: flex;
@@ -325,7 +325,7 @@
   gap: 4px;
 }
 
-.agent-root-item {
+.host-root-item {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -338,11 +338,11 @@
   transition: background var(--transition-fast);
 }
 
-.agent-root-item:hover {
+.host-root-item:hover {
   background: color-mix(in oklch, var(--accent-primary) 6%, transparent);
 }
 
-.agent-root-icon {
+.host-root-icon {
   flex-shrink: 0;
   color: var(--text-muted);
   opacity: 0.5;

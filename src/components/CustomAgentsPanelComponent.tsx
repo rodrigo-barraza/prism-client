@@ -251,7 +251,7 @@ export default function CustomAgentsPanel({
     if (workspaceIsDown) {
       const reason = !currentWorkspace
         ? "No workspace set up — configure one in Settings to unlock"
-        : "Workspace agent is down — make sure the workspace agent is running and connected";
+        : "Workspace connector is offline — make sure the connector is running and connected";
       for (const tool of availableTools || []) {
         const isWorkspaceTool =
           tool.domainKey === "workspace" ||

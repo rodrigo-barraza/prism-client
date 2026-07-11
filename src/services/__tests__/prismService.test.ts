@@ -281,7 +281,7 @@ describe("PrismService", () => {
       expect(lastUrl).toContain("/settings/harnesses");
     });
 
-    it("workspace agent download urls", () => {
+    it("workspace connector download urls", () => {
       expect(PrismService.getWorkspaceAgentDownloadUrl()).toContain("/workspaces/download/agent");
       expect(PrismService.getWorkspaceAgentPlatformDownloadUrl("linux")).toContain("/workspaces/download/agent?platform=linux");
       expect(PrismService.getWorkspaceAgentTrayAppDownloadUrl("windows")).toContain("/workspaces/download/tray-app?platform=windows");

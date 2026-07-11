@@ -482,8 +482,8 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
     it("renders 'Locked On' badge when only SOME workspace tools are locked off", () => {
       // Only lock off 2 of 8 workspace tools — the group is NOT entirely locked off
       const partialLockedOff = new Map<string, string>();
-      partialLockedOff.set("read_file", "Workspace agent is down");
-      partialLockedOff.set("write_file", "Workspace agent is down");
+      partialLockedOff.set("read_file", "Workspace connector is offline");
+      partialLockedOff.set("write_file", "Workspace connector is offline");
 
       const { container } = render(
         <ToolSelectionComponent
@@ -506,8 +506,8 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
 
     it("renders locked-off tools as unchecked and remaining tools as checked within the same group", () => {
       const partialLockedOff = new Map<string, string>();
-      partialLockedOff.set("read_file", "Workspace agent is down");
-      partialLockedOff.set("write_file", "Workspace agent is down");
+      partialLockedOff.set("read_file", "Workspace connector is offline");
+      partialLockedOff.set("write_file", "Workspace connector is offline");
 
       const { container } = render(
         <ToolSelectionComponent

@@ -82,7 +82,7 @@ export default function WorkspaceSwitcherButtonComponent() {
                   </span>
                 </div>
                 {workspace.isAgentServed && (
-                  <span className={styles["workspace-switcher-menu-item-agent-badge"]}>
+                  <span className={styles["workspace-switcher-menu-item-remote-badge"]}>
                     remote
                   </span>
                 )}

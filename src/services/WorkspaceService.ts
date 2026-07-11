@@ -82,7 +82,7 @@ export default class WorkspaceService {
   }
 
   /**
-   * Full workspace config including connected workspace-service agent metadata.
+   * Full workspace config including connected host metadata.
    * Used by the Settings page for the richer workspace management UI.
    */
   static async listFull(): Promise<WorkspaceFullResponse> {

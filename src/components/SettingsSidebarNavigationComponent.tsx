@@ -334,7 +334,7 @@ export default function SettingsSidebarNavigationComponent({
                   variant="warning"
                   title={
                     section.id === "workspaces"
-                      ? "No workspace agents connected"
+                      ? "No hosts connected"
                       : `${warningCount} model${warningCount > 1 ? "s" : ""} still need to be set`
                   }
                 />
