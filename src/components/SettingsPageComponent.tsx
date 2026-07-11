@@ -93,7 +93,6 @@ interface LocalAgent {
   path?: string;
   capabilities?: string[];
   roots?: { path: string; isAgentServed?: boolean }[];
-  version?: string;
   clientIp?: string;
   connectedAt?: string;
   pendingRpcs?: number;
@@ -157,6 +156,18 @@ export default function SettingsPageComponent() {
     return `${days}d ${hours % 24}h`;
   };
 
+  /** Refresh workspace + agent data from the backend. */
+  const refreshWorkspaceData = useCallback(async () => {
+    try {
+      const { workspaces, agents }: { workspaces: LocalWorkspace[]; agents: LocalAgent[] } =
+        await WorkspaceService.listFull();
+      setWsWorkspaces(workspaces || []);
+      setWsAgents(agents || []);
+    } catch (error: unknown) {
+      console.error("Failed to refresh workspace data:", error);
+    }
+  }, []);
+
   // -- Load config + settings on mount --------------------------------
   useEffect(() => {
     PrismService.getConfigWithLocalModels({
@@ -177,21 +188,18 @@ export default function SettingsPageComponent() {
       .catch(console.error);
 
     // Fetch full workspace config (workspaces + agents)
-    WorkspaceService.listFull()
-      .then(
-        ({
-          workspaces,
-          agents,
-        }: {
-          workspaces: LocalWorkspace[];
-          agents: LocalAgent[];
-        }) => {
-          setWsWorkspaces(workspaces || []);
-          setWsAgents(agents || []);
-        },
-      )
-      .catch(console.error);
-  }, []);
+    refreshWorkspaceData();
+  }, [refreshWorkspaceData]);
+
+  // Poll workspace/agent data every 10s so host connect/disconnect appears live
+  useEffect(() => {
+    const WORKSPACE_SETTINGS_POLL_INTERVAL_MILLISECONDS = 10_000;
+    const pollTimer = setInterval(
+      refreshWorkspaceData,
+      WORKSPACE_SETTINGS_POLL_INTERVAL_MILLISECONDS,
+    );
+    return () => clearInterval(pollTimer);
+  }, [refreshWorkspaceData]);
 
   // -- Persist changes ------------------------------------------------
   const persistSettings = useCallback(
@@ -419,13 +427,9 @@ export default function SettingsPageComponent() {
       const currentUserRoots = wsWorkspaces
         .filter((workspace: LocalWorkspace) => !workspace.isPinned)
         .map((workspace: LocalWorkspace) => workspace.path);
-      // Resolve the new path — if Windows, the backend will translate
       const newPath = wsAddPath.trim();
       await WorkspaceService.update([...currentUserRoots, newPath]);
-      // Refresh full config
-      const { workspaces, agents } = await WorkspaceService.listFull();
-      setWsWorkspaces(workspaces || []);
-      setWsAgents(agents || []);
+      await refreshWorkspaceData();
       setWsAddPath("");
       setWsValidation(null);
       await refreshWorkspaces();
@@ -444,7 +448,7 @@ export default function SettingsPageComponent() {
     } finally {
       setWsAdding(false);
     }
-  }, [wsAddPath, wsAdding, wsWorkspaces, refreshWorkspaces]);
+  }, [wsAddPath, wsAdding, wsWorkspaces, refreshWorkspaces, refreshWorkspaceData]);
 
   const handleRemoveWorkspace = useCallback(
     async (pathToRemove: string) => {
@@ -456,15 +460,13 @@ export default function SettingsPageComponent() {
           )
           .map((workspace: LocalWorkspace) => workspace.path);
         await WorkspaceService.update(remainingUserRoots);
-        const { workspaces, agents } = await WorkspaceService.listFull();
-        setWsWorkspaces(workspaces || []);
-        setWsAgents(agents || []);
+        await refreshWorkspaceData();
         await refreshWorkspaces();
       } catch (error: unknown) {
         console.error("Failed to remove workspace:", error);
       }
     },
-    [wsWorkspaces, refreshWorkspaces],
+    [wsWorkspaces, refreshWorkspaces, refreshWorkspaceData],
   );
 
   const handleResetAgents = useCallback(async () => {
@@ -1292,11 +1294,7 @@ export default function SettingsPageComponent() {
                         <span className={styles["host-name"]}>
                           {agent.hostInfo?.hostname || agent.name}
                         </span>
-                        {agent.version && (
-                          <span className={styles["host-version"]}>
-                            v{agent.version}
-                          </span>
-                        )}
+
                       </div>
                       <div className={styles["host-meta"]}>
                         <span className={styles["host-meta-item"]}>
@@ -1414,7 +1412,7 @@ export default function SettingsPageComponent() {
                           {workspace.name}
                           <span className={styles["static-badge"]}>
                             <Wifi size={8} />
-                            Remote
+                            Connected
                           </span>
                         </span>
                         <span className={styles["workspace-item-path"]}>
@@ -1432,6 +1430,31 @@ export default function SettingsPageComponent() {
                               <span className={styles["host-info-tag"]}>
                                 <HardDrive size={9} />
                                 {formatPlatformLabel(hostInfo)}
+                              </span>
+                            )}
+                            {hostInfo.username && (
+                              <span className={styles["host-info-tag"]}>
+                                {hostInfo.username}
+                              </span>
+                            )}
+                            {hostInfo.cpuModel && (
+                              <span className={styles["host-info-tag"]}>
+                                <Cpu size={9} />
+                                {hostInfo.cpuModel}
+                                {hostInfo.cpuCores
+                                  ? ` (${hostInfo.cpuCores}c)`
+                                  : ""}
+                              </span>
+                            )}
+                            {hostInfo.totalMemoryBytes && (
+                              <span className={styles["host-info-tag"]}>
+                                <MemoryStick size={9} />
+                                {formatMemorySize(hostInfo.totalMemoryBytes)}
+                              </span>
+                            )}
+                            {hostInfo.release && (
+                              <span className={styles["host-info-tag"]}>
+                                {hostInfo.release}
                               </span>
                             )}
                           </div>

@@ -95,7 +95,7 @@ export default function WorkspaceSelectorComponent({
                 <span className={styles['menu-item-path']}>{workspace.path}</span>
               </div>
               {workspace.isAgentServed && (
-                <span className={styles['menu-item-remote-badge']}>remote</span>
+                <span className={styles['menu-item-remote-badge']}>connected</span>
               )}
               {workspace.isPinned && (
                 <Lock size={9} className={styles['menu-item-pinned']} />
