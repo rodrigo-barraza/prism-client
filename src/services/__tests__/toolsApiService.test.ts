@@ -246,7 +246,7 @@ describe("ToolsApiService", () => {
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({
-          path: "/some/file.txt",
+          absolutePath: "/some/file.txt",
           startLine: 1,
           endLine: 5,
         }),

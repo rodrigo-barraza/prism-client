@@ -225,7 +225,7 @@ export default class ToolsApiService {
     { startLine, endLine }: { startLine?: number; endLine?: number } = {},
   ): Promise<FileReadResponse> {
     return ToolsApiService._post<FileReadResponse>("/agentic/file/read", {
-      path,
+      absolutePath: path,
       startLine,
       endLine,
     });

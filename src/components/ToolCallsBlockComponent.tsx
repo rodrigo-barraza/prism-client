@@ -4,7 +4,7 @@ import { resolveToolEmoji, isEmojiImageUrl } from "./WorkflowNodeConstantsCompon
 import { ToolResultView } from "./ToolResultRenderers";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 
-import { renderToolName } from "@rodrigo-barraza/utilities-library";
+import { renderToolName, resolveToolDisplaySummary } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { ToolCallEvent } from "../types/types";
 import type { SubAgentToolActivityItem } from "./MessageListComponent";
@@ -109,20 +109,25 @@ export default function ToolCallsBlockComponent({
     : toolCall.durationMs;
 
   const headerLabelText = useMemo(() => {
+    const activeContextualSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: true });
+    const completedContextualSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: false });
+
     if (isBlockActive) {
+      const activeLabel = activeContextualSummary ?? `Calling ${toolDisplayName}`;
       return liveToolElapsedSeconds > 0
-        ? `Calling ${toolDisplayName} for ${liveToolElapsedSeconds}s\u2026`
-        : `Calling ${toolDisplayName}\u2026`;
+        ? `${activeLabel} for ${liveToolElapsedSeconds}s\u2026`
+        : `${activeLabel}\u2026`;
     }
     if (effectiveDurationMs != null && effectiveDurationMs > 0) {
       const totalDurationSeconds = Math.round(effectiveDurationMs / 1000);
       const durationFormattedLabel = totalDurationSeconds < 1
         ? "<1 second"
         : `${totalDurationSeconds} second${totalDurationSeconds === 1 ? "" : "s"}`;
-      return `${toolDisplayName} for ${durationFormattedLabel}`;
+      const completedLabel = completedContextualSummary ?? toolDisplayName;
+      return `${completedLabel} for ${durationFormattedLabel}`;
     }
-    return toolDisplayName;
-  }, [isBlockActive, liveToolElapsedSeconds, toolDisplayName, effectiveDurationMs]);
+    return completedContextualSummary ?? toolDisplayName;
+  }, [isBlockActive, liveToolElapsedSeconds, toolDisplayName, effectiveDurationMs, toolCall.name, toolCall.args]);
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(!isBlockActive);
   const wasHeaderManuallyExpanded = useRef(false);
