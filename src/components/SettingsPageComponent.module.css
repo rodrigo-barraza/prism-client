@@ -724,10 +724,57 @@
 
 .setup-guide-header {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 10px;
+  border: none;
+  border-bottom: 1px solid var(--calculated-border-subtle);
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  color: var(--text-primary);
+  transition: background var(--transition-fast);
+}
+
+.setup-guide-header:hover {
+  background: color-mix(in oklch, var(--accent-primary) 3%, transparent);
+}
+
+.setup-guide-header-text {
+  flex: 1;
+  display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--calculated-border-subtle);
+  min-width: 0;
+}
+
+.setup-guide-header-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.25s ease;
+  will-change: transform;
+  transform: rotate(-90deg);
+}
+
+.setup-guide-header-is-expanded .setup-guide-header-chevron {
+  transform: rotate(0deg);
+}
+
+/* ── Drawer (disclosure) container ───────────────────────────────── */
+
+.setup-guide-drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.setup-guide-drawer-is-open {
+  grid-template-rows: 1fr;
+}
+
+.setup-guide-drawer-inner {
+  overflow: hidden;
 }
 
 .setup-guide-title {

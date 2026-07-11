@@ -26,13 +26,13 @@ interface SettingsSection {
 }
 
 const SETTINGS_SECTIONS: SettingsSection[] = [
+  { id: "workspaces", label: "Workspaces", icon: FolderOpen },
   { id: "memory-models", label: "Memory Models", icon: Brain },
   { id: "emotion-models", label: "Emotion Models", icon: Heart },
   { id: "creative-models", label: "Creative Models", icon: Palette },
   { id: "audio-models", label: "Audio Models", icon: Volume2 },
   { id: "harness-models", label: "Harness Models", icon: Workflow },
   { id: "agent-defaults", label: "Agent Defaults", icon: Network },
-  { id: "workspaces", label: "Workspaces", icon: FolderOpen },
   { id: "security-sandboxing", label: "Security & Sandboxing", icon: Lock },
   { id: "mcp-servers", label: "MCP Servers", icon: Plug },
   { id: "custom-themes", label: "Custom Themes", icon: Palette },
