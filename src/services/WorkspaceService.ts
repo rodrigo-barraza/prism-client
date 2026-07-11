@@ -142,4 +142,18 @@ export default class WorkspaceService {
       throw new Error(`WorkspaceService.tree failed: ${response.status}`);
     return response.json();
   }
+
+  /**
+   * Disconnect a remote workspace agent by ID.
+   * Sends a server-initiated kick so the agent does not auto-reconnect.
+   */
+  static async disconnectAgent(agentId: string): Promise<{ disconnected: boolean; agentId: string }> {
+    const response = await fetch(`${API_BASE}/workspaces/agents/${agentId}`, {
+      method: "DELETE",
+      headers: getBaseHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(`WorkspaceService.disconnectAgent failed: ${response.status}`);
+    return response.json();
+  }
 }

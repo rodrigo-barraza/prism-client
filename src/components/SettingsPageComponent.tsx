@@ -101,6 +101,135 @@ interface LocalAgent {
 }
 
 /**
+ * ── Platform-first Workspace Setup Guide Configuration ──────────
+ */
+
+type SetupGuidePlatformKey =
+  | "windows"
+  | "wsl2"
+  | "linux"
+  | "macos-intel"
+  | "macos-apple-silicon";
+
+type SetupGuideMethodKey = "tray" | "desktop" | "download" | "docker" | "local";
+
+interface PlatformDefinition {
+  label: string;
+  methods: SetupGuideMethodKey[];
+}
+
+const SETUP_GUIDE_PLATFORMS: [SetupGuidePlatformKey, PlatformDefinition][] = [
+  ["windows", { label: "Windows", methods: ["tray", "desktop", "download", "docker", "local"] }],
+  ["wsl2", { label: "WSL2", methods: ["desktop", "download", "local", "docker"] }],
+  ["linux", { label: "Linux", methods: ["tray", "desktop", "download", "docker", "local"] }],
+  ["macos-intel", { label: "macOS Intel", methods: ["tray", "desktop", "download", "docker", "local"] }],
+  ["macos-apple-silicon", { label: "macOS Apple Silicon", methods: ["tray", "desktop", "download", "docker", "local"] }],
+];
+
+const METHOD_ICONS: Record<SetupGuideMethodKey, typeof Monitor> = {
+  tray: AppWindow,
+  desktop: Monitor,
+  download: Download,
+  docker: Container,
+  local: Terminal,
+};
+
+const METHOD_TITLES: Record<SetupGuideMethodKey, string> = {
+  tray: "System Tray App",
+  desktop: "Desktop App",
+  download: "Single File",
+  docker: "Docker",
+  local: "Local (Node.js)",
+};
+
+function getMethodHint(
+  method: SetupGuideMethodKey,
+  platform: SetupGuidePlatformKey,
+): string {
+  switch (method) {
+    case "tray":
+      if (platform === "windows") return "One-click installer — auto-launches on login";
+      if (platform === "linux") return "AppImage — auto-launches on login";
+      return "DMG installer — auto-launches on login";
+    case "desktop":
+      if (platform === "wsl2") return "Pre-built Linux binary — no Node.js needed";
+      return "Standalone executable — no Node.js, no dependencies";
+    case "download":
+      return "Download one file, run with Node.js 22+";
+    case "docker":
+      return "Containerized — headless servers and NAS";
+    case "local":
+      if (platform === "wsl2") return "Clone the repo — native filesystem performance";
+      return "Clone the repo — full source access and customization";
+  }
+}
+
+function getTrayAppDownloadKey(platform: SetupGuidePlatformKey): string {
+  switch (platform) {
+    case "windows": return "win-x64";
+    case "linux": return "linux-x64";
+    case "macos-intel": return "mac-x64";
+    case "macos-apple-silicon": return "mac-arm64";
+    default: return "";
+  }
+}
+
+function getDesktopAppDownloadKey(platform: SetupGuidePlatformKey): string {
+  switch (platform) {
+    case "windows": return "win-x64";
+    case "wsl2": return "linux-x64";
+    case "linux": return "linux-x64";
+    case "macos-intel": return "mac-x64";
+    case "macos-apple-silicon": return "mac-arm64";
+  }
+}
+
+function getTrayAppDownloadLabel(platform: SetupGuidePlatformKey): { name: string; arch: string } {
+  switch (platform) {
+    case "windows": return { name: "Windows", arch: "Installer" };
+    case "linux": return { name: "Linux", arch: "AppImage" };
+    case "macos-intel": return { name: "macOS", arch: "Intel" };
+    case "macos-apple-silicon": return { name: "macOS", arch: "Apple Silicon" };
+    default: return { name: "", arch: "" };
+  }
+}
+
+function getDesktopAppDownloadLabel(platform: SetupGuidePlatformKey): { name: string; arch: string } {
+  switch (platform) {
+    case "windows": return { name: "Windows", arch: "x64" };
+    case "wsl2": return { name: "Linux", arch: "x64 (WSL2)" };
+    case "linux": return { name: "Linux", arch: "x64" };
+    case "macos-intel": return { name: "macOS", arch: "Intel" };
+    case "macos-apple-silicon": return { name: "macOS", arch: "Apple Silicon" };
+  }
+}
+
+function getTrayAppInstallHint(platform: SetupGuidePlatformKey): string {
+  switch (platform) {
+    case "windows":
+      return "Run the installer — it installs to your user profile and launches automatically.";
+    case "linux":
+      return "Make the AppImage executable (chmod +x) and run it.";
+    default:
+      return "Open the DMG and drag to Applications.";
+  }
+}
+
+function getDesktopRunCommand(platform: SetupGuidePlatformKey): string {
+  if (platform === "windows") return ".\\workspace-agent.exe --workspace C:\\path\\to\\project";
+  return "./workspace-agent --workspace /path/to/project";
+}
+
+function getDesktopRunChmodHint(platform: SetupGuidePlatformKey): boolean {
+  return platform !== "windows";
+}
+
+function getWorkspacePathExample(platform: SetupGuidePlatformKey): string {
+  if (platform === "windows") return "C:\\Users\\you\\development";
+  return "/home/you/development";
+}
+
+/**
  * SettingsPageComponent — server-side settings management.
  *
  * Exposes:
@@ -116,9 +245,8 @@ export default function SettingsPageComponent() {
   const [saved, setSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [harnesses, setHarnesses] = useState<AgenticHarness[]>([]);
-  const [expandedGuide, setExpandedGuide] = useState<
-    "desktop" | "tray" | "download" | "docker" | "local" | null
-  >(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<SetupGuidePlatformKey | null>(null);
+  const [expandedMethod, setExpandedMethod] = useState<SetupGuideMethodKey | null>(null);
   const [isGuideDrawerOpen, setIsGuideDrawerOpen] = useState(true);
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
 
@@ -750,7 +878,23 @@ export default function SettingsPageComponent() {
                         <span className={styles["host-name"]}>
                           {agent.hostInfo?.hostname || agent.name}
                         </span>
-
+                        <button
+                          type="button"
+                          className={styles["connected-status-button"]}
+                          onClick={async () => {
+                            try {
+                              await WorkspaceService.disconnectAgent(agent.id);
+                              refreshWorkspaceData();
+                            } catch (error: unknown) {
+                              console.error("Failed to disconnect agent:", error);
+                            }
+                          }}
+                        >
+                          <Wifi size={9} className={styles["connected-status-button-icon-connected"]} />
+                          <span className={styles["connected-status-button-label-connected"]}>Connected</span>
+                          <WifiOff size={9} className={styles["connected-status-button-icon-disconnect"]} />
+                          <span className={styles["connected-status-button-label-disconnect"]}>Disconnect</span>
+                        </button>
                       </div>
                       <div className={styles["host-meta"]}>
                         <span className={styles["host-meta-item"]}>
@@ -811,13 +955,6 @@ export default function SettingsPageComponent() {
                         </div>
                       )}
                     </div>
-                    <div className={styles["host-capabilities"]}>
-                      {(agent.capabilities || []).map((cap: string) => (
-                        <span key={cap} className={styles["capability-tag"]}>
-                          {cap}
-                        </span>
-                      ))}
-                    </div>
                   </div>
 
                   {/* Roots served by this agent */}
@@ -866,10 +1003,6 @@ export default function SettingsPageComponent() {
                       <div className={styles["workspace-item-details"]}>
                         <span className={styles["workspace-item-name"]}>
                           {workspace.name}
-                          <span className={styles["static-badge"]}>
-                            <Wifi size={8} />
-                            Connected
-                          </span>
                         </span>
                         <span className={styles["workspace-item-path"]}>
                           {workspace.path}
@@ -1132,927 +1265,1073 @@ export default function SettingsPageComponent() {
             >
               <div className={styles["setup-guide-drawer-inner"]}>
 
-            {/* Desktop App — one-click standalone executable */}
-            <button
-              className={`${styles["guide-toggle"]} ${expandedGuide === "desktop" ? styles["guide-expanded"] : ""}`}
-              onClick={() =>
-                setExpandedGuide(expandedGuide === "desktop" ? null : "desktop")
-              }
-            >
-              <Monitor size={16} className={styles["guide-toggle-icon"]} />
-              <div className={styles["guide-toggle-label"]}>
-                <span className={styles["guide-toggle-title"]}>
-                  Desktop App
-                </span>
-                <span className={styles["guide-toggle-hint"]}>
-                  One-click standalone executable — no Node.js, no dependencies
-                </span>
-              </div>
-              <ChevronRight size={14} className={styles["guide-chevron"]} />
-            </button>
+            {/* ── Platform selector pills ─────────────────────────────── */}
+            <div className={styles["platform-selector-bar"]}>
+              {SETUP_GUIDE_PLATFORMS.map(([platformKey, platformDefinition]) => (
+                <button
+                  key={platformKey}
+                  className={`${styles["platform-selector-pill"]} ${selectedPlatform === platformKey ? styles["platform-selector-is-active"] : ""}`}
+                  onClick={() => {
+                    if (selectedPlatform === platformKey) {
+                      setSelectedPlatform(null);
+                      setExpandedMethod(null);
+                    } else {
+                      setSelectedPlatform(platformKey);
+                      setExpandedMethod(null);
+                    }
+                  }}
+                >
+                  {platformDefinition.label}
+                </button>
+              ))}
+            </div>
 
-            {expandedGuide === "desktop" && (
-              <div className={styles["guide-content"]}>
-                <div className={styles["single-file-explainer"]}>
-                  <div className={styles["single-file-explainer-icon"]}>
-                    <Monitor size={20} />
-                  </div>
-                  <div className={styles["single-file-explainer-text"]}>
-                    <span className={styles["single-file-explainer-headline"]}>
-                      Pre-configured standalone executable
-                    </span>
-                    <span
-                      className={styles["single-file-explainer-description"]}
-                    >
-                      Downloads a single binary with your backend URL and
-                      credentials pre-baked. Just run it — no setup, no
-                      dependencies, no Node.js required. Works on Windows,
-                      macOS, and Linux.
-                    </span>
-                  </div>
-                </div>
+            {/* ── Methods for selected platform ───────────────────────── */}
+            {selectedPlatform && (() => {
+              const platformDefinition = SETUP_GUIDE_PLATFORMS.find(
+                ([key]) => key === selectedPlatform,
+              )?.[1];
+              if (!platformDefinition) return null;
 
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>1</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Download for your platform
-                    </span>
-                    <div className={styles["platform-download-grid"]}>
-                      <a
-                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
-                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl(
-                          "win-x64",
+              return (
+                <div className={styles["platform-methods-container"]}>
+                  {platformDefinition.methods.map((methodKey, methodIndex) => {
+                    const MethodIcon = METHOD_ICONS[methodKey];
+                    const isFirstMethod = methodIndex === 0;
+
+                    return (
+                      <div key={methodKey}>
+                        {/* Method toggle button */}
+                        <button
+                          className={`${styles["guide-toggle"]} ${expandedMethod === methodKey ? styles["guide-expanded"] : ""}`}
+                          onClick={() =>
+                            setExpandedMethod(
+                              expandedMethod === methodKey ? null : methodKey,
+                            )
+                          }
+                        >
+                          <MethodIcon
+                            size={16}
+                            className={styles["guide-toggle-icon"]}
+                          />
+                          <div className={styles["guide-toggle-label"]}>
+                            <span className={styles["guide-toggle-title"]}>
+                              {METHOD_TITLES[methodKey]}
+                            </span>
+                            <span className={styles["guide-toggle-hint"]}>
+                              {getMethodHint(methodKey, selectedPlatform)}
+                            </span>
+                          </div>
+                          {isFirstMethod && (
+                            <span className={styles["recommended-badge"]}>
+                              Recommended
+                            </span>
+                          )}
+                          <ChevronRight
+                            size={14}
+                            className={styles["guide-chevron"]}
+                          />
+                        </button>
+
+                        {/* ── Method expanded content ──────────────────── */}
+
+                        {/* System Tray App */}
+                        {expandedMethod === "tray" && methodKey === "tray" && (
+                          <div className={styles["guide-content"]}>
+                            <div className={styles["single-file-explainer"]}>
+                              <div
+                                className={
+                                  styles["single-file-explainer-icon"]
+                                }
+                              >
+                                <AppWindow size={20} />
+                              </div>
+                              <div
+                                className={
+                                  styles["single-file-explainer-text"]
+                                }
+                              >
+                                <span
+                                  className={
+                                    styles["single-file-explainer-headline"]
+                                  }
+                                >
+                                  Always-on agent in your system tray
+                                </span>
+                                <span
+                                  className={
+                                    styles[
+                                      "single-file-explainer-description"
+                                    ]
+                                  }
+                                >
+                                  A full desktop application that lives in your
+                                  system tray. Includes a setup wizard, settings
+                                  panel, log viewer, and auto-launch on login.
+                                  Runs silently in the background — no terminal
+                                  window needed.
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className={styles["guide-step"]}>
+                              <span className={styles["step-number"]}>1</span>
+                              <div className={styles["step-body"]}>
+                                <span className={styles["step-title"]}>
+                                  Download the installer
+                                </span>
+                                <a
+                                  className={`${styles["platform-download-button"]} ${styles["platform-recommended"]}`}
+                                  href={PrismService.getWorkspaceAgentTrayAppDownloadUrl(
+                                    getTrayAppDownloadKey(selectedPlatform),
+                                  )}
+                                  download
+                                >
+                                  <Download size={14} />
+                                  <span
+                                    className={
+                                      styles["platform-download-label"]
+                                    }
+                                  >
+                                    <span
+                                      className={
+                                        styles["platform-download-name"]
+                                      }
+                                    >
+                                      {
+                                        getTrayAppDownloadLabel(
+                                          selectedPlatform,
+                                        ).name
+                                      }
+                                    </span>
+                                    <span
+                                      className={
+                                        styles["platform-download-arch"]
+                                      }
+                                    >
+                                      {
+                                        getTrayAppDownloadLabel(
+                                          selectedPlatform,
+                                        ).arch
+                                      }
+                                    </span>
+                                  </span>
+                                </a>
+                              </div>
+                            </div>
+
+                            <div className={styles["guide-step"]}>
+                              <span className={styles["step-number"]}>2</span>
+                              <div className={styles["step-body"]}>
+                                <span className={styles["step-title"]}>
+                                  Run the installer
+                                </span>
+                                <span className={styles["step-hint"]}>
+                                  {getTrayAppInstallHint(selectedPlatform)}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className={styles["guide-step"]}>
+                              <span className={styles["step-number"]}>3</span>
+                              <div className={styles["step-body"]}>
+                                <span className={styles["step-title"]}>
+                                  Complete the setup wizard
+                                </span>
+                                <span className={styles["step-hint"]}>
+                                  On first launch, the app opens a setup wizard
+                                  where you select your workspace directory. The
+                                  backend URL and credentials are
+                                  pre-configured — just pick your folder and
+                                  click connect. The agent starts automatically
+                                  and appears in your system tray.
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className={styles["guide-step"]}>
+                              <span className={styles["step-number"]}>4</span>
+                              <div className={styles["step-body"]}>
+                                <span className={styles["step-title"]}>
+                                  Verify connection
+                                </span>
+                                <span className={styles["step-hint"]}>
+                                  Right-click the system tray icon to see the
+                                  connection status. The host will appear in
+                                  this settings panel under Remote Hosts.
+                                  Enable{" "}
+                                  <code className={styles["inline-code"]}>
+                                    Launch at login
+                                  </code>{" "}
+                                  in the tray menu to keep the connector running
+                                  across restarts.
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         )}
-                        download
-                      >
-                        <Download size={14} />
-                        <span className={styles["platform-download-label"]}>
-                          <span className={styles["platform-download-name"]}>
-                            Windows
-                          </span>
-                          <span className={styles["platform-download-arch"]}>
-                            x64
-                          </span>
-                        </span>
-                      </a>
-                      <a
-                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Linux/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
-                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl(
-                          "linux-x64",
-                        )}
-                        download
-                      >
-                        <Download size={14} />
-                        <span className={styles["platform-download-label"]}>
-                          <span className={styles["platform-download-name"]}>
-                            Linux
-                          </span>
-                          <span className={styles["platform-download-arch"]}>
-                            x64
-                          </span>
-                        </span>
-                      </a>
-                      <a
-                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && !/arm|aarch/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
-                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl(
-                          "mac-x64",
-                        )}
-                        download
-                      >
-                        <Download size={14} />
-                        <span className={styles["platform-download-label"]}>
-                          <span className={styles["platform-download-name"]}>
-                            macOS
-                          </span>
-                          <span className={styles["platform-download-arch"]}>
-                            Intel
-                          </span>
-                        </span>
-                      </a>
-                      <a
-                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && /arm|aarch/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
-                        href={PrismService.getWorkspaceAgentPlatformDownloadUrl(
-                          "mac-arm64",
-                        )}
-                        download
-                      >
-                        <Download size={14} />
-                        <span className={styles["platform-download-label"]}>
-                          <span className={styles["platform-download-name"]}>
-                            macOS
-                          </span>
-                          <span className={styles["platform-download-arch"]}>
-                            Apple Silicon
-                          </span>
-                        </span>
-                      </a>
-                    </div>
-                  </div>
+
+                        {/* Desktop App (SEA binary) */}
+                        {expandedMethod === "desktop" &&
+                          methodKey === "desktop" && (
+                            <div className={styles["guide-content"]}>
+                              <div
+                                className={styles["single-file-explainer"]}
+                              >
+                                <div
+                                  className={
+                                    styles["single-file-explainer-icon"]
+                                  }
+                                >
+                                  <Monitor size={20} />
+                                </div>
+                                <div
+                                  className={
+                                    styles["single-file-explainer-text"]
+                                  }
+                                >
+                                  <span
+                                    className={
+                                      styles[
+                                        "single-file-explainer-headline"
+                                      ]
+                                    }
+                                  >
+                                    Pre-configured standalone executable
+                                  </span>
+                                  <span
+                                    className={
+                                      styles[
+                                        "single-file-explainer-description"
+                                      ]
+                                    }
+                                  >
+                                    Downloads a single binary with your backend
+                                    URL and credentials pre-baked. Just run
+                                    it — no setup, no dependencies, no Node.js
+                                    required.
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  1
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Download for your platform
+                                  </span>
+                                  <a
+                                    className={`${styles["platform-download-button"]} ${styles["platform-recommended"]}`}
+                                    href={PrismService.getWorkspaceAgentPlatformDownloadUrl(
+                                      getDesktopAppDownloadKey(
+                                        selectedPlatform,
+                                      ),
+                                    )}
+                                    download
+                                  >
+                                    <Download size={14} />
+                                    <span
+                                      className={
+                                        styles["platform-download-label"]
+                                      }
+                                    >
+                                      <span
+                                        className={
+                                          styles["platform-download-name"]
+                                        }
+                                      >
+                                        {
+                                          getDesktopAppDownloadLabel(
+                                            selectedPlatform,
+                                          ).name
+                                        }
+                                      </span>
+                                      <span
+                                        className={
+                                          styles["platform-download-arch"]
+                                        }
+                                      >
+                                        {
+                                          getDesktopAppDownloadLabel(
+                                            selectedPlatform,
+                                          ).arch
+                                        }
+                                      </span>
+                                    </span>
+                                  </a>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  2
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Run it from your project directory
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>
+                                      {getDesktopRunCommand(selectedPlatform)}
+                                    </code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          getDesktopRunCommand(
+                                            selectedPlatform,
+                                          ),
+                                        );
+                                        setCopiedBlock("desktop-2");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "desktop-2" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                  <span className={styles["step-hint"]}>
+                                    Backend URL and credentials are already
+                                    compiled in. Just point it at your workspace
+                                    directory.
+                                    {getDesktopRunChmodHint(selectedPlatform) &&
+                                      " On macOS/Linux, you may need to "}
+                                    {getDesktopRunChmodHint(
+                                      selectedPlatform,
+                                    ) && (
+                                      <code
+                                        className={styles["inline-code"]}
+                                      >
+                                        chmod +x workspace-agent
+                                      </code>
+                                    )}
+                                    {getDesktopRunChmodHint(selectedPlatform) &&
+                                      " first."}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  3
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Verify connection
+                                  </span>
+                                  <span className={styles["step-hint"]}>
+                                    Look for{" "}
+                                    <code className={styles["inline-code"]}>
+                                      Connected to ws://…
+                                    </code>{" "}
+                                    and{" "}
+                                    <code className={styles["inline-code"]}>
+                                      Server confirmed registration
+                                    </code>{" "}
+                                    in the output. The host will appear in this
+                                    settings panel under Remote Hosts.
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Single File */}
+                        {expandedMethod === "download" &&
+                          methodKey === "download" && (
+                            <div className={styles["guide-content"]}>
+                              <div
+                                className={styles["single-file-explainer"]}
+                              >
+                                <div
+                                  className={
+                                    styles["single-file-explainer-icon"]
+                                  }
+                                >
+                                  <HardDrive size={20} />
+                                </div>
+                                <div
+                                  className={
+                                    styles["single-file-explainer-text"]
+                                  }
+                                >
+                                  <span
+                                    className={
+                                      styles[
+                                        "single-file-explainer-headline"
+                                      ]
+                                    }
+                                  >
+                                    Connect your local machine to Prism
+                                  </span>
+                                  <span
+                                    className={
+                                      styles[
+                                        "single-file-explainer-description"
+                                      ]
+                                    }
+                                  >
+                                    The Workspace Connector is a single file
+                                    that bridges your local project files to
+                                    Prism&apos;s AI tools over WebSocket.
+                                    Nothing is uploaded — all file access stays
+                                    on your device. Requires Node.js 22+.
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  1
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Download the connector
+                                  </span>
+                                  <a
+                                    className={
+                                      styles["single-file-download-button"]
+                                    }
+                                    href={PrismService.getWorkspaceAgentDownloadUrl()}
+                                    download="workspace-agent.mjs"
+                                  >
+                                    <Download size={14} />
+                                    workspace-agent.mjs
+                                  </a>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  2
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Run it from your terminal
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>
+                                      node workspace-agent.mjs{"\n"}
+                                      {"  "}--backend ws://YOUR_SERVER:5590
+                                      {"\n"}
+                                      {"  "}--workspace{" "}
+                                      {getWorkspacePathExample(
+                                        selectedPlatform,
+                                      )}
+                                      {"\n"}
+                                      {"  "}--secret YOUR_API_SECRET
+                                    </code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          `node workspace-agent.mjs \\\n  --backend ws://YOUR_SERVER:5590 \\\n  --workspace ${getWorkspacePathExample(selectedPlatform)} \\\n  --secret YOUR_API_SECRET`,
+                                        );
+                                        setCopiedBlock("download-2");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "download-2" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                  <span className={styles["step-hint"]}>
+                                    Replace the backend URL, workspace path, and
+                                    secret with your own values. Leave the
+                                    terminal running — the connector reconnects
+                                    automatically if interrupted.
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  3
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Verify connection
+                                  </span>
+                                  <span className={styles["step-hint"]}>
+                                    Look for{" "}
+                                    <code className={styles["inline-code"]}>
+                                      Connected to ws://…
+                                    </code>{" "}
+                                    and{" "}
+                                    <code className={styles["inline-code"]}>
+                                      Server confirmed registration
+                                    </code>{" "}
+                                    in the output. The host will appear in this
+                                    settings panel under Remote Hosts.
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Docker */}
+                        {expandedMethod === "docker" &&
+                          methodKey === "docker" && (
+                            <div className={styles["guide-content"]}>
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  1
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Clone the repository
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>
+                                      git clone
+                                      https://github.com/rodrigo-barraza/workspace-service.git
+                                      {"\n"}cd workspace-service
+                                    </code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          "git clone https://github.com/rodrigo-barraza/workspace-service.git\ncd workspace-service",
+                                        );
+                                        setCopiedBlock("docker-1");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "docker-1" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  2
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Create your{" "}
+                                    <code className={styles["inline-code"]}>
+                                      .env
+                                    </code>{" "}
+                                    file
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>cp .env.example .env</code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          "cp .env.example .env",
+                                        );
+                                        setCopiedBlock("docker-2");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "docker-2" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                  <span className={styles["step-hint"]}>
+                                    Edit{" "}
+                                    <code className={styles["inline-code"]}>
+                                      .env
+                                    </code>{" "}
+                                    and set your{" "}
+                                    <code className={styles["inline-code"]}>
+                                      WORKSPACE_SERVICE_SECRET
+                                    </code>{" "}
+                                    to match your tools-service agent secret.
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  3
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Build and start the container
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>docker compose up -d</code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          "docker compose up -d",
+                                        );
+                                        setCopiedBlock("docker-3");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "docker-3" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                  <span className={styles["step-hint"]}>
+                                    The container exposes{" "}
+                                    <code className={styles["inline-code"]}>
+                                      /workspace
+                                    </code>{" "}
+                                    as the root. Mount your project directories
+                                    via{" "}
+                                    <code className={styles["inline-code"]}>
+                                      volumes
+                                    </code>{" "}
+                                    in{" "}
+                                    <code className={styles["inline-code"]}>
+                                      docker-compose.yml
+                                    </code>
+                                    .
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  4
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Verify connection
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>
+                                      docker logs workspace-service
+                                    </code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          "docker logs workspace-service",
+                                        );
+                                        setCopiedBlock("docker-4");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "docker-4" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                  <span className={styles["step-hint"]}>
+                                    Look for{" "}
+                                    <code className={styles["inline-code"]}>
+                                      Connected to ws://…
+                                    </code>{" "}
+                                    and{" "}
+                                    <code className={styles["inline-code"]}>
+                                      Server confirmed registration
+                                    </code>
+                                    .
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-env-table"]}>
+                                <span
+                                  className={
+                                    styles["environment-table-title"]
+                                  }
+                                >
+                                  Environment Variables
+                                </span>
+                                <div
+                                  className={
+                                    styles["environment-layout-row"]
+                                  }
+                                >
+                                  <code
+                                    className={styles["environment-key"]}
+                                  >
+                                    WORKSPACE_BACKEND
+                                  </code>
+                                  <span
+                                    className={
+                                      styles["environment-description"]
+                                    }
+                                  >
+                                    WebSocket URL of tools-service (e.g.{" "}
+                                    <code className={styles["inline-code"]}>
+                                      ws://192.168.86.2:5590
+                                    </code>
+                                    )
+                                  </span>
+                                </div>
+                                <div
+                                  className={
+                                    styles["environment-layout-row"]
+                                  }
+                                >
+                                  <code
+                                    className={styles["environment-key"]}
+                                  >
+                                    WORKSPACE_ROOTS
+                                  </code>
+                                  <span
+                                    className={
+                                      styles["environment-description"]
+                                    }
+                                  >
+                                    Comma-separated root directories (default:{" "}
+                                    <code className={styles["inline-code"]}>
+                                      /workspace
+                                    </code>
+                                    )
+                                  </span>
+                                </div>
+                                <div
+                                  className={
+                                    styles["environment-layout-row"]
+                                  }
+                                >
+                                  <code
+                                    className={styles["environment-key"]}
+                                  >
+                                    WORKSPACE_SERVICE_SECRET
+                                  </code>
+                                  <span
+                                    className={
+                                      styles["environment-description"]
+                                    }
+                                  >
+                                    Must match your tools-service agent secret
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Local (Node.js) */}
+                        {expandedMethod === "local" &&
+                          methodKey === "local" && (
+                            <div className={styles["guide-content"]}>
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  1
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Clone and install dependencies
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>
+                                      git clone
+                                      https://github.com/rodrigo-barraza/workspace-service.git
+                                      {"\n"}cd workspace-service{"\n"}npm
+                                      install
+                                    </code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          "git clone https://github.com/rodrigo-barraza/workspace-service.git\ncd workspace-service\nnpm install",
+                                        );
+                                        setCopiedBlock("local-1");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "local-1" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  2
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Create your{" "}
+                                    <code className={styles["inline-code"]}>
+                                      .env
+                                    </code>{" "}
+                                    file
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>cp .env.example .env</code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          "cp .env.example .env",
+                                        );
+                                        setCopiedBlock("local-2");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "local-2" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                  <span className={styles["step-hint"]}>
+                                    Fill in your values:
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>
+                                      WORKSPACE_BACKEND=ws://192.168.86.2:5590
+                                      {"\n"}
+                                      WORKSPACE_ROOTS=
+                                      {getWorkspacePathExample(
+                                        selectedPlatform,
+                                      )}
+                                      {"\n"}
+                                      WORKSPACE_SERVICE_SECRET=your-agent-secret
+                                    </code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          `WORKSPACE_BACKEND=ws://192.168.86.2:5590\nWORKSPACE_ROOTS=${getWorkspacePathExample(selectedPlatform)}\nWORKSPACE_SERVICE_SECRET=your-agent-secret`,
+                                        );
+                                        setCopiedBlock("local-2b");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "local-2b" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  3
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Start the service
+                                  </span>
+                                  <div className={styles["code-block"]}>
+                                    <code>npm run dev:local</code>
+                                    <button
+                                      className={styles["copy-button"]}
+                                      title="Copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          "npm run dev:local",
+                                        );
+                                        setCopiedBlock("local-3");
+                                        setTimeout(
+                                          () => setCopiedBlock(null),
+                                          FEEDBACK_STANDARD_MILLISECONDS,
+                                        );
+                                      }}
+                                    >
+                                      {copiedBlock === "local-3" ? (
+                                        <CheckCheck size={12} />
+                                      ) : (
+                                        <Copy size={12} />
+                                      )}
+                                    </button>
+                                  </div>
+                                  <span className={styles["step-hint"]}>
+                                    This loads{" "}
+                                    <code className={styles["inline-code"]}>
+                                      .env
+                                    </code>{" "}
+                                    automatically and starts with file-watch
+                                    reload. You can also pass env vars inline or
+                                    use CLI flags — see the README for details.
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className={styles["guide-step"]}>
+                                <span className={styles["step-number"]}>
+                                  4
+                                </span>
+                                <div className={styles["step-body"]}>
+                                  <span className={styles["step-title"]}>
+                                    Verify connection
+                                  </span>
+                                  <span className={styles["step-hint"]}>
+                                    Look for{" "}
+                                    <code className={styles["inline-code"]}>
+                                      Connected to ws://…
+                                    </code>{" "}
+                                    and{" "}
+                                    <code className={styles["inline-code"]}>
+                                      Server confirmed registration
+                                    </code>{" "}
+                                    in the output. The host will appear in this
+                                    settings panel under Remote Hosts.
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div
+                                className={styles["guide-compare-table"]}
+                              >
+                                <span
+                                  className={
+                                    styles["environment-table-title"]
+                                  }
+                                >
+                                  Docker vs. Local
+                                </span>
+                                <div
+                                  className={
+                                    styles["compare-layout-row"]
+                                  }
+                                >
+                                  <span
+                                    className={styles["compare-label"]}
+                                  >
+                                    Filesystem
+                                  </span>
+                                  <span
+                                    className={styles["compare-docker"]}
+                                  >
+                                    Volume-mounted
+                                  </span>
+                                  <span
+                                    className={styles["compare-local"]}
+                                  >
+                                    Native — no mount overhead
+                                  </span>
+                                </div>
+                                <div
+                                  className={
+                                    styles["compare-layout-row"]
+                                  }
+                                >
+                                  <span
+                                    className={styles["compare-label"]}
+                                  >
+                                    Performance
+                                  </span>
+                                  <span
+                                    className={styles["compare-docker"]}
+                                  >
+                                    Container + I/O
+                                  </span>
+                                  <span
+                                    className={styles["compare-local"]}
+                                  >
+                                    Faster grep, glob, git
+                                  </span>
+                                </div>
+                                <div
+                                  className={
+                                    styles["compare-layout-row"]
+                                  }
+                                >
+                                  <span
+                                    className={styles["compare-label"]}
+                                  >
+                                    Git / Shell
+                                  </span>
+                                  <span
+                                    className={styles["compare-docker"]}
+                                  >
+                                    Inside container
+                                  </span>
+                                  <span
+                                    className={styles["compare-local"]}
+                                  >
+                                    Host environment
+                                  </span>
+                                </div>
+                                <div
+                                  className={
+                                    styles["compare-layout-row"]
+                                  }
+                                >
+                                  <span
+                                    className={styles["compare-label"]}
+                                  >
+                                    Use case
+                                  </span>
+                                  <span
+                                    className={styles["compare-docker"]}
+                                  >
+                                    Servers, NAS
+                                  </span>
+                                  <span
+                                    className={styles["compare-local"]}
+                                  >
+                                    Dev machines, WSL2
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                      </div>
+                    );
+                  })}
                 </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>2</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Run it from your project directory
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>
-                        {typeof navigator !== "undefined" &&
-                        /Win/i.test(navigator.userAgent)
-                          ? ".\\workspace-agent.exe --workspace C:\\path\\to\\project"
-                          : "./workspace-agent --workspace /path/to/project"}
-                      </code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            typeof navigator !== "undefined" &&
-                              /Win/i.test(navigator.userAgent)
-                              ? ".\\workspace-agent.exe --workspace C:\\path\\to\\project"
-                              : "./workspace-agent --workspace /path/to/project",
-                          );
-                          setCopiedBlock("desktop-2");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "desktop-2" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                    <span className={styles["step-hint"]}>
-                      Backend URL and credentials are already compiled in. Just
-                      point it at your workspace directory. On macOS/Linux, you
-                      may need to{" "}
-                      <code className={styles["inline-code"]}>
-                        chmod +x workspace-agent
-                      </code>{" "}
-                      first.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>3</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Verify connection
-                    </span>
-                    <span className={styles["step-hint"]}>
-                      Look for{" "}
-                      <code className={styles["inline-code"]}>
-                        Connected to ws://…
-                      </code>{" "}
-                      and{" "}
-                      <code className={styles["inline-code"]}>
-                        Server confirmed registration
-                      </code>{" "}
-                      in the output. The host will appear in this settings
-                      panel under Remote Hosts.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* System Tray App — Electron-based with setup wizard */}
-            <button
-              className={`${styles["guide-toggle"]} ${expandedGuide === "tray" ? styles["guide-expanded"] : ""}`}
-              onClick={() =>
-                setExpandedGuide(expandedGuide === "tray" ? null : "tray")
-              }
-            >
-              <AppWindow size={16} className={styles["guide-toggle-icon"]} />
-              <div className={styles["guide-toggle-label"]}>
-                <span className={styles["guide-toggle-title"]}>
-                  System Tray App
-                </span>
-                <span className={styles["guide-toggle-hint"]}>
-                  Installs to system tray with setup wizard — auto-launches on
-                  login
-                </span>
-              </div>
-              <ChevronRight size={14} className={styles["guide-chevron"]} />
-            </button>
-
-            {expandedGuide === "tray" && (
-              <div className={styles["guide-content"]}>
-                <div className={styles["single-file-explainer"]}>
-                  <div className={styles["single-file-explainer-icon"]}>
-                    <AppWindow size={20} />
-                  </div>
-                  <div className={styles["single-file-explainer-text"]}>
-                    <span className={styles["single-file-explainer-headline"]}>
-                      Always-on agent in your system tray
-                    </span>
-                    <span
-                      className={styles["single-file-explainer-description"]}
-                    >
-                      A full desktop application that lives in your system tray.
-                      Includes a setup wizard, settings panel, log viewer, and
-                      auto-launch on login. Runs silently in the background — no
-                      terminal window needed.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>1</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Download the installer
-                    </span>
-                    <div className={styles["platform-download-grid"]}>
-                      <a
-                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Win/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
-                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl(
-                          "win-x64",
-                        )}
-                        download
-                      >
-                        <Download size={14} />
-                        <span className={styles["platform-download-label"]}>
-                          <span className={styles["platform-download-name"]}>
-                            Windows
-                          </span>
-                          <span className={styles["platform-download-arch"]}>
-                            Installer
-                          </span>
-                        </span>
-                      </a>
-                      <a
-                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && !/arm|aarch/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
-                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl(
-                          "mac-x64",
-                        )}
-                        download
-                      >
-                        <Download size={14} />
-                        <span className={styles["platform-download-label"]}>
-                          <span className={styles["platform-download-name"]}>
-                            macOS
-                          </span>
-                          <span className={styles["platform-download-arch"]}>
-                            Intel
-                          </span>
-                        </span>
-                      </a>
-                      <a
-                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent) && /arm|aarch/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
-                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl(
-                          "mac-arm64",
-                        )}
-                        download
-                      >
-                        <Download size={14} />
-                        <span className={styles["platform-download-label"]}>
-                          <span className={styles["platform-download-name"]}>
-                            macOS
-                          </span>
-                          <span className={styles["platform-download-arch"]}>
-                            Apple Silicon
-                          </span>
-                        </span>
-                      </a>
-                      <a
-                        className={`${styles["platform-download-button"]} ${typeof navigator !== "undefined" && /Linux/i.test(navigator.userAgent) ? styles["platform-recommended"] : ""}`}
-                        href={PrismService.getWorkspaceAgentTrayAppDownloadUrl(
-                          "linux-x64",
-                        )}
-                        download
-                      >
-                        <Download size={14} />
-                        <span className={styles["platform-download-label"]}>
-                          <span className={styles["platform-download-name"]}>
-                            Linux
-                          </span>
-                          <span className={styles["platform-download-arch"]}>
-                            AppImage
-                          </span>
-                        </span>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>2</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Run the installer
-                    </span>
-                    <span className={styles["step-hint"]}>
-                      On Windows, run the installer — it installs to your user
-                      profile and launches automatically. On macOS, open the DMG
-                      and drag to Applications. On Linux, make the AppImage
-                      executable and run it.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>3</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Complete the setup wizard
-                    </span>
-                    <span className={styles["step-hint"]}>
-                      On first launch, the app opens a setup wizard where you
-                      select your workspace directory. The backend URL and
-                      credentials are pre-configured — just pick your folder and
-                      click connect. The agent starts automatically and appears
-                      in your system tray.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>4</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Verify connection
-                    </span>
-                    <span className={styles["step-hint"]}>
-                      Right-click the system tray icon to see the connection
-                      status. The host will appear in this settings panel under
-                      Remote Hosts. Enable{" "}
-                      <code className={styles["inline-code"]}>
-                        Launch at login
-                      </code>{" "}
-                      in the tray menu to keep the connector running across
-                      restarts.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Single-file download (simplest path) */}
-            <button
-              className={`${styles["guide-toggle"]} ${expandedGuide === "download" ? styles["guide-expanded"] : ""}`}
-              onClick={() =>
-                setExpandedGuide(
-                  expandedGuide === "download" ? null : "download",
-                )
-              }
-            >
-              <Download size={16} className={styles["guide-toggle-icon"]} />
-              <div className={styles["guide-toggle-label"]}>
-                <span className={styles["guide-toggle-title"]}>
-                  Single File
-                </span>
-                <span className={styles["guide-toggle-hint"]}>
-                  Download one file, run it anywhere — zero dependencies except
-                  Node.js 22+
-                </span>
-              </div>
-              <ChevronRight size={14} className={styles["guide-chevron"]} />
-            </button>
-
-            {expandedGuide === "download" && (
-              <div className={styles["guide-content"]}>
-                <div className={styles["single-file-explainer"]}>
-                  <div className={styles["single-file-explainer-icon"]}>
-                    <HardDrive size={20} />
-                  </div>
-                  <div className={styles["single-file-explainer-text"]}>
-                    <span className={styles["single-file-explainer-headline"]}>
-                      Connect your local machine to Prism
-                    </span>
-                    <span
-                      className={styles["single-file-explainer-description"]}
-                    >
-                      The Workspace Connector is a single file that bridges your
-                      local project files to Prism&apos;s AI tools over
-                      WebSocket. Nothing is uploaded — all file access stays on
-                      your device. Works on Windows, macOS, and Linux.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>1</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Download the connector
-                    </span>
-                    <a
-                      className={styles["single-file-download-button"]}
-                      href={PrismService.getWorkspaceAgentDownloadUrl()}
-                      download="workspace-agent.mjs"
-                    >
-                      <Download size={14} />
-                      workspace-agent.mjs
-                    </a>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>2</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Run it from your terminal
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>
-                        node workspace-agent.mjs{"\n"}
-                        {"  "}--backend ws://YOUR_SERVER:5590{"\n"}
-                        {"  "}--workspace /path/to/your/project{"\n"}
-                        {"  "}--secret YOUR_API_SECRET
-                      </code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            "node workspace-agent.mjs \\\n  --backend ws://YOUR_SERVER:5590 \\\n  --workspace /path/to/your/project \\\n  --secret YOUR_API_SECRET",
-                          );
-                          setCopiedBlock("download-2");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "download-2" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                    <span className={styles["step-hint"]}>
-                      Replace the backend URL, workspace path, and secret with
-                      your own values. Leave the terminal running — the connector
-                      reconnects automatically if interrupted.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>3</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Verify connection
-                    </span>
-                    <span className={styles["step-hint"]}>
-                      Look for{" "}
-                      <code className={styles["inline-code"]}>
-                        Connected to ws://…
-                      </code>{" "}
-                      and{" "}
-                      <code className={styles["inline-code"]}>
-                        Server confirmed registration
-                      </code>{" "}
-                      in the output. The host will appear in this settings
-                      panel under Remote Hosts.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Docker setup */}
-            <button
-              className={`${styles["guide-toggle"]} ${expandedGuide === "docker" ? styles["guide-expanded"] : ""}`}
-              onClick={() =>
-                setExpandedGuide(expandedGuide === "docker" ? null : "docker")
-              }
-            >
-              <Container size={16} className={styles["guide-toggle-icon"]} />
-              <div className={styles["guide-toggle-label"]}>
-                <span className={styles["guide-toggle-title"]}>Docker</span>
-                <span className={styles["guide-toggle-hint"]}>
-                  Headless servers, NAS, always-on deployments
-                </span>
-              </div>
-              <ChevronRight size={14} className={styles["guide-chevron"]} />
-            </button>
-
-            {expandedGuide === "docker" && (
-              <div className={styles["guide-content"]}>
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>1</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Clone the repository
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>
-                        git clone
-                        https://github.com/rodrigo-barraza/workspace-service.git
-                        {"\n"}cd workspace-service
-                      </code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            "git clone https://github.com/rodrigo-barraza/workspace-service.git\ncd workspace-service",
-                          );
-                          setCopiedBlock("docker-1");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "docker-1" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>2</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Create your{" "}
-                      <code className={styles["inline-code"]}>.env</code> file
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>cp .env.example .env</code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText("cp .env.example .env");
-                          setCopiedBlock("docker-2");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "docker-2" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                    <span className={styles["step-hint"]}>
-                      Edit <code className={styles["inline-code"]}>.env</code>{" "}
-                      and set your{" "}
-                      <code className={styles["inline-code"]}>
-                        WORKSPACE_SERVICE_SECRET
-                      </code>{" "}
-                      to match your tools-service agent secret.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>3</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Build and start the container
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>docker compose up -d</code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText("docker compose up -d");
-                          setCopiedBlock("docker-3");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "docker-3" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                    <span className={styles["step-hint"]}>
-                      The container exposes{" "}
-                      <code className={styles["inline-code"]}>/workspace</code>{" "}
-                      as the root. Mount your project directories via{" "}
-                      <code className={styles["inline-code"]}>volumes</code> in{" "}
-                      <code className={styles["inline-code"]}>
-                        docker-compose.yml
-                      </code>
-                      .
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>4</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Verify connection
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>docker logs workspace-service</code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            "docker logs workspace-service",
-                          );
-                          setCopiedBlock("docker-4");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "docker-4" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                    <span className={styles["step-hint"]}>
-                      Look for{" "}
-                      <code className={styles["inline-code"]}>
-                        Connected to ws://…
-                      </code>{" "}
-                      and{" "}
-                      <code className={styles["inline-code"]}>
-                        Server confirmed registration
-                      </code>
-                      .
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-env-table"]}>
-                  <span className={styles["environment-table-title"]}>
-                    Environment Variables
-                  </span>
-                  <div className={styles["environment-layout-row"]}>
-                    <code className={styles["environment-key"]}>
-                      WORKSPACE_BACKEND
-                    </code>
-                    <span className={styles["environment-description"]}>
-                      WebSocket URL of tools-service (e.g.{" "}
-                      <code className={styles["inline-code"]}>
-                        ws://192.168.86.2:5590
-                      </code>
-                      )
-                    </span>
-                  </div>
-                  <div className={styles["environment-layout-row"]}>
-                    <code className={styles["environment-key"]}>
-                      WORKSPACE_ROOTS
-                    </code>
-                    <span className={styles["environment-description"]}>
-                      Comma-separated root directories (default:{" "}
-                      <code className={styles["inline-code"]}>/workspace</code>)
-                    </span>
-                  </div>
-                  <div className={styles["environment-layout-row"]}>
-                    <code className={styles["environment-key"]}>
-                      WORKSPACE_SERVICE_SECRET
-                    </code>
-                    <span className={styles["environment-description"]}>
-                      Must match your tools-service agent secret
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Local (Node) setup */}
-            <button
-              className={`${styles["guide-toggle"]} ${expandedGuide === "local" ? styles["guide-expanded"] : ""}`}
-              onClick={() =>
-                setExpandedGuide(expandedGuide === "local" ? null : "local")
-              }
-            >
-              <Terminal size={16} className={styles["guide-toggle-icon"]} />
-              <div className={styles["guide-toggle-label"]}>
-                <span className={styles["guide-toggle-title"]}>
-                  Local (Node.js)
-                </span>
-                <span className={styles["guide-toggle-hint"]}>
-                  WSL2, Linux, macOS — native filesystem performance
-                </span>
-              </div>
-              <ChevronRight size={14} className={styles["guide-chevron"]} />
-            </button>
-
-            {expandedGuide === "local" && (
-              <div className={styles["guide-content"]}>
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>1</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Clone and install dependencies
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>
-                        git clone
-                        https://github.com/rodrigo-barraza/workspace-service.git
-                        {"\n"}cd workspace-service{"\n"}npm install
-                      </code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            "git clone https://github.com/rodrigo-barraza/workspace-service.git\ncd workspace-service\nnpm install",
-                          );
-                          setCopiedBlock("local-1");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "local-1" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>2</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Create your{" "}
-                      <code className={styles["inline-code"]}>.env</code> file
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>cp .env.example .env</code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText("cp .env.example .env");
-                          setCopiedBlock("local-2");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "local-2" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                    <span className={styles["step-hint"]}>
-                      Fill in your values:
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>
-                        WORKSPACE_BACKEND=ws://192.168.86.2:5590{"\n"}
-                        WORKSPACE_ROOTS=/home/you/development{"\n"}
-                        WORKSPACE_SERVICE_SECRET=your-agent-secret
-                      </code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            "WORKSPACE_BACKEND=ws://192.168.86.2:5590\nWORKSPACE_ROOTS=/home/you/development\nWORKSPACE_SERVICE_SECRET=your-agent-secret",
-                          );
-                          setCopiedBlock("local-2b");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "local-2b" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>3</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Start the service
-                    </span>
-                    <div className={styles["code-block"]}>
-                      <code>npm run dev:local</code>
-                      <button
-                        className={styles["copy-button"]}
-                        title="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText("npm run dev:local");
-                          setCopiedBlock("local-3");
-                          setTimeout(
-                            () => setCopiedBlock(null),
-                            FEEDBACK_STANDARD_MILLISECONDS,
-                          );
-                        }}
-                      >
-                        {copiedBlock === "local-3" ? (
-                          <CheckCheck size={12} />
-                        ) : (
-                          <Copy size={12} />
-                        )}
-                      </button>
-                    </div>
-                    <span className={styles["step-hint"]}>
-                      This loads{" "}
-                      <code className={styles["inline-code"]}>.env</code>{" "}
-                      automatically and starts with file-watch reload. You can
-                      also pass env vars inline or use CLI flags — see the
-                      README for details.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-step"]}>
-                  <span className={styles["step-number"]}>4</span>
-                  <div className={styles["step-body"]}>
-                    <span className={styles["step-title"]}>
-                      Verify connection
-                    </span>
-                    <span className={styles["step-hint"]}>
-                      Look for{" "}
-                      <code className={styles["inline-code"]}>
-                        Connected to ws://…
-                      </code>{" "}
-                      and{" "}
-                      <code className={styles["inline-code"]}>
-                        Server confirmed registration
-                      </code>{" "}
-                      in the output. The host will appear in this settings
-                      panel under Remote Hosts.
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles["guide-compare-table"]}>
-                  <span className={styles["environment-table-title"]}>
-                    Docker vs. Local
-                  </span>
-                  <div className={styles["compare-layout-row"]}>
-                    <span className={styles["compare-label"]}>Filesystem</span>
-                    <span className={styles["compare-docker"]}>
-                      Volume-mounted
-                    </span>
-                    <span className={styles["compare-local"]}>
-                      Native — no mount overhead
-                    </span>
-                  </div>
-                  <div className={styles["compare-layout-row"]}>
-                    <span className={styles["compare-label"]}>Performance</span>
-                    <span className={styles["compare-docker"]}>
-                      Container + I/O
-                    </span>
-                    <span className={styles["compare-local"]}>
-                      Faster grep, glob, git
-                    </span>
-                  </div>
-                  <div className={styles["compare-layout-row"]}>
-                    <span className={styles["compare-label"]}>Git / Shell</span>
-                    <span className={styles["compare-docker"]}>
-                      Inside container
-                    </span>
-                    <span className={styles["compare-local"]}>
-                      Host environment
-                    </span>
-                  </div>
-                  <div className={styles["compare-layout-row"]}>
-                    <span className={styles["compare-label"]}>Use case</span>
-                    <span className={styles["compare-docker"]}>
-                      Servers, NAS
-                    </span>
-                    <span className={styles["compare-local"]}>
-                      Dev machines, WSL2
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             <div className={styles["guide-footnote"]}>
               <span>

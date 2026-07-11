@@ -285,25 +285,63 @@
   opacity: 0.4;
 }
 
-/* ── Host capability tags ────────────────────────────────────────── */
+/* ── Connected status button (host card) ────────────────────────── */
 
-.host-capabilities {
-  display: flex;
-  flex-wrap: wrap;
+.connected-status-button {
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
-  flex-shrink: 0;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  background: oklch(0.85 0.12 145 / 0.15);
+  color: oklch(0.55 0.15 145);
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    scale 120ms ease;
 }
 
-.capability-tag {
-  font-size: 0.625rem;
-  font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: color-mix(in oklch, var(--accent-primary) 8%, transparent);
-  color: color-mix(in oklch, var(--accent-primary) 80%, var(--text-primary));
-  letter-spacing: 0.2px;
-  text-transform: lowercase;
+.connected-status-button:hover {
+  background: oklch(0.65 0.2 25 / 0.15);
+  color: oklch(0.55 0.2 25);
+  scale: 1.04;
 }
+
+.connected-status-button:active {
+  scale: 0.96;
+}
+
+.connected-status-button .connected-status-button-label-disconnect {
+  display: none;
+}
+
+.connected-status-button .connected-status-button-icon-disconnect {
+  display: none;
+}
+
+.connected-status-button:hover .connected-status-button-label-connected {
+  display: none;
+}
+
+.connected-status-button:hover .connected-status-button-icon-connected {
+  display: none;
+}
+
+.connected-status-button:hover .connected-status-button-label-disconnect {
+  display: inline;
+}
+
+.connected-status-button:hover .connected-status-button-icon-disconnect {
+  display: inline-flex;
+}
+
 
 /* ── Host roots list ─────────────────────────────────────────────── */
 
@@ -790,6 +828,73 @@
   line-height: 1.4;
 }
 
+/* ── Platform selector pill bar ──────────────────────────────────── */
+
+.platform-selector-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 16px;
+}
+
+.platform-selector-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--calculated-border-subtle);
+  border-radius: 100px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.platform-selector-pill:hover {
+  border-color: color-mix(in oklch, var(--accent-primary) 40%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 4%, transparent);
+  color: var(--text-primary);
+}
+
+.platform-selector-pill.platform-selector-is-active {
+  border-color: color-mix(in oklch, var(--accent-primary) 60%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 8%, transparent);
+  color: var(--accent-primary);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--accent-primary) 12%, transparent);
+}
+
+/* ── Platform methods container ──────────────────────────────────── */
+
+.platform-methods-container {
+  animation: guide-slide-in 0.2s ease-out;
+}
+
+/* ── Recommended badge ───────────────────────────────────────────── */
+
+.recommended-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--accent-primary);
+  background: color-mix(in oklch, var(--accent-primary) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--accent-primary) 20%, transparent);
+  border-radius: 100px;
+  line-height: 1.4;
+}
+
 /* ── Guide toggle buttons ────────────────────────────────────────── */
 
 .guide-toggle {
@@ -1243,5 +1348,15 @@
 
   .platform-download-grid {
     grid-template-columns: 1fr;
+  }
+
+  .platform-selector-bar {
+    gap: 4px;
+    padding: 10px 12px;
+  }
+
+  .platform-selector-pill {
+    padding: 5px 10px;
+    font-size: 0.6875rem;
   }
 }
