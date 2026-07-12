@@ -755,9 +755,7 @@ export default function SettingsPageComponent() {
     (workspace: LocalWorkspace) =>
       !workspace.isPinned && !workspace.isAgentServed,
   );
-  const agentServedRoots = wsWorkspaces.filter(
-    (workspace: LocalWorkspace) => workspace.isAgentServed,
-  );
+
 
   const findAgentForRoot = (rootPath: string): LocalAgent | undefined => {
     return wsAgents.find((agent: LocalAgent) =>
@@ -974,18 +972,44 @@ export default function SettingsPageComponent() {
                   {/* Roots served by this agent */}
                   {agent.roots && agent.roots.length > 0 && (
                     <div className={styles["host-roots"]}>
+                      <div className={styles["host-roots-header"]}>
+                        <FolderTree size={10} />
+                        <span>
+                          Workspace{agent.roots.length !== 1 ? "s" : ""}
+                        </span>
+                        {agent.roots.length > 1 && (
+                          <span className={styles["host-roots-count"]}>
+                            {agent.roots.length}
+                          </span>
+                        )}
+                      </div>
                       {agent.roots.map((root: unknown) => {
                         const pathString =
                           typeof root === "string"
                             ? root
                             : (root as { path: string })?.path || "";
+                        const rootName =
+                          pathString === "/"
+                            ? "/"
+                            : pathString.split("/").filter(Boolean).pop() ||
+                              pathString;
                         return (
                           <div
                             key={pathString}
                             className={styles["host-root-item"]}
                           >
-                            <FolderOpen size={13} />
-                            {pathString}
+                            <FolderOpen
+                              size={13}
+                              className={styles["host-root-icon"]}
+                            />
+                            <div className={styles["host-root-details"]}>
+                              <span className={styles["host-root-name"]}>
+                                {rootName}
+                              </span>
+                              <span className={styles["host-root-path"]}>
+                                {pathString}
+                              </span>
+                            </div>
                           </div>
                         );
                       })}
@@ -996,79 +1020,6 @@ export default function SettingsPageComponent() {
             </>
           )}
 
-          {/* Host-served workspace roots (managed by connected hosts) */}
-          {agentServedRoots.length > 0 && (
-            <>
-              <div className={styles["workspace-divider"]} />
-              <div className={styles["section-label"]}>
-                <FolderTree size={10} />
-                Connected Workspaces
-              </div>
-              {agentServedRoots.map((workspace: LocalWorkspace) => {
-                const servingAgent = findAgentForRoot(workspace.path);
-                const hostInfo = servingAgent?.hostInfo;
-                return (
-                  <div key={workspace.id} className={styles["workspace-item"]}>
-                    <div className={styles["workspace-item-info"]}>
-                      <FolderOpen
-                        size={16}
-                        className={styles["workspace-item-icon"]}
-                      />
-                      <div className={styles["workspace-item-details"]}>
-                        <span className={styles["workspace-item-name"]}>
-                          {workspace.name}
-                        </span>
-                        <span className={styles["workspace-item-path"]}>
-                          {workspace.path}
-                        </span>
-                        {hostInfo && (
-                          <div className={styles["workspace-host-info"]}>
-                            {hostInfo.hostname && (
-                              <span className={styles["host-info-tag"]}>
-                                <Monitor size={9} />
-                                {hostInfo.hostname}
-                              </span>
-                            )}
-                            {hostInfo.platform && (
-                              <span className={styles["host-info-tag"]}>
-                                <HardDrive size={9} />
-                                {formatPlatformLabel(hostInfo)}
-                              </span>
-                            )}
-                            {hostInfo.username && (
-                              <span className={styles["host-info-tag"]}>
-                                {hostInfo.username}
-                              </span>
-                            )}
-                            {hostInfo.cpuModel && (
-                              <span className={styles["host-info-tag"]}>
-                                <Cpu size={9} />
-                                {hostInfo.cpuModel}
-                                {hostInfo.cpuCores
-                                  ? ` (${hostInfo.cpuCores}c)`
-                                  : ""}
-                              </span>
-                            )}
-                            {hostInfo.totalMemoryBytes && (
-                              <span className={styles["host-info-tag"]}>
-                                <MemoryStick size={9} />
-                                {formatMemorySize(hostInfo.totalMemoryBytes)}
-                              </span>
-                            )}
-                            {hostInfo.release && (
-                              <span className={styles["host-info-tag"]}>
-                                {hostInfo.release}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </>
-          )}
 
           {/* Local static roots (from env config, not host-served) */}
           {localStaticRoots.length > 0 && (
