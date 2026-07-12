@@ -1257,7 +1257,7 @@ export default function SettingsPageComponent() {
           <div className={styles["workspace-divider"]} />
           <div className={styles["section-label"]}>
             <Lock size={10} />
-            Agent Authentication
+            Host Authentication
           </div>
           <div className={styles["agent-secret-layout-row"]}>
             <InputComponent
@@ -1270,8 +1270,8 @@ export default function SettingsPageComponent() {
             />
           </div>
           <div className={styles["agent-secret-hint"]}>
-            Workspace agents include this secret when connecting. If empty, any
-            agent can connect without authentication.
+            Workspace hosts include this secret when connecting. If empty, any
+            host can connect without authentication.
           </div>
 
           {/* -- Workspace Setup Guide ------------------------------- */}
