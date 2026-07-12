@@ -1108,6 +1108,12 @@ export interface PrismSettings {
   creative?: CreativeConfig;
   /** Somatic state emotion analysis model config */
   somatic?: SomaticConfig;
+  /** Workspace agent connection config */
+  workspace?: WorkspaceConfig;
+}
+
+export interface WorkspaceConfig {
+  agentSecret?: string;
 }
 
 export interface CreativeConfig {

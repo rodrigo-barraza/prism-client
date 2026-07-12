@@ -21,6 +21,7 @@ import {
   CircleUser,
   LogOut,
   Settings,
+  ChevronUp,
 } from "lucide-react";
 import {
   USER_NAV_SECTIONS,
@@ -113,6 +114,8 @@ export default function NavigationSidebarComponent({
   const [isLocal, setIsLocal] = useState(false);
   const [settingsWarningCount, setSettingsWarningCount] = useState<number>(0);
   const [cronJobNotificationsCount, setCronJobNotificationsCount] = useState(0);
+  const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
+  const profileContainerReference = useRef<HTMLDivElement>(null);
 
   const clearCronJobNotifications = useCallback(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT, "0");
@@ -273,6 +276,40 @@ export default function NavigationSidebarComponent({
       }
       return next;
     });
+  }, []);
+
+  // Close profile popover on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileContainerReference.current &&
+        !profileContainerReference.current.contains(event.target as Node)
+      ) {
+        setIsProfilePopoverOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const userProfile = userSession?.user;
+
+  const getUserInitials = useCallback(() => {
+    if (!userProfile?.name) return "?";
+    const nameParts = userProfile.name.trim().split(/\s+/);
+    if (nameParts.length >= 2) {
+      const firstInitial = nameParts[0]?.charAt(0) || "";
+      const lastInitial = nameParts[nameParts.length - 1]?.charAt(0) || "";
+      return (firstInitial + lastInitial).toUpperCase();
+    }
+    return (userProfile.name.charAt(0) || "?").toUpperCase();
+  }, [userProfile?.name]);
+
+  const handleSignOut = useCallback(async () => {
+    setIsProfilePopoverOpen(false);
+    await signOut({ callbackUrl: "/login" });
   }, []);
 
   // -- Bouncing mini cats for concurrent API calls ----------------
@@ -744,18 +781,68 @@ export default function NavigationSidebarComponent({
               {/* Footer actions */}
               <div className={styles['mobile-popover-footer']}>
                 {authStatus === "authenticated" ? (
-                  <button
-                    className={styles['navigation-link']}
-                    onClick={() => {
-                      signOut();
-                      setMobileOpen(false);
-                    }}
-                  >
-                    <span className={styles['is-active-state-layer']}>
-                      <LogOut className={styles['navigation-icon']} />
-                      <span className={styles['navigation-label']}>Log Out</span>
-                    </span>
-                  </button>
+                  <div className={styles['user-profile-container']} ref={profileContainerReference}>
+                    <button
+                      className={`${styles['user-profile-trigger']} ${isProfilePopoverOpen ? styles['is-popover-open-state'] : ""}`}
+                      onClick={() => setIsProfilePopoverOpen((previous) => !previous)}
+                      aria-expanded={isProfilePopoverOpen}
+                      aria-haspopup="menu"
+                      title={`Logged in as ${userProfile?.name || userProfile?.email}`}
+                    >
+                      <div className={styles['user-profile-avatar']}>
+                        {userProfile?.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            className={styles['user-profile-avatar-image']}
+                            src={userProfile.image}
+                            alt={userProfile.name || "User profile photo"}
+                          />
+                        ) : (
+                          <div className={styles['user-profile-avatar-initials']}>
+                            <span>{getUserInitials()}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className={styles['user-profile-identity']}>
+                        <span className={styles['user-profile-display-name']}>
+                          {userProfile?.name || "User"}
+                        </span>
+                        {userProfile?.email && (
+                          <span className={styles['user-profile-email-address']}>
+                            {userProfile.email}
+                          </span>
+                        )}
+                      </div>
+                      <ChevronUp size={14} className={styles['user-profile-chevron-icon']} />
+                    </button>
+
+                    {isProfilePopoverOpen && (
+                      <div className={styles['user-profile-popover']} role="menu">
+                        <header className={styles['user-profile-popover-header']}>
+                          <div className={styles['user-profile-popover-display-name']}>
+                            {userProfile?.name || "User"}
+                          </div>
+                          {userProfile?.email && (
+                            <div className={styles['user-profile-popover-email-address']}>
+                              {userProfile.email}
+                            </div>
+                          )}
+                        </header>
+                        <hr className={styles['user-profile-popover-divider']} />
+                        <button
+                          className={`${styles['user-profile-popover-action-button']} ${styles['user-profile-popover-logout-action']}`}
+                          onClick={() => {
+                            handleSignOut();
+                            setMobileOpen(false);
+                          }}
+                          role="menuitem"
+                        >
+                          <LogOut size={14} className={styles['user-profile-popover-action-icon']} />
+                          <span>Log Out</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 ) : authStatus === "unauthenticated" ? (
                   <button
                     className={styles['navigation-link']}
@@ -938,26 +1025,68 @@ export default function NavigationSidebarComponent({
         {/* Footer */}
         <div className={styles['footer']}>
           {authStatus === "authenticated" ? (
-            <TooltipComponent
-              label="Log Out"
-              position="right"
-              delay={200}
-              disabled={showNav}
-              className={styles['tooltip-fill']}
-            >
+            <div className={styles['user-profile-container']} ref={profileContainerReference}>
               <button
-                className={styles['navigation-link']}
-                onClick={() => signOut()}
-                onMouseEnter={(e) =>
-                  SoundService.playHover({ event: e.nativeEvent })
+                className={`${styles['user-profile-trigger']} ${isProfilePopoverOpen ? styles['is-popover-open-state'] : ""}`}
+                onClick={() => setIsProfilePopoverOpen((previous) => !previous)}
+                onMouseEnter={(mouseEnterEvent) =>
+                  SoundService.playHover({ event: mouseEnterEvent.nativeEvent })
                 }
+                aria-expanded={isProfilePopoverOpen}
+                aria-haspopup="menu"
+                title={`Logged in as ${userProfile?.name || userProfile?.email}`}
               >
-                <span className={styles['is-active-state-layer']}>
-                  <LogOut className={styles['navigation-icon']} />
-                  <span className={styles['navigation-label']}>Log Out</span>
-                </span>
+                <div className={styles['user-profile-avatar']}>
+                  {userProfile?.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className={styles['user-profile-avatar-image']}
+                      src={userProfile.image}
+                      alt={userProfile.name || "User profile photo"}
+                    />
+                  ) : (
+                    <div className={styles['user-profile-avatar-initials']}>
+                      <span>{getUserInitials()}</span>
+                    </div>
+                  )}
+                </div>
+                <div className={styles['user-profile-identity']}>
+                  <span className={styles['user-profile-display-name']}>
+                    {userProfile?.name || "User"}
+                  </span>
+                  {userProfile?.email && (
+                    <span className={styles['user-profile-email-address']}>
+                      {userProfile.email}
+                    </span>
+                  )}
+                </div>
+                <ChevronUp size={14} className={styles['user-profile-chevron-icon']} />
               </button>
-            </TooltipComponent>
+
+              {isProfilePopoverOpen && (
+                <div className={styles['user-profile-popover']} role="menu">
+                  <header className={styles['user-profile-popover-header']}>
+                    <div className={styles['user-profile-popover-display-name']}>
+                      {userProfile?.name || "User"}
+                    </div>
+                    {userProfile?.email && (
+                      <div className={styles['user-profile-popover-email-address']}>
+                        {userProfile.email}
+                      </div>
+                    )}
+                  </header>
+                  <hr className={styles['user-profile-popover-divider']} />
+                  <button
+                    className={`${styles['user-profile-popover-action-button']} ${styles['user-profile-popover-logout-action']}`}
+                    onClick={handleSignOut}
+                    role="menuitem"
+                  >
+                    <LogOut size={14} className={styles['user-profile-popover-action-icon']} />
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
           ) : authStatus === "unauthenticated" ? (
             <TooltipComponent
               label="Log In"
@@ -969,8 +1098,8 @@ export default function NavigationSidebarComponent({
               <button
                 className={styles['navigation-link']}
                 onClick={() => signIn("google")}
-                onMouseEnter={(e) =>
-                  SoundService.playHover({ event: e.nativeEvent })
+                onMouseEnter={(mouseEnterEvent) =>
+                  SoundService.playHover({ event: mouseEnterEvent.nativeEvent })
                 }
               >
                 <span className={styles['is-active-state-layer']}>

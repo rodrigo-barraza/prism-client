@@ -660,6 +660,19 @@
   margin: 0;
 }
 
+/* ── Agent Secret ────────────────────────────────────────────────── */
+
+.agent-secret-layout-row {
+  padding: 0 24px;
+}
+
+.agent-secret-hint {
+  padding: 2px 24px 8px;
+  font-size: 11px;
+  color: var(--calculated-text-muted);
+  line-height: 1.5;
+}
+
 /* ── Harness selector ────────────────────────────────────────────── */
 
 .harness-grid {

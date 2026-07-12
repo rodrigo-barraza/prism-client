@@ -627,6 +627,20 @@ export default function SettingsPageComponent() {
     await persistSettings(updated);
   }, [defaults, persistSettings]);
 
+  const handleWorkspaceSecretChange = useCallback(
+    (value: string) => {
+      const updated = {
+        workspace: {
+          ...settings?.workspace,
+          agentSecret: value,
+        },
+      };
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
   const handleImageModelSelect = useCallback(
     (provider: string, model: string) => {
       const updated = {
@@ -1238,6 +1252,27 @@ export default function SettingsPageComponent() {
               </span>
             </div>
           )}
+
+          {/* -- Agent Authentication --------------------------------- */}
+          <div className={styles["workspace-divider"]} />
+          <div className={styles["section-label"]}>
+            <Lock size={10} />
+            Agent Authentication
+          </div>
+          <div className={styles["agent-secret-layout-row"]}>
+            <InputComponent
+              type="password"
+              placeholder="Shared secret (leave empty to disable)"
+              value={settings?.workspace?.agentSecret || ""}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                handleWorkspaceSecretChange(event.target.value)
+              }
+            />
+          </div>
+          <div className={styles["agent-secret-hint"]}>
+            Workspace agents include this secret when connecting. If empty, any
+            agent can connect without authentication.
+          </div>
 
           {/* -- Workspace Setup Guide ------------------------------- */}
           <div className={styles["setup-guide"]}>
