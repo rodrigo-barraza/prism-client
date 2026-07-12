@@ -68,7 +68,7 @@ import type {
   PrismConfig,
 } from "../types/types";
 
-interface HostInfo {
+interface MachineInfo {
   hostname?: string;
   platform?: string;
   arch?: string;
@@ -97,7 +97,7 @@ interface LocalAgent {
   clientIp?: string;
   connectedAt?: string;
   pendingRpcs?: number;
-  hostInfo?: HostInfo;
+  machineInfo?: MachineInfo;
 }
 
 /**
@@ -233,7 +233,7 @@ function getWorkspacePathExample(platform: SetupGuidePlatformKey): string {
  * SettingsPageComponent — server-side settings management.
  *
  * Exposes:
- *   - "Workspaces" section with host connection status + workspace management
+ *   - "Workspaces" section with machine connection status + workspace management
  *   - "Memory Models" section for extraction, consolidation, and embedding
  *   - "Harness Models" section for sub-agent and critic model configuration
  */
@@ -321,7 +321,7 @@ export default function SettingsPageComponent() {
     refreshWorkspaceData();
   }, [refreshWorkspaceData]);
 
-  // Poll workspace/agent data every 10s so host connect/disconnect appears live
+  // Poll workspace/agent data every 10s so machine connect/disconnect appears live
   useEffect(() => {
     const WORKSPACE_SETTINGS_POLL_INTERVAL_MILLISECONDS = 10_000;
     const pollTimer = setInterval(
@@ -776,7 +776,7 @@ export default function SettingsPageComponent() {
       : `${(totalBytes / BYTES_IN_MIB).toFixed(0)} MB`;
   };
 
-  const formatPlatformLabel = (hostInfo: HostInfo): string => {
+  const formatPlatformLabel = (machineInfo: MachineInfo): string => {
     const platformLabels: Record<string, string> = {
       win32: "Windows",
       darwin: "macOS",
@@ -784,8 +784,8 @@ export default function SettingsPageComponent() {
       freebsd: "FreeBSD",
     };
     const platformLabel =
-      platformLabels[hostInfo.platform || ""] || hostInfo.platform || "Unknown";
-    return hostInfo.arch ? `${platformLabel} ${hostInfo.arch}` : platformLabel;
+      platformLabels[machineInfo.platform || ""] || machineInfo.platform || "Unknown";
+    return machineInfo.arch ? `${platformLabel} ${machineInfo.arch}` : platformLabel;
   };
 
   // -- Loading state --------------------------------------------------
@@ -851,44 +851,44 @@ export default function SettingsPageComponent() {
         />
 
         <CardComponent.Body>
-          {/* Host status banner */}
-          <div className={styles["host-status-banner"]}>
+          {/* Machine status banner */}
+          <div className={styles["machine-status-banner"]}>
             <div
-              className={`${styles["host-status-dot"]} ${hasAgents ? styles["connected"] : styles["disconnected"]}`}
+              className={`${styles["machine-status-dot"]} ${hasAgents ? styles["connected"] : styles["disconnected"]}`}
             />
-            <span className={styles["host-status-text"]}>
+            <span className={styles["machine-status-text"]}>
               {hasAgents ? (
                 <>
-                  <strong>{wsAgents.length}</strong> host
+                  <strong>{wsAgents.length}</strong> machine
                   {wsAgents.length !== 1 ? "s" : ""} connected
                 </>
               ) : (
-                "No hosts connected"
+                "No machines connected"
               )}
             </span>
-            <span className={styles["host-status-meta"]}>
+            <span className={styles["machine-status-meta"]}>
               {wsWorkspaces.length} root{wsWorkspaces.length !== 1 ? "s" : ""}{" "}
               total
             </span>
           </div>
 
-          {/* Connected Hosts */}
+          {/* Connected Machines */}
           {hasAgents && (
             <>
               <div className={styles["section-label"]}>
                 <Server size={10} />
-                Remote Hosts
+                Machines
               </div>
               {wsAgents.map((agent: LocalAgent) => (
-                <div key={agent.id} className={styles["host-card"]}>
-                  <div className={styles["host-card-header"]}>
-                    <div className={styles["host-icon"]}>
+                <div key={agent.id} className={styles["machine-card"]}>
+                  <div className={styles["machine-card-header"]}>
+                    <div className={styles["machine-icon"]}>
                       <Wifi size={16} />
                     </div>
-                    <div className={styles["host-info"]}>
-                      <div className={styles["host-name-layout-row"]}>
-                        <span className={styles["host-name"]}>
-                          {agent.hostInfo?.hostname || agent.name}
+                    <div className={styles["machine-info"]}>
+                      <div className={styles["machine-name-layout-row"]}>
+                        <span className={styles["machine-name"]}>
+                          {agent.machineInfo?.hostname || agent.name}
                         </span>
                         <button
                           type="button"
@@ -908,60 +908,60 @@ export default function SettingsPageComponent() {
                           <span className={styles["connected-status-button-label-disconnect"]}>Disconnect</span>
                         </button>
                       </div>
-                      <div className={styles["host-meta"]}>
-                        <span className={styles["host-meta-item"]}>
+                      <div className={styles["machine-meta"]}>
+                        <span className={styles["machine-meta-item"]}>
                           {agent.clientIp}
                         </span>
-                        {agent.hostInfo?.platform && (
+                        {agent.machineInfo?.platform && (
                           <>
-                            <span className={styles["host-meta-separator"]} />
-                            <span className={styles["host-meta-item"]}>
-                              {formatPlatformLabel(agent.hostInfo)}
+                            <span className={styles["machine-meta-separator"]} />
+                            <span className={styles["machine-meta-item"]}>
+                              {formatPlatformLabel(agent.machineInfo)}
                             </span>
                           </>
                         )}
-                        <span className={styles["host-meta-separator"]} />
+                        <span className={styles["machine-meta-separator"]} />
                         {agent.connectedAt && (
-                          <span className={styles["host-meta-item"]}>
+                          <span className={styles["machine-meta-item"]}>
                             up {formatUptime(agent.connectedAt)}
                           </span>
                         )}
                         {(agent.pendingRpcs ?? 0) > 0 && (
                           <>
-                            <span className={styles["host-meta-separator"]} />
-                            <span className={styles["host-meta-item"]}>
+                            <span className={styles["machine-meta-separator"]} />
+                            <span className={styles["machine-meta-item"]}>
                               {agent.pendingRpcs} pending
                             </span>
                           </>
                         )}
                       </div>
-                      {agent.hostInfo && (
-                        <div className={styles["workspace-host-info"]}>
-                          {agent.hostInfo.username && (
-                            <span className={styles["host-info-tag"]}>
-                              {agent.hostInfo.username}
+                      {agent.machineInfo && (
+                        <div className={styles["workspace-machine-info"]}>
+                          {agent.machineInfo.username && (
+                            <span className={styles["machine-info-tag"]}>
+                              {agent.machineInfo.username}
                             </span>
                           )}
-                          {agent.hostInfo.cpuModel && (
-                            <span className={styles["host-info-tag"]}>
+                          {agent.machineInfo.cpuModel && (
+                            <span className={styles["machine-info-tag"]}>
                               <Cpu size={9} />
-                              {agent.hostInfo.cpuModel}
-                              {agent.hostInfo.cpuCores
-                                ? ` (${agent.hostInfo.cpuCores}c)`
+                              {agent.machineInfo.cpuModel}
+                              {agent.machineInfo.cpuCores
+                                ? ` (${agent.machineInfo.cpuCores}c)`
                                 : ""}
                             </span>
                           )}
-                          {agent.hostInfo.totalMemoryBytes && (
-                            <span className={styles["host-info-tag"]}>
+                          {agent.machineInfo.totalMemoryBytes && (
+                            <span className={styles["machine-info-tag"]}>
                               <MemoryStick size={9} />
                               {formatMemorySize(
-                                agent.hostInfo.totalMemoryBytes,
+                                agent.machineInfo.totalMemoryBytes,
                               )}
                             </span>
                           )}
-                          {agent.hostInfo.release && (
-                            <span className={styles["host-info-tag"]}>
-                              {agent.hostInfo.release}
+                          {agent.machineInfo.release && (
+                            <span className={styles["machine-info-tag"]}>
+                              {agent.machineInfo.release}
                             </span>
                           )}
                         </div>
@@ -971,14 +971,14 @@ export default function SettingsPageComponent() {
 
                   {/* Roots served by this agent */}
                   {agent.roots && agent.roots.length > 0 && (
-                    <div className={styles["host-roots"]}>
-                      <div className={styles["host-roots-header"]}>
+                    <div className={styles["machine-roots"]}>
+                      <div className={styles["machine-roots-header"]}>
                         <FolderTree size={10} />
                         <span>
                           Workspace{agent.roots.length !== 1 ? "s" : ""}
                         </span>
                         {agent.roots.length > 1 && (
-                          <span className={styles["host-roots-count"]}>
+                          <span className={styles["machine-roots-count"]}>
                             {agent.roots.length}
                           </span>
                         )}
@@ -996,17 +996,17 @@ export default function SettingsPageComponent() {
                         return (
                           <div
                             key={pathString}
-                            className={styles["host-root-item"]}
+                            className={styles["machine-root-item"]}
                           >
                             <FolderOpen
                               size={13}
-                              className={styles["host-root-icon"]}
+                              className={styles["machine-root-icon"]}
                             />
-                            <div className={styles["host-root-details"]}>
-                              <span className={styles["host-root-name"]}>
+                            <div className={styles["machine-root-details"]}>
+                              <span className={styles["machine-root-name"]}>
                                 {rootName}
                               </span>
-                              <span className={styles["host-root-path"]}>
+                              <span className={styles["machine-root-path"]}>
                                 {pathString}
                               </span>
                             </div>
@@ -1021,7 +1021,7 @@ export default function SettingsPageComponent() {
           )}
 
 
-          {/* Local static roots (from env config, not host-served) */}
+          {/* Local static roots (from env config, not machine-served) */}
           {localStaticRoots.length > 0 && (
             <>
               <div className={styles["workspace-divider"]} />
@@ -1064,7 +1064,7 @@ export default function SettingsPageComponent() {
               </div>
               {userRoots.map((ws: LocalWorkspace) => {
                 const servingAgent = findAgentForRoot(ws.path);
-                const hostInfo = servingAgent?.hostInfo;
+                const machineInfo = servingAgent?.machineInfo;
                 return (
                   <div key={ws.id} className={styles["workspace-item"]}>
                     <div className={styles["workspace-item-info"]}>
@@ -1079,38 +1079,38 @@ export default function SettingsPageComponent() {
                         <span className={styles["workspace-item-path"]}>
                           {ws.path}
                         </span>
-                        {hostInfo && (
-                          <div className={styles["workspace-host-info"]}>
-                            {hostInfo.hostname && (
-                              <span className={styles["host-info-tag"]}>
+                        {machineInfo && (
+                          <div className={styles["workspace-machine-info"]}>
+                            {machineInfo.hostname && (
+                              <span className={styles["machine-info-tag"]}>
                                 <Monitor size={9} />
-                                {hostInfo.hostname}
+                                {machineInfo.hostname}
                               </span>
                             )}
-                            {hostInfo.platform && (
-                              <span className={styles["host-info-tag"]}>
+                            {machineInfo.platform && (
+                              <span className={styles["machine-info-tag"]}>
                                 <HardDrive size={9} />
-                                {formatPlatformLabel(hostInfo)}
+                                {formatPlatformLabel(machineInfo)}
                               </span>
                             )}
-                            {hostInfo.username && (
-                              <span className={styles["host-info-tag"]}>
-                                {hostInfo.username}
+                            {machineInfo.username && (
+                              <span className={styles["machine-info-tag"]}>
+                                {machineInfo.username}
                               </span>
                             )}
-                            {hostInfo.cpuModel && (
-                              <span className={styles["host-info-tag"]}>
+                            {machineInfo.cpuModel && (
+                              <span className={styles["machine-info-tag"]}>
                                 <Cpu size={9} />
-                                {hostInfo.cpuModel}
-                                {hostInfo.cpuCores
-                                  ? ` (${hostInfo.cpuCores}c)`
+                                {machineInfo.cpuModel}
+                                {machineInfo.cpuCores
+                                  ? ` (${machineInfo.cpuCores}c)`
                                   : ""}
                               </span>
                             )}
-                            {hostInfo.totalMemoryBytes && (
-                              <span className={styles["host-info-tag"]}>
+                            {machineInfo.totalMemoryBytes && (
+                              <span className={styles["machine-info-tag"]}>
                                 <MemoryStick size={9} />
-                                {formatMemorySize(hostInfo.totalMemoryBytes)}
+                                {formatMemorySize(machineInfo.totalMemoryBytes)}
                               </span>
                             )}
                           </div>
@@ -1204,11 +1204,11 @@ export default function SettingsPageComponent() {
             </div>
           )}
 
-          {/* -- Agent Authentication --------------------------------- */}
+          {/* -- Machine Authentication -------------------------------- */}
           <div className={styles["workspace-divider"]} />
           <div className={styles["section-label"]}>
             <Lock size={10} />
-            Host Authentication
+            Machine Authentication
           </div>
           <div className={styles["agent-secret-layout-row"]}>
             <InputComponent
@@ -1221,8 +1221,8 @@ export default function SettingsPageComponent() {
             />
           </div>
           <div className={styles["agent-secret-hint"]}>
-            Workspace hosts include this secret when connecting. If empty, any
-            host can connect without authentication.
+            Workspace machines include this secret when connecting. If empty, any
+            machine can connect without authentication.
           </div>
 
           {/* -- Workspace Setup Guide ------------------------------- */}
@@ -1443,8 +1443,8 @@ export default function SettingsPageComponent() {
                                 </span>
                                 <span className={styles["step-hint"]}>
                                   Right-click the system tray icon to see the
-                                  connection status. The host will appear in
-                                  this settings panel under Remote Hosts.
+                                  connection status. The machine will appear in
+                                  this settings panel under Machines.
                                   Enable{" "}
                                   <code className={styles["inline-code"]}>
                                     Launch at login
@@ -1623,8 +1623,8 @@ export default function SettingsPageComponent() {
                                     <code className={styles["inline-code"]}>
                                       Server confirmed registration
                                     </code>{" "}
-                                    in the output. The host will appear in this
-                                    settings panel under Remote Hosts.
+                                    in the output. The machine will appear in this
+                                    settings panel under Machines.
                                   </span>
                                 </div>
                               </div>
@@ -1763,8 +1763,8 @@ export default function SettingsPageComponent() {
                                     <code className={styles["inline-code"]}>
                                       Server confirmed registration
                                     </code>{" "}
-                                    in the output. The host will appear in this
-                                    settings panel under Remote Hosts.
+                                    in the output. The machine will appear in this
+                                    settings panel under Machines.
                                   </span>
                                 </div>
                               </div>
@@ -1849,8 +1849,8 @@ export default function SettingsPageComponent() {
                                     </button>
                                   </div>
                                   <span className={styles["step-hint"]}>
-                                    The host authentication secret is configured
-                                    above in the Host Authentication section.
+                                    The machine authentication secret is configured
+                                    above in the Machine Authentication section.
                                   </span>
                                 </div>
                               </div>
@@ -2182,8 +2182,8 @@ export default function SettingsPageComponent() {
                                     <code className={styles["inline-code"]}>
                                       Server confirmed registration
                                     </code>{" "}
-                                    in the output. The host will appear in this
-                                    settings panel under Remote Hosts.
+                                    in the output. The machine will appear in this
+                                    settings panel under Machines.
                                   </span>
                                 </div>
                               </div>
@@ -2294,7 +2294,7 @@ export default function SettingsPageComponent() {
 
             <div className={styles["guide-footnote"]}>
               <span>
-                Multiple hosts can connect simultaneously — each registers with a
+                Multiple machines can connect simultaneously — each registers with a
                 unique ID and routes automatically.
               </span>
             </div>
