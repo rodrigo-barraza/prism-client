@@ -11,6 +11,7 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import styles from "./MarkdownContentComponent.module.css";
 import { sanitizeInlineLatex } from "../utils/latexSanitizer";
+import { escapeXmlDelimiterTags } from "../utils/xmlTagEscaper";
 import { CopyButtonComponent } from "@rodrigo-barraza/components-library";
 
 interface FencedCodeBlockProps {
@@ -219,7 +220,10 @@ export default function MarkdownContent({
   className,
   children,
 }: MarkdownContentProps) {
-  const sanitizedContent = useMemo(() => sanitizeInlineLatex(content || ""), [content]);
+  const sanitizedContent = useMemo(
+    () => escapeXmlDelimiterTags(sanitizeInlineLatex(content || "")),
+    [content],
+  );
 
   if (!content) return null;
   return (
