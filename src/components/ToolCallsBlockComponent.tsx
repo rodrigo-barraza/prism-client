@@ -162,7 +162,7 @@ export default function ToolCallsBlockComponent({
             const exactSeconds = effectiveDurationMs / 1000;
             const decimalPlaces = Math.min(Math.max(Math.ceil(-Math.log10(exactSeconds)), 1), 6);
             const roundedValue = parseFloat(exactSeconds.toFixed(decimalPlaces));
-            return ` for ${roundedValue}s`;
+            return ` for ${roundedValue} seconds`;
           }
           return ` for ${totalDurationSeconds} second${totalDurationSeconds === 1 ? "" : "s"}`;
         })()

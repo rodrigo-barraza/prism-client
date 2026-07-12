@@ -498,10 +498,10 @@ describe("ToolCallsBlockComponent", () => {
         );
       });
 
-      // Should show ~15 seconds, NOT "0.4s" from the dispatch durationMs
+      // Should show ~15 seconds, NOT "0.4 seconds" from the dispatch durationMs
       const headerText = getHeaderText();
       expect(headerText).toContain("15 seconds");
-      expect(headerText).not.toContain("0.4s");
+      expect(headerText).not.toContain("0.4 seconds");
     });
 
     it("uses toolCall.durationMs for non-subagent tools", () => {
@@ -535,8 +535,8 @@ describe("ToolCallsBlockComponent", () => {
 
       // When loaded from history (no active→inactive transition observed),
       // and members have no durationMilliseconds, falls back to toolCall.durationMs
-      // (400ms → "0.4s")
-      expect(getHeaderText()).toContain("0.4s");
+      // (400ms → "0.4 seconds")
+      expect(getHeaderText()).toContain("0.4 seconds");
     });
 
     it("derives wall-clock duration from member durationMilliseconds for persisted subagent tools", () => {
