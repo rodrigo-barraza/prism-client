@@ -2722,13 +2722,23 @@ export default function ChatConversationComponent({
       return;
     }
 
+    // For existing agent conversations (messages already sent), the DB's
+    // systemPrompt is the authoritative prompt that was sent to providers.
+    // Calling the preview endpoint would re-assemble from scratch AND inject
+    // the stored prompt as "User System Instruction", causing duplication.
+    // Only call the preview for NEW conversations where no agent turn has
+    // happened yet and we need to show what the prompt WILL look like.
+    if (messages.length > 0 && settings.systemPrompt) {
+      setPreviewSystemPrompt(null);
+      return;
+    }
+
     const debounceTimer = setTimeout(() => {
       const allDisabledTools = [...disabledTools, ...lockedOffTools.keys()];
       PrismService.previewSystemPrompt({
         agent: agentId || undefined,
         disabledTools: allDisabledTools,
         workspaceEnabled: settings.agents?.workspaceEnabled !== false,
-        systemPrompt: settings.systemPrompt || undefined,
         locale: settings.agents?.locale || undefined,
         model: settings.model || undefined,
       })
@@ -2749,6 +2759,7 @@ export default function ChatConversationComponent({
     showRaw,
     isNoAgent,
     agentId,
+    messages.length,
     disabledTools,
     lockedOffTools,
     settings.agents?.workspaceEnabled,
@@ -2776,7 +2787,6 @@ export default function ChatConversationComponent({
         agent: agentId || undefined,
         disabledTools: allDisabledTools,
         workspaceEnabled: settings.agents?.workspaceEnabled !== false,
-        systemPrompt: settings.systemPrompt || undefined,
         locale: settings.agents?.locale || undefined,
         model: settings.model || undefined,
       })
