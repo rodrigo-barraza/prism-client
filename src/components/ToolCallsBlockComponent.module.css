@@ -131,6 +131,17 @@
   rotate: -90deg;
 }
 
+.tool-calls-disclosure-tool-name {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--color-warning);
+  opacity: 0.5;
+  padding: 0 6px 4px;
+}
+
 .tool-calls-content {
   padding: 2px 10px 6px;
   display: flex;

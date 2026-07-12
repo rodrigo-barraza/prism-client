@@ -228,6 +228,7 @@ export default function ToolCallsBlockComponent({
 
       <div className={`${styles['tool-calls-disclosure']}${isHeaderCollapsed ? ` ${styles['tool-calls-disclosure-collapsed']}` : ''}`}>
         <div className={styles['tool-calls-content']}>
+          <span className={styles['tool-calls-disclosure-tool-name']}>{toolCall.name}</span>
           {Object.keys(teamToolActivity.toolCounts).length > 0 && (
             <ToolBadgeRow
               tools={teamToolActivity.toolCounts}
