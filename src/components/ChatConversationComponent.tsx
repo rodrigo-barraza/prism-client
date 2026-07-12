@@ -8091,6 +8091,7 @@ export default function ChatConversationComponent({
               : relativePath;
             handleOpenFileInViewer(absPath);
           }}
+          onOpenFileInViewer={handleOpenFileInViewer}
           planProposal={planProposal}
           onPlanApprove={() => {
             setPlanProposal((previousPlan) => (previousPlan ? { ...previousPlan, status: "approved" } : null));

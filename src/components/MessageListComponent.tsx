@@ -677,6 +677,7 @@ export interface MessageListProps {
   onImageClick?: (url: string) => void;
   onDocClick?: (url: string) => void;
   onMentionFileOpen?: (path: string) => void;
+  onOpenFileInViewer?: (absolutePath: string) => void;
 }
 
 /**
@@ -707,6 +708,7 @@ export default function MessageList({
   onImageClick,
   onDocClick,
   onMentionFileOpen,
+  onOpenFileInViewer,
 }: MessageListProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [localLightboxSourceUrl, setLocalLightboxSourceUrl] = useState<string | null>(null);
@@ -1460,6 +1462,7 @@ export default function MessageList({
                                         key={`group-tool-${toolCallIndex}`}
                                         toolCall={singleToolCall}
                                         subAgentToolActivity={subAgentToolActivity}
+                                        onOpenFileInViewer={onOpenFileInViewer}
                                       />
                                     ))}
                                   {groupMessage.images && groupMessage.images.length > 0 && (
@@ -1752,6 +1755,7 @@ export default function MessageList({
                                   streamingOutputs={streamingOutputs}
                                   subAgentToolActivity={subAgentToolActivity}
                                   isAutoCollapsed={opts.isAutoCollapsed}
+                                  onOpenFileInViewer={onOpenFileInViewer}
                                 />
                               ));
                             }
@@ -1995,6 +1999,7 @@ export default function MessageList({
                                 toolCall={singleToolCall}
                                 streamingOutputs={streamingOutputs}
                                 subAgentToolActivity={subAgentToolActivity}
+                                onOpenFileInViewer={onOpenFileInViewer}
                               />
                             ))}
 

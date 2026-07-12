@@ -16,6 +16,7 @@ interface ToolCallsBlockProps {
   streamingOutputs?: Map<string, string> | null;
   subAgentToolActivity?: Record<string, SubAgentToolActivityItem> | null;
   isAutoCollapsed?: boolean;
+  onOpenFileInViewer?: (absolutePath: string) => void;
 }
 
 export const VISUAL_TOOL_NAMES = new Set([
@@ -40,6 +41,7 @@ export default function ToolCallsBlockComponent({
   streamingOutputs,
   subAgentToolActivity,
   isAutoCollapsed,
+  onOpenFileInViewer,
 }: ToolCallsBlockProps) {
   const isCurrentlyCalling = toolCall.status === "calling" || toolCall.status === "streaming";
   const hasActiveSubAgents = detectActiveSubAgents(toolCall, subAgentToolActivity);
@@ -108,9 +110,35 @@ export default function ToolCallsBlockComponent({
     ? (capturedSubAgentDurationMs ?? persistedSubAgentDurationMs ?? toolCall.durationMs)
     : toolCall.durationMs;
 
+  const handleSubjectClick = useMemo(() => {
+    const completedSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: false });
+    if (!completedSummary?.filePath || !onOpenFileInViewer) return null;
+    const targetFilePath = completedSummary.filePath;
+    return (event: React.MouseEvent) => {
+      event.stopPropagation();
+      onOpenFileInViewer(targetFilePath);
+    };
+  }, [toolCall.name, toolCall.args, onOpenFileInViewer]);
+
   const headerLabelContent = useMemo(() => {
     const activeSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: true });
     const completedSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: false });
+
+    const subjectElement = (summary: { subject: string; filePath?: string }) => {
+      if (summary.filePath && handleSubjectClick) {
+        return (
+          <span
+            className={`${styles['tool-calls-toggle-subject']} ${styles['tool-calls-toggle-subject-clickable']}`}
+            onClick={handleSubjectClick}
+            role="link"
+            tabIndex={0}
+          >
+            {summary.subject}
+          </span>
+        );
+      }
+      return <span className={styles['tool-calls-toggle-subject']}>{summary.subject}</span>;
+    };
 
     if (isBlockActive) {
       const durationSuffix = liveToolElapsedSeconds > 0
@@ -118,7 +146,7 @@ export default function ToolCallsBlockComponent({
         : "\u2026";
 
       if (activeSummary) {
-        return <>{activeSummary.verb} <span className={styles['tool-calls-toggle-subject']}>{activeSummary.subject}</span>{durationSuffix}</>;
+        return <>{activeSummary.verb} {subjectElement(activeSummary)}{durationSuffix}</>;
       }
       return <>Calling {toolDisplayName}{durationSuffix}</>;
     }
@@ -133,10 +161,10 @@ export default function ToolCallsBlockComponent({
       : "";
 
     if (completedSummary) {
-      return <>{completedSummary.verb} <span className={styles['tool-calls-toggle-subject']}>{completedSummary.subject}</span>{durationLabel}</>;
+      return <>{completedSummary.verb} {subjectElement(completedSummary)}{durationLabel}</>;
     }
     return <>{toolDisplayName}{durationLabel}</>;
-  }, [isBlockActive, liveToolElapsedSeconds, toolDisplayName, effectiveDurationMs, toolCall.name, toolCall.args]);
+  }, [isBlockActive, liveToolElapsedSeconds, toolDisplayName, effectiveDurationMs, toolCall.name, toolCall.args, handleSubjectClick]);
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(!isBlockActive);
   const wasHeaderManuallyExpanded = useRef(false);

@@ -107,6 +107,18 @@
   & .tool-calls-toggle-subject {
     font-weight: 600;
   }
+
+  & .tool-calls-toggle-subject-clickable {
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: oklch(0 0 0 / 0);
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.2s;
+
+    &:hover {
+      text-decoration-color: currentColor;
+    }
+  }
 }
 
 /* ── Chevron rotation ── */
