@@ -7,6 +7,7 @@
 // ============================================================
 
 import { MESSAGE_ROLES, EXECUTION_STATUS } from "../constants";
+import type { ToolDisplayMetadata } from "@rodrigo-barraza/utilities-library";
 
 // --- Identifiers --------------------------------------------
 
@@ -1225,13 +1226,7 @@ export interface ToolSchema {
     description?: string;
     parameters?: JsonSchemaObject;
   };
-  display?: {
-    activeVerb: string;
-    completedVerb: string;
-    subjectParam: string;
-    subjectFormat: "basename" | "full" | "truncate" | "quoted" | "domain";
-    filePathParam?: string;
-  };
+  display?: ToolDisplayMetadata;
 }
 
 // --- Benchmark Presets --------------------------------------
