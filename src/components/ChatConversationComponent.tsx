@@ -633,6 +633,24 @@ export default function ChatConversationComponent({
     return initialViewMode === "raw";
   });
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
+  const toolDisplayMetadataMap = useMemo(() => {
+    const map: Record<
+      string,
+      {
+        activeVerb: string;
+        completedVerb: string;
+        subjectParam: string;
+        subjectFormat: "basename" | "full" | "truncate" | "quoted" | "domain";
+        filePathParam?: string;
+      }
+    > = {};
+    for (const tool of builtInTools || []) {
+      if (tool.display) {
+        map[tool.name] = tool.display;
+      }
+    }
+    return map;
+  }, [builtInTools]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [_injectedSkills, setInjectedSkills] = useState<Skill[]>([]);
   const [rules, setRules] = useState<Rule[]>([]);
@@ -8015,6 +8033,7 @@ export default function ChatConversationComponent({
                     )?.content
                   : undefined
               }
+              toolDisplayMetadataMap={toolDisplayMetadataMap}
             />
           )}
         </div>
@@ -8105,6 +8124,7 @@ export default function ChatConversationComponent({
               console.error,
             );
           }}
+          toolDisplayMetadataMap={toolDisplayMetadataMap}
         />
 
         {/* Pending approval cards */}

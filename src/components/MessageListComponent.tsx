@@ -678,6 +678,7 @@ export interface MessageListProps {
   onDocClick?: (url: string) => void;
   onMentionFileOpen?: (path: string) => void;
   onOpenFileInViewer?: (absolutePath: string) => void;
+  toolDisplayMetadataMap?: Record<string, any> | null;
 }
 
 /**
@@ -709,6 +710,7 @@ export default function MessageList({
   onDocClick,
   onMentionFileOpen,
   onOpenFileInViewer,
+  toolDisplayMetadataMap,
 }: MessageListProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [localLightboxSourceUrl, setLocalLightboxSourceUrl] = useState<string | null>(null);
@@ -1463,6 +1465,7 @@ export default function MessageList({
                                         toolCall={singleToolCall}
                                         subAgentToolActivity={subAgentToolActivity}
                                         onOpenFileInViewer={onOpenFileInViewer}
+                                        toolDisplayMetadataMap={toolDisplayMetadataMap}
                                       />
                                     ))}
                                   {groupMessage.images && groupMessage.images.length > 0 && (
@@ -1756,6 +1759,7 @@ export default function MessageList({
                                   subAgentToolActivity={subAgentToolActivity}
                                   isAutoCollapsed={opts.isAutoCollapsed}
                                   onOpenFileInViewer={onOpenFileInViewer}
+                                  toolDisplayMetadataMap={toolDisplayMetadataMap}
                                 />
                               ));
                             }
@@ -2000,6 +2004,7 @@ export default function MessageList({
                                 streamingOutputs={streamingOutputs}
                                 subAgentToolActivity={subAgentToolActivity}
                                 onOpenFileInViewer={onOpenFileInViewer}
+                                toolDisplayMetadataMap={toolDisplayMetadataMap}
                               />
                             ))}
 

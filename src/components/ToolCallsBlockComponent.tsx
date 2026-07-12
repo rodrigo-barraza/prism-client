@@ -4,7 +4,7 @@ import { resolveToolEmoji, isEmojiImageUrl } from "./WorkflowNodeConstantsCompon
 import { ToolResultView } from "./ToolResultRenderers";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 
-import { renderToolName, resolveToolDisplaySummary } from "@rodrigo-barraza/utilities-library";
+import { renderToolName, resolveToolDisplaySummary, type ToolDisplayMetadata } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { ToolCallEvent } from "../types/types";
 import type { SubAgentToolActivityItem } from "./MessageListComponent";
@@ -17,6 +17,7 @@ interface ToolCallsBlockProps {
   subAgentToolActivity?: Record<string, SubAgentToolActivityItem> | null;
   isAutoCollapsed?: boolean;
   onOpenFileInViewer?: (absolutePath: string) => void;
+  toolDisplayMetadataMap?: Record<string, ToolDisplayMetadata> | null;
 }
 
 export const VISUAL_TOOL_NAMES = new Set([
@@ -42,6 +43,7 @@ export default function ToolCallsBlockComponent({
   subAgentToolActivity,
   isAutoCollapsed,
   onOpenFileInViewer,
+  toolDisplayMetadataMap,
 }: ToolCallsBlockProps) {
   const isCurrentlyCalling = toolCall.status === "calling" || toolCall.status === "streaming";
   const hasActiveSubAgents = detectActiveSubAgents(toolCall, subAgentToolActivity);
@@ -110,19 +112,21 @@ export default function ToolCallsBlockComponent({
     ? (capturedSubAgentDurationMs ?? persistedSubAgentDurationMs ?? toolCall.durationMs)
     : toolCall.durationMs;
 
+  const displayMetadata = toolDisplayMetadataMap?.[toolCall.name];
+
   const handleSubjectClick = useMemo(() => {
-    const completedSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: false });
+    const completedSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: false, display: displayMetadata });
     if (!completedSummary?.filePath || !onOpenFileInViewer) return null;
     const targetFilePath = completedSummary.filePath;
     return (event: React.MouseEvent) => {
       event.stopPropagation();
       onOpenFileInViewer(targetFilePath);
     };
-  }, [toolCall.name, toolCall.args, onOpenFileInViewer]);
+  }, [toolCall.name, toolCall.args, onOpenFileInViewer, displayMetadata]);
 
   const headerLabelContent = useMemo(() => {
-    const activeSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: true });
-    const completedSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: false });
+    const activeSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: true, display: displayMetadata });
+    const completedSummary = resolveToolDisplaySummary(toolCall.name, toolCall.args, { isActive: false, display: displayMetadata });
 
     const subjectElement = (summary: { subject: string; filePath?: string }) => {
       if (summary.filePath && handleSubjectClick) {
