@@ -1898,15 +1898,8 @@ export default function SettingsPageComponent() {
                                     </button>
                                   </div>
                                   <span className={styles["step-hint"]}>
-                                    Edit{" "}
-                                    <code className={styles["inline-code"]}>
-                                      .env
-                                    </code>{" "}
-                                    and set your{" "}
-                                    <code className={styles["inline-code"]}>
-                                      WORKSPACE_SERVICE_SECRET
-                                    </code>{" "}
-                                    to match your tools-service agent secret.
+                                    The host authentication secret is configured
+                                    above in the Host Authentication section.
                                   </span>
                                 </div>
                               </div>
@@ -2060,24 +2053,6 @@ export default function SettingsPageComponent() {
                                     )
                                   </span>
                                 </div>
-                                <div
-                                  className={
-                                    styles["environment-layout-row"]
-                                  }
-                                >
-                                  <code
-                                    className={styles["environment-key"]}
-                                  >
-                                    WORKSPACE_SERVICE_SECRET
-                                  </code>
-                                  <span
-                                    className={
-                                      styles["environment-description"]
-                                    }
-                                  >
-                                    Must match your tools-service agent secret
-                                  </span>
-                                </div>
                               </div>
                             </div>
                           )}
@@ -2171,15 +2146,13 @@ export default function SettingsPageComponent() {
                                       {getWorkspacePathExample(
                                         selectedPlatform,
                                       )}
-                                      {"\n"}
-                                      WORKSPACE_SERVICE_SECRET=your-agent-secret
                                     </code>
                                     <button
                                       className={styles["copy-button"]}
                                       title="Copy"
                                       onClick={() => {
                                         navigator.clipboard.writeText(
-                                          `WORKSPACE_BACKEND=ws://192.168.86.2:5590\nWORKSPACE_ROOTS=${getWorkspacePathExample(selectedPlatform)}\nWORKSPACE_SERVICE_SECRET=your-agent-secret`,
+                                          `WORKSPACE_BACKEND=ws://192.168.86.2:5590\nWORKSPACE_ROOTS=${getWorkspacePathExample(selectedPlatform)}`,
                                         );
                                         setCopiedBlock("local-2b");
                                         setTimeout(
