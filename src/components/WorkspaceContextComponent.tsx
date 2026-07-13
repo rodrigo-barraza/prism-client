@@ -27,7 +27,7 @@ const WorkspaceContext = createContext<WorkspaceContextType>({
 /**
  * WorkspaceProvider — manages workspace selection state.
  *
- * Workspaces are config-defined filesystem paths (from tools-api WORKSPACE_ROOTS).
+ * Workspaces are filesystem paths served dynamically by workspace agents.
  * The selected workspace root is stored in localStorage and sent to Prism
  * via the x-workspace-root header (see serviceHeaders.js).
  */
