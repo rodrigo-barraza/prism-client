@@ -977,11 +977,12 @@ export default function SettingsPageComponent() {
                     </div>
                   </div>
 
-                  {/* Roots served by this agent */}
+                  {/* Roots served by this agent — only shown when the agent
+                     provides explicit displayRoots (non-Docker environments).
+                     Docker containers register virtual root "/" with no
+                     displayRoots, so nothing renders here. */}
                   {(() => {
-                    const displayableRoots = agent.displayRoots && agent.displayRoots.length > 0
-                      ? agent.displayRoots
-                      : agent.roots;
+                    const displayableRoots = agent.displayRoots;
                     if (!displayableRoots || displayableRoots.length === 0) return null;
                     return (
                       <div className={styles["machine-roots"]}>
