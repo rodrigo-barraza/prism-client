@@ -792,6 +792,10 @@ export interface TransformedRequestItem {
   topK?: number;
   frequencyPenalty?: number;
   presencePenalty?: number;
+  /** Backend-reconstructed display-ready chat preview (GET /requests/:id only) */
+  displayMessages?: Message[];
+  /** Backend-extracted system prompt accompanying displayMessages */
+  displaySystemPrompt?: string;
   [key: string]: unknown;
 }
 

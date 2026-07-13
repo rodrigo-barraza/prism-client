@@ -1,12 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 
-vi.mock("@rodrigo-barraza/components-library", () => ({
-  CopyButtonComponent: () => null,
-  IconButtonComponent: () => null,
-}));
-
 import type { Message, AgentConversation } from "../../types/types";
-import { prepareDisplayMessages } from "../../components/MessageListComponent";
+import { resolveDisplayMessages } from "../messageHelpers.js";
 
 describe("Post-Stream Refresh Guard", () => {
   it("should retry if the database has fewer messages, but ultimately skip updating to prevent disappearing messages", async () => {
@@ -37,7 +32,7 @@ describe("Post-Stream Refresh Guard", () => {
     const attemptPostStreamRefresh = async (attempt = 1): Promise<void> => {
       const full = await mockGetAgentSession();
       if (full && full.messages) {
-        const displayMessages = prepareDisplayMessages(full.messages);
+        const displayMessages = resolveDisplayMessages(full);
         const currentCount = messagesRef.current.length;
 
         if (displayMessages.length < currentCount) {
@@ -117,7 +112,7 @@ describe("Post-Stream Refresh Guard", () => {
     const attemptPostStreamRefresh = async (attempt = 1): Promise<void> => {
       const full = await mockGetAgentSession();
       if (full && full.messages) {
-        const displayMessages = prepareDisplayMessages(full.messages);
+        const displayMessages = resolveDisplayMessages(full);
         const currentCount = messagesRef.current.length;
 
         if (displayMessages.length < currentCount) {
@@ -198,7 +193,7 @@ describe("Post-Stream Refresh Guard", () => {
     const attemptPostStreamRefresh = async (attempt = 1): Promise<void> => {
       const full = await mockGetAgentSession();
       if (full && full.messages) {
-        const displayMessages = prepareDisplayMessages(full.messages);
+        const displayMessages = resolveDisplayMessages(full);
         const currentCount = messagesRef.current.length;
 
         if (displayMessages.length < currentCount) {

@@ -11,9 +11,7 @@ import { formatNumber, formatLatency, formatTokensPerSec } from "@rodrigo-barraz
 import BadgeComponent from "../components/BadgeComponent";
 import ModalityIconComponent from "../components/ModalityIconComponent";
 import ToolIconComponent from "../components/ToolIconComponent";
-import { prepareDisplayMessages } from "../components/MessageListComponent";
-import { MESSAGE_ROLES } from "../constants";
-import type { TransformedRequestItem, Message, JsonValue } from "../types/types";
+import type { TransformedRequestItem, JsonValue } from "../types/types";
 import type { DrawerSection } from "../components/RequestDetailsComponent";
 
 export interface TransformedMediaAsset {
@@ -436,86 +434,23 @@ export function buildRequestDetailSections(
 
 /* -- Chat message reconstruction --------------------------------- */
 
-interface CanonicalResponsePayload {
-  text?: string;
-  thinking?: string;
-  toolCalls?: Array<{
-    name: string;
-    id: string;
-    args?: Record<string, unknown>;
-    result?: unknown;
-    status?: string;
-  }>;
-  images?: string[];
-}
-
 /**
- * Reconstruct a displayable chat message array from the canonical
- * request/response payloads stored in a request log document.
+ * Resolve the displayable chat preview for a request-log document.
  *
- * The backend's RequestLogger normalizes all provider responses into a
- * canonical `{ text, thinking, toolCalls, images }` shape before persisting,
- * so no multi-provider format detection is needed here.
+ * The backend reconstructs the preview server-side (GET /requests/:id →
+ * `displayMessages` + `displaySystemPrompt`, see
+ * reconstructRequestDisplayMessages in prism-service) — provider tool-call
+ * normalization no longer lives in the client. List rows exclude the raw
+ * payloads, so there is nothing to render until the detail fetch lands.
  *
  * Returns `{ messages, systemPrompt }` or `null` if there's nothing to display.
  */
 export function reconstructChatMessages(
   selectedRequest: TransformedRequestItem | null | undefined,
 ) {
-  if (!selectedRequest) return null;
-
-  const requestPayload = selectedRequest.requestPayload as
-    | { messages?: Message[] }
-    | undefined;
-  const responsePayload = selectedRequest.responsePayload as
-    | CanonicalResponsePayload
-    | undefined;
-
-  if (!requestPayload?.messages?.length) return null;
-
-  const chatMessages = [...requestPayload.messages];
-
-  if (responsePayload) {
-    const assistantMessage: Message = {
-      role: MESSAGE_ROLES.ASSISTANT,
-      content: responsePayload.text || "",
-      model: selectedRequest.model,
-      provider: selectedRequest.provider,
-    };
-
-    if (responsePayload.thinking) {
-      assistantMessage.thinking = responsePayload.thinking;
-    }
-
-    if (Array.isArray(responsePayload.toolCalls) && responsePayload.toolCalls.length) {
-      assistantMessage.toolCalls = responsePayload.toolCalls.map((toolCall) => ({
-        id: toolCall.id,
-        name: toolCall.name,
-        args: toolCall.args || {},
-        result: toolCall.result,
-        status: toolCall.status,
-      }));
-    }
-
-    if (Array.isArray(responsePayload.images) && responsePayload.images.length) {
-      assistantMessage.images = responsePayload.images;
-    }
-
-    const hasDisplayableContent =
-      assistantMessage.content ||
-      assistantMessage.toolCalls?.length ||
-      assistantMessage.images?.length;
-
-    if (hasDisplayableContent) {
-      chatMessages.push(assistantMessage);
-    }
-  }
-
-  const messages = prepareDisplayMessages(chatMessages);
-  const systemPrompt = chatMessages.find(
-    (message: Message) => message.role === "system",
-  )?.content;
-  if (!messages.length) return null;
-
-  return { messages, systemPrompt };
+  if (!selectedRequest?.displayMessages?.length) return null;
+  return {
+    messages: selectedRequest.displayMessages,
+    systemPrompt: selectedRequest.displaySystemPrompt,
+  };
 }

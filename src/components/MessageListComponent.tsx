@@ -383,15 +383,6 @@ function ThinkingBlock({
   );
 }
 
-/**
- * Prepare messages for display — filters out tool/system messages
- * and merges tool results into the preceding assistant's toolCalls.
- * Soft-deleted messages are always included (with their `deleted` flag)
- * so they render in-place as ghostly apparitions.
- * Use this in both /chat and /admin/chat for consistency.
- */
-export { prepareDisplayMessages } from "../utils/messageHelpers.ts";
-
 interface MediaPreviewProps {
   dataUrl: string;
   onClick?: () => void;
