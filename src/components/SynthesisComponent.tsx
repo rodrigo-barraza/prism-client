@@ -378,7 +378,11 @@ export default function SynthesisComponent() {
     [],
   );
 
-  // -- Generation logic (real back-and-forth /chat calls) ---------
+  // -- Generation logic (server-orchestrated turn loop) -----------
+  // The backend owns the synthesis loop (persona prompt, role-swapping,
+  // user-simulator model selection, persistence) — see
+  // SynthesisOrchestrationService in prism-service (audit H3). This client
+  // just renders the role-tagged SSE stream.
   const handleGenerate = useCallback(async () => {
     if (!settings.provider || !settings.model) return;
 
@@ -390,290 +394,108 @@ export default function SynthesisComponent() {
     const convId = generateUUID();
     setConversationId(convId);
 
-    // Start with seed messages as the conversation so far
-    const conversation = seedMessages
+    const seeds = seedMessages
       .filter((message: Message) => message.content && message.content.trim())
-      .map((message: Message) => ({ role: message.role, content: message.content }));
+      .map((message: Message) => ({
+        role: message.role,
+        content: message.content as string,
+      }));
 
+    // Local mirror of completed messages; the in-flight turn renders on top
+    let conversation: Message[] = seeds.map(
+      (message) => ({ ...message }) as Message,
+    );
     setGeneratedMessages([...conversation]);
 
-    // If we have seed messages, append them to the conversation first
-    if (conversation.length > 0) {
-      try {
-        await PrismService.appendMessages(convId, conversation, undefined, {
-          title: `Synthesis: ${systemPrompt.slice(0, 60)}`,
-          systemPrompt: systemPrompt.trim(),
-          synthetic: true,
-          settings: {
-            provider: settings.provider,
-            model: settings.model,
-            temperature: settings.temperature,
-          },
-        });
-      } catch {
-        // Non-critical — conversation just won't have seed messages persisted
-      }
-    }
+    let currentRole: string = MESSAGE_ROLES.USER;
+    let currentContent = "";
+    let currentThinking = "";
 
-    // Conversation metadata for Prism persistence — only used the FIRST
-    // time we need to create the conversation record in the backend.
-    const convMeta = {
-      title: `Synthesis: ${systemPrompt.slice(0, 60)}`,
-      systemPrompt: systemPrompt.trim(),
-      synthetic: true,
-      settings: {
-        provider: settings.provider,
-        model: settings.model,
-        temperature: settings.temperature,
-      },
+    const renderStreamingTurn = () => {
+      setGeneratedMessages([
+        ...conversation,
+        {
+          role: currentRole,
+          content: currentContent,
+          thinking: currentThinking || undefined,
+          _streaming: true,
+        } as Message,
+      ]);
     };
 
-    // Track whether the conversation record has been created in the backend.
-    // If seed messages were appended above, it's already created.
-    let conversationCreated = conversation.length > 0;
-
-    // targetTurns = total user/assistant pairs; each turn = 2 messages
-    const totalMessages = Number(targetTurns) * 2;
-    const remaining = totalMessages - conversation.length;
-
-    // Figure out what role the next message should be
-    let nextRole =
-      conversation.length === 0
-        ? "user"
-        : conversation[conversation.length - 1].role === "user"
-          ? "assistant"
-          : "user";
-
     try {
-      for (let i = 0; i < remaining; i++) {
-        if (abortedRef.current) break;
-
-        if (nextRole === "assistant") {
-          // --- ASSISTANT TURN: genuine model response -----------
-          const turnMeta = conversationCreated ? undefined : convMeta;
-          let turnThinking = "";
-
-          const assistantContent = await streamTurn(
-            settings,
-            systemPrompt.trim(),
-            conversation,
-            (partial: string) => {
-              setGeneratedMessages([
-                ...conversation,
-                {
-                  role: MESSAGE_ROLES.ASSISTANT,
-                  content: partial,
-                  thinking: turnThinking || undefined,
-                  _streaming: true,
-                },
-              ]);
-              setGenerationProgress(partial);
-            },
-            abortRef,
-            convId,
-            turnMeta,
-            {
-              onThinking: (chunk: string) => {
-                turnThinking += chunk;
-                setGeneratedMessages([
-                  ...conversation,
-                  {
-                    role: MESSAGE_ROLES.ASSISTANT,
-                    content: "",
-                    thinking: turnThinking,
-                    _streaming: true,
-                  },
-                ]);
-              },
-            },
-          );
-          conversationCreated = true;
-
-          if (abortedRef.current) break;
-
-          conversation.push({
-            role: MESSAGE_ROLES.ASSISTANT,
-            content: assistantContent,
-            thinking: turnThinking || undefined,
-          } as Message);
-          setGeneratedMessages([...conversation]);
-          setGenerationProgress("");
-          nextRole = "user";
-        } else {
-          // --- USER TURN: simulated user message ---------------
-          const userSystemPrompt = buildUserSimulationPrompt(userPersona);
-
-          // Role-swap the conversation so the user-simulator model sees the
-          // assistant's messages as "user" prompts and vice versa.
-          // IMPORTANT: Many local models (Gemma, Llama, etc.) have strict
-          // Jinja chat templates that require messages to alternate
-          // user → assistant → user, with the first non-system message being
-          // "user".  After role-swapping, the history may start with
-          // "assistant" (when the real conversation started with a user msg).
-          // We fix this by ensuring the first message is always role "user".
-          let simulatorHistory: Message[];
-          if (conversation.length > 0) {
-            const swapped = conversation.map((message: Message) => ({
-              role:
-                message.role === MESSAGE_ROLES.USER ? MESSAGE_ROLES.ASSISTANT : MESSAGE_ROLES.USER,
-              content: message.content,
-            }));
-            // If the swapped history starts with "assistant", prepend a
-            // contextual user message so the template stays happy.
-            if (swapped[0].role === MESSAGE_ROLES.ASSISTANT) {
-              swapped.unshift({
-                role: MESSAGE_ROLES.USER,
-                content:
-                  "Continue the conversation. Generate the next natural user message.",
-              });
-            }
-            simulatorHistory = swapped as Message[];
-          } else {
-            simulatorHistory = [
-              {
-                role: MESSAGE_ROLES.USER,
-                content:
-                  "Start the conversation. Send the first message as the user.",
-              },
-            ] as Message[];
-          }
-
-          // Use separate model for user simulation when enabled
-          const userTurnSettings =
-            useUserSimModel && userSimSettings.provider && userSimSettings.model
-              ? {
-                  ...settings,
-                  provider: userSimSettings.provider,
-                  model: userSimSettings.model,
-                  temperature: userSimSettings.temperature,
-                }
-              : settings;
-
-          const userContent = await streamTurn(
-            userTurnSettings,
-            userSystemPrompt,
-            simulatorHistory,
-            (partial: string) => {
-              setGeneratedMessages([
-                ...conversation,
-                { role: MESSAGE_ROLES.USER, content: partial, _streaming: true },
-              ]);
-              setGenerationProgress(partial);
-            },
-            abortRef,
-            undefined,
-            undefined,
-            { skipConversation: true },
-          );
-
-          if (abortedRef.current) break;
-
-          // Append the generated user message to the conversation in Prism
-          const userMessage = {
-            role: MESSAGE_ROLES.USER,
-            content: userContent as string,
-          };
-          conversation.push(userMessage);
-          try {
-            // Pass meta on the first call to create the conversation record
-            const appendMeta = conversationCreated ? undefined : convMeta;
-            await PrismService.appendMessages(
-              convId,
-              [userMessage],
-              undefined,
-              appendMeta,
-            );
-            conversationCreated = true;
-          } catch {
-            // Non-critical
-          }
-          setGeneratedMessages([...conversation]);
-          setGenerationProgress("");
-          nextRole = "assistant";
-        }
-      }
-
-      // Ensure conversation ends with assistant
-      if (
-        !abortedRef.current &&
-        conversation.length > 0 &&
-        conversation[conversation.length - 1].role !== "assistant"
-      ) {
-        let finalThinking = "";
-        const assistantContent = await streamTurn(
-          settings,
-          systemPrompt.trim(),
-          conversation,
-          (partial: string) => {
-            setGeneratedMessages([
-              ...conversation,
-              {
-                role: MESSAGE_ROLES.ASSISTANT,
-                content: partial,
-                thinking: finalThinking || undefined,
-                _streaming: true,
-              },
-            ]);
-            setGenerationProgress(partial);
-          },
-          abortRef,
-          convId,
-          undefined,
+      await new Promise<void>((resolve, reject) => {
+        const cancel = PrismService.streamSynthesis(
           {
-            onThinking: (chunk: string) => {
-              finalThinking += chunk;
-              setGeneratedMessages([
-                ...conversation,
-                {
-                  role: MESSAGE_ROLES.ASSISTANT,
-                  content: "",
-                  thinking: finalThinking,
-                  _streaming: true,
-                },
-              ]);
-            },
-          },
-        );
-
-        if (!abortedRef.current) {
-          conversation.push({
-            role: MESSAGE_ROLES.ASSISTANT,
-            content: assistantContent,
-            thinking: finalThinking || undefined,
-          } as Message);
-          setGeneratedMessages([...conversation]);
-        }
-      }
-
-      if (!abortedRef.current) {
-        setLeftTab("output");
-
-        // Save the synthesis run to the dedicated collection
-        const synthesisRunId = generateUUID();
-        try {
-          await PrismService.createSynthesisRun({
-            id: synthesisRunId,
+            conversationId: convId,
             title: `Synthesis: ${systemPrompt.slice(0, 60)}`,
             systemPrompt,
-
             userPersona,
             category,
             targetTurns: Number(targetTurns),
-            seedMessages: seedMessages.filter(
-              (message: Message) => message.content && message.content.trim(),
-            ),
+            seedMessages: seeds,
             settings: {
               provider: settings.provider,
               model: settings.model,
               temperature: settings.temperature,
+              maxTokens: settings.maxTokens,
+              thinkingEnabled: settings.thinkingEnabled,
+              reasoningEffort: settings.reasoningEffort,
+              thinkingLevel: settings.thinkingLevel,
+              thinkingBudget: settings.thinkingBudget,
             },
-            conversationId: convId,
-          });
-          setActiveHistoryId(synthesisRunId);
-        } catch (error: unknown | Error) {
-          console.error("Failed to save synthesis run:", error);
-        }
+            // Use separate model for user simulation when enabled
+            userSimSettings:
+              useUserSimModel &&
+              userSimSettings.provider &&
+              userSimSettings.model
+                ? {
+                    provider: userSimSettings.provider,
+                    model: userSimSettings.model,
+                    temperature: userSimSettings.temperature,
+                  }
+                : undefined,
+          },
+          {
+            onTurnStart: (role: string) => {
+              currentRole = role;
+              currentContent = "";
+              currentThinking = "";
+              renderStreamingTurn();
+            },
+            onChunk: (content: string) => {
+              currentContent += content;
+              renderStreamingTurn();
+              setGenerationProgress(currentContent);
+            },
+            onThinking: (chunk: string) => {
+              currentThinking += chunk;
+              renderStreamingTurn();
+            },
+            onTurnComplete: (message: Message) => {
+              conversation = [...conversation, message];
+              setGeneratedMessages([...conversation]);
+              setGenerationProgress("");
+            },
+            onDone: (data) => {
+              if (data?.synthesisRunId) {
+                setActiveHistoryId(data.synthesisRunId);
+              }
+              resolve();
+            },
+            onError: (error: Error) => reject(error),
+          },
+        );
+        // Stopping must also settle this promise — an aborted fetch ends the
+        // stream without a done event.
+        abortRef.current = () => {
+          cancel();
+          resolve();
+        };
+      });
 
+      if (!abortedRef.current) {
+        setLeftTab("output");
         loadSynthesisHistory();
       }
     } catch (error: unknown) {
@@ -1228,123 +1050,4 @@ export default function SynthesisComponent() {
       </ThreePanelLayout>
     </main>
   );
-}
-
-// -- Helpers -----------------------------------------------------
-
-/**
- * Stream a single chat turn and return the collected text.
- * Each turn is a real /chat call — the model genuinely responds to the context.
- * When conversationId is provided, the messages are persisted to that conversation.
- */
-function streamTurn(
-  settings: {
-    provider: string;
-    model: string;
-    temperature?: number;
-    maxTokens?: number;
-    thinkingEnabled?: boolean;
-    reasoningEffort?: string;
-    thinkingLevel?: string;
-    thinkingBudget?: string | number;
-  },
-  turnSystemPrompt: string,
-  history: Message[],
-  onPartial: (partial: string) => void,
-  abortRef: React.MutableRefObject<(() => void) | null>,
-  conversationId?: string | null,
-  conversationMeta?: Record<string, unknown>,
-  {
-    skipConversation = false,
-    onThinking,
-  }: { skipConversation?: boolean; onThinking?: (chunk: string) => void } = {},
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let collected = "";
-
-    const payload = {
-      provider: settings.provider,
-      model: settings.model,
-      messages: [
-        { role: MESSAGE_ROLES.SYSTEM, content: turnSystemPrompt },
-        ...history,
-      ],
-      temperature: settings.temperature,
-      maxTokens: settings.maxTokens,
-    };
-
-    // Thinking / reasoning settings — respect the user's toggle
-    const thinkingOn =
-      settings.thinkingEnabled ?? settings.provider === "lm-studio";
-    if (thinkingOn) {
-      (payload as Record<string, unknown>).thinkingEnabled = true;
-      if (settings.reasoningEffort)
-        (payload as Record<string, unknown>).reasoningEffort =
-          settings.reasoningEffort;
-      if (settings.thinkingLevel)
-        (payload as Record<string, unknown>).thinkingLevel =
-          settings.thinkingLevel;
-      if (settings.thinkingBudget)
-        (payload as Record<string, unknown>).thinkingBudget =
-          settings.thinkingBudget;
-    } else {
-      (payload as Record<string, unknown>).thinkingEnabled = false;
-    }
-
-    // Skip conversation persistence entirely (used for user-simulation turns)
-    if (skipConversation) {
-      (payload as Record<string, unknown>).skipConversation = true;
-    } else if (conversationId) {
-      (payload as Record<string, unknown>).conversationId = conversationId;
-      if (conversationMeta)
-        (payload as Record<string, unknown>).conversationMeta =
-          conversationMeta;
-    }
-
-    const cancel = PrismService.streamText(payload, {
-      onChunk: (content: string) => {
-        collected += content;
-        onPartial(collected);
-      },
-      onThinking: onThinking || undefined,
-      onDone: () => resolve(collected),
-      onError: (error) => reject(error),
-    });
-
-    abortRef.current = cancel;
-  });
-}
-
-/**
- * Build the system prompt for the user-simulator model call.
- * Instructs the model to role-play as the user persona and
- * generate a single natural follow-up user message.
- */
-function buildUserSimulationPrompt(userPersona: string) {
-  let prompt = `You are simulating a human user in a conversation with an AI assistant. Your job is to generate the NEXT single message that this user would naturally say.
-
-`;
-
-  if (userPersona.trim()) {
-    prompt += `## Your Personality
-"""
-${userPersona}
-"""
-
-`;
-  } else {
-    prompt += `## Your Personality
-You are a casual, curious human chatting naturally. Ask follow-up questions, share reactions, and keep the conversation flowing organically.
-
-`;
-  }
-
-  prompt += `## Rules
-- Generate ONLY the next user message — nothing else.
-- Do NOT include quotes, labels, prefixes like "User:", or any meta-commentary.
-- Be natural and conversational — react to what the assistant said, ask follow-ups, or steer the topic.
-- Keep messages concise and human-like (1-3 sentences typically).
-- Do NOT repeat or rephrase previous messages.`;
-
-  return prompt;
 }

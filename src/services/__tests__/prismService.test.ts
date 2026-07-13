@@ -769,4 +769,92 @@ describe("PrismService", () => {
       cancel();
     });
   });
+
+  // Synthesis stream framing (audit H3 — server-orchestrated turn loop).
+  // The SSE protocol is produced by SynthesisOrchestrationService in
+  // prism-service; these tests pin the client-side event dispatch.
+  describe("Synthesis SSE dispatch", () => {
+    it("routes synthesis framing events to the new callbacks", () => {
+      const onSynthesisStart = vi.fn();
+      const onTurnStart = vi.fn();
+      const onTurnComplete = vi.fn();
+      const onChunk = vi.fn();
+      const onDone = vi.fn();
+      const callbacks = {
+        onSynthesisStart,
+        onTurnStart,
+        onTurnComplete,
+        onChunk,
+        onDone,
+      };
+
+      PrismService._dispatchSSE(
+        { type: "synthesis_start", conversationId: "conv-9" } as SSEData,
+        callbacks,
+      );
+      expect(onSynthesisStart).toHaveBeenCalledWith("conv-9");
+
+      PrismService._dispatchSSE(
+        { type: "turn_start", role: MESSAGE_ROLES.USER, index: 0 } as SSEData,
+        callbacks,
+      );
+      expect(onTurnStart).toHaveBeenCalledWith(MESSAGE_ROLES.USER, 0);
+
+      PrismService._dispatchSSE(
+        { type: "chunk", content: "hi" } as SSEData,
+        callbacks,
+      );
+      expect(onChunk).toHaveBeenCalledWith("hi", undefined, undefined);
+
+      PrismService._dispatchSSE(
+        {
+          type: "turn_complete",
+          role: MESSAGE_ROLES.USER,
+          message: { role: MESSAGE_ROLES.USER, content: "hi" },
+        } as unknown as SSEData,
+        callbacks,
+      );
+      expect(onTurnComplete).toHaveBeenCalledWith(
+        { role: MESSAGE_ROLES.USER, content: "hi" },
+        MESSAGE_ROLES.USER,
+      );
+
+      PrismService._dispatchSSE(
+        {
+          type: "done",
+          conversationId: "conv-9",
+          synthesisRunId: "run-1",
+        } as SSEData,
+        callbacks,
+      );
+      expect(onDone).toHaveBeenCalledWith(
+        expect.objectContaining({ synthesisRunId: "run-1" }),
+      );
+    });
+
+    it("streamSynthesis POSTs to /synthesis/generate", async () => {
+      fetchResult = {
+        ok: true,
+        body: {
+          getReader: () => ({
+            read: async () => ({ done: true, value: undefined }),
+          }),
+        },
+      };
+      const cancel = PrismService.streamSynthesis(
+        {
+          systemPrompt: "sys",
+          targetTurns: 1,
+          seedMessages: [],
+          settings: { provider: "openai", model: "gpt-test" },
+        },
+        {},
+      );
+      // Allow the async stream body to run
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(lastUrl).toContain("/synthesis/generate");
+      expect(lastOptions?.method).toBe("POST");
+      cancel();
+    });
+  });
 });

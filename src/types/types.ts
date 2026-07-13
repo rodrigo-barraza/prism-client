@@ -702,6 +702,12 @@ export interface TransformedSSEData {
   outputTokens?: number;
   estimatedCost?: number;
   message?: string;
+  /** Synthesis stream: role owning the current turn (turn_start/turn_complete) */
+  role?: string;
+  /** Synthesis stream: message index of the turn being generated */
+  index?: number;
+  /** Synthesis stream: id of the persisted run document (done event) */
+  synthesisRunId?: string;
   conversationId?: string;
   event?: string;
   tool?: {
@@ -835,6 +841,12 @@ export interface SSECallbacks {
   onUsageUpdate?: (event: SSEData) => void;
   onContextBudget?: (event: SSEData) => void;
   onStatus?: (event: SSEData) => void;
+  /** Synthesis stream (/synthesis/generate): run started, conversation allocated */
+  onSynthesisStart?: (conversationId: string) => void;
+  /** Synthesis stream: a user/assistant turn begins — subsequent chunk/thinking events belong to it */
+  onTurnStart?: (role: string, index: number) => void;
+  /** Synthesis stream: turn finished with its canonical message */
+  onTurnComplete?: (message: Message, role: string) => void;
   onDone?: (event: SSEData) => void;
   onError?: (error: Error) => void;
 }

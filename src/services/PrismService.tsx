@@ -1368,6 +1368,9 @@ export default class PrismService {
       onUsageUpdate,
       onContextBudget,
       onStatus,
+      onSynthesisStart,
+      onTurnStart,
+      onTurnComplete,
       onDone,
       onError,
     } = callbacks;
@@ -1477,6 +1480,17 @@ export default class PrismService {
       case SERVER_SENT_EVENT_TYPES.STATUS:
         onStatus?.(data);
         break;
+      // Synthesis-stream framing events (/synthesis/generate — see
+      // SynthesisOrchestrationService in prism-service for the protocol)
+      case "synthesis_start":
+        onSynthesisStart?.(data.conversationId as string);
+        break;
+      case "turn_start":
+        onTurnStart?.(data.role as string, data.index as number);
+        break;
+      case "turn_complete":
+        onTurnComplete?.(data.message as unknown as Message, data.role as string);
+        break;
       case SERVER_SENT_EVENT_TYPES.DONE:
         onDone?.(data);
         break;
@@ -1495,6 +1509,48 @@ export default class PrismService {
    */
   static streamText(payload: ChatPayload, callbacks: SSECallbacks): () => void {
     return PrismService._streamSSE("/chat", { body: payload }, callbacks);
+  }
+
+  /**
+   * Stream a full server-orchestrated synthesis run via SSE.
+   * The backend owns the turn loop (persona prompt, role-swapping, model
+   * selection, persistence — see SynthesisOrchestrationService); the client
+   * consumes role-tagged framing events: onSynthesisStart → (onTurnStart →
+   * onChunk/onThinking → onTurnComplete)* → onDone.
+   */
+  static streamSynthesis(
+    payload: {
+      conversationId?: string;
+      title?: string;
+      systemPrompt: string;
+      userPersona?: string;
+      category?: string;
+      targetTurns: number;
+      seedMessages: Array<{ role: string; content: string }>;
+      settings: {
+        provider: string;
+        model: string;
+        temperature?: number;
+        maxTokens?: number;
+        thinkingEnabled?: boolean;
+        reasoningEffort?: string;
+        thinkingLevel?: string;
+        thinkingBudget?: string | number;
+      };
+      userSimSettings?: {
+        provider: string;
+        model: string;
+        temperature?: number;
+      } | null;
+      saveRun?: boolean;
+    },
+    callbacks: SSECallbacks,
+  ): () => void {
+    return PrismService._streamSSE(
+      "/synthesis/generate",
+      { body: payload },
+      callbacks,
+    );
   }
 
   /**
