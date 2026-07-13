@@ -472,6 +472,8 @@ export interface Conversation {
   agentIndex?: number | null;
   /** Backend-serialized display-ready messages (tool results merged, empty stubs filtered) */
   displayMessages?: Message[];
+  /** Backend-computed canonical activity state — use for snapshot data only; live surfaces re-derive from SSE-patched fields */
+  state?: import("../utils/agentConversationStates").AgentConversationState;
 }
 
 export interface ConversationListResponse {

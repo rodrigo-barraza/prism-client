@@ -45,6 +45,7 @@ import { PROVIDER_COLORS, BYTES_IN_KIB, KIB_IN_MIB, MIB_IN_GIB, MESSAGE_ROLES, C
 import {
   deriveAgentConversationState,
   AGENT_CONVERSATION_STATE_COLORS,
+  type AgentConversationState,
 } from "./agentConversationStates";
 import styles from "../components/TableComponentsComponent.module.css";
 import type { TokenUsage } from "../types/types";
@@ -67,6 +68,8 @@ export interface TableRow {
   pendingBackgroundTasks?: number;
   hasSubAgents?: boolean;
   requestErrorCount?: number;
+  /** Server-computed canonical activity state (snapshot endpoints) */
+  state?: AgentConversationState;
   modalities?: Record<string, boolean | number> | null;
   toolDisplayNames?: string[];
   toolApiNames?: string[];
@@ -690,6 +693,7 @@ export const activeStatusColumn = () => ({
   width: "32px",
   render: (conversation: TableRow) => {
     const conversationState = deriveAgentConversationState({
+      state: conversation.state,
       isActive: conversation.isActive,
       isGenerating: conversation.isGenerating,
       pendingBackgroundTasks: conversation.pendingBackgroundTasks,

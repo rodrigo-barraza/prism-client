@@ -49,24 +49,36 @@ export interface ConversationStateColors {
  * Evaluates in priority order: generating → orchestrating →
  * done → error → sub-agents → background-tasks → active.
  *
+ * When the server already computed `state` (mirrored ladder in
+ * prism-service/src/services/conversation/utils.ts — keep the two in sync),
+ * pass it through and it wins. Only do this for SNAPSHOT data fetched from
+ * the API (e.g. the admin table). LIVE surfaces (HistoryItemComponent) must
+ * keep deriving from SSE-patched props — a server snapshot goes stale there.
+ *
  * isGenerating takes priority over isActive === false because the client-side
  * SSE streaming state is always more authoritative than the persisted isActive
  * flag, which may be stale during the window between handleSend() and the
  * backend's markGenerating(true) propagating via change stream.
  */
 export function deriveAgentConversationState({
+  state,
   isActive,
   isGenerating,
   pendingBackgroundTasks,
   hasSubAgents,
   requestErrorCount,
 }: {
+  /** Server-computed state — returned as-is when present */
+  state?: AgentConversationState;
   isActive?: boolean;
   isGenerating?: boolean;
   pendingBackgroundTasks?: number;
   hasSubAgents?: boolean;
   requestErrorCount?: number;
 }): AgentConversationState {
+  if (state) {
+    return state;
+  }
   if (isGenerating) {
     return hasSubAgents ? "orchestrating" : "generating";
   }
