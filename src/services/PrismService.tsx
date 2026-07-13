@@ -75,13 +75,18 @@ function getHeaders() {
 }
 
 /**
- * Resolve a file reference to a usable URL.
- * Points directly at the MinIO bucket URL for minio:// refs.
+ * Resolve a file reference to a usable URL — a pure minio://key → URL prefix
+ * swap (direct bucket URL when configured, else the backend /files proxy).
+ *
+ * Key repair lives server-side: FileService.normalizeKey (prism-service)
+ * scrubs the historical "::ffff:" artifact on reads, and served
+ * displayMessages arrive pre-cleaned. The scrub below remains ONLY as a
+ * fallback for historical refs that reach us outside those serializers
+ * (workflow nodes, tool-result JSON) when pointing directly at the bucket.
  */
 function resolveFileReference(fileReference: string): string {
   if (typeof fileReference === "string" && fileReference.startsWith("minio://")) {
-    let key = fileReference.replace("minio://", "");
-    key = key.replace(/::ffff:/g, "");
+    const key = fileReference.replace("minio://", "").replace(/::ffff:/g, "");
     const base = MINIO_URL || `${API_BASE}/files`;
     return `${base}/${key}`;
   }
