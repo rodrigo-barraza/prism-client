@@ -13,7 +13,7 @@ import {
   Workflow,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import WorkspaceService from "../services/WorkspaceService";
+import { useWorkspace } from "./WorkspaceContextComponent";
 import type { PrismSettings } from "../types/types";
 import { EVENT_NAME_PRISM_SETTINGS_UPDATED } from "../constants";
 import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
@@ -115,39 +115,42 @@ export default function SettingsSidebarNavigationComponent({
   const isUserScrollingActiveReference = useRef(true);
   const scrolledInitialSectionIdReference = useRef<string | null>(null);
 
-  useEffect(() => {
-    const loadWarnings = async () => {
-      try {
-        const [loadedSettings, workspaceList] = await Promise.all([
-          PrismService.getSettings(),
-          WorkspaceService.list().catch(() => []),
-        ]);
-        const warnings = computeSectionWarnings(loadedSettings);
-        const hasConnectedWorkspace =
-          workspaceList &&
-          workspaceList.length > 0 &&
-          workspaceList.some((workspace) => workspace.isAgentServed);
+  const { workspaces } = useWorkspace();
+  const settingsReference = useRef<PrismSettings | null>(null);
 
-        if (!hasConnectedWorkspace) {
-          warnings["workspaces"] = 1;
-        }
-        setSectionWarnings(warnings);
-      } catch (error) {
-        console.error(error);
+  // Recompute section warnings reactively when settings or workspaces change.
+  // WorkspaceContext polls every 30s, so connect/disconnect events propagate
+  // to the indicator without a manual page refresh.
+  const recomputeSectionWarnings = useCallback(
+    (loadedSettings: PrismSettings, workspaceList: typeof workspaces) => {
+      const warnings = computeSectionWarnings(loadedSettings);
+      const hasConnectedWorkspace =
+        workspaceList &&
+        workspaceList.length > 0 &&
+        workspaceList.some((workspace) => workspace.isAgentServed);
+
+      if (!hasConnectedWorkspace) {
+        warnings["workspaces"] = 1;
       }
-    };
-    loadWarnings();
+      setSectionWarnings(warnings);
+    },
+    [],
+  );
+
+  // Fetch settings on mount and listen for settings updates
+  useEffect(() => {
+    PrismService.getSettings()
+      .then((loadedSettings) => {
+        settingsReference.current = loadedSettings;
+        recomputeSectionWarnings(loadedSettings, workspaces);
+      })
+      .catch(console.error);
 
     const handleSettingsUpdated = (event: Event) => {
       const customEvent = event as CustomEvent<PrismSettings>;
       if (customEvent.detail) {
-        setSectionWarnings((previousWarnings) => {
-          const warnings = computeSectionWarnings(customEvent.detail);
-          if (previousWarnings["workspaces"]) {
-            warnings["workspaces"] = previousWarnings["workspaces"];
-          }
-          return warnings;
-        });
+        settingsReference.current = customEvent.detail;
+        recomputeSectionWarnings(customEvent.detail, workspaces);
       }
     };
 
@@ -155,7 +158,13 @@ export default function SettingsSidebarNavigationComponent({
     return () => {
       window.removeEventListener(EVENT_NAME_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     };
-  }, []);
+  }, [workspaces, recomputeSectionWarnings]);
+
+  // Recompute when workspaces change (reactive via WorkspaceContext polling)
+  useEffect(() => {
+    if (!settingsReference.current) return;
+    recomputeSectionWarnings(settingsReference.current, workspaces);
+  }, [workspaces, recomputeSectionWarnings]);
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;

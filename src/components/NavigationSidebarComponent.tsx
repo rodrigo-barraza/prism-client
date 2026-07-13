@@ -11,7 +11,7 @@ import React, {
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import PrismService from "../services/PrismService";
-import WorkspaceService from "../services/WorkspaceService";
+import { useWorkspace } from "./WorkspaceContextComponent";
 import type { PrismSettings } from "../types/types";
 import {
   ShieldCheck,
@@ -96,6 +96,7 @@ export default function NavigationSidebarComponent({
     text: textCount,
   };
   const pathname = usePathname();
+  const { workspaces } = useWorkspace();
   const { data: userSession, status: authStatus } = useSession();
   const { theme, themes, setTheme } = useTheme();
   const customThemeMeta = useMemo(
@@ -146,71 +147,57 @@ export default function NavigationSidebarComponent({
     };
   }, []);
 
-  // Fetch settings to determine if action is needed on /settings
+  // Compute settings warning count reactively from settings + workspace context.
+  // The workspace context polls every 30s, so connect/disconnect events
+  // propagate to the indicator without a manual page refresh.
+  const settingsReference = useRef<PrismSettings | null>(null);
+
+  const recomputeWarnings = useCallback((loadedSettings: PrismSettings | null, workspaceList: typeof workspaces) => {
+    if (!loadedSettings) {
+      setSettingsWarningCount(0);
+      return;
+    }
+
+    const memoryConfig = loadedSettings.memory || {};
+    const creativeConfig = loadedSettings.creative || {};
+
+    let warningCount = 0;
+    if (!memoryConfig.extractionModel) warningCount++;
+    if (!memoryConfig.consolidationModel) warningCount++;
+    if (!memoryConfig.embeddingModel) warningCount++;
+    if (!creativeConfig.imageModel) warningCount++;
+    if (!creativeConfig.visionModel) warningCount++;
+    if (!creativeConfig.textToSpeechModel) warningCount++;
+    if (!creativeConfig.speechToTextModel) warningCount++;
+
+    const hasConnectedWorkspace =
+      workspaceList &&
+      workspaceList.length > 0 &&
+      workspaceList.some((workspace) => workspace.isAgentServed);
+
+    if (!hasConnectedWorkspace) {
+      warningCount++;
+    }
+
+    setSettingsWarningCount(warningCount);
+  }, []);
+
+  // Fetch settings on mount and listen for settings updates
   useEffect(() => {
     if (mode !== "user") return;
 
-    const checkWarnings = async (settingsData?: PrismSettings | null) => {
-      try {
-        const [loadedSettings, workspaceList] = await Promise.all([
-          settingsData !== undefined && settingsData !== null
-            ? Promise.resolve(settingsData)
-            : PrismService.getSettings(),
-          WorkspaceService.list().catch(() => []),
-        ]);
-
-        if (!loadedSettings) {
-          setSettingsWarningCount(0);
-          return;
-        }
-
-        const memoryConfig = loadedSettings.memory || {};
-        const creativeConfig = loadedSettings.creative || {};
-
-        let warningCount = 0;
-        if (!memoryConfig.extractionModel) {
-          warningCount++;
-        }
-        if (!memoryConfig.consolidationModel) {
-          warningCount++;
-        }
-        if (!memoryConfig.embeddingModel) {
-          warningCount++;
-        }
-        if (!creativeConfig.imageModel) {
-          warningCount++;
-        }
-        if (!creativeConfig.visionModel) {
-          warningCount++;
-        }
-        if (!creativeConfig.textToSpeechModel) {
-          warningCount++;
-        }
-        if (!creativeConfig.speechToTextModel) {
-          warningCount++;
-        }
-
-        const hasConnectedWorkspace =
-          workspaceList &&
-          workspaceList.length > 0 &&
-          workspaceList.some((workspace) => workspace.isAgentServed);
-
-        if (!hasConnectedWorkspace) {
-          warningCount++;
-        }
-
-        setSettingsWarningCount(warningCount);
-      } catch (error) {
-        // ignore
-      }
-    };
-
-    checkWarnings();
+    PrismService.getSettings()
+      .then((loadedSettings) => {
+        settingsReference.current = loadedSettings;
+        recomputeWarnings(loadedSettings, workspaces);
+      })
+      .catch(() => {});
 
     const handleSettingsUpdated = (event: Event) => {
       const customEvent = event as CustomEvent<PrismSettings>;
       if (customEvent.detail) {
-        checkWarnings(customEvent.detail);
+        settingsReference.current = customEvent.detail;
+        recomputeWarnings(customEvent.detail, workspaces);
       }
     };
 
@@ -218,7 +205,13 @@ export default function NavigationSidebarComponent({
     return () => {
       window.removeEventListener(EVENT_NAME_PRISM_SETTINGS_UPDATED, handleSettingsUpdated);
     };
-  }, [mode]);
+  }, [mode, workspaces, recomputeWarnings]);
+
+  // Recompute when workspaces change (reactive via WorkspaceContext polling)
+  useEffect(() => {
+    if (mode !== "user" || !settingsReference.current) return;
+    recomputeWarnings(settingsReference.current, workspaces);
+  }, [mode, workspaces, recomputeWarnings]);
 
   useEffect(() => {
     // Resolve on client only — prevents SSR hydration flash of admin link
