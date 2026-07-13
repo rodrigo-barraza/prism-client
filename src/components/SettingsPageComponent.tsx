@@ -94,6 +94,7 @@ interface LocalAgent {
   path?: string;
   capabilities?: string[];
   roots?: { path: string; isAgentServed?: boolean }[];
+  displayRoots?: string[];
   clientIp?: string;
   connectedAt?: string;
   pendingRpcs?: number;
@@ -970,51 +971,57 @@ export default function SettingsPageComponent() {
                   </div>
 
                   {/* Roots served by this agent */}
-                  {agent.roots && agent.roots.length > 0 && (
-                    <div className={styles["machine-roots"]}>
-                      <div className={styles["machine-roots-header"]}>
-                        <FolderTree size={10} />
-                        <span>
-                          Workspace{agent.roots.length !== 1 ? "s" : ""}
-                        </span>
-                        {agent.roots.length > 1 && (
-                          <span className={styles["machine-roots-count"]}>
-                            {agent.roots.length}
+                  {(() => {
+                    const displayableRoots = agent.displayRoots && agent.displayRoots.length > 0
+                      ? agent.displayRoots
+                      : agent.roots;
+                    if (!displayableRoots || displayableRoots.length === 0) return null;
+                    return (
+                      <div className={styles["machine-roots"]}>
+                        <div className={styles["machine-roots-header"]}>
+                          <FolderTree size={10} />
+                          <span>
+                            Workspace{displayableRoots.length !== 1 ? "s" : ""}
                           </span>
-                        )}
-                      </div>
-                      {agent.roots.map((root: unknown) => {
-                        const pathString =
-                          typeof root === "string"
-                            ? root
-                            : (root as { path: string })?.path || "";
-                        const rootName =
-                          pathString === "/"
-                            ? "/"
-                            : pathString.split("/").filter(Boolean).pop() ||
-                              pathString;
-                        return (
-                          <div
-                            key={pathString}
-                            className={styles["machine-root-item"]}
-                          >
-                            <FolderOpen
-                              size={13}
-                              className={styles["machine-root-icon"]}
-                            />
-                            <div className={styles["machine-root-details"]}>
-                              <span className={styles["machine-root-name"]}>
-                                {rootName}
-                              </span>
-                              <span className={styles["machine-root-path"]}>
-                                {pathString}
-                              </span>
+                          {displayableRoots.length > 1 && (
+                            <span className={styles["machine-roots-count"]}>
+                              {displayableRoots.length}
+                            </span>
+                          )}
+                        </div>
+                        {displayableRoots.map((root: unknown) => {
+                          const pathString =
+                            typeof root === "string"
+                              ? root
+                              : (root as { path: string })?.path || "";
+                          const rootName =
+                            pathString === "/"
+                              ? "/"
+                              : pathString.split("/").filter(Boolean).pop() ||
+                                pathString;
+                          return (
+                            <div
+                              key={pathString}
+                              className={styles["machine-root-item"]}
+                            >
+                              <FolderOpen
+                                size={13}
+                                className={styles["machine-root-icon"]}
+                              />
+                              <div className={styles["machine-root-details"]}>
+                                <span className={styles["machine-root-name"]}>
+                                  {rootName}
+                                </span>
+                                <span className={styles["machine-root-path"]}>
+                                  {pathString}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               ))}
             </>
