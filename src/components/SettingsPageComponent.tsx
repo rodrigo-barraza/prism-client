@@ -20,7 +20,6 @@ import {
   WifiOff,
   FolderTree,
   Settings,
-  Settings2,
   Cpu,
   Container,
   Terminal,
@@ -85,7 +84,6 @@ interface LocalWorkspace {
   id?: string;
   name?: string;
   path: string;
-  isPinned?: boolean;
   isAgentServed?: boolean;
 }
 
@@ -558,7 +556,7 @@ export default function SettingsPageComponent() {
     setWsAdding(true);
     try {
       const currentUserRoots = wsWorkspaces
-        .filter((workspace: LocalWorkspace) => !workspace.isPinned)
+        .filter((workspace: LocalWorkspace) => !workspace.isAgentServed)
         .map((workspace: LocalWorkspace) => workspace.path);
       const newPath = wsAddPath.trim();
       await WorkspaceService.update([...currentUserRoots, newPath]);
@@ -589,7 +587,7 @@ export default function SettingsPageComponent() {
         const remainingUserRoots = wsWorkspaces
           .filter(
             (workspace: LocalWorkspace) =>
-              !workspace.isPinned && workspace.path !== pathToRemove,
+              !workspace.isAgentServed && workspace.path !== pathToRemove,
           )
           .map((workspace: LocalWorkspace) => workspace.path);
         await WorkspaceService.update(remainingUserRoots);
@@ -748,15 +746,9 @@ export default function SettingsPageComponent() {
   }, []);
 
   // -- Derived workspace data -----------------------------------------
-  const localStaticRoots = wsWorkspaces.filter(
-    (workspace: LocalWorkspace) =>
-      workspace.isPinned &&
-      !workspace.isAgentServed &&
-      workspace.path !== "/workspace",
-  );
   const userRoots = wsWorkspaces.filter(
     (workspace: LocalWorkspace) =>
-      !workspace.isPinned && !workspace.isAgentServed,
+      !workspace.isAgentServed,
   );
 
 
@@ -1043,38 +1035,7 @@ export default function SettingsPageComponent() {
           )}
 
 
-          {/* Local static roots (from env config, not machine-served) */}
-          {localStaticRoots.length > 0 && (
-            <>
-              <div className={styles["workspace-divider"]} />
-              <div className={styles["section-label"]}>
-                <Settings2 size={10} />
-                Static Roots
-              </div>
-              {localStaticRoots.map((ws: LocalWorkspace) => (
-                <div key={ws.id} className={styles["workspace-item"]}>
-                  <div className={styles["workspace-item-info"]}>
-                    <FolderOpen
-                      size={16}
-                      className={styles["workspace-item-icon"]}
-                    />
-                    <div className={styles["workspace-item-details"]}>
-                      <span className={styles["workspace-item-name"]}>
-                        {ws.name}
-                        <span className={styles["static-badge"]}>
-                          <Lock size={8} />
-                          Static
-                        </span>
-                      </span>
-                      <span className={styles["workspace-item-path"]}>
-                        {ws.path}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
+
 
           {/* User-configured workspace roots */}
           {userRoots.length > 0 && (

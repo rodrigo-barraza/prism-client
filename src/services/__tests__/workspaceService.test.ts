@@ -16,7 +16,7 @@ describe("WorkspaceService", () => {
 
   it("should perform GET request to list workspaces and return results", async () => {
     const mockWorkspaces = [
-      { id: "1", name: "test-workspace", path: "/test", isPinned: false },
+      { id: "1", name: "test-workspace", path: "/test" },
     ];
     const mockResponse = {
       ok: true,
@@ -40,7 +40,6 @@ describe("WorkspaceService", () => {
     const mockFullConfig = {
       workspaces: [],
       agents: [],
-      staticRoots: [],
     };
     const mockResponse = {
       ok: true,
@@ -64,7 +63,6 @@ describe("WorkspaceService", () => {
     const newRoots = ["/new/path/one", "/new/path/two"];
     const mockUpdateResponse = {
       workspaceRoots: newRoots,
-      staticRoots: [],
       userRoots: newRoots,
     };
     const mockResponse = {

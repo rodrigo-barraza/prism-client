@@ -9,7 +9,6 @@ export interface WorkspaceItem {
   id: string;
   name: string;
   path: string;
-  isPinned: boolean;
   isAgentServed?: boolean;
   agentId?: string | null;
   agentName?: string | null;
@@ -26,12 +25,10 @@ export interface WorkspaceListResponse {
 export interface WorkspaceFullResponse {
   workspaces: WorkspaceItem[];
   agents: Array<{ id: string; name: string; project?: string; path?: string }>;
-  staticRoots: string[];
 }
 
 export interface WorkspaceUpdateResponse {
   workspaceRoots: string[];
-  staticRoots: string[];
   userRoots: string[];
 }
 
@@ -64,10 +61,10 @@ export interface WorkspaceTreeResponse {
 // --- Service ------------------------------------------------
 
 /**
- * WorkspaceService — fetches and manages configured workspace roots via Prism.
+ * WorkspaceService — fetches and manages workspace roots via Prism.
  *
- * Workspaces are config-defined filesystem paths (from tools-api WORKSPACE_ROOTS
- * and user-configured roots). Operations: list, update, validate.
+ * Workspaces are served exclusively by connected agents (workspace-service
+ * tray app or desktop agents). Operations: list, update, validate.
  */
 export default class WorkspaceService {
   static async list(): Promise<WorkspaceItem[]> {

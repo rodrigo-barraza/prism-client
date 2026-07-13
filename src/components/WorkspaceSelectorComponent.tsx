@@ -97,9 +97,6 @@ export default function WorkspaceSelectorComponent({
               {workspace.isAgentServed && (
                 <span className={styles['menu-item-remote-badge']}>connected</span>
               )}
-              {workspace.isPinned && (
-                <Lock size={9} className={styles['menu-item-pinned']} />
-              )}
             </button>
           ))}
         </div>
