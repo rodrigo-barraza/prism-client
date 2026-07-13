@@ -216,62 +216,21 @@ export type BadgeProps =
 // 2. Constants & Clean Name Helpers
 // ═══════════════════════════════════════════════════════════════════════
 
-// Static fallback label map — used before the server config loads.
-// Once config arrives, `registerModelLabels()` augments this with the
-// full catalog so new models don't require a client code change.
+// Tiny static fallback — ONLY the default/flagship models that may render in
+// the brief window before `/config` loads. The full catalog is seeded at
+// runtime by `registerModelLabels()` from the server's `/config` labels, so
+// new or renamed models never require a client code change. Anything not
+// listed here (or not yet seeded) falls through to `cleanModelName`'s
+// title-casing heuristic, which produces a reasonable label on its own.
+//
+// Do NOT re-expand this into a full catalog snapshot — that's exactly the
+// drift this map was trimmed to avoid.
 const STATIC_MODEL_LABELS: Record<string, string> = {
-  "gpt-5.2": "GPT 5.2",
-  "gpt-5-mini": "GPT 5 Mini",
-  "gpt-5-nano": "GPT 5 Nano",
-  "gpt-4.1-mini": "GPT 4.1 Mini",
-  "gpt-4.1-nano": "GPT 4.1 Nano",
-  "gpt-4o": "GPT 4o",
-  "gpt-4": "GPT 4",
-  "gpt-5.3-chat-latest": "GPT 5.3 Chat",
-  "gpt-5.3-codex": "GPT 5.3 Codex",
   "gpt-5.4": "GPT 5.4",
-  "gpt-5.4-pro": "GPT 5.4 Pro",
-  "gpt-5.4-mini": "GPT 5.4 Mini",
-  "gpt-5.4-nano": "GPT 5.4 Nano",
-  "gpt-4o-mini-tts": "GPT 4o Mini TTS",
-  "gpt-image-1.5": "GPT Image 1.5",
-  "text-embedding-3-small": "Embedding 3 Small",
-  "text-embedding-3-large": "Embedding 3 Large",
-  "text-embedding-ada-002": "Ada 002",
-  "gpt-4o-transcribe": "GPT-4o Transcribe",
-  "gpt-4o-mini-transcribe": "GPT-4o Mini Transcribe",
-  "whisper-1": "Whisper V2",
-  "claude-haiku-4-5-20251001": "Haiku 4.5",
-  "claude-sonnet-4-5-20250929": "Sonnet 4.5",
-  "claude-sonnet-4-6": "Sonnet 4.6",
-  "claude-sonnet-5": "Sonnet 5",
-  "claude-opus-4-5-20251101": "Opus 4.5",
-  "claude-opus-4-6": "Opus 4.6",
-  "claude-opus-4-7": "Opus 4.7",
-  "claude-opus-4-8": "Opus 4.8",
   "claude-fable-5": "Fable 5",
-  "claude-mythos-5": "Mythos 5",
-  "gemini-3-flash-preview": "Gemini 3 Flash",
-  "gemini-3-pro-preview": "Gemini 3 Pro",
-  "gemini-3.1-pro-preview": "Gemini 3.1 Pro",
-  "gemini-3.1-flash-live-preview": "Gemini 3.1 Flash Live",
+  "claude-opus-4-8": "Opus 4.8",
   "gemini-3.5-flash": "Gemini 3.5 Flash",
-  "gemini-2.0-flash-lite-preview-tts": "Gemini 2.0 Flash Lite TTS",
-  "gemini-2.5-flash-lite-preview-tts": "Gemini 2.5 Flash Lite TTS",
-  "gemini-2.5-flash-preview-tts": "Gemini 2.5 Flash TTS",
-  "gemini-2.5-pro-preview-tts": "Gemini 2.5 Pro TTS",
-  "espeak-ng": "eSpeak NG",
-  eleven_turbo_v2: "Eleven Turbo v2",
-  "inworld-tts-1.5-max": "Inworld TTS 1.5 Max",
-  "inworld-tts-1.5-mini": "Inworld TTS 1.5 Mini",
-  "gemini-3-pro-image-preview": "Gemini 3 Pro Image",
-  "gemini-3.1-flash-image-preview": "Gemini 3.1 Flash Image",
-  "gemini-embedding-2-preview": "Gemini Embedding 2",
-  "gemini-embedding-001": "Gemini Embedding",
-  "gemini-2.0-flash-preview-stt": "Gemini 2.0 Flash STT",
-  "gemini-3-flash-preview-stt": "Gemini 3 Flash",
-  "gemini-3-pro-preview-stt": "Gemini 3 Pro",
-  "gemini-3.5-flash-stt": "Gemini 3.5 Flash",
+  "gemini-3-pro-preview": "Gemini 3 Pro",
 };
 
 // Dynamic labels merged from server config (populated by registerModelLabels)

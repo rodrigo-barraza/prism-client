@@ -116,7 +116,7 @@ import {
   POLL_STANDARD,
 } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES, SERVER_SENT_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
-import { buildUnifiedToolCounts, CAPABILITY_TOOL_NAMES, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams, buildSettingsDefaults } from "../utils/utilities";
+import { buildUnifiedToolCounts, CAPABILITY_TOOL_NAMES, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams, buildSettingsDefaults, isNameBasedThinkingModel } from "../utils/utilities";
 import {
   MESSAGE_ROLES,
   EXECUTION_STATUS,
@@ -147,7 +147,6 @@ import {
   EVENT_NAME_AGENT_SWITCH,
   EVENT_NAME_MODEL_CHANGE,
   EVENT_NAME_CRON_JOB_SCHEDULED,
-  FALLBACK_THINKING_PATTERNS,
   LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE,
 } from "../constants";
 import adminPageStyles from "../app/admin/chat/page.module.css";
@@ -1612,18 +1611,20 @@ export default function ChatConversationComponent({
     const modelChanged = previousModelRef.current !== settings.model;
     previousModelRef.current = settings.model;
 
-    // Check if the model is an always-on thinking model (e.g. Gemini 3.5 Flash)
+    // Always-on thinking is a model capability, fully derivable from the
+    // catalog: a thinking model whose thinkingLevels can't drop to "minimal"
+    // cannot have thinking disabled. (Previously also gated on
+    // `provider === "google"`, which was redundant with thinkingLevels.)
     const canDisable =
       !modelDef.thinkingLevels || modelDef.thinkingLevels.includes("minimal");
-    const isGoogleAlwaysOn =
-      !canDisable && settings.provider === "google" && modelDef.thinking;
+    const isThinkingAlwaysOn = !canDisable && modelDef.thinking;
 
     // Anthropic adaptive thinking models (Fable 5, Mythos 5, Opus 4.7+) have
     // thinking as an inherent capability — default it on when switching to them.
     const isAdaptiveThinking =
       modelDef.adaptiveThinking === true && modelDef.thinking;
 
-    if (isGoogleAlwaysOn && !settings.thinkingEnabled) {
+    if (isThinkingAlwaysOn && !settings.thinkingEnabled) {
       setSettings((previousSettings) => ({
         ...previousSettings,
         thinkingEnabled: true,
@@ -2649,17 +2650,13 @@ export default function ChatConversationComponent({
           (model: { name: string }) => model.name === settings.model,
         ) as Record<string, unknown> | undefined
       : undefined;
-    const modelNameLower = (settings.model || "").toLowerCase();
-    const thinkingPatterns = config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS;
-    const isNameBasedThinkingModel = thinkingPatterns.some((pattern) =>
-      modelNameLower.includes(pattern),
-    );
     const hasNativeThinking = !!(
       activeModelDefinition?.thinking ||
       activeModelDefinition?.supportsThinking ||
       (Array.isArray(activeModelDefinition?.thinkingLevels) && (activeModelDefinition.thinkingLevels as string[]).length > 0) ||
       (Array.isArray(activeModelDefinition?.tools) && (activeModelDefinition.tools as string[]).includes("Thinking")) ||
-      (settings.provider === "lm-studio" && isNameBasedThinkingModel)
+      (settings.provider === "lm-studio" &&
+        isNameBasedThinkingModel(settings.model, config))
     );
     if (hasNativeThinking) {
       lockedToolsMap.set(TOOL_NAMES.THINK, "Disabled — this model has built-in thinking/reasoning");

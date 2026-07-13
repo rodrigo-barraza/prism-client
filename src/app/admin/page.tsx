@@ -7,6 +7,7 @@ import type {
   IrisProjectStat,
   IrisModelStat,
   IrisAgentStat,
+  IrisProviderStat,
   IrisTimelineEntry,
   Conversation,
 } from "@/types/types";
@@ -35,7 +36,10 @@ import {
   POLL_LAZY,
   FEEDBACK_STANDARD_MILLISECONDS,
 } from "@rodrigo-barraza/utilities-library";
-import IrisService, { type IrisRequestEntry } from "../../services/IrisService";
+import IrisService, {
+  type IrisRequestEntry,
+  type IrisCostBreakdownResponse,
+} from "../../services/IrisService";
 import PrismService from "../../services/PrismService";
 import { formatNumber, formatCost, formatLatency, formatTokensPerSec, formatElapsedTime } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../utils/utilities";
@@ -60,27 +64,6 @@ import AdminFiltersCardComponent from "../../components/AdminFiltersCardComponen
 import ResourceCardComponent from "../../components/ResourceCardComponent";
 import styles from "./page.module.css";
 
-interface ProviderAggregation {
-  provider: string;
-  totalRequests: number;
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  totalCost: number;
-  latencySum: number;
-  tpsSum: number;
-  tpsCount: number;
-  modelCount: number;
-  models: string[];
-  conversationCount: number;
-  workflowCount: number;
-  agentConversationCount: number;
-}
-
-interface ProviderAggregationComputed extends ProviderAggregation {
-  avgLatency: number;
-  avgTokensPerSec: number | null;
-}
-
 export default function DashboardPage() {
   const searchParams = useSearchParams();
   const projectFilter = searchParams.get("project") || null;
@@ -92,6 +75,10 @@ export default function DashboardPage() {
   const [projectStats, setProjectStats] = useState<IrisProjectStat[]>([]);
   const [modelStats, setModelStats] = useState<IrisModelStat[]>([]);
   const [agentStats, setAgentStats] = useState<IrisAgentStat[]>([]);
+  // Provider rollups come pre-aggregated from the server's /stats/costs
+  // `providers` facet (true weighted averages) — the client no longer
+  // re-groups per-model stats, which produced averages-of-averages drift.
+  const [costProviders, setCostProviders] = useState<IrisProviderStat[]>([]);
   const [configModels, setConfigModels] = useState<Record<string, string[]>>(
     {},
   );
@@ -154,6 +141,7 @@ export default function DashboardPage() {
           order: "desc",
           ...filterParams,
         }),
+        IrisService.getCostStats(filterParams),
         PrismService.getConfig().catch(() => null),
       ]);
 
@@ -166,6 +154,7 @@ export default function DashboardPage() {
         requestsResult,
         tracesResult,
         conversationsResult,
+        costsResult,
         prismConfigResult,
       ] = results;
 
@@ -195,6 +184,11 @@ export default function DashboardPage() {
       );
       setAgentStats(
         agentsResult.status === "fulfilled" ? agentsResult.value : [],
+      );
+      setCostProviders(
+        costsResult.status === "fulfilled"
+          ? ((costsResult.value as IrisCostBreakdownResponse).providers ?? [])
+          : [],
       );
 
       if (timelineResult.status === "fulfilled") {
@@ -258,6 +252,7 @@ export default function DashboardPage() {
     setProjectStats([]);
     setModelStats([]);
     setAgentStats([]);
+    setCostProviders([]);
     setTimeline([]);
     setRecentRequests([]);
     setRecentTraces([]);
@@ -304,85 +299,37 @@ export default function DashboardPage() {
     setTimelineGranularity(value);
   }, []);
 
-  // Build provider distribution and model stats (Memoized & Single-pass)
-  const {
-    providerData,
-    totalProviderRequests,
-    totalProviderCost,
-    topModels,
-    totalModelRequests,
-    totalModelCost,
-  } = useMemo(() => {
-    const providerAgg: Record<string, ProviderAggregation> = {};
-    let modelRequestsSum = 0;
-    let modelCostSum = 0;
-
-    for (const modelStat of modelStats) {
-      // 1. Accumulate model totals
-      modelRequestsSum += modelStat.totalRequests;
-      modelCostSum += modelStat.totalCost || 0;
-
-      // 2. Accumulate provider groups
-      if (!providerAgg[modelStat.provider]) {
-        providerAgg[modelStat.provider] = {
-          provider: modelStat.provider,
-          totalRequests: 0,
-          totalInputTokens: 0,
-          totalOutputTokens: 0,
-          totalCost: 0,
-          latencySum: 0,
-          tpsSum: 0,
-          tpsCount: 0,
-          modelCount: 0,
-          models: [] as string[],
-          conversationCount: 0,
-          workflowCount: 0,
-          agentConversationCount: 0,
-        };
-      }
-      const providerDataVal = providerAgg[modelStat.provider];
-      providerDataVal.totalRequests += modelStat.totalRequests;
-      providerDataVal.totalInputTokens += modelStat.totalInputTokens || 0;
-      providerDataVal.totalOutputTokens += modelStat.totalOutputTokens || 0;
-      providerDataVal.totalCost += modelStat.totalCost || 0;
-      providerDataVal.latencySum += (modelStat.avgLatency || 0) * modelStat.totalRequests;
-      providerDataVal.modelCount += 1;
-      if (modelStat.model) providerDataVal.models.push(modelStat.model);
-      providerDataVal.conversationCount += modelStat.conversationCount || 0;
-      providerDataVal.workflowCount += modelStat.workflowCount || 0;
-      providerDataVal.agentConversationCount += modelStat.agentConversationCount || 0;
-      if (modelStat.avgTokensPerSec) {
-        providerDataVal.tpsSum += modelStat.avgTokensPerSec * modelStat.totalRequests;
-        providerDataVal.tpsCount += modelStat.totalRequests;
-      }
-    }
-
-    // Compute averages and sort providers
-    const providerDataList: ProviderAggregationComputed[] = Object.values(providerAgg)
-      .map((providerAggItem) => ({
-        ...providerAggItem,
-        avgLatency: providerAggItem.totalRequests > 0 ? providerAggItem.latencySum / providerAggItem.totalRequests : 0,
-        avgTokensPerSec: providerAggItem.tpsCount > 0 ? providerAggItem.tpsSum / providerAggItem.tpsCount : null,
-      }))
-      .sort((providerA, providerB) => providerB.totalRequests - providerA.totalRequests);
-
-    // Compute provider totals in a single pass
+  // Provider rollups: consumed directly from the server's /stats/costs
+  // `providers` facet (true weighted avgLatency / avgTokensPerSec over raw
+  // request docs). Previously these were re-derived here by request-weighting
+  // per-model averages, which is not arithmetically equal to a true aggregate.
+  const { providerData, totalProviderRequests, totalProviderCost } = useMemo(() => {
+    const providerDataList = costProviders;
     let providerRequestsSum = 0;
     let providerCostSum = 0;
     for (const provider of providerDataList) {
-      providerRequestsSum += provider.totalRequests;
-      providerCostSum += provider.totalCost;
+      providerRequestsSum += provider.totalRequests || 0;
+      providerCostSum += provider.totalCost || 0;
     }
-
-    // Top models sorted
-    const topModelsList = [...modelStats].sort(
-      (modelA, modelB) => modelB.totalRequests - modelA.totalRequests,
-    );
-
     return {
       providerData: providerDataList,
       totalProviderRequests: providerRequestsSum || 1,
       totalProviderCost: providerCostSum || 1,
+    };
+  }, [costProviders]);
+
+  // Model totals + top-models list (still sourced from the per-model facet).
+  const { topModels, totalModelRequests, totalModelCost } = useMemo(() => {
+    let modelRequestsSum = 0;
+    let modelCostSum = 0;
+    for (const modelStat of modelStats) {
+      modelRequestsSum += modelStat.totalRequests;
+      modelCostSum += modelStat.totalCost || 0;
+    }
+    const topModelsList = [...modelStats].sort(
+      (modelA, modelB) => modelB.totalRequests - modelA.totalRequests,
+    );
+    return {
       topModels: topModelsList,
       totalModelRequests: modelRequestsSum || 1,
       totalModelCost: modelCostSum || 1,

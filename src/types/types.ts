@@ -202,6 +202,9 @@ export interface ParameterDescriptor {
     min?: number;
     locked?: boolean;
     lockedReason?: string;
+    /** Lock the parameter whenever a reasoning model has thinking enabled. */
+    lockedWhenReasoning?: boolean;
+    lockedWhenReasoningReason?: string;
   }>;
 }
 
@@ -300,6 +303,11 @@ export interface TokenUsage {
   cacheReadInputTokens?: number;
   cacheCreationInputTokens?: number;
   reasoningOutputTokens?: number;
+  /**
+   * Authoritative pre-summed prompt tokens from the server
+   * (new + cache_read + cache_write). Prefer this over re-deriving the sum.
+   */
+  totalInputTokens?: number;
   requests?: number;
 }
 

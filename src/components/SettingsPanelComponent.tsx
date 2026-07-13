@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_WORKFLOW_TITLE, FALLBACK_THINKING_PATTERNS, LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE, MESSAGE_ROLES } from "@/constants";
+import { DEFAULT_WORKFLOW_TITLE, LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE, MESSAGE_ROLES } from "@/constants";
 import { useState, useEffect } from "react";
 import {
   Cpu,
@@ -36,7 +36,7 @@ import styles from "./SettingsPanelComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
 import StatsTabBarComponent from "./StatsTabBarComponent";
 import { formatCost } from "@rodrigo-barraza/utilities-library";
-import { CAPABILITY_TOOL_NAMES } from "../utils/utilities";
+import { CAPABILITY_TOOL_NAMES, isNameBasedThinkingModel } from "../utils/utilities";
 import { TOGGLEABLE_TOOLS } from "./WorkflowNodeConstantsComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import ToolCallBadgeComponent from "./ToolCallBadgeComponent";
@@ -1101,9 +1101,10 @@ export default function SettingsPanel({
                         selectedModelDef.thinkingLevels.includes("minimal");
                       const alwaysOn =
                         !canDisable && !!selectedModelDef?.thinkingLevels;
-                      const modelName = (settings.model || "").toLowerCase();
-                      const nameBasedThinking = (config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS)
-                        .some((pattern) => modelName.includes(pattern));
+                      const nameBasedThinking = isNameBasedThinkingModel(
+                        settings.model,
+                        config,
+                      );
                       const lmStudioCanToggle =
                         isLmStudioProvider &&
                         (selectedModelDef?.thinking || nameBasedThinking);

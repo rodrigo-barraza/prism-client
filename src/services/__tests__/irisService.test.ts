@@ -412,9 +412,11 @@ describe("IrisService", () => {
       `${PRISM_SERVICE_URL}/admin/lm-studio/load`,
       expect.objectContaining({
         method: "POST",
+        // Client now sends its own camelCase names; the backend owns the
+        // mapping to LM Studio's snake_case load vocabulary (M5).
         body: JSON.stringify({
           model: "my-model",
-          context_length: 2048,
+          contextLength: 2048,
         }),
       }),
     );

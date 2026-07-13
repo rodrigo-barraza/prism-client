@@ -107,6 +107,8 @@ export interface TableRow {
   matchMode?: string;
   latency?: number;
   usage?: TokenUsage;
+  /** Server-persisted generation-only throughput (benchmark rows). */
+  tokensPerSecond?: number;
   estimatedCost?: number;
   completedAt?: string;
   total?: number;
@@ -1135,24 +1137,31 @@ export const benchmarkTokensOutColumn = () => ({
   },
 });
 
+// Resolve a row's throughput, preferring the server-persisted authoritative
+// value. The server measures generation-only throughput (excludes queue/TTFT);
+// the outputTokens ÷ round-trip-latency fallback is a rougher, inconsistent
+// definition kept only for rows lacking the server field.
+const resolveBenchmarkTokensPerSecond = (row: TableRow): number => {
+  const serverValue = row.tokensPerSecond;
+  if (typeof serverValue === "number" && serverValue > 0) return serverValue;
+  const usage = row.usage as { outputTokens?: number } | undefined;
+  const outputTokens = usage?.outputTokens ?? 0;
+  const latencyValue = row.latency as number | undefined;
+  return latencyValue && latencyValue > 0 && outputTokens > 0
+    ? outputTokens / latencyValue
+    : 0;
+};
+
 export const benchmarkTokPerSecColumn = () => ({
   key: "tokPerSec",
   label: "Tok/s",
-  description: "Output throughput — completion tokens per second",
+  description: "Output throughput — completion tokens per second (server-measured)",
   sortable: true,
-  sortValue: (row: TableRow) => {
-    const usage = row.usage as { outputTokens?: number } | undefined;
-    const outputTokens = usage?.outputTokens ?? 0;
-    const latencyValue = row.latency as number | undefined;
-    return latencyValue && latencyValue > 0 && outputTokens > 0 ? outputTokens / latencyValue : 0;
-  },
+  sortValue: (row: TableRow) => resolveBenchmarkTokensPerSecond(row),
   align: "right" as const,
   render: (row: TableRow) => {
-    const usage = row.usage as { outputTokens?: number } | undefined;
-    const outputTokens = usage?.outputTokens ?? 0;
-    const latencyValue = row.latency as number | undefined;
-    if (!latencyValue || latencyValue <= 0 || outputTokens <= 0) return emptyDash();
-    const tokensPerSecond = outputTokens / latencyValue;
+    const tokensPerSecond = resolveBenchmarkTokensPerSecond(row);
+    if (tokensPerSecond <= 0) return emptyDash();
     return (
       <span className={styles['benchmark-tps-cell']}>
         <Gauge size={10} />

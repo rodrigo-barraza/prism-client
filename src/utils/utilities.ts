@@ -13,53 +13,79 @@ import type {
   ModelOption,
 } from "../types/types";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { FALLBACK_THINKING_PATTERNS } from "../constants";
+
+/**
+ * Whether a model's NAME matches a known thinking/reasoning pattern.
+ *
+ * Local providers (LM Studio) expose dynamically-discovered models with no
+ * server-side capability flags, so thinking is inferred from the name using
+ * the server-provided `thinkingPatterns` list (falling back to a bundled
+ * default). Centralised here so the inference isn't re-implemented per
+ * component and stays consistent with the config-driven pattern list.
+ */
+export function isNameBasedThinkingModel(
+  modelName: string | null | undefined,
+  config?: Pick<PrismConfig, "thinkingPatterns"> | null,
+): boolean {
+  if (!modelName) return false;
+  const lowerName = modelName.toLowerCase();
+  const patterns = config?.thinkingPatterns || FALLBACK_THINKING_PATTERNS;
+  return patterns.some((pattern) => lowerName.includes(pattern));
+}
 
 // -- Prism-specific utilities ---------------------------------
 
-export interface LmStudioLoadBody {
+export interface LmStudioLoadOptions {
+  contextLength?: number;
+  flashAttention?: boolean;
+  offloadKvCache?: boolean;
+  evalBatchSize?: number;
+}
+
+export interface LmStudioLoadBody extends LmStudioLoadOptions {
   model: string;
-  context_length?: number;
-  flash_attention?: boolean;
-  offload_kv_cache_to_gpu?: boolean;
-  eval_batch_size?: number;
 }
 
 /**
  * Build the JSON body for LM Studio load requests.
- * Maps camelCase options to the snake_case API contract.
- * Used by PrismService.loadLmStudioModel, loadLmStudioModelStream,
- * and IrisService.loadLmStudioModel.
+ *
+ * The body now carries the client's own camelCase option names — the backend
+ * (LmStudioRoutes) owns the mapping to LM Studio's snake_case load vocabulary,
+ * so the client no longer needs to know provider load-option key names.
  */
 export function buildLmStudioLoadBody(
   model: string,
-  options: {
-    contextLength?: number;
-    flashAttention?: boolean;
-    offloadKvCache?: boolean;
-    evalBatchSize?: number;
-  } = {},
+  options: LmStudioLoadOptions = {},
 ): LmStudioLoadBody {
   const body: LmStudioLoadBody = { model };
-  if (options.contextLength != null)
-    body.context_length = options.contextLength;
+  if (options.contextLength != null) body.contextLength = options.contextLength;
   if (options.flashAttention != null)
-    body.flash_attention = options.flashAttention;
+    body.flashAttention = options.flashAttention;
   if (options.offloadKvCache != null)
-    body.offload_kv_cache_to_gpu = options.offloadKvCache;
-  if (options.evalBatchSize != null)
-    body.eval_batch_size = options.evalBatchSize;
+    body.offloadKvCache = options.offloadKvCache;
+  if (options.evalBatchSize != null) body.evalBatchSize = options.evalBatchSize;
   return body;
 }
 
 /**
  * Get the total input token count from a usage object.
- * Providers like Anthropic and Google split prompt tokens into
- * new + cache_read + cache_write. This aggregates all three.
+ *
+ * The server is the single source of truth for prompt-token composition and
+ * attaches an authoritative pre-summed `totalInputTokens` to every usage
+ * payload (CostCalculator.withTotalInputTokens). We render that directly so a
+ * future provider cache bucket can't silently diverge the client from billing.
+ *
+ * The manual sum (new + cache_read + cache_write) remains only as a fallback
+ * for historical/records that predate the server field.
  */
 export function getTotalInputTokens(
   usage: TokenUsage | null | undefined,
 ): number {
   if (!usage) return 0;
+  if (typeof usage.totalInputTokens === "number") {
+    return usage.totalInputTokens;
+  }
   return (
     (usage.inputTokens || 0) +
     (usage.cacheReadInputTokens || 0) +

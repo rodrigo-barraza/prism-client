@@ -16,6 +16,7 @@ import type {
   IrisProjectStat,
   IrisModelStat,
   IrisAgentStat,
+  IrisProviderStat,
   IrisUserStat,
   IrisTimelineEntry,
   JsonValue,
@@ -42,6 +43,29 @@ export interface IrisStatsResponse {
   totalRequests?: number;
   totalCost?: number;
   avgDuration?: number;
+}
+
+/** A cost/usage rollup facet row (totals, per-provider, per-model, …). */
+export interface IrisCostFacetRow {
+  totalCost?: number;
+  totalInputTokens?: number;
+  totalOutputTokens?: number;
+  totalRequests?: number;
+  avgLatency?: number;
+  avgTokensPerSec?: number | null;
+}
+
+/**
+ * GET /stats/costs — comprehensive cost breakdown. The server owns every
+ * rollup here (true weighted averages over raw request docs), so the admin
+ * UI consumes these facets directly instead of re-aggregating per-model rows.
+ */
+export interface IrisCostBreakdownResponse {
+  totals: (IrisCostFacetRow & { avgLatency?: number }) | null;
+  projects: Array<IrisCostFacetRow & { project: string }>;
+  providers: IrisProviderStat[];
+  models: Array<IrisCostFacetRow & { model: string; provider: string }>;
+  endpoints: Array<IrisCostFacetRow & { endpoint: string }>;
 }
 
 export interface IrisConversationListResponse {
@@ -242,9 +266,9 @@ export default class IrisService {
 
   static async getCostStats(
     queryParameters: QueryParams = {},
-  ): Promise<IrisStatsResponse> {
+  ): Promise<IrisCostBreakdownResponse> {
     const query = toSearchParams(queryParameters);
-    return fetchJSON<IrisStatsResponse>(
+    return fetchJSON<IrisCostBreakdownResponse>(
       `/stats/costs${query ? `?${query}` : ""}`,
     );
   }

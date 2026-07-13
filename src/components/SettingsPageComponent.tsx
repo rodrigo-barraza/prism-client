@@ -673,15 +673,17 @@ export default function SettingsPageComponent() {
   );
 
   const handleResetCreative = useCallback(async () => {
+    // The server's settings-defaults endpoint always populates these from the
+    // catalog's per-modality recommended defaults — no hardcoded model-ID
+    // fallbacks here (they drift when the recommended default changes).
     if (!defaults?.creative) return;
     const updated = {
       creative: {
         ...settings?.creative,
-        imageProvider: defaults.creative.imageProvider || "google",
-        imageModel:
-          defaults.creative.imageModel || "gemini-3-pro-image-preview",
-        visionProvider: defaults.creative.visionProvider || "google",
-        visionModel: defaults.creative.visionModel || "gemini-3.5-flash",
+        imageProvider: defaults.creative.imageProvider,
+        imageModel: defaults.creative.imageModel,
+        visionProvider: defaults.creative.visionProvider,
+        visionModel: defaults.creative.visionModel,
       },
     };
     setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
@@ -719,16 +721,15 @@ export default function SettingsPageComponent() {
   );
 
   const handleResetAudio = useCallback(async () => {
+    // Server-provided defaults only — no hardcoded provider/model fallbacks.
     if (!defaults?.creative) return;
     const updated = {
       creative: {
         ...settings?.creative,
-        textToSpeechProvider:
-          defaults.creative.textToSpeechProvider || "elevenlabs",
-        textToSpeechModel: defaults.creative.textToSpeechModel || "",
-        speechToTextProvider:
-          defaults.creative.speechToTextProvider || "openai",
-        speechToTextModel: defaults.creative.speechToTextModel || "",
+        textToSpeechProvider: defaults.creative.textToSpeechProvider,
+        textToSpeechModel: defaults.creative.textToSpeechModel,
+        speechToTextProvider: defaults.creative.speechToTextProvider,
+        speechToTextModel: defaults.creative.speechToTextModel,
       },
     };
     setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));

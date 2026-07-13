@@ -104,10 +104,10 @@ export default function ParametersPanelComponent({
   const selectedModelDefinition = currentProviderModels.find(
     (model) => model.name === settings.model,
   );
-  const isReasoningModel =
-    selectedModelDefinition?.thinking ||
-    (settings.model || "").includes("o1") ||
-    (settings.model || "").includes("o3");
+  // Reasoning is a config-driven model capability. (The old `o1`/`o3`
+  // model-name substring fallback matched no models in the current catalog
+  // and only risked false positives on future names.)
+  const isReasoningModel = !!selectedModelDefinition?.thinking;
   const isTranscriptionModel = selectedModelDefinition?._isTranscription === true;
   const isTextToSpeechModel = selectedModelDefinition?._isTTS === true;
   const isSpecialModel = isTranscriptionModel || isTextToSpeechModel;
@@ -195,18 +195,20 @@ export default function ParametersPanelComponent({
     const currentValue = resolveCurrentValue(descriptor);
     const providerOverride = getProviderOverride(descriptor);
 
-    // Check if this parameter is locked by provider override or model constraint
+    // Check if this parameter is locked by provider override or model constraint.
+    // The reasoning-time lock (e.g. Anthropic's temperature=1 requirement) is
+    // driven by the server-provided `lockedWhenReasoning` flag rather than a
+    // hardcoded `provider === "anthropic"` branch.
     const isProviderLocked = providerOverride?.locked === true;
-    const isAnthropicThinkingLocked =
-      descriptor.key === "temperature" &&
+    const isReasoningLocked =
+      providerOverride?.lockedWhenReasoning === true &&
       isReasoningModel &&
-      settings.thinkingEnabled &&
-      currentProvider === "anthropic";
-    const isLocked = isProviderLocked || isAnthropicThinkingLocked;
+      !!settings.thinkingEnabled;
+    const isLocked = isProviderLocked || isReasoningLocked;
     const lockedReason = isProviderLocked
       ? providerOverride?.lockedReason || "Locked by provider"
-      : isAnthropicThinkingLocked
-        ? "Locked by Thinking (= 1)"
+      : isReasoningLocked
+        ? providerOverride?.lockedWhenReasoningReason || "Locked while reasoning"
         : undefined;
 
     // Apply provider-specific max/min overrides
@@ -268,7 +270,7 @@ export default function ParametersPanelComponent({
                 min={effectiveMin ?? 0}
                 max={sliderMax ?? 1}
                 step={effectiveStep ?? 0.1}
-                value={isLocked ? (isAnthropicThinkingLocked ? 1 : clampedValue) : clampedValue}
+                value={isReasoningLocked ? 1 : clampedValue}
                 onChange={(value: number) => handleParameterChange(descriptor.key, value)}
                 disabled={isLocked}
               />

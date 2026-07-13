@@ -5,6 +5,7 @@ import IrisService, {
   type RateLimitData,
   type ModelRateLimitData,
 } from "../../../services/IrisService";
+import type { IrisProviderStat } from "@/types/types";
 import PrismService from "../../../services/PrismService";
 import {
   SelectComponent,
@@ -39,9 +40,8 @@ interface ProviderStat {
   totalCost: number;
   totalTokens: number;
   avgLatency: number;
+  avgTokensPerSec?: number | null;
   models: ModelStat[];
-  _latencySum: number;
-  _latencyCount: number;
 }
 
 export default function ProvidersPage() {
@@ -49,6 +49,9 @@ export default function ProvidersPage() {
     useProjectFilter();
   const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const [modelStats, setModelStats] = useState<ModelStat[]>([]);
+  // Provider-level rollups (true weighted averages) from the server's
+  // /stats/costs `providers` facet — not re-derived from per-model averages.
+  const [costProviders, setCostProviders] = useState<IrisProviderStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
@@ -61,6 +64,7 @@ export default function ProvidersPage() {
     setLoading(true);
     setError(null);
     setModelStats([]);
+    setCostProviders([]);
 
     async function load() {
       try {
@@ -68,13 +72,15 @@ export default function ProvidersPage() {
         if (projectFilter) params.project = projectFilter;
         if (agentFilter) params.agent = agentFilter;
         Object.assign(params, buildDateRangeParams(dateRange));
-        const [models, limits] = await Promise.all([
+        const [models, costs, limits] = await Promise.all([
           IrisService.getModelStats(params),
+          IrisService.getCostStats(params).catch(() => null),
           IrisService.getRateLimits().catch(() => ({})),
           // Side-effect: registers local provider nicknames
           PrismService.getConfig().catch(() => null),
         ]);
         setModelStats((models || []) as ModelStat[]);
+        setCostProviders(costs?.providers ?? []);
         setRateLimits((limits || {}) as Record<string, RateLimitData>);
       } catch (error: unknown) {
         setError(error instanceof Error ? error.message : String(error));
@@ -85,39 +91,31 @@ export default function ProvidersPage() {
     load();
   }, [dateRange, projectFilter, agentFilter]);
 
-  // Aggregate by provider
+  // Provider rows come from the server's authoritative /stats/costs rollup
+  // (true weighted avgLatency / avgTokensPerSec). We only join the per-model
+  // list locally for the expandable drill-down.
   const providers = useMemo(() => {
-    const map: Record<string, ProviderStat> = {};
-    modelStats.forEach((model: ModelStat) => {
-      if (!map[model.provider]) {
-        map[model.provider] = {
-          provider: model.provider,
-          totalRequests: 0,
-          totalCost: 0,
-          totalTokens: 0,
-          avgLatency: 0,
-          models: [],
-          _latencySum: 0,
-          _latencyCount: 0,
-        };
-      }
-      const providerData = map[model.provider];
-      providerData.totalRequests += model.totalRequests;
-      providerData.totalCost += model.totalCost;
-      providerData.totalTokens += model.totalTokens;
-      providerData._latencySum += (model.avgLatency || 0) * model.totalRequests;
-      providerData._latencyCount += model.totalRequests;
-      providerData.models.push(model);
-    });
+    const modelsByProvider: Record<string, ModelStat[]> = {};
+    for (const model of modelStats) {
+      (modelsByProvider[model.provider] ??= []).push(model);
+    }
 
-    return Object.values(map)
-      .map((provider) => ({
-        ...provider,
-        avgLatency: provider._latencyCount ? provider._latencySum / provider._latencyCount : 0,
-        models: provider.models.sort((modelA, modelB) => modelB.totalRequests - modelA.totalRequests),
+    return costProviders
+      .map((providerRollup): ProviderStat => ({
+        provider: providerRollup.provider,
+        totalRequests: providerRollup.totalRequests || 0,
+        totalCost: providerRollup.totalCost || 0,
+        totalTokens:
+          (providerRollup.totalInputTokens || 0) +
+          (providerRollup.totalOutputTokens || 0),
+        avgLatency: providerRollup.avgLatency || 0,
+        avgTokensPerSec: providerRollup.avgTokensPerSec ?? null,
+        models: (modelsByProvider[providerRollup.provider] || []).sort(
+          (modelA, modelB) => modelB.totalRequests - modelA.totalRequests,
+        ),
       }))
       .sort((providerA, providerB) => providerB.totalRequests - providerA.totalRequests);
-  }, [modelStats]);
+  }, [costProviders, modelStats]);
 
   const totalRequests =
     providers.reduce((sum: number, provider) => sum + provider.totalRequests, 0) || 1;
