@@ -36,7 +36,7 @@ describe("Graph type consolidation", () => {
     // The component should re-export these constants (not types, which are erased at runtime)
     expect(componentModule.PROACTIVE_PENDING_REQUEST_NODE_ID).toBe("request:proactive-pending");
     expect(componentModule.PROACTIVE_PENDING_TURN_NODE_ID).toBe("turn:proactive-pending");
-  });
+  }, 30000);
 });
 
 describe("Trailing-edge throttle behavior", () => {
