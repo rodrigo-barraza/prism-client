@@ -77,6 +77,8 @@ interface MachineInfo {
   cpuModel?: string;
   cpuCores?: number;
   totalMemoryBytes?: number;
+  isWsl?: boolean;
+  wslDistro?: string;
 }
 
 interface LocalWorkspace {
@@ -778,6 +780,14 @@ export default function SettingsPageComponent() {
   };
 
   const formatPlatformLabel = (machineInfo: MachineInfo): string => {
+    // Detect WSL2 from the isWsl flag or kernel release string
+    const isWslEnvironment =
+      machineInfo.isWsl || /microsoft/i.test(machineInfo.release || "");
+
+    if (isWslEnvironment) {
+      return machineInfo.arch ? `WSL2 ${machineInfo.arch}` : "WSL2";
+    }
+
     const platformLabels: Record<string, string> = {
       win32: "Windows",
       darwin: "macOS",
@@ -889,7 +899,7 @@ export default function SettingsPageComponent() {
                     <div className={styles["machine-info"]}>
                       <div className={styles["machine-name-layout-row"]}>
                         <span className={styles["machine-name"]}>
-                          {agent.machineInfo?.hostname || agent.name}
+                          {agent.name}
                         </span>
                         <button
                           type="button"
@@ -958,6 +968,11 @@ export default function SettingsPageComponent() {
                               {formatMemorySize(
                                 agent.machineInfo.totalMemoryBytes,
                               )}
+                            </span>
+                          )}
+                          {agent.machineInfo.wslDistro && (
+                            <span className={styles["machine-info-tag"]}>
+                              {agent.machineInfo.wslDistro}
                             </span>
                           )}
                           {agent.machineInfo.release && (
