@@ -3728,6 +3728,8 @@ export default function ChatConversationComponent({
         const contentSegments: ContentSegment[] = [];
         const textFragments: string[] = [];
         const thinkingFragments: string[] = [];
+        const audioRefs: string[] = []; // one entry per audio segment — mirrors message.audio
+        const imageRefs: string[] = []; // one entry per image segment — mirrors message.images
         const segmentToolIdSet = new Set(); // Dedup: track tool IDs already in contentSegments
         let lastSegmentType: string | null = null; // "thinking" | "text" | "tools"
         let prevCleanLen = 0; // length of cleanTextRaw at last onChunk — used for computing deltas
@@ -3908,22 +3910,31 @@ export default function ChatConversationComponent({
             if (isStale()) return;
             const imgRef = minioRef || dataStr;
             if (!imgRef) return;
+            // Track segment ordering so images render inline at their true
+            // position (matching the backend's post-stream displayMessages)
+            if (!imageRefs.includes(imgRef)) {
+              contentSegments.push({
+                type: "image",
+                fragmentIndex: imageRefs.length,
+              });
+              imageRefs.push(imgRef);
+              lastSegmentType = "image";
+            }
             setMessages((previousMessages) => {
               const updated = [...previousMessages];
               const last = updated[updated.length - 1];
               if (last?.role === "assistant") {
-                const existingImages = last.images || [];
-                if (!existingImages.includes(imgRef)) {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    images: [...existingImages, imgRef],
-                  };
-                }
+                updated[updated.length - 1] = {
+                  ...last,
+                  images: [...imageRefs],
+                  contentSegments: snapshotSegments(),
+                };
               } else {
                 updated.push({
                   role: MESSAGE_ROLES.ASSISTANT,
                   content: "",
-                  images: [imgRef],
+                  images: [...imageRefs],
+                  contentSegments: snapshotSegments(),
                 });
               }
               return updated;
@@ -3932,26 +3943,31 @@ export default function ChatConversationComponent({
           onAudio: (dataString: string, _mimeType: string) => {
             if (isStale()) return;
             if (!dataString) return;
+            // Track segment ordering so audio players render inline at their
+            // true position (matching the backend's post-stream displayMessages)
+            if (!audioRefs.includes(dataString)) {
+              contentSegments.push({
+                type: "audio",
+                fragmentIndex: audioRefs.length,
+              });
+              audioRefs.push(dataString);
+              lastSegmentType = "audio";
+            }
             setMessages((previousMessages) => {
               const updated = [...previousMessages];
               const last = updated[updated.length - 1];
               if (last?.role === "assistant") {
-                const existingAudio = Array.isArray(last.audio)
-                  ? last.audio
-                  : last.audio
-                    ? [last.audio]
-                    : [];
-                if (!existingAudio.includes(dataString)) {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    audio: [...existingAudio, dataString],
-                  };
-                }
+                updated[updated.length - 1] = {
+                  ...last,
+                  audio: [...audioRefs],
+                  contentSegments: snapshotSegments(),
+                };
               } else {
                 updated.push({
                   role: MESSAGE_ROLES.ASSISTANT,
                   content: "",
-                  audio: [dataString],
+                  audio: [...audioRefs],
+                  contentSegments: snapshotSegments(),
                 });
               }
               return updated;

@@ -854,7 +854,8 @@ export interface SSECallbacks {
 }
 
 export interface ContentSegment {
-  type: "thinking" | "tools" | "text" | "plan";
+  type: "thinking" | "tools" | "text" | "plan" | "audio" | "image";
+  /** For text/thinking: index into the fragments array. For audio/image: index into message.audio/message.images. */
   fragmentIndex?: number;
   toolIds?: string[];
 }

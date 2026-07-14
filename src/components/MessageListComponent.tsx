@@ -1806,6 +1806,49 @@ export default function MessageList({
                                 />
                               );
                             }
+                            if (seg.type === "audio") {
+                              const audioList = Array.isArray(message.audio)
+                                ? message.audio
+                                : message.audio
+                                  ? [message.audio]
+                                  : [];
+                              const audioRef =
+                                audioList[seg.fragmentIndex ?? 0];
+                              if (!audioRef) return null;
+                              return (
+                                <div
+                                  key={`seg-a-${si}`}
+                                  className={styles['image-preview-layout-row']}
+                                >
+                                  <MediaPreview dataUrl={audioRef} />
+                                </div>
+                              );
+                            }
+                            if (seg.type === "image") {
+                              const imageRef =
+                                message.images?.[seg.fragmentIndex ?? 0];
+                              if (!imageRef) return null;
+                              const resolvedUrl =
+                                PrismService.getFileUrl(imageRef);
+                              const cat = getMimeCategory(imageRef);
+                              let clickHandler;
+                              if (cat === "image")
+                                clickHandler = () =>
+                                  handleImageClick(resolvedUrl);
+                              else if (cat === "pdf" || cat === "text")
+                                clickHandler = () => onDocClick?.(resolvedUrl);
+                              return (
+                                <div
+                                  key={`seg-i-${si}`}
+                                  className={styles['image-preview-layout-row']}
+                                >
+                                  <MediaPreview
+                                    dataUrl={imageRef}
+                                    onClick={clickHandler}
+                                  />
+                                </div>
+                              );
+                            }
                             return null;
                           };
 
@@ -1876,14 +1919,6 @@ export default function MessageList({
                               (state) => state.type !== "thinking",
                             );
 
-                            // Find last tool segment for auto-collapse logic
-                            const lastToolSegmentIndex = (() => {
-                              for (let k = segs.length - 1; k >= 0; k--) {
-                                if (segs[k].type === "tools") return k;
-                              }
-                              return -1;
-                            })();
-
                             // Find the last thinking segment — the streaming cursor
                             // should attach to this one (not the absolute last segment)
                             // so intermediate thinking blocks remain visible during
@@ -1929,10 +1964,12 @@ export default function MessageList({
                                     >
                                       {renderSeg(seg, segmentIndex, {
                                         isLastText,
+                                        // Collapse each tool card as soon as it
+                                        // completes so the streaming render matches
+                                        // the final grouped layout (the active tool
+                                        // stays expanded via isBlockActive)
                                         isAutoCollapsed:
-                                          isStreaming &&
-                                          seg.type === "tools" &&
-                                          segmentIndex !== lastToolSegmentIndex,
+                                          isStreaming && seg.type === "tools",
                                       })}
                                     </React.Fragment>
                                   );
@@ -1953,20 +1990,14 @@ export default function MessageList({
                             }
                             return -1;
                           })();
-                          // Find last tool segment for auto-collapse logic
-                          const lastToolIndex = (() => {
-                            for (let k = segs.length - 1; k >= 0; k--) {
-                              if (segs[k].type === "tools") return k;
-                            }
-                            return -1;
-                          })();
                           return segs.map((seg, si) =>
                             renderSeg(seg, si, {
                               isLastText: si === lastTextIndex,
+                              // Collapse each tool card as soon as it completes so
+                              // the streaming render matches the final grouped layout
+                              // (the active tool stays expanded via isBlockActive)
                               isAutoCollapsed:
-                                isStreaming &&
-                                seg.type === "tools" &&
-                                si !== lastToolIndex,
+                                isStreaming && seg.type === "tools",
                             }),
                           );
                         })()
@@ -2102,8 +2133,12 @@ export default function MessageList({
                           );
                         })()}
 
-                      {/* Images / media */}
-                      {message.images && message.images.length > 0 && (
+                      {/* Images / media (skipped when already rendered inline via segments) */}
+                      {message.images &&
+                        message.images.length > 0 &&
+                        !message.contentSegments?.some(
+                          (segment) => segment.type === "image",
+                        ) && (
                         <div className={styles['image-preview-layout-row']}>
                           {message.images.map((rawUrl, j) => {
                             const resolvedUrl = PrismService.getFileUrl(rawUrl);
@@ -2135,8 +2170,11 @@ export default function MessageList({
                           </div>
                         )}
 
-                      {/* Audio */}
-                      {message.audio && (
+                      {/* Audio (skipped when already rendered inline via segments) */}
+                      {message.audio &&
+                        !message.contentSegments?.some(
+                          (segment) => segment.type === "audio",
+                        ) && (
                         <div className={styles['image-preview-layout-row']}>
                           {(Array.isArray(message.audio)
                             ? message.audio
