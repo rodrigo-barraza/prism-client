@@ -5016,6 +5016,7 @@ export default function ChatConversationComponent({
               messageTokens: data.messageTokens as number,
               systemPromptTokens: data.systemPromptTokens as number,
               toolSchemaTokens: data.toolSchemaTokens as number,
+              skillTokens: data.skillTokens !== undefined ? (data.skillTokens as number) : undefined,
               safetyMarginTokens: data.safetyMarginTokens as number,
               totalInputTokens: data.totalInputTokens as number,
               availableOutputTokens: data.availableOutputTokens as number,

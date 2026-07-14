@@ -613,6 +613,7 @@ export interface SSEContextBudgetEvent {
   messageTokens: number;
   systemPromptTokens: number;
   toolSchemaTokens: number;
+  skillTokens?: number;
   safetyMarginTokens: number;
   totalInputTokens: number;
   availableOutputTokens: number;
@@ -629,6 +630,7 @@ export interface ContextBudget {
   messageTokens: number;
   systemPromptTokens: number;
   toolSchemaTokens: number;
+  skillTokens?: number;
   safetyMarginTokens: number;
   totalInputTokens: number;
   availableOutputTokens: number;

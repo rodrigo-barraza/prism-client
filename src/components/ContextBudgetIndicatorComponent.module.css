@@ -1,6 +1,8 @@
 /* ── Context Budget Indicator ──────────────────────────────── */
 /* Compact stacked progress bar showing context window usage  */
-/* above the chat input box.                                  */
+/* above the chat input box. Category colors mirror Claude    */
+/* Code's context-usage panel: system prompt (orange), system */
+/* tools (blue), skills (green), messages (yellow).           */
 
 .context-budget-indicator {
   max-width: 800px;
@@ -9,14 +11,16 @@
   padding-inline: 4px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   opacity: 0;
   animation: context-budget-fade-in 0.3s ease-out forwards;
 
-  --messages-color: oklch(0.65 0.15 250);
-  --system-color: oklch(0.7 0.12 180);
-  --tools-color: oklch(0.6 0.16 300);
-  --draft-color: oklch(0.75 0.17 65);
+  --system-color: oklch(0.72 0.15 60);
+  --tools-color: oklch(0.68 0.13 245);
+  --skills-color: oklch(0.72 0.15 155);
+  --messages-color: oklch(0.8 0.14 90);
+  --draft-color: oklch(0.65 0.14 300);
+  --free-color: var(--calculated-border-color);
 }
 
 @keyframes context-budget-fade-in {
@@ -30,14 +34,64 @@
   }
 }
 
+/* ── Header row ────────────────────────────────────────────── */
+
+.context-budget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+.context-budget-usage {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-weight: 500;
+}
+
+.context-budget-separator {
+  opacity: 0.4;
+}
+
+.context-budget-percent {
+  opacity: 0.65;
+  font-weight: 400;
+}
+
+.context-budget-indicator[data-severity="warning"] .context-budget-percent {
+  color: oklch(0.75 0.15 80);
+  opacity: 1;
+}
+
+.context-budget-indicator[data-severity="critical"] .context-budget-percent {
+  color: oklch(0.65 0.2 25);
+  opacity: 1;
+}
+
+.context-budget-header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.context-budget-available {
+  opacity: 0.6;
+  font-size: 10px;
+}
+
 /* ── Stacked bar ───────────────────────────────────────────── */
 
 .context-budget-bar {
   display: flex;
-  height: 4px;
-  border-radius: 2px;
+  height: 5px;
+  border-radius: 3px;
   overflow: hidden;
-  background: var(--calculated-border-color);
+  background: var(--free-color);
   gap: 1px;
 }
 
@@ -46,71 +100,77 @@
   transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Messages segment — accent blue */
-.segment-messages {
-  background: var(--messages-color);
-  border-radius: 2px 0 0 2px;
+.context-budget-bar > div:first-child {
+  border-radius: 3px 0 0 3px;
 }
 
-/* System prompt segment — teal */
+/* System prompt segment — orange */
 .segment-system-prompt {
   background: var(--system-color);
 }
 
-/* Tool schemas segment — purple */
+/* System tools segment — blue */
 .segment-tool-schemas {
   background: var(--tools-color);
 }
 
-/* Draft input segment — amber, appears at end of bar */
+/* Skills segment — green */
+.segment-skills {
+  background: var(--skills-color);
+}
+
+/* Messages segment — yellow */
+.segment-messages {
+  background: var(--messages-color);
+}
+
+/* Draft input segment — violet, appears at end of bar */
 .segment-draft-input {
   background: var(--draft-color);
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 3px 3px 0;
   opacity: 0.85;
-}
-
-/* ── Severity modifiers ────────────────────────────────────── */
-
-.context-budget-indicator[data-severity="warning"] {
-  --messages-color: oklch(0.75 0.15 80);
-}
-
-.context-budget-indicator[data-severity="critical"] {
-  --messages-color: oklch(0.65 0.2 25);
-  --system-color: oklch(0.6 0.18 30);
-  --tools-color: oklch(0.55 0.15 35);
 }
 
 /* ── Legend row ────────────────────────────────────────────── */
 
 .context-budget-legend {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 4px 14px;
   align-items: center;
   margin-block-start: 1px;
-  margin-block-end: 2px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  gap: 5px;
+  font-size: 10px;
+  letter-spacing: 0.02em;
   color: var(--text-secondary);
-  opacity: 0.8;
+  line-height: 1.2;
+}
+
+.legend-label {
+  opacity: 0.75;
+}
+
+.legend-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.legend-item-free .legend-label,
+.legend-item-free .legend-count {
+  opacity: 0.55;
 }
 
 .legend-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  transition: background-color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.legend-dot-messages {
-  background-color: var(--messages-color);
+  flex-shrink: 0;
 }
 
 .legend-dot-system {
@@ -121,42 +181,29 @@
   background-color: var(--tools-color);
 }
 
+.legend-dot-skills {
+  background-color: var(--skills-color);
+}
+
+.legend-dot-messages {
+  background-color: var(--messages-color);
+}
+
 .legend-dot-draft {
   background-color: var(--draft-color);
 }
 
-/* ── Labels row ────────────────────────────────────────────── */
-
-.context-budget-labels {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 10px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-secondary);
-  letter-spacing: 0.01em;
-  line-height: 1;
+.legend-dot-free {
+  background-color: var(--free-color);
 }
 
-.context-budget-usage {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.context-budget-separator {
-  opacity: 0.4;
-}
-
-.context-budget-available {
-  opacity: 0.6;
-}
+/* ── Badges ────────────────────────────────────────────────── */
 
 .context-budget-clamped-badge {
   display: inline-flex;
   align-items: center;
   padding: 1px 4px;
-  margin-inline-start: 4px;
+  margin-inline-start: 6px;
   font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
@@ -167,13 +214,10 @@
   line-height: 1.3;
 }
 
-/* ── Source quality badge ──────────────────────────────────── */
-
 .context-budget-source-badge {
   display: inline-flex;
   align-items: center;
   padding: 1px 4px;
-  margin-inline-start: 4px;
   font-size: 8px;
   font-weight: 600;
   text-transform: uppercase;
