@@ -6,23 +6,24 @@
 
 import { PROJECT_NAME } from "@/config";
 import { LOCAL_STORAGE_KEY_WORKSPACE_ROOT, LOCAL_STORAGE_KEY_USERNAME } from "@/constants";
+import { IDENTITY_HEADERS } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 export function getBaseHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "x-project": PROJECT_NAME,
+    [IDENTITY_HEADERS.project]: PROJECT_NAME,
   };
 
   // Include the active workspace root path if one is selected (client-side only)
   if (typeof window !== "undefined") {
     const workspaceRoot = localStorage.getItem(LOCAL_STORAGE_KEY_WORKSPACE_ROOT);
     if (workspaceRoot) {
-      headers["x-workspace-root"] = workspaceRoot;
+      headers[IDENTITY_HEADERS.workspaceRoot] = workspaceRoot;
     }
 
     const username = localStorage.getItem(LOCAL_STORAGE_KEY_USERNAME);
     if (username) {
-      headers["x-username"] = username;
+      headers[IDENTITY_HEADERS.username] = username;
     }
   }
 

@@ -1,5 +1,5 @@
 import { EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS } from "@/constants";
-import { SERVER_SENT_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { SERVER_SENT_EVENT_TYPES, IDENTITY_HEADERS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { PRISM_SERVICE_URL, PRISM_WEBSOCKET_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
@@ -1677,8 +1677,8 @@ export default class PrismService {
 
     const headers = getHeaders();
     const websocketUrlParameters = new URLSearchParams({
-      project: headers["x-project"] || "any",
-      username: headers["x-username"] || "anonymous",
+      project: headers[IDENTITY_HEADERS.project] || "any",
+      username: headers[IDENTITY_HEADERS.username] || "anonymous",
     });
     const websocketUrl = `${PRISM_WEBSOCKET_URL}/ws/chat?${websocketUrlParameters.toString()}`;
 

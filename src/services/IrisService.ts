@@ -1,6 +1,7 @@
 import { PRISM_SERVICE_URL } from "@/config";
 import type { GraphData } from "@rodrigo-barraza/utilities-library/graph";
 import { getBaseHeaders } from "./serviceHeaders";
+import { IDENTITY_HEADERS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { subscribe as sseSubscribe } from "./SSEManager";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
@@ -26,7 +27,7 @@ import type {
 const API_BASE = PRISM_SERVICE_URL;
 
 function getAdminHeaders(): Record<string, string> {
-  return { ...getBaseHeaders(), "x-username": "admin" };
+  return { ...getBaseHeaders(), [IDENTITY_HEADERS.username]: "admin" };
 }
 
 // --- Response Interfaces ------------------------------------
