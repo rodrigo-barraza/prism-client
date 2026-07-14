@@ -290,29 +290,36 @@ function ThinkingBlock({
   const [streamClosed, setStreamClosed] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
 
-  // Live counter for streaming — track elapsed seconds in real-time
+  // Live counter for streaming — track elapsed seconds in real-time.
+  // Deliberately keyed on a boolean rather than the thinking text itself:
+  // depending on `thinking` would tear down and recreate the interval on
+  // every streamed token, so a sub-second token cadence keeps the 1s timer
+  // from ever firing and the counter never advances.
   const streamingStartRef = useRef<number | null>(null);
   const [liveElapsedSeconds, setLiveElapsedSeconds] = useState(0);
+  const hasThinkingText = Boolean(thinking);
 
   useEffect(() => {
-    if (isStreaming && thinking) {
+    if (isStreaming && hasThinkingText) {
       if (streamingStartRef.current === null) {
         streamingStartRef.current = performance.now();
       }
-      const intervalId = setInterval(() => {
+      const updateElapsedSeconds = () => {
         if (streamingStartRef.current !== null) {
           setLiveElapsedSeconds(
             Math.round((performance.now() - streamingStartRef.current) / 1000),
           );
         }
-      }, 1000);
+      };
+      updateElapsedSeconds();
+      const intervalId = setInterval(updateElapsedSeconds, 1000);
       return () => clearInterval(intervalId);
     }
     if (!isStreaming) {
       streamingStartRef.current = null;
       setLiveElapsedSeconds(0);
     }
-  }, [isStreaming, thinking]);
+  }, [isStreaming, hasThinkingText]);
 
   // Derive collapsed state:
   // - Streaming: expanded unless user explicitly closed it
@@ -347,7 +354,7 @@ function ThinkingBlock({
   const thinkingLabel = (() => {
     if (isStreaming) {
       return liveElapsedSeconds > 0
-        ? `Thinking for ${liveElapsedSeconds}s…`
+        ? `Thinking for ${liveElapsedSeconds} second${liveElapsedSeconds === 1 ? "" : "s"}…`
         : "Thinking…";
     }
     if (thinkingDurationSeconds != null && thinkingDurationSeconds > 0) {
