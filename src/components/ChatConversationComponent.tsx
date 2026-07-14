@@ -532,6 +532,12 @@ export default function ChatConversationComponent({
   const [adminSelectedSource, setAdminSelectedSource] = useState<
     "conversation" | "agent_conversation" | null
   >(null);
+  // Ref mirror so the long-lived change-stream subscription reads the
+  // current source without re-subscribing (see activeIdRef).
+  const adminSelectedSourceRef = useRef<
+    "conversation" | "agent_conversation" | null
+  >(adminSelectedSource);
+  adminSelectedSourceRef.current = adminSelectedSource;
   const [adminLoadingDetail, setAdminLoadingDetail] = useState(false);
   const [adminNewIds, setAdminNewIds] = useState<Set<string>>(new Set());
   const [adminGeneratingCount, setAdminGeneratingCount] = useState(0);
@@ -610,6 +616,11 @@ export default function ChatConversationComponent({
   const [conversationsHasMore, setConversationsHasMore] = useState(false);
   const [conversationsLoading, setConversationsLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // Ref mirrors for long-lived subscriptions (admin change-stream onChange)
+  // that must read the CURRENT selection without re-subscribing on every
+  // selection change.
+  const activeIdRef = useRef<string | null>(activeId);
+  activeIdRef.current = activeId;
 
   // Single source of truth for the conversation graph.
   // Called unconditionally so the SSE subscription stays alive
@@ -2218,6 +2229,27 @@ export default function ChatConversationComponent({
   ]);
 
   // Admin: select an entry
+  // Admin: upsert a freshly-fetched document into `conversations`. The
+  // live-stream gate (isConversationRunning / isActiveConversationSubAgent)
+  // derives from this entry's isActive/parentAgentConversationId, so it must
+  // track the latest fetch — an insert-only snapshot would freeze the gate
+  // in whatever state the conversation had when first selected.
+  const adminUpsertConversationEntry = useCallback(
+    (fullEntry: AgentConversation | Conversation) => {
+      if (!fullEntry?.id) return;
+      setConversations((previousConversations) => {
+        const exists = previousConversations.some(
+          (entry) => entry.id === fullEntry.id,
+        );
+        if (!exists) return [fullEntry, ...previousConversations];
+        return previousConversations.map((entry) =>
+          entry.id === fullEntry.id ? { ...entry, ...fullEntry } : entry,
+        );
+      });
+    },
+    [],
+  );
+
   const adminSelectEntry = useCallback(
     async (id: string, source: "conversation" | "agent_conversation" = "conversation") => {
       if (!isAdmin || id === activeId) return;
@@ -2281,18 +2313,14 @@ export default function ChatConversationComponent({
         });
 
         // Update sidebar conversations with the full entry
-        setConversations((previousConversations) => {
-          const exists = previousConversations.some((entry) => entry.id === id);
-          if (exists) return previousConversations;
-          return [fullEntry as AgentConversation | Conversation, ...previousConversations];
-        });
+        adminUpsertConversationEntry(fullEntry as AgentConversation | Conversation);
       } catch {
         setMessages([]);
       } finally {
         setAdminLoadingDetail(false);
       }
     },
-    [isAdmin, activeId, adminAgentParam, adminTraceFilter, adminProjectFilter, adminProviderFilter, adminModelFilter],
+    [isAdmin, activeId, adminAgentParam, adminTraceFilter, adminProjectFilter, adminProviderFilter, adminModelFilter, adminUpsertConversationEntry],
   );
 
   // Admin: refresh selected entry
@@ -2304,6 +2332,12 @@ export default function ChatConversationComponent({
           source === "agent_conversation"
             ? ((await IrisService.getAgentConversation(id)) as UnifiedEntry)
             : ((await IrisService.getConversation(id)) as UnifiedEntry);
+        // Keep the gate-driving entry (isActive etc.) in sync with the DB
+        adminUpsertConversationEntry(full as AgentConversation | Conversation);
+        // While the live WebSocket stream owns `messages`, don't clobber the
+        // partially-streamed content with a whole-document snapshot — the
+        // stream's onDone does the final canonical refresh.
+        if (isWebSocketStreamingRef.current) return;
         const displayMessages = resolveDisplayMessages(full);
         setMessages(displayMessages);
         setBackendConversationStats(full.stats || null);
@@ -2311,7 +2345,7 @@ export default function ChatConversationComponent({
         console.error("Failed to refresh selected entry:", error);
       }
     },
-    [isAdmin],
+    [isAdmin, adminUpsertConversationEntry],
   );
 
   // Admin: initial detail load by ID
@@ -2447,9 +2481,17 @@ export default function ChatConversationComponent({
           event.collection === "agent_conversations"
         ) {
           adminLoadEntries();
-          // Also refresh selected entry if it matches
-          if (event.id && event.id === activeId) {
-            adminRefreshSelectedEntry(activeId, adminSelectedSource);
+          // Also refresh selected entry if it matches. Read the CURRENT
+          // selection through refs — this subscription lives for the whole
+          // admin session, so closing over activeId state would compare
+          // against the selection at subscribe time (always null) and the
+          // viewed conversation would never refresh.
+          const currentActiveId = activeIdRef.current;
+          if (event.id && event.id === currentActiveId) {
+            adminRefreshSelectedEntry(
+              currentActiveId,
+              adminSelectedSourceRef.current,
+            );
           }
         }
       },
@@ -6690,6 +6732,10 @@ export default function ChatConversationComponent({
         isSubAgentConversation: isActiveConversationSubAgent,
         isClientDrivenGeneration: isClientDrivenGenerationRef.current,
         isConversationRunning,
+        // The admin viewer never drives generation — it live-streams ANY
+        // running conversation (the service mirrors main-conversation
+        // events to direct WebSocket subscribers too).
+        isReadOnlyViewer: isAdmin,
       })
     ) {
       return;
@@ -6893,6 +6939,14 @@ export default function ChatConversationComponent({
         streamedText = "";
         streamedThinking = "";
 
+        // The admin viewer reads cross-user documents through the admin
+        // fetchers — the username-scoped PrismService endpoints would miss
+        // another user's conversation entirely.
+        if (isAdmin) {
+          adminRefreshSelectedEntry(activeId, adminSelectedSourceRef.current);
+          return;
+        }
+
         (async () => {
           try {
             const finalConversation = isNoAgent
@@ -6931,8 +6985,10 @@ export default function ChatConversationComponent({
     isActiveConversationSubAgent,
     isConversationRunning,
     isNoAgent,
+    isAdmin,
     agentProject,
     applyConversationData,
+    adminRefreshSelectedEntry,
   ]);
 
   // -- Visibility Recovery (Mobile Screen Lock) -------------------

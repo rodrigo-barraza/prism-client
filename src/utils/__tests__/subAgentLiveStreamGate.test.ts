@@ -56,3 +56,36 @@ describe("shouldOpenSubAgentLiveStream", () => {
     ).toBe(false);
   });
 });
+
+describe("shouldOpenSubAgentLiveStream — read-only viewer (/admin/chat)", () => {
+  // The admin viewer never drives generation itself, and the service mirrors
+  // main-conversation events to direct WebSocket subscribers
+  // (SseUtilities.withDirectViewerBroadcast) — so a read-only viewer streams
+  // ANY running conversation, not only sub-agents.
+  it("opens the stream for a running MAIN conversation", () => {
+    expect(
+      shouldOpenSubAgentLiveStream({
+        ...BASE,
+        isSubAgentConversation: false,
+        isReadOnlyViewer: true,
+      }),
+    ).toBe(true);
+  });
+
+  it("still opens for a running sub-agent conversation", () => {
+    expect(
+      shouldOpenSubAgentLiveStream({ ...BASE, isReadOnlyViewer: true }),
+    ).toBe(true);
+  });
+
+  it("stays closed for a finished conversation", () => {
+    expect(
+      shouldOpenSubAgentLiveStream({
+        ...BASE,
+        isSubAgentConversation: false,
+        isReadOnlyViewer: true,
+        isConversationRunning: false,
+      }),
+    ).toBe(false);
+  });
+});

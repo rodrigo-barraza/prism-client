@@ -18,6 +18,7 @@ export function shouldOpenSubAgentLiveStream({
   isSubAgentConversation,
   isClientDrivenGeneration,
   isConversationRunning,
+  isReadOnlyViewer = false,
 }: {
   /** The conversation currently open in the UI, if any */
   activeConversationId: string | null | undefined;
@@ -27,9 +28,17 @@ export function shouldOpenSubAgentLiveStream({
   isClientDrivenGeneration: boolean;
   /** True when the backend reports the conversation as still doing work */
   isConversationRunning: boolean;
+  /**
+   * True for pure viewers that never drive generation themselves (the
+   * /admin/chat viewer). The service mirrors MAIN-conversation events to
+   * direct WebSocket subscribers too (SseUtilities withDirectViewerBroadcast),
+   * so a read-only viewer streams any running conversation — not only
+   * sub-agents.
+   */
+  isReadOnlyViewer?: boolean;
 }): boolean {
   if (!activeConversationId) return false;
-  if (!isSubAgentConversation) return false;
+  if (!isSubAgentConversation && !isReadOnlyViewer) return false;
   if (isClientDrivenGeneration) return false;
   return isConversationRunning;
 }
