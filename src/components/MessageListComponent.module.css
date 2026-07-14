@@ -862,18 +862,21 @@
 /* ── Sticky Pinned User Message ── */
 .sticky-user-message {
   position: sticky;
-  top: -30px;
+  top: 0;
   z-index: 20;
   pointer-events: auto;
   will-change: opacity;
+  /* Opaque backdrop matching the chat background so scrolling
+     content is cut off at the sticky's bottom edge instead of
+     showing through around it */
+  background: var(--background-base);
 }
 
 .sticky-user-message-inner {
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: 800px;
-  margin: 0 auto;
+  width: 100%;
   padding: 10px 14px;
   background: color-mix(in oklch,
       var(--accent-primary) 8%,
@@ -885,7 +888,7 @@
       var(--calculated-border-color));
   border-top: none;
   border-left: 3px solid var(--accent-primary);
-  border-radius: 0 0 6px 0;
+  border-radius: 0 0 6px 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow:

@@ -994,13 +994,16 @@ export default function MessageList({
     };
   }, [displayMessages.length]);
 
-  // Derive sticky message data from the pinned index
+  // Derive sticky message data from the pinned index. Messages with
+  // neither text nor attachments (e.g. audio-only) are never pinned.
   const stickyUserMessage = useMemo(() => {
     if (pinnedUserMessageIndex < 0) return null;
     const message = displayMessages[pinnedUserMessageIndex];
     if (!message || message.role !== "user" || message.deleted) return null;
+    const text = (message.content || "").trim();
+    if (!text && !message.images?.length) return null;
     return {
-      content: message.content,
+      content: text,
       images: message.images,
       index: pinnedUserMessageIndex,
     };
@@ -1165,17 +1168,17 @@ export default function MessageList({
                 {stickyUserMessage.images.length > 1 ? "s" : ""}
               </span>
             )}
-            <span className={styles['sticky-user-message-text']}>
-              {stickyUserMessage?.content
-                ? renderContentWithMentions(
-                    stickyUserMessage.content.length > 200
-                      ? stickyUserMessage.content.slice(0, 200) + "…"
-                      : stickyUserMessage.content,
-                    knownPathsSet,
-                    onMentionFileOpen,
-                  )
-                : "(no text)"}
-            </span>
+            {stickyUserMessage?.content && (
+              <span className={styles['sticky-user-message-text']}>
+                {renderContentWithMentions(
+                  stickyUserMessage.content.length > 200
+                    ? stickyUserMessage.content.slice(0, 200) + "…"
+                    : stickyUserMessage.content,
+                  knownPathsSet,
+                  onMentionFileOpen,
+                )}
+              </span>
+            )}
           </div>
           <ChevronDown size={14} className={styles['sticky-user-message-chevron']} />
         </div>
