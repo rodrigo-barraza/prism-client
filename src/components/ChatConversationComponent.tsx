@@ -6745,6 +6745,12 @@ export default function ChatConversationComponent({
   // The backend's SubAgentTelemetryEmitter broadcasts these events to
   // any WebSocket subscriber registered for the sub-agent's own
   // conversationId via WebSocketConnectionRegistry.
+  // Admin's subscription is always-on for the viewed conversation, so its
+  // gate must not depend on the (change-stream-lagged) running flag — a
+  // constant here keeps the effect from tearing the socket down mid-turn
+  // every time the persisted flag flips.
+  const liveStreamConversationRunning = isAdmin ? false : isConversationRunning;
+
   useEffect(() => {
     if (!activeId) return;
     if (
@@ -6752,10 +6758,11 @@ export default function ChatConversationComponent({
         activeConversationId: activeId,
         isSubAgentConversation: isActiveConversationSubAgent,
         isClientDrivenGeneration: isClientDrivenGenerationRef.current,
-        isConversationRunning,
+        isConversationRunning: liveStreamConversationRunning,
         // The admin viewer never drives generation — it live-streams ANY
-        // running conversation (the service mirrors main-conversation
-        // events to direct WebSocket subscribers too).
+        // conversation (the service mirrors main-conversation events to
+        // direct WebSocket subscribers too), and stays subscribed while
+        // viewing so turn-start events are never missed.
         isReadOnlyViewer: isAdmin,
       })
     ) {
@@ -6775,17 +6782,60 @@ export default function ChatConversationComponent({
     let streamedThinking = seeded.streamedThinking;
     let isSubscriptionActive = true;
 
-    // Mark this conversation as "generating" so the UI shows the active state
-    setIsGenerating(true);
+    // Non-admin (viewed sub-agent): the gate guarantees a generation is
+    // running, so show the active state immediately. Admin: the always-on
+    // subscription is mostly idle — the flag raises lazily when events
+    // actually arrive (markStreamDelivering) and clears on done.
+    if (!isAdmin) setIsGenerating(true);
+
+    // An event just arrived — this stream owns `messages` until done.
+    // Re-raised per event so ownership recovers on every subsequent turn
+    // of an always-on admin subscription.
+    const markStreamDelivering = () => {
+      isWebSocketStreamingRef.current = true;
+      webSocketHasStreamedContentRef.current = true;
+      setIsGenerating(true);
+    };
 
     // Capture for the cleanup's final canonical refresh (admin viewer)
     const streamedConversationId = activeId;
     const streamedAdminSource = adminSelectedSourceRef.current;
 
     const cleanupWebSocket = PrismService.subscribeToAutoResponse(activeId, {
+      onUserMessage: (data: SSEData) => {
+        if (!isSubscriptionActive) return;
+        // A new turn started: reset the accumulators and render the user's
+        // prompt immediately — it is only persisted at finalize, so no
+        // snapshot refresh can show it until the turn ends.
+        markStreamDelivering();
+        streamedText = "";
+        streamedThinking = "";
+        const userMessageContent = (data.content as string) || "";
+        if (!userMessageContent) return;
+        setMessages((previousMessages) => {
+          const lastMessage = previousMessages[previousMessages.length - 1];
+          if (
+            lastMessage?.role === "user" &&
+            lastMessage.content === userMessageContent
+          ) {
+            return previousMessages; // already present (e.g. snapshot race)
+          }
+          return [
+            ...previousMessages,
+            {
+              role: MESSAGE_ROLES.USER,
+              content: userMessageContent,
+              timestamp: new Date(
+                (data.timestamp as number) || Date.now(),
+              ).toISOString(),
+            } as ClientMessage,
+          ];
+        });
+      },
+
       onChunk: (content: string) => {
         if (!isSubscriptionActive) return;
-        webSocketHasStreamedContentRef.current = true;
+        markStreamDelivering();
         streamedText += content;
         const trimmedText = streamedText.trim();
 
@@ -6809,7 +6859,7 @@ export default function ChatConversationComponent({
 
       onThinking: (content: string) => {
         if (!isSubscriptionActive) return;
-        webSocketHasStreamedContentRef.current = true;
+        markStreamDelivering();
         streamedThinking += content;
 
         setMessages((previousMessages) => {
@@ -6835,7 +6885,7 @@ export default function ChatConversationComponent({
 
       onToolExecution: (data: SSEData) => {
         if (!isSubscriptionActive) return;
-        webSocketHasStreamedContentRef.current = true;
+        markStreamDelivering();
         const toolData = data.tool as Record<string, unknown> | undefined;
         if (!toolData) return;
         if (data.toolEmoji && toolData.name) {
@@ -6963,6 +7013,9 @@ export default function ChatConversationComponent({
         setIsGenerating(false);
         isClientDrivenGenerationRef.current = false;
         isWebSocketStreamingRef.current = false;
+        // Release `messages` ownership so snapshot refreshes flow again
+        // between turns of an always-on (admin) subscription.
+        webSocketHasStreamedContentRef.current = false;
         streamedText = "";
         streamedThinking = "";
 
@@ -7019,7 +7072,7 @@ export default function ChatConversationComponent({
   }, [
     activeId,
     isActiveConversationSubAgent,
-    isConversationRunning,
+    liveStreamConversationRunning,
     isNoAgent,
     isAdmin,
     agentProject,

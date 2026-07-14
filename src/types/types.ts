@@ -832,6 +832,8 @@ export interface SSECallbacks {
   onApprovalRequired?: (event: SSEData) => void;
   onPlanProposal?: (event: SSEData) => void;
   onUserQuestion?: (event: SSEData) => void;
+  /** Turn-start mirror of the user's prompt (`user_message` event) */
+  onUserMessage?: (event: SSEData) => void;
   onTaskNotification?: (event: SSEData) => void;
   onConversationStateUpdate?: (event: SSEData) => void;
   onTodoUpdate?: (event: SSEData) => void;

@@ -61,7 +61,7 @@ describe("shouldOpenSubAgentLiveStream — read-only viewer (/admin/chat)", () =
   // The admin viewer never drives generation itself, and the service mirrors
   // main-conversation events to direct WebSocket subscribers
   // (SseUtilities.withDirectViewerBroadcast) — so a read-only viewer streams
-  // ANY running conversation, not only sub-agents.
+  // ANY conversation, not only sub-agents.
   it("opens the stream for a running MAIN conversation", () => {
     expect(
       shouldOpenSubAgentLiveStream({
@@ -78,13 +78,28 @@ describe("shouldOpenSubAgentLiveStream — read-only viewer (/admin/chat)", () =
     ).toBe(true);
   });
 
-  it("stays closed for a finished conversation", () => {
+  it("stays subscribed even for an idle conversation (never miss a turn start)", () => {
+    // Regression: gating the admin subscription on the persisted running
+    // flag raced the turn's first events — the user_message mirror and the
+    // opening chunks were broadcast before the change-stream refresh could
+    // flip the flag, so the user's prompt only appeared when the agent
+    // replied and the reply arrived as one un-streamed block.
     expect(
       shouldOpenSubAgentLiveStream({
         ...BASE,
         isSubAgentConversation: false,
         isReadOnlyViewer: true,
         isConversationRunning: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("never opens without a viewed conversation", () => {
+    expect(
+      shouldOpenSubAgentLiveStream({
+        ...BASE,
+        activeConversationId: null,
+        isReadOnlyViewer: true,
       }),
     ).toBe(false);
   });

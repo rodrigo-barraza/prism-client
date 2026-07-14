@@ -1448,6 +1448,7 @@ export default class PrismService {
       onUsageUpdate,
       onContextBudget,
       onStatus,
+      onUserMessage,
       onSynthesisStart,
       onTurnStart,
       onTurnComplete,
@@ -1559,6 +1560,12 @@ export default class PrismService {
         break;
       case SERVER_SENT_EVENT_TYPES.STATUS:
         onStatus?.(data);
+        break;
+      // Turn-start mirror of the user's prompt — emitted by chat/agent
+      // handlers so direct viewers (/admin/chat, second tab) can render it
+      // before it is persisted at finalize.
+      case "user_message":
+        onUserMessage?.(data);
         break;
       // Synthesis-stream framing events (/synthesis/generate — see
       // SynthesisOrchestrationService in prism-service for the protocol)
