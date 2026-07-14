@@ -851,6 +851,15 @@ export interface SSECallbacks {
   onTurnComplete?: (message: Message, role: string) => void;
   onDone?: (event: SSEData) => void;
   onError?: (error: Error) => void;
+  /**
+   * The transport closed without the server sending a terminal done/error
+   * event — network EOF (server crash mid-turn) or a stalled socket that
+   * produced no bytes past the watchdog window. Consumers waiting on
+   * onDone must treat this as end-of-stream.
+   */
+  onStreamClosed?: (info: { reason: "eof-without-done" | "stalled" }) => void;
+  /** The stream was torn down by the caller's abort handle (user stop). */
+  onAborted?: () => void;
 }
 
 export interface ContentSegment {

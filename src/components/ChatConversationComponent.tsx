@@ -5214,6 +5214,12 @@ export default function ChatConversationComponent({
             console.error(`[onError] stream error:`, error);
             reject(error);
           },
+          // Transport EOF without a done/error event (server crash mid-turn,
+          // proxy timeout). Classified as a network error so the catch below
+          // enters recovery polling — the backend loop persists independently.
+          onStreamClosed: ({ reason }) => {
+            reject(new Error(`SSE network stream closed early (${reason})`));
+          },
         });
       });
 

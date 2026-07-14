@@ -697,3 +697,94 @@ describe("regression: large tool results", () => {
     expect(messages[1].thinkingFragments).toEqual(["Let me think..."]);
   });
 });
+
+// ─── Regression: done/error matching for in-flight tools ────────
+
+describe("done/error matching regressions", () => {
+  it("attaches a result to a tool still in 'streaming' status when the done event has no id", () => {
+    const messages: ToolMessageSlice[] = [
+      makeUserMessage(),
+      makeAssistantMessage({
+        toolCalls: [
+          {
+            id: "tc-1",
+            name: "read_file",
+            args: { path: "/a.ts" },
+            status: "streaming",
+            timestamp: Date.now(),
+          },
+        ],
+      }),
+    ];
+
+    const result = applyToolExecutionToMessages(
+      messages,
+      "tc-random-fallback",
+      { name: "read_file", status: "done", result: { content: "..." } },
+      makeSnapshot(),
+    );
+
+    expect(result[1].toolCalls![0]).toMatchObject({
+      id: "tc-1",
+      status: "done",
+      result: { content: "..." },
+    });
+  });
+
+  it("name fallback completes only the first in-flight entry, not all same-name calls", () => {
+    const messages: ToolMessageSlice[] = [
+      makeUserMessage(),
+      makeAssistantMessage({
+        toolCalls: [
+          { id: "tc-1", name: "web_search", args: { q: "a" }, status: "calling", timestamp: Date.now() },
+          { id: "tc-2", name: "web_search", args: { q: "b" }, status: "calling", timestamp: Date.now() },
+        ],
+      }),
+    ];
+
+    const result = applyToolExecutionToMessages(
+      messages,
+      "tc-random-fallback",
+      { name: "web_search", status: "done", result: { hits: 3 } },
+      makeSnapshot(),
+    );
+
+    expect(result[1].toolCalls![0].status).toBe("done");
+    expect(result[1].toolCalls![1].status).toBe("calling");
+    expect(result[1].toolCalls![1].result).toBeUndefined();
+  });
+
+  it("a done event without args preserves previously accumulated args", () => {
+    const messages: ToolMessageSlice[] = [
+      makeUserMessage(),
+      makeAssistantMessage({
+        toolCalls: [
+          { id: "tc-1", name: "write_file", args: { path: "/a.ts", content: "x" }, status: "calling", timestamp: Date.now() },
+        ],
+      }),
+    ];
+
+    const result = applyToolExecutionToMessages(
+      messages,
+      "tc-1",
+      { id: "tc-1", name: "write_file", status: "done", result: { ok: true } },
+      makeSnapshot(),
+    );
+
+    expect(result[1].toolCalls![0].args).toEqual({ path: "/a.ts", content: "x" });
+  });
+
+  it("applyToolExecutionToActivity matches 'streaming' entries on no-id done events", () => {
+    const activity: ToolCallEvent[] = [
+      { id: "tc-1", name: "read_file", args: {}, status: "streaming", timestamp: Date.now() },
+    ];
+
+    const result = applyToolExecutionToActivity(activity, "tc-random", {
+      name: "read_file",
+      status: "done",
+      result: "ok",
+    });
+
+    expect(result![0]).toMatchObject({ id: "tc-1", status: "done", result: "ok" });
+  });
+});

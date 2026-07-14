@@ -1256,6 +1256,68 @@ export default class PrismService {
   ): () => void {
     const { onError } = callbacks;
     const controller = new AbortController();
+    // Terminal-state guarantee: consumers must never hang waiting for onDone.
+    // Track whether the server delivered a logical terminal event (done/error);
+    // if the stream closes without one, synthesize onStreamClosed.
+    let sawTerminalEvent = false;
+    // Watchdog: a stalled-but-open socket (half-open TCP, dead proxy) never
+    // rejects reader.read() — without this the stream hangs forever. The
+    // server emits `: ping` comment frames well inside this window, and any
+    // byte (data or comment) resets the timer.
+    const STALL_TIMEOUT_MS = 120_000;
+    let stallTimer: ReturnType<typeof setTimeout> | undefined;
+    let stalled = false;
+    const armStallTimer = () => {
+      clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => {
+        stalled = true;
+        controller.abort();
+      }, STALL_TIMEOUT_MS);
+    };
+
+    const parseAndDispatchLine = (line: string) => {
+      if (!line.startsWith("data: ")) return;
+      const json = line.slice(6);
+      if (!json) return;
+
+      try {
+        const data = PrismService._normalizeSSEData(JSON.parse(json));
+        if (
+          data.type === SERVER_SENT_EVENT_TYPES.TOOL_EXECUTION ||
+          data.type === SERVER_SENT_EVENT_TYPES.TOOL_CALL ||
+          data.type === SERVER_SENT_EVENT_TYPES.DONE ||
+          data.type === SERVER_SENT_EVENT_TYPES.ERROR
+        ) {
+          console.debug(
+            `[SSE dispatch] type=${data.type} status=${data.status || ""} tool=${(data.tool as { name?: string })?.name || data.name || ""} (${json.length}ch)`,
+          );
+        }
+        if (
+          data.type === SERVER_SENT_EVENT_TYPES.DONE ||
+          data.type === SERVER_SENT_EVENT_TYPES.ERROR
+        ) {
+          sawTerminalEvent = true;
+        }
+        PrismService._dispatchSSE(data, callbacks);
+      } catch (parseError: unknown) {
+        if (json.length > 0) {
+          console.warn(
+            `[PrismService] SSE JSON parse failed (${json.length} chars):`,
+            getErrorMessage(parseError),
+            json.slice(0, 200),
+          );
+        }
+      }
+    };
+
+    // Tolerate CRLF line endings and skip `:` comment (heartbeat) frames.
+    const parseLines = (lines: string[]) => {
+      for (const rawLine of lines) {
+        const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+        if (line.startsWith(":")) continue; // SSE comment / server heartbeat
+        parseAndDispatchLine(line);
+      }
+    };
 
     (async () => {
       try {
@@ -1273,16 +1335,24 @@ export default class PrismService {
           return;
         }
 
-        const reader = response.body!.getReader();
+        if (!response.body) {
+          if (onError) onError(new Error("SSE response has no body"));
+          return;
+        }
+
+        const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        armStallTimer();
 
         while (true) {
           const { done, value } = await reader.read();
+          armStallTimer();
           if (done) {
-            console.debug(
-              `[SSE] stream reader done, remaining buffer=${buffer.length}ch`,
-            );
+            // Flush any trailing bytes: a final event without a terminating
+            // newline would otherwise be silently discarded.
+            buffer += decoder.decode();
+            if (buffer.length > 0) parseLines(buffer.split("\n"));
             break;
           }
 
@@ -1292,46 +1362,55 @@ export default class PrismService {
           const lines = buffer.split("\n");
           buffer = lines.pop() || ""; // Keep incomplete line in buffer
 
-          for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
-            const json = line.slice(6);
-            if (!json) continue;
+          parseLines(lines);
+        }
 
-            try {
-              const data = JSON.parse(json);
-              if (
-                data.type === SERVER_SENT_EVENT_TYPES.TOOL_EXECUTION ||
-                data.type === SERVER_SENT_EVENT_TYPES.TOOL_CALL ||
-                data.type === SERVER_SENT_EVENT_TYPES.DONE ||
-                data.type === SERVER_SENT_EVENT_TYPES.ERROR
-              ) {
-                console.debug(
-                  `[SSE dispatch] type=${data.type} status=${data.status || ""} tool=${data.tool?.name || data.name || ""} (${json.length}ch)`,
-                );
-              }
-              PrismService._dispatchSSE(data, callbacks);
-            } catch (parseError: unknown) {
-              if (json.length > 0) {
-                console.warn(
-                  `[PrismService] SSE JSON parse failed (${json.length} chars):`,
-                  getErrorMessage(parseError),
-                  json.slice(0, 200),
-                );
-              }
-            }
-          }
+        if (!sawTerminalEvent) {
+          console.warn(`[SSE] stream closed without done/error event`);
+          callbacks.onStreamClosed?.({ reason: "eof-without-done" });
         }
       } catch (error: unknown) {
-        if (error instanceof Error && error.name === "AbortError") return;
+        if (error instanceof Error && error.name === "AbortError") {
+          if (stalled) {
+            console.warn(
+              `[SSE] no bytes received for ${STALL_TIMEOUT_MS / 1000}s — treating stream as stalled`,
+            );
+            callbacks.onStreamClosed?.({ reason: "stalled" });
+          } else {
+            callbacks.onAborted?.();
+          }
+          return;
+        }
         console.error(`[SSE] stream error:`, error);
         if (onError)
           onError(
             error instanceof Error ? error : new Error(getErrorMessage(error)),
           );
+      } finally {
+        clearTimeout(stallTimer);
       }
     })();
 
     return () => controller.abort();
+  }
+
+  /**
+   * Normalize a parsed SSE event at the wire boundary so downstream
+   * consumers see one canonical shape. Currently: the server emits tool
+   * durations as either `durationMs` or `durationMilliseconds` depending
+   * on the code path (provider vs orchestrator) — canonicalize to
+   * `durationMs` on both the envelope and the nested `tool` object.
+   */
+  static _normalizeSSEData(data: SSEData): SSEData {
+    const normalizeDuration = (obj: Record<string, unknown> | undefined) => {
+      if (!obj) return;
+      if (obj.durationMs == null && typeof obj.durationMilliseconds === "number") {
+        obj.durationMs = obj.durationMilliseconds;
+      }
+    };
+    normalizeDuration(data as Record<string, unknown>);
+    normalizeDuration(data.tool as Record<string, unknown> | undefined);
+    return data;
   }
 
   /**
@@ -1446,10 +1525,10 @@ export default class PrismService {
       case SERVER_SENT_EVENT_TYPES.USER_QUESTION:
         onUserQuestion?.(data);
         break;
-      case "task_notification":
+      case SERVER_SENT_EVENT_TYPES.TASK_NOTIFICATION:
         onTaskNotification?.(data);
         break;
-      case "conversation_state_update":
+      case SERVER_SENT_EVENT_TYPES.CONVERSATION_STATE_UPDATE:
         onConversationStateUpdate?.(data);
         break;
       case SERVER_SENT_EVENT_TYPES.TODO_UPDATE:

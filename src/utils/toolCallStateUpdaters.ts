@@ -4,10 +4,14 @@
  * Extracted from ChatConversationComponent to enable isolated unit testing.
  * These functions compute the next `messages` array given the current
  * messages and an incoming tool execution / tool call event.
+ *
+ * All three public updaters delegate to a single `mergeToolEvent` helper so
+ * the streaming/calling upsert and done/error matching rules live in exactly
+ * one place.
  */
 
 import type { ToolCallEvent, ContentSegment } from "../types/types";
-import { MESSAGE_ROLES } from "../constants";
+import { MESSAGE_ROLES, EXECUTION_STATUS } from "../constants";
 
 // --- Shared message shape (subset of ClientMessage) -------------
 export interface ToolMessageSlice {
@@ -25,7 +29,7 @@ export interface ToolExecutionInput {
   name?: string;
   args?: Record<string, unknown>;
   result?: unknown;
-  status: string; // "calling" | "done" | "error"
+  status: string; // "streaming" | "calling" | "done" | "error"
   durationMs?: number;
   timestamp?: number;
 }
@@ -37,82 +41,97 @@ export interface SegmentSnapshot {
   thinkingFragments: string[];
 }
 
+/** Statuses in which a tool call is still in flight and may receive a result. */
+const IN_FLIGHT_STATUSES = new Set<string>([
+  EXECUTION_STATUS.STREAMING,
+  EXECUTION_STATUS.CALLING,
+]);
+
+const hasArgs = (args?: Record<string, unknown>): args is Record<string, unknown> =>
+  !!args && Object.keys(args).length > 0;
+
 /**
- * Compute the next messages array after a tool execution event.
+ * Merge a tool event into a tool-call list. Pure.
  *
- * This is a **pure function**: it does not mutate inputs and returns
- * a new array.  It mirrors the inline logic that was previously nested
- * inside `setToolActivity → setMessages` in ChatConversationComponent.
+ * streaming/calling → upsert by id, with change-detection so repeated
+ * identical deltas return the SAME array reference (callers can use this
+ * to skip state updates).
+ *
+ * done/error → update the entry matched by id; when the event carries no
+ * id, fall back to the first in-flight entry (streaming OR calling) with
+ * the same name — a tool may complete straight from `streaming`.
  */
-export function applyToolExecutionToMessages(
-  messages: ToolMessageSlice[],
+function mergeToolEvent(
+  currentToolCalls: ToolCallEvent[],
   resolvedId: string,
   toolInput: ToolExecutionInput,
+): ToolCallEvent[] {
+  if (IN_FLIGHT_STATUSES.has(toolInput.status)) {
+    const existingTool = currentToolCalls.find((toolCall) => toolCall.id === resolvedId);
+    if (existingTool) {
+      const hasArgsChange = hasArgs(toolInput.args) &&
+                            JSON.stringify(existingTool.args || {}) !== JSON.stringify(toolInput.args);
+      const hasStatusChange = existingTool.status !== toolInput.status;
+      if (!hasArgsChange && !hasStatusChange) return currentToolCalls;
+      return currentToolCalls.map((toolCall) =>
+        toolCall.id === resolvedId
+          ? {
+              ...toolCall,
+              status: toolInput.status,
+              ...(hasArgs(toolInput.args) ? { args: toolInput.args } : {}),
+            }
+          : toolCall,
+      );
+    }
+    return [
+      ...currentToolCalls,
+      {
+        id: resolvedId,
+        name: toolInput.name || "unknown",
+        args: toolInput.args || {},
+        status: toolInput.status,
+        timestamp: toolInput.timestamp || Date.now(),
+      },
+    ];
+  }
+
+  // done / error — update the matching entry. Match at most one entry when
+  // falling back to name matching, so parallel same-name calls don't all
+  // get stamped with one result.
+  let nameFallbackUsed = false;
+  return currentToolCalls.map((toolCall) => {
+    const matchesById = !!toolInput.id && toolCall.id === toolInput.id;
+    const matchesByName =
+      !toolInput.id &&
+      !nameFallbackUsed &&
+      toolCall.name === (toolInput.name || "unknown") &&
+      IN_FLIGHT_STATUSES.has(toolCall.status || "");
+    if (!matchesById && !matchesByName) return toolCall;
+    if (matchesByName) nameFallbackUsed = true;
+    return {
+      ...toolCall,
+      status: toolInput.status,
+      result: toolInput.result,
+      ...(hasArgs(toolInput.args) ? { args: toolInput.args } : { args: toolCall.args || {} }),
+      durationMs:
+        toolInput.durationMs ||
+        (toolCall.timestamp ? Date.now() - toolCall.timestamp : undefined),
+    };
+  });
+}
+
+/**
+ * Attach an updated tool-call list to the trailing assistant message,
+ * creating a placeholder assistant message when tool events arrive before
+ * any text chunks. Pure.
+ */
+function attachToolCallsToMessages(
+  messages: ToolMessageSlice[],
+  updatedToolCalls: ToolCallEvent[],
   snapshot: SegmentSnapshot,
 ): ToolMessageSlice[] {
   const array = [...messages];
   const last = array[array.length - 1];
-
-  const currentToolCalls: ToolCallEvent[] =
-    last?.role === "assistant" ? last.toolCalls || [] : [];
-
-  let updatedToolCalls: ToolCallEvent[];
-
-  if (toolInput.status === "streaming" || toolInput.status === "calling") {
-    const existingIndex = currentToolCalls.findIndex((toolCall) => toolCall.id === resolvedId);
-    if (existingIndex >= 0) {
-      const existingTool = currentToolCalls[existingIndex];
-      const hasArgsChange = toolInput.args && Object.keys(toolInput.args).length > 0 &&
-                            JSON.stringify(existingTool.args || {}) !== JSON.stringify(toolInput.args);
-      const hasStatusChange = existingTool.status !== toolInput.status;
-
-      if (hasArgsChange || hasStatusChange) {
-        updatedToolCalls = currentToolCalls.map((toolCall) =>
-          toolCall.id === resolvedId
-            ? {
-                ...toolCall,
-                status: toolInput.status,
-                ...(toolInput.args && Object.keys(toolInput.args).length > 0
-                  ? { args: toolInput.args }
-                  : {}),
-              }
-            : toolCall,
-        );
-      } else {
-        updatedToolCalls = currentToolCalls;
-      }
-    } else {
-      updatedToolCalls = [
-        ...currentToolCalls,
-        {
-          id: resolvedId,
-          name: toolInput.name || "unknown",
-          args: toolInput.args || {},
-          status: toolInput.status,
-          timestamp: toolInput.timestamp || Date.now(),
-        },
-      ];
-    }
-  } else {
-    // done / error — update the matching entry
-    updatedToolCalls = currentToolCalls.map((toolCall) => {
-      if (
-        (toolInput.id && toolCall.id === toolInput.id) ||
-        (!toolInput.id &&
-          toolCall.name === (toolInput.name || "unknown") &&
-          toolCall.status === "calling")
-      ) {
-        return {
-          ...toolCall,
-          status: toolInput.status,
-          result: toolInput.result,
-          args: toolInput.args || {},
-          durationMs: toolInput.durationMs || (toolCall.timestamp ? Date.now() - toolCall.timestamp : undefined),
-        };
-      }
-      return toolCall;
-    });
-  }
 
   if (last?.role === "assistant") {
     array[array.length - 1] = {
@@ -138,6 +157,26 @@ export function applyToolExecutionToMessages(
 }
 
 /**
+ * Compute the next messages array after a tool execution event.
+ *
+ * This is a **pure function**: it does not mutate inputs and returns
+ * a new array.  It mirrors the inline logic that was previously nested
+ * inside `setToolActivity → setMessages` in ChatConversationComponent.
+ */
+export function applyToolExecutionToMessages(
+  messages: ToolMessageSlice[],
+  resolvedId: string,
+  toolInput: ToolExecutionInput,
+  snapshot: SegmentSnapshot,
+): ToolMessageSlice[] {
+  const last = messages[messages.length - 1];
+  const currentToolCalls: ToolCallEvent[] =
+    last?.role === "assistant" ? last.toolCalls || [] : [];
+  const updatedToolCalls = mergeToolEvent(currentToolCalls, resolvedId, toolInput);
+  return attachToolCallsToMessages(messages, updatedToolCalls, snapshot);
+}
+
+/**
  * Compute the next toolActivity array after a tool execution event.
  *
  * Pure function — returns the updated activity list.
@@ -148,58 +187,8 @@ export function applyToolExecutionToActivity(
   resolvedId: string,
   toolInput: ToolExecutionInput,
 ): ToolCallEvent[] | null {
-  if (toolInput.status === "streaming" || toolInput.status === "calling") {
-    const existingIndex = previousToolActivity.findIndex((activity) => activity.id === resolvedId);
-    if (existingIndex >= 0) {
-      const existingTool = previousToolActivity[existingIndex];
-      const hasArgsChange = toolInput.args && Object.keys(toolInput.args).length > 0 &&
-                            JSON.stringify(existingTool.args || {}) !== JSON.stringify(toolInput.args);
-      const hasStatusChange = existingTool.status !== toolInput.status;
-
-      if (hasArgsChange || hasStatusChange) {
-        return previousToolActivity.map((activity) =>
-          activity.id === resolvedId
-            ? {
-                ...activity,
-                status: toolInput.status,
-                ...(toolInput.args && Object.keys(toolInput.args).length > 0
-                  ? { args: toolInput.args }
-                  : {}),
-              }
-            : activity,
-        );
-      }
-      return null; // Signal: no change
-    }
-    return [
-      ...previousToolActivity,
-      {
-        id: resolvedId,
-        name: toolInput.name || "unknown",
-        args: toolInput.args || {},
-        status: toolInput.status,
-        timestamp: toolInput.timestamp || Date.now(),
-      },
-    ];
-  } else {
-    return previousToolActivity.map((activity) => {
-      if (
-        (toolInput.id && activity.id === toolInput.id) ||
-        (!toolInput.id &&
-          activity.name === (toolInput.name || "unknown") &&
-          activity.status === "calling")
-      ) {
-        return {
-          ...activity,
-          status: toolInput.status,
-          result: toolInput.result,
-          args: toolInput.args || {},
-          durationMs: toolInput.durationMs || (activity.timestamp ? Date.now() - activity.timestamp : undefined),
-        };
-      }
-      return activity;
-    });
-  }
+  const updated = mergeToolEvent(previousToolActivity, resolvedId, toolInput);
+  return updated === previousToolActivity ? null : updated;
 }
 
 /**
@@ -214,87 +203,17 @@ export function applyToolCallToMessages(
   toolData: ToolCallEvent,
   snapshot: SegmentSnapshot,
 ): ToolMessageSlice[] {
-  const array = [...messages];
-  const last = array[array.length - 1];
-
-  const currentToolCalls: ToolCallEvent[] =
-    last?.role === "assistant" ? last.toolCalls || [] : [];
-
-  let updatedToolCalls: ToolCallEvent[];
-
-  if (toolData.status === "streaming" || toolData.status === "calling") {
-    const existingIndex = currentToolCalls.findIndex((toolCall) => toolCall.id === resolvedId);
-    if (existingIndex >= 0) {
-      const existingTool = currentToolCalls[existingIndex];
-      const hasArgsChange = toolData.args && Object.keys(toolData.args).length > 0 &&
-                            JSON.stringify(existingTool.args || {}) !== JSON.stringify(toolData.args);
-      const hasStatusChange = existingTool.status !== toolData.status;
-
-      if (hasArgsChange || hasStatusChange) {
-        updatedToolCalls = currentToolCalls.map((toolCall) =>
-          toolCall.id === resolvedId
-            ? {
-                ...toolCall,
-                status: toolData.status,
-                ...(toolData.args && Object.keys(toolData.args).length > 0
-                  ? { args: toolData.args }
-                  : {}),
-              }
-            : toolCall,
-        );
-      } else {
-        updatedToolCalls = currentToolCalls;
-      }
-    } else {
-      updatedToolCalls = [
-        ...currentToolCalls,
-        {
-          id: resolvedId,
-          name: toolData.name,
-          args: toolData.args,
-          status: toolData.status,
-          timestamp: Date.now(),
-        },
-      ];
-    }
-  } else {
-    updatedToolCalls = currentToolCalls.map((toolCall) => {
-      if (
-        (toolData.id && toolCall.id === toolData.id) ||
-        (!toolData.id && toolCall.name === toolData.name && toolCall.status === "calling")
-      ) {
-        return {
-          ...toolCall,
-          status: toolData.status,
-          result: toolData.result,
-          ...(toolData.args && Object.keys(toolData.args).length > 0
-            ? { args: toolData.args }
-            : {}),
-          durationMs: toolData.durationMs || (toolCall.timestamp ? Date.now() - toolCall.timestamp : undefined),
-        };
-      }
-      return toolCall;
-    });
-  }
-
-  if (last?.role === "assistant") {
-    array[array.length - 1] = {
-      ...last,
-      toolCalls: updatedToolCalls,
-      contentSegments: snapshot.contentSegments,
-      textFragments: snapshot.textFragments,
-      thinkingFragments: snapshot.thinkingFragments,
-    };
-  } else {
-    array.push({
-      role: MESSAGE_ROLES.ASSISTANT,
-      content: "",
-      toolCalls: updatedToolCalls,
-      contentSegments: snapshot.contentSegments,
-      textFragments: snapshot.textFragments,
-      thinkingFragments: snapshot.thinkingFragments,
-    });
-  }
-
-  return array;
+  return applyToolExecutionToMessages(
+    messages,
+    resolvedId,
+    {
+      id: toolData.id,
+      name: toolData.name,
+      args: toolData.args,
+      result: toolData.result,
+      status: toolData.status || "",
+      durationMs: toolData.durationMs,
+    },
+    snapshot,
+  );
 }
