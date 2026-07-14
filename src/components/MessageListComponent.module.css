@@ -571,8 +571,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  max-width: 800px;
-  margin: 0 auto;
+  margin: 0;
   width: 100%;
 
   &.model-change-divider-faded {
@@ -610,8 +609,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  max-width: 800px;
-  margin: 0 auto;
+  margin: 0;
   width: 100%;
 }
 
@@ -690,8 +688,7 @@
 .deleted-layout-row {
   display: flex;
   align-items: center;
-  max-width: 800px;
-  margin: 0 auto;
+  margin: 0;
   width: 100%;
 
   &:hover .deleted-actions {
@@ -700,8 +697,7 @@
 }
 
 .deleted-expanded {
-  max-width: 800px;
-  margin: 0 auto;
+  margin: 0;
   width: 100%;
 }
 

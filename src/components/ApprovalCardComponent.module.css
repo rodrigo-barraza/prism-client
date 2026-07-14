@@ -1,21 +1,27 @@
+/* Full message width; while pending it carries a warning-tinted
+   glow (the "this needs you" signal, matching the question card). */
 .card {
-  max-width: 800px;
-  margin: 8px auto;
   width: 100%;
-  border-radius: 10px;
-  border: 1px solid color-mix(in oklch, var(--color-warning) 25%, transparent);
+  margin: 8px 0;
+  border-radius: var(--border-radius-md);
+  border: 1px solid
+    color-mix(in oklch, var(--color-warning) 35%, var(--calculated-border-color));
   background: color-mix(
     in srgb,
     var(--color-warning) 4%,
     var(--background-surface)
   );
-  padding: 12px 14px;
+  box-shadow:
+    0 0 0 2px color-mix(in oklch, var(--color-warning) 12%, transparent),
+    0 4px 20px oklch(0.0% 0.0 0.0 / 0.2);
+  padding: 14px 16px;
   animation: slide-in 0.2s ease-out;
 
   &.resolved {
     opacity: 0.6;
     border-color: var(--calculated-border-subtle);
     background: var(--background-surface);
+    box-shadow: none;
   }
 }
 
@@ -31,6 +37,29 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* "Waiting for your approval" — the explicit call to action */
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-warning);
+  white-space: nowrap;
+}
+
+.header-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  flex-shrink: 0;
+  animation: status-dot-pulse 1.4s ease-in-out infinite;
+  will-change: opacity, transform;
 }
 
 .tier-icon {
@@ -100,33 +129,35 @@
 .reject-button {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  border-radius: 6px;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--button-border-radius);
   border: 1px solid transparent;
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
+/* Primary action — filled so the expected choice is obvious */
 .approve-button {
-  background: color-mix(in oklch, var(--color-success) 15%, transparent);
-  color: var(--color-success);
-  border-color: color-mix(in oklch, var(--color-success) 25%, transparent);
+  background: var(--color-success);
+  color: oklch(1 0 0);
+  border-color: var(--color-success);
 
   &:hover {
-    background: color-mix(in oklch, var(--color-success) 25%, transparent);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
   }
 }
 
 .approve-all-button {
-  background: color-mix(in oklch, var(--color-info) 12%, transparent);
-  color: var(--color-info);
-  border-color: color-mix(in oklch, var(--color-info) 20%, transparent);
+  background: color-mix(in oklch, var(--accent-primary) 12%, transparent);
+  color: var(--accent-primary);
+  border-color: color-mix(in oklch, var(--accent-primary) 20%, transparent);
 
   &:hover {
-    background: color-mix(in oklch, var(--color-info) 22%, transparent);
+    background: color-mix(in oklch, var(--accent-primary) 22%, transparent);
   }
 }
 
@@ -137,6 +168,18 @@
 
   &:hover {
     background: color-mix(in oklch, var(--color-danger) 22%, transparent);
+  }
+}
+
+@keyframes status-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.6);
   }
 }
 

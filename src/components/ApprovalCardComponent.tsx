@@ -59,6 +59,12 @@ export default function ApprovalCardComponent({
             {tierInfo.label}
           </span>
         </div>
+        {isPending && (
+          <span className={styles['header-status']}>
+            <span className={styles['header-status-dot']} />
+            Waiting for your approval
+          </span>
+        )}
       </div>
 
       {argEntries.length > 0 && (
