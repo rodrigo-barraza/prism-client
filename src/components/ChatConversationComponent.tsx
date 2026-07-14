@@ -595,7 +595,7 @@ export default function ChatConversationComponent({
         }
       : DEFAULT_EMPTY_STATE;
 
-  const { currentWorkspace, setCurrentWorkspace, workspaces } = useWorkspace();
+  const { currentWorkspace, setCurrentWorkspace, workspaces, workspacesLoaded } = useWorkspace();
 
   // -- State ----------------------------------------------------
   const [messages, setMessages] = useState<ClientMessage[]>([]);
@@ -3228,6 +3228,38 @@ export default function ChatConversationComponent({
       setLeftTab("settings");
     }
   }, [leftTab, isWorkspaceTabVisible]);
+
+  // Keep the Workspace toggle in sync with live workspace availability while
+  // the conversation is still new (settings unlocked): a disconnect flips it
+  // off, a reconnect restores the user's persisted preference. The persisted
+  // preference itself is only written by explicit user toggles.
+  useEffect(() => {
+    if (!workspacesLoaded || isNoAgent || messages.length > 0) return;
+    const workspaceAvailable = workspaces.length > 0;
+    const workspaceToggledOn = settings.agents?.workspaceEnabled !== false;
+    if (!workspaceAvailable && workspaceToggledOn) {
+      setSettings((state) => ({
+        ...state,
+        agents: { ...state.agents, workspaceEnabled: false },
+      }));
+    } else if (workspaceAvailable && !workspaceToggledOn) {
+      const persistedWorkspaceToggle = localStorage.getItem(
+        LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE,
+      );
+      if (persistedWorkspaceToggle !== "false") {
+        setSettings((state) => ({
+          ...state,
+          agents: { ...state.agents, workspaceEnabled: true },
+        }));
+      }
+    }
+  }, [
+    workspacesLoaded,
+    workspaces.length,
+    isNoAgent,
+    messages.length,
+    settings.agents?.workspaceEnabled,
+  ]);
 
   useEffect(() => {
     if (leftTab === "subAgents" && !hasOrchestratorTools) {

@@ -15,6 +15,8 @@ export interface WorkspaceContextType {
   currentWorkspace: WorkspaceItem | null;
   setCurrentWorkspace: (workspace: WorkspaceItem | null) => void;
   refreshWorkspaces: () => Promise<WorkspaceItem[]>;
+  /** True once the workspace list has been fetched successfully at least once. */
+  workspacesLoaded: boolean;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType>({
@@ -22,6 +24,7 @@ const WorkspaceContext = createContext<WorkspaceContextType>({
   currentWorkspace: null,
   setCurrentWorkspace: () => {},
   refreshWorkspaces: async () => [],
+  workspacesLoaded: false,
 });
 
 /**
@@ -36,6 +39,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [currentWorkspace, _setCurrentWorkspace] =
     useState<WorkspaceItem | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [workspacesLoaded, setWorkspacesLoaded] = useState(false);
 
   /** Set the active workspace and persist to localStorage. */
   const setCurrentWorkspace = useCallback((workspace: WorkspaceItem | null) => {
@@ -53,6 +57,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     try {
       const list = await WorkspaceService.list();
       setWorkspaces(list);
+      setWorkspacesLoaded(true);
 
       // If the persisted workspace is in the list, restore it
       const storedPath = localStorage.getItem(LOCAL_STORAGE_KEY_WORKSPACE_ROOT);
@@ -69,6 +74,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         // No previous selection — default to first workspace
         _setCurrentWorkspace(list[0]);
         localStorage.setItem(LOCAL_STORAGE_KEY_WORKSPACE_ROOT, list[0].path);
+      } else if (list.length === 0) {
+        // All workspace agents disconnected — clear the selection so
+        // dependent UI (workspace tab, tree) hides. Keep the persisted
+        // path so the same workspace is restored on reconnect.
+        _setCurrentWorkspace(null);
       }
 
       return list;
@@ -83,10 +93,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     refreshWorkspaces();
   }, [refreshWorkspaces]);
 
-  // Poll every 30s to detect host reconnections (e.g. after reboot)
+  // Poll to detect connects/disconnects — same cadence as the Settings
+  // page so the workspace tab and toggles react just as quickly.
   useEffect(() => {
     if (!mounted) return;
-    const WORKSPACE_POLL_INTERVAL_MILLISECONDS = 30_000;
+    const WORKSPACE_POLL_INTERVAL_MILLISECONDS = 10_000;
     const pollTimer = setInterval(
       refreshWorkspaces,
       WORKSPACE_POLL_INTERVAL_MILLISECONDS,
@@ -102,6 +113,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           currentWorkspace: null,
           setCurrentWorkspace,
           refreshWorkspaces,
+          workspacesLoaded: false,
         }}
       >
         {children}
@@ -116,6 +128,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         currentWorkspace,
         setCurrentWorkspace,
         refreshWorkspaces,
+        workspacesLoaded,
       }}
     >
       {children}

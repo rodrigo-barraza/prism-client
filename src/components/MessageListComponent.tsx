@@ -928,82 +928,86 @@ export default function MessageList({
       });
   }, [messages, showRaw]);
 
-  // -- Sticky last user message (pinned header) -------------
-  const [isUserMessageScrolledPast, setIsUserMessageScrolledPast] = useState(false);
-  const lastUserMessageRef = useRef<HTMLDivElement | null>(null);
-  const lastUserMessageIndexRef = useRef<number>(-1);
+  // -- Sticky user message (pinned section header) -----------
+  // Tracks ALL user messages: the pinned candidate is whichever
+  // user message "owns" the section at the top of the viewport
+  // (the last one whose top edge has scrolled past it). It only
+  // shows once its own bubble is fully out of view — while the
+  // bubble is visible at the top, the real message acts as its
+  // own header, so scrolling back up settles it into place.
+  const [pinnedUserMessageIndex, setPinnedUserMessageIndex] = useState(-1);
+  const userMessageElementsRef = useRef<Map<number, HTMLDivElement>>(new Map());
   const scrollingToUserMessageRef = useRef<boolean>(false);
+  const recomputePinnedRef = useRef<(() => void) | null>(null);
 
-  // Find the last user message
-  const lastUserMessageIndex = useMemo(() => {
-    for (let i = displayMessages.length - 1; i >= 0; i--) {
-      if (
-        displayMessages[i].role === "user" &&
-        !displayMessages[i].deleted &&
-        !isNotificationMessage(displayMessages[i])
-      )
-        return i;
-    }
-    return -1;
-  }, [displayMessages]);
-
-  // IntersectionObserver for scroll-past detection
   useEffect(() => {
-    lastUserMessageIndexRef.current = lastUserMessageIndex;
-    const node = lastUserMessageRef.current;
-    if (!node || lastUserMessageIndex < 0) {
-      return;
-    }
+    const container = containerReference.current;
+    if (!container) return;
 
     // Find the scroll container — walk up to the nearest overflow-y ancestor
-    let scrollParent = node.parentElement;
+    let scrollParent = container.parentElement;
     while (scrollParent) {
       const overflow = getComputedStyle(scrollParent).overflowY;
       if (overflow === "auto" || overflow === "scroll") break;
       scrollParent = scrollParent.parentElement;
     }
     if (!scrollParent) return;
+    const scrollElement = scrollParent;
 
-    const observer = new IntersectionObserver(
-      ([entry]: IntersectionObserverEntry[]) => {
-        // Suppress during programmatic scroll-to to prevent stutter
-        if (scrollingToUserMessageRef.current) return;
-        // Show sticky when user message is NOT intersecting
-        // AND the element is above the viewport (scrolled past)
-        const rootTop = entry.rootBounds ? entry.rootBounds.top : 0;
-        const scrolledPast =
-          !entry.isIntersecting &&
-          entry.boundingClientRect.bottom < rootTop + 20;
-        setIsUserMessageScrolledPast(scrolledPast);
-      },
-      {
-        root: scrollParent,
-        threshold: 0,
-        rootMargin: "0px",
-      },
-    );
+    let rafId: number | null = null;
+    const updatePinnedIndex = () => {
+      rafId = null;
+      // Suppress during programmatic scroll-to to prevent stutter
+      if (scrollingToUserMessageRef.current) return;
+      const pinThreshold = scrollElement.getBoundingClientRect().top + 20;
 
-    observer.observe(node);
-    return () => {
-      observer.disconnect();
-      setIsUserMessageScrolledPast(false);
+      let ownerIndex = -1;
+      let ownerBottom = 0;
+      userMessageElementsRef.current.forEach((element, index) => {
+        const rect = element.getBoundingClientRect();
+        if (rect.top < pinThreshold && index > ownerIndex) {
+          ownerIndex = index;
+          ownerBottom = rect.bottom;
+        }
+      });
+      setPinnedUserMessageIndex(
+        ownerIndex >= 0 && ownerBottom < pinThreshold ? ownerIndex : -1,
+      );
     };
-  }, [lastUserMessageIndex]);
+    recomputePinnedRef.current = updatePinnedIndex;
 
-  // Derive sticky message data from the boolean flag
+    const scheduleUpdate = () => {
+      if (rafId === null) rafId = requestAnimationFrame(updatePinnedIndex);
+    };
+    scrollElement.addEventListener("scroll", scheduleUpdate, { passive: true });
+    // Content height changes (streaming, images loading) shift positions
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    resizeObserver.observe(container);
+    updatePinnedIndex();
+
+    return () => {
+      scrollElement.removeEventListener("scroll", scheduleUpdate);
+      resizeObserver.disconnect();
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      recomputePinnedRef.current = null;
+      setPinnedUserMessageIndex(-1);
+    };
+  }, [displayMessages.length]);
+
+  // Derive sticky message data from the pinned index
   const stickyUserMessage = useMemo(() => {
-    if (!isUserMessageScrolledPast || lastUserMessageIndex < 0) return null;
-    const message = displayMessages[lastUserMessageIndex];
-    if (!message) return null;
+    if (pinnedUserMessageIndex < 0) return null;
+    const message = displayMessages[pinnedUserMessageIndex];
+    if (!message || message.role !== "user" || message.deleted) return null;
     return {
       content: message.content,
       images: message.images,
-      index: lastUserMessageIndex,
+      index: pinnedUserMessageIndex,
     };
-  }, [isUserMessageScrolledPast, lastUserMessageIndex, displayMessages]);
+  }, [pinnedUserMessageIndex, displayMessages]);
 
   const handleStickyClick = useCallback(() => {
-    const node = lastUserMessageRef.current;
+    const node = userMessageElementsRef.current.get(pinnedUserMessageIndex);
     if (!node) return;
     // Walk up to the nearest scrollable ancestor
     let scrollParent = node.parentElement;
@@ -1014,26 +1018,23 @@ export default function MessageList({
     }
     if (!scrollParent) return;
 
-    // Suppress observer during scroll to prevent stutter from layout shifts
+    // Suppress tracking during scroll to prevent stutter from layout shifts
     scrollingToUserMessageRef.current = true;
 
     const nodeRect = node.getBoundingClientRect();
     const parentRect = scrollParent.getBoundingClientRect();
-    const offset = nodeRect.top - parentRect.top + scrollParent.scrollTop - 50;
+    // Land the message just inside the pin threshold so the sticky header
+    // dismisses and the real message takes its place at the top
+    const offset = nodeRect.top - parentRect.top + scrollParent.scrollTop - 12;
     scrollParent.scrollTo({ top: offset, behavior: "smooth" });
 
-    // Re-enable observer after scroll completes — it will naturally
-    // detect the element is visible and dismiss the sticky header
+    // Re-enable tracking after the smooth scroll completes — the recompute
+    // sees the message back in view and dismisses the sticky header
     setTimeout(() => {
       scrollingToUserMessageRef.current = false;
-      // Manually check if element is now visible and dismiss sticky
-      const rect = node.getBoundingClientRect();
-      const pRect = scrollParent.getBoundingClientRect();
-      if (rect.top >= pRect.top) {
-        setIsUserMessageScrolledPast(false);
-      }
+      recomputePinnedRef.current?.();
     }, 600);
-  }, []);
+  }, [pinnedUserMessageIndex]);
 
   const toggleDeletedExpanded = (index: number) => {
     setExpandedDeletedSet((previousExpandedSet) => {
@@ -1597,8 +1598,14 @@ export default function MessageList({
                 return (
                   <div
                     ref={
-                      i === lastUserMessageIndex && message.role === "user"
-                        ? lastUserMessageRef
+                      message.role === "user"
+                        ? (element: HTMLDivElement | null) => {
+                            if (element) {
+                              userMessageElementsRef.current.set(i, element);
+                            } else {
+                              userMessageElementsRef.current.delete(i);
+                            }
+                          }
                         : undefined
                     }
                     data-message-index={i}
