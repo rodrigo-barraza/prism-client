@@ -9,11 +9,123 @@ import IrisService, {
 import PrismService from "../services/PrismService";
 import { EXECUTION_STATUS, LAYOUT, TIMING } from "../constants";
 import type { AgentConversation, ConversationStats, ToolSchema } from "../types/types";
-import type { GraphData, GraphNode } from "@rodrigo-barraza/utilities-library/graph";
+import type { GraphData, GraphNode, GraphEdge } from "@rodrigo-barraza/utilities-library/graph";
 import {
   PROACTIVE_PENDING_REQUEST_NODE_ID,
   PROACTIVE_PENDING_TURN_NODE_ID,
 } from "../components/ChatConversationGraphComponent";
+
+/* ═══════════════════════════════════════════════════════════════════
+   Pending-chain helpers
+   ═══════════════════════════════════════════════════════════════════ */
+
+/** True when any real request node exists that was NOT part of the baseline
+    snapshot taken at generation start — i.e. it arrived during the current
+    generation cycle. */
+export function hasNewRequestNodesSince(nodes: GraphNode[], baselineRequestNodeIds: Set<string>): boolean {
+  return nodes.some(
+    (node) =>
+      node.category === "request" &&
+      node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID &&
+      !baselineRequestNodeIds.has(node.id),
+  );
+}
+
+/** Builds the proactive pending nodes/edges (optionally with a turn boundary
+    node ahead of the pending request) without mutating the given graph.
+
+    The chain always hangs off the MAIN agent chain (agentDepth 0) — sub-agent
+    requests can hold the highest global sequence number while an orchestrator
+    is running, but the next turn/request belongs to the root agent. */
+export function buildPendingChainAdditions(
+  graph: GraphData,
+  includeTurnNode: boolean,
+): { nodes: GraphNode[]; edges: GraphEdge[] } {
+  const realRequestNodes = graph.nodes.filter(
+    (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
+  );
+  const nextSequenceNumber = realRequestNodes.length > 0
+    ? Math.max(...realRequestNodes.map((node) => node.sequenceNumber ?? 0)) + 1
+    : 1;
+
+  const lastMainChainRequest = realRequestNodes
+    .filter((node) => ((node.metadata?.agentDepth as number) ?? 0) === 0)
+    .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
+    .at(-1);
+
+  const realTurnNodes = graph.nodes.filter(
+    (node) => node.category === "turn" && node.id !== PROACTIVE_PENDING_TURN_NODE_ID,
+  );
+
+  // Prefer a trailing turn node that has no request children yet as the tail
+  let chainTail: GraphNode | undefined = lastMainChainRequest;
+  const lastTurnNode = realTurnNodes.at(-1);
+  if (lastTurnNode) {
+    const turnHasRequestChild = graph.edges.some(
+      (edge) => edge.source === lastTurnNode.id && graph.nodes.some(
+        (node) => node.id === edge.target && node.category === "request",
+      ),
+    );
+    if (!turnHasRequestChild) chainTail = lastTurnNode;
+  }
+
+  const agentNode = graph.nodes.find((node) => node.category === "agent");
+  const anchorX = chainTail?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X;
+  const anchorY = chainTail ? chainTail.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y);
+
+  const additionNodes: GraphNode[] = [];
+  const additionEdges: GraphEdge[] = [];
+
+  let pendingParentId: string | null = chainTail?.id ?? agentNode?.id ?? null;
+  let pendingY = anchorY;
+
+  if (includeTurnNode) {
+    const nextTurnIndex = realTurnNodes.length;
+    additionNodes.push({
+      id: PROACTIVE_PENDING_TURN_NODE_ID,
+      label: `Turn ${nextTurnIndex + 1}`,
+      category: "turn",
+      radius: LAYOUT.NODE_RADIUS,
+      x: anchorX,
+      y: anchorY,
+      velocityX: 0,
+      velocityY: 0,
+      metadata: { turnIndex: nextTurnIndex },
+    });
+    if (pendingParentId) {
+      additionEdges.push({ source: pendingParentId, target: PROACTIVE_PENDING_TURN_NODE_ID, strength: 0.5 });
+    }
+    pendingParentId = PROACTIVE_PENDING_TURN_NODE_ID;
+    pendingY = anchorY + LAYOUT.NODE_SPACING_Y;
+  }
+
+  additionNodes.push({
+    id: PROACTIVE_PENDING_REQUEST_NODE_ID,
+    label: `#${nextSequenceNumber} pending`,
+    category: "request",
+    radius: LAYOUT.NODE_RADIUS,
+    x: anchorX,
+    y: pendingY,
+    velocityX: 0,
+    velocityY: 0,
+    sequenceNumber: nextSequenceNumber,
+    metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
+  });
+  if (pendingParentId) {
+    additionEdges.push({ source: pendingParentId, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
+  }
+
+  return { nodes: additionNodes, edges: additionEdges };
+}
+
+/** Fingerprint capturing the request set AND per-request state that affects
+    graph rendering (status transitions, tool call counts) — so the polling
+    fallback rebuilds on content changes, not just count changes. */
+function computeRequestsFingerprint(requests: IrisRequestEntry[]): string {
+  return requests
+    .map((request) => `${request._id}:${String(request.status ?? "")}:${request.toolApiNames?.length ?? 0}:${String(request.success ?? "")}`)
+    .join("|");
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    Canonical layout dimensions
@@ -42,6 +154,12 @@ export interface ConversationGraphDataState {
   toolEmojiMap: Map<string, string>;
   nodesRef: MutableRefObject<GraphNode[]>;
   graphDataRef: MutableRefObject<GraphData | null>;
+  /** Node being dragged in ANY rendering instance sharing this state, so
+      concurrent collision loops never fight over a pinned node. */
+  draggedNodeIdRef: MutableRefObject<string | null>;
+  /** Rendering instance that currently owns the collision-settlement loop —
+      prevents two mounted instances from applying pushes twice per frame. */
+  collisionOwnerRef: MutableRefObject<symbol | null>;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -66,6 +184,8 @@ export default function useConversationGraphData(
   const conversationStatsRef = useRef<ConversationStats | null>(null);
   const graphDataRef = useRef<GraphData | null>(null);
   const nodesRef = useRef<GraphNode[]>([]);
+  const draggedNodeIdRef = useRef<string | null>(null);
+  const collisionOwnerRef = useRef<symbol | null>(null);
 
   // All agentConversationIds known from the current request set.
   // Sub-agent requests use their own unique conversationId, so the SSE
@@ -78,8 +198,11 @@ export default function useConversationGraphData(
   // initial loadGraph fetch must NOT blindly overwrite that data.
   const ssePopulatedForConversationRef = useRef<string | null>(null);
 
-  // Tracks the real request count at the moment generation started.
-  const requestCountAtGenerationStartRef = useRef<number>(0);
+  // Request node IDs that already existed the moment generation started.
+  // Any request node NOT in this set arrived during the current generation
+  // cycle. An ID snapshot (rather than a count) stays correct even when the
+  // baseline is recorded before the bootstrap graph has loaded.
+  const requestNodeIdsAtGenerationStartRef = useRef<Set<string>>(new Set());
   const previousIsGeneratingRef = useRef(false);
 
   // Throttle state for incrementalGraphRebuild — prevents hammering the
@@ -140,148 +263,75 @@ export default function useConversationGraphData(
         CANONICAL_LAYOUT_HEIGHT,
       );
 
-      setGraphData((previousGraphData) => {
-        const existingPositions = new Map<string, { x: number; y: number }>();
-        const existingNodeIds = new Set<string>();
+      // Build the final graph BEFORE dispatching state — setGraphData updater
+      // functions must stay pure (no mutation of closure objects, no timers),
+      // otherwise a re-invoked updater would push duplicate pending nodes.
+      const previousGraphData = graphDataRef.current;
 
-        if (previousGraphData) {
-          for (const node of previousGraphData.nodes) {
-            existingPositions.set(node.id, { x: node.x, y: node.y });
-            existingNodeIds.add(node.id);
-          }
+      const existingPositions = new Map<string, { x: number; y: number }>();
+      const existingNodeIds = new Set<string>();
+      if (previousGraphData) {
+        for (const node of previousGraphData.nodes) {
+          existingPositions.set(node.id, { x: node.x, y: node.y });
+          existingNodeIds.add(node.id);
         }
+      }
 
-        const newNodeIds = new Set<string>();
-        for (const node of graph.nodes) {
-          if (!existingNodeIds.has(node.id)) newNodeIds.add(node.id);
-        }
+      const newNodeIds = new Set<string>();
+      for (const node of graph.nodes) {
+        if (!existingNodeIds.has(node.id)) newNodeIds.add(node.id);
+      }
 
-        // When new sub-agent nodes appear, the graph topology has changed
-        // significantly — the layout algorithm computes sub-agent branch
-        // positions relative to the main chain, so preserving old positions
-        // would place new nodes at coordinates relative to a stale grid.
-        const hasNewSubAgentNodes = [...newNodeIds].some((nodeId) => {
-          const node = graph.nodes.find((graphNode) => graphNode.id === nodeId);
-          if (!node) return false;
-          if (node.category === "subagent") return true;
-          if (node.category === "request" && ((node.metadata?.agentDepth as number) ?? 0) > 0) return true;
-          return false;
-        });
-
-        if (!hasNewSubAgentNodes) {
-          for (const node of graph.nodes) {
-            if (newNodeIds.has(node.id)) continue;
-            const previousPosition = existingPositions.get(node.id);
-            if (previousPosition) {
-              node.x = previousPosition.x;
-              node.y = previousPosition.y;
-            }
-          }
-        }
-
-        // Re-inject the proactive pending node when generation is still active
-        const hadProactiveRequest = previousGraphData?.nodes.some(
-          (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
-        );
-        const hadProactiveTurn = previousGraphData?.nodes.some(
-          (node) => node.id === PROACTIVE_PENDING_TURN_NODE_ID,
-        );
-        const previousRealRequestCount = previousGraphData
-          ? previousGraphData.nodes.filter(
-              (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-            ).length
-          : 0;
-        const currentRealRequestCount = graph.nodes.filter(
-          (node) => node.category === "request",
-        ).length;
-
-        const hasNewRealRequestsArrived = currentRealRequestCount > requestCountAtGenerationStartRef.current;
-
-        const findChainTail = () => {
-          const realRequestNodes = graph.nodes.filter((node) => node.category === "request");
-          const lastRealRequest = realRequestNodes
-            .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
-            .at(-1);
-          const turnNodes = graph.nodes.filter((node) => node.category === "turn");
-          const lastTurnNode = turnNodes.at(-1);
-          if (lastTurnNode) {
-            const turnHasRequestChild = graph.edges.some(
-              (edge) => edge.source === lastTurnNode.id && graph.nodes.some(
-                (node) => node.id === edge.target && node.category === "request",
-              ),
-            );
-            if (!turnHasRequestChild) return lastTurnNode;
-          }
-          return lastRealRequest;
-        };
-
-        if ((hadProactiveRequest || hadProactiveTurn) && currentRealRequestCount > previousRealRequestCount) {
-          if (isGeneratingRef.current) {
-            const chainTail = findChainTail();
-            const agentNode = graph.nodes.find((node) => node.category === "agent");
-            const lastRealRequest = graph.nodes
-              .filter((node) => node.category === "request")
-              .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
-              .at(-1);
-
-            const cascadingProactiveNode: GraphNode = {
-              id: PROACTIVE_PENDING_REQUEST_NODE_ID,
-              label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
-              category: "request",
-              radius: LAYOUT.NODE_RADIUS,
-              x: chainTail?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X,
-              y: chainTail ? chainTail.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y),
-              velocityX: 0,
-              velocityY: 0,
-              sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
-              metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
-            };
-
-            graph.nodes.push(cascadingProactiveNode);
-            if (chainTail) {
-              graph.edges.push({ source: chainTail.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
-            }
-          }
-        } else if ((hadProactiveRequest || hadProactiveTurn) && !isGeneratingRef.current && hasNewRealRequestsArrived) {
-          // Generation stopped and real requests have arrived — don't re-inject
-        } else if (hadProactiveRequest || hadProactiveTurn) {
-          if (isGeneratingRef.current) {
-            const chainTail = findChainTail();
-            const agentNode = graph.nodes.find((node) => node.category === "agent");
-            const lastRealRequest = graph.nodes
-              .filter((node) => node.category === "request")
-              .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
-              .at(-1);
-
-            const reinjectedNode: GraphNode = {
-              id: PROACTIVE_PENDING_REQUEST_NODE_ID,
-              label: `#${(lastRealRequest?.sequenceNumber ?? 0) + 1} pending`,
-              category: "request",
-              radius: LAYOUT.NODE_RADIUS,
-              x: chainTail?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X,
-              y: chainTail ? chainTail.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y),
-              velocityX: 0,
-              velocityY: 0,
-              sequenceNumber: (lastRealRequest?.sequenceNumber ?? 0) + 1,
-              metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
-            };
-
-            graph.nodes.push(reinjectedNode);
-            if (chainTail) {
-              graph.edges.push({ source: chainTail.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
-            }
-          }
-        }
-
-        nodesRef.current = graph.nodes;
-
-        if (newNodeIds.size > 0) {
-          setEnteringNodeIds(newNodeIds);
-          setTimeout(() => setEnteringNodeIds(new Set()), TIMING.ANIMATION_DURATION);
-        }
-
-        return graph;
+      // When new sub-agent nodes appear, the graph topology has changed
+      // significantly — the layout algorithm computes sub-agent branch
+      // positions relative to the main chain, so preserving old positions
+      // would place new nodes at coordinates relative to a stale grid.
+      const hasNewSubAgentNodes = [...newNodeIds].some((nodeId) => {
+        const node = graph.nodes.find((graphNode) => graphNode.id === nodeId);
+        if (!node) return false;
+        if (node.category === "subagent") return true;
+        if (node.category === "request" && ((node.metadata?.agentDepth as number) ?? 0) > 0) return true;
+        return false;
       });
+
+      if (!hasNewSubAgentNodes) {
+        for (const node of graph.nodes) {
+          if (newNodeIds.has(node.id)) continue;
+          const previousPosition = existingPositions.get(node.id);
+          if (previousPosition) {
+            node.x = previousPosition.x;
+            node.y = previousPosition.y;
+          }
+        }
+      }
+
+      // Re-inject the pending chain while generation is still active. The
+      // proactive turn node is preserved too, but only until the first real
+      // request of this generation cycle lands — from then on the server
+      // graph contains the real turn boundary node.
+      const hadProactiveRequest = previousGraphData?.nodes.some(
+        (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
+      ) ?? false;
+      const hadProactiveTurn = previousGraphData?.nodes.some(
+        (node) => node.id === PROACTIVE_PENDING_TURN_NODE_ID,
+      ) ?? false;
+
+      if ((hadProactiveRequest || hadProactiveTurn) && isGeneratingRef.current) {
+        const includeTurnNode = hadProactiveTurn
+          && !hasNewRequestNodesSince(graph.nodes, requestNodeIdsAtGenerationStartRef.current);
+        const pendingChain = buildPendingChainAdditions(graph, includeTurnNode);
+        graph.nodes.push(...pendingChain.nodes);
+        graph.edges.push(...pendingChain.edges);
+      }
+
+      nodesRef.current = graph.nodes;
+      graphDataRef.current = graph;
+      setGraphData(graph);
+
+      if (newNodeIds.size > 0) {
+        setEnteringNodeIds(newNodeIds);
+        setTimeout(() => setEnteringNodeIds(new Set()), TIMING.ANIMATION_DURATION);
+      }
     } catch {
       // Graph API failed — silently degrade
     } finally {
@@ -476,14 +526,19 @@ export default function useConversationGraphData(
         }
 
         const updatedRequests = updatedRequestsResponse.requests || [];
-        const previousCount = knownRequestIds.size;
+
+        // Fingerprint comparison (not just count) so status transitions and
+        // tool updates on existing requests also refresh the graph — the
+        // polling fallback has no per-document change events to rely on.
+        const previousFingerprint = computeRequestsFingerprint(conversationRequestsRef.current);
+        const updatedFingerprint = computeRequestsFingerprint(updatedRequests);
 
         knownRequestIds.clear();
         for (const request of updatedRequests) {
           if (request._id) knownRequestIds.add(request._id);
         }
 
-        if (updatedRequests.length !== previousCount) {
+        if (updatedFingerprint !== previousFingerprint) {
           conversationRequestsRef.current = updatedRequests;
           setConversationStats(updatedStats);
           setConversationRequests(updatedRequests);
@@ -690,137 +745,60 @@ export default function useConversationGraphData(
 
   // -- Proactive pending request node injection/removal -----------
   useEffect(() => {
-    const currentGraphData = graphDataRef.current;
-    if (!currentGraphData) return;
-
     const wasGenerating = previousIsGeneratingRef.current;
     previousIsGeneratingRef.current = isGenerating;
 
+    const currentGraphData = graphDataRef.current;
+
+    // Snapshot the baseline of known request node IDs the moment generation
+    // starts — even when graph data hasn't loaded yet. With an empty baseline
+    // every request node that appears afterwards counts as new for this
+    // generation cycle, so a first request that lands before the bootstrap
+    // graph can never be miscounted as pre-existing (which previously left a
+    // phantom pending node behind after generation stopped).
+    if (isGenerating && !wasGenerating) {
+      const baselineRequestNodeIds = new Set<string>();
+      if (currentGraphData) {
+        for (const node of currentGraphData.nodes) {
+          if (node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID) {
+            baselineRequestNodeIds.add(node.id);
+          }
+        }
+      }
+      requestNodeIdsAtGenerationStartRef.current = baselineRequestNodeIds;
+    }
+
+    if (!currentGraphData) return;
+
     // ── Injection: generation is active, pending node needed ──
     if (isGenerating) {
-      // Record baseline on the first firing where graphData is available
-      if (!wasGenerating) {
-        const existingRequestNodes = currentGraphData.nodes.filter(
-          (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-        );
-        requestCountAtGenerationStartRef.current = existingRequestNodes.length;
-      }
-
       const hasProactiveNode = currentGraphData.nodes.some(
         (node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID,
       );
       if (hasProactiveNode) return;
 
-      // Don't re-inject if real requests have already arrived for this generation cycle
-      const currentRealRequestCount = currentGraphData.nodes.filter(
-        (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-      ).length;
-      if (currentRealRequestCount > requestCountAtGenerationStartRef.current) return;
+      // Don't inject if real requests have already arrived for this generation cycle
+      if (hasNewRequestNodesSince(currentGraphData.nodes, requestNodeIdsAtGenerationStartRef.current)) return;
 
-      const existingRequestNodes = currentGraphData.nodes.filter(
-        (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-      );
-      const nextSequenceNumber = existingRequestNodes.length > 0
-        ? Math.max(...existingRequestNodes.map((node) => node.sequenceNumber ?? 0)) + 1
-        : 1;
-
-      const agentNode = currentGraphData.nodes.find(
-        (node) => node.category === "agent",
+      // Subsequent turns (main-chain requests already exist) get a turn
+      // boundary node ahead of the pending request node.
+      const isSubsequentTurn = currentGraphData.nodes.some(
+        (node) =>
+          node.category === "request" &&
+          node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID &&
+          ((node.metadata?.agentDepth as number) ?? 0) === 0,
       );
 
-      const lastRequestNode = existingRequestNodes
-        .sort((nodeA, nodeB) => (nodeA.sequenceNumber ?? 0) - (nodeB.sequenceNumber ?? 0))
-        .at(-1);
-
-      // Determine if this is a subsequent turn (there are already request nodes from a previous turn)
-      const isSubsequentTurn = existingRequestNodes.length > 0;
-      const existingTurnNodes = currentGraphData.nodes.filter(
-        (node) => node.category === "turn" && node.id !== PROACTIVE_PENDING_TURN_NODE_ID,
-      );
-      const nextTurnIndex = existingTurnNodes.length;
-
-      const proactiveNodes: GraphNode[] = [];
-      const proactiveEdges: Array<{ source: string; target: string; strength: number }> = [];
-      const enteringIds = new Set<string>();
-
-      // For subsequent turns, inject a turn boundary node first
-      if (isSubsequentTurn) {
-        const turnNodeX = lastRequestNode?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X;
-        const turnNodeY = lastRequestNode ? lastRequestNode.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y);
-
-        const proactiveTurnNode: GraphNode = {
-          id: PROACTIVE_PENDING_TURN_NODE_ID,
-          label: `Turn ${nextTurnIndex + 1}`,
-          category: "turn",
-          radius: LAYOUT.NODE_RADIUS,
-          x: turnNodeX,
-          y: turnNodeY,
-          velocityX: 0,
-          velocityY: 0,
-          metadata: { turnIndex: nextTurnIndex },
-        };
-        proactiveNodes.push(proactiveTurnNode);
-        enteringIds.add(PROACTIVE_PENDING_TURN_NODE_ID);
-
-        // Chain: last_request → turn_node
-        if (lastRequestNode) {
-          proactiveEdges.push({ source: lastRequestNode.id, target: PROACTIVE_PENDING_TURN_NODE_ID, strength: 0.5 });
-        }
-
-        // Chain: turn_node → pending_request
-        const pendingNodeX = turnNodeX;
-        const pendingNodeY = turnNodeY + LAYOUT.NODE_SPACING_Y;
-
-        const proactivePendingNode: GraphNode = {
-          id: PROACTIVE_PENDING_REQUEST_NODE_ID,
-          label: `#${nextSequenceNumber} pending`,
-          category: "request",
-          radius: LAYOUT.NODE_RADIUS,
-          x: pendingNodeX,
-          y: pendingNodeY,
-          velocityX: 0,
-          velocityY: 0,
-          sequenceNumber: nextSequenceNumber,
-          metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
-        };
-        proactiveNodes.push(proactivePendingNode);
-        enteringIds.add(PROACTIVE_PENDING_REQUEST_NODE_ID);
-        proactiveEdges.push({ source: PROACTIVE_PENDING_TURN_NODE_ID, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
-      } else {
-        // First turn: just inject the pending request node
-        const proactiveNodeX = lastRequestNode?.x ?? (agentNode?.x ?? LAYOUT.DEFAULT_NODE_X) + LAYOUT.NODE_SPACING_X;
-        const proactiveNodeY = lastRequestNode ? lastRequestNode.y + LAYOUT.NODE_SPACING_Y : (agentNode?.y ?? LAYOUT.DEFAULT_NODE_Y);
-
-        const proactivePendingNode: GraphNode = {
-          id: PROACTIVE_PENDING_REQUEST_NODE_ID,
-          label: `#${nextSequenceNumber} pending`,
-          category: "request",
-          radius: LAYOUT.NODE_RADIUS,
-          x: proactiveNodeX,
-          y: proactiveNodeY,
-          velocityX: 0,
-          velocityY: 0,
-          sequenceNumber: nextSequenceNumber,
-          metadata: { operation: EXECUTION_STATUS.PENDING, status: EXECUTION_STATUS.PENDING },
-        };
-        proactiveNodes.push(proactivePendingNode);
-        enteringIds.add(PROACTIVE_PENDING_REQUEST_NODE_ID);
-
-        if (agentNode) {
-          proactiveEdges.push({ source: agentNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.5 });
-        }
-        if (lastRequestNode) {
-          proactiveEdges.push({ source: lastRequestNode.id, target: PROACTIVE_PENDING_REQUEST_NODE_ID, strength: 0.6 });
-        }
-      }
+      const pendingChain = buildPendingChainAdditions(currentGraphData, isSubsequentTurn);
+      const enteringIds = new Set(pendingChain.nodes.map((node) => node.id));
 
       setGraphData((previousGraphData) => {
         if (!previousGraphData) return previousGraphData;
         if (previousGraphData.nodes.some((node) => node.id === PROACTIVE_PENDING_REQUEST_NODE_ID)) {
           return previousGraphData;
         }
-        const updatedNodes = [...previousGraphData.nodes, ...proactiveNodes];
-        const updatedEdges = [...previousGraphData.edges, ...proactiveEdges];
+        const updatedNodes = [...previousGraphData.nodes, ...pendingChain.nodes];
+        const updatedEdges = [...previousGraphData.edges, ...pendingChain.edges];
         nodesRef.current = updatedNodes;
         return {
           ...previousGraphData,
@@ -833,7 +811,7 @@ export default function useConversationGraphData(
       setTimeout(() => setEnteringNodeIds(new Set()), TIMING.ANIMATION_DURATION);
 
     // ── Removal: generation stopped ──
-    } else if (!isGenerating && wasGenerating) {
+    } else if (wasGenerating) {
       setGraphData((previousGraphData) => {
         if (!previousGraphData) return previousGraphData;
         const hasProactiveRequest = previousGraphData.nodes.some(
@@ -844,12 +822,9 @@ export default function useConversationGraphData(
         );
         if (!hasProactiveRequest && !hasProactiveTurn) return previousGraphData;
 
-        const currentRealRequestCount = previousGraphData.nodes.filter(
-          (node) => node.category === "request" && node.id !== PROACTIVE_PENDING_REQUEST_NODE_ID,
-        ).length;
-        const hasNewRealRequests = currentRealRequestCount > requestCountAtGenerationStartRef.current;
-
-        if (!hasNewRealRequests) {
+        // Keep the pending visual alive until at least one real request for
+        // this generation cycle has arrived; the next rebuild clears it.
+        if (!hasNewRequestNodesSince(previousGraphData.nodes, requestNodeIdsAtGenerationStartRef.current)) {
           return previousGraphData;
         }
 
@@ -883,5 +858,7 @@ export default function useConversationGraphData(
     toolEmojiMap,
     nodesRef,
     graphDataRef,
+    draggedNodeIdRef,
+    collisionOwnerRef,
   };
 }

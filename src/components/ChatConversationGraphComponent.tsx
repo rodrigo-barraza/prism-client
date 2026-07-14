@@ -228,7 +228,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     toolEmojiMap,
     nodesRef,
     graphDataRef,
+    draggedNodeIdRef,
+    collisionOwnerRef,
   } = resolvedGraphState;
+
+  // Identifies THIS rendering instance for collision-loop ownership. Two
+  // instances can share the same graph state (sidebar + main area) — only
+  // the owner runs the settlement loop, so pushes apply once per frame.
+  const collisionInstanceIdRef = useRef<symbol>(Symbol("graph-collision-instance"));
 
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [selectedEdgeKeys, setSelectedEdgeKeys] = useState<Set<string>>(new Set());
@@ -285,13 +292,10 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     return () => resizeObserver.disconnect();
   }, []);
 
-  const draggingRef = useRef<{ id: string } | null>(null);
   const rafRef = useRef<number | null>(null);
   const settleCountRef = useRef<number>(0);
   const collisionTickRef = useRef<(() => void) | null>(null);
   const previousNodeCountRef = useRef<number>(0);
-
-  useEffect(() => { draggingRef.current = draggedNode; }, [draggedNode]);
 
   useEffect(() => {
     const PUSH_FACTOR = 0.35;
@@ -299,8 +303,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     const COLLISION_PADDING = 15;
 
     collisionTickRef.current = () => {
+      // Another instance sharing this graph state has claimed the loop —
+      // halt this instance's loop so pushes aren't applied twice per frame.
+      if (collisionOwnerRef.current !== collisionInstanceIdRef.current) {
+        rafRef.current = null;
+        return;
+      }
       const currentNodes = nodesRef.current;
-      const dragId = draggingRef.current?.id || null;
+      const dragId = draggedNodeIdRef.current;
       const updates: Record<string, { x: number; y: number }> = {};
 
       for (let indexA = 0; indexA < currentNodes.length; indexA++) {
@@ -355,7 +365,7 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         });
       }
 
-      if (draggingRef.current) {
+      if (draggedNodeIdRef.current) {
         settleCountRef.current = 10;
         rafRef.current = requestAnimationFrame(collisionTickRef.current as FrameRequestCallback);
       } else if (hasUpdates) {
@@ -366,24 +376,36 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
         rafRef.current = requestAnimationFrame(collisionTickRef.current as FrameRequestCallback);
       } else {
         rafRef.current = null;
+        collisionOwnerRef.current = null;
       }
     };
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (fitAnimationFrameRef.current) cancelAnimationFrame(fitAnimationFrameRef.current);
+      if (collisionOwnerRef.current === collisionInstanceIdRef.current) {
+        collisionOwnerRef.current = null;
+      }
     };
   }, []);
 
   const startCollisionLoop = useCallback((frames = 30) => {
+    // Skip when another instance already owns (and runs) the loop
+    if (collisionOwnerRef.current && collisionOwnerRef.current !== collisionInstanceIdRef.current) return;
     if (!rafRef.current && collisionTickRef.current) {
+      collisionOwnerRef.current = collisionInstanceIdRef.current;
       settleCountRef.current = frames;
       rafRef.current = requestAnimationFrame(collisionTickRef.current as FrameRequestCallback);
     }
   }, []);
 
   useEffect(() => {
-    if (draggedNode) startCollisionLoop(30);
+    if (draggedNode) {
+      // Dragging must run the loop in THIS instance — steal ownership so the
+      // other instance's loop halts and the dragged node stays pinned here.
+      collisionOwnerRef.current = collisionInstanceIdRef.current;
+      startCollisionLoop(30);
+    }
   }, [draggedNode, startCollisionLoop]);
 
   // Start collision settlement when new graph data arrives from the hook
@@ -494,9 +516,10 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       const node = graphData?.nodes.find((graphNode) => graphNode.id === nodeId);
       if (!node) return;
       const svgPos = screenToSvg(event.clientX, event.clientY);
+      draggedNodeIdRef.current = nodeId;
       setDraggedNode({ id: nodeId, offsetX: svgPos.x - node.x, offsetY: svgPos.y - node.y });
     },
-    [graphData, screenToSvg],
+    [graphData, screenToSvg, draggedNodeIdRef],
   );
 
   const handleGlobalMouseMove = useCallback(
@@ -529,9 +552,12 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   );
 
   const handleGlobalMouseUp = useCallback(() => {
-    if (draggedNode) setDraggedNode(null);
+    if (draggedNode) {
+      draggedNodeIdRef.current = null;
+      setDraggedNode(null);
+    }
     if (isPanning) setIsPanning(false);
-  }, [draggedNode, isPanning]);
+  }, [draggedNode, isPanning, draggedNodeIdRef]);
 
   useEffect(() => {
     if (draggedNode || isPanning) {
@@ -827,19 +853,33 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
   const hiddenNodeIds = useMemo<Set<string>>(() => {
     if (!graphData || collapsedSubTreeIds.size === 0) return new Set();
     const hidden = new Set<string>();
+    const nodeById = new Map(graphData.nodes.map((graphNode) => [graphNode.id, graphNode]));
+
+    // Hide the full request/tool chain hanging off an agent node. The agent
+    // only has a direct edge to its FIRST request — later requests chain
+    // request→request — so the walk must follow those edges transitively.
+    const hideRequestChain = (agentNodeId: string) => {
+      const queue = [agentNodeId];
+      const visited = new Set(queue);
+      while (queue.length > 0) {
+        const currentId = queue.shift()!;
+        for (const edge of graphData.edges) {
+          if (edge.source !== currentId || visited.has(edge.target)) continue;
+          const targetNode = nodeById.get(edge.target);
+          if (!targetNode) continue;
+          if (targetNode.category === "request" || targetNode.category === "tool") {
+            visited.add(edge.target);
+            hidden.add(edge.target);
+            queue.push(edge.target);
+          }
+        }
+      }
+    };
 
     const hideDescendants = (treeNodes: SubAgentTreeNode[]) => {
       for (const treeNode of treeNodes) {
         hidden.add(treeNode.nodeId);
-        // Also hide all requests/tools/models connected to this hidden agent
-        for (const edge of graphData.edges) {
-          if (edge.source === treeNode.nodeId) {
-            const targetNode = graphData.nodes.find((graphNode) => graphNode.id === edge.target);
-            if (targetNode && targetNode.category !== "agent") {
-              hidden.add(edge.target);
-            }
-          }
-        }
+        hideRequestChain(treeNode.nodeId);
         hideDescendants(treeNode.children);
       }
     };
@@ -854,7 +894,14 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       }
     };
 
-    walkAndCollapse(graphData.subAgentTree);
+    // The root agent isn't part of subAgentTree — collapsing it hides the
+    // entire sub-agent tree (the main request chain stays visible).
+    const rootAgentNode = graphData.nodes.find((graphNode) => graphNode.category === "agent");
+    if (rootAgentNode && collapsedSubTreeIds.has(rootAgentNode.id)) {
+      hideDescendants(graphData.subAgentTree);
+    } else {
+      walkAndCollapse(graphData.subAgentTree);
+    }
     return hidden;
   }, [graphData, collapsedSubTreeIds]);
 
@@ -1300,7 +1347,11 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
                     }
                     return [];
                   };
-                  return countDescendants(findNodeChildren(graphData.subAgentTree));
+                  // The root agent isn't in subAgentTree — its children are the whole tree
+                  const childTreeNodes = node.category === "agent"
+                    ? graphData.subAgentTree
+                    : findNodeChildren(graphData.subAgentTree);
+                  return countDescendants(childTreeNodes);
                 })() : 0;
 
                 return (
