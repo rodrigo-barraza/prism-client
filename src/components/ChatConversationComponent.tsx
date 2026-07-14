@@ -154,6 +154,7 @@ import requestsTableStyles from "./RequestsTableComponent.module.css";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 import useProjectFilter from "../hooks/useProjectFilter";
 import { getErrorMessage } from "../utils/errorMessage";
+import { shouldOpenSubAgentLiveStream } from "../utils/subAgentLiveStreamGate";
 import { useSearchParams, useRouter } from "next/navigation";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent";
@@ -1759,19 +1760,37 @@ export default function ChatConversationComponent({
         return mergedConversations;
       });
 
-      // Seed generatingConversationIds from DB-persisted flags so that
-      // after a page refresh, sidebar items correctly show generating state
-      // for conversations the backend still considers active.
-      const activeConversationIds = result.items
-        .filter((entry) => {
-          const record = entry as unknown as Record<string, unknown>;
-          return record.isActive === true || record.isGenerating === true;
-        })
-        .map((entry) => entry.id || String(entry._id));
-      if (activeConversationIds.length > 0) {
+      // Reconcile generatingConversationIds with DB-persisted flags — both
+      // directions. Adding covers page refresh mid-generation; removing covers
+      // the race where a list fetch (started before a sub-agent's completion
+      // write landed) re-added an id after the `complete` SSE event already
+      // cleared it. Ids absent from this page of results are left untouched:
+      // the fetch says nothing about them.
+      const stillActiveConversationIds = new Set<string>();
+      const settledConversationIds = new Set<string>();
+      for (const entry of result.items) {
+        const record = entry as unknown as Record<string, unknown>;
+        const entryId = entry.id || String(entry._id);
+        if (record.isActive === true || record.isGenerating === true) {
+          stillActiveConversationIds.add(entryId);
+        } else {
+          settledConversationIds.add(entryId);
+        }
+      }
+      if (stillActiveConversationIds.size > 0 || settledConversationIds.size > 0) {
+        // Never remove the conversation this client is actively streaming —
+        // the listing may predate the backend's markGenerating(true) write
+        // (the handleSend → change-stream stale window).
+        const streamingConversationId = isGeneratingRef.current
+          ? conversationIdRef.current
+          : null;
         setGeneratingConversationIds((previousIds) => {
           const next = new Set(previousIds);
-          for (const conversationId of activeConversationIds) next.add(conversationId);
+          for (const conversationId of stillActiveConversationIds) next.add(conversationId);
+          for (const conversationId of settledConversationIds) {
+            if (conversationId === streamingConversationId) continue;
+            next.delete(conversationId);
+          }
           return next;
         });
       }
@@ -4594,6 +4613,34 @@ export default function ChatConversationComponent({
             if (isStale()) return;
             const subAgentId = data.subAgentId;
             if (!subAgentId) return;
+            // Terminal-state settle for a sub-agent's own conversation entry:
+            // stop the sidebar generating dot and resolve the derived state to
+            // "completed" immediately, without waiting for a list reload.
+            const settleSubAgentConversation = (settledConversationId: string) => {
+              setGeneratingConversationIds(
+                (previousGeneratingConversationIds) => {
+                  if (!previousGeneratingConversationIds.has(settledConversationId)) {
+                    return previousGeneratingConversationIds;
+                  }
+                  const next = new Set(previousGeneratingConversationIds);
+                  next.delete(settledConversationId);
+                  return next;
+                },
+              );
+              setConversations((previousConversations) =>
+                previousConversations.map((entry) => {
+                  if ((entry.id || String(entry._id)) !== settledConversationId) {
+                    return entry;
+                  }
+                  return {
+                    ...entry,
+                    isActive: false,
+                    isGenerating: false,
+                    pendingBackgroundTasks: 0,
+                  } as typeof entry;
+                }),
+              );
+            };
             if (data.message === STATUS_MESSAGES.SPAWNED) {
               // Early mapping: store subAgentId indexed by description
               // so SpawnAgentRenderer can look up activity before tool result arrives
@@ -4788,18 +4835,17 @@ export default function ChatConversationComponent({
             } else if (data.message === STATUS_MESSAGES.COMPLETE) {
               // Sub-agent finished — clear phase so StatusBar stops showing "Generating..."
               setSubAgentToolActivity((previousSubAgentToolActivity) => {
-                // Remove the sub-agent's conversation from the generating set
-                // so the sidebar generating-dot stops pulsing.
+                // Settle the sub-agent's conversation so the sidebar dot and
+                // progress bar stop. Prefer the event's conversationId (the
+                // backend includes it on terminal events) — the activity-map
+                // fallback only works when this client saw the "spawned" event.
                 const completedConversationId =
-                  previousSubAgentToolActivity[subAgentId]?.conversationId;
+                  (data.conversationId as string | undefined) ||
+                  (previousSubAgentToolActivity[subAgentId]?.conversationId as
+                    | string
+                    | undefined);
                 if (completedConversationId) {
-                  setGeneratingConversationIds(
-                    (previousGeneratingConversationIds) => {
-                      const next = new Set(previousGeneratingConversationIds);
-                      next.delete(completedConversationId);
-                      return next;
-                    },
-                  );
+                  settleSubAgentConversation(completedConversationId);
                 }
                 return {
                   ...previousSubAgentToolActivity,
@@ -4845,16 +4891,27 @@ export default function ChatConversationComponent({
                 });
               }
             } else if (data.message === STATUS_MESSAGES.FAILED) {
-              // Sub-agent errored — mark as failed
-              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
-                ...previousSubAgentToolActivity,
-                [subAgentId]: {
-                  ...(previousSubAgentToolActivity[subAgentId] || {}),
-                  phase: "failed",
-                  currentTool: null,
-                  error: data.error,
-                },
-              }));
+              // Sub-agent errored — mark as failed and settle its conversation
+              // (failures previously left the sidebar dot/progress bar running).
+              setSubAgentToolActivity((previousSubAgentToolActivity) => {
+                const failedConversationId =
+                  (data.conversationId as string | undefined) ||
+                  (previousSubAgentToolActivity[subAgentId]?.conversationId as
+                    | string
+                    | undefined);
+                if (failedConversationId) {
+                  settleSubAgentConversation(failedConversationId);
+                }
+                return {
+                  ...previousSubAgentToolActivity,
+                  [subAgentId]: {
+                    ...(previousSubAgentToolActivity[subAgentId] || {}),
+                    phase: "failed",
+                    currentTool: null,
+                    error: data.error,
+                  },
+                };
+              });
             }
           },
           onUsageUpdate: (data: SSEData) => {
@@ -6627,9 +6684,16 @@ export default function ChatConversationComponent({
   // conversationId via WebSocketConnectionRegistry.
   useEffect(() => {
     if (!activeId) return;
-    if (!isActiveConversationSubAgent) return;
-    if (isClientDrivenGenerationRef.current) return;
-    if (!isConversationRunning) return;
+    if (
+      !shouldOpenSubAgentLiveStream({
+        activeConversationId: activeId,
+        isSubAgentConversation: isActiveConversationSubAgent,
+        isClientDrivenGeneration: isClientDrivenGenerationRef.current,
+        isConversationRunning,
+      })
+    ) {
+      return;
+    }
 
     // Coordination with other effects and the change-stream guard
     isWebSocketStreamingRef.current = true;

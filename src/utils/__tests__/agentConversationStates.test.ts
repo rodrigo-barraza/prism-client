@@ -74,3 +74,27 @@ describe("deriveAgentConversationState — field ladder (live path)", () => {
     ).toBe("active");
   });
 });
+
+describe("deriveAgentConversationState — sub-agent document lifecycle contract", () => {
+  // Field shapes exactly as prism-service persists them on sub-agent
+  // conversation documents (SubAgentPersistenceService). A running sub-agent
+  // must read as generating so activity indicators and the live-stream
+  // subscribe gate (isActive) engage while it runs.
+  it("reads a freshly-registered/reactivated sub-agent document as 'generating'", () => {
+    expect(
+      deriveAgentConversationState({
+        isActive: true,
+        isGenerating: true,
+      }),
+    ).toBe("generating");
+  });
+
+  it("reads a terminal sub-agent document (markSubAgentTerminal shape) as 'completed'", () => {
+    expect(
+      deriveAgentConversationState({
+        isActive: false,
+        isGenerating: false,
+      }),
+    ).toBe("completed");
+  });
+});
