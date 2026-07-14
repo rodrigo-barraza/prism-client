@@ -30,6 +30,7 @@ import { ToolResultView } from "./ToolResultRenderers";
 import { getResultDisplay } from "./ToolResultRenderers/utils";
 import MarkdownContent from "./MarkdownContentComponent";
 import StreamingCursorComponent from "./StreamingCursorComponent";
+import { splitStreamingTail } from "../utils/streamingText";
 
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 
@@ -376,11 +377,21 @@ function ThinkingBlock({
       <div className={`${styles['thinking-disclosure']}${collapsed ? ` ${styles['thinking-disclosure-collapsed']}` : ''}`}>
         <div className={styles['thinking-content']} ref={contentRef}>
           {thinking?.trim() ? (
-            <MarkdownContent content={thinking}>
-              {isStreaming && (
-                <StreamingCursorComponent active={isStreaming} text={thinking} />
-              )}
-            </MarkdownContent>
+            (() => {
+              const { body, token } = isStreaming
+                ? splitStreamingTail(thinking)
+                : { body: thinking, token: "" };
+              return (
+                <MarkdownContent
+                  content={body}
+                  className={isStreaming ? styles['streaming-text'] : ""}
+                >
+                  {isStreaming && (
+                    <StreamingCursorComponent active token={token} />
+                  )}
+                </MarkdownContent>
+              );
+            })()
           ) : (
             isStreaming && <StreamingCursorComponent active standalone />
           )}
@@ -1785,33 +1796,35 @@ export default function MessageList({
                               const isLastTextSeg = !!opts.isLastText;
                               const showCursor =
                                 !opts.insideThinking && !opts.suppressCursor;
+                              const cursorActive =
+                                isStreaming && isLastTextSeg && showCursor;
                               if (fragmentText) {
+                                const { body, token } = cursorActive
+                                  ? splitStreamingTail(fragmentText)
+                                  : { body: fragmentText, token: "" };
                                 return (
                                   <MarkdownContent
                                     key={`seg-x-${si}`}
-                                    content={fragmentText}
+                                    content={body}
                                     className={
-                                      isStreaming && isLastTextSeg && showCursor
-                                        ? styles['streaming-text']
-                                        : ""
+                                      cursorActive ? styles['streaming-text'] : ""
                                     }
                                   >
-                                    {isLastTextSeg && showCursor && (
+                                    {cursorActive && (
                                       <StreamingCursorComponent
-                                        active={isStreaming}
-                                        text={fragmentText}
+                                        active
+                                        token={token}
                                       />
                                     )}
                                   </MarkdownContent>
                                 );
                               }
-                              if (isStreaming && isLastTextSeg && showCursor) {
+                              if (cursorActive) {
                                 return (
                                   <StreamingCursorComponent
                                     key={`seg-x-${si}`}
                                     active
                                     standalone
-                                    text={fragmentText}
                                   />
                                 );
                               }
@@ -2081,51 +2094,70 @@ export default function MessageList({
                                 message.content,
                               );
                               if (prefix) {
+                                const { body, token } = isStreaming
+                                  ? splitStreamingTail(rest)
+                                  : { body: rest, token: "" };
                                 return (
                                   <div className={styles['text']}>
                                     <div className={styles['raw-prefix']}>
                                       {prefix}
                                     </div>
                                     <MarkdownContent
-                                      content={rest}
+                                      content={body}
                                       className={
                                         isStreaming ? styles['streaming-text'] : ""
                                       }
                                     >
-                                      <StreamingCursorComponent
-                                        active={isStreaming}
-                                        text={rest}
-                                      />
+                                      {isStreaming && (
+                                        <StreamingCursorComponent
+                                          active
+                                          token={token}
+                                        />
+                                      )}
                                     </MarkdownContent>
                                   </div>
                                 );
                               }
+                              const { body, token } = isStreaming
+                                ? splitStreamingTail(message.content)
+                                : { body: message.content, token: "" };
                               return (
                                 <MarkdownContent
-                                  content={message.content}
+                                  content={body}
                                   className={
                                     isStreaming ? styles['streaming-text'] : ""
                                   }
                                 >
-                                  <StreamingCursorComponent
-                                    active={isStreaming}
-                                    text={message.content}
-                                  />
+                                  {isStreaming && (
+                                    <StreamingCursorComponent
+                                      active
+                                      token={token}
+                                    />
+                                  )}
                                 </MarkdownContent>
                               );
                             })()
                           ) : message.content ? (
-                            <MarkdownContent
-                              content={message.content}
-                              className={
-                                isStreaming ? styles['streaming-text'] : ""
-                              }
-                            >
-                              <StreamingCursorComponent
-                                active={isStreaming}
-                                text={message.content}
-                              />
-                            </MarkdownContent>
+                            (() => {
+                              const { body, token } = isStreaming
+                                ? splitStreamingTail(message.content)
+                                : { body: message.content, token: "" };
+                              return (
+                                <MarkdownContent
+                                  content={body}
+                                  className={
+                                    isStreaming ? styles['streaming-text'] : ""
+                                  }
+                                >
+                                  {isStreaming && (
+                                    <StreamingCursorComponent
+                                      active
+                                      token={token}
+                                    />
+                                  )}
+                                </MarkdownContent>
+                              );
+                            })()
                           ) : isStreaming ? (
                             <StreamingCursorComponent active standalone />
                           ) : null}

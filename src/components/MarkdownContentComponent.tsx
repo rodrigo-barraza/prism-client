@@ -225,7 +225,7 @@ export default function MarkdownContent({
     [content],
   );
 
-  if (!content) return null;
+  if (!content && !children) return null;
   return (
     <div className={`markdown-content-component ${styles['text']} ${className || ""}`}>
       <ReactMarkdown

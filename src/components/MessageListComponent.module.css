@@ -9,7 +9,6 @@
 .message {
   display: flex;
   gap: 16px;
-  max-width: 800px;
   margin: 0 auto;
   width: 100%;
   animation: fade-in 0.3s ease-out forwards;
@@ -181,11 +180,9 @@
   margin-bottom: 10px;
   border-radius: var(--border-radius-sm);
   overflow: hidden;
-  background: color-mix(
-    in srgb,
-    var(--accent-primary) 3%,
-    var(--background-base)
-  );
+  background: color-mix(in srgb,
+      var(--accent-primary) 3%,
+      var(--background-base));
   transition: border-color 0.2s ease;
 }
 
@@ -207,11 +204,9 @@
     color 0.2s;
 
   &:hover {
-    background: color-mix(
-      in srgb,
-      var(--accent-primary) 6%,
-      var(--background-elevated)
-    );
+    background: color-mix(in srgb,
+        var(--accent-primary) 6%,
+        var(--background-elevated));
     color: var(--text-primary);
   }
 
@@ -287,11 +282,9 @@
     content: "";
     position: absolute;
     inset: 2px;
-    background: color-mix(
-      in srgb,
-      var(--accent-primary) 3%,
-      var(--background-base)
-    );
+    background: color-mix(in srgb,
+        var(--accent-primary) 3%,
+        var(--background-base));
     border-radius: calc(var(--border-radius-sm) - 1px);
     z-index: 0;
   }
@@ -662,8 +655,10 @@
 .streaming-text {
   position: relative;
 
-  /* Make the last markdown block inline so the cursor sits at end of text */
-  &> :nth-last-child(2) {
+  /* Make a trailing paragraph inline so the cursor (the single element
+     after it) sits at the end of the streamed text. Other trailing blocks
+     (lists, code) stay block-level and the cursor drops below them. */
+  &>p:nth-last-child(2) {
     display: inline;
   }
 
@@ -1057,6 +1052,7 @@
     opacity: 0;
     translate: 0 8px;
   }
+
   to {
     opacity: 0.7;
     translate: 0 0;
@@ -1064,9 +1060,12 @@
 }
 
 @keyframes queued-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -1104,6 +1103,7 @@
     opacity: 0;
     translate: 0 4px;
   }
+
   to {
     opacity: 1;
     translate: 0 0;
