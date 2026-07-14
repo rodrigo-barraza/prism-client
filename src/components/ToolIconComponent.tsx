@@ -3,6 +3,7 @@
 import { Wrench } from "lucide-react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { TOOL_ICON_MAP, TOOL_COLORS } from "./WorkflowNodeConstantsComponent";
+import { resolveCapabilityName } from "@rodrigo-barraza/utilities-library/taxonomy";
 import styles from "./ToolIconComponent.module.css";
 
 interface ToolIconProps {
@@ -64,7 +65,7 @@ export default function ToolIconComponent({
                 <Icon
                   size={size}
                   style={{
-                    color: TOOL_COLORS[label] || "oklch(0.692 0.218 36.634)",
+                    color: TOOL_COLORS[resolveCapabilityName(label)] || "oklch(0.692 0.218 36.634)",
                   }}
                 />
               </span>

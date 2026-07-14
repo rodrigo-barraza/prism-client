@@ -35,6 +35,7 @@ import {
   TooltipComponent,
   SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
+import { resolveCapabilityName } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 import ToolIconComponent from "./ToolIconComponent";
 import FilterDropdownComponent from "./FilterDropdownComponent";
@@ -1634,7 +1635,7 @@ function ModelsTableInner({
                         ? {
                             key: toolName,
                             icon: Icon as React.ComponentType<{ size?: number; className?: string }>,
-                            color: (TOOL_COLORS as Record<string, string>)[toolName],
+                            color: (TOOL_COLORS as Record<string, string>)[resolveCapabilityName(toolName)],
                             title: toolName,
                           }
                         : null;

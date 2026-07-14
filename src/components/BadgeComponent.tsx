@@ -36,6 +36,11 @@ import { renderAgentIcon } from "./AgentPickerComponent";
 import ThreeCanvasComponent from "./ThreeCanvasComponent";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import { formatCost, formatElapsedTime, renderToolName } from "@rodrigo-barraza/utilities-library";
+import {
+  CAPABILITY_DISPLAY_NAMES,
+  CAPABILITY_SHORT_NAMES,
+  resolveCapabilityName,
+} from "@rodrigo-barraza/utilities-library/taxonomy";
 import { resolveToolVisuals, isEmojiImageUrl } from "./WorkflowNodeConstantsComponent";
 
 // Scoped Stylesheets from individual components
@@ -576,36 +581,15 @@ function CoinStaticRenderer({ agent, size }: { agent?: string | ClientAgent | nu
   );
 }
 
-const TOOL_DISPLAY_NAMES: Record<string, string> = {
-  "Tool Calling": "Tool Calling",
-  Thinking: "Thinking",
-  "Web Search": "Web Search",
-  "Google Search": "Web Search",
-  "Code Execution": "Code Execution",
-  "Computer Use": "Computer Use",
-  "File Search": "File Search",
-  "URL Context": "URL Context",
-  "Image Generation": "Image Gen",
-};
-
-const TOOL_SHORT_NAMES: Record<string, string> = {
-  Thinking: "Think",
-  "Tool Calling": "Tool",
-  "Web Search": "Web",
-  "Google Search": "Web",
-  "Code Execution": "Code",
-  "Computer Use": "Computer",
-  "File Search": "File",
-  "URL Context": "URL",
-  "Image Generation": "Image",
-};
-
+// Tool display/short-name maps sourced from the shared capability taxonomy.
+// Keyed by canonical display name — raw provider aliases are normalized first.
 function resolveDisplayName(name: string, variant: string = "default"): string {
-  if (variant === "condensed" && TOOL_SHORT_NAMES[name]) {
-    return TOOL_SHORT_NAMES[name];
+  const canonicalName = resolveCapabilityName(name);
+  if (variant === "condensed" && CAPABILITY_SHORT_NAMES[canonicalName]) {
+    return CAPABILITY_SHORT_NAMES[canonicalName];
   }
-  if (TOOL_DISPLAY_NAMES[name]) {
-    return TOOL_DISPLAY_NAMES[name];
+  if (CAPABILITY_DISPLAY_NAMES[canonicalName]) {
+    return CAPABILITY_DISPLAY_NAMES[canonicalName];
   }
   return renderToolName(name);
 }

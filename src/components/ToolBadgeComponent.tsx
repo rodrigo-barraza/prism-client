@@ -4,53 +4,34 @@ import React from "react";
 import { TooltipComponent } from "@rodrigo-barraza/components-library";
 import { resolveToolVisuals, isEmojiImageUrl } from "./WorkflowNodeConstantsComponent";
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
+import {
+  CAPABILITY_DISPLAY_NAMES,
+  CAPABILITY_SHORT_NAMES,
+  resolveCapabilityName,
+} from "@rodrigo-barraza/utilities-library/taxonomy";
 import styles from "./ToolBadgeComponent.module.css";
 
 // ═══════════════════════════════════════════════════════════════════════
-// Canonical tool display names — single source of truth for labels.
+// Canonical tool display names — sourced from the shared capability
+// taxonomy (@rodrigo-barraza/utilities-library/taxonomy). React icon
+// components stay client-side (see WorkflowNodeConstantsComponent) but the
+// display-name / short-name maps live in the library.
 // ═══════════════════════════════════════════════════════════════════════
 
 /**
- * Map raw tool function names (snake_case) AND canonical tool names
- * to a consistent display label.
- */
-const TOOL_DISPLAY_NAMES: Record<string, string> = {
-  // -- Canonical capability names --
-  "Tool Calling": "Tool Calling",
-  Thinking: "Thinking",
-  "Web Search": "Web Search",
-  "Google Search": "Web Search",
-  "Code Execution": "Code Execution",
-  "Computer Use": "Computer Use",
-  "File Search": "File Search",
-  "URL Context": "URL Context",
-  "Image Generation": "Image Generation",
-};
-
-/**
- * Abbreviated display names for the "condensed" variant.
- */
-const TOOL_SHORT_NAMES: Record<string, string> = {
-  Thinking: "Think",
-  "Tool Calling": "Tool",
-  "Web Search": "Web",
-  "Google Search": "Web",
-  "Code Execution": "Code",
-  "Computer Use": "Computer",
-  "File Search": "File",
-  "URL Context": "URL",
-  "Image Generation": "Image",
-};
-
-/**
  * Resolve any tool name to a human-readable display label.
+ *
+ * The shared maps are keyed by canonical display names, so a raw
+ * provider-native alias (e.g. "googleSearch", "web_search") is normalized
+ * first via resolveCapabilityName (identity for canonical/unknown names).
  */
 function resolveDisplayName(name: string, variant: string = "default"): string {
-  if (variant === "condensed" && TOOL_SHORT_NAMES[name]) {
-    return TOOL_SHORT_NAMES[name];
+  const canonicalName = resolveCapabilityName(name);
+  if (variant === "condensed" && CAPABILITY_SHORT_NAMES[canonicalName]) {
+    return CAPABILITY_SHORT_NAMES[canonicalName];
   }
-  if (TOOL_DISPLAY_NAMES[name]) {
-    return TOOL_DISPLAY_NAMES[name];
+  if (CAPABILITY_DISPLAY_NAMES[canonicalName]) {
+    return CAPABILITY_DISPLAY_NAMES[canonicalName];
   }
   // Fallback: title-case via shared utility
   return renderToolName(name);

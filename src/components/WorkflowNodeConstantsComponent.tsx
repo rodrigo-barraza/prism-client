@@ -3,6 +3,11 @@
 import type { ComponentType } from "react";
 import type { WorkflowNode } from "../types/types";
 import {
+  CAPABILITY_COLORS,
+  CAPABILITY_EMOJI,
+  resolveCapabilityName,
+} from "@rodrigo-barraza/utilities-library/taxonomy";
+import {
   Type,
   Image,
   Volume2,
@@ -60,20 +65,11 @@ export const MODALITY_COLORS = {
   thinking: "oklch(0.769 0.177 90.046)",
 };
 
-// -- Tool Colors --
-export const TOOL_COLORS: Record<string, string> = {
-  Thinking: "oklch(0.769 0.177 90.046)",
-  "Tool Calling": "oklch(0.692 0.218 36.634)",
-  "Web Search": "oklch(0.588 0.158 241.966)",
-  "Google Search": "oklch(0.588 0.158 241.966)",
-  googleSearch: "oklch(0.588 0.158 241.966)",
-  "Web Fetch": "oklch(0.588 0.158 241.966)",
-  "Code Execution": "oklch(0.606 0.25 293.528)",
-  "Computer Use": "oklch(0.705 0.191 165.574)",
-  "File Search": "oklch(0.553 0.013 255.487)",
-  "URL Context": "oklch(0.697 0.148 209.91)",
-  "Image Generation": "oklch(0.627 0.226 28.324)",
-};
+// -- Tool Colors (canonical display-name keyed; sourced from shared taxonomy) --
+// Re-exported under the historical name so existing consumers keep importing
+// TOOL_COLORS. NOTE: keyed ONLY by canonical display names — raw aliases such
+// as "googleSearch" must be normalized via resolveCapabilityName before lookup.
+export const TOOL_COLORS: Record<string, string> = CAPABILITY_COLORS;
 
 // -- Tool Icon Map (Component references — render as <Icon size={size} />) --
 export const TOOL_ICON_MAP: Record<string, ComponentType<{ size?: number; className?: string }>> = {
@@ -98,19 +94,9 @@ export const TOOL_ICON_MAP: Record<string, ComponentType<{ size?: number; classN
 
 const backendToolEmojiCache = new Map<string, string>();
 
-const CAPABILITY_EMOJI_FALLBACKS: Record<string, string> = {
-  Thinking: "🧠",
-  "Tool Calling": "🛠️",
-  "Web Search": "🌐",
-  "Google Search": "🌐",
-  googleSearch: "🌐",
-  "Web Fetch": "🌐",
-  "Code Execution": "⚡",
-  "Computer Use": "🖥️",
-  "File Search": "🔍",
-  "URL Context": "🔗",
-  "Image Generation": "🖼️",
-};
+// Capability-level UI emoji fallbacks now come from the shared taxonomy
+// (CAPABILITY_EMOJI), keyed by canonical display name. Raw provider aliases
+// (e.g. "googleSearch") are normalized via resolveCapabilityName before lookup.
 
 /**
  * @deprecated Use resolveToolEmoji() instead. Kept for backwards compatibility
@@ -122,12 +108,12 @@ export const TOOL_EMOJI_MAP: Record<string, string> = new Proxy(
   {
     get(_target, property: string) {
       return backendToolEmojiCache.get(property)
-        ?? CAPABILITY_EMOJI_FALLBACKS[property]
+        ?? CAPABILITY_EMOJI[resolveCapabilityName(property)]
         ?? undefined;
     },
     has(_target, property: string) {
       return backendToolEmojiCache.has(property)
-        || property in CAPABILITY_EMOJI_FALLBACKS;
+        || resolveCapabilityName(property) in CAPABILITY_EMOJI;
     },
   },
 );
@@ -138,7 +124,7 @@ export const TOOL_EMOJI_MAP: Record<string, string> = new Proxy(
  */
 export function resolveToolEmoji(toolName: string): string {
   return backendToolEmojiCache.get(toolName)
-    ?? CAPABILITY_EMOJI_FALLBACKS[toolName]
+    ?? CAPABILITY_EMOJI[resolveCapabilityName(toolName)]
     ?? "🛠️";
 }
 
@@ -194,7 +180,7 @@ export function resolveToolVisuals(name: string): ToolVisuals {
   if (resolvedIcon) {
     return {
       Icon: resolvedIcon,
-      color: TOOL_COLORS[name] || "oklch(0.769 0.188 70.08)",
+      color: TOOL_COLORS[resolveCapabilityName(name)] || "oklch(0.769 0.188 70.08)",
       emoji: resolvedEmoji,
     };
   }
