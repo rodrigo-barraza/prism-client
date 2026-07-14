@@ -155,6 +155,11 @@ import { useAdminHeader } from "./AdminHeaderContextComponent";
 import useProjectFilter from "../hooks/useProjectFilter";
 import { getErrorMessage } from "../utils/errorMessage";
 import { shouldOpenSubAgentLiveStream } from "../utils/subAgentLiveStreamGate";
+import {
+  shouldApplySnapshotRefresh,
+  seedStreamAccumulators,
+  extractPersistedContextBudget,
+} from "../utils/liveConversationView";
 import { useSearchParams, useRouter } from "next/navigation";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent";
@@ -1071,6 +1076,11 @@ export default function ChatConversationComponent({
   // Change-stream refresh is safe to skip only for client-driven generation.
   const isClientDrivenGenerationRef = useRef<boolean>(false);
   const isWebSocketStreamingRef = useRef<boolean>(false);
+  // True only once the live WebSocket stream has actually delivered content
+  // for the viewed conversation. DB-snapshot refreshes are suppressed only
+  // then — a silent subscription (e.g. service without direct-viewer
+  // broadcast support) must NOT block boundary refreshes.
+  const webSocketHasStreamedContentRef = useRef<boolean>(false);
   const previousModelRef = useRef<string | null>(null);
   // Track which conversations have active background generation (for history indicator)
   const [generatingConversationIds, setGeneratingConversationIds] = useState(
@@ -1959,8 +1969,7 @@ export default function ChatConversationComponent({
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
 
         // Hydrate persisted context budget from the conversation document
-        const persistedBudget = (full as unknown as Record<string, unknown>).contextBudget as ContextBudget | null | undefined;
-        setContextBudget(persistedBudget ?? null);
+        setContextBudget(extractPersistedContextBudget(full));
       } catch (error: unknown) {
         console.error("Failed to preload conversation from URL:", error);
       }
@@ -2290,6 +2299,9 @@ export default function ChatConversationComponent({
         setConversationId(fullEntry.id || generateUUID());
         setTitle(fullEntry.title || "Untitled");
         setBackendConversationStats(fullEntry.stats || null);
+        // Hydrate the persisted context budget so the read-only budget
+        // indicator renders for the viewed conversation.
+        setContextBudget(extractPersistedContextBudget(fullEntry));
         setSettings((previousSettings) => {
           const nextSettings = { ...previousSettings };
           const conversationSettings = (fullEntry as Conversation)?.settings as Partial<PrismSettings> | undefined;
@@ -2334,10 +2346,20 @@ export default function ChatConversationComponent({
             : ((await IrisService.getConversation(id)) as UnifiedEntry);
         // Keep the gate-driving entry (isActive etc.) in sync with the DB
         adminUpsertConversationEntry(full as AgentConversation | Conversation);
-        // While the live WebSocket stream owns `messages`, don't clobber the
-        // partially-streamed content with a whole-document snapshot — the
-        // stream's onDone does the final canonical refresh.
-        if (isWebSocketStreamingRef.current) return;
+        // Budget updates never clobber streamed text — safe during streaming
+        setContextBudget(extractPersistedContextBudget(full));
+        // While the live WebSocket stream is actively delivering content,
+        // don't clobber the partially-streamed text with a whole-document
+        // snapshot — the stream's onDone does the final canonical refresh.
+        // A merely-open-but-silent subscription must not block refreshes.
+        if (
+          !shouldApplySnapshotRefresh({
+            isStreamOpen: isWebSocketStreamingRef.current,
+            hasStreamedContent: webSocketHasStreamedContentRef.current,
+          })
+        ) {
+          return;
+        }
         const displayMessages = resolveDisplayMessages(full);
         setMessages(displayMessages);
         setBackendConversationStats(full.stats || null);
@@ -6010,8 +6032,7 @@ export default function ChatConversationComponent({
 
       // Hydrate persisted context budget from the conversation document,
       // or clear if the conversation has no budget data.
-      const persistedBudget = (full as unknown as Record<string, unknown>).contextBudget as ContextBudget | null | undefined;
-      setContextBudget(persistedBudget ?? null);
+      setContextBudget(extractPersistedContextBudget(full));
 
       // -- Restore workspace selection from the conversation document --
       // Agent conversations record which workspace they were started with;
@@ -6743,24 +6764,28 @@ export default function ChatConversationComponent({
 
     // Coordination with other effects and the change-stream guard
     isWebSocketStreamingRef.current = true;
+    webSocketHasStreamedContentRef.current = false;
     isClientDrivenGenerationRef.current = true;
 
-    // Mutable streaming state (avoids stale closures in callbacks)
-    // Initialize from existing message if it exists to prevent overwriting content
-    const existingAssistantMessage = [...messagesRef.current]
-      .reverse()
-      .find((message) => message.role === "assistant") as ClientMessage | undefined;
-
-    let streamedText = existingAssistantMessage?.content || "";
-    let streamedThinking = existingAssistantMessage?.thinking || "";
+    // Mutable streaming state (avoids stale closures in callbacks).
+    // Seeds ONLY from a trailing in-flight assistant bubble (joining a
+    // generation already mid-stream) — see seedStreamAccumulators.
+    const seeded = seedStreamAccumulators(messagesRef.current);
+    let streamedText = seeded.streamedText;
+    let streamedThinking = seeded.streamedThinking;
     let isSubscriptionActive = true;
 
     // Mark this conversation as "generating" so the UI shows the active state
     setIsGenerating(true);
 
+    // Capture for the cleanup's final canonical refresh (admin viewer)
+    const streamedConversationId = activeId;
+    const streamedAdminSource = adminSelectedSourceRef.current;
+
     const cleanupWebSocket = PrismService.subscribeToAutoResponse(activeId, {
       onChunk: (content: string) => {
         if (!isSubscriptionActive) return;
+        webSocketHasStreamedContentRef.current = true;
         streamedText += content;
         const trimmedText = streamedText.trim();
 
@@ -6784,6 +6809,7 @@ export default function ChatConversationComponent({
 
       onThinking: (content: string) => {
         if (!isSubscriptionActive) return;
+        webSocketHasStreamedContentRef.current = true;
         streamedThinking += content;
 
         setMessages((previousMessages) => {
@@ -6809,6 +6835,7 @@ export default function ChatConversationComponent({
 
       onToolExecution: (data: SSEData) => {
         if (!isSubscriptionActive) return;
+        webSocketHasStreamedContentRef.current = true;
         const toolData = data.tool as Record<string, unknown> | undefined;
         if (!toolData) return;
         if (data.toolEmoji && toolData.name) {
@@ -6976,9 +7003,18 @@ export default function ChatConversationComponent({
     return () => {
       isSubscriptionActive = false;
       cleanupWebSocket();
+      const hadStreamedContent = webSocketHasStreamedContentRef.current;
       isWebSocketStreamingRef.current = false;
+      webSocketHasStreamedContentRef.current = false;
       isClientDrivenGenerationRef.current = false;
       setIsGenerating(false);
+      // Admin viewer: always land on the canonical DB state once the live
+      // stream closes (gate closed / selection changed). Without this, a
+      // subscription that streamed partial content — or suppressed a
+      // boundary refresh — would leave the viewer stale until manual reload.
+      if (isAdmin && hadStreamedContent) {
+        adminRefreshSelectedEntry(streamedConversationId, streamedAdminSource);
+      }
     };
   }, [
     activeId,
@@ -8535,6 +8571,14 @@ export default function ChatConversationComponent({
           />
         );
       })()}
+
+      {/* Admin viewer: read-only context budget in the input-wrapper slot,
+          without the input form itself */}
+      {isAdmin && contextBudget && (
+        <div className={chatStyles['input-wrapper']}>
+          <ContextBudgetIndicatorComponent contextBudget={contextBudget} />
+        </div>
+      )}
 
       {!isAdmin && (
       <div
