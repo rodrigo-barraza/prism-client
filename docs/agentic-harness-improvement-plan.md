@@ -1,6 +1,16 @@
 # Prism Client — Agentic Harness Improvement Plan
 
 Date: 2026-07-13
+
+> **Implementation status (2026-07-13):** Quick wins, Phase 0, Phase 1 (in-place
+> hardening: framing/watchdog/heartbeat — the agentStream.ts module extraction
+> and typed onEvent union are still open), Phase 2.4 (dual tool handlers merged;
+> the WebSocket pipeline at ~line 6600 still has its own copy — unify via the
+> Phase 2 reducer), and Phase 3 items 3.1/3.2/3.4 are DONE. Still open:
+> Phase 2 reducer + component decomposition, Phase 3.3 (tool policy),
+> Phase 3.5 (shared state ladder), Phase 3.6 (persisted event — note the
+> Finalizer already emits `done` after persistence, so re-verify whether
+> attemptPostStreamRefresh is still needed at all), Phases 4–5.
 Scope: the main agentic flow in prism-client (`ChatConversationComponent` → `PrismService._streamSSE` → SSE callbacks → tool/sub-agent state → render), plus business logic that should migrate to prism-service.
 Constraint: every phase is independently shippable and must not break current functionality. Client and service deploy independently (`npm run deploy` each), so all protocol changes are **additive-first**: server emits old + new shapes during transition, client switches, old shape removed last.
 

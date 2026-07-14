@@ -3603,7 +3603,10 @@ export default function ChatConversationComponent({
 
   // -- Orchestration loop ---------------------------------------
   const runOrchestrationLoop = useCallback(
-    async (conversationMessages: ClientMessage[], resolvedTitle: string) => {
+    async (
+      conversationMessages: ClientMessage[],
+      activeRuleNames: string[] = [],
+    ) => {
       const currentMessages = [...conversationMessages];
       // Capture which conversation this generation belongs to — if the user
       // switches conversations, streaming callbacks will skip UI updates.
@@ -3651,25 +3654,23 @@ export default function ChatConversationComponent({
               ...(settings.codeExecutionEnabled ? { codeExecution: true } : {}),
               ...(settings.urlContextEnabled ? { urlContext: true } : {}),
               conversationId,
-              conversationMeta: {
-                title: resolvedTitle,
-                ...(settings.systemPrompt
-                  ? { systemPrompt: settings.systemPrompt }
-                  : {}),
-              },
+              // Title is derived server-side (ChatRoutes) — send only meta
+              // the server can't derive itself.
+              ...(settings.systemPrompt
+                ? { conversationMeta: { systemPrompt: settings.systemPrompt } }
+                : {}),
               // Omit project — falls back to x-project header ("prism"),
               // routing to the conversations collection
               traceId,
             }
           : {
-              // Agent mode: full /agent endpoint with AgenticLoopService
+              // Agent mode: full /agent endpoint with AgenticLoopService.
+              // No system placeholder — the harness assembles the system
+              // prompt server-side and feeds it to providers as a
+              // first-class parameter, never via the messages array.
               provider: settings.provider ?? "",
               model: settings.model ?? "",
-              messages: [
-                // System prompt placeholder — replaced server-side by SystemPromptAssembler
-                { role: MESSAGE_ROLES.SYSTEM, content: "" },
-                ...currentMessages,
-              ],
+              messages: currentMessages,
               functionCallingEnabled: true,
               disabledTools: [...disabledTools, ...lockedOffTools.keys()],
               maxTokens: settings.maxTokens,
@@ -3686,14 +3687,16 @@ export default function ChatConversationComponent({
               ...(settings.thinkingLevel && {
                 thinkingLevel: settings.thinkingLevel,
               }),
-              // Local models need enough context for MCP tool schemas + conversation
-              minContextLength: 120_000,
               project: agentProject,
               conversationId,
-              conversationMeta: { title: resolvedTitle },
               traceId,
               agent: agentId,
-              harness: settings?.agents?.harness || "standard",
+              ...(activeRuleNames.length > 0 && { activeRuleNames }),
+              // Send only explicit user overrides — the server owns the
+              // defaults (harness "standard", minContextLength, agent).
+              ...(settings?.agents?.harness && {
+                harness: settings.agents.harness,
+              }),
               topology: settings?.agents?.topology || DEFAULT_TOPOLOGY,
               thoughtStructure:
                 (settings?.agents?.thoughtStructure as string) || undefined,
@@ -3750,6 +3753,163 @@ export default function ChatConversationComponent({
         const streamFn = isNoAgent
           ? PrismService.streamText
           : PrismService.streamAgentText;
+        // Unified handler for both tool-event pipelines: agentic
+        // `tool_execution` envelopes and LM Studio native MCP `toolCall`
+        // events. Owns activity/message state updates, segment tracking,
+        // and the panel-refresh side effects.
+        const handleToolEvent = (
+          toolInput: {
+            id?: string;
+            name?: string;
+            args?: Record<string, unknown>;
+            result?: unknown;
+            status: string;
+            durationMs?: number;
+            timestamp?: number;
+          },
+          { toolEmoji, logLabel }: { toolEmoji?: string; logLabel: string },
+        ) => {
+          if (toolEmoji && toolInput.name) cacheToolEmoji(toolInput.name, toolEmoji);
+          const resolvedId = toolInput.id || `tc-${Date.now()}-${Math.random()}`;
+          console.debug(
+            `[${logLabel}] ${toolInput.status} ${toolInput.name} id=${resolvedId}`,
+          );
+
+          setToolActivity((previousToolActivity: ToolCallEvent[]) => {
+            const next = applyToolExecutionToActivity(
+              previousToolActivity,
+              resolvedId,
+              toolInput,
+            );
+            return next ?? previousToolActivity;
+          });
+
+          // Track segment ordering: group consecutive tool events
+          // Guard: only add to segments if not already tracked
+          if (toolInput.status === "streaming" || toolInput.status === "calling") {
+            if (!segmentToolIdSet.has(resolvedId)) {
+              segmentToolIdSet.add(resolvedId);
+              if (lastSegmentType === "tools") {
+                // Append to current tools segment
+                contentSegments[contentSegments.length - 1].toolIds!.push(
+                  resolvedId,
+                );
+              } else {
+                contentSegments.push({
+                  type: "tools",
+                  toolIds: [resolvedId],
+                });
+                lastSegmentType = "tools";
+              }
+            }
+          }
+
+          // Capture snapshot values from the mutable streaming closure
+          // BEFORE passing to the functional updater
+          const snapshot = {
+            contentSegments: snapshotSegments(),
+            textFragments: [...textFragments],
+            thinkingFragments: [...thinkingFragments],
+          };
+
+          setMessages(
+            (msgPrev: ClientMessage[]) =>
+              applyToolExecutionToMessages(
+                msgPrev,
+                resolvedId,
+                toolInput,
+                snapshot,
+              ) as ClientMessage[],
+          );
+
+          // Auto-refresh tasks panel when any task tool completes
+          if (
+            toolInput.status !== "calling" &&
+            toolInput.name &&
+            toolInput.name.includes("_task")
+          ) {
+            setTasksRefreshKey((k) => k + 1);
+          }
+
+          // Increment scheduled task notification badge when agent creates a cron job
+          if (
+            toolInput.status === "done" &&
+            toolInput.name === TOOL_NAMES.CREATE_CRON_JOB
+          ) {
+            const currentNotificationCount = parseInt(
+              localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
+              10,
+            );
+            localStorage.setItem(
+              LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
+              String(currentNotificationCount + 1),
+            );
+            window.dispatchEvent(new CustomEvent(EVENT_NAME_CRON_JOB_SCHEDULED));
+          }
+
+          // Auto-refresh memories panel when save_memory completes
+          if (
+            toolInput.status !== "calling" &&
+            toolInput.name === TOOL_NAMES.SAVE_MEMORY
+          ) {
+            if (hasAnyMemoryModelSet) {
+              setLeftTabBottom("memories");
+            }
+            setMemoriesRefreshKey((k) => k + 1);
+            PrismService.getAgentMemories(agentProject, 1, agentId)
+              .then((result) => setTotalMemoriesCount(result.total || 0))
+              .catch(() => {
+                /* Non-critical background count refresh */
+              });
+          }
+
+          // Auto-refresh workspace tree when filesystem-mutating tools complete
+          if (
+            toolInput.status !== "calling" &&
+            WORKSPACE_FS_TOOLS.has(toolInput.name || "")
+          ) {
+            setWorkspaceTreeRefreshKey((k) => k + 1);
+
+            // Live-update file viewer: refresh open tabs whose path was touched
+            const mutatedPath =
+              (toolInput.args?.path as string) ||
+              (toolInput.args?.source as string) ||
+              null;
+            const openFiles = viewerOpenFilesRef.current;
+            if (mutatedPath && openFiles.length > 0) {
+              // delete_file and move_file both remove the source path
+              if (
+                toolInput.name === TOOL_NAMES.DELETE_FILE ||
+                toolInput.name === TOOL_NAMES.MOVE_FILE
+              ) {
+                const deleted = openFiles.find(
+                  (file: ViewerOpenFile) => file.path === mutatedPath,
+                );
+                if (deleted) {
+                  setViewerOpenFiles((previousViewerOpenFiles) => {
+                    const next = previousViewerOpenFiles.filter(
+                      (file: ViewerOpenFile) => file.path !== mutatedPath,
+                    );
+                    setViewerActiveFileId((activeId: string | null) => {
+                      if (activeId !== deleted.id) return activeId;
+                      const closedTabIndex = previousViewerOpenFiles.findIndex(
+                        (file: ViewerOpenFile) => file.id === deleted.id,
+                      );
+                      const newActive =
+                        next[Math.min(closedTabIndex, next.length - 1)];
+                      return newActive?.id || null;
+                    });
+                    return next;
+                  });
+                }
+              } else if (openFiles.some((file) => file.path === mutatedPath)) {
+                // Bump refresh key to re-fetch modified file content
+                setViewerRefreshKey((k) => k + 1);
+              }
+            }
+          }
+        };
+
         abortRef.current = streamFn(payload, {
           onChunk: (
             content: string,
@@ -3977,313 +4137,36 @@ export default function ChatConversationComponent({
             if (isStale()) return;
             const toolData = data.tool;
             if (!toolData) return;
-            if (data.toolEmoji && toolData.name) cacheToolEmoji(toolData.name as string, data.toolEmoji as string);
-            const resolvedId =
-              toolData.id || `tc-${Date.now()}-${Math.random()}`;
-            console.debug(
-              `[ToolExec] ${data.status} ${toolData.name} id=${resolvedId}`,
+            handleToolEvent(
+              {
+                id: toolData.id,
+                name: toolData.name,
+                args: toolData.args,
+                status: data.status as string,
+                result: toolData.result,
+                durationMs: toolData.durationMs,
+                timestamp: data.timestamp as number | undefined,
+              },
+              {
+                toolEmoji: data.toolEmoji as string | undefined,
+                logLabel: "ToolExec",
+              },
             );
-
-            setToolActivity((previousToolActivity: ToolCallEvent[]) => {
-              const next = applyToolExecutionToActivity(
-                previousToolActivity,
-                resolvedId,
-                {
-                  id: toolData.id,
-                  name: toolData.name,
-                  args: toolData.args,
-                  status: data.status as string,
-                  result: toolData.result,
-                  durationMs: toolData.durationMs || (toolData as Record<string, unknown>).durationMilliseconds as number | undefined,
-                  timestamp: data.timestamp as number | undefined,
-                },
-              );
-              return next ?? previousToolActivity;
-            });
-
-            // Track segment ordering: group consecutive tool events
-            // Guard: only add to segments if not already tracked
-            if (data.status === "streaming" || data.status === "calling") {
-              if (!segmentToolIdSet.has(resolvedId)) {
-                segmentToolIdSet.add(resolvedId);
-                if (lastSegmentType === "tools") {
-                  // Append to current tools segment
-                  contentSegments[contentSegments.length - 1].toolIds!.push(
-                    resolvedId,
-                  );
-                } else {
-                  contentSegments.push({
-                    type: "tools",
-                    toolIds: [resolvedId],
-                  });
-                  lastSegmentType = "tools";
-                }
-              }
-            }
-
-            // Capture snapshot values from the mutable streaming closure
-            // BEFORE passing to the functional updater
-            const execSnapshot = {
-              contentSegments: snapshotSegments(),
-              textFragments: [...textFragments],
-              thinkingFragments: [...thinkingFragments],
-            };
-
-            setMessages((msgPrev: ClientMessage[]) => {
-              const next = applyToolExecutionToMessages(
-                msgPrev,
-                resolvedId,
-                {
-                  id: toolData.id,
-                  name: toolData.name,
-                  args: toolData.args,
-                  status: data.status as string,
-                  result: toolData.result,
-                  durationMs: toolData.durationMs || (toolData as Record<string, unknown>).durationMilliseconds as number | undefined,
-                  timestamp: data.timestamp as number | undefined,
-                },
-                execSnapshot,
-              ) as ClientMessage[];
-              console.debug(
-                `[ToolExec setMessages] ${data.status} ${toolData.name}: previousPixelSize=${msgPrev.length} → next=${next.length}`,
-              );
-              return next;
-            });
-
-            // Auto-refresh tasks panel when any task tool completes
-            if (
-              data.status !== "calling" &&
-              toolData.name &&
-              toolData.name.includes("_task")
-            ) {
-              setTasksRefreshKey((k) => k + 1);
-            }
-
-            // Increment scheduled task notification badge when agent creates a cron job
-            if (
-              data.status === "done" &&
-              toolData.name === TOOL_NAMES.CREATE_CRON_JOB
-            ) {
-              const currentNotificationCount = parseInt(
-                localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
-                10,
-              );
-              localStorage.setItem(
-                LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
-                String(currentNotificationCount + 1),
-              );
-              window.dispatchEvent(new CustomEvent(EVENT_NAME_CRON_JOB_SCHEDULED));
-            }
-
-            // Auto-refresh memories panel when save_memory completes
-            if (
-              data.status !== "calling" &&
-              toolData.name === TOOL_NAMES.SAVE_MEMORY
-            ) {
-              if (hasAnyMemoryModelSet) {
-                setLeftTabBottom("memories");
-              }
-              setMemoriesRefreshKey((k) => k + 1);
-              PrismService.getAgentMemories(agentProject, 1, agentId)
-                .then((result) => setTotalMemoriesCount(result.total || 0))
-                .catch(() => {
-                  /* Non-critical background count refresh */
-                });
-            }
-
-            // Auto-refresh workspace tree when filesystem-mutating tools complete
-            if (
-              data.status !== "calling" &&
-              WORKSPACE_FS_TOOLS.has(toolData.name || "")
-            ) {
-              setWorkspaceTreeRefreshKey((k) => k + 1);
-
-              // Live-update file viewer: refresh open tabs whose path was touched
-              const mutatedPath =
-                (toolData.args?.path as string) ||
-                (toolData.args?.source as string) ||
-                null;
-              const openFiles = viewerOpenFilesRef.current;
-              if (mutatedPath && openFiles.length > 0) {
-                // delete_file and move_file both remove the source path
-                if (
-                  toolData.name === TOOL_NAMES.DELETE_FILE ||
-                  toolData.name === TOOL_NAMES.MOVE_FILE
-                ) {
-                  const deleted = openFiles.find(
-                    (file: ViewerOpenFile) => file.path === mutatedPath,
-                  );
-                  if (deleted) {
-                    setViewerOpenFiles((previousViewerOpenFiles) => {
-                      const next = previousViewerOpenFiles.filter(
-                        (file: ViewerOpenFile) => file.path !== mutatedPath,
-                      );
-                      setViewerActiveFileId((activeId: string | null) => {
-                        if (activeId !== deleted.id) return activeId;
-                        const closedTabIndex = previousViewerOpenFiles.findIndex(
-                          (file: ViewerOpenFile) => file.id === deleted.id,
-                        );
-                        const newActive =
-                          next[Math.min(closedTabIndex, next.length - 1)];
-                        return newActive?.id || null;
-                      });
-                      return next;
-                    });
-                  }
-                } else if (openFiles.some((file) => file.path === mutatedPath)) {
-                  // Bump refresh key to re-fetch modified file content
-                  setViewerRefreshKey((k) => k + 1);
-                }
-              }
-            }
           },
           // LM Studio native MCP tool calls (toolCall events)
           onToolCall: (toolCall: ToolCallEvent) => {
             if (isStale()) return;
-            const toolData = toolCall;
-            const resolvedId =
-              toolData.id || `tc-${Date.now()}-${Math.random()}`;
-            console.debug(
-              `[ToolCall MCP] ${toolData.status} ${toolData.name} id=${resolvedId}`,
+            handleToolEvent(
+              {
+                id: toolCall.id,
+                name: toolCall.name,
+                args: toolCall.args,
+                status: (toolCall.status as string) || "",
+                result: toolCall.result,
+                durationMs: toolCall.durationMs,
+              },
+              { logLabel: "ToolCall MCP" },
             );
-
-            setToolActivity((previousToolActivity) => {
-              const next = applyToolExecutionToActivity(
-                previousToolActivity,
-                resolvedId,
-                {
-                  id: toolData.id,
-                  name: toolData.name,
-                  args: toolData.args,
-                  status: toolData.status as string,
-                  result: toolData.result,
-                },
-              );
-              return next ?? previousToolActivity;
-            });
-
-            // Track segment ordering: group consecutive tool events
-            // Guard: only add to segments if not already tracked
-            if (toolData.status === "streaming" || toolData.status === "calling") {
-              if (!segmentToolIdSet.has(resolvedId)) {
-                segmentToolIdSet.add(resolvedId);
-                if (lastSegmentType === "tools") {
-                  contentSegments[contentSegments.length - 1].toolIds!.push(
-                    resolvedId,
-                  );
-                } else {
-                  contentSegments.push({
-                    type: "tools",
-                    toolIds: [resolvedId],
-                  });
-                  lastSegmentType = "tools";
-                }
-              }
-            }
-
-            // Capture snapshot values from the mutable streaming closure
-            const callSnapshot = {
-              contentSegments: snapshotSegments(),
-              textFragments: [...textFragments],
-              thinkingFragments: [...thinkingFragments],
-            };
-
-            setMessages((msgPrev: ClientMessage[]) => {
-              const next = applyToolCallToMessages(
-                msgPrev,
-                resolvedId,
-                toolData,
-                callSnapshot,
-              ) as ClientMessage[];
-              console.debug(
-                `[ToolCall MCP setMessages] ${toolData.status} ${toolData.name}: previousPixelSize=${msgPrev.length} → next=${next.length}`,
-              );
-              return next;
-            });
-
-            // Auto-refresh tasks panel when any task tool completes (MCP path)
-            if (
-              toolData.status !== "calling" &&
-              toolData.name &&
-              toolData.name.includes("_task")
-            ) {
-              setTasksRefreshKey((k) => k + 1);
-            }
-
-            // Auto-refresh memories panel when save_memory completes (MCP path)
-            if (
-              toolData.status !== "calling" &&
-              toolData.name === TOOL_NAMES.SAVE_MEMORY
-            ) {
-              if (hasAnyMemoryModelSet) {
-                setLeftTabBottom("memories");
-              }
-              setMemoriesRefreshKey((k) => k + 1);
-              PrismService.getAgentMemories(agentProject, 1, agentId)
-                .then((result) => setTotalMemoriesCount(result.total || 0))
-                .catch(() => {
-                  /* Non-critical background count refresh */
-                });
-            }
-
-            // Increment scheduled task notification badge when agent creates a cron job
-            if (
-              toolData.status === "done" &&
-              toolData.name === TOOL_NAMES.CREATE_CRON_JOB
-            ) {
-              const currentNotificationCount = parseInt(
-                localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
-                10,
-              );
-              localStorage.setItem(
-                LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
-                String(currentNotificationCount + 1),
-              );
-              window.dispatchEvent(new CustomEvent(EVENT_NAME_CRON_JOB_SCHEDULED));
-            }
-
-            // Auto-refresh workspace tree when FS-mutating tools complete (MCP path)
-            if (
-              toolData.status !== "calling" &&
-              WORKSPACE_FS_TOOLS.has(toolData.name)
-            ) {
-              setWorkspaceTreeRefreshKey((k) => k + 1);
-
-              // Live-update file viewer (MCP path)
-              const mutatedPath =
-                toolData.args?.path || toolData.args?.source || null;
-              const openFiles = viewerOpenFilesRef.current;
-              if (mutatedPath && openFiles.length > 0) {
-                // delete_file and move_file both remove the source path
-                if (
-                  toolData.name === TOOL_NAMES.DELETE_FILE ||
-                  toolData.name === TOOL_NAMES.MOVE_FILE
-                ) {
-                  const deleted = openFiles.find(
-                    (file: ViewerOpenFile) => file.path === mutatedPath,
-                  );
-                  if (deleted) {
-                    setViewerOpenFiles((previousViewerOpenFiles) => {
-                      const next = previousViewerOpenFiles.filter(
-                        (file: ViewerOpenFile) => file.path !== mutatedPath,
-                      );
-                      setViewerActiveFileId((activeId: string | null) => {
-                        if (activeId !== deleted.id) return activeId;
-                        const closedTabIndex = previousViewerOpenFiles.findIndex(
-                          (file: ViewerOpenFile) => file.id === deleted.id,
-                        );
-                        const newActive =
-                          next[Math.min(closedTabIndex, next.length - 1)];
-                        return newActive?.id || null;
-                      });
-                      return next;
-                    });
-                  }
-                } else if (openFiles.some((file) => file.path === mutatedPath)) {
-                  setViewerRefreshKey((k) => k + 1);
-                }
-              }
-            }
           },
           onToolOutput: (data: SSEData) => {
             if (isStale()) return;
@@ -5353,6 +5236,8 @@ export default function ChatConversationComponent({
       setContextTruncated(null);
 
       const currentMessages = messagesRef.current;
+      // Optimistic display title only — the persisted title is derived
+      // server-side (ChatRoutes) and arrives via the change stream.
       let resolvedTitle = titleRef.current;
       if (currentMessages.length === 0) {
         const titleText =
@@ -5390,9 +5275,13 @@ export default function ChatConversationComponent({
 
       setCurrentTurnStart(Date.now());
       setIsBackendStatsStale(true);
-      // Prepend active rules to user message (Claude Code pattern)
-      // Rules are extracted from inline badges in the contentEditable DOM.
+      // Active rules: extracted from inline badges in the contentEditable
+      // DOM. Agent mode sends only the NAMES — SystemPromptAssembler
+      // resolves the content server-side into an <active-rules> section.
+      // Direct chat (/chat) has no server-side prompt assembly, so the
+      // legacy inline wrapping remains for that path only.
       let finalMessageContent = text;
+      const turnActiveRuleNames: string[] = [];
       const inlineActiveRuleNames = textareaRef.current
         ? extractSlashCommandNames(textareaRef.current)
         : new Set<string>();
@@ -5401,10 +5290,14 @@ export default function ChatConversationComponent({
           (rule) => rule.enabled && inlineActiveRuleNames.has(rule.name),
         );
         if (enabledRules.length > 0) {
-          const rulesBlock = enabledRules
-            .map((rule) => `## /${rule.name}\n${rule.content}`)
-            .join("\n\n");
-          finalMessageContent = `[Active Rules]\n${rulesBlock}\n\n[User Message]\n${text}`;
+          if (isNoAgent) {
+            const rulesBlock = enabledRules
+              .map((rule) => `## /${rule.name}\n${rule.content}`)
+              .join("\n\n");
+            finalMessageContent = `[Active Rules]\n${rulesBlock}\n\n[User Message]\n${text}`;
+          } else {
+            turnActiveRuleNames.push(...enabledRules.map((rule) => rule.name));
+          }
         }
       }
 
@@ -5455,7 +5348,7 @@ export default function ChatConversationComponent({
         console.debug(
           `[handleSend] starting runOrchestrationLoop, updatedMessages=${updatedMessages.length}`,
         );
-        await runOrchestrationLoop(updatedMessages, resolvedTitle);
+        await runOrchestrationLoop(updatedMessages, turnActiveRuleNames);
         // Messages are already updated by the streaming callbacks — just reload history
         console.debug(
           `[handleSend] runOrchestrationLoop resolved, proceeding to post-stream refresh`,

@@ -1,4 +1,4 @@
-import { AGENT_IDS, EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS } from "@/constants";
+import { EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS } from "@/constants";
 import { SERVER_SENT_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { PRISM_SERVICE_URL, PRISM_WEBSOCKET_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
@@ -1195,8 +1195,9 @@ export default class PrismService {
   static async generateAgentText(
     payload: ChatPayload,
   ): Promise<ChatGenerationResult> {
+    // Default agent selection is server policy (AgentRoutes).
     return PrismService._request<ChatGenerationResult>("/agent?stream=false", {
-      body: { ...payload, agent: payload.agent || AGENT_IDS.CODING },
+      body: payload,
     });
   }
 
@@ -1641,11 +1642,8 @@ export default class PrismService {
     payload: ChatPayload,
     callbacks: SSECallbacks,
   ): () => void {
-    return PrismService._streamSSE(
-      "/agent",
-      { body: { ...payload, agent: payload.agent || AGENT_IDS.CODING } },
-      callbacks,
-    );
+    // Default agent selection is server policy (AgentRoutes).
+    return PrismService._streamSSE("/agent", { body: payload }, callbacks);
   }
 
   /**
