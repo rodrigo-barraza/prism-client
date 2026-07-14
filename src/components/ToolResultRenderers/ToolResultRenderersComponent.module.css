@@ -388,46 +388,41 @@
   scrollbar-width: thin;
 }
 
-/* ── Terminal Line ─────────────────────────────────────────── */
+/* ── IN / OUT Sections (Claude Code-style) ─────────────────── */
 
-.term-line {
+.term-io-section {
   display: flex;
-  padding: 0 10px;
-  gap: 0;
-  white-space: pre;
-  border-left: 2px solid transparent;
-  transition: background 60ms ease;
+  align-items: flex-start;
+  padding: 4px 10px;
 }
 
-.term-line:hover {
-  background: oklch(100.0% 0.0001 263.3 / 0.02);
+.term-io-section-out {
+  border-top: 1px solid oklch(100.0% 0.0001 263.3 / 0.06);
 }
 
-/* ── Line Number Gutter ────────────────────────────────────── */
-
-.term-line-num {
+.term-io-label {
   flex-shrink: 0;
-  width: 32px;
-  text-align: right;
-  padding-right: 10px;
-  color: oklch(100.0% 0.0001 263.3 / 0.08);
+  width: 34px;
+  padding-top: 1px;
+  color: oklch(100.0% 0.0001 263.3 / 0.25);
   font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   user-select: none;
-  border-right: 1px solid oklch(100.0% 0.0001 263.3 / 0.03);
-  margin-right: 10px;
 }
 
-.term-line:hover .term-line-num {
-  color: oklch(100.0% 0.0001 263.3 / 0.18);
-}
-
-/* ── Line Content ──────────────────────────────────────────── */
-
-.term-line-content {
+.term-io-lines {
   flex: 1;
+  min-width: 0;
+}
+
+.term-io-line {
   color: var(--text-primary);
   word-break: break-all;
   white-space: pre-wrap;
+  border-left: 2px solid transparent;
+  padding-left: 4px;
+  margin-left: -6px;
 }
 
 /* ── Log Level Line Accents ────────────────────────────────── */
@@ -468,11 +463,17 @@
   color: var(--color-violet);
 }
 
-/* ── Input / Prompt ────────────────────────────────────────── */
+/* ── Header cwd ────────────────────────────────────────────── */
 
-.terminal-input {
-  color: var(--color-github-green);
-  font-weight: 600;
+.terminal-cwd {
+  color: oklch(100.0% 0.0001 263.3 / 0.25);
+  font-family: var(--font-mono, monospace);
+  font-weight: 400;
+  font-size: 0.625rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 40%;
 }
 
 .terminal-cursor {

@@ -5,29 +5,6 @@ import { tryParse, ANSI_RE, ANSI_COLORS, ANSI_BRIGHT_COLORS, ansi256ToHex, strip
 import { StatusBadge, RawResultToggle } from "../SharedComponents";
 import styles from "../ToolResultRenderersComponent.module.css";
 
-const PROMPT_PREFIXES: Record<string, string> = { bash: "$ ", python: ">>> ", javascript: "> " };
-const CONTINUATION_PREFIXES: Record<string, string> = { python: "... ", javascript: ".. " };
-const DEFAULT_CWD: Record<string, string> = { bash: "/tmp", python: "python3", javascript: "node" };
-
-function formatInputPrompt(
-  input: string | null,
-  language: string | undefined,
-  cwd: string | null,
-) {
-  if (!input) return "";
-  const prompt = PROMPT_PREFIXES[language || ""] || "$ ";
-  const continuationPrompt = CONTINUATION_PREFIXES[language || ""] || "  ";
-  const lines = input.split("\n");
-  const resolvedCwd = cwd || DEFAULT_CWD[language || ""] || "";
-  const pathPrefix = resolvedCwd ? `${resolvedCwd} ` : "";
-  return lines
-    .map(
-      (line: string, index: number) =>
-        `${index === 0 ? pathPrefix + prompt : continuationPrompt}${line}`,
-    )
-    .join("\n");
-}
-
 function parseAnsi(text: string): string | React.ReactNode | React.ReactNode[] {
   if (!text.includes("\x1b")) return text;
   const parts = [];
@@ -174,18 +151,16 @@ export function TerminalRenderer({
     ? terminalOutput
     : standardOutput || standardError || parsingError || terminalOutput;
 
-  const formattedInputPrompt = formatInputPrompt(commandInput, language, currentWorkingDirectory);
-
-  // Split output into lines for per-line rendering
+  // Split input/output into lines for per-line rendering
   const outputLinesArray = useMemo(() => {
     if (!finalDisplayOutput) return [];
     return finalDisplayOutput.split("\n");
   }, [finalDisplayOutput]);
 
   const inputLinesArray = useMemo(() => {
-    if (!formattedInputPrompt) return [];
-    return formattedInputPrompt.split("\n");
-  }, [formattedInputPrompt]);
+    if (!commandInput) return [];
+    return commandInput.split("\n");
+  }, [commandInput]);
 
   const totalLinesCount = inputLinesArray.length + outputLinesArray.length;
 
@@ -204,14 +179,19 @@ export function TerminalRenderer({
     setIsAutoScrollEnabled(isAtTheBottom);
   }, []);
 
-  if (!finalDisplayOutput && !formattedInputPrompt)
+  if (!finalDisplayOutput && !commandInput)
     return <RawResultToggle result={result} />;
+
+  const hasOutputSection = outputLinesArray.length > 0 || isCurrentlyStreaming;
 
   return (
     <div className={styles['terminal-block']}>
       <div className={styles['terminal-header']}>
         <Terminal size={11} />
         <span>{language || "terminal"}</span>
+        {currentWorkingDirectory && (
+          <span className={styles['terminal-cwd']}>{currentWorkingDirectory}</span>
+        )}
         {isCurrentlyStreaming && <span className={styles['terminal-live']}>● live</span>}
         {exitCodeValue != null && (
           <StatusBadge success={exitCodeValue === 0} label={`exit ${exitCodeValue}`} />
@@ -230,41 +210,41 @@ export function TerminalRenderer({
         className={styles['terminal-body']}
         onScroll={handleTerminalScroll}
       >
-        {/* Input command lines */}
-        {inputLinesArray.map((line, index) => (
-          <div key={`in-${index}`} className={styles['term-line']}>
-            <span className={styles['term-line-num']}>{index + 1}</span>
-            <span
-              className={`${styles['term-line-content']} ${styles['terminal-input']}`}
-            >
-              {line}
-            </span>
-          </div>
-        ))}
-        {/* Output lines */}
-        {outputLinesArray.map((line, index) => {
-          const terminalLevel = detectTerminalLevel(line);
-          const currentLineNumber = inputLinesArray.length + index + 1;
-          return (
-            <div
-              key={`out-${index}`}
-              className={`${styles['term-line']} ${terminalLevel ? TERM_LEVEL_CLASS[terminalLevel] || "" : ""}`}
-            >
-              <span className={styles['term-line-num']}>{currentLineNumber}</span>
-              <span
-                className={`${styles['term-line-content']} ${terminalLevel ? TERM_CONTENT_LEVEL_CLASS[terminalLevel] || "" : ""}`}
-              >
-                {parseAnsi(line)}
-              </span>
+        {/* IN — the command as issued */}
+        {inputLinesArray.length > 0 && (
+          <div className={styles['term-io-section']}>
+            <span className={styles['term-io-label']}>IN</span>
+            <div className={styles['term-io-lines']}>
+              {inputLinesArray.map((line, index) => (
+                <div key={`in-${index}`} className={styles['term-io-line']}>
+                  {line}
+                </div>
+              ))}
             </div>
-          );
-        })}
-        {isCurrentlyStreaming && (
-          <div className={styles['term-line']}>
-            <span className={styles['term-line-num']} />
-            <span className={styles['term-line-content']}>
-              <span className={styles['terminal-cursor']}>▊</span>
-            </span>
+          </div>
+        )}
+        {/* OUT — command output */}
+        {hasOutputSection && (
+          <div className={`${styles['term-io-section']} ${styles['term-io-section-out']}`}>
+            <span className={styles['term-io-label']}>OUT</span>
+            <div className={styles['term-io-lines']}>
+              {outputLinesArray.map((line, index) => {
+                const terminalLevel = detectTerminalLevel(line);
+                return (
+                  <div
+                    key={`out-${index}`}
+                    className={`${styles['term-io-line']} ${terminalLevel ? TERM_LEVEL_CLASS[terminalLevel] || "" : ""} ${terminalLevel ? TERM_CONTENT_LEVEL_CLASS[terminalLevel] || "" : ""}`}
+                  >
+                    {parseAnsi(line)}
+                  </div>
+                );
+              })}
+              {isCurrentlyStreaming && (
+                <div className={styles['term-io-line']}>
+                  <span className={styles['terminal-cursor']}>▊</span>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

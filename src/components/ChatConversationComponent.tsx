@@ -114,6 +114,7 @@ import {
   formatTokensPerSec,
   formatDuration,
   POLL_STANDARD,
+  type ToolDisplayMetadata,
 } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES, SERVER_SENT_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { buildUnifiedToolCounts, CAPABILITY_TOOL_NAMES, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams, buildSettingsDefaults, isNameBasedThinkingModel } from "../utils/utilities";
@@ -650,16 +651,7 @@ export default function ChatConversationComponent({
   });
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const toolDisplayMetadataMap = useMemo(() => {
-    const map: Record<
-      string,
-      {
-        activeVerb: string;
-        completedVerb: string;
-        subjectParam: string;
-        subjectFormat: "basename" | "full" | "truncate" | "quoted" | "domain";
-        filePathParam?: string;
-      }
-    > = {};
+    const map: Record<string, ToolDisplayMetadata> = {};
     for (const tool of builtInTools || []) {
       if (tool.display) {
         map[tool.name] = tool.display;
