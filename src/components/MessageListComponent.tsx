@@ -954,6 +954,31 @@ export default function MessageList({
     if (!scrollParent) return;
     const scrollElement = scrollParent;
 
+    // Sticky offsets resolve against the scroll container's padding box,
+    // so a padded container leaves a see-through gap above/beside the
+    // pinned bar. Measure the gap and expose it as CSS variables the
+    // sticky uses to pull itself flush with the visible top edge and
+    // cover the side gutters.
+    const applyCoverOffsets = () => {
+      const scrollRect = scrollElement.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const scrollportLeft = scrollRect.left + scrollElement.clientLeft;
+      const scrollportRight = scrollportLeft + scrollElement.clientWidth;
+      container.style.setProperty(
+        "--sticky-cover-top",
+        getComputedStyle(scrollElement).paddingTop,
+      );
+      container.style.setProperty(
+        "--sticky-cover-left",
+        `${Math.max(0, containerRect.left - scrollportLeft)}px`,
+      );
+      container.style.setProperty(
+        "--sticky-cover-right",
+        `${Math.max(0, scrollportRight - containerRect.right)}px`,
+      );
+    };
+    applyCoverOffsets();
+
     let rafId: number | null = null;
     const updatePinnedIndex = () => {
       rafId = null;
@@ -980,9 +1005,14 @@ export default function MessageList({
       if (rafId === null) rafId = requestAnimationFrame(updatePinnedIndex);
     };
     scrollElement.addEventListener("scroll", scheduleUpdate, { passive: true });
-    // Content height changes (streaming, images loading) shift positions
-    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    // Content height changes (streaming, images loading) shift positions;
+    // scroll container resizes can change its responsive padding
+    const resizeObserver = new ResizeObserver(() => {
+      applyCoverOffsets();
+      scheduleUpdate();
+    });
     resizeObserver.observe(container);
+    resizeObserver.observe(scrollElement);
     updatePinnedIndex();
 
     return () => {

@@ -862,7 +862,13 @@
 /* ── Sticky Pinned User Message ── */
 .sticky-user-message {
   position: sticky;
-  top: 0;
+  /* Sticky offsets resolve against the scroll container's padding box.
+     Pull the bar up and out over the container's padding (measured at
+     runtime into the --sticky-cover-* variables) so it docks flush to
+     the visible top edge with no see-through gap above or beside it. */
+  top: calc(-1 * var(--sticky-cover-top, 0px));
+  margin-left: calc(-1 * var(--sticky-cover-left, 0px));
+  margin-right: calc(-1 * var(--sticky-cover-right, 0px));
   z-index: 20;
   pointer-events: auto;
   will-change: opacity;
@@ -877,7 +883,10 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 10px 14px;
+  /* Extra inline padding re-aligns the content with the message column
+     after the wrapper bleeds over the container's side padding */
+  padding: 10px calc(var(--sticky-cover-right, 0px) + 14px) 10px
+    calc(var(--sticky-cover-left, 0px) + 14px);
   background: color-mix(in oklch,
       var(--accent-primary) 8%,
       var(--background-surface));
