@@ -1,18 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   MessageCircleQuestion,
   Send,
-  CornerDownLeft,
   Check,
   ChevronRight,
   StickyNote,
 } from "lucide-react";
-import {
-  InputComponent,
-  TextAreaComponent,
-} from "@rodrigo-barraza/components-library";
+import { TextAreaComponent } from "@rodrigo-barraza/components-library";
+import InputBoxComponent from "./InputBoxComponent";
+import ChatInputButton from "./ChatInputButtonComponent";
 import styles from "./UserQuestionCardComponent.module.css";
 
 interface QuestionOption {
@@ -33,7 +31,8 @@ interface NormalizedQuestion {
 }
 
 interface QuestionBlockProps {
-  _index?: number;
+  questionNumber: number;
+  totalQuestions: number;
   question: string;
   header?: string | null;
   options?: QuestionOption[];
@@ -48,7 +47,8 @@ interface QuestionBlockProps {
  * optional preview pane, free-text input, and annotations.
  */
 function QuestionBlock({
-  _index,
+  questionNumber,
+  totalQuestions,
   question,
   header,
   options = [],
@@ -62,7 +62,7 @@ function QuestionBlock({
   const [annotations, setAnnotations] = useState("");
   const [showAnnotations, setShowAnnotations] = useState(false);
   const [previewIdx, setPreviewIdx] = useState<number | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Auto-focus input when there are no options or after mount
   useEffect(() => {
@@ -70,6 +70,14 @@ function QuestionBlock({
       inputRef.current?.focus();
     }
   }, [isPending, options.length]);
+
+  // Auto-expand the answer textarea like the main chat input
+  useEffect(() => {
+    const element = inputRef.current;
+    if (!element) return;
+    element.style.height = "auto";
+    element.style.height = `${Math.min(element.scrollHeight, 200)}px`;
+  }, [freeText]);
 
   const handleOptionClick = (label: string) => {
     if (multiSelect) {
@@ -102,12 +110,17 @@ function QuestionBlock({
     onAnswer?.({ answer, annotations: annotations || undefined });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
+
+  const canSubmit =
+    Boolean(freeText.trim()) ||
+    Boolean(!multiSelect && selected) ||
+    (multiSelect && Array.isArray(selected) && selected.length > 0);
 
   // The preview currently focused
   const activePreview =
@@ -115,8 +128,17 @@ function QuestionBlock({
 
   return (
     <div className={styles['question-block']}>
-      {/* Header chip */}
-      {header && <span className={styles['header-chip']}>{header}</span>}
+      {/* Question number + header chip */}
+      {(totalQuestions > 1 || header) && (
+        <div className={styles['question-meta']}>
+          {totalQuestions > 1 && (
+            <span className={styles['question-number']}>
+              Question {questionNumber} of {totalQuestions}
+            </span>
+          )}
+          {header && <span className={styles['header-chip']}>{header}</span>}
+        </div>
+      )}
 
       {/* Question text */}
       <div className={styles['question-text']}>{question}</div>
@@ -166,43 +188,39 @@ function QuestionBlock({
         </div>
       )}
 
-      {/* Free-text input (always available) */}
+      {/* Free-text input — same shell as the main chat input */}
       {isPending && (
-        <div className={styles['input-layout-row']}>
-          <InputComponent
-            ref={inputRef}
-            type="text"
-            placeholder={
-              options.length > 0
-                ? "Or type a custom answer…"
-                : "Type your answer…"
-            }
-            value={freeText}
-            onChange={(
-              e: React.ChangeEvent<HTMLInputElement>,
-            ) => setFreeText(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          {/* Annotation toggle */}
-          <button
-            className={`${styles['annotate-button']} ${showAnnotations ? styles['annotate-button-element-is-active-state'] : ""}`}
-            onClick={() => setShowAnnotations((value) => !value)}
-            title="Add notes"
-          >
-            <StickyNote size={14} />
-          </button>
-          <button
-            className={styles['send-button']}
-            onClick={handleSubmit}
-            disabled={
-              !freeText.trim() &&
-              !selected &&
-              !(multiSelect && Array.isArray(selected) && selected.length > 0)
-            }
-          >
-            <Send size={14} />
-          </button>
-        </div>
+        <InputBoxComponent>
+          <div className={styles['answer-input-row']}>
+            <textarea
+              ref={inputRef}
+              rows={1}
+              className={styles['answer-textarea']}
+              placeholder={
+                options.length > 0
+                  ? "Or type a custom answer…"
+                  : "Type your answer…"
+              }
+              value={freeText}
+              onChange={(
+                e: React.ChangeEvent<HTMLTextAreaElement>,
+              ) => setFreeText(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <ChatInputButton
+              icon={<StickyNote size={18} />}
+              label="Add notes to this answer"
+              isActive={showAnnotations}
+              onClick={() => setShowAnnotations((value) => !value)}
+            />
+            <ChatInputButton
+              variant="submit"
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              label="Send answer"
+            />
+          </div>
+        </InputBoxComponent>
       )}
 
       {/* Annotations textarea */}
@@ -222,7 +240,7 @@ function QuestionBlock({
       {/* Resolved state */}
       {!isPending && answeredWith && (
         <div className={styles['answered-layout-row']}>
-          <CornerDownLeft size={12} className={styles['answered-icon']} />
+          <Check size={14} className={styles['answered-icon']} />
           <span className={styles['answered-text']}>
             {Array.isArray(answeredWith)
               ? answeredWith.join(", ")
@@ -259,8 +277,9 @@ export default function UserQuestionCardComponent({
   // Track answers per question index
   const [collectedAnswers, setCollectedAnswers] = useState<Record<number, QuestionAnswerData>>({});
   const isMultiQuestion = normalizedQuestions.length > 1;
+  const answeredCount = Object.keys(collectedAnswers).length;
   const allAnswered = isMultiQuestion
-    ? Object.keys(collectedAnswers).length === normalizedQuestions.length
+    ? answeredCount === normalizedQuestions.length
     : false;
 
   const handleQuestionAnswer = useCallback(
@@ -293,9 +312,20 @@ export default function UserQuestionCardComponent({
         <span className={styles['label']}>
           Agent Question{normalizedQuestions.length > 1 ? "s" : ""}
         </span>
-        {normalizedQuestions.length > 1 && (
+        {isMultiQuestion && (
           <span className={styles['count-badge']}>
-            {Object.keys(collectedAnswers).length}/{normalizedQuestions.length}
+            {answeredCount}/{normalizedQuestions.length} answered
+          </span>
+        )}
+        {isPending ? (
+          <span className={styles['header-status']}>
+            <span className={styles['header-status-dot']} />
+            Waiting for your answer
+          </span>
+        ) : (
+          <span className={styles['header-status-resolved']}>
+            <Check size={12} />
+            Answered
           </span>
         )}
       </div>
@@ -319,7 +349,8 @@ export default function UserQuestionCardComponent({
         return (
           <QuestionBlock
             key={questionIndex}
-            _index={questionIndex}
+            questionNumber={questionIndex + 1}
+            totalQuestions={normalizedQuestions.length}
             question={normalizedQuestion.question}
             header={normalizedQuestion.header}
             options={normalizedQuestion.options || []}
@@ -344,8 +375,7 @@ export default function UserQuestionCardComponent({
             {!allAnswered && (
               <span className={styles['remaining']}>
                 (
-                {normalizedQuestions.length -
-                  Object.keys(collectedAnswers).length}{" "}
+                {normalizedQuestions.length - answeredCount}{" "}
                 remaining)
               </span>
             )}

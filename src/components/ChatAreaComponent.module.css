@@ -316,48 +316,12 @@
   font-weight: 500;
 }
 
-.input-box {
+/* Visual shell (border, focus ring, prism generating border) lives in
+   InputBoxComponent.module.css — this class only positions it in the chat. */
+.input-box-layout {
   max-width: 800px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-md);
-  padding: 8px;
-  position: relative;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-  box-shadow: 0 4px 20px oklch(0.0% 0.0 0.0 / 0.2);
-}
-
-.input-box:focus-within {
-  border-color: var(--accent-primary);
-  box-shadow:
-    0 0 0 2px var(--calculated-accent-primary-glow),
-    0 4px 20px oklch(0.0% 0.0 0.0 / 0.3);
-}
-
-.input-box-drag-is-active-state {
-  border-color: var(--accent-primary);
-  border-style: dashed;
-  box-shadow:
-    0 0 0 2px var(--calculated-accent-primary-glow),
-    0 4px 20px oklch(0.0% 0.0 0.0 / 0.3);
-}
-
-.input-box-generating {
-  border-color: transparent;
-  background-image:
-    linear-gradient(var(--background-surface), var(--background-surface)),
-    linear-gradient(var(--prism-angle, 0deg), var(--prism-colors));
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  animation: prism-rotate var(--prism-speed) linear infinite;
-  box-shadow:
-    0 0 12px oklch(58.5% 0.2041 277.1 / 0.15),
-    0 4px 20px oklch(0.0% 0.0 0.0 / 0.3);
+  width: 100%;
 }
 
 .drag-overlay {

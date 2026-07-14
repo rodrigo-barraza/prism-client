@@ -164,6 +164,7 @@ import {
 import { useSearchParams, useRouter } from "next/navigation";
 import chatStyles from "./ChatAreaComponent.module.css";
 import ChatInputButton from "./ChatInputButtonComponent";
+import InputBoxComponent from "./InputBoxComponent";
 import {
   ButtonComponent,
   EmptyStateComponent,
@@ -8667,9 +8668,12 @@ export default function ChatConversationComponent({
             estimatedDraftTokens={Math.ceil(draftInputLength / 4)}
           />
         )}
-        <form
+        <InputBoxComponent
+          as="form"
           onSubmit={handleSend}
-          className={`${chatStyles['input-box']} ${isDragging ? chatStyles['input-box-drag-is-active-state'] : ""} ${isConversationRunning ? chatStyles['input-box-generating'] : ""}`}
+          isDragActive={isDragging}
+          isGenerating={isConversationRunning}
+          className={chatStyles['input-box-layout']}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -8901,7 +8905,7 @@ export default function ChatConversationComponent({
               aria-label={isConversationRunning ? "Stop" : "Send"}
             />
           </div>
-        </form>
+        </InputBoxComponent>
       </div>
       )}
       {!isAdmin && lightboxSourceUrl && (
