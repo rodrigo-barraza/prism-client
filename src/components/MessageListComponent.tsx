@@ -1703,6 +1703,19 @@ export default function MessageList({
                           // the same tool call from appearing in multiple segments
                           const renderedToolIds = new Set();
 
+                          // Only the block currently being generated stays open:
+                          // the last tool call of the final segment, and only while
+                          // this message is streaming. Once a newer block or the
+                          // text response starts (or streaming ends), every tool
+                          // block collapses unless the user opened it manually.
+                          const latestOpenToolId = (() => {
+                            if (!isStreaming) return null;
+                            const lastSeg = segs[segs.length - 1];
+                            if (lastSeg?.type !== "tools") return null;
+                            const ids = lastSeg.toolIds || [];
+                            return ids[ids.length - 1] ?? null;
+                          })();
+
                           // Helper: render a segment by type
                           const renderSeg = (
                             seg: ContentSegment,
@@ -1711,7 +1724,6 @@ export default function MessageList({
                               isLastText?: boolean;
                               insideThinking?: boolean;
                               suppressCursor?: boolean;
-                              isAutoCollapsed?: boolean;
                             } = {},
                           ) => {
                             if (seg.type === "thinking") {
@@ -1748,7 +1760,10 @@ export default function MessageList({
                                   toolCall={singleToolCall}
                                   streamingOutputs={streamingOutputs}
                                   subAgentToolActivity={subAgentToolActivity}
-                                  isAutoCollapsed={opts.isAutoCollapsed}
+                                  isAutoCollapsed={
+                                    singleToolCall.id == null ||
+                                    singleToolCall.id !== latestOpenToolId
+                                  }
                                   onOpenFileInViewer={onOpenFileInViewer}
                                   toolDisplayMetadataMap={toolDisplayMetadataMap}
                                 />
@@ -1964,12 +1979,6 @@ export default function MessageList({
                                     >
                                       {renderSeg(seg, segmentIndex, {
                                         isLastText,
-                                        // Collapse each tool card as soon as it
-                                        // completes so the streaming render matches
-                                        // the final grouped layout (the active tool
-                                        // stays expanded via isBlockActive)
-                                        isAutoCollapsed:
-                                          isStreaming && seg.type === "tools",
                                       })}
                                     </React.Fragment>
                                   );
@@ -1993,11 +2002,6 @@ export default function MessageList({
                           return segs.map((seg, si) =>
                             renderSeg(seg, si, {
                               isLastText: si === lastTextIndex,
-                              // Collapse each tool card as soon as it completes so
-                              // the streaming render matches the final grouped layout
-                              // (the active tool stays expanded via isBlockActive)
-                              isAutoCollapsed:
-                                isStreaming && seg.type === "tools",
                             }),
                           );
                         })()
@@ -2025,6 +2029,13 @@ export default function MessageList({
                                 toolCall={singleToolCall}
                                 streamingOutputs={streamingOutputs}
                                 subAgentToolActivity={subAgentToolActivity}
+                                isAutoCollapsed={
+                                  // Only the latest tool call stays open, and only
+                                  // while streaming with no text response yet
+                                  !isStreaming ||
+                                  !!message.content ||
+                                  toolCallIndex !== message.toolCalls!.length - 1
+                                }
                                 onOpenFileInViewer={onOpenFileInViewer}
                                 toolDisplayMetadataMap={toolDisplayMetadataMap}
                               />
