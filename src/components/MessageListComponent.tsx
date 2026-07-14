@@ -1982,13 +1982,18 @@ export default function MessageList({
                           if (hasThinking) {
                             const lastSeg = segs[segs.length - 1];
 
-                            // Find the last text segment index for streaming cursor
+                            // Find the last text segment index for streaming cursor.
+                            // The cursor only attaches to text while text is the
+                            // final segment — once a tool call (or anything else)
+                            // starts after it, the cursor moves below that block.
                             const lastTextSegmentIndex = (() => {
                               for (let k = segs.length - 1; k >= 0; k--) {
                                 if (segs[k].type === "text") return k;
                               }
                               return -1;
                             })();
+                            const cursorOnText =
+                              lastTextSegmentIndex === segs.length - 1;
 
                             // Track whether any non-thinking content exists
                             const hasVisibleContent = segs.some(
@@ -2033,6 +2038,7 @@ export default function MessageList({
                                     );
                                   }
                                   const isLastText =
+                                    cursorOnText &&
                                     segmentIndex === lastTextSegmentIndex;
                                   return (
                                     <React.Fragment
@@ -2044,26 +2050,51 @@ export default function MessageList({
                                     </React.Fragment>
                                   );
                                 })}
-                                {/* Streaming cursor when no visible content yet */}
-                                {isStreaming && !hasVisibleContent && (
-                                  <StreamingCursorComponent active standalone />
-                                )}
+                                {/* Streaming cursor when no visible content yet,
+                                    or below the trailing non-text block (e.g. a
+                                    tool call being generated/executed) */}
+                                {isStreaming &&
+                                  (!hasVisibleContent ||
+                                    (lastSeg &&
+                                      lastSeg.type !== "text" &&
+                                      lastSeg.type !== "thinking")) && (
+                                    <StreamingCursorComponent active standalone />
+                                  )}
                               </>
                             );
                           }
 
                           // No thinking — render all segments inline (tools interleaved with text)
-                          // Find the last text segment to place streaming cursor
+                          // Find the last text segment to place streaming cursor.
+                          // The cursor only stays attached to text while text is
+                          // the final segment — once a tool call (or other block)
+                          // follows it, the cursor renders standalone below.
                           const lastTextIndex = (() => {
                             for (let k = segs.length - 1; k >= 0; k--) {
                               if (segs[k].type === "text") return k;
                             }
                             return -1;
                           })();
-                          return segs.map((seg, si) =>
-                            renderSeg(seg, si, {
-                              isLastText: si === lastTextIndex,
-                            }),
+                          const trailingSeg = segs[segs.length - 1];
+                          const textIsLast =
+                            lastTextIndex === segs.length - 1;
+                          return (
+                            <>
+                              {segs.map((seg, si) =>
+                                renderSeg(seg, si, {
+                                  isLastText:
+                                    textIsLast && si === lastTextIndex,
+                                }),
+                              )}
+                              {isStreaming &&
+                                trailingSeg &&
+                                trailingSeg.type !== "text" && (
+                                  <StreamingCursorComponent
+                                    active
+                                    standalone
+                                  />
+                                )}
+                            </>
                           );
                         })()
                       ) : (
