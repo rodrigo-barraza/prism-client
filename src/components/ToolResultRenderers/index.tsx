@@ -53,10 +53,9 @@ const TOOL_RESULT_RENDERER_REGISTRY: Record<
   create_vector_animation: { Renderer: Renderers.VectorAnimationRenderer },
 
   // 3D Tools
+  create_3d: { Renderer: Renderers.ThreeSceneRenderer },
   create_3d_mesh: { Renderer: Renderers.ThreeMeshRenderer },
   create_3d_voxel: { Renderer: Renderers.ThreeVoxelRenderer },
-  create_3d_model: { Renderer: Renderers.ThreeModelRenderer },
-  create_3d_scene: { Renderer: Renderers.ThreeSceneRenderer },
 
   // Visual Compute Tools
   generate_qr_code: { Renderer: Renderers.QrCodeRenderer },
@@ -125,6 +124,7 @@ export function ToolResultView({
         language={language}
         subAgentToolActivity={subAgentToolActivity}
         subAgentStartIndex={subAgentStartIndex}
+        hideToggles={hideToggles}
       />
       {!hideToggles && <OutputResultToggle result={toolCall.result} />}
     </>

@@ -1,4 +1,4 @@
-import { ParsedToolResult } from "./types";
+import { ParsedToolResult, ToolResultDisplay } from "./types";
 
 export function basename(filePath: string | null | undefined): string {
   if (!filePath) return "";
@@ -24,6 +24,22 @@ export function tryParse(result: unknown): ParsedToolResult | null {
     } catch {
       return null;
     }
+  }
+  return null;
+}
+
+/**
+ * Extract the self-describing display metadata from a tool result, if any.
+ * Returns null unless the result carries a well-formed `display` object.
+ */
+export function getResultDisplay(result: unknown): ToolResultDisplay | null {
+  const display = tryParse(result)?.display;
+  if (
+    display &&
+    typeof display.url === "string" &&
+    (display.kind === "embed" || display.kind === "image")
+  ) {
+    return display;
   }
   return null;
 }

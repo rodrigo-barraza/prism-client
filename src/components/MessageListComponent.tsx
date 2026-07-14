@@ -25,8 +25,9 @@ import {
   Bot,
   Terminal,
 } from "lucide-react";
-import ToolCallsBlockComponent, { VISUAL_TOOL_NAMES } from "./ToolCallsBlockComponent";
+import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import { ToolResultView } from "./ToolResultRenderers";
+import { getResultDisplay } from "./ToolResultRenderers/utils";
 import MarkdownContent from "./MarkdownContentComponent";
 import StreamingCursorComponent from "./StreamingCursorComponent";
 
@@ -2136,10 +2137,21 @@ export default function MessageList({
                         message.toolCalls &&
                         message.toolCalls.length > 0 &&
                         (() => {
+                          // A tool result renders inline when it carries
+                          // self-describing `display` metadata — except media
+                          // already promoted to message.images (generated
+                          // images, screenshots), which the media row below
+                          // renders.
+                          const messageImageUrls = new Set(message.images || []);
                           const visualToolCalls = message.toolCalls.filter(
-                            (toolCall: ToolCallEvent) =>
-                              VISUAL_TOOL_NAMES.has(toolCall.name) &&
-                              toolCall.result,
+                            (toolCall: ToolCallEvent) => {
+                              const display = getResultDisplay(toolCall.result);
+                              if (!display) return false;
+                              return !(
+                                display.kind === "image" &&
+                                messageImageUrls.has(display.url)
+                              );
+                            },
                           );
                           if (visualToolCalls.length === 0) return null;
                           return visualToolCalls.map(

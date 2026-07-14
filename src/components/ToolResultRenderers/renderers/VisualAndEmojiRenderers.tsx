@@ -86,38 +86,7 @@ export function ThreeVoxelRenderer({ result, args }: RendererProps) {
   );
 }
 
-export function ThreeModelRenderer({ result, args }: RendererProps) {
-  const parsed = tryParse(result);
-  if (!parsed) return <RawResultToggle result={result} />;
-
-  const hasModelError = !!parsed.error;
-  const modelObjectCount = parsed.objectCount || (args as { objects?: unknown[] })?.objects?.length || 0;
-  const totalModelObjects = parsed.totalObjects || modelObjectCount;
-  const isModelAppend = !!parsed.isAppend;
-  const modelEmbedUrl = parsed.sceneEmbedUrl || parsed.embedUrl || "";
-
-  return (
-    <div className={styles['renderer-block']}>
-      <div className={styles['renderer-header']}>
-        <span style={{ fontSize: 13 }}>🎨</span>
-        <span className={styles['renderer-title']}>
-          3D Model — {isModelAppend ? `Added ${modelObjectCount} objects` : `Created ${modelObjectCount} objects`}
-          {isModelAppend && ` (Total: ${totalModelObjects} objects)`}
-        </span>
-        <StatusBadge
-          success={!hasModelError}
-          label={hasModelError ? "Error" : "Interactive 3D"}
-        />
-      </div>
-      {hasModelError && <div className={styles['error-text']}>{parsed.error}</div>}
-      {!hasModelError && modelEmbedUrl && (
-        <ThreeDimensionalSceneEmbed sourceUrl={modelEmbedUrl} title="3D Model" />
-      )}
-    </div>
-  );
-}
-
-export function ThreeSceneRenderer({ result, args }: RendererProps) {
+export function ThreeSceneRenderer({ result }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 

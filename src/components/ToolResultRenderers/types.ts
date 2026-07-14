@@ -241,6 +241,24 @@ export interface ParsedToolResult {
     layers?: Array<unknown>;
     duration?: number;
   };
+  // Self-describing display metadata (see ToolResultDisplay)
+  display?: ToolResultDisplay;
+}
+
+/**
+ * Self-describing display metadata carried by visual tool results.
+ * Any tool result with `display` renders inline in the conversation and
+ * inside its tool card without needing a per-tool renderer: "embed"
+ * becomes an auto-resizing iframe, "image" an <img>. Emitted by
+ * tools-service (embed tools) and prism-service (generated images,
+ * screenshots).
+ */
+export interface ToolResultDisplay {
+  kind: "embed" | "image";
+  url: string;
+  /** Fallback iframe height in px until the embed reports its own size. */
+  height?: number;
+  title?: string;
 }
 
 export interface RendererProps {
@@ -254,6 +272,8 @@ export interface RendererProps {
   > | null;
   /** Cumulative offset from prior create_subagents calls so numbering is global */
   subAgentStartIndex?: number;
+  /** True when rendered inline in the message body (suppress raw/output toggles) */
+  hideToggles?: boolean;
 }
 
 export interface ToolResultViewProps {
