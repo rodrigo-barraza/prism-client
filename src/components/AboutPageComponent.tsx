@@ -224,33 +224,146 @@ const PAPER_CATEGORIES: PaperCategory[] = [
           { component: "Tree structure", status: "aligned", detail: "Full tree maintained with UCB1-guided re-visitation of unexplored siblings" },
         ],
       },
+      {
+        title: "THREAD: Thinking Deeper with Recursive Spawning",
+        authors: "Schroeder et al.",
+        year: 2024,
+        arxivUrl: "https://arxiv.org/abs/2405.17402",
+        description:
+          "Recursive hierarchical delegation — any sub-agent can itself spawn child sub-agents down to a bounded depth. The parent's depth is tracked so each child runs at depth + 1, with coordinator-vs-worker roles assigned per level and the iteration budget attenuated at every delegation hop.",
+        implementationFile: "OrchestratorService.ts",
+        categoryLabel: "Recursive Delegation",
+        badgeClass: "badge-hierarchical",
+        alignment: [
+          { component: "Recursive spawning", status: "aligned", detail: "Any agent can spawn child sub-agents; each child runs at parentDepth + 1" },
+          { component: "Bounded depth", status: "aligned", detail: "childRecursionDepth is gated against maxRecursionDepth to prevent unbounded fan-out (off-by-one guarded)" },
+          { component: "Coordinator/Worker roles", status: "extended", detail: "Per-level role assignment — coordinators delegate, workers execute (RAH-style)" },
+          { component: "Hierarchical aggregation", status: "aligned", detail: "Child results bubble up and are aggregated at each parent via SubAgentResultBuilder" },
+          { component: "Scope attenuation", status: "extended", detail: "Iteration budget shrinks by a fixed factor at every hop, with a minimum floor" },
+        ],
+      },
     ],
   },
   {
-    title: "Infrastructure & Safety",
-    icon: "🛡️",
+    title: "Harness Lifecycle & Reliability",
+    icon: "⚙️",
     papers: [
       {
-        title: "Critic Gate: Multi-Model Safety Review",
-        authors: "Safety Pattern",
-        year: null,
-        arxivUrl: null,
+        title: "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+        authors: "Yang et al.",
+        year: 2024,
+        arxivUrl: "https://arxiv.org/abs/2405.15793",
         description:
-          "A lightweight second-opinion gate that uses a fast model to review high-risk (DANGER tier) tool calls before execution — catching catastrophic commands like rm -rf or DROP TABLE.",
-        implementationFile: "CriticGate.ts",
-        categoryLabel: "Safety",
-        badgeClass: "badge-safety",
+          "Git-based filesystem checkpointing and rollback. Before a batch of destructive tool calls the harness captures a `git stash create` checkpoint; if validation fails or a Tree-of-Thoughts branch is rejected, the working tree is restored — complementing conversation-level backtracking with filesystem-level backtracking.",
+        implementationFile: "SandboxExecutor.ts",
+        categoryLabel: "Checkpointing",
+        badgeClass: "badge-checkpointing",
+        alignment: [
+          { component: "Filesystem checkpoint", status: "aligned", detail: "`git stash create` snapshots the working tree without polluting the user's stash reflog" },
+          { component: "Surgical restore", status: "aligned", detail: "`git checkout <ref> -- .` replaces the working tree without touching HEAD" },
+          { component: "Pairs with ToT backtracking", status: "extended", detail: "Restores filesystem state alongside conversation state on branch rejection — a gap ToT alone leaves open" },
+          { component: "Fails open", status: "extended", detail: "Verifies a git repo first and never blocks execution on checkpoint failure" },
+        ],
       },
       {
-        title: "Auto-Approval Engine: Tiered Tool Permission System",
+        title: "Event-Driven System Reminders",
+        authors: "Reliability Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "Counteracts instruction fade-out in long sessions: as a loop grows past ~10 iterations the system prompt recedes into the distant context prefix and constraint adherence degrades. An LLM distills a condensed (~300-token) behavioral summary that is re-injected on a fixed interval and cached thereafter.",
+        implementationFile: "SystemReminderInjector.ts",
+        categoryLabel: "Reliability",
+        badgeClass: "badge-reliability",
+      },
+      {
+        title: "Structured Tool-Error Recovery",
+        authors: "Reliability Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "When a tool call errors, instead of surfacing only the raw error the harness injects a structured system message naming the failed tool, its arguments, and the error — then prompts the model to diagnose which argument caused the failure and retry. Recovery is guided, not forced.",
+        implementationFile: "ToolRetryInterceptor.ts",
+        categoryLabel: "Error Recovery",
+        badgeClass: "badge-error-recovery",
+      },
+      {
+        title: "Automatic Validation Feedback Loop",
+        authors: "Reliability Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "The “linter loop”: after file-mutating tool calls the harness runs language-aware linter/AST validation and, on error, injects the structured feedback as a synthetic message so the model self-corrects on the next iteration without spending another tool call.",
+        implementationFile: "ValidationInterceptor.ts",
+        categoryLabel: "Validation",
+        badgeClass: "badge-validation",
+      },
+      {
+        title: "Output-Truncation Recovery",
+        authors: "Reliability Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "Auto-continues when a response is cut short by the max-output-tokens limit. Rather than discarding the partial output, it is appended and a continuation prompt injected so the model resumes where it left off — retried with escalating token limits, clamped to the model's physical ceiling.",
+        implementationFile: "OutputTruncationRecovery.ts",
+        categoryLabel: "Continuation",
+        badgeClass: "badge-continuation",
+      },
+      {
+        title: "Semantic Stall Detection",
+        authors: "Reliability Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "Iteration-level loop detection. Compares entire tool-call sets across consecutive iterations to catch zero-progress behavior — exact repeats, cyclical alternation between a few states, or identical text output — complementing token-level repetition detection within a single generation.",
+        implementationFile: "SemanticStallDetector.ts",
+        categoryLabel: "Loop Detection",
+        badgeClass: "badge-loop-detection",
+      },
+      {
+        title: "Per-Session Cost Budget Enforcement",
+        authors: "Reliability Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "A cost ceiling for agentic loops. Cumulative estimated spend is checked after every iteration and, once the configured maxCostDollars is exceeded, the loop breaks into exhaustion recovery. A shared budget accumulates spend across an agent and every sub-agent it transitively spawns.",
+        implementationFile: "CostBudgetEnforcer.ts",
+        categoryLabel: "Cost Control",
+        badgeClass: "badge-cost-control",
+      },
+      {
+        title: "Recursive Delegation Guardrails",
         authors: "Safety Pattern",
         year: null,
         arxivUrl: null,
         description:
-          "Deterministic three-tier permission system — AUTO (read-only), WRITE (file mutations), DANGER (shell execution) — with declarative policy evaluation and full-auto override support.",
-        implementationFile: "AutoApprovalEngine.ts",
-        categoryLabel: "Safety",
+          "Bounds on recursive sub-agent spawning: a hard circuit breaker on total concurrent agents per conversation to prevent exponential fan-out, plus scope attenuation that shrinks each child's iteration budget by a fixed factor at every delegation hop.",
+        implementationFile: "constants.ts",
+        categoryLabel: "Guardrails",
         badgeClass: "badge-safety",
+      },
+    ],
+  },
+  {
+    title: "Memory & Context",
+    icon: "🧩",
+    papers: [
+      {
+        title: "Agent Workflow Memory",
+        authors: "Wang et al.",
+        year: 2024,
+        arxivUrl: "https://arxiv.org/abs/2409.07429",
+        description:
+          "Extracts reusable workflow templates from successful sessions and replays them as procedural memory on analogous future tasks. On completion (≥3 tool calls, no circuit-breaker errors) the tool trajectory is compressed, embedded, and persisted; similar past workflows are later retrieved by cosine similarity and injected as procedural context.",
+        implementationFile: "WorkflowMemoryService.ts",
+        categoryLabel: "Procedural Memory",
+        badgeClass: "badge-memory",
+        alignment: [
+          { component: "Workflow extraction", status: "aligned", detail: "Successful sessions compressed into ordered tool-name + key-arg workflow summaries" },
+          { component: "Embedding + persistence", status: "aligned", detail: "Summaries embedded and stored in the workflow_memories collection" },
+          { component: "Similarity retrieval", status: "aligned", detail: "Top-K similar past workflows retrieved by embedding cosine similarity at prompt-assembly time" },
+          { component: "Replay as procedural memory", status: "aligned", detail: "Retrieved workflows injected as procedural context for adaptation on new tasks" },
+        ],
       },
       {
         title: "Memory Consolidation: Embedding-Based Clustering and Dedup",
@@ -280,10 +393,71 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         year: null,
         arxivUrl: null,
         description:
-          "Pressure-gated micro-compaction and auto-compaction of conversation context to stay within model context windows while preserving critical reasoning history and tool results.",
+          "Pressure-gated auto-compaction of conversation context to stay within model context windows while preserving critical reasoning history and tool results.",
         implementationFile: "CompactionService.ts",
         categoryLabel: "Context Management",
         badgeClass: "badge-context-management",
+      },
+      {
+        title: "Micro-Compaction: In-Memory Tool-Result Clearing",
+        authors: "Context Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "The lightest compaction layer — no LLM call required. Before sending to the model, large tool results from compactable read-only tools in old, unprotected turns are cleared, with recent turns always protected. Trims context while preserving the cacheable prompt prefix.",
+        implementationFile: "MicroCompactionService.ts",
+        categoryLabel: "Context Management",
+        badgeClass: "badge-context-management",
+      },
+      {
+        title: "Plan Mode: Tool-Based Planning State Machine",
+        authors: "Workflow Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "A “plan first” workflow: the loop starts with tools stripped, the model designs a plan and calls exit_plan_mode for approval, then continues with full tools once approved. The planning instruction is injected as a standalone message to keep the system-prompt hash stable for prefix caching.",
+        implementationFile: "PlanningModeService.ts",
+        categoryLabel: "Planning",
+        badgeClass: "badge-planning",
+      },
+      {
+        title: "Conversation Embedding: Cross-Session Semantic Search",
+        authors: "Search Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "Generates and persists summary embeddings on agent conversation documents by combining titles, compaction summaries, and linked memories — enabling cross-session semantic search with zero additional LLM cost.",
+        implementationFile: "ConversationEmbeddingService.ts",
+        categoryLabel: "Semantic Search",
+        badgeClass: "badge-semantic-search",
+      },
+    ],
+  },
+  {
+    title: "Infrastructure & Safety",
+    icon: "🛡️",
+    papers: [
+      {
+        title: "Critic Gate: Multi-Model Safety Review",
+        authors: "Safety Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "A lightweight second-opinion gate that uses a fast model to review high-risk (DANGER tier) tool calls before execution — catching catastrophic commands like rm -rf or DROP TABLE.",
+        implementationFile: "CriticGate.ts",
+        categoryLabel: "Safety",
+        badgeClass: "badge-safety",
+      },
+      {
+        title: "Auto-Approval Engine: Tiered Tool Permission System",
+        authors: "Safety Pattern",
+        year: null,
+        arxivUrl: null,
+        description:
+          "Deterministic three-tier permission system — AUTO (read-only), WRITE (file mutations), DANGER (shell execution) — with declarative policy evaluation and full-auto override support.",
+        implementationFile: "AutoApprovalEngine.ts",
+        categoryLabel: "Safety",
+        badgeClass: "badge-safety",
       },
       {
         title: "DAG-Based Workflow Orchestration",
@@ -306,17 +480,6 @@ const PAPER_CATEGORIES: PaperCategory[] = [
         implementationFile: "EmotionalStateEngine.ts",
         categoryLabel: "Affect",
         badgeClass: "badge-affect",
-      },
-      {
-        title: "Conversation Embedding: Cross-Session Semantic Search",
-        authors: "Search Pattern",
-        year: null,
-        arxivUrl: null,
-        description:
-          "Generates and persists summary embeddings on agent conversation documents by combining titles, compaction summaries, and linked memories — enabling cross-session semantic search with zero additional LLM cost.",
-        implementationFile: "ConversationEmbeddingService.ts",
-        categoryLabel: "Semantic Search",
-        badgeClass: "badge-semantic-search",
       },
     ],
   },
@@ -400,9 +563,10 @@ export default function AboutPageComponent() {
       <section className={styles["hero-section"]}>
         <h1 className={styles["hero-title"]}>Research Implementations</h1>
         <p className={styles["hero-subtitle"]}>
-          Prism implements state-of-the-art research from agentic AI, multi-agent systems,
-          and thought structures — from single-agent ReAct loops to multi-agent
-          coordination patterns. For detailed sub-agent topology documentation, see the{" "}
+          Prism implements state-of-the-art research across agentic AI — from single-agent
+          thought structures and multi-agent topologies to the harness-lifecycle, memory,
+          and safety machinery that keeps long-running loops reliable. For detailed sub-agent
+          topology documentation, see the{" "}
           <Link href="/topologies" className={styles["hero-cross-reference-link"]}>Topologies</Link> page.
         </p>
       </section>
@@ -423,7 +587,7 @@ export default function AboutPageComponent() {
                 <PaperCard
                   key={paper.implementationFile + paper.title}
                   paper={paper}
-                  entranceDelayMilliseconds={cardIndex * 60}
+                  entranceDelayMilliseconds={Math.min(cardIndex, 8) * 45}
                 />
               );
             })}
@@ -521,6 +685,7 @@ function PaperCard({
       rich
       position="top"
       enterDelay={200}
+      className={styles["card-tooltip-anchor"]}
       title="Paper ↔ Implementation Alignment"
       content={<AlignmentTooltipContent alignment={paper.alignment!} />}
     >
