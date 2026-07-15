@@ -459,7 +459,7 @@ export default function WorkspaceTreePanelComponent({
         {treeLoading && <PanelLoadingSpinner />}
         {!treeLoading && treeData?.tree && filteredTree.length > 0 && (
           <div className={styles['tree-root']}>
-            // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
+            {/* eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change */}
             {filteredTree.map((node: WorkspaceTreeNode) => (
               <TreeNode
                 key={node.name}

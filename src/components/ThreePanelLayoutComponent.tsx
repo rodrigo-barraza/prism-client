@@ -230,7 +230,6 @@ export default function ThreePanelLayout({
   const setLeftSidebarNode = useCallback(
     // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
     (node: HTMLElement | null) => {
-      // eslint-disable-next-line react-hooks/immutability -- ref callback runs at commit; writing refs here is the intended React pattern
       (splitContainerRef as React.MutableRefObject<HTMLElement | null>).current = node;
       // eslint-disable-next-line react-hooks/immutability -- ref callback runs at commit; writing refs here is the intended React pattern
       (leftSwipeReference as React.MutableRefObject<HTMLElement | null>).current = node;

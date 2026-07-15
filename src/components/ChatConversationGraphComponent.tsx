@@ -1343,13 +1343,18 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
                   return countDescendants(childTreeNodes);
                 })() : 0;
 
+                // eslint-disable-next-line react-hooks/refs -- compiler false positive: memoized handler is inferred as a ref read
+                const onNodeMouseDown = (event: React.MouseEvent) => handleNodeMouseDown(event, node.id);
+                // eslint-disable-next-line react-hooks/refs -- compiler false positive: memoized handler is inferred as a ref read
+                const onNodeClick = (event: React.MouseEvent) => handleNodeClick(event, node.id);
+
                 return (
                   <g
                     key={node.id}
                     data-node-identifier={node.id}
                     className={`${graphStyles['node-group']}${isEntering ? ` ${graphStyles['node-entering']}` : ""}`}
-                    onMouseDown={(event) => handleNodeMouseDown(event, node.id)}
-                    onClick={(event) => handleNodeClick(event, node.id)}
+                    onMouseDown={onNodeMouseDown}
+                    onClick={onNodeClick}
                     filter={isPhaseActive ? "url(#chat-graph-session-glow)" : (isSelected || isNodeLiveActive) ? "url(#chat-graph-node-hover-glow)" : undefined}
                   >
                     {/* Phase-synced activity pulse ring for session center */}

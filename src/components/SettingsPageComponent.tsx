@@ -2859,7 +2859,7 @@ export default function SettingsPageComponent() {
                 Allow the agent to view, search, or edit `.env` environment
                 configurations, `.pem` certificates, `.key` private keys, and
                 SSH credentials inside the workspace. When disabled, these files
-                are strictly isolated from the agent's file tools to prevent
+                are strictly isolated from the agent&apos;s file tools to prevent
                 credential leakage.
               </span>
             </div>
