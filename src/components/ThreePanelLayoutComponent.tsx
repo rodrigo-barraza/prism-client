@@ -253,7 +253,8 @@ export default function ThreePanelLayout({
   }, []);
 
   const mainContentSwipeReference = useSwipeToReveal({
-    onSwipeRight: openLeftSidebar,
+    onSwipeRight:
+      leftPanel != null || leftPanelBottom != null ? openLeftSidebar : undefined,
     onSwipeLeft: rightPanel ? openRightSidebar : undefined,
     isEnabled: isMobile && !showLeft && !showRight,
   });
@@ -347,6 +348,11 @@ export default function ThreePanelLayout({
   const transitionStyle = hydrated ? undefined : { transition: "none" };
 
   const hasSplitPanels = leftPanelBottom != null;
+  /* Only mount the left sidebar (and its header toggle) when there is
+     actual content — pages like /about pass leftPanel={null}, and an empty
+     aside should not reserve space or show a dead toggle. Mirrors how the
+     right sidebar is conditionally rendered. */
+  const hasLeftPanel = leftPanel != null || hasSplitPanels;
 
   const resolvedTitleIcon = typeof title === "string" ? resolvePageIcon(title) : null;
 
@@ -363,13 +369,17 @@ export default function ThreePanelLayout({
             metaContent={headerMeta}
             centerContent={headerCenter}
             controls={headerControls}
-            leadingToggle={{
-              isVisible: showLeft,
-              onToggle: toggleLeft,
-              visibleIcon: <PanelLeftClose size={16} />,
-              hiddenIcon: <PanelLeft size={16} />,
-              label: (leftTitle || "panel").toLowerCase(),
-            }}
+            leadingToggle={
+              hasLeftPanel
+                ? {
+                    isVisible: showLeft,
+                    onToggle: toggleLeft,
+                    visibleIcon: <PanelLeftClose size={16} />,
+                    hiddenIcon: <PanelLeft size={16} />,
+                    label: (leftTitle || "panel").toLowerCase(),
+                  }
+                : undefined
+            }
             trailingToggle={
               rightPanel
                 ? {
@@ -386,42 +396,44 @@ export default function ThreePanelLayout({
 
         {/* Body: sidebars + main content */}
         <div className={styles["layout-body-layout-row"]}>
-          {/* Left Sidebar */}
-          <aside
-            className={`${styles["left-sidebar-panel"]} ${!showLeft ? styles["is-sidebar-hidden"] : ""} ${hasSplitPanels ? styles["has-split-panels"] : ""}`}
-            style={transitionStyle}
-            onClick={handleSidebarClick(toggleLeft)}
-            ref={setLeftSidebarNode}
-          >
-            {hasSplitPanels ? (
-              <>
-                <div
-                  className={styles["split-panel-top-group"]}
-                  style={{ flex: `0 0 ${splitRatio * 100}%` }}
-                >
-                  {leftPanel}
-                </div>
-                <div
-                  className={styles["split-panel-resize-handle"]}
-                  onMouseDown={handleSplitDragStart}
-                  onTouchStart={handleSplitTouchStart}
-                  role="separator"
-                  aria-orientation="horizontal"
-                  aria-label="Resize sidebar panels"
-                >
-                  <div className={styles["split-panel-resize-grip"]} />
-                </div>
-                <div
-                  className={styles["split-panel-bottom-group"]}
-                  style={{ flex: `0 0 ${(1 - splitRatio) * 100}%` }}
-                >
-                  {leftPanelBottom}
-                </div>
-              </>
-            ) : (
-              leftPanel
-            )}
-          </aside>
+          {/* Left Sidebar — only mounted when there is content to show */}
+          {hasLeftPanel && (
+            <aside
+              className={`${styles["left-sidebar-panel"]} ${!showLeft ? styles["is-sidebar-hidden"] : ""} ${hasSplitPanels ? styles["has-split-panels"] : ""}`}
+              style={transitionStyle}
+              onClick={handleSidebarClick(toggleLeft)}
+              ref={setLeftSidebarNode}
+            >
+              {hasSplitPanels ? (
+                <>
+                  <div
+                    className={styles["split-panel-top-group"]}
+                    style={{ flex: `0 0 ${splitRatio * 100}%` }}
+                  >
+                    {leftPanel}
+                  </div>
+                  <div
+                    className={styles["split-panel-resize-handle"]}
+                    onMouseDown={handleSplitDragStart}
+                    onTouchStart={handleSplitTouchStart}
+                    role="separator"
+                    aria-orientation="horizontal"
+                    aria-label="Resize sidebar panels"
+                  >
+                    <div className={styles["split-panel-resize-grip"]} />
+                  </div>
+                  <div
+                    className={styles["split-panel-bottom-group"]}
+                    style={{ flex: `0 0 ${(1 - splitRatio) * 100}%` }}
+                  >
+                    {leftPanelBottom}
+                  </div>
+                </>
+              ) : (
+                leftPanel
+              )}
+            </aside>
+          )}
 
           {/* File Viewer Pane (VS Code-style, between sidebar and chat) */}
           {fileViewerPanel}

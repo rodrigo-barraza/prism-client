@@ -304,33 +304,28 @@ export default function PromptsPageComponent() {
     <div className={styles["form-card"]}>
       <div className={styles["form-body"]}>
         <div className={styles["form-field"]}>
-          <label className={styles["form-label"]}>Title</label>
-          <input
-            type="text"
-            className={styles["form-input"]}
+          <InputComponent
+            label="Title"
             value={formTitle}
-            onChange={(event) => setFormTitle(event.target.value)}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setFormTitle(event.target.value)}
             placeholder="Give your prompt a descriptive title…"
             autoFocus
           />
         </div>
         <div className={styles["form-field"]}>
           <label className={styles["form-label"]}>Content</label>
-          <textarea
-            className={styles["form-textarea"]}
+          <TextAreaComponent
             value={formContent}
-            onChange={(event) => setFormContent(event.target.value)}
+            onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setFormContent(event.target.value)}
             placeholder="Write your prompt content here…"
-            rows={6}
+            minRows={6}
           />
         </div>
         <div className={styles["form-field"]}>
-          <label className={styles["form-label"]}>Tags (comma-separated)</label>
-          <input
-            type="text"
-            className={styles["form-input"]}
+          <InputComponent
+            label="Tags (comma-separated)"
             value={formTags}
-            onChange={(event) => setFormTags(event.target.value)}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setFormTags(event.target.value)}
             placeholder="e.g. coding, creative, analysis"
           />
         </div>
@@ -545,20 +540,13 @@ export default function PromptsPageComponent() {
 
   return (
     <div className={`prompts-page-component ${styles['container']}`}>
-      {/* Header */}
-      <div className={styles['header']}>
-        <div className={styles["header-left"]}>
-          <h1 className={styles['title']}>
-            <BookText className={styles["title-icon"]} size={22} />
-            Prompts
-          </h1>
-          <p className={styles['subtitle']}>
-            Create and store your own reusable prompts and messages.
-          </p>
-        </div>
-
-        <div className={styles["header-right"]}>
-          {!isCreating && (
+      <PageHeroComponent
+        icon={BookText}
+        title="Prompts"
+        subtitle="Create and store your own reusable prompts and messages."
+        stats={[{ value: total, label: "prompts" }]}
+        actions={
+          !isCreating && (
             <ButtonComponent
               variant="primary"
               size="small"
@@ -570,9 +558,9 @@ export default function PromptsPageComponent() {
             >
               New Prompt
             </ButtonComponent>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       <div className={styles['page']}>
         <SearchInputComponent
@@ -634,12 +622,11 @@ export default function PromptsPageComponent() {
         )}
 
         {!isLoading && prompts.length === 0 && !isCreating && (
-          <div className={styles["empty-state-container"]}>
-            <BookText size={48} className={styles["empty-state-icon"]} />
-            <p className={styles["empty-state-title"]}>No prompts yet</p>
-            <p className={styles["empty-state-description"]}>
-              Create your first prompt to start building your personal prompt library.
-            </p>
+          <EmptyStateComponent
+            icon={<BookText />}
+            title="No prompts yet"
+            subtitle="Create your first prompt to start building your personal prompt library."
+          >
             <ButtonComponent
               variant="primary"
               icon={Plus}
@@ -650,7 +637,7 @@ export default function PromptsPageComponent() {
             >
               Create Your First Prompt
             </ButtonComponent>
-          </div>
+          </EmptyStateComponent>
         )}
 
         {/* Pagination */}
@@ -664,155 +651,148 @@ export default function PromptsPageComponent() {
 
       {/* Prompt Detail Modal */}
       {modalPrompt && (
-        <div
-          className={styles["modal-overlay"]}
-          onClick={closePromptModal}
-        >
-          <div
-            className={styles["modal-container"]}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className={styles["modal-header"]}>
+        <ModalComponent
+          id="prompt-detail-modal"
+          size="lg"
+          onClose={closePromptModal}
+          title={
+            <div className={styles["modal-title-row"]}>
               {modalPrompt.color && (
                 <span
                   className={styles["color-indicator-dot"]}
-                  style={{ backgroundColor: modalPrompt.color, marginInlineEnd: 4 }}
+                  style={{ backgroundColor: modalPrompt.color }}
                 />
               )}
               {modalEditMode ? (
-                <input
-                  type="text"
-                  className={styles["modal-title-input"]}
+                <InputComponent
                   value={modalTitle}
-                  onChange={(event) => setModalTitle(event.target.value)}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => setModalTitle(event.target.value)}
                   autoFocus
                 />
               ) : (
                 <h2 className={styles["modal-title"]}>{modalPrompt.title}</h2>
               )}
-              <div className={styles["modal-header-actions"]}>
-                {modalEditMode ? (
-                  <>
-                    <ButtonComponent
-                      variant="primary"
-                      size="small"
-                      icon={Save}
-                      onClick={handleModalSave}
-                      disabled={isModalSaving || !modalTitle.trim() || !modalContent.trim()}
-                    >
-                      Save
-                    </ButtonComponent>
-                    <ButtonComponent
-                      variant="disabled"
-                      size="small"
-                      icon={X}
-                      onClick={() => {
-                        setModalEditMode(false);
-                        setModalTitle(modalPrompt.title);
-                        setModalContent(modalPrompt.content);
-                        setModalTags((modalPrompt.tags || []).join(", "));
-                      }}
-                    >
-                      Cancel
-                    </ButtonComponent>
-                  </>
-                ) : (
-                  <>
-                    <ButtonComponent
-                      variant="disabled"
-                      size="small"
-                      icon={copiedPromptId === modalPrompt.id ? Check : Copy}
-                      onClick={() => handleCopyToClipboard(modalPrompt)}
-                    >
-                      {copiedPromptId === modalPrompt.id ? "Copied" : "Copy"}
-                    </ButtonComponent>
-                    <ButtonComponent
-                      variant="disabled"
-                      size="small"
-                      icon={Pencil}
-                      onClick={() => setModalEditMode(true)}
-                    >
-                      Edit
-                    </ButtonComponent>
-                  </>
-                )}
-                <CloseButtonComponent onClick={closePromptModal} />
-              </div>
             </div>
-
-            <div className={styles["modal-meta"]}>
-              {modalPrompt.tags?.map((tag) => (
-                <span key={tag} className={styles["tag-badge"]}>{tag}</span>
-              ))}
-              <span className={styles["metric-badge"]}>
-                {countWords(modalEditMode ? modalContent : modalPrompt.content).toLocaleString()} words
-              </span>
-              <span className={styles["metric-badge"]}>
-                ~{estimateTokens(modalEditMode ? modalContent : modalPrompt.content).toLocaleString()} tokens
-              </span>
-              {modalPrompt.updatedAt && (
-                <span className={styles["prompt-timestamp"]}>
-                  Updated {new Date(modalPrompt.updatedAt).toLocaleDateString()}
-                </span>
+          }
+          footer={
+            <div className={styles["modal-footer-actions"]}>
+              {modalEditMode ? (
+                <>
+                  <ButtonComponent
+                    variant="primary"
+                    size="small"
+                    icon={Save}
+                    onClick={handleModalSave}
+                    disabled={isModalSaving || !modalTitle.trim() || !modalContent.trim()}
+                  >
+                    Save
+                  </ButtonComponent>
+                  <ButtonComponent
+                    variant="disabled"
+                    size="small"
+                    icon={X}
+                    onClick={() => {
+                      setModalEditMode(false);
+                      setModalTitle(modalPrompt.title);
+                      setModalContent(modalPrompt.content);
+                      setModalTags((modalPrompt.tags || []).join(", "));
+                    }}
+                  >
+                    Cancel
+                  </ButtonComponent>
+                </>
+              ) : (
+                <>
+                  <ButtonComponent
+                    variant="disabled"
+                    size="small"
+                    icon={copiedPromptId === modalPrompt.id ? Check : Copy}
+                    onClick={() => handleCopyToClipboard(modalPrompt)}
+                  >
+                    {copiedPromptId === modalPrompt.id ? "Copied" : "Copy"}
+                  </ButtonComponent>
+                  <ButtonComponent
+                    variant="disabled"
+                    size="small"
+                    icon={Pencil}
+                    onClick={() => setModalEditMode(true)}
+                  >
+                    Edit
+                  </ButtonComponent>
+                </>
               )}
             </div>
-
-            {modalEditMode ? (
-              <div className={styles["modal-edit-body"]}>
-                <div className={styles["form-field"]}>
-                  <label className={styles["form-label"]}>Content</label>
-                  <textarea
-                    className={styles["modal-textarea"]}
-                    value={modalContent}
-                    onChange={(event) => setModalContent(event.target.value)}
-                    rows={16}
-                  />
-                </div>
-                <div className={styles["form-field"]}>
-                  <label className={styles["form-label"]}>Tags (comma-separated)</label>
-                  <input
-                    type="text"
-                    className={styles["form-input"]}
-                    value={modalTags}
-                    onChange={(event) => setModalTags(event.target.value)}
-                    placeholder="e.g. coding, creative, analysis"
-                  />
-                </div>
-                <div className={styles["form-field"]}>
-                  <label className={styles["form-label"]}>Label Color</label>
-                  <div className={styles["color-picker-group"]}>
-                    {COLOR_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        className={`${styles["color-picker-button"]} ${modalColor === option.value ? styles["is-selected-state"] : ""}`}
-                        style={{ "--option-color": option.value } as React.CSSProperties}
-                        onClick={() => setModalColor(option.value)}
-                        title={option.name}
-                      >
-                        {modalColor === option.value && <Check size={COLOR_CHECK_ICON_SIZE} />}
-                      </button>
-                    ))}
-                    {modalColor && (
-                      <button
-                        type="button"
-                        className={styles["clear-color-button"]}
-                        onClick={() => setModalColor("")}
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <MarkdownContent
-                content={modalPrompt.content}
-                className={styles["modal-content"]}
-              />
+          }
+        >
+          <div className={styles["modal-meta"]}>
+            {modalPrompt.tags?.map((tag) => (
+              <span key={tag} className={styles["tag-badge"]}>{tag}</span>
+            ))}
+            <span className={styles["metric-badge"]}>
+              {countWords(modalEditMode ? modalContent : modalPrompt.content).toLocaleString()} words
+            </span>
+            <span className={styles["metric-badge"]}>
+              ~{estimateTokens(modalEditMode ? modalContent : modalPrompt.content).toLocaleString()} tokens
+            </span>
+            {modalPrompt.updatedAt && (
+              <span className={styles["prompt-timestamp"]}>
+                Updated {new Date(modalPrompt.updatedAt).toLocaleDateString()}
+              </span>
             )}
           </div>
-        </div>
+
+          {modalEditMode ? (
+            <div className={styles["modal-edit-body"]}>
+              <div className={styles["form-field"]}>
+                <label className={styles["form-label"]}>Content</label>
+                <TextAreaComponent
+                  value={modalContent}
+                  onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setModalContent(event.target.value)}
+                  minRows={16}
+                />
+              </div>
+              <div className={styles["form-field"]}>
+                <InputComponent
+                  label="Tags (comma-separated)"
+                  value={modalTags}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => setModalTags(event.target.value)}
+                  placeholder="e.g. coding, creative, analysis"
+                />
+              </div>
+              <div className={styles["form-field"]}>
+                <label className={styles["form-label"]}>Label Color</label>
+                <div className={styles["color-picker-group"]}>
+                  {COLOR_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`${styles["color-picker-button"]} ${modalColor === option.value ? styles["is-selected-state"] : ""}`}
+                      style={{ "--option-color": option.value } as React.CSSProperties}
+                      onClick={() => setModalColor(option.value)}
+                      title={option.name}
+                    >
+                      {modalColor === option.value && <Check size={COLOR_CHECK_ICON_SIZE} />}
+                    </button>
+                  ))}
+                  {modalColor && (
+                    <button
+                      type="button"
+                      className={styles["clear-color-button"]}
+                      onClick={() => setModalColor("")}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <MarkdownContent
+              content={modalPrompt.content}
+              className={styles["modal-content"]}
+            />
+          )}
+        </ModalComponent>
       )}
     </div>
   );

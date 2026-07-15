@@ -346,222 +346,103 @@ function resolveGradient(agent?: string | ClientAgent | null): string[] {
   return resolveAgentGradient(agent?.id);
 }
 
-const TEXTURE_SIZE = 256;
+const COIN_FACE_TEXTURE_SIZE = 256;
+const COIN_SPIN_IMPULSE_PER_KEYSTROKE = 1.4;
+const COIN_TYPING_IDLE_DELAY_MILLISECONDS = 700;
 
-type ThreeScene = InstanceType<typeof THREE.Scene>;
-type ThreePerspectiveCamera = InstanceType<typeof THREE.PerspectiveCamera>;
-type ThreeMesh = InstanceType<typeof THREE.Mesh>;
-type ThreeCanvasTexture = InstanceType<typeof THREE.CanvasTexture>;
-
-interface SetupState {
-  scene: ThreeScene;
-  camera: ThreePerspectiveCamera;
-  THREE: typeof THREE;
-}
-
-interface TickState {
-  elapsed: number;
-}
-
-function useCoinAnimation({ agent, size }: { agent?: string | ClientAgent | null; size: number }) {
-  const meshReference = useRef<ThreeMesh | null>(null);
-  const textureReference = useRef<ThreeCanvasTexture | null>(null);
-  const textureCanvasReference = useRef<HTMLCanvasElement | null>(null);
-  const iconCanvasReference = useRef<HTMLCanvasElement | null>(null);
+/**
+ * AgentCoinRenderer — the animated 3D agent coin (see the `coin` preset in
+ * src/services/three-animations). Owns the DOM-side concerns: rasterizing
+ * the agent icon/avatar into the coin face, forwarding typing events as
+ * spin impulses, and pointer parallax.
+ */
+function AgentCoinRenderer({ agent, size }: { agent?: string | ClientAgent | null; size: number }) {
+  const iconContainerReference = useRef<HTMLSpanElement | null>(null);
   const coinWrapperReference = useRef<HTMLSpanElement | null>(null);
+  const animationHandleReference = useRef<ThreeAnimationHandle | null>(null);
+  const typingIdleTimerReference = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const gradient = useMemo(() => resolveGradient(agent), [agent]);
+  const coinOptions = useMemo<CoinAnimationOptions>(
+    () => ({ gradient: [gradient[0], gradient[1]] }),
+    [gradient],
+  );
 
-  const typingSpeedMultiplier = useRef(1.0);
-  const typingDecayTimerId = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const typingDecayRequestAnimationFrameId = useRef<number | null>(null);
-
-  const BASE_ROTATION_SPEED = 1.2;
-  const SPEED_INCREMENT_PER_KEYSTROKE = 0.6;
-  const MAXIMUM_SPEED_MULTIPLIER = 12;
-  const DECAY_RATE = 0.92;
-  const TYPING_IDLE_DELAY_MILLISECONDS = 400;
-
+  // Typing events → spin impulses (decay happens inside the preset)
   useEffect(() => {
     const handleTypingEvent = () => {
-      typingSpeedMultiplier.current = Math.min(
-        typingSpeedMultiplier.current + SPEED_INCREMENT_PER_KEYSTROKE,
-        MAXIMUM_SPEED_MULTIPLIER,
+      animationHandleReference.current?.setParameter?.(
+        "spinImpulse",
+        COIN_SPIN_IMPULSE_PER_KEYSTROKE,
       );
+      coinWrapperReference.current?.setAttribute("data-is-typing-state", "true");
 
-      if (coinWrapperReference.current) {
-        coinWrapperReference.current.setAttribute("data-is-typing-state", "true");
+      if (typingIdleTimerReference.current) {
+        clearTimeout(typingIdleTimerReference.current);
       }
-
-      if (typingDecayTimerId.current) {
-        clearTimeout(typingDecayTimerId.current);
-      }
-      if (typingDecayRequestAnimationFrameId.current) {
-        cancelAnimationFrame(typingDecayRequestAnimationFrameId.current);
-        typingDecayRequestAnimationFrameId.current = null;
-      }
-
-      typingDecayTimerId.current = setTimeout(() => {
-        const decayLoop = () => {
-          typingSpeedMultiplier.current =
-            1.0 +
-            (typingSpeedMultiplier.current - 1.0) * DECAY_RATE;
-
-          if (typingSpeedMultiplier.current <= 1.02) {
-            typingSpeedMultiplier.current = 1.0;
-            typingDecayRequestAnimationFrameId.current = null;
-
-            if (coinWrapperReference.current) {
-              coinWrapperReference.current.setAttribute("data-is-typing-state", "false");
-            }
-            return;
-          }
-          typingDecayRequestAnimationFrameId.current = requestAnimationFrame(decayLoop);
-        };
-        decayLoop();
-      }, TYPING_IDLE_DELAY_MILLISECONDS);
+      typingIdleTimerReference.current = setTimeout(() => {
+        coinWrapperReference.current?.setAttribute("data-is-typing-state", "false");
+      }, COIN_TYPING_IDLE_DELAY_MILLISECONDS);
     };
 
     window.addEventListener(EVENT_NAME_USER_TYPING, handleTypingEvent);
     return () => {
       window.removeEventListener(EVENT_NAME_USER_TYPING, handleTypingEvent);
-      if (typingDecayTimerId.current) clearTimeout(typingDecayTimerId.current);
-      if (typingDecayRequestAnimationFrameId.current) cancelAnimationFrame(typingDecayRequestAnimationFrameId.current);
+      if (typingIdleTimerReference.current) {
+        clearTimeout(typingIdleTimerReference.current);
+      }
     };
   }, []);
 
-  const handleSetup = useCallback(
-    ({ scene, camera, THREE }: SetupState) => {
-      camera.position.set(0, 0, 20);
-      camera.lookAt(0, 0, 0);
-
-      const textureCanvas = document.createElement("canvas");
-      textureCanvas.width = TEXTURE_SIZE;
-      textureCanvas.height = TEXTURE_SIZE;
-      const context = textureCanvas.getContext("2d");
-      if (context) {
-        const radius = TEXTURE_SIZE * 0.16;
-        context.beginPath();
-        context.roundRect(0, 0, TEXTURE_SIZE, TEXTURE_SIZE, radius);
-        context.closePath();
-        const canvasGradient = context.createLinearGradient(
-          0,
-          0,
-          TEXTURE_SIZE,
-          TEXTURE_SIZE,
-        );
-        canvasGradient.addColorStop(0, gradient[0]);
-        canvasGradient.addColorStop(1, gradient[1]);
-        context.fillStyle = canvasGradient;
-        context.fill();
-      }
-      textureCanvasReference.current = textureCanvas;
-
-      const texture = new THREE.CanvasTexture(textureCanvas);
-      texture.colorSpace = THREE.SRGBColorSpace;
-      textureReference.current = texture;
-
-      const geometry = new THREE.PlaneGeometry(1.2, 1.2);
-      const material = new THREE.MeshBasicMaterial({
-        map: texture,
-        transparent: true,
-        side: THREE.DoubleSide,
-      });
-
-      const mesh = new THREE.Mesh(geometry, material);
-      meshReference.current = mesh;
-      scene.add(mesh);
-    },
-    [gradient],
-  );
-
+  // Rasterize the hidden icon/avatar DOM into the coin face texture
   useEffect(() => {
-    if (!iconCanvasReference.current) return;
-
-    const animationFrameId = requestAnimationFrame(() => {
-      if (!textureCanvasReference.current) return;
-      const iconSize = TEXTURE_SIZE * 0.55;
-      const iconOffset = (TEXTURE_SIZE - iconSize) / 2;
-      const context = (textureCanvasReference.current as HTMLCanvasElement).getContext("2d");
-      if (!context) return;
-
-      const imageElement = (iconCanvasReference.current as HTMLElement).querySelector(
-        "img",
-      );
-      if (imageElement) {
-        const drawAvatarImage = () => {
-          context.drawImage(imageElement, 0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
-          if (textureReference.current)
-            (textureReference.current as { needsUpdate: boolean }).needsUpdate = true;
-        };
-        if (imageElement.complete && imageElement.naturalWidth > 0) {
-          drawAvatarImage();
-        } else {
-          imageElement.onload = drawAvatarImage;
-        }
-        return;
-      }
-
-      const svg = (iconCanvasReference.current as HTMLElement).querySelector("svg");
-      if (!svg) return;
-
-      svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-      const markup = svg.outerHTML.replace(/currentColor/g, "oklch(1 0 0)");
-
-      const image = new Image();
-      const blob = new Blob([markup], { type: "image/svg+xml;charset=utf-8" });
-      const objectUrl = URL.createObjectURL(blob);
-      image.onload = () => {
-        URL.revokeObjectURL(objectUrl);
-        if (!textureCanvasReference.current) return;
-        context.drawImage(image, iconOffset, iconOffset, iconSize, iconSize);
-        if (textureReference.current)
-          (textureReference.current as { needsUpdate: boolean }).needsUpdate = true;
-      };
-      image.onerror = () => {
-        URL.revokeObjectURL(objectUrl);
-      };
-      image.src = objectUrl;
-    });
-
-    return () => cancelAnimationFrame(animationFrameId);
+    let isCancelled = false;
+    extractRenderableFromContainer(iconContainerReference.current).then(
+      (faceSource) => {
+        if (isCancelled || !faceSource) return;
+        animationHandleReference.current?.setParameter?.("faceSource", faceSource);
+      },
+    );
+    return () => {
+      isCancelled = true;
+    };
   }, [agent]);
 
-  const rotationAccumulator = useRef(0);
-  const lastElapsed = useRef(0);
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLSpanElement>) => {
+      const wrapper = coinWrapperReference.current;
+      if (!wrapper) return;
+      const rect = wrapper.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      animationHandleReference.current?.setParameter?.("pointerTilt", {
+        x: ((event.clientX - rect.left) / rect.width) * 2 - 1,
+        y: ((event.clientY - rect.top) / rect.height) * 2 - 1,
+      });
+    },
+    [],
+  );
 
-  const handleTick = useCallback(({ elapsed }: TickState) => {
-    if (!meshReference.current) return;
-    const deltaTime = elapsed - lastElapsed.current;
-    lastElapsed.current = elapsed;
-    rotationAccumulator.current +=
-      deltaTime * BASE_ROTATION_SPEED * typingSpeedMultiplier.current;
-    meshReference.current.rotation.y = rotationAccumulator.current;
+  const handlePointerLeave = useCallback(() => {
+    animationHandleReference.current?.setParameter?.("pointerTilt", { x: 0, y: 0 });
   }, []);
 
-  return { iconRef: iconCanvasReference, coinWrapRef: coinWrapperReference, handleSetup, handleTick, size, agent };
-}
-
-function CoinStaticRenderer({ agent, size }: { agent?: string | ClientAgent | null; size: number }) {
-  const { iconRef: iconCanvasReference, coinWrapRef: coinWrapperReference, handleSetup, handleTick } = useCoinAnimation({
-    agent,
-    size,
-  });
-
   return (
-    <span ref={coinWrapperReference} data-is-typing-state="false">
-      <span ref={iconCanvasReference} className={agentStyles['hidden-icon']}>
-        {renderAgentIcon(agent, Math.round(TEXTURE_SIZE * 0.5))}
+    <span
+      ref={coinWrapperReference}
+      data-is-typing-state="false"
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+    >
+      <span ref={iconContainerReference} className={agentStyles['hidden-icon']}>
+        {renderAgentIcon(agent, Math.round(COIN_FACE_TEXTURE_SIZE * 0.5))}
       </span>
-      <ThreeCanvasComponent
-        onSetup={handleSetup}
-        onTick={handleTick}
-        cameraFov={5}
-        cameraPosition={[0, 0, 20]}
-        alpha
-        antialias
-        toneMapping="None"
+      <ThreeAnimationComponent
+        animation={createCoinAnimation}
+        options={coinOptions}
+        size={size}
+        bleed={0.3}
         className={agentStyles['coin-canvas']}
-        style={{ width: size, height: size }}
+        handleRef={animationHandleReference}
       />
     </span>
   );
@@ -1078,7 +959,7 @@ export default function BadgeComponent(props: BadgeProps) {
       if (animation) {
         return (
           <span className={`${agentStyles['coin-wrap']} ${className}`}>
-            <CoinStaticRenderer key={agentId} agent={normalizedAgent} size={size} />
+            <AgentCoinRenderer key={agentId} agent={normalizedAgent} size={size} />
           </span>
         );
       }
