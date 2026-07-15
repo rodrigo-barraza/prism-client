@@ -10,6 +10,7 @@ import {
   emptyDash,
 } from "../utils/tableColumns";
 import type { IrisAgentStat } from "../types/types";
+import { PROVIDER_COLORS } from "../constants";
 
 interface AgentsTableProps {
   agents?: IrisAgentStat[];
@@ -78,19 +79,11 @@ export default function AgentsTableComponent({
       description: "Proportional share of total requests",
       sortValue: (row: IrisAgentStat) => row.totalRequests,
       render: (row: IrisAgentStat, index: number) => {
-        const agentColors = [
-          "oklch(0.72 0.18 145)",
-          "oklch(0.72 0.18 250)",
-          "oklch(0.72 0.18 30)",
-          "oklch(0.72 0.18 310)",
-          "oklch(0.72 0.18 70)",
-          "oklch(0.72 0.18 190)",
-        ];
         return (
           <ProportionBarComponent
             value={row.totalRequests}
             total={totalRequests}
-            color={agentColors[index % agentColors.length]}
+            color={PROVIDER_COLORS[index % PROVIDER_COLORS.length]}
           />
         );
       },

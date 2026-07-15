@@ -51,6 +51,31 @@ const DEFAULT_TURNS = 4;
 const MIN_TURNS = 1;
 const MAX_TURNS = 500;
 
+const LEFT_TABS = {
+  CONFIG: "config",
+  OUTPUT: "output",
+} as const;
+
+/** Default sampling settings for the synthesis (assistant) model. */
+const DEFAULT_SYNTHESIS_SETTINGS = {
+  provider: "",
+  model: "",
+  temperature: 1.0,
+  thinkingEnabled: true,
+  reasoningEffort: "high",
+  thinkingLevel: "high",
+  thinkingBudget: "",
+  webSearchEnabled: false,
+} as const;
+
+const DEFAULT_MAX_TOKENS = 4096;
+
+/** The user-simulation model runs slightly cooler than the assistant. */
+const DEFAULT_USER_SIMULATION_TEMPERATURE = 0.9;
+
+const RUN_TITLE_PROMPT_PREVIEW_LENGTH = 60;
+const DOWNLOAD_FILENAME_PREFIX = "sft-conversation-";
+
 const SAMPLE_SEEDS = [
   {
     label: "Chatbot with personality",
@@ -64,7 +89,7 @@ const SAMPLE_SEEDS = [
       {
         role: MESSAGE_ROLES.ASSISTANT,
         content:
-          "Umm, I-I think that was in 48 BC, b-but I'message not sure, I'message sorry.",
+          "Umm, I-I think that was in 48 BC, b-but I'm not sure, I'm sorry.",
       },
     ],
     category: "Chat",
@@ -149,42 +174,25 @@ export default function SynthesisComponent() {
   // -- Config & model state --------------------------------------
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [settings, setSettings] = useState(() => ({
-    provider: "",
-    model: "",
-    temperature: 1.0,
-    thinkingEnabled: true,
-    reasoningEffort: "high",
-    thinkingLevel: "high",
-    thinkingBudget: "",
-    webSearchEnabled: false,
+    ...DEFAULT_SYNTHESIS_SETTINGS,
     ...buildSettingsDefaults(config?.parameterDescriptors),
-    maxTokens: 4096,
+    maxTokens: DEFAULT_MAX_TOKENS,
   }));
 
   // Update settings when config loads if they haven't been customized yet
   useEffect(() => {
     if (config?.parameterDescriptors) {
       setSettings(prev => {
-        const baseSettings = {
-          provider: "",
-          model: "",
-          temperature: 1.0,
-          thinkingEnabled: true,
-          reasoningEffort: "high",
-          thinkingLevel: "high",
-          thinkingBudget: "",
-          webSearchEnabled: false,
-        };
         const defaults = buildSettingsDefaults(config.parameterDescriptors);
         return {
-          ...baseSettings,
+          ...DEFAULT_SYNTHESIS_SETTINGS,
           ...defaults,
           ...prev,
         };
       });
     }
   }, [config]);
-  const [leftTab, setLeftTab] = useState("config"); // "config" | "output"
+  const [leftTab, setLeftTab] = useState<string>(LEFT_TABS.CONFIG);
 
   // -- Model memory (persist last-used model per page) ----------
   const { saveModel, restoreModel } = useModelMemory(STORAGE_KEY_MODEL_MEMORY_SYNTHESIS);
@@ -197,7 +205,7 @@ export default function SynthesisComponent() {
   const [userSimSettings, setUserSimSettings] = useState({
     provider: "",
     model: "",
-    temperature: 0.9,
+    temperature: DEFAULT_USER_SIMULATION_TEMPERATURE,
   });
   const [targetTurns, setTargetTurns] = useState<number | "">(DEFAULT_TURNS);
   const [category, setCategory] = useState("Chat");
@@ -428,7 +436,7 @@ export default function SynthesisComponent() {
         const cancel = PrismService.streamSynthesis(
           {
             conversationId: convId,
-            title: `Synthesis: ${systemPrompt.slice(0, 60)}`,
+            title: `Synthesis: ${systemPrompt.slice(0, RUN_TITLE_PROMPT_PREVIEW_LENGTH)}`,
             systemPrompt,
             userPersona,
             category,
@@ -553,7 +561,7 @@ export default function SynthesisComponent() {
 
     setUserPersona("");
     setUseUserSimModel(true);
-    setUserSimSettings({ provider: "", model: "", temperature: 0.9 });
+    setUserSimSettings({ provider: "", model: "", temperature: DEFAULT_USER_SIMULATION_TEMPERATURE });
     setTargetTurns(DEFAULT_TURNS);
     setCategory("Chat");
     setGenerationProgress("");
@@ -631,7 +639,7 @@ export default function SynthesisComponent() {
     const url = URL.createObjectURL(blob);
     const downloadAnchor = document.createElement("a");
     downloadAnchor.href = url;
-    downloadAnchor.download = `sft-conversation-${Date.now()}.json`;
+    downloadAnchor.download = `${DOWNLOAD_FILENAME_PREFIX}${Date.now()}.json`;
     downloadAnchor.click();
     URL.revokeObjectURL(url);
   }, [sftJsonString]);
@@ -660,9 +668,9 @@ export default function SynthesisComponent() {
     <>
       <TabBarComponent
         tabs={[
-          { key: "config", label: "Configure" },
+          { key: LEFT_TABS.CONFIG, label: "Configure" },
           {
-            key: "output",
+            key: LEFT_TABS.OUTPUT,
             label: "Output",
             badge:
               generatedMessages.length > 0
@@ -674,7 +682,7 @@ export default function SynthesisComponent() {
         onChange={setLeftTab}
       />
 
-      {leftTab === "config" && (
+      {leftTab === LEFT_TABS.CONFIG && (
         <div className={styles['config-panel']}>
           {/* Model selection */}
           <SettingsPanel
@@ -688,7 +696,7 @@ export default function SynthesisComponent() {
         </div>
       )}
 
-      {leftTab === "output" && (
+      {leftTab === LEFT_TABS.OUTPUT && (
         <div className={styles['output-panel']}>
           {generatedMessages.length > 0 ? (
             <>
@@ -711,10 +719,11 @@ export default function SynthesisComponent() {
               <JsonViewerComponent data={sftData} label="SFT Output" />
             </>
           ) : (
-            <div className={styles['output-empty']}>
-              <FlaskConical size={24} />
-              <p>Generate a conversation to see the SFT output here.</p>
-            </div>
+            <EmptyStateComponent
+              icon={<FlaskConical />}
+              subtitle="Generate a conversation to see the SFT output here."
+              className={styles['output-empty']}
+            />
           )}
         </div>
       )}

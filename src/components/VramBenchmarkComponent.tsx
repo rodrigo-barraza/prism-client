@@ -45,8 +45,9 @@ import {
   FilterSelectComponent,
 } from "./FilterBarComponent";
 import {
+  ButtonComponent,
   InputComponent,
-  PageHeaderComponent,
+  PageHeroComponent,
   SelectComponent,
   StatsCardComponent as StatsCard,
   TabBarComponent,
@@ -123,57 +124,64 @@ interface SettingsInfoEntry {
   purpose: string;
 }
 
-const QUANT_COLORS: Record<string, PaletteEntry> = {
-  Q4_0: { bg: "oklch(0.789 0.154 196.451 / 0.55)", border: "oklch(0.789 0.154 196.451)" },
-  Q4_K_M: { bg: "oklch(0.585 0.233 277.117 / 0.55)", border: "oklch(0.585 0.233 277.117)" },
-  Q4_K_S: { bg: "oklch(0.606 0.25 293.528 / 0.55)", border: "oklch(0.606 0.25 293.528)" },
-  Q4_1: { bg: "oklch(0.588 0.158 241.966 / 0.55)", border: "oklch(0.588 0.158 241.966)" },
-  Q5_K_S: { bg: "oklch(0.705 0.191 165.574 / 0.55)", border: "oklch(0.705 0.191 165.574)" },
-  Q5_K_M: { bg: "oklch(0.697 0.148 185.045 / 0.55)", border: "oklch(0.697 0.148 185.045)" },
-  Q6_K: { bg: "oklch(0.769 0.177 90.046 / 0.55)", border: "oklch(0.769 0.177 90.046)" },
-  Q6_K_L: { bg: "oklch(0.769 0.188 70.08 / 0.55)", border: "oklch(0.769 0.188 70.08)" },
-  Q8_0: { bg: "oklch(0.627 0.226 28.324 / 0.55)", border: "oklch(0.627 0.226 28.324)" },
-  Q3_K_L: { bg: "oklch(0.692 0.218 36.634 / 0.55)", border: "oklch(0.692 0.218 36.634)" },
-  FP16: { bg: "oklch(0.627 0.231 348.347 / 0.55)", border: "oklch(0.627 0.231 348.347)" },
-  F16: { bg: "oklch(0.627 0.231 348.347 / 0.55)", border: "oklch(0.627 0.231 348.347)" },
-  BF16: { bg: "oklch(0.627 0.231 310 / 0.55)", border: "oklch(0.627 0.231 310)" },
+/** Alpha applied to a series' border color to derive its fill. */
+const SERIES_FILL_ALPHA = 0.55;
+
+/** Derives a translucent fill + solid border pair from one oklch color. */
+function makeSeriesColor(border: string, fillAlpha: number = SERIES_FILL_ALPHA): PaletteEntry {
+  return { bg: border.replace(/\)$/, ` / ${fillAlpha})`), border };
+}
+
+/** Border color per quantization format (hue-coded by family). */
+const QUANT_BORDER_COLORS: Record<string, string> = {
+  Q4_0: "oklch(0.789 0.154 196.451)",
+  Q4_K_M: "oklch(0.585 0.233 277.117)",
+  Q4_K_S: "oklch(0.606 0.25 293.528)",
+  Q4_1: "oklch(0.588 0.158 241.966)",
+  Q5_K_S: "oklch(0.705 0.191 165.574)",
+  Q5_K_M: "oklch(0.697 0.148 185.045)",
+  Q6_K: "oklch(0.769 0.177 90.046)",
+  Q6_K_L: "oklch(0.769 0.188 70.08)",
+  Q8_0: "oklch(0.627 0.226 28.324)",
+  Q3_K_L: "oklch(0.692 0.218 36.634)",
+  FP16: "oklch(0.627 0.231 348.347)",
+  F16: "oklch(0.627 0.231 348.347)",
+  BF16: "oklch(0.627 0.231 310)",
 };
 
-const GPU_COLORS: Record<string, PaletteEntry> = {
-  "NVIDIA GeForce RTX 4090": {
-    bg: "rgba(99,102,241,0.6)",
-    border: "oklch(0.585 0.233 277.117)",
-  },
-  "NVIDIA GeForce RTX 5070 Ti": {
-    bg: "rgba(16,185,129,0.6)",
-    border: "oklch(0.705 0.191 165.574)",
-  },
+const GPU_FILL_ALPHA = 0.6;
+
+const GPU_BORDER_COLORS: Record<string, string> = {
+  "NVIDIA GeForce RTX 4090": "oklch(0.585 0.233 277.117)",
+  "NVIDIA GeForce RTX 5070 Ti": "oklch(0.705 0.191 165.574)",
 };
 
-// Fallback rainbow for unknown quant/GPU
+const UNKNOWN_GPU_BORDER_COLOR = "oklch(0.5 0.01 260)";
+
+// Fallback rainbow for unknown quant/GPU (mirrors PROVIDER_COLORS hues)
 const PALETTE: PaletteEntry[] = [
-  { bg: "rgba(99,102,241,0.55)", border: "oklch(0.585 0.233 277.117)" },
-  { bg: "rgba(16,185,129,0.55)", border: "oklch(0.705 0.191 165.574)" },
-  { bg: "rgba(245,158,11,0.55)", border: "oklch(0.769 0.188 70.08)" },
-  { bg: "rgba(244,63,94,0.55)", border: "oklch(0.627 0.226 28.324)" },
-  { bg: "rgba(59,130,246,0.55)", border: "oklch(0.588 0.158 241.966)" },
-  { bg: "rgba(139,92,246,0.55)", border: "oklch(0.606 0.25 293.528)" },
-  { bg: "rgba(236,72,153,0.55)", border: "oklch(0.627 0.231 348.347)" },
-  { bg: "rgba(34,211,238,0.55)", border: "oklch(0.8 0.13 195)" },
-];
+  "oklch(0.585 0.233 277.117)",
+  "oklch(0.705 0.191 165.574)",
+  "oklch(0.769 0.188 70.08)",
+  "oklch(0.627 0.226 28.324)",
+  "oklch(0.588 0.158 241.966)",
+  "oklch(0.606 0.25 293.528)",
+  "oklch(0.627 0.231 348.347)",
+  "oklch(0.8 0.13 195)",
+].map((border) => makeSeriesColor(border));
 
 let paletteIndex = 0;
 function getQuantColor(q: string): PaletteEntry {
-  if (QUANT_COLORS[q]) return QUANT_COLORS[q];
+  if (QUANT_BORDER_COLORS[q]) return makeSeriesColor(QUANT_BORDER_COLORS[q]);
   const fallbackColor = PALETTE[paletteIndex % PALETTE.length];
   paletteIndex++;
   return fallbackColor;
 }
 
 function getGPUColor(gpuName: string): PaletteEntry {
-  return (
-    GPU_COLORS[gpuName] || { bg: "rgba(107,114,128,0.5)", border: "oklch(0.5 0.01 260)" }
-  );
+  const border = GPU_BORDER_COLORS[gpuName];
+  if (border) return makeSeriesColor(border, GPU_FILL_ALPHA);
+  return makeSeriesColor(UNKNOWN_GPU_BORDER_COLOR, GPU_FILL_ALPHA);
 }
 
 function shortGPU(name?: string) {
@@ -194,8 +202,17 @@ function shortModelName(name: string, max = 18) {
 }
 
 // -- Chart defaults -------------------------------------------
+// Chart.js renders to canvas, which cannot resolve CSS variables —
+// chart chrome colors are therefore named constants.
 
 const CHART_FONT = "'Inter', sans-serif";
+const CHART_GRID_LINE_COLOR = "rgba(255, 255, 255, 0.04)";
+const CHART_POINT_FILL_COLOR = "rgba(255, 255, 255, 0.7)";
+const CHART_POINT_BORDER_COLOR = "rgba(255, 255, 255, 0.3)";
+const CHART_POINT_FILL_COLOR_FAINT = "rgba(255, 255, 255, 0.5)";
+const CHART_POINT_BORDER_COLOR_FAINT = "rgba(255, 255, 255, 0.2)";
+const MUTED_SERIES_FILL_COLOR = "rgba(128, 128, 128, 0.15)";
+const MUTED_SERIES_BORDER_COLOR = "rgba(100, 100, 100, 0.5)";
 
 const TOOLTIP_STYLE: Partial<TooltipOptions> = {
   backgroundColor: "rgba(10, 10, 15, 0.92)",
@@ -212,7 +229,7 @@ const TOOLTIP_STYLE: Partial<TooltipOptions> = {
 };
 
 const GRID_STYLE = {
-  color: "rgba(255,255,255,0.04)",
+  color: CHART_GRID_LINE_COLOR,
 };
 
 const TICK_STYLE = {
@@ -2233,8 +2250,8 @@ export default function VramBenchmarkComponent() {
             type: "scatter",
             label: "Individual Runs",
             data: scatterData as unknown as [number, number][],
-            backgroundColor: "rgba(255, 255, 255, 0.7)",
-            borderColor: "rgba(255, 255, 255, 0.3)",
+            backgroundColor: CHART_POINT_FILL_COLOR,
+            borderColor: CHART_POINT_BORDER_COLOR,
             borderWidth: 0.5,
             pointRadius: 3.5,
             pointHoverRadius: 6,
@@ -2280,7 +2297,7 @@ export default function VramBenchmarkComponent() {
             ...(clipMax != null ? { max: clipMax } : {}),
           },
           y: {
-            grid: { color: "rgba(255,255,255,0.04)" },
+            grid: { color: CHART_GRID_LINE_COLOR },
             ticks: { ...TICK_STYLE, padding: 8 },
           },
         },
@@ -2508,8 +2525,8 @@ export default function VramBenchmarkComponent() {
             type: "scatter",
             label: "Individual Runs",
             data: scatterData as unknown as [number, number][],
-            backgroundColor: "rgba(255, 255, 255, 0.7)",
-            borderColor: "rgba(255, 255, 255, 0.3)",
+            backgroundColor: CHART_POINT_FILL_COLOR,
+            borderColor: CHART_POINT_BORDER_COLOR,
             borderWidth: 0.5,
             pointRadius: 3.5,
             pointHoverRadius: 6,
@@ -2555,7 +2572,7 @@ export default function VramBenchmarkComponent() {
             ...(tpsClipMaxVal !== undefined ? { max: tpsClipMaxVal } : {}),
           },
           y: {
-            grid: { color: "rgba(255,255,255,0.04)" },
+            grid: { color: CHART_GRID_LINE_COLOR },
             ticks: { ...TICK_STYLE, padding: 8 },
           },
         },
@@ -2878,8 +2895,8 @@ export default function VramBenchmarkComponent() {
               quantGroups[q].minTps,
               quantGroups[q].maxTps,
             ]),
-            backgroundColor: "rgba(128,128,128,0.15)",
-            borderColor: "rgba(100,100,100,0.5)",
+            backgroundColor: MUTED_SERIES_FILL_COLOR,
+            borderColor: MUTED_SERIES_BORDER_COLOR,
             borderWidth: 1.5,
             borderRadius: 2,
             borderSkipped: false,
@@ -3125,8 +3142,8 @@ export default function VramBenchmarkComponent() {
           {
             label: "TPS Range",
             data: tpsRangeData as [number, number][],
-            backgroundColor: "rgba(128,128,128,0.15)",
-            borderColor: "rgba(100,100,100,0.5)",
+            backgroundColor: MUTED_SERIES_FILL_COLOR,
+            borderColor: MUTED_SERIES_BORDER_COLOR,
             borderWidth: 1.5,
             borderSkipped: false,
             borderRadius: 2,
@@ -3139,8 +3156,8 @@ export default function VramBenchmarkComponent() {
             type: "scatter",
             label: "Context Runs",
             data: ctxScatterData as unknown as [number, number][],
-            backgroundColor: "rgba(255, 255, 255, 0.7)",
-            borderColor: "rgba(255, 255, 255, 0.3)",
+            backgroundColor: CHART_POINT_FILL_COLOR,
+            borderColor: CHART_POINT_BORDER_COLOR,
             borderWidth: 0.5,
             pointRadius: 3.5,
             pointHoverRadius: 6,
@@ -3154,8 +3171,8 @@ export default function VramBenchmarkComponent() {
             type: "scatter",
             label: "TPS Runs",
             data: tpsScatterData as unknown as [number, number][],
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            borderColor: "rgba(255, 255, 255, 0.2)",
+            backgroundColor: CHART_POINT_FILL_COLOR_FAINT,
+            borderColor: CHART_POINT_BORDER_COLOR_FAINT,
             borderWidth: 0.5,
             pointRadius: 3,
             pointHoverRadius: 5,
@@ -3235,7 +3252,7 @@ export default function VramBenchmarkComponent() {
             ticks: TICK_STYLE,
           },
           y: {
-            grid: { color: "rgba(255,255,255,0.04)" },
+            grid: { color: CHART_GRID_LINE_COLOR },
             ticks: { ...TICK_STYLE, padding: 8 },
           },
         },
@@ -3593,7 +3610,7 @@ export default function VramBenchmarkComponent() {
 
     // Chart.js global defaults
     Chart.defaults.color = "oklch(0.5 0.02 260)";
-    Chart.defaults.borderColor = "rgba(255,255,255,0.04)";
+    Chart.defaults.borderColor = CHART_GRID_LINE_COLOR;
     Chart.defaults.font.family = CHART_FONT;
 
     // Clear cached colors so search highlight re-snapshots after rebuild
@@ -3823,23 +3840,19 @@ export default function VramBenchmarkComponent() {
 
   if (loading && rawData.length === 0) {
     return (
-      <>
-        <PageHeaderComponent title="VRAM Benchmark" subtitle="Loading…" />
-        <div className={styles['content']}>
-          <LoadingMessage message="Fetching VRAM benchmarks…" />
-        </div>
-      </>
+      <div className={styles['content']}>
+        <PageHeroComponent icon={Gauge} title="VRAM Benchmark" subtitle="Loading…" />
+        <LoadingMessage message="Fetching VRAM benchmarks…" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <>
-        <PageHeaderComponent title="VRAM Benchmark" subtitle="Error" />
-        <div className={styles['content']}>
-          <ErrorMessage message={error} />
-        </div>
-      </>
+      <div className={styles['content']}>
+        <PageHeroComponent icon={Gauge} title="VRAM Benchmark" subtitle="Error" />
+        <ErrorMessage message={error} />
+      </div>
     );
   }
 
@@ -3847,20 +3860,27 @@ export default function VramBenchmarkComponent() {
 
   return (
     <>
-      <PageHeaderComponent title="VRAM Benchmark" subtitle={subtitle}>
-        <button
-          className={`vram-benchmark-component ${styles['refresh-button']}`}
-          onClick={() => {
-            setLoading(true);
-            fetchData();
-          }}
-        >
-          <RefreshCw size={14} />
-          Refresh
-        </button>
-      </PageHeaderComponent>
-
-      <div className={styles['content']}>
+      <div className={`vram-benchmark-component ${styles['content']}`}>
+        <PageHeroComponent
+          icon={Gauge}
+          title="VRAM Benchmark"
+          subtitle={subtitle}
+          className={styles['page-hero']}
+          actions={
+            <ButtonComponent
+              variant="secondary"
+              size="small"
+              icon={RefreshCw}
+              loading={loading}
+              onClick={() => {
+                setLoading(true);
+                fetchData();
+              }}
+            >
+              Refresh
+            </ButtonComponent>
+          }
+        />
         {/* Stats cards */}
         {stats && (
           <div className={styles['stats-grid']}>

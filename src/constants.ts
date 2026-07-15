@@ -216,6 +216,12 @@ export const PROVIDER_COLORS = [
   "oklch(0.697 0.148 209.91)", // Cyan 500
 ];
 
+/** Default accent for new/unconfigured agents (Indigo 500). */
+export const DEFAULT_AGENT_ACCENT_COLOR = PROVIDER_COLORS[0];
+
+/** Sentinel id for an unsaved agent draft in the /agents editor. */
+export const NEW_AGENT_DRAFT_ID = "new-agent-draft";
+
 // -- Polling intervals (re-exported from utilities-library) -------
 export {
   POLL_FAST, // 3s  — benchmarks, sub-agents

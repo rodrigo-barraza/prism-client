@@ -10,6 +10,10 @@
   animation: fade-in var(--transition-normal) ease-out;
 }
 
+.page-hero {
+  margin-block-end: 24px;
+}
+
 /* ─── Stats grid ─── */
 .stats-grid {
   display: grid;
@@ -24,31 +28,8 @@
 }
 
 /* ─── Refresh button (in PageHeader right slot) ─── */
-.refresh-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  background: var(--background-surface);
-  color: var(--text-secondary);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
 
-.refresh-button:hover {
-  background: var(--background-elevated);
-  color: var(--text-primary);
-  border-color: var(--accent-primary);
-}
 
-.refresh-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 /* ─── Tab bar override ─── */
 .tab-bar {
@@ -145,7 +126,7 @@
 .vram-clip-inputs:focus-within {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px
-    var(--calculated-accent-primary-glow, oklch(58.5% 0.2041 277.1 / 0.1));
+    var(--calculated-accent-primary-glow);
 }
 
 .vram-clip-input {
@@ -210,7 +191,7 @@
 .chart-search-group:focus-within {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px
-    var(--calculated-accent-primary-glow, oklch(58.5% 0.2041 277.1 / 0.1));
+    var(--calculated-accent-primary-glow);
 }
 
 .chart-search-icon {

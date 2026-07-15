@@ -10,6 +10,7 @@ import AgentsDetailPanelComponent from "./AgentsDetailPanelComponent";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import { getErrorMessage } from "../utils/errorMessage";
+import { DEFAULT_AGENT_ACCENT_COLOR, NEW_AGENT_DRAFT_ID } from "../constants";
 import styles from "./AgentsPageComponent.module.css";
 
 export interface EditableAgent extends CustomAgent {
@@ -29,7 +30,7 @@ const EMPTY_AGENT: EditableAgent = {
   project: "coding",
   icon: "Bot",
   avatar: "",
-  color: "oklch(0.585 0.233 277.117)",
+  color: DEFAULT_AGENT_ACCENT_COLOR,
   backgroundImage: "",
   identity: "",
   guidelines: "",
@@ -161,8 +162,8 @@ export default function AgentsPageComponent() {
 
   const handleSelectAgent = useCallback(
     (agentId: string, isCustom: boolean) => {
-      if (agentId === "new-agent-draft") {
-        setSelectedAgentId("new-agent-draft");
+      if (agentId === NEW_AGENT_DRAFT_ID) {
+        setSelectedAgentId(NEW_AGENT_DRAFT_ID);
         setIsCreateMode(true);
         setIsConfirmingDelete(false);
         setErrorMessage(null);
@@ -199,7 +200,7 @@ export default function AgentsPageComponent() {
   );
 
   const handleCreateNewAgent = useCallback(() => {
-    setSelectedAgentId("new-agent-draft");
+    setSelectedAgentId(NEW_AGENT_DRAFT_ID);
     setIsCreateMode(true);
     setIsConfirmingDelete(false);
     setErrorMessage(null);
@@ -299,7 +300,7 @@ export default function AgentsPageComponent() {
         project: sourceAgent.project || "coding",
         icon: sourceAgent.icon || "Bot",
         avatar: sourceAgent.avatar || "",
-        color: sourceAgent.color || "oklch(0.585 0.233 277.117)",
+        color: sourceAgent.color || DEFAULT_AGENT_ACCENT_COLOR,
         backgroundImage: sourceAgent.backgroundImage || "",
         identity: "",
         guidelines: "",
@@ -317,7 +318,7 @@ export default function AgentsPageComponent() {
 
   const sidebarCustomAgents = useMemo(() => {
     if (isCreateMode && editingAgent) {
-      return [{ ...editingAgent, _id: "new-agent-draft" }, ...customAgents];
+      return [{ ...editingAgent, _id: NEW_AGENT_DRAFT_ID }, ...customAgents];
     }
     if (editingAgent && editingAgent._id) {
       return customAgents.map((agent) =>

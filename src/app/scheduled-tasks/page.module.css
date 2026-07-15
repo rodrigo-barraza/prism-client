@@ -82,44 +82,11 @@
   flex-shrink: 0;
 }
 
-.header-top-layout-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-}
 
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
 
-.header-title-layout-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 
-.header-icon {
-  color: var(--accent-primary);
-  opacity: 0.8;
-}
 
-.header-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  margin: 0;
-  color: var(--text-primary);
-}
 
-.header-subtitle {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  letter-spacing: -0.01em;
-}
 
 
 .header-actions {
@@ -153,38 +120,9 @@
   color: var(--accent-primary);
 }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 60px 24px;
-  text-align: center;
-  border: 1px dashed var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  background: var(--background-surface);
-}
 
-.empty-icon {
-  color: var(--text-muted);
-  opacity: 0.6;
-  margin-bottom: 8px;
-}
 
-.empty-state h2 {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary);
-}
 
-.empty-state p {
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  max-width: 300px;
-  margin: 0;
-}
 
 
 /* ── Grid & Cards ──────────────────────────────────────────── */
@@ -486,7 +424,7 @@
 .confirm-yes {
   background: var(--color-danger);
   border: none;
-  color: oklch(1 0 0);
+  color: var(--calculated-text-inverse, var(--color-white));
 }
 
 .confirm-yes:hover {
@@ -750,7 +688,7 @@
 .detail-overlay {
   position: fixed;
   inset: 0;
-  background: oklch(0.0% 0.0 0.0 / 0.55);
+  background: var(--media-scrim, oklch(0 0 0 / 0.55));
   z-index: 1000;
   display: flex;
   align-items: center;

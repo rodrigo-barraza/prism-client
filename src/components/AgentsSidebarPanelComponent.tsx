@@ -4,10 +4,23 @@ import React, { useState, useMemo, useCallback } from "react";
 import { Plus, Wrench } from "lucide-react";
 import type { AgentPersona, ToolSchema } from "../types/types";
 import BadgeComponent from "./BadgeComponent";
-import { SearchInputComponent, ButtonComponent } from "@rodrigo-barraza/components-library";
+import { EmptyMessage } from "./StateMessageComponent";
+import {
+  ButtonComponent,
+  SearchInputComponent,
+  TabBarComponent,
+} from "@rodrigo-barraza/components-library";
 import styles from "./AgentsPageComponent.module.css";
 
-type AgentSidebarTab = "custom" | "built-in";
+const SIDEBAR_TABS = {
+  CUSTOM: "custom",
+  BUILT_IN: "built-in",
+} as const;
+
+type AgentSidebarTab = (typeof SIDEBAR_TABS)[keyof typeof SIDEBAR_TABS];
+
+const AGENT_BADGE_SIZE = 28;
+const TOOL_TAG_ICON_SIZE = 8;
 
 interface EditableAgentSummary {
   _id?: unknown;
@@ -37,7 +50,7 @@ export default function AgentsSidebarPanelComponent({
   onCreateNewAgent,
   availableTools = [],
 }: AgentsSidebarPanelComponentProps) {
-  const [activeTab, setActiveTab] = useState<AgentSidebarTab>("custom");
+  const [activeTab, setActiveTab] = useState<AgentSidebarTab>(SIDEBAR_TABS.CUSTOM);
   const [searchQuery, setSearchQuery] = useState("");
 
   const builtInOnlyAgents = useMemo(() => {
@@ -110,24 +123,24 @@ export default function AgentsSidebarPanelComponent({
     <>
       {/* Tab Navigation */}
       <div className={`agents-sidebar-panel-component ${styles["sidebar-tab-navigation"]}`}>
-        <button
-          className={`${styles["sidebar-tab-button"]} ${activeTab === "custom" ? styles["is-active-tab-state"] : ""}`}
-          onClick={() => setActiveTab("custom")}
-          type="button"
-        >
-          Custom
-          {customAgents.length > 0 && (
-            <span className={styles["tab-count-badge"]}>{customAgents.length}</span>
-          )}
-        </button>
-        <button
-          className={`${styles["sidebar-tab-button"]} ${activeTab === "built-in" ? styles["is-active-tab-state"] : ""}`}
-          onClick={() => setActiveTab("built-in")}
-          type="button"
-        >
-          Built-in
-          <span className={styles["tab-count-badge"]}>{builtInOnlyAgents.length}</span>
-        </button>
+        <TabBarComponent
+          activeTab={activeTab}
+          onChange={(tabKey: string) => setActiveTab(tabKey as AgentSidebarTab)}
+          variant="secondary"
+          ariaLabel="Agent groups"
+          tabs={[
+            {
+              key: SIDEBAR_TABS.CUSTOM,
+              label: "Custom",
+              badge: customAgents.length > 0 ? customAgents.length : undefined,
+            },
+            {
+              key: SIDEBAR_TABS.BUILT_IN,
+              label: "Built-in",
+              badge: builtInOnlyAgents.length,
+            },
+          ]}
+        />
       </div>
 
       {/* Search Bar */}
@@ -136,14 +149,14 @@ export default function AgentsSidebarPanelComponent({
           id="input-agents-sidebar-search"
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder={`Search ${activeTab === "custom" ? "custom" : "built-in"} agents...`}
+          placeholder={`Search ${activeTab === SIDEBAR_TABS.CUSTOM ? "custom" : "built-in"} agents...`}
           compact
         />
       </div>
 
       {/* Agent List */}
       <div className={styles["sidebar-scroll-container"]}>
-        {activeTab === "custom" && (
+        {activeTab === SIDEBAR_TABS.CUSTOM && (
           <div>
             {/* Create button inline in the custom tab */}
             <div className={styles["create-agent-button-wrapper"]}>
@@ -159,13 +172,13 @@ export default function AgentsSidebarPanelComponent({
             </div>
 
             {filteredCustomAgents.length === 0 ? (
-              <div className={styles["empty-state-view"]} style={{ paddingBlock: 24 }}>
-                <span className={styles["agent-description-text"]}>
-                  {searchQuery
+              <EmptyMessage
+                message={
+                  searchQuery
                     ? "No custom agents match your search."
-                    : "No custom agents created yet."}
-                </span>
-              </div>
+                    : "No custom agents created yet."
+                }
+              />
             ) : (
               filteredCustomAgents.map((agent) => {
                 const isSelected = selectedAgentId === String(agent._id);
@@ -185,13 +198,13 @@ export default function AgentsSidebarPanelComponent({
                         avatar: agent.avatar,
                         color: agent.color,
                       }}
-                      size={28}
+                      size={AGENT_BADGE_SIZE}
                     />
                     <div className={styles["agent-info-container"]}>
                       <span className={styles["agent-name-text"]}>{agent.name}</span>
                       <span className={styles["agent-description-text"]}>{agent.description}</span>
                       <span className={styles["agent-badge-tag"]}>
-                        <Wrench size={8} style={{ marginInlineEnd: 2 }} />
+                        <Wrench size={TOOL_TAG_ICON_SIZE} className={styles["agent-badge-tag-icon"]} />
                         {getToolsCount(agent)} tools
                       </span>
                     </div>
@@ -202,14 +215,10 @@ export default function AgentsSidebarPanelComponent({
           </div>
         )}
 
-        {activeTab === "built-in" && (
+        {activeTab === SIDEBAR_TABS.BUILT_IN && (
           <div>
             {filteredBuiltInAgents.length === 0 ? (
-              <div className={styles["empty-state-view"]} style={{ paddingBlock: 24 }}>
-                <span className={styles["agent-description-text"]}>
-                  No built-in agents match your search.
-                </span>
-              </div>
+              <EmptyMessage message="No built-in agents match your search." />
             ) : (
               filteredBuiltInAgents.map((agent) => {
                 const isSelected = selectedAgentId === agent.id;
@@ -229,13 +238,13 @@ export default function AgentsSidebarPanelComponent({
                         avatar: agent.avatar,
                         color: agent.color,
                       }}
-                      size={28}
+                      size={AGENT_BADGE_SIZE}
                     />
                     <div className={styles["agent-info-container"]}>
                       <span className={styles["agent-name-text"]}>{agent.name}</span>
                       <span className={styles["agent-description-text"]}>{agent.description}</span>
                       <span className={styles["agent-badge-tag"]}>
-                        <Wrench size={8} style={{ marginInlineEnd: 2 }} />
+                        <Wrench size={TOOL_TAG_ICON_SIZE} className={styles["agent-badge-tag-icon"]} />
                         {getToolsCount(agent)} tools
                       </span>
                     </div>

@@ -14,6 +14,7 @@ import {
 import ImageCropperComponent from "./ImageCropperComponent";
 import {
   ButtonComponent,
+  EmptyStateComponent,
   ToggleComponent,
   InputComponent,
   TextAreaComponent,
@@ -27,6 +28,7 @@ import BadgeComponent from "./BadgeComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import InfoBannerComponent from "./InfoBannerComponent";
+import { DEFAULT_AGENT_ACCENT_COLOR } from "../constants";
 
 
 
@@ -100,7 +102,7 @@ import {
 } from "lucide-react";
 
 const curatedAccentColors: CuratedColorOption[] = [
-  { color: "oklch(0.585 0.233 277.117)", name: "Indigo" },
+  { color: DEFAULT_AGENT_ACCENT_COLOR, name: "Indigo" },
   { color: "oklch(0.606 0.25 293.528)", name: "Violet" },
   { color: "oklch(0.6 0.23 290)", name: "Purple" },
   { color: "oklch(0.627 0.231 310)", name: "Fuchsia" },
@@ -243,7 +245,7 @@ export default function AgentsDetailPanelComponent({
     return lockedToolsMap;
   }, [currentWorkspace, availableTools]);
 
-  const currentAccentColor = editingAgent?.color || selectedBuiltInAgent?.color || "oklch(0.585 0.233 277.117)";
+  const currentAccentColor = editingAgent?.color || selectedBuiltInAgent?.color || DEFAULT_AGENT_ACCENT_COLOR;
 
   const fileInputReference = useRef<HTMLInputElement | null>(null);
   const heroAvatarInputReference = useRef<HTMLInputElement | null>(null);
@@ -930,18 +932,18 @@ export default function AgentsDetailPanelComponent({
               variant="primary"
               className={styles["duplicate-button-element"]}
               onClick={() => onDuplicateAgent(selectedBuiltInAgent)}
+              icon={Copy}
             >
-              <Copy size={12} style={{ marginRight: 6 }} />
               Duplicate as Custom Agent
             </ButtonComponent>
           </div>
         </div>
       ) : (
-        <div className={styles["empty-state-view"]}>
-          <Bot size={48} />
-          <h3>Select an Agent Persona</h3>
-          <p>Choose an agent from the sidebar or create a new custom agent persona.</p>
-        </div>
+        <EmptyStateComponent
+          icon={<Bot />}
+          title="Select an Agent Persona"
+          subtitle="Choose an agent from the sidebar or create a new custom agent persona."
+        />
       )}
     </div>
   );

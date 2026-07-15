@@ -9,6 +9,15 @@ import {
   X,
   CalendarDays,
 } from "lucide-react";
+import {
+  ButtonComponent,
+  IconButtonComponent,
+  SegmentedControlComponent,
+} from "@rodrigo-barraza/components-library";
+import {
+  MILLISECONDS_PER_DAY,
+  MILLISECONDS_PER_WEEK,
+} from "@rodrigo-barraza/utilities-library";
 import styles from "./ScheduledTaskCalendarComponent.module.css";
 
 
@@ -78,6 +87,17 @@ const MONTH_NAMES = [
 ];
 
 const MAX_VISIBLE_EVENTS_PER_DAY = 3;
+
+const CALENDAR_VIEWS = {
+  MONTH: "month",
+  WEEK: "week",
+  DAY: "day",
+} as const;
+
+type CalendarView = (typeof CALENDAR_VIEWS)[keyof typeof CALENDAR_VIEWS];
+
+const NAVIGATION_ICON_SIZE = 16;
+const TODAY_ICON_SIZE = 12;
 
 const SCHEDULE_TYPE_KEYS: ScheduledTask["scheduleType"][] = [
   "hourly",
@@ -274,7 +294,7 @@ function getEventsForDate(
 
             if (freq === "daily") {
               const differenceInMs = targetDateNormalized.getTime() - startDate.getTime();
-              const differenceInDays = Math.floor(differenceInMs / (24 * 60 * 60 * 1000));
+              const differenceInDays = Math.floor(differenceInMs / MILLISECONDS_PER_DAY);
               matchesDate = differenceInDays % interval === 0;
             } else if (freq === "weekly") {
               const startSunday = new Date(startDate);
@@ -284,7 +304,7 @@ function getEventsForDate(
               targetSunday.setDate(targetDateNormalized.getDate() - targetDateNormalized.getDay());
 
               const differenceInMs = targetSunday.getTime() - startSunday.getTime();
-              const differenceInWeeks = Math.floor(differenceInMs / (7 * 24 * 60 * 60 * 1000));
+              const differenceInWeeks = Math.floor(differenceInMs / MILLISECONDS_PER_WEEK);
 
               if (differenceInWeeks % interval === 0) {
                 if (!rule.weekdays || rule.weekdays.length === 0) {
@@ -562,7 +582,7 @@ export default function ScheduledTaskCalendarComponent({
   onEventClick,
 }: ScheduledTaskCalendarComponentProps) {
   const [focusedDate, setFocusedDate] = useState(() => new Date());
-  const [activeView, setActiveView] = useState<"month" | "week" | "day">("month");
+  const [activeView, setActiveView] = useState<CalendarView>(CALENDAR_VIEWS.MONTH);
   const [popoverDayKey, setPopoverDayKey] = useState<string | null>(null);
   const timelineContainerReference = useRef<HTMLDivElement>(null);
 
@@ -572,13 +592,13 @@ export default function ScheduledTaskCalendarComponent({
   );
 
   const calendarGrid = useMemo(() => {
-    if (activeView === "month") {
+    if (activeView === CALENDAR_VIEWS.MONTH) {
       return buildCalendarGrid(
         focusedDate.getFullYear(),
         focusedDate.getMonth(),
         enabledTasks,
       );
-    } else if (activeView === "week") {
+    } else if (activeView === CALENDAR_VIEWS.WEEK) {
       return buildWeekGrid(focusedDate, enabledTasks);
     }
     return [];
@@ -631,11 +651,11 @@ export default function ScheduledTaskCalendarComponent({
   const navigateToPrevious = useCallback(() => {
     setFocusedDate((previousDate) => {
       const newDate = new Date(previousDate);
-      if (activeView === "month") {
+      if (activeView === CALENDAR_VIEWS.MONTH) {
         newDate.setMonth(previousDate.getMonth() - 1);
-      } else if (activeView === "week") {
+      } else if (activeView === CALENDAR_VIEWS.WEEK) {
         newDate.setDate(previousDate.getDate() - 7);
-      } else if (activeView === "day") {
+      } else if (activeView === CALENDAR_VIEWS.DAY) {
         newDate.setDate(previousDate.getDate() - 1);
       }
       return newDate;
@@ -646,11 +666,11 @@ export default function ScheduledTaskCalendarComponent({
   const navigateToNext = useCallback(() => {
     setFocusedDate((previousDate) => {
       const newDate = new Date(previousDate);
-      if (activeView === "month") {
+      if (activeView === CALENDAR_VIEWS.MONTH) {
         newDate.setMonth(previousDate.getMonth() + 1);
-      } else if (activeView === "week") {
+      } else if (activeView === CALENDAR_VIEWS.WEEK) {
         newDate.setDate(previousDate.getDate() + 7);
-      } else if (activeView === "day") {
+      } else if (activeView === CALENDAR_VIEWS.DAY) {
         newDate.setDate(previousDate.getDate() + 1);
       }
       return newDate;
@@ -664,7 +684,7 @@ export default function ScheduledTaskCalendarComponent({
   }, []);
 
   useEffect(() => {
-    if (activeView === "day" && timelineContainerReference.current) {
+    if (activeView === CALENDAR_VIEWS.DAY && timelineContainerReference.current) {
       let firstEventHour = 8;
       for (let hourIndex = 0; hourIndex < 24; hourIndex++) {
         const hasEvents = dayEvents.some((event) =>
@@ -692,26 +712,22 @@ export default function ScheduledTaskCalendarComponent({
       {/* -- Header Navigation -- */}
       <header className={styles["calendar-header"]}>
         <nav className={styles["calendar-navigation-group"]}>
-          <button
-            className={styles["calendar-navigation-button"]}
+          <IconButtonComponent
+            icon={<ChevronsLeft size={NAVIGATION_ICON_SIZE} />}
             onClick={navigateToPreviousYear}
-            title="Previous year"
+            tooltip="Previous year"
             aria-label="Navigate to previous year"
-          >
-            <ChevronsLeft size={16} />
-          </button>
-          <button
-            className={styles["calendar-navigation-button"]}
+          />
+          <IconButtonComponent
+            icon={<ChevronLeft size={NAVIGATION_ICON_SIZE} />}
             onClick={navigateToPrevious}
-            title="Previous"
+            tooltip="Previous"
             aria-label="Navigate previous"
-          >
-            <ChevronLeft size={16} />
-          </button>
+          />
         </nav>
 
         <div className={styles["calendar-title-group"]}>
-          {activeView === "month" && (
+          {activeView === CALENDAR_VIEWS.MONTH && (
             <>
               <span className={styles["calendar-month-label"]}>
                 {MONTH_NAMES[focusedDate.getMonth()]}
@@ -721,12 +737,12 @@ export default function ScheduledTaskCalendarComponent({
               </span>
             </>
           )}
-          {activeView === "week" && (
+          {activeView === CALENDAR_VIEWS.WEEK && (
             <span className={styles["calendar-month-label"]}>
               {formatWeekRangeLabel(focusedDate)}
             </span>
           )}
-          {activeView === "day" && (
+          {activeView === CALENDAR_VIEWS.DAY && (
             <span className={styles["calendar-month-label"]}>
               {formatDayLabel(focusedDate)}
             </span>
@@ -734,65 +750,44 @@ export default function ScheduledTaskCalendarComponent({
         </div>
 
         <nav className={styles["calendar-navigation-group"]}>
-          <div className={styles["calendar-view-toggle-group"]}>
-            <button
-              className={classNames(
-                styles["view-toggle-button"],
-                activeView === "month" && styles["is-active-state"],
-              )}
-              onClick={() => setActiveView("month")}
-            >
-              Month
-            </button>
-            <button
-              className={classNames(
-                styles["view-toggle-button"],
-                activeView === "week" && styles["is-active-state"],
-              )}
-              onClick={() => setActiveView("week")}
-            >
-              Week
-            </button>
-            <button
-              className={classNames(
-                styles["view-toggle-button"],
-                activeView === "day" && styles["is-active-state"],
-              )}
-              onClick={() => setActiveView("day")}
-            >
-              Day
-            </button>
-          </div>
+          <SegmentedControlComponent
+            value={activeView}
+            onChange={(view: string) => setActiveView(view as CalendarView)}
+            compact
+            segments={[
+              { value: CALENDAR_VIEWS.MONTH, label: "Month" },
+              { value: CALENDAR_VIEWS.WEEK, label: "Week" },
+              { value: CALENDAR_VIEWS.DAY, label: "Day" },
+            ]}
+          />
 
-          <button
-            className={styles["calendar-today-button"]}
+          <ButtonComponent
+            variant="secondary"
+            size="small"
+            icon={CalendarDays}
+            iconSize={TODAY_ICON_SIZE}
             onClick={navigateToToday}
             title="Jump to today"
           >
-            <CalendarDays size={12} />
-            <span>Today</span>
-          </button>
-          <button
-            className={styles["calendar-navigation-button"]}
+            Today
+          </ButtonComponent>
+          <IconButtonComponent
+            icon={<ChevronRight size={NAVIGATION_ICON_SIZE} />}
             onClick={navigateToNext}
-            title="Next"
+            tooltip="Next"
             aria-label="Navigate next"
-          >
-            <ChevronRight size={16} />
-          </button>
-          <button
-            className={styles["calendar-navigation-button"]}
+          />
+          <IconButtonComponent
+            icon={<ChevronsRight size={NAVIGATION_ICON_SIZE} />}
             onClick={navigateToNextYear}
-            title="Next year"
+            tooltip="Next year"
             aria-label="Navigate to next year"
-          >
-            <ChevronsRight size={16} />
-          </button>
+          />
         </nav>
       </header>
 
       {/* -- Weekday Labels -- */}
-      {activeView !== "day" && (
+      {activeView !== CALENDAR_VIEWS.DAY && (
         <div className={styles["calendar-weekday-layout-row"]}>
           {WEEKDAY_LABELS.map((dayLabel) => (
             <div key={dayLabel} className={styles["calendar-weekday-cell"]}>
@@ -803,18 +798,18 @@ export default function ScheduledTaskCalendarComponent({
       )}
 
       {/* -- Days Grid -- */}
-      {activeView !== "day" && (
+      {activeView !== CALENDAR_VIEWS.DAY && (
         <div
           className={classNames(
             styles["calendar-days-grid"],
-            activeView === "week" && styles["is-week-view-grid"],
+            activeView === CALENDAR_VIEWS.WEEK && styles["is-week-view-grid"],
           )}
         >
           {calendarGrid.map((calendarDay) => {
             const dayKey = calendarDay.date.toISOString().split("T")[0];
             const isPopoverOpen = popoverDayKey === dayKey;
             const maxVisibleEvents =
-              activeView === "week" ? 8 : MAX_VISIBLE_EVENTS_PER_DAY;
+              activeView === CALENDAR_VIEWS.WEEK ? 8 : MAX_VISIBLE_EVENTS_PER_DAY;
             const visibleEvents = calendarDay.events.slice(
               0,
               maxVisibleEvents,
@@ -830,10 +825,10 @@ export default function ScheduledTaskCalendarComponent({
                   !calendarDay.isCurrentMonth && styles["is-outside-month"],
                   calendarDay.isToday && styles["is-today-cell"],
                 )}
-                style={{ cursor: activeView === "month" ? "default" : "pointer" }}
+                style={{ cursor: activeView === CALENDAR_VIEWS.MONTH ? "default" : "pointer" }}
                 onClick={() => {
                   setFocusedDate(calendarDay.date);
-                  setActiveView("day");
+                  setActiveView(CALENDAR_VIEWS.DAY);
                 }}
               >
                 <div className={styles["calendar-day-number"]}>
@@ -904,16 +899,14 @@ export default function ScheduledTaskCalendarComponent({
                         <span className={styles["calendar-popover-date-label"]}>
                           {formatPopoverDateLabel(calendarDay.date)}
                         </span>
-                        <button
-                          className={styles["calendar-popover-close-button"]}
+                        <IconButtonComponent
+                          icon={<X size={TODAY_ICON_SIZE} />}
                           onClick={(clickEvent) => {
                             clickEvent.stopPropagation();
                             setPopoverDayKey(null);
                           }}
                           aria-label="Close popover"
-                        >
-                          <X size={12} />
-                        </button>
+                        />
                       </div>
                       <div className={styles["calendar-popover-events-list"]}>
                         {calendarDay.events.map((event, eventIndex) => (
@@ -927,7 +920,6 @@ export default function ScheduledTaskCalendarComponent({
                               setPopoverDayKey(null);
                               onEventClick?.(event.taskId);
                             }}
-                            style={{ cursor: "pointer" }}
                           >
                             <span
                               className={classNames(
@@ -960,7 +952,7 @@ export default function ScheduledTaskCalendarComponent({
       )}
 
       {/* -- Day View -- */}
-      {activeView === "day" && (
+      {activeView === CALENDAR_VIEWS.DAY && (
         <div className={styles["calendar-day-view-container"]}>
           {dayEvents.length === 0 ? (
             <div className={styles["calendar-day-view-empty-state"]}>

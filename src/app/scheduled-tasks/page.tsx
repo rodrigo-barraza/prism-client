@@ -28,8 +28,10 @@ import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 import PrismService from "../../services/PrismService";
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
 import {
+  EmptyStateComponent,
   LayoutHeaderComponent,
   ModalComponent,
+  PageHeroComponent,
   SelectComponent,
   SearchInputComponent,
   InputComponent,
@@ -1028,17 +1030,20 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
             </div>
 
             {/* Header */}
-            <header className={styles['header']}>
-              <div className={styles['header-top-layout-row']}>
-                <div className={styles['header-left']}>
-                  <div className={styles['header-title-layout-row']}>
-                    <Clock className={styles['header-icon']} />
-                    <h1 className={styles['header-title']}>Scheduled Tasks</h1>
-                  </div>
-                  <p className={styles['header-subtitle']}>Automate background agent workflows on a schedule</p>
-                </div>
-              </div>
-
+            <PageHeroComponent
+              icon={Clock}
+              title="Scheduled Tasks"
+              subtitle="Automate background agent workflows on a schedule"
+              stats={[
+                { value: tasks.length, label: "tasks" },
+                {
+                  value: tasks.filter((task) => task.enabled).length,
+                  label: "enabled",
+                  variant: "success",
+                },
+              ]}
+              className={styles['header']}
+            >
               <SearchInputComponent
                 value={searchQuery}
                 onChange={setSearchQuery}
@@ -1084,7 +1089,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   New
                 </ButtonComponent>
               </div>
-            </header>
+            </PageHeroComponent>
 
             {/* Task Content */}
             <div>
@@ -1093,12 +1098,11 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   <PanelLoadingSpinner size="large" />
                 </div>
               ) : filteredTasks.length === 0 ? (
-                <div className={styles['empty-state']}>
-                  <Clock size={48} className={styles['empty-icon']} />
-                  <h2>No Scheduled Tasks found</h2>
-                  <p>
-                    Create a background agent automation task to get started.
-                  </p>
+                <EmptyStateComponent
+                  icon={<Clock />}
+                  title="No Scheduled Tasks found"
+                  subtitle="Create a background agent automation task to get started."
+                >
                   <ButtonComponent
                     variant="primary"
                     size="small"
@@ -1106,7 +1110,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
                   >
                     Create your first task
                   </ButtonComponent>
-                </div>
+                </EmptyStateComponent>
               ) : viewMode === "calendar" ? (
                 /* -- Calendar View -- */
                 <ScheduledTaskCalendarComponent

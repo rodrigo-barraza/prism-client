@@ -27,31 +27,6 @@
   gap: 4px;
 }
 
-.calendar-navigation-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--border-radius-sm);
-  border: 1px solid transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast),
-    border-color var(--transition-fast);
-
-  &:hover {
-    background: var(--background-surface);
-    border-color: var(--calculated-border-color);
-    color: var(--text-primary);
-  }
-
-  &:active {
-    scale: 0.95;
-  }
-}
 
 .calendar-title-group {
   display: flex;
@@ -72,28 +47,6 @@
   color: var(--text-tertiary);
 }
 
-.calendar-today-button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--calculated-border-color);
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast),
-    border-color var(--transition-fast);
-
-  &:hover {
-    background: var(--calculated-accent-primary-subtle);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-  }
-}
 
 /* ── Weekday Header Row ───────────────────────────────────── */
 
@@ -263,8 +216,8 @@
 }
 
 .calendar-event-chip.is-color-custom {
-  background: color-mix(in oklch, var(--color-indigo, oklch(58.5% 0.2041 277.1)) 18%, transparent);
-  color: var(--color-indigo, oklch(58.5% 0.2041 277.1));
+  background: color-mix(in oklch, var(--color-indigo) 18%, transparent);
+  color: var(--color-indigo);
 }
 
 .calendar-event-chip.is-color-trigger {
@@ -305,7 +258,7 @@
 .is-color-custom.calendar-event-chip-dot,
 .is-color-custom.calendar-popover-event-dot,
 .is-color-custom.calendar-legend-dot {
-  background: var(--color-indigo, oklch(58.5% 0.2041 277.1));
+  background: var(--color-indigo);
 }
 
 .is-color-trigger.calendar-event-chip-dot,
@@ -373,24 +326,6 @@
   color: var(--text-primary);
 }
 
-.calendar-popover-close-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--border-radius-sm);
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
-
-  &:hover {
-    background: var(--background-elevated);
-    color: var(--text-primary);
-  }
-}
 
 .calendar-popover-events-list {
   display: flex;
@@ -401,6 +336,7 @@
 }
 
 .calendar-popover-event-item {
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -528,39 +464,7 @@
 
 /* ── Calendar View Switcher / Toggles ───────────────────── */
 
-.calendar-view-toggle-group {
-  display: flex;
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  padding: 2px;
-  margin-inline-end: 8px;
-}
 
-.view-toggle-button {
-  padding: 4px 10px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  border-radius: calc(var(--border-radius-sm) - 2px);
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
-
-  &:hover {
-    color: var(--text-primary);
-    background: var(--background-elevated);
-  }
-
-  &.is-active-state {
-    background: var(--accent-primary);
-    color: var(--calculated-text-inverse);
-    font-weight: 600;
-  }
-}
 
 /* ── Calendar Day View Layout & Timeline ────────────────── */
 
@@ -667,7 +571,7 @@
   padding: 8px 12px;
   border-radius: var(--border-radius-sm);
   border-inline-start: 4px solid currentColor;
-  box-shadow: 0 1px 3px oklch(0 0 0 / 0.05);
+  box-shadow: var(--calculated-shadow-sm);
   cursor: pointer;
   transition:
     transform var(--transition-fast),
@@ -711,9 +615,9 @@
   }
 
   &.is-color-custom {
-    background: color-mix(in oklch, var(--color-indigo, oklch(58.5% 0.2041 277.1)) 8%, var(--background-surface));
-    color: var(--color-indigo, oklch(58.5% 0.2041 277.1));
-    border-color: var(--color-indigo, oklch(58.5% 0.2041 277.1));
+    background: color-mix(in oklch, var(--color-indigo) 8%, var(--background-surface));
+    color: var(--color-indigo);
+    border-color: var(--color-indigo);
   }
 
   &.is-disabled-task {
