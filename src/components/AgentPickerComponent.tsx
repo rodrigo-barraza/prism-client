@@ -37,6 +37,7 @@ interface AgentPickerComponentProps {
 /** Image-based agent icons (rendered as <img> instead of SVG). */
 const AGENT_IMAGES: Record<string, string> = {
   OMNI: "/omni-agent-avatar.png",
+  BENDER: "/bender-agent-avatar.jpg",
   STICKERS: "/clankerbox-agent-avatar.png",
   OOG: "/oog-agent-avatar.jpg",
 };
