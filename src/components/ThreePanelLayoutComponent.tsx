@@ -114,7 +114,6 @@ export default function ThreePanelLayout({
       }
     }
 
-    // eslint-disable-next-line react-compiler/react-compiler
     setHydrated(true);
   }, []);
 
@@ -224,6 +223,17 @@ export default function ThreePanelLayout({
     onDismiss: closeRightSidebar,
     isEnabled: isMobile && showRight,
   });
+
+  /* Left sidebar ref wiring — runs at commit via ref callback, not during render */
+  const setLeftSidebarNode = useCallback(
+    (node: HTMLElement | null) => {
+      // eslint-disable-next-line react-hooks/immutability -- ref callback runs at commit; writing refs here is the intended React pattern
+      (splitContainerRef as React.MutableRefObject<HTMLElement | null>).current = node;
+      // eslint-disable-next-line react-hooks/immutability -- ref callback runs at commit; writing refs here is the intended React pattern
+      (leftSwipeReference as React.MutableRefObject<HTMLElement | null>).current = node;
+    },
+    [leftSwipeReference],
+  );
 
   /* -- Mobile: swipe-to-reveal gestures on main content -- */
   const openLeftSidebar = useCallback(() => {
@@ -379,10 +389,7 @@ export default function ThreePanelLayout({
             className={`${styles["left-sidebar-panel"]} ${!showLeft ? styles["is-sidebar-hidden"] : ""} ${hasSplitPanels ? styles["has-split-panels"] : ""}`}
             style={transitionStyle}
             onClick={handleSidebarClick(toggleLeft)}
-            ref={(node) => {
-              (splitContainerRef as React.MutableRefObject<HTMLElement | null>).current = node;
-              (leftSwipeReference as React.MutableRefObject<HTMLElement | null>).current = node;
-            }}
+            ref={setLeftSidebarNode}
           >
             {hasSplitPanels ? (
               <>
