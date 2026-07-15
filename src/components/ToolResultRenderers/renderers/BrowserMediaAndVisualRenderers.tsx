@@ -106,9 +106,9 @@ export function BrowserActionRenderer({ result, args }: RendererProps) {
 
 export function AudioGeneratorRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
-  if (!parsed) return <RawResultToggle result={result} />;
 
   const audioSourceUrl = React.useMemo(() => {
+    if (!parsed) return null;
     if (parsed.audioRef) {
       return PrismService.getFileUrl(parsed.audioRef);
     }
@@ -116,6 +116,8 @@ export function AudioGeneratorRenderer({ result, args }: RendererProps) {
     const mimeType = parsed.audio.mimeType || "audio/wav";
     return `data:${mimeType};base64,${parsed.audio.data}`;
   }, [parsed]);
+
+  if (!parsed) return <RawResultToggle result={result} />;
 
   const totalAudioDuration = parsed.duration || 0;
   const audioSampleCount = parsed.sampleCount || 0;
@@ -145,9 +147,9 @@ export function AudioGeneratorRenderer({ result, args }: RendererProps) {
 
 export function TextToSpeechRenderer({ result, args }: RendererProps) {
   const parsed = tryParse(result);
-  if (!parsed) return <RawResultToggle result={result} />
 
   const audioSourceUrl = React.useMemo(() => {
+    if (!parsed) return null;
     if (parsed.audioRef) {
       return PrismService.getFileUrl(parsed.audioRef);
     }
@@ -155,6 +157,8 @@ export function TextToSpeechRenderer({ result, args }: RendererProps) {
     const mimeType = parsed.audio.mimeType || "audio/wav";
     return `data:${mimeType};base64,${parsed.audio.data}`;
   }, [parsed]);
+
+  if (!parsed) return <RawResultToggle result={result} />;
 
   const hasTtsError = !!parsed.error;
   const ttsVoiceLabel = parsed.voice ? String(parsed.voice) : null;

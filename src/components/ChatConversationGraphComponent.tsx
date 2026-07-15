@@ -208,7 +208,7 @@ export interface ChatConversationGraphComponentProps {
    Main Component
    ═══════════════════════════════════════════════════════════════════ */
 
-export default function ChatConversationGraphComponent({ conversationId, toolActivity = [], isGenerating = false, compact = false, graphState: externalGraphState }: ChatConversationGraphComponentProps) {
+export default function ChatConversationGraphComponent({ conversationId, isGenerating = false, compact = false, graphState: externalGraphState }: ChatConversationGraphComponentProps) {
   // When external graphState is provided, the internal hook is a no-op (null conversationId).
   // When standalone (no parent providing graphState), the hook manages its own SSE + data.
   const internalGraphState = useConversationGraphData(
