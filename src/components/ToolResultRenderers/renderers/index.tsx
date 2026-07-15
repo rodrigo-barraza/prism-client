@@ -14,9 +14,9 @@ import React from "react";
 
 /**
  * Renders a tool result's self-describing `display` metadata: an
- * auto-resizing iframe for embeds, an <img> for images. This is the
- * generic path that lets any tool surface visual output without a
- * dedicated renderer.
+ * auto-resizing iframe for embeds, an <img> for images, native players
+ * for video/audio. This is the generic path that lets any tool surface
+ * visual output without a dedicated renderer.
  */
 export function ToolResultDisplayView({
   display,
@@ -33,6 +33,32 @@ export function ToolResultDisplayView({
         title={displayTitle}
         fallbackHeight={display.height ?? 360}
       />
+    );
+  }
+  if (display.kind === "video") {
+    return (
+      <div className={styles['visual-tool-image-container']}>
+        <video
+          src={PrismService.getFileUrl(display.url)}
+          poster={display.poster ? PrismService.getFileUrl(display.poster) : undefined}
+          controls
+          preload="metadata"
+          className={styles['visual-tool-video']}
+        />
+      </div>
+    );
+  }
+  if (display.kind === "audio") {
+    return (
+      <div className={styles['visual-tool-image-container']}>
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+        <audio
+          src={PrismService.getFileUrl(display.url)}
+          controls
+          preload="metadata"
+          className={styles['visual-tool-audio']}
+        />
+      </div>
     );
   }
   return (

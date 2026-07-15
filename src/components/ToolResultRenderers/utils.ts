@@ -37,7 +37,10 @@ export function getResultDisplay(result: unknown): ToolResultDisplay | null {
   if (
     display &&
     typeof display.url === "string" &&
-    (display.kind === "embed" || display.kind === "image")
+    (display.kind === "embed" ||
+      display.kind === "image" ||
+      display.kind === "video" ||
+      display.kind === "audio")
   ) {
     return display;
   }

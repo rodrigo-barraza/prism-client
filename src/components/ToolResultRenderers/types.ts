@@ -249,16 +249,18 @@ export interface ParsedToolResult {
  * Self-describing display metadata carried by visual tool results.
  * Any tool result with `display` renders inline in the conversation and
  * inside its tool card without needing a per-tool renderer: "embed"
- * becomes an auto-resizing iframe, "image" an <img>. Emitted by
- * tools-service (embed tools) and prism-service (generated images,
- * screenshots).
+ * becomes an auto-resizing iframe, "image" an <img>, "video"/"audio"
+ * native media players. Emitted by tools-service (embed tools,
+ * download_video) and prism-service (generated images, screenshots).
  */
 export interface ToolResultDisplay {
-  kind: "embed" | "image";
+  kind: "embed" | "image" | "video" | "audio";
   url: string;
   /** Fallback iframe height in px until the embed reports its own size. */
   height?: number;
   title?: string;
+  /** Poster image shown before a video plays (video only). */
+  poster?: string;
 }
 
 export interface RendererProps {

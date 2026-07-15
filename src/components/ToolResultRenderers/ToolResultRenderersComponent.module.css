@@ -1389,6 +1389,21 @@
   object-fit: contain;
 }
 
+.visual-tool-video {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  height: auto;
+  background: oklch(0% 0 0);
+}
+
+.visual-tool-audio {
+  display: block;
+  width: 320px;
+  max-width: 100%;
+  padding: 10px 12px;
+}
+
 .visual-tool-embed-wrapper {
   margin-block-start: 6px;
   border-radius: 8px;
