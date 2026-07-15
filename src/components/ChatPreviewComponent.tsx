@@ -47,15 +47,9 @@ export default function ChatPreviewComponent({
     if (!messages) return false;
     return messages.some(
       (message) =>
-        // New format: injected context lives in its own system message
-        (message.role === "system" &&
-          (message as unknown as Record<string, unknown>)._isInjectedContext === true) ||
-        // Legacy format: context was embedded in user message content/rawContent
-        (message.role === "user" &&
-          (message.content?.startsWith("[System Context]") ||
-            message.rawContent?.startsWith("[System Context]") ||
-            message.content?.startsWith("[System Context - Local Time:") ||
-            message.rawContent?.startsWith("[System Context - Local Time:"))),
+        // Injected context lives in its own system message
+        message.role === "system" &&
+        (message as unknown as Record<string, unknown>)._isInjectedContext === true,
     );
   }, [messages]);
 

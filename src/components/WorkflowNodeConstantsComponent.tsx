@@ -65,12 +65,6 @@ export const MODALITY_COLORS = {
   thinking: "oklch(0.769 0.177 90.046)",
 };
 
-// -- Tool Colors (canonical display-name keyed; sourced from shared taxonomy) --
-// Re-exported under the historical name so existing consumers keep importing
-// TOOL_COLORS. NOTE: keyed ONLY by canonical display names — raw aliases such
-// as "googleSearch" must be normalized via resolveCapabilityName before lookup.
-export const TOOL_COLORS: Record<string, string> = CAPABILITY_COLORS;
-
 // -- Tool Icon Map (Component references — render as <Icon size={size} />) --
 export const TOOL_ICON_MAP: Record<string, ComponentType<{ size?: number; className?: string }>> = {
   Thinking: Brain,
@@ -97,26 +91,6 @@ const backendToolEmojiCache = new Map<string, string>();
 // Capability-level UI emoji fallbacks now come from the shared taxonomy
 // (CAPABILITY_EMOJI), keyed by canonical display name. Raw provider aliases
 // (e.g. "googleSearch") are normalized via resolveCapabilityName before lookup.
-
-/**
- * @deprecated Use resolveToolEmoji() instead. Kept for backwards compatibility
- * while consumers migrate. Returns capability fallbacks merged with the
- * backend cache — backend values take priority.
- */
-export const TOOL_EMOJI_MAP: Record<string, string> = new Proxy(
-  {} as Record<string, string>,
-  {
-    get(_target, property: string) {
-      return backendToolEmojiCache.get(property)
-        ?? CAPABILITY_EMOJI[resolveCapabilityName(property)]
-        ?? undefined;
-    },
-    has(_target, property: string) {
-      return backendToolEmojiCache.has(property)
-        || resolveCapabilityName(property) in CAPABILITY_EMOJI;
-    },
-  },
-);
 
 /**
  * Resolve the primary emoji for a tool name.
@@ -180,13 +154,13 @@ export function resolveToolVisuals(name: string): ToolVisuals {
   if (resolvedIcon) {
     return {
       Icon: resolvedIcon,
-      color: TOOL_COLORS[resolveCapabilityName(name)] || "oklch(0.769 0.188 70.08)",
+      color: CAPABILITY_COLORS[resolveCapabilityName(name)] || "oklch(0.769 0.188 70.08)",
       emoji: resolvedEmoji,
     };
   }
   return {
     Icon: TOOL_ICON_MAP["Tool Calling"] || Wrench,
-    color: TOOL_COLORS["Tool Calling"] || "oklch(0.692 0.218 36.634)",
+    color: CAPABILITY_COLORS["Tool Calling"] || "oklch(0.692 0.218 36.634)",
     emoji: resolvedEmoji,
   };
 }

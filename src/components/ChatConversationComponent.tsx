@@ -6383,7 +6383,7 @@ export default function ChatConversationComponent({
         tokenHwmRef.current = { input: 0, output: 0, total: 0 };
 
         // Restore tool toggle state from the conversation's persisted toolConfig.
-        // Legacy conversations without toolConfig default to all tools disabled.
+        // Conversations without toolConfig default to all tools disabled.
         const conversationToolConfig = (conversationSettings as Record<string, unknown>)?.toolConfig as
           | { disabledTools?: string[]; dynamicEnabledTools?: string[] }
           | undefined;

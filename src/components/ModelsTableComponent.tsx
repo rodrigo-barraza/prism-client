@@ -28,14 +28,13 @@ import { PROVIDER_LABELS } from "../constants";
 import {
   MODALITY_ICONS,
   MODALITY_COLORS,
-  TOOL_COLORS,
 } from "./WorkflowNodeConstantsComponent";
 import {
   TableComponent,
   TooltipComponent,
   SearchInputComponent,
 } from "@rodrigo-barraza/components-library";
-import { resolveCapabilityName } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { resolveCapabilityName, CAPABILITY_COLORS } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 import ToolIconComponent from "./ToolIconComponent";
 import FilterDropdownComponent from "./FilterDropdownComponent";
@@ -1635,7 +1634,7 @@ function ModelsTableInner({
                         ? {
                             key: toolName,
                             icon: Icon as React.ComponentType<{ size?: number; className?: string }>,
-                            color: (TOOL_COLORS as Record<string, string>)[resolveCapabilityName(toolName)],
+                            color: CAPABILITY_COLORS[resolveCapabilityName(toolName)],
                             title: toolName,
                           }
                         : null;

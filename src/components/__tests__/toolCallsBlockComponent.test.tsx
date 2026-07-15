@@ -41,7 +41,6 @@ vi.mock("lucide-react", () => ({
 
 // Mock WorkflowNodeConstantsComponent
 vi.mock("../WorkflowNodeConstantsComponent", () => ({
-  TOOL_EMOJI_MAP: {},
   resolveToolVisuals: () => ({
     Icon: ({ size }: { size: number }) => <span data-testid="tool-icon" data-size={size} />,
     color: "#ff9900",

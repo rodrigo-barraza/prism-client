@@ -106,20 +106,10 @@ export default function RunHistorySidebarComponent({
 }: RunHistorySidebarComponentProps) {
   const [activeTab, setActiveTab] = useState("general");
 
-  // Normalize assertions: fall back to single expectedValue/matchMode for older benchmarks
-  const assertions: BenchmarkAssertion[] = useMemo(() => {
-    const existingAssertions = benchmark?.assertions;
-    if (existingAssertions && existingAssertions.length > 0) return existingAssertions;
-    if (benchmark?.expectedValue) {
-      return [
-        {
-          expectedValue: benchmark.expectedValue,
-          matchMode: benchmark.matchMode || "contains",
-        },
-      ];
-    }
-    return [];
-  }, [benchmark]);
+  const assertions: BenchmarkAssertion[] = useMemo(
+    () => benchmark?.assertions ?? [],
+    [benchmark],
+  );
 
   const operator = benchmark?.assertionOperator || "AND";
 

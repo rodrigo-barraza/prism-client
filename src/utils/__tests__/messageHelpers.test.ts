@@ -7,9 +7,8 @@ import type { Message } from "../../types/types.js";
  * conversation-serving endpoints now attach backend-serialized
  * `displayMessages` at serve time (see prepareDisplayMessages +
  * reconstructRequestDisplayMessages tests in prism-service, which carry the
- * former normalization coverage). resolveDisplayMessages keeps only a
- * readable-degradation fallback for responses that unexpectedly lack the
- * field.
+ * former normalization coverage). resolveDisplayMessages reads the
+ * backend-provided field directly with no client-side fallback.
  */
 describe("messageHelpers - resolveDisplayMessages", () => {
   it("returns backend-provided displayMessages when present and non-empty", () => {
@@ -33,7 +32,7 @@ describe("messageHelpers - resolveDisplayMessages", () => {
     expect(resolveDisplayMessages({ displayMessages })).toBe(displayMessages);
   });
 
-  it("falls back to raw messages minus tool-role stubs when displayMessages is missing", () => {
+  it("returns an empty array when displayMessages is missing (no raw-message fallback)", () => {
     const entry = {
       messages: [
         { role: "user", content: "question" },
@@ -41,17 +40,15 @@ describe("messageHelpers - resolveDisplayMessages", () => {
         { role: "tool", content: "raw tool result", tool_call_id: "call-1" },
       ] as Message[],
     };
-    const result = resolveDisplayMessages(entry);
-    expect(result).toHaveLength(2);
-    expect(result.every((message) => message.role !== "tool")).toBe(true);
+    expect(resolveDisplayMessages(entry)).toEqual([]);
   });
 
-  it("falls back when displayMessages is an empty array", () => {
+  it("returns the backend displayMessages as-is when it is an empty array", () => {
     const entry = {
       displayMessages: [] as Message[],
       messages: [{ role: "user", content: "hello" }] as Message[],
     };
-    expect(resolveDisplayMessages(entry)).toHaveLength(1);
+    expect(resolveDisplayMessages(entry)).toHaveLength(0);
   });
 
   it("returns empty array when entry has no message fields at all", () => {

@@ -20,6 +20,7 @@ describe("Post-Stream Refresh Guard", () => {
     const databaseSession = {
       id: "session-123",
       messages: [],
+      displayMessages: [],
     } as unknown as AgentConversation;
 
     let fetchAttemptsCount = 0;
@@ -101,6 +102,10 @@ describe("Post-Stream Refresh Guard", () => {
         { role: "user", content: "hey" },
         { role: "assistant", content: "hello" },
       ],
+      displayMessages: [
+        { role: "user", content: "hey" },
+        { role: "assistant", content: "hello" },
+      ],
     } as unknown as AgentConversation;
 
     let fetchAttemptsCount = 0;
@@ -179,6 +184,10 @@ describe("Post-Stream Refresh Guard", () => {
     const databaseSession = {
       id: "session-123",
       messages: [
+        { role: "user", content: "different query" },
+        { role: "assistant", content: "hello" },
+      ],
+      displayMessages: [
         { role: "user", content: "different query" },
         { role: "assistant", content: "hello" },
       ],

@@ -118,29 +118,13 @@ export function mapConversationToHistoryItem(
 
 
 function deriveModelNames(conversation: Conversation): string[] {
+  // Prefer the client-side live enrichment written during active generation
+  // (keeps sidebar badges live before the backend listing catches up), then
+  // fall back to the backend-authoritative modelNames field.
   if ((conversation._liveModelNames?.length ?? 0) > 0) {
     return conversation._liveModelNames!;
   }
-  if ((conversation.modelNames?.length ?? 0) > 0) {
-    return conversation.modelNames!;
-  }
-
-  const messages = conversation.messages || [];
-  const modelNamesSet = new Set<string>();
-
-  for (let index = messages.length - 1; index >= 0; index--) {
-    if (messages[index].role === "assistant") {
-      if (messages[index].model) modelNamesSet.add(messages[index].model!);
-    }
-  }
-
-  if (modelNamesSet.size === 0) {
-    const fallbackModel =
-      conversation.model || conversation.settings?.model;
-    if (fallbackModel) modelNamesSet.add(fallbackModel);
-  }
-
-  return Array.from(modelNamesSet);
+  return conversation.modelNames ?? [];
 }
 
 

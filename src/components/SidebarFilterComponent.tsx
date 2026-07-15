@@ -19,7 +19,8 @@ import {
 } from "lucide-react";
 import ProviderLogo from "./ProviderLogosComponent";
 import { resolveProviderLabel } from "./ProviderLogosComponent";
-import { MODALITY_COLORS, TOOL_COLORS } from "./WorkflowNodeConstantsComponent";
+import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
+import { CAPABILITY_COLORS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import {
   DatePickerComponent,
   DATE_PRESETS,
@@ -88,25 +89,25 @@ const TOOL_FILTERS = [
     key: "thinking",
     icon: Brain,
     title: "Thinking",
-    color: TOOL_COLORS["Thinking"],
+    color: CAPABILITY_COLORS["Thinking"],
   },
   {
     key: "webSearch",
     icon: Globe,
     title: "Web Search",
-    color: TOOL_COLORS["Web Search"],
+    color: CAPABILITY_COLORS["Web Search"],
   },
   {
     key: "codeExecution",
     icon: Code,
     title: "Code Execution",
-    color: TOOL_COLORS["Code Execution"],
+    color: CAPABILITY_COLORS["Code Execution"],
   },
   {
     key: "functionCalling",
     icon: Parentheses,
     title: "Tool Calling",
-    color: TOOL_COLORS["Tool Calling"],
+    color: CAPABILITY_COLORS["Tool Calling"],
   },
 ];
 

@@ -38,10 +38,9 @@ import BadgeComponent from "./BadgeComponent";
 import {
   MODALITY_ICONS,
   MODALITY_COLORS,
-  TOOL_COLORS,
 } from "./WorkflowNodeConstantsComponent";
 import { formatContextTokens, formatFileSize, formatNumber, formatTokenCount } from "@rodrigo-barraza/utilities-library";
-import { resolveCapabilityName } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { resolveCapabilityName, CAPABILITY_COLORS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { RawModel } from "./ModelsTableComponent";
 import styles from "./ModelDetailPanelComponent.module.css";
 
@@ -560,7 +559,7 @@ export default function ModelDetailPanelComponent({ model, onClose }: ModelDetai
                 <div className={styles['tools-grid']}>
                   {modelDetail.tools.map((tool: string) => {
                     const Icon = (TOOL_ICONS as Record<string, React.ElementType>)[tool];
-                    const color = (TOOL_COLORS as Record<string, string>)[resolveCapabilityName(tool)];
+                    const color = CAPABILITY_COLORS[resolveCapabilityName(tool)];
                     return (
                       <span
                         key={tool}

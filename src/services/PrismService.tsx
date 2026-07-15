@@ -78,14 +78,11 @@ function getHeaders() {
  * swap (direct bucket URL when configured, else the backend /files proxy).
  *
  * Key repair lives server-side: FileService.normalizeKey (prism-service)
- * scrubs the historical "::ffff:" artifact on reads, and served
- * displayMessages arrive pre-cleaned. The scrub below remains ONLY as a
- * fallback for historical refs that reach us outside those serializers
- * (workflow nodes, tool-result JSON) when pointing directly at the bucket.
+ * normalizes keys on reads, and served displayMessages arrive pre-cleaned.
  */
 function resolveFileReference(fileReference: string): string {
   if (typeof fileReference === "string" && fileReference.startsWith("minio://")) {
-    const key = fileReference.replace("minio://", "").replace(/::ffff:/g, "");
+    const key = fileReference.replace("minio://", "");
     const base = MINIO_URL || `${API_BASE}/files`;
     return `${base}/${key}`;
   }
@@ -1014,7 +1011,6 @@ export default class PrismService {
         providerName?: string;
         resolvedModel?: string;
         durationMs: number;
-        toolUses: number;
         hasChanges: boolean;
         totalCost?: number | null;
         branchName?: string | null;
@@ -1043,7 +1039,7 @@ export default class PrismService {
       provider: subAgent.providerName,
       durationMs: subAgent.durationMs,
       totalCost: subAgent.totalCost ?? undefined,
-      toolCallCount: subAgent.toolCallCount ?? subAgent.toolUses,
+      toolCallCount: subAgent.toolCallCount,
       branchName: subAgent.branchName ?? undefined,
       files: subAgent.files,
       recursionDepth: subAgent.recursionDepth,

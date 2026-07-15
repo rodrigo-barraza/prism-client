@@ -48,7 +48,7 @@ import ImagePreviewComponent from "./ImagePreviewComponent";
 import styles from "./MessageListComponent.module.css";
 import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
-import { EXECUTION_STATUS, APPROVAL_STATUS } from "../constants";
+import { APPROVAL_STATUS } from "../constants";
 import { getTotalInputTokens } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
@@ -73,25 +73,13 @@ export interface SubAgentToolActivityItem {
 /* -- Task notification detection ─────────────────────────────
  * Sub-agent results, async task completions, and timer reminders
  * arrive as user-role messages with _notificationSource metadata.
- * For legacy messages persisted before the metadata field existed,
- * fall back to content-based <task-notification> XML detection.
- * For messages persisted before the XML wrapping was added,
- * fall back to header-based pattern detection.                  */
-
-const LEGACY_NOTIFICATION_HEADERS = [
-  "[SUB-AGENT TEAM COMPLETED]",
-  "[SUB-AGENT RESUMED COMPLETED]",
-  "[TEAM DONE]",
-  "[ASYNC TASK COMPLETED]",
-];
+ * For messages persisted before the metadata field existed,
+ * fall back to content-based <task-notification> XML detection.  */
 
 function isNotificationMessage(message: Message): boolean {
   if (message._notificationSource) return true;
   if (!message.content) return false;
-  if (message.content.includes("<task-notification>")) return true;
-  return LEGACY_NOTIFICATION_HEADERS.some(
-    (header) => message.content!.includes(header),
-  );
+  return message.content.includes("<task-notification>");
 }
 
 function parseTaskNotification(content: string | undefined | null) {
@@ -114,29 +102,7 @@ function parseTaskNotification(content: string | undefined | null) {
     };
   }
 
-  // Legacy fallback: plain-text format from before XML wrapping was added.
-  // Format: `[[SUB-AGENT TEAM COMPLETED] Team "name" (topology) finished.]\n\n<result body>`
-  const matchedHeader = LEGACY_NOTIFICATION_HEADERS.find((header) =>
-    content.includes(header),
-  );
-  if (!matchedHeader) return null;
-
-  // Extract the summary line (first line, strip outer brackets)
-  const firstNewline = content.indexOf("\n");
-  const summaryLine =
-    firstNewline > 0 ? content.substring(0, firstNewline) : content;
-  const cleanedSummary = summaryLine.replace(/^\[+/, "").replace(/\]+$/, "").trim();
-  const resultBody =
-    firstNewline > 0 ? content.substring(firstNewline).trim() : "";
-
-  return {
-    taskId: null,
-    status: EXECUTION_STATUS.COMPLETED,
-    summary: cleanedSummary,
-    result: resultBody || null,
-    toolUses: 0,
-    durationMs: null,
-  };
+  return null;
 }
 
 /**
