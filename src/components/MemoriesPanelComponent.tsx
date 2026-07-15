@@ -35,6 +35,7 @@ import PrismService from "../services/PrismService";
 import { getErrorMessage } from "../utils/errorMessage";
 import type {
   AgentMemory,
+  AgentMemoryFacets,
   ConsolidationHistoryEntry,
   ConsolidateResult,
   MemoryType,
@@ -80,6 +81,27 @@ const MEMORY_TYPE_FILTER_ITEMS = [
     color: TYPE_FILTER_COLORS.reference,
   },
 ];
+
+// Discord (LUPOS) memory categories — stored in the same `type` field as the
+// coding memory types above, so both feed the same Type filter.
+const LUPOS_TYPE_FILTER_ITEMS: Record<
+  string,
+  { icon: typeof User; title: string; color: string }
+> = {
+  personal: { icon: User, title: "Personal", color: "#818cf8" },
+  preference: { icon: Heart, title: "Preference", color: "#f472b6" },
+  gaming: { icon: Gamepad2, title: "Gaming", color: "#a78bfa" },
+  work: { icon: Briefcase, title: "Work", color: "#fbbf24" },
+  family: { icon: Users, title: "Family", color: "#fb923c" },
+  hobby: { icon: Palette, title: "Hobby", color: "#34d399" },
+  location: { icon: MapPin, title: "Location", color: "#22d3ee" },
+  relationship: { icon: HeartHandshake, title: "Relationship", color: "#f87171" },
+  achievement: { icon: Trophy, title: "Achievement", color: "#facc15" },
+  other: { icon: Tag, title: "Other", color: "#94a3b8" },
+};
+
+const ABOUT_USER_COLOR = "#818cf8";
+const SOURCE_USER_COLOR = "#34d399";
 
 const TRIGGER_LABELS: Record<string, string> = {
   manual: "Manual",
@@ -147,6 +169,15 @@ export default function MemoriesPanel({
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [selectedType, setSelectedType] = useState<string>("all");
+  const [selectedAboutUserId, setSelectedAboutUserId] = useState<string | null>(
+    null,
+  );
+  const [selectedSourceUserId, setSelectedSourceUserId] = useState<
+    string | null
+  >(null);
+
+  // Distinct types + Discord users (about/source) for the filter dropdown
+  const [facets, setFacets] = useState<AgentMemoryFacets | null>(null);
 
   // History state
   const [history, setHistory] = useState<ConsolidationHistoryEntry[]>([]);
@@ -177,6 +208,8 @@ export default function MemoriesPanel({
           agent,
           currentSkip,
           typeParam,
+          selectedAboutUserId || undefined,
+          selectedSourceUserId || undefined,
         );
         const fetched = result.memories || [];
 
@@ -219,8 +252,23 @@ export default function MemoriesPanel({
         setLoadingMore(false);
       }
     },
-    [project, agent, selectedType],
+    [project, agent, selectedType, selectedAboutUserId, selectedSourceUserId],
   );
+
+  const loadFacets = useCallback(async () => {
+    try {
+      const result = await PrismService.getAgentMemoryFacets(project, agent);
+      setFacets(result);
+    } catch {
+      // Facets are progressive enhancement — degrade to static type filters
+      // (e.g. when the service doesn't expose /agent-memories/facets yet).
+      setFacets(null);
+    }
+  }, [project, agent]);
+
+  useEffect(() => {
+    loadFacets();
+  }, [loadFacets, refreshKey]);
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
