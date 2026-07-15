@@ -34,6 +34,9 @@
  *   - "timeScale": number — cloud drift speed multiplier (default 1)
  *   - "timeOfDayHours": number|null — force a local hour (0..24) for the
  *     sky, or null to follow the real clock again
+ *   - "typeImpulse": number — kick the forward fly-through speed (typing
+ *     feedback); accumulates toward a cap and decays back to the idle drift,
+ *     mirroring the agent coin's "spinImpulse"
  */
 
 import type { TickState } from "../ThreeService";
@@ -114,6 +117,11 @@ const NIGHT_PALETTE: CloudsPalette = {
 };
 
 const NOISE_TEXTURE_SIZE = 256;
+
+// Forward fly-through: idle drift speed and how a typing "impulse" ramps it.
+const BASE_FORWARD_SPEED = 3.0; // units/sec — the calm idle drift
+const FORWARD_BOOST_DECAY_PER_SECOND = 1.5; // eases back to idle after typing
+const MAX_FORWARD_BOOST = 18.0; // cap so sustained typing tops out
 
 /**
  * Deterministic PRNG (mulberry32) — the noise texture is identical every
@@ -216,6 +224,7 @@ precision highp float;
 
 uniform vec2 uResolution;
 uniform float uTime;
+uniform float uForward;
 uniform vec3 uSeed;
 uniform float uCoverage;
 uniform sampler2D uNoiseTexture;
@@ -562,8 +571,8 @@ void main() {
     rayCamera.y * PITCH_SIN + rayCamera.z * PITCH_COS
   );
 
-  // Slow forward drift for near-cloud parallax
-  vec3 rayOrigin = vec3(0.0, CAMERA_HEIGHT, uTime * 3.0);
+  // Forward fly-through position (accelerates while the user types)
+  vec3 rayOrigin = vec3(0.0, CAMERA_HEIGHT, uForward);
 
   vec3 color = skyColor(rayDirection);
 
@@ -620,9 +629,15 @@ export function createCloudsAnimation(
   // Random field offset — a different stretch of sky every conversation
   const seed = new THREE.Vector3(Math.random(), Math.random(), Math.random());
 
+  // Forward position starts at a per-mount offset (matches the old uTime*3
+   // drift seed) so every conversation flies through a different stretch.
+  let forwardDistance = seed.x * 1200;
+  let forwardBoost = 1; // 1 = idle drift; typing kicks this up (see coin spin)
+
   const uniforms = {
     uResolution: { value: new THREE.Vector2(1, 1) },
     uTime: { value: reducedMotion ? 120 + seed.x * 400 : seed.x * 400 },
+    uForward: { value: forwardDistance },
     uSeed: { value: seed },
     uCoverage: { value: coverage },
     uNoiseTexture: { value: noiseTexture },
@@ -777,11 +792,24 @@ export function createCloudsAnimation(
 
     if (reducedMotion) return;
     uniforms.uTime.value += delta * currentTimeScale;
+
+    // Forward fly-through: decay the typing boost back toward idle (1) with
+    // frame-rate-independent easing, then advance the camera by the boosted
+    // speed. Sustained typing keeps re-kicking it → faster and faster.
+    forwardBoost =
+      1 + (forwardBoost - 1) * Math.exp(-FORWARD_BOOST_DECAY_PER_SECOND * delta);
+    forwardDistance +=
+      delta * BASE_FORWARD_SPEED * forwardBoost * currentTimeScale;
+    uniforms.uForward.value = forwardDistance;
   };
 
   const setParameter = (key: string, value: unknown) => {
     if (key === "timeScale" && typeof value === "number") {
       currentTimeScale = Math.max(0, value);
+      return;
+    }
+    if (key === "typeImpulse" && typeof value === "number") {
+      forwardBoost = Math.min(forwardBoost + value, MAX_FORWARD_BOOST);
       return;
     }
     if (key === "timeOfDayHours") {

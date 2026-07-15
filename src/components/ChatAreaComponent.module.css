@@ -237,26 +237,14 @@
    so all in-flow content sits above it automatically. */
 
 /* Legibility over the scene (bright cloud deck by day, dark sky by night):
-   a soft dark halo separates the text in both cases, and a faint frosted
-   scrim behind the content keeps contrast consistent as the sky changes. */
-.empty-state-over-scene {
-  position: relative;
-  border-radius: 20px;
-  background: radial-gradient(
-    120% 100% at 50% 45%,
-    oklch(20% 0.03 255 / 0.28),
-    transparent 72%
-  );
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-}
-
+   white text with a soft dark halo reads in both cases, with no scrim box
+   over the clouds. The badge/icon keep their own styling. */
 .empty-state-over-scene h2,
 .empty-state-over-scene p {
   color: #f4f8ff;
   text-shadow:
-    0 1px 3px oklch(20% 0.05 255 / 0.55),
-    0 2px 18px oklch(20% 0.06 255 / 0.4);
+    0 1px 2px oklch(18% 0.05 255 / 0.65),
+    0 1px 10px oklch(18% 0.06 255 / 0.5);
 }
 
 .welcome {

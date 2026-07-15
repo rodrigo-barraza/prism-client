@@ -1,14 +1,20 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import ThreeBackgroundComponent from "./ThreeBackgroundComponent";
 import {
   createCloudsAnimation,
   type CloudsAnimationOptions,
   type ThreeAnimationFactory,
+  type ThreeAnimationHandle,
 } from "../services/three-animations";
 import type { ChatBackgroundName } from "../hooks/useChatBackgroundSetting";
+import { EVENT_NAME_USER_TYPING } from "../constants";
 import styles from "./ChatBackgroundComponent.module.css";
+
+// Each keystroke kicks the forward fly-through speed by this much (the preset
+// accumulates it toward its cap and decays back), mirroring the coin's spin.
+const TYPE_IMPULSE_PER_KEYSTROKE = 2.6;
 
 interface ChatBackgroundScene {
   // Registry holds heterogeneous option shapes — erased to `any` on purpose
@@ -73,6 +79,21 @@ export default function ChatBackgroundComponent({
   background,
 }: ChatBackgroundComponentProps) {
   const scene = CHAT_BACKGROUND_SCENES[background];
+  const handleRef = useRef<ThreeAnimationHandle | null>(null);
+
+  // Typing → forward fly-through impulse (decay lives inside the preset).
+  // Harmless for scenes that ignore "typeImpulse".
+  useEffect(() => {
+    const handleTyping = () => {
+      handleRef.current?.setParameter?.(
+        "typeImpulse",
+        TYPE_IMPULSE_PER_KEYSTROKE,
+      );
+    };
+    window.addEventListener(EVENT_NAME_USER_TYPING, handleTyping);
+    return () =>
+      window.removeEventListener(EVENT_NAME_USER_TYPING, handleTyping);
+  }, []);
 
   // Options are captured once at mount by the bridge, so compute here.
   const options = useMemo(() => {
@@ -97,6 +118,7 @@ export default function ChatBackgroundComponent({
         options={options}
         maxPixelRatio={scene.maxPixelRatio}
         maxFps={scene.maxFps}
+        handleRef={handleRef}
       />
     </div>
   );
