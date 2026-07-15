@@ -27,7 +27,7 @@ export default function ToggleButtonComponent({
   label?: string;
   active?: boolean;
   title?: string;
-  onClick?: (e: React.MouseEvent) => void;
+  onClick?: (_e: React.MouseEvent) => void;
 }) {
   return (
     <button

@@ -41,7 +41,7 @@ import {
 import {
   getTotalInputTokens,
 } from "./utilities";
-import { PROVIDER_COLORS, BYTES_IN_KIB, KIB_IN_MIB, MIB_IN_GIB, MESSAGE_ROLES, CATEGORIES, EXECUTION_STATUS } from "../constants";
+import { PROVIDER_COLORS, BYTES_IN_KIB, KIB_IN_MIB, MIB_IN_GIB, CATEGORIES, EXECUTION_STATUS } from "../constants";
 import {
   deriveAgentConversationState,
   AGENT_CONVERSATION_STATE_COLORS,
@@ -128,7 +128,7 @@ export const emptyDash = () => <span className={styles['empty-dash']}>—</span>
 /** Render a value or a muted dash if falsy/zero */
 export const valueOrDash = <T,>(
   value: T | undefined | null,
-  render: (value: T) => React.ReactNode,
+  render: (_value: T) => React.ReactNode,
 ) => (value ? render(value) : emptyDash());
 
 /** Merge modalities from an array of conversations into a single object */
@@ -502,7 +502,7 @@ export const latencyColumn = (key = "avgLatency", label = "Avg Latency") => ({
  */
 export const countLinkColumns = (
   entityKey: string,
-  entityValue: (row: TableRow) => string,
+  entityValue: (_row: TableRow) => string,
 ) => [
   {
     key: "traceCount",

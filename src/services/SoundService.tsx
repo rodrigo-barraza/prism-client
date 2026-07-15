@@ -487,11 +487,11 @@ const SoundService = {
    *   <div {...SoundService.interactive(() => navigate(id))}>
    */
   interactive(
-    onClick?: (e: React.MouseEvent) => void,
-    onMouseEnter?: (e: React.MouseEvent) => void,
+    onClick?: (_e: React.MouseEvent) => void,
+    onMouseEnter?: (_e: React.MouseEvent) => void,
   ): {
-    onClick: (e: React.MouseEvent) => void;
-    onMouseEnter: (e: React.MouseEvent) => void;
+    onClick: (_e: React.MouseEvent) => void;
+    onMouseEnter: (_e: React.MouseEvent) => void;
   } {
     return {
       onMouseEnter: (e: React.MouseEvent) => {

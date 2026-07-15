@@ -29,20 +29,20 @@ interface TreeNodeProps {
   parentPath?: string;
   expandedPaths: Set<string>;
   expandedTick: number;
-  onToggleExpand: (path: string) => void;
-  onMentionFile?: ((path: string) => void) | null;
-  onOpenFile?: ((path: string) => void) | null;
+  onToggleExpand: (_path: string) => void;
+  onMentionFile?: ((_path: string) => void) | null;
+  onOpenFile?: ((_path: string) => void) | null;
 }
 
 interface WorkspaceTreePanelProps {
   workspaceTreeRefreshKey?: number;
-  onMentionFile?: ((path: string) => void) | null;
-  onOpenFile?: ((path: string) => void) | null;
+  onMentionFile?: ((_path: string) => void) | null;
+  onOpenFile?: ((_path: string) => void) | null;
   locked?: boolean;
   unavailableWorkspace?: string | null;
   hideHeader?: boolean;
   onTreeStats?: (
-    stats: { totalEntries: number; truncated: boolean } | null,
+    _stats: { totalEntries: number; truncated: boolean } | null,
   ) => void;
 }
 

@@ -103,11 +103,11 @@ export default function RequestsTableComponent({
   maxHeight?: number | string | null;
   sortKey?: string;
   sortDir?: string;
-  onSort?: (key: string, dir: string) => void;
-  onRowClick?: (row: TransformedRequestItem) => void;
-  onRowMouseEnter?: (row: TransformedRequestItem, index: number) => void;
+  onSort?: (_key: string, _dir: string) => void;
+  onRowClick?: (_row: TransformedRequestItem) => void;
+  onRowMouseEnter?: (_row: TransformedRequestItem, _index: number) => void;
   onRowMouseLeave?: () => void;
-  getRowClassName?: (row: TransformedRequestItem) => string;
+  getRowClassName?: (_row: TransformedRequestItem) => string;
   storageKey?: string;
 }) {
   const router = useRouter();

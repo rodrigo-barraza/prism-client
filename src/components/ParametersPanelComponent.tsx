@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Settings2, RotateCcw, HardDrive } from "lucide-react";
+import { RotateCcw, HardDrive } from "lucide-react";
 import {
   InputComponent,
   SelectComponent,
@@ -36,7 +36,7 @@ function formatBytes(bytes: number): string {
 
 export interface ParametersPanelProps {
   settings: PrismSettings;
-  onChange?: (changes: Partial<PrismSettings>) => void;
+  onChange?: (_changes: Partial<PrismSettings>) => void;
   config: PrismConfig | null;
   readOnly?: boolean;
   isAgentMode?: boolean;

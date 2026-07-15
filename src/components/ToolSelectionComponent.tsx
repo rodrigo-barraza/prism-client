@@ -12,7 +12,6 @@ import {
   ChevronDown,
   Globe2,
   TerminalSquare,
-  GitBranch,
   MonitorSmartphone,
   Code2,
   CloudSun,
@@ -59,7 +58,7 @@ interface ToolSchema {
 interface ToolSelectionProps {
   availableTools?: ToolSchema[];
   enabledTools?: string[];
-  onEnabledToolsChange?: (tools: string[]) => void;
+  onEnabledToolsChange?: (_tools: string[]) => void;
   coreToolsLocked?: boolean;
   lockedOffTools?: Map<string, string>;
   readOnly?: boolean;
@@ -68,7 +67,7 @@ interface ToolSelectionProps {
   /** Subset of enabledTools that are enabled by default (only relevant in triStateMode). */
   enabledByDefaultTools?: string[];
   /** Callback when the enabled-by-default subset changes (only relevant in triStateMode). */
-  onEnabledByDefaultToolsChange?: (tools: string[]) => void;
+  onEnabledByDefaultToolsChange?: (_tools: string[]) => void;
 }
 
 const DOMAIN_ICONS: Record<string, LucideIcon> = {

@@ -89,7 +89,7 @@ const ICON_MAP = {
 interface ChatInputButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: IconName | "upload" | React.ReactNode;
   uploadTypes?: UploadType[];
-  onClick?: (e: React.MouseEvent) => void;
+  onClick?: (_e: React.MouseEvent) => void;
   label?: string;
   isActive?: boolean;
   disabled?: boolean;

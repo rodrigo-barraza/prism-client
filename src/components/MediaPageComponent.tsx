@@ -113,7 +113,7 @@ export interface MediaPageComponentProps {
   project?: string | null;
   dateRange?: { from: string; to: string };
   agent?: string | null;
-  onCountChange?: (total: number) => void;
+  onCountChange?: (_total: number) => void;
 }
 
 export default function MediaPageComponent({

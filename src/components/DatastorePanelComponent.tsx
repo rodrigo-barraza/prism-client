@@ -26,8 +26,8 @@ const RECORDS_PAGE_SIZE = 25;
 interface DatastorePanelProps {
   project?: string;
   refreshKey?: number;
-  onCountChange?: (count: number) => void;
-  onActionsChange?: (actions: ReactNode) => void;
+  onCountChange?: (_count: number) => void;
+  onActionsChange?: (_actions: ReactNode) => void;
 }
 
 /**

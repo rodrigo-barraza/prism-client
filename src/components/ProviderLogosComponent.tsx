@@ -307,12 +307,12 @@ export default function ProviderLogo({
   if (!provider) return null;
   // Resolve multi-instance IDs (e.g. "lm-studio-2") to base type logo
   const key = (
-    LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>
+    LOGOS as Record<string, ((_size: number) => React.ReactNode) | undefined>
   )[provider]
     ? provider
     : _resolveBaseTypeFromLogos(provider);
   const render = (
-    LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>
+    LOGOS as Record<string, ((_size: number) => React.ReactNode) | undefined>
   )[key];
   if (!render) return null;
   return (
@@ -334,7 +334,7 @@ function _resolveBaseTypeFromLogos(id: string) {
   const match = id.match(/^(.+)-(\d+)$/);
   if (
     match &&
-    (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[
+    (LOGOS as Record<string, ((_size: number) => React.ReactNode) | undefined>)[
       match[1]
     ]
   )
@@ -422,7 +422,7 @@ export function resolveProviderLabel(id?: string) {
 export function resolveProviderLogoKey(id?: string) {
   if (!id) return "";
   if (
-    (LOGOS as Record<string, ((size: number) => React.ReactNode) | undefined>)[
+    (LOGOS as Record<string, ((_size: number) => React.ReactNode) | undefined>)[
       id
     ]
   )

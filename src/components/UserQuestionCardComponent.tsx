@@ -38,7 +38,7 @@ interface QuestionBlockProps {
   options?: QuestionOption[];
   multiSelect?: boolean;
   isPending: boolean;
-  onAnswer?: (answerData: QuestionAnswerData) => void;
+  onAnswer?: (_answerData: QuestionAnswerData) => void;
   answeredWith?: string | string[] | null;
 }
 
@@ -255,7 +255,7 @@ function QuestionBlock({
 interface UserQuestionCardComponentProps {
   questions?: NormalizedQuestion[];
   context?: string | null;
-  onAnswer?: (answers: QuestionAnswerData[]) => void;
+  onAnswer?: (_answers: QuestionAnswerData[]) => void;
   isPending?: boolean;
   answeredWith?: Array<QuestionAnswerData | string> | null;
 }

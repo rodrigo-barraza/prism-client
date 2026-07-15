@@ -69,7 +69,7 @@ interface NavigationProps {
   systemStatus?: string;
   isGenerating?: boolean;
   activeApiCount?: number;
-  onNavClick?: (href: string) => void;
+  onNavClick?: (_href: string) => void;
 }
 
 // Module-level cache to persist the sidebar open/collapsed state across client-side page transitions.

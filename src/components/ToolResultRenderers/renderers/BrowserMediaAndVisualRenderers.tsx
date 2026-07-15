@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Monitor, Music, Volume2, RotateCcw, Trash2, ArrowRight, Download } from "lucide-react";
+import { Monitor, Music, Volume2, RotateCcw, Trash2, ArrowRight } from "lucide-react";
 import { RendererProps } from "../types";
 import { tryParse } from "../utils";
 import { PathPill, StatusBadge, RawResultToggle } from "../SharedComponents";

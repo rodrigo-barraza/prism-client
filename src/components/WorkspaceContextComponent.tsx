@@ -13,7 +13,7 @@ import { LOCAL_STORAGE_KEY_WORKSPACE_ROOT } from "../constants";
 export interface WorkspaceContextType {
   workspaces: WorkspaceItem[];
   currentWorkspace: WorkspaceItem | null;
-  setCurrentWorkspace: (workspace: WorkspaceItem | null) => void;
+  setCurrentWorkspace: (_workspace: WorkspaceItem | null) => void;
   refreshWorkspaces: () => Promise<WorkspaceItem[]>;
   /** True once the workspace list has been fetched successfully at least once. */
   workspacesLoaded: boolean;

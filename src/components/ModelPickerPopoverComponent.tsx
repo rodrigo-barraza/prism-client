@@ -12,12 +12,12 @@ import { createPortal } from "react-dom";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import PrismService from "../services/PrismService";
 import ModelsTableComponent from "./ModelsTableComponent";
-import type { RawModel, RowData } from "./ModelsTableComponent";
+import type { RawModel } from "./ModelsTableComponent";
 import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
 
 import SoundService from "@/services/SoundService";
-import { LOCAL_PROVIDERS, EVENT_NAME_PANEL_DISMISS_SIDEBARS } from "../constants";
+import { EVENT_NAME_PANEL_DISMISS_SIDEBARS } from "../constants";
 import styles from "./ModelPickerPopoverComponent.module.css";
 import {
   CloseButtonComponent,
@@ -118,16 +118,16 @@ export interface ModelPickerPopoverProps {
     [key: string]: string | number | boolean | undefined;
   } | null;
   onSelectModel?:
-    | ((provider: string, model: string) => void)
-    | ((model: ExtendedModelOption) => void);
-  onLmStudioSelect?: (model: ExtendedModelOption) => void;
+    | ((_provider: string, _model: string) => void)
+    | ((_model: ExtendedModelOption) => void);
+  onLmStudioSelect?: (_model: ExtendedModelOption) => void;
   loadingProgress?: number | null;
   favorites?: string[];
-  onToggleFavorite?: (key: string) => void;
+  onToggleFavorite?: (_key: string) => void;
   disabled?: boolean;
   multiSelect?: boolean;
   selectedKeys?: Set<string>;
-  renderActions?: (model: ExtendedModelOption) => React.ReactNode;
+  renderActions?: (_model: ExtendedModelOption) => React.ReactNode;
   triggerLabel?: string;
   triggerIcon?: React.ReactNode;
   modelTypeFilter?: string;
@@ -370,7 +370,7 @@ export default function ModelPickerPopoverComponent({
     (rawModel: ExtendedModelOption) => {
       if (multiSelect) {
         // Multi-select: toggle selection, keep popover open
-        (onSelectModel as (model: ExtendedModelOption) => void)?.(rawModel);
+        (onSelectModel as (_model: ExtendedModelOption) => void)?.(rawModel);
         return;
       }
 
@@ -384,7 +384,7 @@ export default function ModelPickerPopoverComponent({
         provider === settings?.provider &&
         name === settings?.model
       ) {
-        (onSelectModel as (provider: string, model: string) => void)?.("", "");
+        (onSelectModel as (_provider: string, _model: string) => void)?.("", "");
         setOpen(false);
         setHighlightIndex(-1);
         document.dispatchEvent(new CustomEvent(EVENT_NAME_PANEL_DISMISS_SIDEBARS));
@@ -400,7 +400,7 @@ export default function ModelPickerPopoverComponent({
         return;
       }
 
-      (onSelectModel as (provider: string, model: string) => void)?.(
+      (onSelectModel as (_provider: string, _model: string) => void)?.(
         provider,
         name,
       );
@@ -655,14 +655,14 @@ export default function ModelPickerPopoverComponent({
             <div ref={bodyRef} className={styles['popover-body']}>
               <ModelsTableComponent
                 models={filteredModels as unknown as RawModel[]}
-                onSelect={handleSelect as unknown as (model: RawModel) => void}
+                onSelect={handleSelect as unknown as (_model: RawModel) => void}
                 showSearch={false}
                 showProviderFilter
                 favorites={favorites}
                 onToggleFavorite={onToggleFavorite}
                 renderActions={
                   renderActions as unknown as
-                    | ((model: RawModel) => React.ReactNode)
+                    | ((_model: RawModel) => React.ReactNode)
                     | undefined
                 }
                 activeRowKey={activeRowKey}
@@ -675,7 +675,7 @@ export default function ModelPickerPopoverComponent({
                 selectedKeys={multiSelect ? selectedKeys : undefined}
                 onToggleSelect={
                   multiSelect
-                    ? (onSelectModel as unknown as (model: RawModel) => void)
+                    ? (onSelectModel as unknown as (_model: RawModel) => void)
                     : undefined
                 }
               />

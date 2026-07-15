@@ -56,19 +56,19 @@ interface HistoryItem {
 interface HistoryItemProps {
   item: HistoryItem;
   isActive?: boolean;
-  onClick?: (item: HistoryItem) => void;
-  onDelete?: (conversationId: string) => void;
-  onDownload?: (conversationId: string) => void;
-  onCopy?: (conversationId: string) => void;
+  onClick?: (_item: HistoryItem) => void;
+  onDelete?: (_conversationId: string) => void;
+  onDownload?: (_conversationId: string) => void;
+  onCopy?: (_conversationId: string) => void;
   icon?: LucideIcon;
   readOnly?: boolean;
   admin?: boolean;
   isNew?: boolean;
   isFavorite?: boolean;
-  onToggleFavorite?: (conversationId: string) => void;
+  onToggleFavorite?: (_conversationId: string) => void;
   className?: string;
   dataPanelClose?: boolean;
-  onOpenInNewTab?: (item: HistoryItem) => void;
+  onOpenInNewTab?: (_item: HistoryItem) => void;
   isGenerating?: boolean;
   pendingBackgroundTasks?: number;
   isCondensed?: boolean;

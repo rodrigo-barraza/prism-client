@@ -55,7 +55,7 @@ export function ThreeMeshRenderer({ result, args }: RendererProps) {
   );
 }
 
-export function ThreeVoxelRenderer({ result, args }: RendererProps) {
+export function ThreeVoxelRenderer({ result }: RendererProps) {
   const parsed = tryParse(result);
   if (!parsed) return <RawResultToggle result={result} />;
 

@@ -32,7 +32,7 @@ async function refreshActiveConversation(
   sessionId: string,
   context: RefreshGuardContext,
   fetchSession: () => Promise<AgentConversation | null>,
-  applySessionData: (session: AgentConversation) => void,
+  applySessionData: (_session: AgentConversation) => void,
 ): Promise<boolean> {
   if (!sessionId || sessionId !== context.currentSessionId) return false;
 

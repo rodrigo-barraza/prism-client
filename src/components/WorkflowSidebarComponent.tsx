@@ -35,18 +35,18 @@ interface WorkflowSidebarProps {
   admin?: boolean;
   workflows?: WorkflowRecord[];
   activeWorkflowId?: string;
-  onLoadWorkflow?: (id: string) => void;
-  onDeleteWorkflow?: (id: string) => void;
-  onDownloadWorkflow?: (id: string) => void;
-  onCopyWorkflow?: (id: string) => void;
-  onAddAsset?: (type: string, nodeType?: string) => void;
+  onLoadWorkflow?: (_id: string) => void;
+  onDeleteWorkflow?: (_id: string) => void;
+  onDownloadWorkflow?: (_id: string) => void;
+  onCopyWorkflow?: (_id: string) => void;
+  onAddAsset?: (_type: string, _nodeType?: string) => void;
   onNewWorkflow?: () => void;
   onSaveWorkflow?: () => void;
   workflowName?: string;
-  onWorkflowNameChange?: (name: string) => void;
+  onWorkflowNameChange?: (_name: string) => void;
   loading?: boolean;
   favorites?: string[];
-  onToggleFavorite?: (id: string) => void;
+  onToggleFavorite?: (_id: string) => void;
   initialProviders?: string[];
   initialSearch?: string;
 }

@@ -19,7 +19,7 @@ const TABS = [
 
 export interface StatsTabBarProps {
   activeTab: string;
-  onChange: (tab: string) => void;
+  onChange: (_tab: string) => void;
 }
 
 export default function StatsTabBarComponent({

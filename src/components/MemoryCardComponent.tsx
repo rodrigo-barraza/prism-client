@@ -36,8 +36,8 @@ interface MemoryCardComponentProps {
   memory: AgentMemory;
   isNew?: boolean;
   isConfirmingDelete?: boolean;
-  onDeleteRequest: (memoryId: string) => void;
-  onDeleteConfirm: (memoryId: string) => void;
+  onDeleteRequest: (_memoryId: string) => void;
+  onDeleteConfirm: (_memoryId: string) => void;
   onDeleteCancel: () => void;
 }
 

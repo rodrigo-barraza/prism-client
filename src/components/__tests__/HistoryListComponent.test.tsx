@@ -25,7 +25,7 @@ vi.mock("@rodrigo-barraza/components-library", () => ({
     placeholder,
   }: {
     value: string;
-    onChange: (nextValue: string) => void;
+    onChange: (_nextValue: string) => void;
     placeholder?: string;
   }) => (
     <input

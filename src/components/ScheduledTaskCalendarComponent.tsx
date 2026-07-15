@@ -58,7 +58,7 @@ interface CalendarDay {
 
 interface ScheduledTaskCalendarComponentProps {
   tasks: ScheduledTask[];
-  onEventClick?: (taskId: string) => void;
+  onEventClick?: (_taskId: string) => void;
 }
 
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

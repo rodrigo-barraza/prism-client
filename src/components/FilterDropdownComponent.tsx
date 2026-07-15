@@ -27,13 +27,13 @@ export interface FilterGroup {
   items: FilterItem[];
   activeKeys: string | Set<string> | null;
   isSingleSelect?: boolean;
-  onToggle: (key: string | null) => void;
+  onToggle: (_key: string | null) => void;
 }
 
 export interface FilterDropdownComponentProps {
   groups?: FilterGroup[];
   dateRange?: { from: string; to: string };
-  onDateChange?: (range: { from: string; to: string }) => void;
+  onDateChange?: (_range: { from: string; to: string }) => void;
   dateStorageKey?: string;
   triggerLabel?: string;
   fullWidth?: boolean;
@@ -66,7 +66,7 @@ export default function FilterDropdownComponent({
         const parsed = JSON.parse(stored);
         if (parsed.from || parsed.to) onDateChange(parsed);
       }
-    } catch (e) {
+    } catch  {
       /* ignore */
     }
   }, [dateStorageKey, onDateChange]);

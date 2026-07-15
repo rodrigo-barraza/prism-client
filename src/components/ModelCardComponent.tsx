@@ -25,10 +25,10 @@ interface ModelCardProps {
   supportsThinking?: boolean;
   isTools?: boolean;
   config?: PrismConfig | null;
-  onRemove?: (instanceId: string) => void;
-  onChangeModel?: (instanceId: string, provider: string, modelName: string) => void;
-  onToggleThinking?: (instanceId: string) => void;
-  onToggleTools?: (instanceId: string) => void;
+  onRemove?: (_instanceId: string) => void;
+  onChangeModel?: (_instanceId: string, _provider: string, _modelName: string) => void;
+  onToggleThinking?: (_instanceId: string) => void;
+  onToggleTools?: (_instanceId: string) => void;
 }
 
 export default function ModelCardComponent({

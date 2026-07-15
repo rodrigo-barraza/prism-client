@@ -3,20 +3,17 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
 import {
-  BotMessageSquare,
   Paperclip,
   X,
   ClipboardList,
   Zap,
   GitBranch,
   Repeat,
-  Activity,
   CornerDownLeft,
   Send,
   Square,
   File,
   FolderOpen,
-  FolderTree,
   Plus,
   ShieldCheck,
   FileText,
@@ -41,7 +38,6 @@ import {
   Skill,
   Rule,
   ToolCallEvent,
-  CustomAgent,
   PrismSettings,
   Conversation,
   AgentPersona,
@@ -52,8 +48,6 @@ import {
   ModelOption,
   SSEData,
   ContentSegment,
-  Favorite,
-  Workflow,
   TransformedRequestItem,
   LlamaCppServerProps,
   ContextBudget,
@@ -110,14 +104,9 @@ import useConversationStats from "../hooks/useConversationStats";
 import { 
   generateUUID, 
   renderToolName,
-  formatTokenCount,
-  formatLatency,
-  formatTokensPerSec,
-  formatDuration,
-  POLL_STANDARD,
   type ToolDisplayMetadata,
 } from "@rodrigo-barraza/utilities-library";
-import { TOOL_NAMES, SERVER_SENT_EVENT_TYPES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { TOOL_NAMES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { buildUnifiedToolCounts, CAPABILITY_TOOL_NAMES, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams, buildSettingsDefaults, isNameBasedThinkingModel } from "../utils/utilities";
 import {
   MESSAGE_ROLES,
@@ -182,7 +171,6 @@ import useToolToggles from "../hooks/useToolToggles";
 import useModelMemory from "../hooks/useModelMemory";
 import AgentPickerComponent from "./AgentPickerComponent";
 import BadgeComponent, { registerModelLabels } from "./BadgeComponent";
-import WorkspaceSelectorComponent from "./WorkspaceSelectorComponent";
 import { useWorkspace } from "./WorkspaceContextComponent";
 import WorkspaceService from "../services/WorkspaceService";
 import {
@@ -683,9 +671,9 @@ export default function ChatConversationComponent({
   // -- Notifications & Toasts ------------------------------------
   const { toasts, addToast: originalAddToast, removeToast } = useToast();
   const addToast = originalAddToast as (
-    message: React.ReactNode,
-    type?: "success" | "warning" | "error" | "info" | string,
-    duration?: number,
+    _message: React.ReactNode,
+    _type?: "success" | "warning" | "error" | "info" | string,
+    _duration?: number,
   ) => number;
   const pendingDeletionsRef = useRef<
     Map<
@@ -888,7 +876,7 @@ export default function ChatConversationComponent({
       ? STORAGE_KEY_MODEL_MEMORY_AGENT
       : STORAGE_KEY_MODEL_MEMORY_AGENT_PREFIX + agentId;
 
-  const { disabledTools, handleToggleBuiltIn, handleToggleAllBuiltIn, resetToAllDisabled, restoreDisabledTools, enableSpecificTools } =
+  const { disabledTools, handleToggleBuiltIn, resetToAllDisabled, restoreDisabledTools, enableSpecificTools } =
     useToolToggles(builtInTools, isCoreToolsLocked);
 
   // -- Model memory (persist last-used model per agent) ----------
@@ -3561,7 +3549,7 @@ export default function ChatConversationComponent({
     },
     [ensureMentionCache],
   );
-  const detectMentionQueryRef = useRef<((element: HTMLDivElement) => void) | null>(
+  const detectMentionQueryRef = useRef<((_element: HTMLDivElement) => void) | null>(
     detectMentionQuery,
   );
   detectMentionQueryRef.current = detectMentionQuery;
@@ -7059,7 +7047,7 @@ export default function ChatConversationComponent({
         }
       },
 
-      onDone: (data?: SSEData) => {
+      onDone: (_data?: SSEData) => {
         if (!isSubscriptionActive) return;
         // Generation finished — do a final full refresh from DB
         // to get the canonical message state with all metadata.

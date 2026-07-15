@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { X, ZoomIn, ZoomOut, Upload } from "lucide-react";
+import { X, ZoomIn, ZoomOut } from "lucide-react";
 import { ButtonComponent } from "@rodrigo-barraza/components-library";
 import styles from "./ImageCropperComponent.module.css";
 
 interface ImageCropperComponentProps {
   imageFile: File | null;
-  onCrop: (croppedDataUrl: string) => void;
+  onCrop: (_croppedDataUrl: string) => void;
   onCancel: () => void;
 }
 

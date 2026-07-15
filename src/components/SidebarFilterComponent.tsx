@@ -62,14 +62,14 @@ interface SidebarFilterProps {
   activeModalities?: Set<string>;
   activeTools?: Set<string>;
   activeProviders?: Set<string>;
-  onModalityChange?: (next: Set<string>) => void;
-  onToolChange?: (next: Set<string>) => void;
-  onProviderChange?: (next: Set<string>) => void;
+  onModalityChange?: (_next: Set<string>) => void;
+  onToolChange?: (_next: Set<string>) => void;
+  onProviderChange?: (_next: Set<string>) => void;
   showFavoritesOnly?: boolean;
   onFavoritesToggle?: () => void;
   _hasFavorites?: boolean;
   dateRange?: DateRange;
-  onDateChange?: (range: DateRange) => void;
+  onDateChange?: (_range: DateRange) => void;
   dateStorageKey?: string;
   triggerLabel?: string;
   toolsGroupLabel?: string;
@@ -157,7 +157,7 @@ export default function SidebarFilterComponent({
         const parsed = JSON.parse(stored);
         if (parsed.from || parsed.to) onDateChange(parsed);
       }
-    } catch (e) {
+    } catch  {
       /* ignore */
     }
   }, [dateStorageKey, onDateChange]);

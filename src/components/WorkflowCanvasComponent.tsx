@@ -46,27 +46,27 @@ export default function WorkflowCanvas({
 }: {
   nodes: IWorkflowNode[];
   connections: WorkflowConnection[];
-  onUpdateNodePosition: (nodeId: string, pos: { x: number; y: number }) => void;
-  onDeleteNode: (nodeId: string) => void;
-  onAddConnection: (conn: {
+  onUpdateNodePosition: (_nodeId: string, _pos: { x: number; y: number }) => void;
+  onDeleteNode: (_nodeId: string) => void;
+  onAddConnection: (_conn: {
     sourceNodeId: string;
     sourceModality: string;
     targetNodeId: string;
     targetModality: string;
   }) => void;
-  onDeleteConnection: (connId: string) => void;
-  onUpdateNodeContent?: (nodeId: string, content: string) => void;
-  onUpdateNodeConfig?: (nodeId: string, key: string, value: unknown) => void;
+  onDeleteConnection: (_connId: string) => void;
+  onUpdateNodeContent?: (_nodeId: string, _content: string) => void;
+  onUpdateNodeConfig?: (_nodeId: string, _key: string, _value: unknown) => void;
   onUpdateFileInput?: (
-    nodeId: string,
-    content: string | ArrayBuffer | null,
-    mimeType: string | null,
+    _nodeId: string,
+    _content: string | ArrayBuffer | null,
+    _mimeType: string | null,
   ) => void;
-  onDuplicateNode?: (node: IWorkflowNode) => void;
+  onDuplicateNode?: (_node: IWorkflowNode) => void;
   nodeStatuses?: Record<string, string>;
   nodeResults?: Record<string, unknown>;
   selectedNodeId?: string | null;
-  onSelectNode: (nodeId: string) => void;
+  onSelectNode: (_nodeId: string) => void;
   activeWorkflowId?: string | null;
   readOnly?: boolean;
   isLoadingWorkflow?: boolean;

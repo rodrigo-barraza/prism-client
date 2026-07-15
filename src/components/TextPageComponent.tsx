@@ -22,7 +22,6 @@ import {
 import FilterDropdownComponent from "./FilterDropdownComponent";
 import { LoadingMessage, EmptyMessage } from "./StateMessageComponent";
 import { FilterBarComponent } from "./FilterBarComponent";
-import { formatCost } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../utils/utilities";
 import styles from "./TextPageComponent.module.css";
 import { LOCAL_STORAGE_KEY_DATE_RANGE, LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE } from "../constants";
@@ -66,7 +65,7 @@ interface TextPageComponentProps {
   mode?: string;
   dateRange?: { from: string; to: string };
   agent?: string;
-  onCountChange?: (count: number) => void;
+  onCountChange?: (_count: number) => void;
 }
 
 export default function TextPageComponent({

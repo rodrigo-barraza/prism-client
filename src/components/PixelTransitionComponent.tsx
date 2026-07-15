@@ -97,7 +97,7 @@ export default function PixelTransitionComponent({
   }, []);
 
   /** rAF animation tick — stored in a ref to avoid stale closures */
-  const tickRef = useRef<((timestamp: number) => void) | null>(null);
+  const tickRef = useRef<((_timestamp: number) => void) | null>(null);
   tickRef.current = (timestamp: number) => {
     if (!startTimeRef.current) startTimeRef.current = timestamp;
 

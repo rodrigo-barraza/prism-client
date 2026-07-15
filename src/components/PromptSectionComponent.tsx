@@ -23,7 +23,7 @@ export default function PromptSectionComponent({
   label?: string;
   badge?: React.ReactNode;
   value?: string;
-  onChange: (value: string) => void;
+  onChange: (_value: string) => void;
   placeholder?: string;
   rows?: number;
   className?: string;

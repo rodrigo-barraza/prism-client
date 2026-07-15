@@ -19,7 +19,7 @@ import {
 import IrisService, {
   type IrisRequestEntry,
 } from "../services/IrisService";
-import type { AgentConversation, ConversationStats, ToolCallEvent } from "../types/types";
+import type { AgentConversation, ToolCallEvent } from "../types/types";
 import { cleanModelName } from "./BadgeComponent";
 import ProviderLogo, { resolveProviderLabel, resolveProviderLogoKey } from "./ProviderLogosComponent";
 import StarfieldComponent from "./StarfieldComponent";
@@ -36,7 +36,7 @@ import {
   formatElapsedTime,
   timeAgo as formatTimeAgo,
 } from "@rodrigo-barraza/utilities-library";
-import { EXECUTION_STATUS, APPROVAL_STATUS } from "../constants";
+import { EXECUTION_STATUS } from "../constants";
 
 import graphStyles from "./ConversationGraphPageComponent.module.css";
 import styles from "./ChatConversationGraphComponent.module.css";
@@ -53,7 +53,7 @@ export type {
   GraphData,
 } from "@rodrigo-barraza/utilities-library/graph";
 
-import type { NodeCategory, GraphNode, GraphEdge, SubAgentTreeNode, GraphData } from "@rodrigo-barraza/utilities-library/graph";
+import type { NodeCategory, GraphNode, GraphEdge, SubAgentTreeNode } from "@rodrigo-barraza/utilities-library/graph";
 
 const NODE_COLORS: Record<NodeCategory, string> = {
   project: "oklch(0.72 0.15 120)",
@@ -222,12 +222,9 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
     graphData,
     setGraphData,
     isLoading,
-    isLiveConnected,
     enteringNodeIds,
-    setEnteringNodeIds,
     toolEmojiMap,
     nodesRef,
-    graphDataRef,
     draggedNodeIdRef,
     collisionOwnerRef,
   } = resolvedGraphState;
@@ -1775,7 +1772,7 @@ function InlineRequestPayloadSection({
 }: {
   requestDetail: IrisRequestEntry;
   expandedSections: Set<string>;
-  onToggleSection: (key: string) => void;
+  onToggleSection: (_key: string) => void;
 }) {
   const requestPayload = requestDetail.requestPayload as { messages?: RequestPayloadMessage[] } | null;
   const responsePayload = requestDetail.responsePayload as {

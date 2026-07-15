@@ -10,7 +10,7 @@ interface ResourceCardProps {
   icon: LucideIcon;
   count: string | number;
   label: string;
-  onClick?: (event: React.SyntheticEvent) => void;
+  onClick?: (_event: React.SyntheticEvent) => void;
 }
 
 export default function ResourceCardComponent({

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { getBaseHeaders } from "../serviceHeaders";
 import { PROJECT_NAME } from "../../config";
 import { LOCAL_STORAGE_KEY_WORKSPACE_ROOT, LOCAL_STORAGE_KEY_USERNAME } from "../../constants";

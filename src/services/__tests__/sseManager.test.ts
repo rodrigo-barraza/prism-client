@@ -5,7 +5,7 @@ class MockEventSource {
   static instancesList: MockEventSource[] = [];
 
   url: string;
-  onmessage: ((event: MessageEvent) => void) | null = null;
+  onmessage: ((_event: MessageEvent) => void) | null = null;
   onerror: (() => void) | null = null;
   close = vi.fn();
 

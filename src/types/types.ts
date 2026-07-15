@@ -809,57 +809,57 @@ export interface TransformedRequestItem {
 
 export interface SSECallbacks {
   onChunk?: (
-    content: string,
-    sourceModel?: string,
-    outputCharacters?: number,
+    _content: string,
+    _sourceModel?: string,
+    _outputCharacters?: number,
   ) => void;
   onThinking?: (
-    content: string,
-    sourceModel?: string,
-    outputCharacters?: number,
+    _content: string,
+    _sourceModel?: string,
+    _outputCharacters?: number,
   ) => void;
-  onImage?: (data: string, mimeType: string, minioRef?: string) => void;
-  onAudio?: (data: string, mimeType: string) => void;
-  onExecutableCode?: (code: string, language: string) => void;
-  onCodeExecutionResult?: (output: string, outcome: string) => void;
-  onWebSearchResult?: (results: WebSearchResult[]) => void;
-  onToolCall?: (event: ToolCallEvent) => void;
-  onToolExecution?: (event: SSEData) => void;
-  onToolOutput?: (event: SSEData) => void;
-  onSubAgentToolExecution?: (event: SSEData) => void;
-  onSubAgentToolOutput?: (event: SSEData) => void;
-  onSubAgentStatus?: (event: SSEData) => void;
-  onApprovalRequired?: (event: SSEData) => void;
-  onPlanProposal?: (event: SSEData) => void;
-  onUserQuestion?: (event: SSEData) => void;
+  onImage?: (_data: string, _mimeType: string, _minioRef?: string) => void;
+  onAudio?: (_data: string, _mimeType: string) => void;
+  onExecutableCode?: (_code: string, _language: string) => void;
+  onCodeExecutionResult?: (_output: string, _outcome: string) => void;
+  onWebSearchResult?: (_results: WebSearchResult[]) => void;
+  onToolCall?: (_event: ToolCallEvent) => void;
+  onToolExecution?: (_event: SSEData) => void;
+  onToolOutput?: (_event: SSEData) => void;
+  onSubAgentToolExecution?: (_event: SSEData) => void;
+  onSubAgentToolOutput?: (_event: SSEData) => void;
+  onSubAgentStatus?: (_event: SSEData) => void;
+  onApprovalRequired?: (_event: SSEData) => void;
+  onPlanProposal?: (_event: SSEData) => void;
+  onUserQuestion?: (_event: SSEData) => void;
   /** Turn-start mirror of the user's prompt (`user_message` event) */
-  onUserMessage?: (event: SSEData) => void;
-  onTaskNotification?: (event: SSEData) => void;
-  onConversationStateUpdate?: (event: SSEData) => void;
-  onTodoUpdate?: (event: SSEData) => void;
-  onBriefUpdate?: (event: SSEData) => void;
-  onRunInfo?: (event: SSEData) => void;
-  onModelStart?: (event: SSEData) => void;
-  onModelComplete?: (event: SSEData) => void;
-  onRunComplete?: (event: SSEData) => void;
-  onUsageUpdate?: (event: SSEData) => void;
-  onContextBudget?: (event: SSEData) => void;
-  onStatus?: (event: SSEData) => void;
+  onUserMessage?: (_event: SSEData) => void;
+  onTaskNotification?: (_event: SSEData) => void;
+  onConversationStateUpdate?: (_event: SSEData) => void;
+  onTodoUpdate?: (_event: SSEData) => void;
+  onBriefUpdate?: (_event: SSEData) => void;
+  onRunInfo?: (_event: SSEData) => void;
+  onModelStart?: (_event: SSEData) => void;
+  onModelComplete?: (_event: SSEData) => void;
+  onRunComplete?: (_event: SSEData) => void;
+  onUsageUpdate?: (_event: SSEData) => void;
+  onContextBudget?: (_event: SSEData) => void;
+  onStatus?: (_event: SSEData) => void;
   /** Synthesis stream (/synthesis/generate): run started, conversation allocated */
-  onSynthesisStart?: (conversationId: string) => void;
+  onSynthesisStart?: (_conversationId: string) => void;
   /** Synthesis stream: a user/assistant turn begins — subsequent chunk/thinking events belong to it */
-  onTurnStart?: (role: string, index: number) => void;
+  onTurnStart?: (_role: string, _index: number) => void;
   /** Synthesis stream: turn finished with its canonical message */
-  onTurnComplete?: (message: Message, role: string) => void;
-  onDone?: (event: SSEData) => void;
-  onError?: (error: Error) => void;
+  onTurnComplete?: (_message: Message, _role: string) => void;
+  onDone?: (_event: SSEData) => void;
+  onError?: (_error: Error) => void;
   /**
    * The transport closed without the server sending a terminal done/error
    * event — network EOF (server crash mid-turn) or a stalled socket that
    * produced no bytes past the watchdog window. Consumers waiting on
    * onDone must treat this as end-of-stream.
    */
-  onStreamClosed?: (info: { reason: "eof-without-done" | "stalled" }) => void;
+  onStreamClosed?: (_info: { reason: "eof-without-done" | "stalled" }) => void;
   /** The stream was torn down by the caller's abort handle (user stop). */
   onAborted?: () => void;
 }

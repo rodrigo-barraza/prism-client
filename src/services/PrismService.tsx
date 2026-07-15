@@ -19,7 +19,6 @@ import type {
   AgentPersona,
   Skill,
   Rule,
-  AgentMemory,
   AgentMemoryListResponse,
   PrismSettings,
   MCPServer,
@@ -178,8 +177,8 @@ export default class PrismService {
     onLocalMerge,
     serviceInstance,
   }: {
-    onConfig?: (config: PrismConfig) => void;
-    onLocalMerge?: (config: PrismConfig) => void;
+    onConfig?: (_config: PrismConfig) => void;
+    onLocalMerge?: (_config: PrismConfig) => void;
     serviceInstance?: typeof PrismService;
   } = {}): Promise<PrismConfig> {
     const service = serviceInstance || PrismService;
@@ -2109,9 +2108,9 @@ export default class PrismService {
       evalBatchSize?: number;
     } = {},
     callbacks: {
-      onProgress?: (percentage: number) => void;
+      onProgress?: (_percentage: number) => void;
       onComplete?: () => void;
-      onError?: (error: Error) => void;
+      onError?: (_error: Error) => void;
     } = {},
   ): () => void {
     const { onProgress, onComplete, onError } = callbacks;

@@ -205,7 +205,7 @@ describe("Trailing-edge throttle behavior", () => {
 function createThrottledFunction(options: {
   throttleMilliseconds: number;
   getLastCallTimestamp: () => number;
-  setLastCallTimestamp: (timestamp: number) => void;
+  setLastCallTimestamp: (_timestamp: number) => void;
   getIsInFlight: () => boolean;
   execute: () => void;
 }) {

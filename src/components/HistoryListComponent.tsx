@@ -66,10 +66,10 @@ const COST_FILTER_COLOR = "oklch(0.7 0.17 145)";
 interface HistoryListProps {
   items?: HistoryListItem[];
   activeId?: string | null;
-  onSelect?: (item: HistoryListItem) => void;
-  onDelete?: (id: string) => void;
-  onDownload?: (id: string) => void;
-  onCopy?: (id: string) => void;
+  onSelect?: (_item: HistoryListItem) => void;
+  onDelete?: (_id: string) => void;
+  onDownload?: (_id: string) => void;
+  onCopy?: (_id: string) => void;
   icon?: LucideIcon;
   readOnly?: boolean;
   emptyLabel?: string;
@@ -80,19 +80,19 @@ interface HistoryListProps {
   admin?: boolean;
   newIds?: Set<string>;
   favorites?: string[];
-  onToggleFavorite?: (id: string) => void;
+  onToggleFavorite?: (_id: string) => void;
   initialProviders?: string[];
   initialSearch?: string;
   countLabel?: string;
-  onOpenInNewTab?: (item: HistoryListItem) => void;
+  onOpenInNewTab?: (_item: HistoryListItem) => void;
   generatingConversationIds?: Set<string>;
   knownParentConversationIds?: Set<string>;
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => void;
-  onSearchChange?: (query: string) => void;
+  onSearchChange?: (_query: string) => void;
   dateRange?: { from: string; to: string };
-  onDateChange?: (range: { from: string; to: string }) => void;
+  onDateChange?: (_range: { from: string; to: string }) => void;
   dateStorageKey?: string;
   filterStorageKey?: string;
   /** Live sub-agent execution phases keyed by conversationId */

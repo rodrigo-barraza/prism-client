@@ -275,8 +275,8 @@ const codeTheme = {
 interface FileTabProps {
   file: { id: string; path: string };
   isActive: boolean;
-  onSelect: (id: string) => void;
-  onClose: (id: string) => void;
+  onSelect: (_id: string) => void;
+  onClose: (_id: string) => void;
 }
 
 const FileTab = memo(function FileTab({
@@ -322,14 +322,14 @@ export interface OpenFile {
 export interface FileViewerPanelProps {
   openFiles?: OpenFile[];
   activeFileId?: string | null;
-  onSelectFile: (id: string) => void;
-  onCloseFile: (id: string) => void;
-  onFileNotFound?: (id: string, path: string) => void;
+  onSelectFile: (_id: string) => void;
+  onCloseFile: (_id: string) => void;
+  onFileNotFound?: (_id: string, _path: string) => void;
   isOpen?: boolean;
   width?: number;
-  onWidthChange?: (width: number) => void;
+  onWidthChange?: (_width: number) => void;
   refreshKey?: number;
-  onMentionLines?: (path: string, startLine: number, endLine: number) => void;
+  onMentionLines?: (_path: string, _startLine: number, _endLine: number) => void;
 }
 
 interface CachedFile {

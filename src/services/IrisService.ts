@@ -333,7 +333,7 @@ export default class IrisService {
    * Uses a shared singleton connection per URL (SSEManager).
    */
   static subscribeConversationStats(
-    onStats: (data: IrisConversationStatsResponse) => void,
+    onStats: (_data: IrisConversationStatsResponse) => void,
     project: string | null = null,
   ): { close: () => void } {
     const queryParametersString = project ? `?project=${encodeURIComponent(project)}` : "";
@@ -353,8 +353,8 @@ export default class IrisService {
     onChange,
     onStatus,
   }: {
-    onChange?: (data: IrisCollectionChangeEvent) => void;
-    onStatus?: (data: IrisCollectionChangeEvent) => void;
+    onChange?: (_data: IrisCollectionChangeEvent) => void;
+    onStatus?: (_data: IrisCollectionChangeEvent) => void;
   }): { close: () => void } {
     const url = `${API_BASE}/admin/changes/stream`;
     const { unsubscribe } = sseSubscribe(url, (raw) => {

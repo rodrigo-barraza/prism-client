@@ -1,7 +1,7 @@
 import { useCallback, useRef, type Dispatch, type SetStateAction } from "react";
 import StorageService from "../services/StorageService";
 import { LOCAL_PROVIDERS, type ProviderType } from "../constants";
-import type { PrismConfig, ModelOption } from "../types/types";
+import type { PrismConfig } from "../types/types";
 
 /**
  * useModelMemory — Persist and restore the last-used model per page context.

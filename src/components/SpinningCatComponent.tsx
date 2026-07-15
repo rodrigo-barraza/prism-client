@@ -189,7 +189,7 @@ export default function SpinningCatComponent({
   }, []);
 
   // -- Main animation loop (always running, speed-controlled) ---
-  const tickRef = useRef<((now: number) => void) | null>(null);
+  const tickRef = useRef<((_now: number) => void) | null>(null);
 
   useEffect(() => {
     const loop = (now: number) => {

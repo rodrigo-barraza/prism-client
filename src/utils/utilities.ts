@@ -12,7 +12,6 @@ import type {
   PrismConfig,
   ModelOption,
 } from "../types/types";
-import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { FALLBACK_THINKING_PATTERNS } from "../constants";
 
 /**

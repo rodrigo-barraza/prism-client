@@ -22,7 +22,7 @@ import styles from "./DrawingCanvasComponent.module.css";
 
 interface DrawingCanvasProps {
   backgroundImageSourceUrl?: string;
-  onSave: (dataUrl: string) => void;
+  onSave: (_dataUrl: string) => void;
   onClose: () => void;
 }
 

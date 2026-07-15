@@ -15,11 +15,11 @@ export interface SetupState {
   THREE: typeof THREE;
 }
 
-export type SetupCallback = (state: SetupState) => (() => void) | void;
+export type SetupCallback = (_state: SetupState) => (() => void) | void;
 
 export interface ThreeCanvasComponentProps extends Omit<ThreeCreateOptions, "toneMapping"> {
   onSetup?: SetupCallback;
-  onTick?: (state: TickState) => void;
+  onTick?: (_state: TickState) => void;
   toneMapping?: string;
   paused?: boolean;
   className?: string;
@@ -59,7 +59,7 @@ export default function ThreeCanvasComponent({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const instanceIdRef = useRef<string | null>(null);
-  const onTickRef = useRef<((state: TickState) => void) | undefined>(onTick);
+  const onTickRef = useRef<((_state: TickState) => void) | undefined>(onTick);
   const setupCleanupRef = useRef<(() => void) | void | null>(null);
 
   // Keep onTick ref current without re-creating the instance

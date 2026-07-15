@@ -187,7 +187,7 @@ function ToolCard({
   agents,
 }: {
   tool: ToolSchema;
-  onClick: (tool: ToolSchema) => void;
+  onClick: (_tool: ToolSchema) => void;
   agents: { id: string; name: string }[];
 }) {
   const parameterCount = countParams(tool);
@@ -223,7 +223,7 @@ export interface ToolsTableComponentProps {
   tools: ToolSchema[];
   agents?: AgentMinimal[];
   toolStats?: Record<string, ToolUsageStat>;
-  onSelect?: (tool: ToolSchema) => void;
+  onSelect?: (_tool: ToolSchema) => void;
   showSearch?: boolean;
   emptyText?: string;
 }

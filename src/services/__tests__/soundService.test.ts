@@ -24,7 +24,7 @@ class MockAudioBuffer {
 }
 
 class MockAudioNode {
-  connect(target: any, output?: number, input?: number) {}
+  connect(_target: any, _output?: number, _input?: number) {}
   disconnect() {}
 }
 
@@ -39,8 +39,8 @@ class MockGainNode extends MockAudioNode {
 class MockAudioBufferSourceNode extends MockAudioNode {
   buffer: any = null;
   playbackRate = new MockAudioParam();
-  start(when?: number) {}
-  stop(when?: number) {}
+  start(_when?: number) {}
+  stop(_when?: number) {}
 }
 
 class MockAudioContext {
@@ -64,11 +64,11 @@ class MockAudioContext {
     return new MockAudioBufferSourceNode();
   }
 
-  createChannelSplitter(numberOfOutputs?: number) {
+  createChannelSplitter(_numberOfOutputs?: number) {
     return new MockAudioNode();
   }
 
-  createChannelMerger(numberOfInputs?: number) {
+  createChannelMerger(_numberOfInputs?: number) {
     return new MockAudioNode();
   }
 

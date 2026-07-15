@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Users, ExternalLink, MessageSquare, StopCircle } from "lucide-react";
 import { RendererProps, SubAgentActivity, SubAgentToolActivityItem, ToolArgs } from "../types";
-import { tryParse, basename } from "../utils";
+import { tryParse } from "../utils";
 import { StatusBadge, RawResultToggle } from "../SharedComponents";
 import { ToolBadgeRow } from "../../ToolBadgeComponent";
 import StatusBarComponent from "../../StatusBarComponent";

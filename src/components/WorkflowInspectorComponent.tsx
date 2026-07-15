@@ -32,7 +32,6 @@ import {
   ModelOption,
   WorkflowConnection,
   WorkflowNode,
-  WorkflowNodeStatus,
   Message,
   JsonSchemaObject,
 } from "../types/types";
@@ -74,15 +73,15 @@ interface WorkflowInspectorProps {
   allModels?: ModelOption[];
   nodeResults?: Record<string, NodeResult | null | undefined>;
   nodeStatuses?: Record<string, string>;
-  onUpdateNodeConfig?: (nodeId: string, key: string, value: unknown) => void;
-  onUpdateNodeContent?: (nodeId: string, content: string) => void;
+  onUpdateNodeConfig?: (_nodeId: string, _key: string, _value: unknown) => void;
+  onUpdateNodeContent?: (_nodeId: string, _content: string) => void;
   onUpdateFileInput?: (
-    nodeId: string,
-    fileData: string | ArrayBuffer | null,
-    mimeType: string | null,
+    _nodeId: string,
+    _fileData: string | ArrayBuffer | null,
+    _mimeType: string | null,
   ) => void;
-  onChangeModel?: (nodeId: string, model: ModelOption) => void;
-  onSelectNode?: (nodeId: string) => void;
+  onChangeModel?: (_nodeId: string, _model: ModelOption) => void;
+  onSelectNode?: (_nodeId: string) => void;
   onClose: () => void;
   readOnly?: boolean;
 }

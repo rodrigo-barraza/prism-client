@@ -89,7 +89,7 @@ export interface AgentToggleOption {
   type?: "cycle" | "toggle";
   value?: number;
   isActive?: boolean;
-  onChange?: (value: boolean | number) => void;
+  onChange?: (_value: boolean | number) => void;
   title?: string;
   checked?: boolean;
   disabled?: boolean;
@@ -98,7 +98,7 @@ export interface AgentToggleOption {
 export interface SettingsPanelProps {
   config: PrismConfig | null;
   settings: PrismSettings;
-  onChange?: (updates: Partial<PrismSettings>) => void;
+  onChange?: (_updates: Partial<PrismSettings>) => void;
   _hasAssistantImages?: boolean;
   _inferenceMode?: string;
   readOnly?: boolean;

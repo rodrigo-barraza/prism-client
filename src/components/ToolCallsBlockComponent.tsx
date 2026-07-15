@@ -16,7 +16,7 @@ interface ToolCallsBlockProps {
   streamingOutputs?: Map<string, string> | null;
   subAgentToolActivity?: Record<string, SubAgentToolActivityItem> | null;
   isAutoCollapsed?: boolean;
-  onOpenFileInViewer?: (absolutePath: string) => void;
+  onOpenFileInViewer?: (_absolutePath: string) => void;
   toolDisplayMetadataMap?: Record<string, ToolDisplayMetadata> | null;
 }
 

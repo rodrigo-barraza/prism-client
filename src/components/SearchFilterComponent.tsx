@@ -15,7 +15,7 @@ import { LucideIcon } from "lucide-react";
 export interface SearchFilterComponentProps {
   options?: string[];
   value?: string;
-  onChange: (value: string) => void;
+  onChange: (_value: string) => void;
   placeholder?: string;
   allLabel?: string;
   badgeColor?: string;

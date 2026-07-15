@@ -45,7 +45,7 @@ export interface PillOption {
 export interface FilterPillsProps {
   options: PillOption[];
   value: string;
-  onChange: (key: string) => void;
+  onChange: (_key: string) => void;
 }
 
 export function FilterPillsComponent({
@@ -80,8 +80,8 @@ export function FilterPillsComponent({
 
 export interface SearchInputProps {
   value: string;
-  onChange: (val: string) => void;
-  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  onChange: (_val: string) => void;
+  onSubmit?: (_e: React.FormEvent<HTMLFormElement>) => void;
   placeholder?: string;
 }
 
@@ -115,7 +115,7 @@ export interface ViewModeOption {
 
 export interface ViewModeToggleProps {
   mode: string;
-  onChange: (mode: string) => void;
+  onChange: (_mode: string) => void;
   modes: ViewModeOption[];
 }
 
@@ -155,7 +155,7 @@ export interface FilterIconButtonOption {
 export interface FilterIconButtonGroupProps {
   options: FilterIconButtonOption[];
   activeKeys: Set<string> | string | null;
-  onChange: (keys: Set<string> | string | null) => void;
+  onChange: (_keys: Set<string> | string | null) => void;
   isSingleSelect?: boolean;
 }
 
@@ -206,7 +206,7 @@ export function FilterIconButtonGroupComponent({
 
 export interface FilterInputProps {
   value: string;
-  onChange: (val: string) => void;
+  onChange: (_val: string) => void;
   placeholder?: string;
   className?: string;
 }
@@ -237,7 +237,7 @@ export interface SelectOption {
 
 export interface FilterSelectProps {
   value: string;
-  onChange: (val: string) => void;
+  onChange: (_val: string) => void;
   options: SelectOption[];
   className?: string;
 }
@@ -246,7 +246,6 @@ export function FilterSelectComponent({
   value,
   onChange,
   options,
-  className = "",
 }: FilterSelectProps) {
   return (
     <LibSelectComponent

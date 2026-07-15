@@ -403,8 +403,8 @@ export interface TableColumn<T = RowData> {
   hideable?: boolean;
   defaultHidden?: boolean;
   width?: string;
-  sortValue?: (row: T) => number | string;
-  render?: (row: T) => React.ReactNode;
+  sortValue?: (_row: T) => number | string;
+  render?: (_row: T) => React.ReactNode;
 }
 
 /**
@@ -483,17 +483,17 @@ function buildStatsColumns({
 export interface ModelsTableComponentProps {
   models?: RawModel[];
   mode?: "model" | "stats" | "full" | "benchmark";
-  onSelect?: (model: RawModel) => void;
-  renderActions?: (model: RawModel) => React.ReactNode;
+  onSelect?: (_model: RawModel) => void;
+  renderActions?: (_model: RawModel) => React.ReactNode;
   showSearch?: boolean;
   showProviderFilter?: boolean;
   favorites?: string[];
-  onToggleFavorite?: (key: string) => void;
+  onToggleFavorite?: (_key: string) => void;
   activeRowKey?: string | null;
   highlightedRowKey?: string | null;
   highlightedRowRef?:
     | React.RefObject<HTMLTableRowElement | null>
-    | ((element: HTMLTableRowElement | null) => void);
+    | ((_element: HTMLTableRowElement | null) => void);
   loadingModelKey?: string | null;
   configModels?: Record<string, string[]>;
   totalRequests?: number;
@@ -503,8 +503,8 @@ export interface ModelsTableComponentProps {
   title?: string;
   maxHeight?: number;
   selectedKeys?: Set<string>;
-  onToggleSelect?: (model: RawModel) => void;
-  getRowClassName?: (row: RowData) => string;
+  onToggleSelect?: (_model: RawModel) => void;
+  getRowClassName?: (_row: RowData) => string;
 }
 
 export default function ModelsTableComponent({
@@ -600,17 +600,17 @@ export default function ModelsTableComponent({
 interface ModelsTableInnerProps {
   models: RawModel[];
   mode: "model" | "full" | "benchmark";
-  onSelect?: (model: RawModel) => void;
-  renderActions?: (model: RawModel) => React.ReactNode;
+  onSelect?: (_model: RawModel) => void;
+  renderActions?: (_model: RawModel) => React.ReactNode;
   showSearch?: boolean;
   showProviderFilter?: boolean;
   favorites: string[];
-  onToggleFavorite?: (key: string) => void;
+  onToggleFavorite?: (_key: string) => void;
   activeRowKey?: string | null;
   highlightedRowKey?: string | null;
   highlightedRowRef?:
     | React.RefObject<HTMLTableRowElement | null>
-    | ((element: HTMLTableRowElement | null) => void);
+    | ((_element: HTMLTableRowElement | null) => void);
   loadingModelKey?: string | null;
   configModels?: Record<string, string[]>;
   totalRequests?: number;
@@ -619,8 +619,8 @@ interface ModelsTableInnerProps {
   title?: string;
   maxHeight?: number;
   selectedKeys?: Set<string>;
-  onToggleSelect?: (model: RawModel) => void;
-  getRowClassName?: (row: RowData) => string;
+  onToggleSelect?: (_model: RawModel) => void;
+  getRowClassName?: (_row: RowData) => string;
 }
 
 function ModelsTableInner({

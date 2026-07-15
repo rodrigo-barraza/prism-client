@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 
@@ -44,7 +44,7 @@ vi.mock("@rodrigo-barraza/components-library", () => ({
       {children}
     </div>
   ),
-  SearchInputComponent: ({ value, onChange, placeholder }: { value: string; onChange: (value: string) => void; placeholder: string }) => (
+  SearchInputComponent: ({ value, onChange, placeholder }: { value: string; onChange: (_value: string) => void; placeholder: string }) => (
     <input
       data-testid="search-input"
       value={value}
@@ -52,7 +52,7 @@ vi.mock("@rodrigo-barraza/components-library", () => ({
       placeholder={placeholder}
     />
   ),
-  SegmentedControlComponent: ({ value, onChange, segments }: { value: string; onChange: (value: string) => void; segments: Array<{ value: string; label: string }> }) => (
+  SegmentedControlComponent: ({ value, onChange, segments }: { value: string; onChange: (_value: string) => void; segments: Array<{ value: string; label: string }> }) => (
     <div data-testid="segmented-control">
       {segments.map((segment: { value: string; label: string }) => (
         <button
@@ -99,7 +99,7 @@ vi.mock("@rodrigo-barraza/components-library", () => ({
     label,
   }: {
     value: string;
-    onChange: (value: string) => void;
+    onChange: (_value: string) => void;
     options: Array<{ value: string; label: string }>;
     label?: string;
   }) => (

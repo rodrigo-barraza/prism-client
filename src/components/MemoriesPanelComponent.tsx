@@ -99,8 +99,8 @@ interface MemoriesPanelProps {
   agent?: string;
   refreshKey?: number;
   consolidationEvent?: ConsolidationEvent | null;
-  onCountChange?: (count: number) => void;
-  onActionsChange?: (actions: ReactNode) => void;
+  onCountChange?: (_count: number) => void;
+  onActionsChange?: (_actions: ReactNode) => void;
   memoryConfigured?: boolean;
 }
 

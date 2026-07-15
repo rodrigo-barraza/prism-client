@@ -66,7 +66,7 @@ export function escapeXmlDelimiterTags(content: string): string {
   const codeBlocks = content.match(FENCED_CODE_BLOCK_PATTERN) || [];
 
   const processedSegments = segments.map((segment) =>
-    segment.replace(XML_TAG_PATTERN, (fullMatch, openOrClose, tagName, attributes, closing) => {
+    segment.replace(XML_TAG_PATTERN, (fullMatch, openOrClose, tagName, _attributes, _closing) => {
       // Preserve standard HTML elements
       if (STANDARD_HTML_ELEMENTS.has(tagName.toLowerCase())) {
         return fullMatch;

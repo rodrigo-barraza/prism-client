@@ -62,7 +62,7 @@ export interface MediaCardProps {
   showFavorite?: boolean;
   isFavorite?: boolean;
   onFavorite?: () => void;
-  onImageClick?: (url: string) => void;
+  onImageClick?: (_url: string) => void;
 }
 
 /**

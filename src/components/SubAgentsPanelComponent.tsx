@@ -61,9 +61,9 @@ export default function SubAgentsPanelComponent({
 }: {
   conversationId: string;
   refreshKey?: number;
-  onCountChange?: (count: number) => void;
-  onMaxDepthChange?: (depth: number) => void;
-  onActionsChange?: (actions: ReactNode) => void;
+  onCountChange?: (_count: number) => void;
+  onMaxDepthChange?: (_depth: number) => void;
+  onActionsChange?: (_actions: ReactNode) => void;
   subAgentToolActivity?: Record<string, SubAgentToolActivityItem>;
 }) {
   const [subAgentList, setSubAgentList] = useState<CoordinatorSubAgent[]>([]);

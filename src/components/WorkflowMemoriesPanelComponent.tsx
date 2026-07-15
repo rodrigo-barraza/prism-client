@@ -26,8 +26,8 @@ interface WorkflowMemoriesPanelProps {
   project?: string;
   agent?: string;
   refreshKey?: number;
-  onCountChange?: (count: number) => void;
-  onActionsChange?: (actions: ReactNode) => void;
+  onCountChange?: (_count: number) => void;
+  onActionsChange?: (_actions: ReactNode) => void;
 }
 
 const PAGE_SIZE = 20;

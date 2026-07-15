@@ -15,15 +15,15 @@ import type { StatusBarPhase } from "../utils/statusBarPhaseTokens";
 export interface HistoryPanelProps {
   conversations?: Conversation[];
   activeId?: string | null;
-  onSelect?: (conversation: Conversation) => void | Promise<void>;
+  onSelect?: (_conversation: Conversation) => void | Promise<void>;
   onNew?: () => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (_id: string) => void;
   readOnly?: boolean;
   showProject?: boolean;
   showUsername?: boolean;
   newIds?: Set<string>;
   favorites?: string[];
-  onToggleFavorite?: (key: string) => void;
+  onToggleFavorite?: (_key: string) => void;
   initialProviders?: string[];
   initialSearch?: string;
   disableNew?: boolean;
@@ -32,14 +32,14 @@ export interface HistoryPanelProps {
   searchText?: string;
   itemIcon?: LucideIcon;
   countLabel?: string;
-  onOpenInNewTab?: (id: string) => void;
+  onOpenInNewTab?: (_id: string) => void;
   generatingConversationIds?: Set<string>;
   knownParentConversationIds?: Set<string>;
   hasMore?: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => Promise<void> | void;
   dateRange?: { from: string; to: string };
-  onDateChange?: (range: { from: string; to: string }) => void;
+  onDateChange?: (_range: { from: string; to: string }) => void;
   dateStorageKey?: string;
   filterStorageKey?: string;
   className?: string;
@@ -51,7 +51,6 @@ export default function HistoryPanel({
   conversations = [],
   activeId,
   onSelect,
-  onNew,
   onDelete,
   readOnly = false,
   showProject = false,
@@ -61,8 +60,6 @@ export default function HistoryPanel({
   onToggleFavorite,
   initialProviders,
   initialSearch = "",
-  disableNew,
-  newLabel = DEFAULT_CONVERSATION_TITLE,
   emptyText = "No recent chats",
   searchText = "Search conversations...",
   itemIcon,

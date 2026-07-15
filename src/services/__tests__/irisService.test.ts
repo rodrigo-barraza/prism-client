@@ -9,7 +9,6 @@ import IrisService, {
   IrisHealthResponse,
 } from "../IrisService";
 import {
-  AgentConversation,
   Conversation,
   ConversationStats,
   IrisDashboardStats,

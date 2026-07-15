@@ -12,7 +12,7 @@ interface TimerBadgeComponentProps {
   prompt: string;
   mode: "one_shot" | "recurring";
   status: (typeof EXECUTION_STATUS)[keyof typeof EXECUTION_STATUS];
-  onCancel?: (timerId: string) => void;
+  onCancel?: (_timerId: string) => void;
   readOnly?: boolean;
 }
 

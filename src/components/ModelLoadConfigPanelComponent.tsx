@@ -35,7 +35,7 @@ interface MemoryEstimate {
 }
 
 interface ModelLoadConfigService {
-  estimateLmStudioMemory: (modelKey: string, config: ModelLoadConfig) => Promise<MemoryEstimate>;
+  estimateLmStudioMemory: (_modelKey: string, _config: ModelLoadConfig) => Promise<MemoryEstimate>;
 }
 
 interface ModelLoadConfigPanelProps {
@@ -52,7 +52,7 @@ interface ModelLoadConfigPanelProps {
     quantization?: string | { name: string } | null;
     archParams?: ArchParams;
   };
-  onLoad: (modelKey: string, config: Omit<ModelLoadConfig, 'gpuLayers'>) => void;
+  onLoad: (_modelKey: string, _config: Omit<ModelLoadConfig, 'gpuLayers'>) => void;
   onClose: () => void;
   service?: ModelLoadConfigService | null;
   loading?: boolean;

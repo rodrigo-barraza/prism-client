@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import {
-  History,
   CheckCircle2,
   XCircle,
   Clock,
@@ -10,7 +9,6 @@ import {
   ListChecks,
   AlertTriangle,
   Cpu,
-  Settings,
 } from "lucide-react";
 import AgentCardComponent from "./AgentCardComponent";
 import ModelCardComponent from "./ModelCardComponent";
@@ -67,20 +65,20 @@ interface RunHistorySidebarComponentProps {
   benchmark: Benchmark;
   runHistory?: BenchmarkRun[];
   activeRunId?: string | null;
-  onViewRun?: (run: BenchmarkRun) => void;
+  onViewRun?: (_run: BenchmarkRun) => void;
   running?: boolean;
   streamingCompleted?: number;
   selectedModels?: SelectedModelInstance[];
-  onRemoveModel?: (instanceId: string) => void;
-  onChangeModel?: (instanceId: string, provider: string, modelName: string) => void;
+  onRemoveModel?: (_instanceId: string) => void;
+  onChangeModel?: (_instanceId: string, _provider: string, _modelName: string) => void;
   onClearSelection?: () => void;
   thinkingMap?: Record<string, boolean>;
-  onToggleThinking?: (instanceId: string) => void;
+  onToggleThinking?: (_instanceId: string) => void;
   toolsMap?: Record<string, boolean>;
-  onToggleTools?: (instanceId: string) => void;
+  onToggleTools?: (_instanceId: string) => void;
   agentInstances?: AgentInstance[];
-  onRemoveAgent?: (instanceId: string) => void;
-  onChangeAgentModel?: (instanceId: string, provider: string, modelName: string) => void;
+  onRemoveAgent?: (_instanceId: string) => void;
+  onChangeAgentModel?: (_instanceId: string, _provider: string, _modelName: string) => void;
   allModels?: ModelOptionWithProvider[];
   config?: PrismConfig | null;
 }

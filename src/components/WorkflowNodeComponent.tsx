@@ -19,7 +19,6 @@ import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import AssetInputOptions from "./AssetInputOptionsComponent";
 import PrismService from "../services/PrismService";
 import { EXECUTION_STATUS, MESSAGE_ROLES } from "../constants";
-import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import { MODALITY_ICONS } from "./WorkflowNodeConstantsComponent";
 import {
@@ -37,7 +36,7 @@ import {
   getAssetContentHeight,
 } from "./WorkflowNodeConstantsComponent";
 import styles from "./WorkflowNodeComponent.module.css";
-import type { WorkflowNode, WorkflowConnection, Message } from "../types/types";
+import type { WorkflowNode, WorkflowConnection } from "../types/types";
 
 export interface NodePortsProps {
   node: WorkflowNode;
@@ -58,17 +57,17 @@ export interface NodePortsProps {
   connections: WorkflowConnection[];
   nodeStatuses: Record<string, string>;
   onInputPortClick: (
-    e: React.MouseEvent,
-    nodeId: string,
-    portId: string,
+    _e: React.MouseEvent,
+    _nodeId: string,
+    _portId: string,
   ) => void;
   onOutputPortClick: (
-    e: React.MouseEvent,
-    nodeId: string,
-    modality: string,
-    index: number,
+    _e: React.MouseEvent,
+    _nodeId: string,
+    _modality: string,
+    _index: number,
   ) => void;
-  onPortHover: (port: {
+  onPortHover: (_port: {
     nodeId: string;
     type: "input" | "output";
     modality: string;
@@ -382,9 +381,9 @@ export interface NodeShellProps {
   headerActions: React.ReactNode;
   headerActionsWidth?: number;
   typeBadge: string | null;
-  onMouseDown: (e: React.MouseEvent, nodeId: string) => void;
-  onTouchStart?: (e: React.TouchEvent, nodeId: string) => void;
-  onDelete?: (nodeId: string) => void;
+  onMouseDown: (_e: React.MouseEvent, _nodeId: string) => void;
+  onTouchStart?: (_e: React.TouchEvent, _nodeId: string) => void;
+  onDelete?: (_nodeId: string) => void;
   inputTypes: string[];
   outputTypes: string[];
   configOffset?: number;
@@ -608,10 +607,10 @@ export interface ModelNodeProps extends NodePortsProps {
   results?: { error?: string };
   isSelected: boolean;
   isExpanded: boolean;
-  onMouseDown: (e: React.MouseEvent, nodeId: string) => void;
-  onTouchStart?: (e: React.TouchEvent, nodeId: string) => void;
-  onDelete?: (nodeId: string) => void;
-  onUpdateConfig?: (nodeId: string, key: string, value: unknown) => void;
+  onMouseDown: (_e: React.MouseEvent, _nodeId: string) => void;
+  onTouchStart?: (_e: React.TouchEvent, _nodeId: string) => void;
+  onDelete?: (_nodeId: string) => void;
+  onUpdateConfig?: (_nodeId: string, _key: string, _value: unknown) => void;
 }
 
 /**
@@ -840,9 +839,9 @@ function handleFileInputChange(
   nodeId: string,
   file: File,
   onUpdateFileInput?: (
-    nodeId: string,
-    dataUrl: string | ArrayBuffer | null,
-    mimeType: string,
+    _nodeId: string,
+    _dataUrl: string | ArrayBuffer | null,
+    _mimeType: string,
   ) => void,
 ) {
   if (!file) return;
@@ -858,18 +857,18 @@ export interface AssetNodeProps extends NodePortsProps {
   status: string;
   isSelected: boolean;
   isExpanded: boolean;
-  onMouseDown: (e: React.MouseEvent, nodeId: string) => void;
-  onTouchStart?: (e: React.TouchEvent, nodeId: string) => void;
-  onDelete?: (nodeId: string) => void;
-  onUpdateContent?: (nodeId: string, content: string) => void;
+  onMouseDown: (_e: React.MouseEvent, _nodeId: string) => void;
+  onTouchStart?: (_e: React.TouchEvent, _nodeId: string) => void;
+  onDelete?: (_nodeId: string) => void;
+  onUpdateContent?: (_nodeId: string, _content: string) => void;
   onUpdateFileInput?: (
-    nodeId: string,
-    dataUrl: string | ArrayBuffer | null,
-    mimeType: string | null,
+    _nodeId: string,
+    _dataUrl: string | ArrayBuffer | null,
+    _mimeType: string | null,
   ) => void;
-  onUpdateConfig?: (nodeId: string, key: string, value: unknown) => void;
-  onToggleExpand: (nodeId: string) => void;
-  onSelectNode?: (nodeId: string) => void;
+  onUpdateConfig?: (_nodeId: string, _key: string, _value: unknown) => void;
+  onToggleExpand: (_nodeId: string) => void;
+  onSelectNode?: (_nodeId: string) => void;
   readOnly?: boolean;
 }
 
@@ -1359,10 +1358,10 @@ export interface ToolNodeProps extends NodePortsProps {
   status: string;
   isSelected: boolean;
   isExpanded: boolean;
-  onMouseDown: (e: React.MouseEvent, nodeId: string) => void;
-  onTouchStart?: (e: React.TouchEvent, nodeId: string) => void;
-  onDelete?: (nodeId: string) => void;
-  onToggleExpand: (nodeId: string) => void;
+  onMouseDown: (_e: React.MouseEvent, _nodeId: string) => void;
+  onTouchStart?: (_e: React.TouchEvent, _nodeId: string) => void;
+  onDelete?: (_nodeId: string) => void;
+  onToggleExpand: (_nodeId: string) => void;
 }
 
 /**

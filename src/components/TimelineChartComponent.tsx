@@ -221,7 +221,7 @@ interface TimelineChartProps {
   granularity?: string | null;
   defaultGranularity?: string;
   validGranularities?: string[];
-  onGranularityChange?: (granularity: string | null) => void;
+  onGranularityChange?: (_granularity: string | null) => void;
 }
 
 export default function TimelineChartComponent({
@@ -230,7 +230,6 @@ export default function TimelineChartComponent({
   height = 260,
   title = "Activity Over Time",
   granularity,
-  defaultGranularity,
   validGranularities = [],
   onGranularityChange,
 }: TimelineChartProps) {

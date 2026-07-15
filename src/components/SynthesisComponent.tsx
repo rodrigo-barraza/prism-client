@@ -16,7 +16,7 @@ import {
   Settings2,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
-import { MESSAGE_ROLES, EXECUTION_STATUS, STORAGE_KEY_MODEL_MEMORY_SYNTHESIS } from "../constants";
+import { MESSAGE_ROLES, STORAGE_KEY_MODEL_MEMORY_SYNTHESIS } from "../constants";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import SettingsPanel from "./SettingsPanelComponent";

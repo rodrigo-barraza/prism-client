@@ -135,7 +135,7 @@ function buildEntries(
   modelStats: IrisModelStat[],
 ): { name: string; value: number }[] {
   let source: IrisStatRecord[];
-  let nameKey: string | ((record: IrisStatRecord) => string);
+  let nameKey: string | ((_record: IrisStatRecord) => string);
 
   switch (tab) {
     case "project":

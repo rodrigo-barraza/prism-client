@@ -30,14 +30,13 @@ export default function SkillsPanel({
   skills,
   onSkillsChange,
   project,
-  readOnly,
   onActionsChange,
 }: {
   skills: Skill[];
   onSkillsChange: () => void;
   project?: string;
   readOnly?: boolean;
-  onActionsChange?: (actions: ReactNode) => void;
+  onActionsChange?: (_actions: ReactNode) => void;
 }) {
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [isNew, setIsNew] = useState(false);

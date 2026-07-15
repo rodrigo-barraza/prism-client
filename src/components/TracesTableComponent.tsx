@@ -47,7 +47,7 @@ export default function TracesTableComponent({
   maxHeight?: number | string | null;
   sortKey?: string;
   sortDir?: string;
-  onSort?: (key: string, dir: string) => void;
+  onSort?: (_key: string, _dir: string) => void;
 }) {
   const CONVERSATION_COLUMNS = [
     traceIdColumn(),

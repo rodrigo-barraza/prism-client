@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import type { ModelOption, ToolSchema as ToolOption, PrismConfig as FilteredConfig } from "../../types/types";
+import type { ToolSchema as ToolOption, PrismConfig as FilteredConfig } from "../../types/types";
 
 function computeSupportedInputModalities(
   filteredConfig: Partial<FilteredConfig> | null,

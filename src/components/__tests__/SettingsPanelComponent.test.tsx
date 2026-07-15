@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 import SettingsPanel from "../SettingsPanelComponent";
-import { PRISM_SERVICE_URL } from "../../config";
 import type { PrismSettings } from "../../types/types";
 
 vi.mock(

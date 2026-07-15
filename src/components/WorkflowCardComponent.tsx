@@ -9,8 +9,8 @@ import styles from "./WorkflowCardComponent.module.css";
 interface WorkflowCardComponentProps {
   workflow: WorkflowMemory;
   isConfirmingDelete?: boolean;
-  onDeleteRequest: (workflowId: string) => void;
-  onDeleteConfirm: (workflowId: string) => void;
+  onDeleteRequest: (_workflowId: string) => void;
+  onDeleteConfirm: (_workflowId: string) => void;
   onDeleteCancel: () => void;
 }
 

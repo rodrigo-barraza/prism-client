@@ -10,7 +10,7 @@ import styles from "./TextContentComponent.module.css";
 interface TextContentProps {
   label?: string;
   value?: string;
-  onChange?: (value: string) => void;
+  onChange?: (_value: string) => void;
   readOnly?: boolean;
   placeholder?: string;
   className?: string;

@@ -7,8 +7,8 @@ import type { SynthesisRun, Conversation } from "../types/types";
 interface SynthesisHistoryPanelProps {
   conversations?: SynthesisRun[];
   activeId?: string | null;
-  onSelect?: (conversation: SynthesisRun) => void | Promise<void>;
-  onDelete?: (id: string) => void;
+  onSelect?: (_conversation: SynthesisRun) => void | Promise<void>;
+  onDelete?: (_id: string) => void;
 }
 
 export default function SynthesisHistoryPanel({
@@ -22,7 +22,7 @@ export default function SynthesisHistoryPanel({
       className="synthesis-history-panel-component"
       conversations={conversations as unknown as Conversation[]}
       activeId={activeId}
-      onSelect={onSelect as ((conversation: Conversation) => void | Promise<void>) | undefined}
+      onSelect={onSelect as ((_conversation: Conversation) => void | Promise<void>) | undefined}
       onDelete={onDelete}
       readOnly={false}
       newLabel="New Synthesis"

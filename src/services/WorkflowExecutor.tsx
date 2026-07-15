@@ -23,11 +23,11 @@ interface WorkflowOutputs {
 }
 
 interface WorkflowCallbacks {
-  onNodeStart?: (nodeId: string) => void;
-  onNodeComplete?: (nodeId: string, outputs: WorkflowOutputs) => void;
-  onNodeError?: (nodeId: string, error: unknown) => void;
-  onViewerPartial?: (nodeId: string, outputs: WorkflowOutputs) => void;
-  onNodeContentUpdate?: (nodeId: string, data: unknown) => void;
+  onNodeStart?: (_nodeId: string) => void;
+  onNodeComplete?: (_nodeId: string, _outputs: WorkflowOutputs) => void;
+  onNodeError?: (_nodeId: string, _error: unknown) => void;
+  onViewerPartial?: (_nodeId: string, _outputs: WorkflowOutputs) => void;
+  onNodeContentUpdate?: (_nodeId: string, _data: unknown) => void;
 }
 
 interface WorkflowModelNode {

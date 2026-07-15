@@ -38,8 +38,6 @@ import PrismService from "../services/PrismService";
 import { VramBenchmarkEntry, VramBenchmarkMachine } from "../types/types";
 import type {
   TooltipOptions,
-  ScaleOptionsByType,
-  LegendOptions,
 } from "chart.js";
 import { BYTES_IN_KIB, KIB_IN_MIB } from "../constants";
 import {
@@ -256,17 +254,17 @@ function makeDatalabelsPlugin({
   maxLabels = 60,
 }: {
   getLabel: (
-    raw: import("chart.js").BubbleDataPoint & {
+    _raw: import("chart.js").BubbleDataPoint & {
       model?: VramBenchmarkEntry;
       entry?: VramBenchmarkEntry;
     },
-    i: number,
-    di: number,
+    _i: number,
+    _di: number,
   ) => string | null | undefined;
   anchor?: "start" | "center" | "end";
   align?: "top" | "bottom" | "left" | "right" | "center";
   offset?: number;
-  filterFn?: (di: number, chart: Chart) => boolean;
+  filterFn?: (_di: number, _chart: Chart) => boolean;
   maxLabels?: number;
 }) {
   return {
@@ -1588,7 +1586,7 @@ export default function VramBenchmarkComponent() {
     // Compute bestKeys: for "all contexts", find the highest-TPS entry per group
     const computeBestKeys = (
       entries: VramBenchmarkEntry[],
-      groupKeyFn: (entry: VramBenchmarkEntry) => string,
+      groupKeyFn: (_entry: VramBenchmarkEntry) => string,
     ) => {
       if (!hasMultipleContextLengths) return null;
       const bestByGroup: Record<string, VramBenchmarkEntry> = {};
@@ -2781,7 +2779,7 @@ export default function VramBenchmarkComponent() {
         const drawAvgTick = (
           datasetIdx: number,
           scaleId: string,
-          getAvg: (g: QuantGroupStats) => number | undefined,
+          getAvg: (_g: QuantGroupStats) => number | undefined,
         ) => {
           const meta = chart.getDatasetMeta(datasetIdx);
           if (!meta.visible) return;

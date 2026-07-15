@@ -41,7 +41,7 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
 interface SettingsSidebarNavigationProps {
   scrollContainerRef: React.RefObject<HTMLElement | null>;
   initialSectionId?: string;
-  onActiveSectionChange?: (sectionId: string) => void;
+  onActiveSectionChange?: (_sectionId: string) => void;
 }
 
 function computeSectionWarnings(settings: PrismSettings | null): Record<string, number> {

@@ -1,6 +1,6 @@
 import React from "react";
 import { ToolResultViewProps, RendererProps } from "./types";
-import { InputArgsToggle, OutputResultToggle, RawResultToggle } from "./SharedComponents";
+import { InputArgsToggle, OutputResultToggle } from "./SharedComponents";
 import * as Renderers from "./renderers";
 
 /**

@@ -59,7 +59,7 @@ export interface TickState {
   height: number;
 }
 
-export type TickCallback = (state: TickState) => void;
+export type TickCallback = (_state: TickState) => void;
 
 export interface LightingRigOptions {
   ambientIntensity?: number;

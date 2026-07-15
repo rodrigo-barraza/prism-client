@@ -63,7 +63,7 @@ interface CodeBlockProps extends React.ComponentPropsWithoutRef<"code"> {
   node?: unknown;
 }
 
-function CodeBlock({ children, className, node, ...rest }: CodeBlockProps) {
+function CodeBlock({ children, className, node: _node, ...rest }: CodeBlockProps) {
   const match = /language-(\w+)/.exec(className || "");
   if (!match) {
     return (
@@ -130,7 +130,7 @@ interface ImageOrEmbedProps extends React.ComponentPropsWithoutRef<"img"> {
   node?: unknown;
 }
 
-function ImageOrEmbed({ src, alt, node, ...rest }: ImageOrEmbedProps) {
+function ImageOrEmbed({ src, alt, node: _node, ...rest }: ImageOrEmbedProps) {
   // Detect embed URLs that return HTML pages and render as auto-resizing iframes
   const isStringSrc = typeof src === "string";
   if (isStringSrc && src.includes("/utility/map/embed")) {

@@ -1,7 +1,7 @@
 import React from "react";
 import { FileText, Search, FolderTree, Folder, File, Globe } from "lucide-react";
 import { RendererProps } from "../types";
-import { tryParse, basename, extensionOf, EXT_LANG } from "../utils";
+import { tryParse, basename } from "../utils";
 import { PathPill, StatusBadge, RawResultToggle } from "../SharedComponents";
 import styles from "../ToolResultRenderersComponent.module.css";
 

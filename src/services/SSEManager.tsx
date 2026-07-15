@@ -11,7 +11,7 @@
  * the underlying connection is closed.
  */
 
-type SSEListener = (data: unknown) => void;
+type SSEListener = (_data: unknown) => void;
 
 interface PoolEntry {
   eventSource: EventSource;

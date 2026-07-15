@@ -47,7 +47,7 @@ vi.mock("../WorkflowNodeConstantsComponent", () => ({
     color: "#ff9900",
     emoji: "🛠️",
   }),
-  resolveToolEmoji: (name: string) => "🛠️",
+  resolveToolEmoji: (_name: string) => "🛠️",
   isEmojiImageUrl: (emoji: string) => typeof emoji === "string" && emoji.startsWith("http"),
   hydrateToolEmojiCache: vi.fn(),
 }));

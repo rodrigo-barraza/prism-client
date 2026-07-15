@@ -19,7 +19,7 @@ interface Stroke {
 interface ImagePreviewProps {
   src: string;
   onClose: () => void;
-  onUseAnnotated?: (dataUrl: string) => void;
+  onUseAnnotated?: (_dataUrl: string) => void;
   readOnly?: boolean;
 }
 

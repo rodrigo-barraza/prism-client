@@ -28,7 +28,7 @@ interface ConversationsTableProps {
   emptyText?: string;
   sortKey?: string;
   sortDir?: "asc" | "desc" | null;
-  onSort?: (key: string) => void;
+  onSort?: (_key: string) => void;
   compact?: boolean;
   mini?: boolean;
   maxHeight?: number | string;

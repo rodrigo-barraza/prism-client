@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Cpu, Loader2, Power, PowerOff, RefreshCw, Server } from "lucide-react";
+import { Loader2, Power, PowerOff, RefreshCw, Server } from "lucide-react";
 import { POLL_MODERATE } from "@rodrigo-barraza/utilities-library";
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
@@ -80,7 +80,7 @@ function flattenConfigModels(config: PrismConfig | null) {
 interface ModelsPageComponentProps {
   mode?: string;
   project?: string | null;
-  onCountChange?: (value: string | number | null) => void;
+  onCountChange?: (_value: string | number | null) => void;
 }
 
 export default function ModelsPageComponent({

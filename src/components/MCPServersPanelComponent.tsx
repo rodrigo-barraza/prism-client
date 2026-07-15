@@ -6,7 +6,6 @@ import {
   Trash2,
   Edit3,
   Save,
-  X,
   Plug,
   Unplug,
   Wrench,
@@ -40,7 +39,7 @@ export default function MCPServersPanel({
   onServersChange: () => void;
   project?: string;
   readOnly?: boolean;
-  onActionsChange?: (actions: ReactNode) => void;
+  onActionsChange?: (_actions: ReactNode) => void;
 }) {
   const [editingServer, setEditingServer] = useState<MCPServer | null>(null);
   const [isNew, setIsNew] = useState(false);

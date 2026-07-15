@@ -20,7 +20,7 @@ export interface SystemInstructionItem {
 
 export interface SystemPromptModalProps {
   activePrompt?: string;
-  onApply: (text: string) => void;
+  onApply: (_text: string) => void;
   onClose: () => void;
 }
 

@@ -28,7 +28,7 @@ function loadTranscript(name: string): SSEData[] {
 function replay(events: SSEData[]): string[] {
   const log: string[] = [];
   const record =
-    (kind: string, describe?: (event: SSEData) => string) =>
+    (kind: string, describe?: (_event: SSEData) => string) =>
     (event: SSEData) =>
       log.push(describe ? `${kind}:${describe(event)}` : kind);
 

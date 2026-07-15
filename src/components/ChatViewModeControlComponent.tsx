@@ -8,7 +8,7 @@ export type ChatViewMode = "clean" | "raw" | "nodes";
 
 interface ChatViewModeControlComponentProps {
   viewMode: ChatViewMode;
-  onViewModeChange: (mode: ChatViewMode) => void;
+  onViewModeChange: (_mode: ChatViewMode) => void;
 }
 
 export default function ChatViewModeControlComponent({

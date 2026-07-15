@@ -59,8 +59,8 @@ interface TasksPanelProps {
   project?: string;
   refreshKey?: number;
   conversationId?: string;
-  onCountChange?: (count: number) => void;
-  onActionsChange?: (actions: ReactNode) => void;
+  onCountChange?: (_count: number) => void;
+  onActionsChange?: (_actions: ReactNode) => void;
 }
 
 /**

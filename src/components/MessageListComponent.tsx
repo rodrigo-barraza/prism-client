@@ -177,7 +177,7 @@ function splitRawContent(raw: string | undefined | null): {
 function renderContentWithMentions(
   text: string | undefined | null,
   knownPaths: Set<string> | null | undefined,
-  onMentionFileOpen: ((path: string) => void) | undefined,
+  onMentionFileOpen: ((_path: string) => void) | undefined,
 ) {
   const segments = parseMentionTokens(text || "");
   // Fast path: no mentions found, return plain string
@@ -490,11 +490,11 @@ interface EditableMessageProps {
   content: string;
   index: number;
   role: Message["role"];
-  onEdit: (index: number, content: string) => void;
+  onEdit: (_index: number, _content: string) => void;
   editing: boolean;
   onCancelEdit: () => void;
   knownPaths?: Set<string> | null;
-  onMentionFileOpen?: (path: string) => void;
+  onMentionFileOpen?: (_path: string) => void;
   showRaw?: boolean;
 }
 
@@ -670,7 +670,7 @@ export interface MessageListProps {
   subAgentToolActivity?: Record<string, SubAgentToolActivityItem> | null;
   headerContent?: React.ReactNode;
   systemPrompt?: string | null;
-  onSystemPromptEdit?: (editedPromptValue: string) => void;
+  onSystemPromptEdit?: (_editedPromptValue: string) => void;
   planProposal?: { plan: string; steps?: string[]; status?: "pending" | "approved" | "rejected" | "executing" } | null;
   onPlanApprove?: () => void;
   onPlanReject?: () => void;
@@ -679,15 +679,15 @@ export interface MessageListProps {
   queuedNextTurn?: QueuedNextTurn | null;
   onCancelQueuedTurn?: () => void;
 
-  onDelete?: (index: number) => void;
-  onRestore?: (index: number) => void;
-  onEdit?: (index: number, content: string) => void;
-  onRerun?: (index: number) => void;
+  onDelete?: (_index: number) => void;
+  onRestore?: (_index: number) => void;
+  onEdit?: (_index: number, _content: string) => void;
+  onRerun?: (_index: number) => void;
   activeAgent?: ClientAgent | null;
-  onImageClick?: (url: string) => void;
-  onDocClick?: (url: string) => void;
-  onMentionFileOpen?: (path: string) => void;
-  onOpenFileInViewer?: (absolutePath: string) => void;
+  onImageClick?: (_url: string) => void;
+  onDocClick?: (_url: string) => void;
+  onMentionFileOpen?: (_path: string) => void;
+  onOpenFileInViewer?: (_absolutePath: string) => void;
   toolDisplayMetadataMap?: Record<string, any> | null;
 }
 

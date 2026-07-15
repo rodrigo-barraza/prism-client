@@ -43,7 +43,7 @@ export default function RulesPanel({
   rules: Rule[];
   onRulesChange: () => void;
   agent?: string;
-  onActionsChange?: (actions: ReactNode) => void;
+  onActionsChange?: (_actions: ReactNode) => void;
   readOnly?: boolean;
 }) {
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
