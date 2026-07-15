@@ -66,16 +66,6 @@ interface LiveModelData {
   }>;
 }
 
-/** SSE tool call event shape — alias for ToolCallEvent from types.ts */
-type LiveToolCallEvent = ToolCallEvent;
-
-/** SSE tool execution event shape */
-interface LiveToolExecutionEvent {
-  status?: string;
-  tool?: { id?: string; name?: string; args?: unknown; result?: unknown };
-  _sourceModel?: string;
-}
-
 /** Benchmark run target shape */
 interface BenchmarkTarget {
   provider: string;

@@ -1,7 +1,5 @@
 "use client";
 
-import { DEFAULT_CONVERSATION_TITLE } from "@/constants";
-
 import { useMemo } from "react";
 import { MessageSquare } from "lucide-react";
 import HistoryList from "./HistoryListComponent";

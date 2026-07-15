@@ -136,51 +136,6 @@ const DOMAIN_LABELS: Record<string, string> = {
   [DOMAINS.GAMING.displayName]: DOMAINS.GAMING.displayName,
 };
 
-const DOMAIN_ORDER = [
-  DOMAINS.CORE_HARNESS.displayName,
-  DOMAINS.CORE_WORKSPACE.displayName,
-  DOMAINS.CORE_ORCHESTRATOR.displayName,
-  DOMAINS.WEB.displayName,
-  DOMAINS.BROWSER.displayName,
-  DOMAINS.TASKS.displayName,
-  DOMAINS.MEMORY.displayName,
-  DOMAINS.AGENTS.displayName,
-  DOMAINS.TOOLS.displayName,
-  DOMAINS.MCP.displayName,
-  DOMAINS.META.displayName,
-  DOMAINS.CORE_SCHEDULE.displayName,
-  DOMAINS.CONVERSATION_TIMERS.displayName,
-  DOMAINS.SKILLS.displayName,
-  DOMAINS.CONTROL.displayName,
-  DOMAINS.STRUCTURED.displayName,
-  DOMAINS.REASONING.displayName,
-  DOMAINS.WEATHER.displayName,
-  DOMAINS.EVENTS.displayName,
-  DOMAINS.MARKETS.displayName,
-  DOMAINS.TRENDS.displayName,
-  DOMAINS.PRODUCTS.displayName,
-  DOMAINS.FINANCE.displayName,
-  DOMAINS.KNOWLEDGE.displayName,
-  DOMAINS.MOVIES.displayName,
-  DOMAINS.HEALTH.displayName,
-  DOMAINS.COMPUTE.displayName,
-  DOMAINS.COMMUNICATION.displayName,
-  DOMAINS.TRANSIT.displayName,
-  DOMAINS.MARITIME.displayName,
-  DOMAINS.ENERGY.displayName,
-  DOMAINS.CREATIVE.displayName,
-  DOMAINS.GAMING.displayName,
-  DOMAINS.DISCORD.displayName,
-  DOMAINS.SMART_HOME.displayName,
-  DOMAINS.SPORTS.displayName,
-  DOMAINS.UTILITIES.displayName,
-  DOMAINS.TORRENT.displayName,
-  DOMAINS.REDDIT.displayName,
-  "Other",
-];
-
-
-
 /**
  * ToolSelectionComponent — reusable grouped tool picker with domain
  * segmented views, search, tri-state checkboxes, and collapsible groups.

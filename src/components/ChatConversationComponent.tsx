@@ -92,7 +92,6 @@ import useConversationGraphData from "../hooks/useConversationGraphData";
 import ChatViewModeControlComponent from "./ChatViewModeControlComponent";
 import type { ChatViewMode } from "./ChatViewModeControlComponent";
 
-import { buildToolSchemas } from "../utils/FunctionCallingUtilities";
 import {
   applyToolExecutionToMessages,
   applyToolExecutionToActivity,
@@ -1355,7 +1354,6 @@ export default function ChatConversationComponent({
     return modalities;
   }, [filteredConfig, settings.provider, settings.model, builtInTools, disabledTools]);
 
-  const supportsImageInput = supportedInputModalities.has("image");
   const supportsAnyFileInput = supportedInputModalities.size > 0;
 
   const activeUploadTypes = useMemo(() => {
@@ -1944,7 +1942,6 @@ export default function ChatConversationComponent({
         });
 
         // Restore agent toggle state from the conversation's persisted settings
-        const urlLoadConversationSettingsDummy = urlLoadConversationSettings;
         const persistedRecursionDepth = urlLoadConversationSettings?.maxRecursionDepth;
         if (typeof persistedRecursionDepth === "number" && [0, 1, 2, 3].includes(persistedRecursionDepth)) {
           setMaxRecursionDepth(persistedRecursionDepth);
@@ -3155,28 +3152,9 @@ export default function ChatConversationComponent({
     [agentProject, isNoAgent],
   );
 
-  // Build final tool schemas
-  const allToolSchemas = useMemo(
-    () => buildToolSchemas(builtInTools, disabledTools),
-    [builtInTools, disabledTools],
-  );
-
   const configurableTools = useMemo(() => {
     return builtInTools.filter((tool) => tool.system !== true);
   }, [builtInTools]);
-
-  const enabledConfigurableCount = useMemo(() => {
-    return configurableTools.filter((tool) => !disabledTools.has(tool.name))
-      .length;
-  }, [configurableTools, disabledTools]);
-
-  const coreToolsCount = useMemo(() => {
-    return builtInTools.filter((tool) => tool.system === true).length;
-  }, [builtInTools]);
-
-  const enabledCoreToolsCount = useMemo(() => {
-    return builtInTools.filter((tool) => tool.system === true && !disabledTools.has(tool.name)).length;
-  }, [builtInTools, disabledTools]);
 
   const selectableConfigurableTools = useMemo(() => {
     return configurableTools.filter((tool) => !lockedOffTools.has(tool.name));

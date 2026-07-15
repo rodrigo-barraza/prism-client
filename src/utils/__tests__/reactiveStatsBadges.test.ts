@@ -65,7 +65,6 @@ describe("Session cost consistency between sidebar and settings panel", () => {
   it("ensures cost matches exactly in both places during active generation", () => {
     const isBackendStatsStale = true;
     const backendSessionStats = { totalCost: 0.50 };
-    const totalCost = 0.65; // client-side fallback sum
 
     // Sidebar cost (resolvedCost)
     const resolvedCost = resolveConversationCost(
@@ -91,7 +90,6 @@ describe("Session cost consistency between sidebar and settings panel", () => {
   it("ensures cost matches exactly in both places during post-turn gap (message completed, stats stale)", () => {
     const isBackendStatsStale = true;
     const backendSessionStats = { totalCost: 0.50 };
-    const totalCost = 0.70;
 
     const resolvedCost = resolveConversationCost(
       backendSessionStats,
@@ -115,7 +113,6 @@ describe("Session cost consistency between sidebar and settings panel", () => {
   it("ensures cost matches exactly in both places after backend stats refresh (stats fresh)", () => {
     const isBackendStatsStale = false;
     const backendSessionStats = { totalCost: 0.75 }; // now includes the turn's cost and background cost
-    const totalCost = 0.70;
 
     const resolvedCost = resolveConversationCost(
       backendSessionStats,

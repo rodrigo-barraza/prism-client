@@ -263,7 +263,6 @@ export default function HistoryItemComponent({
 
   const itemDate = item.updatedAt || item.createdAt;
   const modalities = item.modalities || {};
-  const hasModalities = modalities && Object.keys(modalities).length > 0;
   const hasModel = (item.modelNames?.length ?? 0) > 0 || item.modelName;
 
   const INPUT_KEYS = ["textIn", "imageIn", "audioIn", "videoIn", "docIn"];

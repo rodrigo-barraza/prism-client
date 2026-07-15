@@ -62,12 +62,6 @@ describe("refreshActiveConversation guard — generation source distinction", ()
     ],
   } as unknown as AgentConversation;
 
-  const GENERATING_SESSION = {
-    id: SESSION_ID,
-    isGenerating: true,
-    messages: [{ role: "user", content: "⏰ Reminder fired: check build" }],
-  } as unknown as AgentConversation;
-
   it("should SKIP refresh when generation is client-driven (active SSE)", async () => {
     const context: RefreshGuardContext = {
       isGenerating: true,

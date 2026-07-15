@@ -439,6 +439,7 @@ describe("ToolSelectionComponent — workspace locked-off flow", () => {
         const foundWorkspaceTool = Array.from(matchingElements).some(
           (element) => element.textContent === renderedName,
         );
+        expect(foundWorkspaceTool).toBe(false);
 
         // Locked-off tools in the "locked-tool-layout-row" pattern should not be in the selected tab
         const lockedRows = container.querySelectorAll(".locked-tool-layout-row");

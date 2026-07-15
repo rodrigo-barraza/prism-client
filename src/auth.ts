@@ -5,6 +5,7 @@ import Credentials from "next-auth/providers/credentials";
 import { ACCOUNTS_SERVICE_URL, AUTH_ALLOWED_EMAILS as ALLOWED_EMAILS, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET } from "./config";
 
 declare module "next-auth" {
+  // eslint-disable-next-line no-unused-vars -- module augmentation via declaration merging
   interface Session {
     user: {
       id: string;
@@ -14,6 +15,7 @@ declare module "next-auth" {
 }
 
 declare module "next-auth/jwt" {
+  // eslint-disable-next-line no-unused-vars -- module augmentation via declaration merging
   interface JWT {
     id?: string;
     picture?: string | null;

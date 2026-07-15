@@ -145,45 +145,6 @@ describe("resetConversationState model parameter resetting", () => {
   });
 
   it("should default thinkingEnabled to true for models that support thinking", () => {
-    const mockConfig = {
-      textToText: {
-        models: {
-          google: [
-            {
-              name: "gemini-3.5-flash",
-              thinking: true,
-            },
-          ],
-          deepseek: [
-            {
-              name: "deepseek-reasoner",
-              thinkingLevels: ["high", "minimal"],
-            },
-          ],
-          anthropic: [
-            {
-              name: "claude-3-5-sonnet",
-              supportsThinking: true,
-            },
-          ],
-          ollama: [
-            {
-              name: "custom-thinking-model",
-              tools: ["Thinking", "Web Search"],
-            },
-          ],
-          "lm-studio": [
-            {
-              name: "qwen3-7b-instruct",
-            },
-            {
-              name: "generic-llama-3",
-            },
-          ],
-        },
-      },
-    };
-
     const updateSettings = (
       settings: { provider: string; model: string },
     ) => {

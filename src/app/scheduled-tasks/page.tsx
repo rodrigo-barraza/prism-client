@@ -55,13 +55,6 @@ interface Workspace {
   path: string;
 }
 
-interface Agent {
-  id: string;
-  name: string;
-  description?: string;
-  project?: string;
-}
-
 interface Model {
   name: string;
   displayName?: string;

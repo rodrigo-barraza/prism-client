@@ -47,7 +47,7 @@ export default function useModelMemory(storageKey: string) {
       {
         fcOnly = false,
         fallback,
-      }: { fcOnly?: boolean; fallback?: (config: PrismConfig) => void } = {},
+      }: { fcOnly?: boolean; fallback?: (_config: PrismConfig) => void } = {},
     ) => {
       if (!config) return;
       if (restoredRef.current) return;

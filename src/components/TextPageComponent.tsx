@@ -42,18 +42,6 @@ interface TextItem {
   estimatedCost?: number;
 }
 
-interface TextSearchParams {
-  page: number;
-  limit: number;
-  origin?: string;
-  search?: string;
-  provider?: string;
-  model?: string;
-  agent?: string;
-  from?: string;
-  to?: string;
-}
-
 interface TextSearchResponse {
   data: TextItem[];
   total: number;

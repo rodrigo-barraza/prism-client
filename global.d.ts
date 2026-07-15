@@ -5,6 +5,7 @@ declare module "*.css" {
 
 declare module "three";
 
+// eslint-disable-next-line no-unused-vars -- global augmentation via declaration merging
 interface Window {
   webkitAudioContext: typeof AudioContext;
 }

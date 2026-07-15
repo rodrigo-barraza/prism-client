@@ -5,7 +5,6 @@ import {
   Download,
   Filter,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 import IrisService from "../../../services/IrisService";
 import { formatNumber, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../../utils/utilities";
@@ -61,7 +60,6 @@ export default function RequestsPage() {
   >(null);
   const isInitialLoadDone = useRef<boolean>(false);
   const fetchGenRef = useRef<number>(0);
-  const searchParams = useSearchParams();
 
   // "Just now" row highlighting — track fresh rows and fade-outs
   const previousJustNowIdsRef = useRef<Set<string>>(new Set());

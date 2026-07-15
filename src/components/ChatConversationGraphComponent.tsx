@@ -19,7 +19,7 @@ import {
 import IrisService, {
   type IrisRequestEntry,
 } from "../services/IrisService";
-import type { AgentConversation, ToolCallEvent } from "../types/types";
+import type { ToolCallEvent } from "../types/types";
 import { cleanModelName } from "./BadgeComponent";
 import ProviderLogo, { resolveProviderLabel, resolveProviderLogoKey } from "./ProviderLogosComponent";
 import StarfieldComponent from "./StarfieldComponent";
@@ -1024,17 +1024,6 @@ export default function ChatConversationGraphComponent({ conversationId, toolAct
       return next;
     });
   }, []);
-
-  // -- Derive active node identifiers from live toolActivity -----------
-  const activeToolNames = useMemo(() => {
-    const names = new Set<string>();
-    for (const toolCall of toolActivity) {
-      if (toolCall.status === "calling" || toolCall.status === "streaming") {
-        names.add(toolCall.name);
-      }
-    }
-    return names;
-  }, [toolActivity]);
 
 
 

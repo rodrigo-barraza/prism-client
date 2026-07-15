@@ -45,7 +45,8 @@ export default function SubAgentNotificationComponent({
         ? "✗"
         : "■";
 
-  const statusColor =
+  // NOTE: computed but never applied to the icon — suspected missing style (kept for follow-up)
+  const _statusColor =
     taskNotif.status === EXECUTION_STATUS.COMPLETED
       ? "var(--color-success, oklch(0.7 0.17 145))"
       : taskNotif.status === EXECUTION_STATUS.FAILED
