@@ -927,6 +927,7 @@ export default function MessageList({
         }
         return message;
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pure render-scoped helper; listing it would recompute the memo every render
   }, [messages, showRaw]);
 
   // -- Sticky user message (pinned section header) -----------

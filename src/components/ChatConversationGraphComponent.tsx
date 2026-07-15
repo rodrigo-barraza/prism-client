@@ -409,6 +409,7 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
   // Start collision settlement when new graph data arrives from the hook
   useEffect(() => {
     if (graphData && graphData.nodes.length > 0) startCollisionLoop(40);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed to node count on purpose; full graphData would restart the settle loop on every mutation
   }, [graphData?.nodes.length, startCollisionLoop]);
 
   // -- Animated viewport auto-fit --------------------------------
@@ -1345,9 +1346,9 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
                 })() : 0;
 
                 // eslint-disable-next-line react-hooks/refs -- compiler false positive: memoized handler is inferred as a ref read
-                const onNodeMouseDown = (event: React.MouseEvent) => handleNodeMouseDown(event, node.id);
+                const onNodeMouseDown = (event: React.MouseEvent<SVGGElement>) => handleNodeMouseDown(event, node.id);
                 // eslint-disable-next-line react-hooks/refs -- compiler false positive: memoized handler is inferred as a ref read
-                const onNodeClick = (event: React.MouseEvent) => handleNodeClick(event, node.id);
+                const onNodeClick = (event: React.MouseEvent<SVGGElement>) => handleNodeClick(event, node.id);
 
                 return (
                   <g

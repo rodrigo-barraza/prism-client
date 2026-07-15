@@ -2025,6 +2025,7 @@ export default function VramBenchmarkComponent() {
         },
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- chart redraw reads latest clip state at invocation; deps scoped to data by design
   }, [models, machineFilter, allFilteredData, activeScatterMode]);
 
   // -- Shared range data for bar charts ----------------------
@@ -2402,6 +2403,7 @@ export default function VramBenchmarkComponent() {
         },
       },
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- chart redraw reads latest clip state at invocation; deps scoped to data by design
   }, [models, vramRanges]);
 
   // -- Tokens per Second (floating range bars) --------------
@@ -2650,6 +2652,7 @@ export default function VramBenchmarkComponent() {
         },
       },
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- chart redraw reads latest clip state at invocation; deps scoped to data by design
   }, [models, tpsRanges]);
 
   // -- TPS zoom-update effect --

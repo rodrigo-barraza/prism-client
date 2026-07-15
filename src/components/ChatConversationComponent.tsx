@@ -794,6 +794,7 @@ export default function ChatConversationComponent({
         if (initialTabKey !== leftTab) setLeftTab(initialTabKey);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initial tab sync runs on trigger props only; adding tab state would clobber user navigation
   }, [initialTabKey]);
 
   useEffect(() => {
@@ -801,6 +802,7 @@ export default function ChatConversationComponent({
       // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       if (initialTabBottomKey !== leftTabBottom) setLeftTabBottom(initialTabBottomKey);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initial tab sync runs on trigger props only; adding tab state would clobber user navigation
   }, [initialTabBottomKey]);
 
   /** Mark a tab as having new unseen data (only if user isn't already viewing it). */
@@ -1849,6 +1851,7 @@ export default function ChatConversationComponent({
     } finally {
       setConversationsLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- agentId is read at call time; reloads are triggered explicitly on agent switch
   }, [agentProject, isNoAgent, conversationsLoading]);
 
   useEffect(() => {
@@ -2165,6 +2168,7 @@ export default function ChatConversationComponent({
     } catch (error) {
       setAdminError(getErrorMessage(error));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- adminSelectEntry is invoked imperatively; keeping identity stable avoids effect churn
   }, [
     isAdmin,
     adminProjectFilter,
@@ -2586,6 +2590,7 @@ export default function ChatConversationComponent({
         <ErrorMessage message={adminError} />
       </>,
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- effect keyed to explicit admin filters; adminHeaderContext object identity churns every render
   }, [
     isAdmin,
     adminProjectFilter,
@@ -3087,6 +3092,7 @@ export default function ChatConversationComponent({
       };
       return updated as unknown as Array<AgentConversation | Conversation>;
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- agent-status effect keyed to explicit triggers; messages/isNoAgent read as snapshots
   }, [
     activeId,
     title,
@@ -5286,6 +5292,7 @@ export default function ChatConversationComponent({
 
       return [];
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- payload builder reads latest settings at call time; identity kept stable by design
     [
       settings.provider,
       settings.model,
@@ -5789,6 +5796,7 @@ export default function ChatConversationComponent({
         loadConversations();
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- send callback reads latest conversation state at call time; identity kept stable by design
     [
       handleStop,
       isConversationRunning,
@@ -5866,6 +5874,7 @@ export default function ChatConversationComponent({
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isConversationRunning read as call-time snapshot by design
     [
       handleSend,
       isGenerating,
@@ -6552,6 +6561,7 @@ export default function ChatConversationComponent({
         setPixelTransition(null);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- stats builder reads latest tool state at call time; identity kept stable by design
     [
       isGenerating,
       activeId,
@@ -6670,6 +6680,7 @@ export default function ChatConversationComponent({
       sseSubscription.close();
       if (listRefreshTimer) clearTimeout(listRefreshTimer);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- admin snapshot read once per conversation change by design
   }, [refreshActiveConversation, loadConversations]);
 
   // ── Live-status poll for viewed sub-agent conversations ──────────
