@@ -1,180 +1,136 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 
-const MOCK_SETTINGS_DEFAULTS = {
-  provider: "",
-  model: "",
-  systemPrompt: "",
-  temperature: 1.0,
-  maxTokens: 2048,
-  topP: 1,
-  topK: 0,
-  frequencyPenalty: 0,
-  presencePenalty: 0,
-  stopSequences: "",
-  thinkingEnabled: true,
-  reasoningEffort: "high",
-  thinkingLevel: "high",
-  thinkingBudget: "",
-  webSearchEnabled: false,
+import { buildResetConversationSettings } from "../conversationReset";
+import { LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE } from "../../constants";
+import type { PrismConfig, PrismSettings } from "../../types/types";
+
+const mockConfig = {
+  textToText: {
+    models: {
+      anthropic: [
+        {
+          name: "claude-sonnet-4-5-20250929",
+          defaultTemperature: 0.7,
+        },
+      ],
+    },
+    defaults: {},
+  },
+  parameterDescriptors: [
+    { key: "temperature", defaultValue: 1.0 },
+    { key: "topP", defaultValue: 1 },
+    { key: "thinkingEnabled", defaultValue: false },
+    { key: "reasoningEffort", defaultValue: "high" },
+  ],
+} as unknown as PrismConfig;
+
+const currentSettings: PrismSettings = {
+  provider: "anthropic",
+  model: "claude-sonnet-4-5-20250929",
+  temperature: 0.2,
+  maxTokens: 1000,
+  topP: 0.5,
+  reasoningEffort: "low",
+  frequencyPenalty: 1.5,
+  presencePenalty: -1.0,
+  minP: 0.1,
+  repeatPenalty: 1.2,
+  seed: 42,
+  agents: { subAgentProvider: "google", workspaceEnabled: false },
 };
 
-describe("resetConversationState model parameter resetting", () => {
-  it("should reset all model parameters to their defaults while keeping the current provider and model", () => {
-    const currentSettings = {
-      provider: "anthropic",
-      model: "claude-sonnet-4-5-20250929",
-      temperature: 0.2,
-      maxTokens: 1000,
-      topP: 0.5,
-      thinkingEnabled: true,
-      reasoningEffort: "low",
-      frequencyPenalty: 1.5,
-      presencePenalty: -1.0,
-      minP: 0.1,
-      repeatPenalty: 1.2,
-      seed: 42,
-    };
-
-    const mockConfig = {
-      textToText: {
-        models: {
-          anthropic: [
-            {
-              name: "claude-sonnet-4-5-20250929",
-              defaultTemperature: 0.7,
-            },
-          ],
-        },
-      },
-    };
-
-    interface TestModelOption {
-      name: string;
-      defaultTemperature?: number;
-    }
-
-    interface TestConversationSettingsInput {
-      provider?: string;
-      model?: string;
-      agents?: {
-        workspaceEnabled?: boolean;
-      };
-    }
-
-    const updateSettings = (
-      settings: TestConversationSettingsInput,
-      isNoAgent: boolean,
-    ) => {
-      let defaultTemperature = 1.0;
-      if (mockConfig && settings.provider && settings.model) {
-        const providerModels =
-          (mockConfig.textToText?.models as Record<string, TestModelOption[]>)?.[settings.provider] || [];
-        const modelDefinition = providerModels.find(
-          (model: TestModelOption) => model.name === settings.model,
-        );
-        if (
-          modelDefinition &&
-          modelDefinition.defaultTemperature !== undefined
-        ) {
-          defaultTemperature = modelDefinition.defaultTemperature;
-        }
-      }
-
-      const persistedWorkspaceToggle =
-        typeof window !== "undefined"
-          ? localStorage.getItem("agent:workspaceTogglePreference")
-          : null;
-      const workspaceEnabledPreference =
-        persistedWorkspaceToggle !== null
-          ? persistedWorkspaceToggle !== "false"
-          : true;
-
-      return {
-        ...MOCK_SETTINGS_DEFAULTS,
-        provider: settings.provider,
-        model: settings.model,
-        agents: {
-          ...settings.agents,
-          workspaceEnabled: workspaceEnabledPreference,
-        },
-        temperature: defaultTemperature,
-        maxTokens: 64000,
-        functionCallingEnabled: !isNoAgent,
-        thinkingEnabled: true,
-        minP: 0,
-        repeatPenalty: 1.0,
-        seed: null,
-        responseFormat: "",
-        serviceTier: !isNoAgent ? "auto" : "",
-        parallelToolCalls: true,
-        candidateCount: 1,
-        responseMimeType: "",
-        store: true,
-        mediaResolution: "",
-        topLogprobs: 0,
-        responseLogprobs: false,
-        logprobs: 0,
-      };
-    };
-
-    const updatedAgentSettings = updateSettings(currentSettings, false);
-
-    expect(updatedAgentSettings.provider).toBe("anthropic");
-    expect(updatedAgentSettings.model).toBe("claude-sonnet-4-5-20250929");
-    expect(updatedAgentSettings.temperature).toBe(0.7);
-    expect(updatedAgentSettings.maxTokens).toBe(64000);
-    expect(updatedAgentSettings.functionCallingEnabled).toBe(true);
-    expect(updatedAgentSettings.thinkingEnabled).toBe(true);
-    expect(updatedAgentSettings.minP).toBe(0);
-    expect(updatedAgentSettings.repeatPenalty).toBe(1.0);
-    expect(updatedAgentSettings.seed).toBeNull();
-    expect(updatedAgentSettings.serviceTier).toBe("auto");
-
-    const updatedChatSettings = updateSettings(currentSettings, true);
-
-    expect(updatedChatSettings.provider).toBe("anthropic");
-    expect(updatedChatSettings.model).toBe("claude-sonnet-4-5-20250929");
-    expect(updatedChatSettings.temperature).toBe(0.7);
-    expect(updatedChatSettings.maxTokens).toBe(64000);
-    expect(updatedChatSettings.functionCallingEnabled).toBe(false);
-    expect(updatedChatSettings.thinkingEnabled).toBe(true);
-    expect(updatedChatSettings.minP).toBe(0);
-    expect(updatedChatSettings.repeatPenalty).toBe(1.0);
-    expect(updatedChatSettings.seed).toBeNull();
-    expect(updatedChatSettings.serviceTier).toBe("");
+describe("buildResetConversationSettings", () => {
+  beforeEach(() => {
+    localStorage.clear();
   });
 
-  it("should default thinkingEnabled to true for models that support thinking", () => {
-    const updateSettings = (
-      settings: { provider: string; model: string },
-    ) => {
-      return {
-        ...MOCK_SETTINGS_DEFAULTS,
-        provider: settings.provider,
-        model: settings.model,
-        thinkingEnabled: true,
-      };
-    };
+  it("resets model parameters to defaults while keeping provider and model (agent mode)", () => {
+    const settings = buildResetConversationSettings(
+      mockConfig,
+      currentSettings,
+      false,
+    );
 
-    const googleSettings = updateSettings({ provider: "google", model: "gemini-3.5-flash" });
-    expect(googleSettings.thinkingEnabled).toBe(true);
+    expect(settings.provider).toBe("anthropic");
+    expect(settings.model).toBe("claude-sonnet-4-5-20250929");
+    // temperature comes from the model's own defaultTemperature, not the
+    // descriptor default and not the previous conversation's value
+    expect(settings.temperature).toBe(0.7);
+    expect(settings.maxTokens).toBe(64000);
+    expect(settings.functionCallingEnabled).toBe(true);
+    expect(settings.minP).toBe(0);
+    expect(settings.repeatPenalty).toBe(1.0);
+    expect(settings.seed).toBeNull();
+    expect(settings.serviceTier).toBe("auto");
+    // descriptor defaults flow through for parameters without overrides
+    expect(settings.topP).toBe(1);
+    expect(settings.reasoningEffort).toBe("high");
+  });
 
-    const deepseekSettings = updateSettings({ provider: "deepseek", model: "deepseek-reasoner" });
-    expect(deepseekSettings.thinkingEnabled).toBe(true);
+  it("disables function calling and service tier in agentless mode", () => {
+    const settings = buildResetConversationSettings(
+      mockConfig,
+      currentSettings,
+      true,
+    );
 
-    const anthropicSettings = updateSettings({ provider: "anthropic", model: "claude-3-5-sonnet" });
-    expect(anthropicSettings.thinkingEnabled).toBe(true);
+    expect(settings.functionCallingEnabled).toBe(false);
+    expect(settings.serviceTier).toBe("");
+  });
 
-    const ollamaSettings = updateSettings({ provider: "ollama", model: "custom-thinking-model" });
-    expect(ollamaSettings.thinkingEnabled).toBe(true);
+  it("forces thinkingEnabled to true even when the descriptor default is false", () => {
+    const settings = buildResetConversationSettings(
+      mockConfig,
+      currentSettings,
+      false,
+    );
+    expect(settings.thinkingEnabled).toBe(true);
+  });
 
-    const lmStudioQwenSettings = updateSettings({ provider: "lm-studio", model: "qwen3-7b-instruct" });
-    expect(lmStudioQwenSettings.thinkingEnabled).toBe(true);
+  it("falls back to temperature 1.0 when the model has no defaultTemperature", () => {
+    const settings = buildResetConversationSettings(
+      mockConfig,
+      { provider: "anthropic", model: "unknown-model" },
+      false,
+    );
+    expect(settings.temperature).toBe(1.0);
+  });
 
-    const lmStudioLlamaSettings = updateSettings({ provider: "lm-studio", model: "generic-llama-3" });
-    expect(lmStudioLlamaSettings.thinkingEnabled).toBe(true);
+  it("falls back to temperature 1.0 when config is unavailable", () => {
+    const settings = buildResetConversationSettings(
+      null,
+      currentSettings,
+      false,
+    );
+    expect(settings.temperature).toBe(1.0);
+  });
 
-    const standardSettings = updateSettings({ provider: "google", model: "gemini-2.0-flash" });
-    expect(standardSettings.thinkingEnabled).toBe(true);
+  it("restores the persisted workspace toggle preference from localStorage", () => {
+    localStorage.setItem(LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE, "false");
+    const disabled = buildResetConversationSettings(
+      mockConfig,
+      currentSettings,
+      false,
+    );
+    expect(disabled.agents?.workspaceEnabled).toBe(false);
+
+    localStorage.setItem(LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE, "true");
+    const enabled = buildResetConversationSettings(
+      mockConfig,
+      currentSettings,
+      false,
+    );
+    expect(enabled.agents?.workspaceEnabled).toBe(true);
+  });
+
+  it("defaults workspace to enabled when no preference is persisted, preserving other agent settings", () => {
+    const settings = buildResetConversationSettings(
+      mockConfig,
+      currentSettings,
+      false,
+    );
+    expect(settings.agents?.workspaceEnabled).toBe(true);
+    // Non-workspace agent settings carry over from the current conversation
+    expect(settings.agents?.subAgentProvider).toBe("google");
   });
 });

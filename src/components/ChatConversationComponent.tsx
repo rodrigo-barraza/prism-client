@@ -107,6 +107,7 @@ import {
 } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { buildUnifiedToolCounts, CAPABILITY_TOOL_NAMES, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams, buildSettingsDefaults, isNameBasedThinkingModel } from "../utils/utilities";
+import { buildResetConversationSettings } from "../utils/conversationReset";
 import {
   MESSAGE_ROLES,
   EXECUTION_STATUS,
@@ -5928,61 +5929,9 @@ export default function ChatConversationComponent({
     // core tools respect coreToolsLocked (locked on = stay enabled).
     resetToAllDisabled();
 
-    setSettings((currentSettings) => {
-      let defaultTemperature = 1.0;
-      if (config && currentSettings.provider && currentSettings.model) {
-        const providerModels =
-          config.textToText?.models?.[currentSettings.provider] || [];
-        const modelDefinition = providerModels.find(
-          (model) => model.name === currentSettings.model,
-        );
-        if (
-          modelDefinition &&
-          modelDefinition.defaultTemperature !== undefined
-        ) {
-          defaultTemperature = modelDefinition.defaultTemperature;
-        }
-      }
-
-      // Restore the user's persisted workspace toggle preference for new conversations.
-      // This reads from localStorage (explicit user action) rather than carrying over
-      // whatever state the previous/loaded conversation had.
-      const persistedWorkspaceToggle =
-        typeof window !== "undefined"
-          ? localStorage.getItem(LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE)
-          : null;
-      const workspaceEnabledPreference =
-        persistedWorkspaceToggle !== null
-          ? persistedWorkspaceToggle !== "false"
-          : true;
-
-      return {
-        ...buildSettingsDefaults(config?.parameterDescriptors),
-        provider: currentSettings.provider,
-        model: currentSettings.model,
-        agents: {
-          ...currentSettings.agents,
-          workspaceEnabled: workspaceEnabledPreference,
-        },
-        temperature: defaultTemperature,
-        maxTokens: 64000,
-        functionCallingEnabled: !isNoAgent,
-        thinkingEnabled: true,
-        minP: 0,
-        repeatPenalty: 1.0,
-        seed: null,
-        responseFormat: "",
-        serviceTier: !isNoAgent ? "auto" : "",
-        parallelToolCalls: true,
-        candidateCount: 1,
-        responseMimeType: "",
-        store: true,
-        mediaResolution: "",
-        topLogprobs: 0,
-        responseLogprobs: false,
-        logprobs: 0,
-      };
-    });
+    setSettings((currentSettings) =>
+      buildResetConversationSettings(config, currentSettings, isNoAgent),
+    );
 
     // Clear conversation from URL
     window.dispatchEvent(

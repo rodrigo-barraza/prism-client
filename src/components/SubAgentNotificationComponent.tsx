@@ -45,8 +45,7 @@ export default function SubAgentNotificationComponent({
         ? "✗"
         : "■";
 
-  // NOTE: computed but never applied to the icon — suspected missing style (kept for follow-up)
-  const _statusColor =
+  const statusColor =
     taskNotif.status === EXECUTION_STATUS.COMPLETED
       ? "var(--color-success, oklch(0.7 0.17 145))"
       : taskNotif.status === EXECUTION_STATUS.FAILED
@@ -65,7 +64,9 @@ export default function SubAgentNotificationComponent({
       <div className={styles['content']}>
         <div className={styles['header']}>
           <div className={styles['role-label']}>
-            <span className={styles['status-icon']}>{statusIcon}</span>
+            <span className={styles['status-icon']} style={{ color: statusColor }}>
+              {statusIcon}
+            </span>
             Tool: Create Subagents
             {timestamp && <BadgeComponent type="dateTime" date={timestamp} />}
           </div>

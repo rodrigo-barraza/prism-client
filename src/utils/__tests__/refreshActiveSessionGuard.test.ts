@@ -106,6 +106,37 @@ describe("refreshActiveConversation guard — generation source distinction", ()
     expect(applySessionData).toHaveBeenCalledWith(COMPLETED_SESSION);
   });
 
+  it("should apply in-progress session data while server-driven generation is still running", async () => {
+    // Backend timer/scheduled task is mid-generation: the fetched session
+    // still has isGenerating: true and only partial messages. The refresh
+    // must go through so the client renders the in-progress state instead
+    // of staying frozen until completion.
+    const GENERATING_SESSION = {
+      id: SESSION_ID,
+      isGenerating: true,
+      messages: [{ role: "user", content: "⏰ Reminder fired: check build" }],
+    } as unknown as AgentConversation;
+
+    const context: RefreshGuardContext = {
+      isGenerating: true,
+      isClientDrivenGeneration: false,
+      currentSessionId: SESSION_ID,
+    };
+
+    const fetchSession = vi.fn().mockResolvedValue(GENERATING_SESSION);
+    const applySessionData = vi.fn();
+
+    const wasRefreshed = await refreshActiveConversation(
+      SESSION_ID,
+      context,
+      fetchSession,
+      applySessionData,
+    );
+
+    expect(wasRefreshed).toBe(true);
+    expect(applySessionData).toHaveBeenCalledWith(GENERATING_SESSION);
+  });
+
   it("should ALLOW refresh when not generating at all", async () => {
     const context: RefreshGuardContext = {
       isGenerating: false,
