@@ -1227,7 +1227,7 @@ export default function MessageList({
               </div>
             </div>
             <MarkdownContent content={systemPrompt} />
-            {systemPrompt && (
+            {!minimal && systemPrompt && (
               <div className={styles['meta-badges']}>
                 <BadgeComponent
                   type="words"
@@ -1532,7 +1532,8 @@ export default function MessageList({
                                   {groupMessage.content ? (
                                     <MarkdownContent content={groupMessage.content} />
                                   ) : null}
-                                  {groupMessage.role === "assistant" &&
+                                  {!minimal &&
+                                    groupMessage.role === "assistant" &&
                                     (groupMessage.usage || groupMessage.provider) && (
                                       <div className={styles['meta-badges']}>
                                         {groupMessage.provider && (
@@ -2368,7 +2369,7 @@ export default function MessageList({
                       )}
 
                       {/* User metadata */}
-                      {message.role === "user" && message.content && (
+                      {!minimal && message.role === "user" && message.content && (
                         <div className={styles['meta-badges']}>
                           <BadgeComponent
                             type="words"
@@ -2388,7 +2389,7 @@ export default function MessageList({
                       )}
 
                       {/* System metadata */}
-                      {message.role === "system" && message.content && (
+                      {!minimal && message.role === "system" && message.content && (
                         <div className={styles['meta-badges']}>
                           <BadgeComponent
                             type="words"
@@ -2408,7 +2409,8 @@ export default function MessageList({
                       )}
 
                       {/* Assistant metadata — only on the last message in a coalesced group */}
-                      {message.role === "assistant" &&
+                      {!minimal &&
+                        message.role === "assistant" &&
                         coalesce?.isLastInGroup !== false &&
                         (message.usage ||
                           message.audio ||
