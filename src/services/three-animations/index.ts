@@ -21,12 +21,19 @@ export {
   type FaceSourceMode,
 } from "./TextureUtilities";
 export { createCoinAnimation, type CoinAnimationOptions } from "./CoinAnimation";
+export {
+  createCloudsAnimation,
+  type CloudsAnimationOptions,
+  type CloudsPalette,
+} from "./CloudsAnimation";
 
 import { createCoinAnimation } from "./CoinAnimation";
+import { createCloudsAnimation } from "./CloudsAnimation";
 
 /** Name → factory registry for discoverability. */
 export const THREE_ANIMATION_PRESETS = {
   coin: createCoinAnimation,
+  clouds: createCloudsAnimation,
 } as const;
 
 export type ThreeAnimationPresetName = keyof typeof THREE_ANIMATION_PRESETS;

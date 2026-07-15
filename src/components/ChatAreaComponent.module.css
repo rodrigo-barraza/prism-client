@@ -225,6 +225,24 @@
   background-attachment: fixed;
 }
 
+/* ── Ambient scene backdrop (empty state) ────────────────────── */
+/* The 3D backdrop is absolutely positioned at z-index 0; in-flow
+   content needs a positioned z-index >= 1 to paint above it. */
+
+.empty-state-raised {
+  position: relative;
+  z-index: 1;
+}
+
+/* Legibility over the bright sky scene: a soft deep-blue halo that
+   separates both light and dark theme text from the cloud deck. */
+.empty-state-over-scene h2,
+.empty-state-over-scene p {
+  text-shadow:
+    0 1px 2px oklch(32% 0.07 255 / 0.3),
+    0 2px 16px oklch(32% 0.08 255 / 0.22);
+}
+
 .welcome {
   margin: auto;
   text-align: left;

@@ -167,6 +167,8 @@ import {
   useToast,
 } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "./StateMessageComponent";
+import ChatBackgroundComponent from "./ChatBackgroundComponent";
+import { useChatBackgroundSetting } from "../hooks/useChatBackgroundSetting";
 import useToolToggles from "../hooks/useToolToggles";
 import useModelMemory from "../hooks/useModelMemory";
 import AgentPickerComponent from "./AgentPickerComponent";
@@ -592,11 +594,20 @@ export default function AgentChatComponent({
 
   const { currentWorkspace, setCurrentWorkspace, workspaces, workspacesLoaded } = useWorkspace();
 
+  // Ambient 3D backdrop for the empty state ("clouds" by default); an
+  // agent's own backgroundImage takes precedence over the scene.
+  const [chatBackground] = useChatBackgroundSetting();
+
   // -- State ----------------------------------------------------
   const [messages, setMessages] = useState<ClientMessage[]>([]);
   const [queuedNextTurn, setQueuedNextTurn] = useState<QueuedNextTurn | null>(
     null,
   );
+
+  // Empty conversation → show the ambient scene (unless the agent brings
+  // its own background image, or the user turned scenes off).
+  const showsChatBackgroundScene =
+    messages.length === 0 && !agentBackgroundImage && chatBackground !== "none";
   const inputValueRef = useRef<string>("");
   const [hasInput, setHasInput] = useState(false);
   const [draftInputLength, setDraftInputLength] = useState(0);
@@ -8223,8 +8234,12 @@ export default function AgentChatComponent({
             : undefined
         }
       >
+        {showsChatBackgroundScene && (
+          <ChatBackgroundComponent background={chatBackground} />
+        )}
         {messages.length === 0 && activeAgentData && (
           <EmptyStateComponent
+            className={`${chatStyles['empty-state-raised']} ${showsChatBackgroundScene ? chatStyles['empty-state-over-scene'] : ""}`}
             icon={
               <BadgeComponent
                 type="agent"

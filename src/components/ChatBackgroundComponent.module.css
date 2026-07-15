@@ -1,0 +1,37 @@
+.chat-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  animation: chat-background-fade-in 600ms ease-out;
+}
+
+@keyframes chat-background-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Instant CSS approximation of the scene — visible while shaders compile
+   and the permanent fallback when WebGL2 is unavailable. */
+.fallback {
+  position: absolute;
+  inset: 0;
+}
+
+.fallback-clouds {
+  background: linear-gradient(
+    180deg,
+    #0e59b7 0%,
+    #2f79cf 26%,
+    #6fa9e3 40%,
+    #cfe9f8 47%,
+    #a8c9e9 55%,
+    #7fa9d8 72%,
+    #5c88c4 100%
+  );
+}

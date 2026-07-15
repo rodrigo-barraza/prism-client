@@ -267,6 +267,7 @@ export default function MemoriesPanel({
   }, [project, agent]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadFacets();
   }, [loadFacets, refreshKey]);
 
@@ -342,6 +343,7 @@ export default function MemoriesPanel({
         text: `✨ ${summary || "Memories consolidated"}`,
       });
       loadMemories(false);
+      loadFacets();
       if (historyOpen) loadHistory();
     } else {
       setToast({ type: "info", text: summary || "No changes needed" });
@@ -384,6 +386,7 @@ export default function MemoriesPanel({
         });
         // Refresh after consolidation
         loadMemories(false);
+        loadFacets();
         if (historyOpen) loadHistory();
       } else {
         setToast({ type: "info", text: result.summary || "No changes needed" });
@@ -397,7 +400,7 @@ export default function MemoriesPanel({
       setConsolidating(false);
       setTimeout(() => setToast(null), TOAST_DURATION_MILLISECONDS);
     }
-  }, [project, agent, loadMemories, loadHistory, historyOpen]);
+  }, [project, agent, loadMemories, loadFacets, loadHistory, historyOpen]);
 
   const handleDeleteAll = useCallback(async () => {
     setDeletingAll(true);
@@ -408,6 +411,7 @@ export default function MemoriesPanel({
       setHasMore(false);
       knownIdsRef.current.clear();
       setConfirmingDeleteAll(false);
+      loadFacets();
       setToast({
         type: "success",
         text: `Deleted ${result.deletedCount} memor${result.deletedCount === 1 ? "y" : "ies"}`,
@@ -422,22 +426,29 @@ export default function MemoriesPanel({
     } finally {
       setDeletingAll(false);
     }
-  }, [project, agent]);
+  }, [project, agent, loadFacets]);
 
   // -- Filtered memories (client-side) ------------------------
   const filteredMemories = useMemo(() => {
     let result = memories;
 
-    // Text search — match against title or content (case-insensitive)
+    // Text search — match title, content, and Discord attribution
+    // (about/source usernames + IDs) case-insensitively
     if (searchQuery.trim()) {
       const normalizedSearch = searchQuery.trim().toLowerCase();
-      result = result.filter((memory) => {
-        const title = (memory.title || "").toLowerCase();
-        const content = (memory.content || "").toLowerCase();
-        return (
-          title.includes(normalizedSearch) || content.includes(normalizedSearch)
-        );
-      });
+      result = result.filter((memory) =>
+        [
+          memory.title,
+          memory.content,
+          memory.username,
+          memory.aboutUsername,
+          memory.aboutUserId,
+          memory.sourceUsername,
+          memory.sourceUserId,
+        ].some((field) =>
+          (field || "").toLowerCase().includes(normalizedSearch),
+        ),
+      );
     }
 
     // Date range filter
@@ -471,6 +482,48 @@ export default function MemoriesPanel({
   }, [memories, searchQuery, dateFrom, dateTo]);
 
   const isFiltered = searchQuery.trim() || dateFrom || dateTo;
+  const hasServerFilters =
+    selectedType !== "all" || !!selectedAboutUserId || !!selectedSourceUserId;
+
+  // -- Filter dropdown items (from server facets when available) ------
+  const typeFilterItems = useMemo(() => {
+    if (!facets?.types?.length) return MEMORY_TYPE_FILTER_ITEMS;
+    return facets.types.map(({ type, count }) => {
+      const known =
+        MEMORY_TYPE_FILTER_ITEMS.find((item) => item.key === type) ||
+        (LUPOS_TYPE_FILTER_ITEMS[type]
+          ? { key: type, ...LUPOS_TYPE_FILTER_ITEMS[type] }
+          : null);
+      return {
+        key: type,
+        icon: known?.icon ?? Tag,
+        color: known?.color ?? "#94a3b8",
+        title: `${known?.title ?? type} (${count})`,
+      };
+    });
+  }, [facets]);
+
+  const aboutUserItems = useMemo(
+    () =>
+      (facets?.aboutUsers ?? []).map((user) => ({
+        key: user.userId,
+        icon: AtSign,
+        color: ABOUT_USER_COLOR,
+        title: `${user.username || user.userId} (${user.count})`,
+      })),
+    [facets],
+  );
+
+  const sourceUserItems = useMemo(
+    () =>
+      (facets?.sourceUsers ?? []).map((user) => ({
+        key: user.userId,
+        icon: MessageCircle,
+        color: SOURCE_USER_COLOR,
+        title: `${user.username || user.userId} (${user.count})`,
+      })),
+    [facets],
+  );
 
   // -- Push header action buttons to parent SidebarTabHeader ---
   // (Must live before early returns to satisfy Rules of Hooks)
@@ -602,8 +655,8 @@ export default function MemoriesPanel({
     );
   }
 
-  // -- Empty ---------------------------------------------------
-  if (memories.length === 0) {
+  // -- Empty (no server filters — keep filter bar when filtering) -----
+  if (memories.length === 0 && !hasServerFilters) {
     return (
       <div className={styles['container']}>
         <div className={styles['empty-state']}>
@@ -647,11 +700,35 @@ export default function MemoriesPanel({
             [
               {
                 label: "Type",
-                items: MEMORY_TYPE_FILTER_ITEMS,
+                items: typeFilterItems,
                 activeKeys: selectedType === "all" ? null : selectedType,
                 isSingleSelect: true,
                 onToggle: (key: string | null) => setSelectedType(key ?? "all"),
               },
+              ...(aboutUserItems.length > 0
+                ? [
+                    {
+                      label: "About User",
+                      items: aboutUserItems,
+                      activeKeys: selectedAboutUserId,
+                      isSingleSelect: true,
+                      onToggle: (key: string | null) =>
+                        setSelectedAboutUserId(key),
+                    },
+                  ]
+                : []),
+              ...(sourceUserItems.length > 0
+                ? [
+                    {
+                      label: "Said By",
+                      items: sourceUserItems,
+                      activeKeys: selectedSourceUserId,
+                      isSingleSelect: true,
+                      onToggle: (key: string | null) =>
+                        setSelectedSourceUserId(key),
+                    },
+                  ]
+                : []),
             ] as FilterGroup[]
           }
           dateRange={{ from: dateFrom, to: dateTo }}
@@ -712,11 +789,11 @@ export default function MemoriesPanel({
       {/* -- Scrollable Content ----------------------------------- */}
       <div className={styles['scrollable-content-area']}>
         {/* -- No results after filtering -------------------------- */}
-        {isFiltered && filteredMemories.length === 0 && (
+        {(isFiltered || hasServerFilters) && filteredMemories.length === 0 && (
           <div className={styles['empty-state']}>
             <div className={styles['empty-title']}>No matching memories</div>
             <div className={styles['empty-subtitle']}>
-              Try adjusting your search query or time range.
+              Try adjusting your search query or filters.
             </div>
           </div>
         )}
@@ -732,6 +809,8 @@ export default function MemoriesPanel({
               onDeleteRequest={(id) => setConfirmingDeleteId(id || null)}
               onDeleteConfirm={handleDelete}
               onDeleteCancel={() => setConfirmingDeleteId(null)}
+              onFilterAboutUser={setSelectedAboutUserId}
+              onFilterSourceUser={setSelectedSourceUserId}
             />
           );
         })}

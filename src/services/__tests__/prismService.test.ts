@@ -254,6 +254,21 @@ describe("PrismService", () => {
       // skip=0 is filtered out due to JS falsy check if (skip) in PrismService.tsx
       expect(lastUrl).toContain("/agent-memories?project=project-a&limit=10&agent=coding&type=type-x");
 
+      await PrismService.getAgentMemories(
+        "project-a",
+        10,
+        "LUPOS",
+        0,
+        undefined,
+        "about-user-1",
+        "source-user-2",
+      );
+      expect(lastUrl).toContain("aboutUserId=about-user-1");
+      expect(lastUrl).toContain("sourceUserId=source-user-2");
+
+      await PrismService.getAgentMemoryFacets("project-a", "LUPOS");
+      expect(lastUrl).toContain("/agent-memories/facets?project=project-a&agent=LUPOS");
+
       await PrismService.deleteAgentMemory("memory-123");
       expect(lastUrl).toContain("/agent-memories/memory-123");
 
