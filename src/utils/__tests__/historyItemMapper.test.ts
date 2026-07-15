@@ -125,29 +125,17 @@ describe("mapConversationToHistoryItem", () => {
     expect(result.modelNames).toEqual(["gpt-5.4"]);
   });
 
-  it("should derive modelNames from assistant messages when no pre-enriched data exists", () => {
+  it("should not derive modelNames from messages or settings — backend modelNames is authoritative", () => {
     const messages = [
       { role: "user", content: "hi" } as Message,
       { role: "assistant", content: "hello", model: "claude-sonnet-4" } as Message,
-      { role: "user", content: "question" } as Message,
-      { role: "assistant", content: "answer", model: "gemini-3.5-flash" } as Message,
     ];
-    const conversation = createMinimalConversation({ messages });
-    const result = mapConversationToHistoryItem(conversation);
-    expect(result.modelNames).toContain("claude-sonnet-4");
-    expect(result.modelNames).toContain("gemini-3.5-flash");
-  });
-
-  it("should fallback to settings.model for modelNames when messages have no model field", () => {
     const conversation = createMinimalConversation({
-      messages: [
-        { role: "user", content: "hi" } as Message,
-        { role: "assistant", content: "hello" } as Message,
-      ],
+      messages,
       settings: { model: "fallback-model" } as Conversation["settings"],
     });
     const result = mapConversationToHistoryItem(conversation);
-    expect(result.modelNames).toEqual(["fallback-model"]);
+    expect(result.modelNames).toEqual([]);
   });
 
   it("should return empty providers when server providers array is absent", () => {
