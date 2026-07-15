@@ -121,12 +121,14 @@ export default function TasksPanel({
   // Reset on session change (new conversation = clean slate)
   useEffect(() => {
     hasData.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setTasks([]);
     setSummary(null);
   }, [conversationId]);
 
   // Single effect — fires on mount, refreshKey changes, and statusFilter/conversation changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadTasks();
   }, [loadTasks, refreshKey]);
 

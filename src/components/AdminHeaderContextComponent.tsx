@@ -68,6 +68,7 @@ export function AdminHeaderProvider({
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE);
       if (stored !== null) {
         const parsed = JSON.parse(stored);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
         setDateRangeState(parsed);
         return;
       }

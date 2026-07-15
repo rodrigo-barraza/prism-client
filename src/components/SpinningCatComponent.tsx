@@ -127,6 +127,7 @@ export default function SpinningCatComponent({
   useEffect(() => {
     animateRef.current = animate;
     if (animate) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setVisuallyActive(true);
       stateRef.current.windingDown = false;
     } else if (

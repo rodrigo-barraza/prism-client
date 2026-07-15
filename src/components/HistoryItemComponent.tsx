@@ -199,6 +199,7 @@ export default function HistoryItemComponent({
      fall back to a local asymptotic curve that uses the same formula. */
   useEffect(() => {
     if (!needsLocalProgress) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLocalProgressPercentage(0);
       localProgressStartRef.current = null;
       return;

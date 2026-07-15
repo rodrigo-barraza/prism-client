@@ -641,6 +641,7 @@ export default function FileViewerPanelComponent({
 
   // Reset selection when switching tabs
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setSelectedLines(new Set());
     lastClickedLineRef.current = null;
   }, [activeFileId]);

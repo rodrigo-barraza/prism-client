@@ -89,6 +89,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   // On mount: load workspaces from Prism (which proxies tools-api config)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setMounted(true);
     refreshWorkspaces();
   }, [refreshWorkspaces]);

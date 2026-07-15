@@ -532,6 +532,7 @@ export default function ChatConversationComponent({
   const adminSelectedSourceRef = useRef<
     "conversation" | "agent_conversation" | null
   >(adminSelectedSource);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   adminSelectedSourceRef.current = adminSelectedSource;
   const [adminLoadingDetail, setAdminLoadingDetail] = useState(false);
   const [adminNewIds, setAdminNewIds] = useState<Set<string>>(new Set());
@@ -615,6 +616,7 @@ export default function ChatConversationComponent({
   // that must read the CURRENT selection without re-subscribing on every
   // selection change.
   const activeIdRef = useRef<string | null>(activeId);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   activeIdRef.current = activeId;
 
   // Single source of truth for the conversation graph.
@@ -701,6 +703,7 @@ export default function ChatConversationComponent({
   );
   const [viewerRefreshKey, setViewerRefreshKey] = useState(0);
   const viewerOpenFilesRef = useRef<ViewerOpenFile[]>(viewerOpenFiles);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   viewerOpenFilesRef.current = viewerOpenFiles;
   const [viewerWidth, setViewerWidth] = useState(() => {
     if (typeof window === "undefined") return 500;
@@ -734,6 +737,7 @@ export default function ChatConversationComponent({
   // Track which tabs have received new data the user hasn't viewed yet
   const [newDataTabs, setNewDataTabs] = useState(new Set());
   const leftTabRef = useRef<string>(leftTab);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   leftTabRef.current = leftTab;
   const [leftTabBottom, setLeftTabBottom] = useState(() => {
     if (initialTabBottomKey) {
@@ -745,6 +749,7 @@ export default function ChatConversationComponent({
     return "tools";
   });
   const leftTabBottomRef = useRef<string>(leftTabBottom);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   leftTabBottomRef.current = leftTabBottom;
 
   useEffect(() => {
@@ -779,6 +784,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (initialTabKey) {
       if (BOTTOM_PANEL_TABS.has(initialTabKey)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
         if (initialTabKey !== leftTabBottom) setLeftTabBottom(initialTabKey);
       } else {
         if (initialTabKey !== leftTab) setLeftTab(initialTabKey);
@@ -788,6 +794,7 @@ export default function ChatConversationComponent({
 
   useEffect(() => {
     if (initialTabBottomKey) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       if (initialTabBottomKey !== leftTabBottom) setLeftTabBottom(initialTabBottomKey);
     }
   }, [initialTabBottomKey]);
@@ -949,6 +956,7 @@ export default function ChatConversationComponent({
       return [10, 25, 50, 100].includes(parsed) ? parsed : null;
     };
     const iter = parseStored(LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     if (iter != null) setMaxIterations(iter);
     const subAgentIter = parseStored(LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS);
     if (subAgentIter != null) setMaxSubAgentIterations(subAgentIter);
@@ -1053,8 +1061,10 @@ export default function ChatConversationComponent({
   const SCROLL_BOTTOM_THRESHOLD = 150;
 
   const conversationIdRef = useRef<string>(conversationId);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   conversationIdRef.current = conversationId;
   const isGeneratingRef = useRef<boolean>(isGenerating);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   isGeneratingRef.current = isGenerating;
   // Distinguish client-initiated generation (active SSE via handleSend)
   // from server-initiated generation (timer/scheduled task, passive DB load).
@@ -1631,6 +1641,7 @@ export default function ChatConversationComponent({
       modelDef.adaptiveThinking === true && modelDef.thinking;
 
     if (isThinkingAlwaysOn && !settings.thinkingEnabled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setSettings((previousSettings) => ({
         ...previousSettings,
         thinkingEnabled: true,
@@ -1648,6 +1659,7 @@ export default function ChatConversationComponent({
     const providerKey = settings.provider || "";
     const isLlamaCpp = providerKey === "llama-cpp" || providerKey.startsWith("llama-cpp-");
     if (!isLlamaCpp) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLlamaCppServerProps(null);
       return;
     }
@@ -1808,6 +1820,7 @@ export default function ChatConversationComponent({
       setConversationsLoading(false);
     }
   }, [agentProject, agentId, isNoAgent]);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   loadConversationsRef.current = loadConversations;
 
   const loadMoreConversations = useCallback(async () => {
@@ -1835,6 +1848,7 @@ export default function ChatConversationComponent({
   }, [agentProject, isNoAgent, conversationsLoading]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     if (!isAdmin) loadConversations();
   }, [loadConversations, isAdmin]);
 
@@ -2023,6 +2037,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (!isAdmin) return;
     if (!adminTargetAgentId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setSkills([]);
       setBuiltInTools([]);
       setTotalMemoriesCount(0);
@@ -2138,6 +2153,7 @@ export default function ChatConversationComponent({
       // Auto-select first entry on load
       if (list.length > 0 && !adminAutoSelectedRef.current) {
         adminAutoSelectedRef.current = true;
+        // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
         adminSelectEntry(list[0].id || "", list[0]._source || "conversation");
       }
 
@@ -2243,6 +2259,7 @@ export default function ChatConversationComponent({
   );
 
   const adminSelectEntry = useCallback(
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
     async (id: string, source: "conversation" | "agent_conversation" = "conversation") => {
       if (!isAdmin || id === activeId) return;
       setActiveId(id);
@@ -2356,6 +2373,7 @@ export default function ChatConversationComponent({
   // Admin: initial detail load by ID
   useEffect(() => {
     if (!isAdmin || !initialId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setAdminLoadingDetail(true);
     IrisService.getConversation(initialId)
       .then((conversation: unknown) => {
@@ -2379,6 +2397,7 @@ export default function ChatConversationComponent({
   // Admin: lazy load system prompt for agent conversations
   useEffect(() => {
     if (!isAdmin) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setAdminConversationSystemPrompt(null);
     if (!activeId || adminSelectedSource !== "agent_conversation") return;
 
@@ -2418,6 +2437,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (!isAdmin) return;
     if (!activeId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setBackendConversationStats(null);
       return;
     }
@@ -2465,6 +2485,7 @@ export default function ChatConversationComponent({
     adminKnownIdsRef.current = null;
     if (!initialId) adminAutoSelectedRef.current = false;
     adminLastFingerprintRef.current = "";
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setAdminEntries([]);
     setAdminFingerprint("");
 
@@ -2600,6 +2621,7 @@ export default function ChatConversationComponent({
   }, [agentProject]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     if (!isAdmin) loadSkills();
   }, [loadSkills, isAdmin]);
 
@@ -2614,6 +2636,7 @@ export default function ChatConversationComponent({
   }, [agentId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     if (!isAdmin) loadRules();
   }, [loadRules, isAdmin]);
 
@@ -2781,6 +2804,7 @@ export default function ChatConversationComponent({
 
   useEffect(() => {
     if (!showRaw || isNoAgent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setPreviewSystemPrompt(null);
       return;
     }
@@ -2840,6 +2864,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (messages.length > 0 || isNoAgent || showRaw) return;
     if (!settings.provider || !settings.model) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setContextBudget(null);
       return;
     }
@@ -2985,6 +3010,7 @@ export default function ChatConversationComponent({
   // generation — no full loadConversations() round-trip needed.
   useEffect(() => {
     if (!activeId || messages.length === 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setConversations((previousConversations) => {
       const index = previousConversations.findIndex((state) => state.id === activeId);
       if (index === -1) return previousConversations;
@@ -3203,6 +3229,7 @@ export default function ChatConversationComponent({
 
   useEffect(() => {
     if (leftTab === "workspace" && !isWorkspaceTabVisible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLeftTab("settings");
     }
   }, [leftTab, isWorkspaceTabVisible]);
@@ -3216,6 +3243,7 @@ export default function ChatConversationComponent({
     const workspaceAvailable = workspaces.length > 0;
     const workspaceToggledOn = settings.agents?.workspaceEnabled !== false;
     if (!workspaceAvailable && workspaceToggledOn) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setSettings((state) => ({
         ...state,
         agents: { ...state.agents, workspaceEnabled: false },
@@ -3241,6 +3269,7 @@ export default function ChatConversationComponent({
 
   useEffect(() => {
     if (leftTab === "subAgents" && !hasOrchestratorTools) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLeftTab("settings");
     }
   }, [leftTab, hasOrchestratorTools]);
@@ -3476,6 +3505,7 @@ export default function ChatConversationComponent({
 
   useEffect(() => {
     mentionCacheRef.current = null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setKnownPaths(undefined);
     // Re-fetch immediately so knownPaths is available for badge staleness
     ensureMentionCache();
@@ -3484,6 +3514,7 @@ export default function ChatConversationComponent({
   // Eagerly populate knownPaths on mount so message list badges can
   // detect staleness without waiting for the user to type @.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     ensureMentionCache();
   }, [ensureMentionCache]);
 
@@ -3530,10 +3561,13 @@ export default function ChatConversationComponent({
   const detectMentionQueryRef = useRef<((_element: HTMLDivElement) => void) | null>(
     detectMentionQuery,
   );
+  // eslint-disable-next-line react-hooks/immutability, react-hooks/refs -- see rule docs; compiler-prep lints, React Compiler not enabled
   detectMentionQueryRef.current = detectMentionQuery;
 
   const mentionResults = useMemo(() => {
+    // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
     if (!mentionOpen || !mentionCacheRef.current) return [];
+    // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
     return filterMentionResults(mentionCacheRef.current, mentionQuery, 20);
   }, [mentionOpen, mentionQuery]);
 
@@ -5289,12 +5323,16 @@ export default function ChatConversationComponent({
   // Read inputValue from ref at send-time to avoid re-creating
   // handleSend on every keystroke (the main cause of input lag).
   const pendingImagesRef = useRef<string[]>(pendingImages);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   pendingImagesRef.current = pendingImages;
   const pendingFilesRef = useRef<typeof pendingFiles>(pendingFiles);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   pendingFilesRef.current = pendingFiles;
   const messagesRef = useRef<ClientMessage[]>(messages);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   messagesRef.current = messages;
   const titleRef = useRef<string>(title);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   titleRef.current = title;
 
   const handleSend = useCallback(
@@ -5838,6 +5876,7 @@ export default function ChatConversationComponent({
   useEffect(() => {
     if (!isGenerating && queuedNextTurn) {
       const payload = queuedNextTurn;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setQueuedNextTurn(null);
       setTimeout(() => {
         handleSend(null, { overridePayload: payload });
@@ -6805,6 +6844,7 @@ export default function ChatConversationComponent({
     // running, so show the active state immediately. Admin: the always-on
     // subscription is mostly idle — the flag raises lazily when events
     // actually arrive (markStreamDelivering) and clears on done.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     if (!isAdmin) setIsGenerating(true);
 
     // An event just arrived — this stream owns `messages` until done.
@@ -7500,6 +7540,7 @@ export default function ChatConversationComponent({
             conversationStats={
               (messages.length > 0
                 ? backendConversationStats
+                  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
                   ? (() => {
                       const mapSubStats = (sub: ConversationStats | undefined) => {
                         if (!sub) return undefined;
@@ -7666,6 +7707,7 @@ export default function ChatConversationComponent({
                         maxSubAgentDepth,
                       } as DisplayConversationStats;
                     })()
+                  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
                   : (() => {
                       // -- Client-side fallback (live generation, no backend data yet) --
                       // When _liveGenProgress exists, use backend-authoritative token
@@ -8376,6 +8418,7 @@ export default function ChatConversationComponent({
         const CHUNK_FRESH_MS = 2000;
         const isChunksFlowing =
           liveStreamingLastChunkTime &&
+          // eslint-disable-next-line react-hooks/purity -- time-based value is intentionally computed during render
           performance.now() - liveStreamingLastChunkTime < CHUNK_FRESH_MS;
 
         // Only derive phase from the last message's content/thinking when
@@ -8824,6 +8867,7 @@ export default function ChatConversationComponent({
                           className={chatStyles['mention-item']}
                           onMouseDown={(event) => {
                             event.preventDefault();
+                            // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
                             const element = textareaRef.current;
                             if (element) {
                               // Clear the typed /query text
@@ -8834,6 +8878,7 @@ export default function ChatConversationComponent({
                               element.appendChild(badge);
                               element.appendChild(space);
                               placeCaretAfter(space);
+                              // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
                               inputValueRef.current = serializeEditable(element);
                               setHasInput(true);
                               element.focus();

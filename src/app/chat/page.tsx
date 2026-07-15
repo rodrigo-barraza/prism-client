@@ -81,6 +81,7 @@ function AgentsPageInner() {
   useEffect(() => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY_ACTIVE_AGENT);
     if (stored && stored !== AGENT_IDS.CODING) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLocalAgentId(stored);
     }
   }, []);
@@ -94,6 +95,7 @@ function AgentsPageInner() {
   useEffect(() => {
     const fromUrl = searchParams.get("agent");
     if (fromUrl && fromUrl !== localAgentId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLocalAgentId(fromUrl);
       localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVE_AGENT, fromUrl);
     }

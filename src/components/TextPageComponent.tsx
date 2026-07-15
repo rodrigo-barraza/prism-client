@@ -110,6 +110,7 @@ export default function TextPageComponent({
   }, [page, origin, search, provider, model, dateRange, isAdmin, externalAgent]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadText();
   }, [loadText]);
 

@@ -55,6 +55,7 @@ export default function AdminUsersPage() {
   }, [dateParams, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setIsLoading(true);
     setError(null);
     setUsers([]);

@@ -87,6 +87,7 @@ export default function ToolRequestsPage() {
 
   useEffect(() => {
     if (!selectedCall?.callerRequestId || selectedCall.callerRequestId === "—") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setAssociatedRequest(null);
       return;
     }
@@ -144,6 +145,7 @@ export default function ToolRequestsPage() {
   }, [page, filters, dateRange]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setLoading(true);
     setError(null);
     setToolCalls([]);

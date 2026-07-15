@@ -159,6 +159,7 @@ export default function BenchmarkDashboardComponent({
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadData();
     PrismService.getFavorites("model")
       .then((favs: Array<{ key: string }>) =>

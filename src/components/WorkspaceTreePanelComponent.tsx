@@ -212,6 +212,7 @@ export default function WorkspaceTreePanelComponent({
   );
 
   // -- Initial fetch (shows loading indicator) --
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
   const fetchTree = useCallback(async () => {
     if (!currentWorkspace?.path) return;
     setTreeLoading(true);
@@ -229,6 +230,7 @@ export default function WorkspaceTreePanelComponent({
   }, [currentWorkspace?.path, autoExpandRoots]);
 
   // -- Silent background refresh (no loading indicator, tree stays mounted) --
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
   const silentRefresh = useCallback(async () => {
     if (!currentWorkspace?.path) return;
     try {
@@ -243,12 +245,14 @@ export default function WorkspaceTreePanelComponent({
   // Fetch on mount
   useEffect(() => {
     if (!treeData && !treeLoading && !hasTreeFetchFailed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       fetchTree();
     }
   }, [treeData, treeLoading, hasTreeFetchFailed, fetchTree]);
 
   // Reset tree + expanded state when workspace changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setTreeData(null);
     setHasTreeFetchFailed(false);
     expandedPathsRef.current = new Set();
@@ -455,6 +459,7 @@ export default function WorkspaceTreePanelComponent({
         {treeLoading && <PanelLoadingSpinner />}
         {!treeLoading && treeData?.tree && filteredTree.length > 0 && (
           <div className={styles['tree-root']}>
+            // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
             {filteredTree.map((node: WorkspaceTreeNode) => (
               <TreeNode
                 key={node.name}

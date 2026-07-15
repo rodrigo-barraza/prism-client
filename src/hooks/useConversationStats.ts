@@ -37,6 +37,7 @@ export default function useConversationStats(
     [messages],
   );
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
   const authoritativeTotalTokens = useMemo(() => {
     if (conversation?.inputTokens != null && conversation?.outputTokens != null) {
       return {

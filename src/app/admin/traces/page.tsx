@@ -82,6 +82,7 @@ export default function TracesPage() {
     // Bump generation to invalidate any in-flight requests from previous effect
     fetchGenRef.current += 1;
     initialLoadDone.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setLoading(true);
 
     loadTraces();

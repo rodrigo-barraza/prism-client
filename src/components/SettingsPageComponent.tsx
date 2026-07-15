@@ -276,6 +276,7 @@ export default function SettingsPageComponent() {
   /** Format uptime duration from ISO date */
   const formatUptime = (isoDate: string) => {
     if (!isoDate) return "";
+    // eslint-disable-next-line react-hooks/purity -- time-based value is intentionally computed during render
     const ms = Date.now() - new Date(isoDate).getTime();
     const seconds = Math.floor(ms / 1000);
     if (seconds < 60) return `${seconds}s`;
@@ -319,6 +320,7 @@ export default function SettingsPageComponent() {
       .catch(console.error);
 
     // Fetch full workspace config (workspaces + agents)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     refreshWorkspaceData();
   }, [refreshWorkspaceData]);
 

@@ -58,6 +58,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
     isOnRequestsRef.current = onRequests;
     isOnMediaRef.current = onMedia;
     isOnTextRef.current = onText;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     if (onConvs) setNewCount(0);
     if (onSessions) setNewTracesCount(0);
     if (onRequests) setNewRequestsCount(0);

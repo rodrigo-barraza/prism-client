@@ -128,6 +128,7 @@ export default function NavigationSidebarComponent({
     const storedCount = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0", 10);
     if (pathname.startsWith("/scheduled-tasks")) {
       if (storedCount > 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
         clearCronJobNotifications();
       }
     } else {
@@ -215,6 +216,7 @@ export default function NavigationSidebarComponent({
 
   useEffect(() => {
     // Resolve on client only — prevents SSR hydration flash of admin link
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setIsLocal(!window.location.hostname.endsWith(".com"));
   }, []);
 
@@ -222,6 +224,7 @@ export default function NavigationSidebarComponent({
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY_PANEL_NAV);
     const initialNav = stored !== null ? stored === "true" : false;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setShowNav((current) => {
       if (current !== initialNav) {
         return initialNav;
@@ -289,6 +292,7 @@ export default function NavigationSidebarComponent({
 
   const userProfile = userSession?.user;
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
   const getUserInitials = useCallback(() => {
     if (!userProfile?.name) return "?";
     const nameParts = userProfile.name.trim().split(/\s+/);
@@ -345,6 +349,7 @@ export default function NavigationSidebarComponent({
   // Add cats when sub-agents spawn, retire cats when sub-agents finish
   useEffect(() => {
     const needed = Math.max(0, (activeApiCount || 0) - 1);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setMiniCats((previousMiniCats) => {
       const activeCount = previousMiniCats.filter((miniCat: MiniCat) => !miniCat.retired).length;
       if (needed === activeCount) return previousMiniCats;

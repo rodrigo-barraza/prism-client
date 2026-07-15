@@ -93,6 +93,7 @@ export default function ToolsSidebarNavigationComponent({
 
   useEffect(() => {
     if (domains.length > 0 && !activeDomainId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setActiveDomainId(domains[0]);
     }
   }, [domains, activeDomainId]);

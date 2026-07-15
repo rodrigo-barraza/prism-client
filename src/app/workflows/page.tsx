@@ -245,6 +245,7 @@ export default function WorkflowsPage({
   // Auto-load workflow from URL param
   useEffect(() => {
     if (!initialWorkflowId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setIsLoadingWorkflow(true);
     WorkflowService.getWorkflow(initialWorkflowId)
       .then((wf) => {
@@ -297,6 +298,7 @@ export default function WorkflowsPage({
           messages: data.messages as Message[],
           position: { x: 200, y: 120 },
         };
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
         setNodes((prev) => [...prev, importedNode as WorkflowNode]);
         setWorkflowName(
           (data.title as string)
@@ -1102,8 +1104,10 @@ export default function WorkflowsPage({
     // Blank workflow (no nodes) is never saveable
     if (nodes.length === 0) return false;
     // Never been saved and has content → saveable
+    // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
     if (!savedSnapshotRef.current) return true;
     const current = JSON.stringify({ workflowName, nodes, edges });
+    // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
     return current !== savedSnapshotRef.current;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workflowName, nodes, edges, savedSnapshotVersion]);

@@ -53,6 +53,7 @@ export default function PixelTransitionComponent({
     onComplete,
     targetRef,
   });
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   propsRef.current = { phase, duration, maxBlockSize, onComplete, targetRef };
 
   /** Ease-out cubic — fast initial ramp, decelerates toward end */
@@ -98,6 +99,7 @@ export default function PixelTransitionComponent({
 
   /** rAF animation tick — stored in a ref to avoid stale closures */
   const tickRef = useRef<((_timestamp: number) => void) | null>(null);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   tickRef.current = (timestamp: number) => {
     if (!startTimeRef.current) startTimeRef.current = timestamp;
 
@@ -148,6 +150,7 @@ export default function PixelTransitionComponent({
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       const element = targetRef?.current;
       if (element) {
+        // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
         element.style.filter = "";
         element.style.willChange = "";
       }

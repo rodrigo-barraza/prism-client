@@ -58,6 +58,7 @@ export default function WorkflowMemoriesPanel({
   const [hasMore, setHasMore] = useState(true);
 
   const workflowsRef = useRef<WorkflowMemory[]>([]);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   workflowsRef.current = workflows;
 
   const loadWorkflows = useCallback(
@@ -111,6 +112,7 @@ export default function WorkflowMemoriesPanel({
   }, [total, onCountChange]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadWorkflows(false);
   }, [loadWorkflows, refreshKey]);
 

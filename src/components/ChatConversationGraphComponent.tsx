@@ -480,6 +480,7 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
 
   // -- Clear per-instance selection on conversation change --------
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setSelectedNodeIds(new Set());
     setSelectedEdgeKeys(new Set());
     setFocusedNodeId(null);
@@ -803,6 +804,7 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
   // Lazy-fetch full request detail
   useEffect(() => {
     if (!focusedNodeId || !graphData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setSelectedRequestDetail(null);
       setExpandedPopoverSections(new Set());
       return;
@@ -1086,6 +1088,7 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
         // latest active node, including all intermediate edges.
         const ancestorFlow = computeAncestorFlowForNode(activeFlowTargetNodeId);
         if (ancestorFlow) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
           setSelectedNodeIds(ancestorFlow.flowNodeIds);
           setSelectedEdgeKeys(ancestorFlow.flowEdgeKeys);
         } else {

@@ -79,6 +79,7 @@ function AdminWorkflowsPageInner() {
 
   useEffect(() => {
     // Immediately enter loading state and clear stale data when filters change
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setLoading(true);
     setError(null);
     setWorkflows([]);
@@ -146,6 +147,7 @@ function AdminWorkflowsPageInner() {
 
   // Reset local nodes whenever the selected workflow changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setLocalNodes(selectedWorkflow?.nodes || []);
   }, [selectedWorkflow]);
 

@@ -163,6 +163,7 @@ export default function AgentPickerComponent({
   // Reset highlighted index and search query when popover closes
   useEffect(() => {
     if (!isPopoverOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setHighlightedIndex(-1);
       setSearchQuery("");
     }

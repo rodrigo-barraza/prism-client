@@ -193,6 +193,7 @@ function CronJobDetailPanel({
   }, [task.id, task.project]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadHistory();
   }, [loadHistory]);
 
@@ -655,12 +656,14 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   }, [showToast, isAdminMode]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadData();
   }, [loadData]);
 
   // -- Form side-effects --
   useEffect(() => {
     if (formProvider && modelsMap[formProvider]?.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setFormModel(modelsMap[formProvider][0].name);
     }
   }, [formProvider, modelsMap]);

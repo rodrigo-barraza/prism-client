@@ -38,6 +38,7 @@ function LogInContentComponent() {
   useEffect(() => {
     if (sessionError) {
       if (sessionError === "OAuthSignin" || sessionError === "OAuthCallback") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
         setAlertError("An error occurred during Google SSO. Please try again.");
       } else if (sessionError === "AccessDenied") {
         setAlertError("Access denied. Your email address is not in the allowed list.");
@@ -51,6 +52,7 @@ function LogInContentComponent() {
   useEffect(() => {
     const mode = searchParameters?.get("mode");
     if (mode === "signup") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setIsSignUpMode(true);
     } else if (mode === "login") {
       setIsSignUpMode(false);

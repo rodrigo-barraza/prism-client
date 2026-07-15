@@ -113,6 +113,7 @@ export default function ToolsPageComponent() {
       (tool) => tool.name.toLowerCase() === toolNameFromUrl.toLowerCase(),
     );
     if (matchedTool) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setSelectedTool(matchedTool);
     }
     hasResolvedDeepLink.current = true;
@@ -201,6 +202,7 @@ export default function ToolsPageComponent() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     fetchTools();
     fetchToolStats();
   }, [fetchTools, fetchToolStats]);

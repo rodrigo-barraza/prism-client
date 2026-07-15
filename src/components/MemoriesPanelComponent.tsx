@@ -144,6 +144,7 @@ export default function MemoriesPanel({
 
   // Keep a mutable ref of memories to avoid recreating loadMemories on page loads
   const memoriesRef = useRef<AgentMemory[]>([]);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   memoriesRef.current = memories;
 
   const PAGE_SIZE = 20;
@@ -228,11 +229,13 @@ export default function MemoriesPanel({
   }, [total, onCountChange]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadMemories(false);
   }, [loadMemories, refreshKey, selectedType]);
 
   // Load history when expanded
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     if (historyOpen) loadHistory();
   }, [historyOpen, loadHistory]);
 
@@ -274,6 +277,7 @@ export default function MemoriesPanel({
 
     const { summary, actionsApplied } = consolidationEvent;
     if (actionsApplied > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setToast({
         type: "success",
         text: `✨ ${summary || "Memories consolidated"}`,

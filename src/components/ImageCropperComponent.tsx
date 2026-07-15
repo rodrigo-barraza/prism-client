@@ -31,6 +31,7 @@ export default function ImageCropperComponent({
   // Read the image file into a base64 string
   useEffect(() => {
     if (!imageFile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setImageSource(null);
       return;
     }

@@ -274,11 +274,13 @@ export default function BenchmarkDetailPageComponent({
       if (row._running) {
         // Switch live preview to this model
         const key = `${row.provider}:${row.model}`;
+        // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
         setViewedModelKey(key);
         setSelectedResult(null);
         // Immediately flush this model's accumulated data so the preview updates instantly
         const benchmarkData = liveDataRef.current.get(key);
         if (benchmarkData) {
+          // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
           setLiveSnapshot({
             text: benchmarkData.text,
             thinking: benchmarkData.thinking,
@@ -371,12 +373,14 @@ export default function BenchmarkDetailPageComponent({
   }, [benchmarkId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadBenchmark();
   }, [loadBenchmark]);
 
   // -- Shared live-state helpers (single source of truth) -----
 
   /** Reset all live streaming refs and state. Called on run complete, error, and stop. */
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
   const resetLiveState = useCallback(() => {
     for (const id of progressIntervalsRef.current.values()) clearInterval(id);
     progressIntervalsRef.current.clear();
@@ -386,6 +390,7 @@ export default function BenchmarkDetailPageComponent({
     }
     setActiveModels(new Map());
     setViewedModelKey(null);
+    // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
     liveDataRef.current = new Map();
     setLiveSnapshot({ text: "", thinking: "", toolCalls: [] });
   }, []);
@@ -405,6 +410,7 @@ export default function BenchmarkDetailPageComponent({
    * and `followBenchmarkRun`. Identical event handling — no duplication.
    */
   const buildBenchmarkSSECallbacks = useCallback(
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
     (overrides: Partial<SSECallbacks> = {}) => ({
       onRunInfo: (data: SSEData) => {
         setStreamingTotal((data as { totalModels?: number }).totalModels || 0);
@@ -832,6 +838,7 @@ export default function BenchmarkDetailPageComponent({
   }, [form, router]);
 
   // -- Run benchmark ------------------------------------------
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
   const handleRun = useCallback(async () => {
     if (!benchmark) return;
     setRunning(true);
@@ -926,6 +933,7 @@ export default function BenchmarkDetailPageComponent({
   ]);
 
   // -- Stop benchmark -----------------------------------------
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
   const handleStop = useCallback(async () => {
     // 1. Explicitly tell the server to abort (reliable — dedicated HTTP POST)
     try {

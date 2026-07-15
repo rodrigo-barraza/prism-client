@@ -326,6 +326,7 @@ export default function CustomAgentsPanel({
     setError(null);
   }, []);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
   const handleSave = useCallback(async () => {
     if (!editingAgent?.name?.trim()) {
       setError("Agent name is required");

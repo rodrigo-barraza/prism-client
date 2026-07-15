@@ -101,11 +101,13 @@ export default function SubAgentsPanelComponent({
   // Reset on conversation change
   useEffect(() => {
     hasInitialDataBeenLoaded.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setSubAgentList([]);
   }, [conversationId]);
 
   // Initial load + external refresh
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     fetchCoordinatorSubAgents();
   }, [fetchCoordinatorSubAgents, refreshKey]);
 

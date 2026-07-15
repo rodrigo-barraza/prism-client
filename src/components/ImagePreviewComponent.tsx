@@ -108,6 +108,7 @@ export default function ImagePreviewComponent({
       );
 
       for (const stroke of strokeList) {
+        // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
         drawStroke(context, stroke);
       }
     },

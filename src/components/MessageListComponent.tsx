@@ -319,6 +319,7 @@ function ThinkingBlock({
     }
     if (!isStreaming) {
       streamingStartRef.current = null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLiveElapsedSeconds(0);
     }
   }, [isStreaming, hasThinkingText]);
@@ -1263,6 +1264,7 @@ export default function MessageList({
         </div>
       )}
       {headerContent}
+      // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
       {displayMessages.map((message, i) => {
         const roleClass =
           message.role === "user"

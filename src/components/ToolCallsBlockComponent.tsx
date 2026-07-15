@@ -55,6 +55,7 @@ export default function ToolCallsBlockComponent({
 
   useEffect(() => {
     if (isBlockActive) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLiveToolElapsedSeconds(computeElapsedSeconds());
       const timerIntervalId = setInterval(() => {
         setLiveToolElapsedSeconds(computeElapsedSeconds());

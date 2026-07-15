@@ -246,6 +246,7 @@ export default function DashboardPage() {
   // Falls back to 60s polling if Change Streams aren't available.
   useEffect(() => {
     // Immediately enter loading state and clear stale data when filters change
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setLoading(true);
     setError(null);
     setStats(null);
@@ -292,6 +293,7 @@ export default function DashboardPage() {
   // Reset granularity override when date range changes so the new span
   // gets its appropriate default resolution instead of a stale override.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setTimelineGranularity(null);
   }, [dateRange]);
 

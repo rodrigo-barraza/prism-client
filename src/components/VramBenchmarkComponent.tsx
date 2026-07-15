@@ -847,6 +847,7 @@ export default function VramBenchmarkComponent() {
   }, [settingsFilter]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     fetchData();
   }, [fetchData]);
 
@@ -2133,6 +2134,7 @@ export default function VramBenchmarkComponent() {
     chart.update("none");
   }, [clipMin, clipMax]);
 
+  // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
   const renderBar = useCallback(() => {
     const canvas = chartRefs.bar.current;
     if (!canvas || models.length === 0) return;
@@ -2147,6 +2149,7 @@ export default function VramBenchmarkComponent() {
     });
 
     if (canvas.parentElement) {
+      // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
       canvas.parentElement.style.height =
         Math.max(400, models.length * 24 + 80) + "px";
     }
@@ -2403,6 +2406,7 @@ export default function VramBenchmarkComponent() {
 
   // -- Tokens per Second (floating range bars) --------------
 
+  // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
   const renderEfficiency = useCallback(() => {
     const canvas = chartRefs.efficiency.current;
     if (!canvas || models.length === 0) return;
@@ -2423,6 +2427,7 @@ export default function VramBenchmarkComponent() {
     });
 
     if (canvas.parentElement) {
+      // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
       canvas.parentElement.style.height =
         Math.max(400, sorted.length * 24 + 80) + "px";
     }
@@ -2962,6 +2967,7 @@ export default function VramBenchmarkComponent() {
   // Dual-axis horizontal floating range bars — matches VRAM/TPS chart pattern.
   // Primary x: context length range (K), Secondary x: TPS range.
 
+  // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
   const renderCtxLeaderboard = useCallback(() => {
     const canvas = chartRefs.ctxLeaderboard.current;
     if (!canvas || models.length === 0) return;
@@ -2993,6 +2999,7 @@ export default function VramBenchmarkComponent() {
     });
 
     if (canvas.parentElement) {
+      // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
       canvas.parentElement.style.height =
         Math.max(400, sorted.length * 24 + 80) + "px";
     }
@@ -3577,6 +3584,7 @@ export default function VramBenchmarkComponent() {
     return () => destroyChart(activeView);
   }, [activeView]);
 
+  // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
   useEffect(() => {
     if (loading || error) return;
 

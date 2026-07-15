@@ -145,6 +145,7 @@ export default function RequestsTableComponent({
 
   useEffect(() => {
     if (isSelfFetching) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       fetchConversationRequests();
     }
   }, [isSelfFetching, fetchConversationRequests, refreshKey]);
@@ -152,6 +153,7 @@ export default function RequestsTableComponent({
   // -- Fetch associations + tool calls when a request is selected --
   useEffect(() => {
     if (!selectedRequest?.requestId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setAssociations(null);
       return;
     }

@@ -217,6 +217,7 @@ export default function CycleButton({
       const countDuration = INFINITY_TWEEN_MS * 0.5; // first 50% = counting
       const glitchDuration = INFINITY_TWEEN_MS * 0.5; // last 50% = chaos
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setShowInfinity(false);
       setTweening(true);
 

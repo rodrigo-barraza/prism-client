@@ -86,12 +86,14 @@ export default function DatastorePanel({
 
   useEffect(() => {
     hasData.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setNamespaces([]);
     setExpandedNamespace(null);
     setRecords([]);
   }, [project]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadNamespaces();
   }, [loadNamespaces, refreshKey]);
 

@@ -74,6 +74,7 @@ export default function StatusBarComponent({
   useEffect(() => {
     if (!active) {
       clearCompletionTimer();
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setDisplayPercentage(0);
       setIsCompletingPhase(false);
       syntheticStartRef.current = null;

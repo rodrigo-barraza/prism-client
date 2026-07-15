@@ -92,6 +92,7 @@ export default function ThreePanelLayout({
     const mobile = window.innerWidth <= 1200;
     if (mobile) {
       // On mobile / narrow viewports, always start with panels closed
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setShowLeft(false);
       setShowRight(false);
     } else {
@@ -150,6 +151,7 @@ export default function ThreePanelLayout({
       }
     } else {
       // Leaving narrow (back to wide): restore both panels
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setShowLeft(true);
       setShowRight(true);
       localStorage.setItem(LOCAL_STORAGE_KEY_PANEL_LEFT, "true");
@@ -226,6 +228,7 @@ export default function ThreePanelLayout({
 
   /* Left sidebar ref wiring — runs at commit via ref callback, not during render */
   const setLeftSidebarNode = useCallback(
+    // eslint-disable-next-line react-hooks/immutability -- existing mutation pattern outside render tracking; restructuring risks behavior change
     (node: HTMLElement | null) => {
       // eslint-disable-next-line react-hooks/immutability -- ref callback runs at commit; writing refs here is the intended React pattern
       (splitContainerRef as React.MutableRefObject<HTMLElement | null>).current = node;

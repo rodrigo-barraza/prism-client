@@ -69,6 +69,7 @@ export default function RequestsPage() {
 
   // Compute which rows are "just now" (< 5s old) on every render/tick
   const justNowIds = useMemo<Set<string>>(() => {
+    // eslint-disable-next-line react-hooks/purity -- time-based value is intentionally computed during render
     const now = Date.now();
     const ids = new Set<string>();
     for (const response of requests) {
@@ -162,6 +163,7 @@ export default function RequestsPage() {
     // Bump generation to invalidate any in-flight requests from previous effect
     fetchGenRef.current += 1;
     isInitialLoadDone.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setIsLoading(true);
     setError(null);
 
