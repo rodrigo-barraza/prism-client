@@ -66,7 +66,7 @@ const DEFAULT_SYNTHESIS_SETTINGS = {
   thinkingLevel: "high",
   thinkingBudget: "",
   webSearchEnabled: false,
-} as const;
+};
 
 const DEFAULT_MAX_TOKENS = 4096;
 
