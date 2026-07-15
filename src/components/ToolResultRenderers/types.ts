@@ -182,8 +182,6 @@ export interface ParsedToolResult {
   audioRef?: string;
   duration?: number;
   sampleCount?: number;
-  layerCount?: number;
-  totalKeyframes?: number;
   isAppend?: boolean;
   voice?: string;
   durationEstimate?: number;
@@ -194,26 +192,6 @@ export interface ParsedToolResult {
     prompt: string;
     mode: "one_shot" | "recurring";
   };
-  // 3D mesh / voxel / model / scene renderer
-  vertexCount?: number;
-  faceCount?: number;
-  totalVertices?: number;
-  totalFaces?: number;
-  sceneEmbedUrl?: string;
-  voxelCount?: number;
-  totalVoxels?: number;
-  objectCount?: number;
-  totalObjects?: number;
-  // QR code renderer
-  qrImageUrl?: string;
-  qrId?: string;
-  dataLength?: number;
-  // LaTeX renderer
-  latexEmbedUrl?: string;
-  latexId?: string;
-  // Diagram renderer
-  diagramEmbedUrl?: string;
-  diagramId?: string;
   // Image manipulation renderer
   imageUrl?: string;
   imageId?: string;
@@ -236,11 +214,6 @@ export interface ParsedToolResult {
       alt: string;
     };
   }>;
-  // Vector animation renderer
-  animation?: {
-    layers?: Array<unknown>;
-    duration?: number;
-  };
   // Self-describing display metadata (see ToolResultDisplay)
   display?: ToolResultDisplay;
 }

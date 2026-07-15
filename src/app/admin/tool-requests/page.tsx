@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { usePersistedState } from "../../../hooks/usePersistedState";
-import { Download, ExternalLink } from "lucide-react";
+import { Download, ExternalLink, Wrench, Boxes, Filter, Bot, Hash } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ToolsApiService from "../../../services/ToolsApiService";
 import IrisService from "../../../services/IrisService";
@@ -11,17 +11,13 @@ import JsonViewerComponent from "../../../components/JsonViewerComponent";
 import {
   BadgeComponent,
   ButtonComponent,
+  InputComponent,
   PaginationComponent,
+  SelectComponent,
   TableComponent,
 } from "@rodrigo-barraza/components-library";
 import { ErrorMessage } from "../../../components/StateMessageComponent";
-import {
-  FilterBarComponent,
-  FilterGroupComponent,
-  FilterInputComponent,
-  FilterSelectComponent,
-  FilterClearButton,
-} from "../../../components/FilterBarComponent";
+import AdminFiltersCardComponent from "../../../components/AdminFiltersCardComponent";
 import RequestDetailsComponent from "../../../components/RequestDetailsComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
 import { formatNumber, formatLatencyMilliseconds, formatDateTime, formatFileSize, formatCost } from "@rodrigo-barraza/utilities-library";
@@ -32,7 +28,7 @@ import styles from "./page.module.css";
 
 // -- Domain options (from ToolSchemaService TOOL_DOMAINS) ---------
 const DOMAIN_OPTIONS = [
-  { value: "", label: "All" },
+  { value: "", label: "All Domains" },
   { value: "Weather & Environment", label: "Weather" },
   { value: "Events", label: "Events" },
   { value: "Markets & Commodities", label: "Markets" },
@@ -55,7 +51,7 @@ const DOMAIN_OPTIONS = [
 
 export default function ToolRequestsPage() {
   const router = useRouter();
-  const { setControls, setTitleBadge, dateRange } = useAdminHeader();
+  const { setTitleBadge, dateRange, setDateRange } = useAdminHeader();
   const [toolCalls, setToolCalls] = useState<ToolCallRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -176,6 +172,7 @@ export default function ToolRequestsPage() {
     });
     setFilterDomain("");
     setFilterSuccess("");
+    setDateRange({ from: "", to: "" });
     setPage(1);
   }
 
@@ -308,21 +305,11 @@ export default function ToolRequestsPage() {
     ];
   }
 
-  // -- Header controls --------------------------------------------
-  useEffect(() => {
-    setControls(
-      <>
-        <ErrorMessage message={error} />
-      </>,
-    );
-  }, [setControls, error]);
-
   useEffect(() => {
     return () => {
-      setControls(null);
       setTitleBadge(null);
     };
-  }, [setControls, setTitleBadge]);
+  }, [setTitleBadge]);
 
   useEffect(() => {
     setTitleBadge(formatNumber(total));
@@ -331,60 +318,80 @@ export default function ToolRequestsPage() {
   return (
     <div className={styles['page']}>
       {/* Filters */}
-      <FilterBarComponent>
-        <FilterGroupComponent label="Tool">
-          <FilterInputComponent
-            placeholder="Filter by tool name..."
-            value={filters.toolName}
-            onChange={(value: string) => handleFilterChange("toolName", value)}
-          />
-        </FilterGroupComponent>
-        <FilterGroupComponent label="Domain">
-          <FilterSelectComponent
-            value={filters.domain}
-            onChange={(value: string) => handleFilterChange("domain", value)}
-            options={DOMAIN_OPTIONS}
-          />
-        </FilterGroupComponent>
-        <FilterGroupComponent label="Request ID">
-          <FilterInputComponent
-            placeholder="Search request ID..."
-            value={filters.callerRequestId}
-            onChange={(value: string) =>
-              handleFilterChange("callerRequestId", value)
-            }
-          />
-        </FilterGroupComponent>
-        <FilterGroupComponent label="Agent">
-          <FilterInputComponent
-            placeholder="Filter by agent..."
-            value={filters.callerAgent}
-            onChange={(value: string) =>
-              handleFilterChange("callerAgent", value)
-            }
-          />
-        </FilterGroupComponent>
-        <FilterGroupComponent label="Status">
-          <FilterSelectComponent
-            value={filters.success}
-            onChange={(value: string) => handleFilterChange("success", value)}
-            options={[
-              { value: "", label: "All" },
-              { value: "true", label: "Success" },
-              { value: "false", label: "Error" },
-            ]}
-          />
-        </FilterGroupComponent>
+      <AdminFiltersCardComponent
+        show={{
+          project: false,
+          provider: false,
+          model: false,
+          agent: false,
+          workspace: false,
+        }}
+        actions={
+          <>
+            <ButtonComponent variant="ghost" onClick={clearFilters}>
+              Clear
+            </ButtonComponent>
+            <ButtonComponent
+              variant="secondary"
+              icon={Download}
+              onClick={exportCSV}
+            >
+              Export CSV
+            </ButtonComponent>
+          </>
+        }
+      >
+        <InputComponent
+          type="text"
+          icon={Wrench}
+          placeholder="Filter by tool…"
+          value={filters.toolName}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            handleFilterChange("toolName", e.target.value)
+          }
+        />
+        <SelectComponent
+          value={filters.domain}
+          options={DOMAIN_OPTIONS}
+          onChange={(value: string) => handleFilterChange("domain", value)}
+          placeholder="All Domains"
+          icon={<Boxes size={14} />}
+          compact
+          searchable
+        />
+        <SelectComponent
+          value={filters.success}
+          options={[
+            { value: "", label: "All Statuses" },
+            { value: "true", label: "Success" },
+            { value: "false", label: "Error" },
+          ]}
+          onChange={(value: string) => handleFilterChange("success", value)}
+          placeholder="All Statuses"
+          icon={<Filter size={14} />}
+          compact
+        />
+        <InputComponent
+          type="text"
+          icon={Bot}
+          placeholder="Filter by agent…"
+          value={filters.callerAgent}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            handleFilterChange("callerAgent", e.target.value)
+          }
+        />
+        <InputComponent
+          type="text"
+          icon={Hash}
+          placeholder="Search request ID…"
+          value={filters.callerRequestId}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            handleFilterChange("callerRequestId", e.target.value)
+          }
+        />
+      </AdminFiltersCardComponent>
 
-        <FilterClearButton onClick={clearFilters} />
-        <ButtonComponent
-          variant="secondary"
-          icon={Download}
-          onClick={exportCSV}
-        >
-          Export CSV
-        </ButtonComponent>
-      </FilterBarComponent>
+      <ErrorMessage message={error} />
 
       {/* Table */}
       <div className={styles['table-wrapper']} data-drawer-ignore-click-outside>

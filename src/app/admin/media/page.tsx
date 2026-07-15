@@ -1,41 +1,34 @@
 "use client";
 
 import { useEffect } from "react";
-import { SelectComponent } from "@rodrigo-barraza/components-library";
+import { useSearchParams } from "next/navigation";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
-import useProjectFilter from "../../../hooks/useProjectFilter";
+import AdminFiltersCardComponent from "../../../components/AdminFiltersCardComponent";
 import MediaPageComponent from "../../../components/MediaPageComponent";
 
 export default function AdminMediaPage() {
-  const { projectFilter, projectOptions, handleProjectChange } =
-    useProjectFilter();
-  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
-
-  useEffect(() => {
-    setControls(
-      <SelectComponent
-        value={projectFilter || ""}
-        options={projectOptions}
-        onChange={handleProjectChange}
-        placeholder="All Projects"
-      />,
-    );
-  }, [setControls, projectFilter, projectOptions, handleProjectChange]);
+  const searchParams = useSearchParams();
+  const projectFilter = searchParams.get("project") || null;
+  const { setTitleBadge, dateRange, agentFilter } = useAdminHeader();
 
   useEffect(() => {
     return () => {
-      setControls(null);
       setTitleBadge(null);
     };
-  }, [setControls, setTitleBadge]);
+  }, [setTitleBadge]);
 
   return (
-    <MediaPageComponent
-      mode="admin"
-      project={projectFilter}
-      dateRange={dateRange}
-      agent={agentFilter}
-      onCountChange={setTitleBadge}
-    />
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <AdminFiltersCardComponent
+        show={{ provider: false, model: false, workspace: false }}
+      />
+      <MediaPageComponent
+        mode="admin"
+        project={projectFilter}
+        dateRange={dateRange}
+        agent={agentFilter}
+        onCountChange={setTitleBadge}
+      />
+    </div>
   );
 }

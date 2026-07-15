@@ -248,54 +248,6 @@ export function TurtleDrawRenderer({ result, args }: RendererProps) {
   );
 }
 
-// -- Vector Animation Player -------------------------------------------
-
-export function VectorAnimationEmbed({ sourceUrl, title }: { sourceUrl: string; title: string }) {
-  return (
-    <div className={styles['turtle-embed-wrapper']}>
-      <iframe
-        src={sourceUrl}
-        className={styles['turtle-embed-frame']}
-        title={title}
-        loading="lazy"
-        referrerPolicy="no-referrer"
-      />
-    </div>
-  );
-}
-
-export function VectorAnimationRenderer({ result, args }: RendererProps) {
-  const parsed = tryParse(result);
-  if (!parsed) return <RawResultToggle result={result} />;
-
-  const hasAnimationError = !!parsed.error;
-  const animationLayerCount = parsed.layerCount || (args?.animation as { layers?: unknown[] })?.layers?.length || 0;
-  const animationTotalKeyframes = parsed.totalKeyframes || 0;
-  const animationDurationSeconds = parsed.duration || (args?.animation as { duration?: number })?.duration || 0;
-  const animationCanvasSize = parsed.canvasSize || "800x600";
-  const animationEmbedUrl = parsed.embedUrl || "";
-  const isAnimationAppend = !!parsed.isAppend;
-
-  return (
-    <div className={styles['renderer-block']}>
-      <div className={styles['renderer-header']}>
-        <span style={{ fontSize: 13 }}>🎬</span>
-        <span className={styles['renderer-title']}>
-          Vector Animation — {isAnimationAppend ? "Updated" : "Created"} {animationLayerCount} layer{animationLayerCount !== 1 ? "s" : ""}{animationTotalKeyframes > 0 ? ` (${animationTotalKeyframes} total keyframes)` : ""} ({animationDurationSeconds.toFixed(1)}s)
-        </span>
-        <StatusBadge
-          success={!hasAnimationError}
-          label={hasAnimationError ? "Error" : animationCanvasSize}
-        />
-      </div>
-      {hasAnimationError && <div className={styles['error-text']}>{parsed.error}</div>}
-      {!hasAnimationError && animationEmbedUrl && (
-        <VectorAnimationEmbed sourceUrl={animationEmbedUrl} title="Vector Animation" />
-      )}
-    </div>
-  );
-}
-
 // -- File Move ---------------------------------------------------------
 
 export function FileMoveRenderer({ result, args }: RendererProps) {

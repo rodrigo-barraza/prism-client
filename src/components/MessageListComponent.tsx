@@ -2241,18 +2241,34 @@ export default function MessageList({
                         (() => {
                           // A tool result renders inline when it carries
                           // self-describing `display` metadata — except media
-                          // already promoted to message.images (generated
-                          // images, screenshots), which the media row below
-                          // renders.
+                          // already promoted to message.images / message.audio
+                          // (generated images, screenshots, TTS audio), which
+                          // the media rows below render.
                           const messageImageUrls = new Set(message.images || []);
+                          const messageAudioUrls = new Set(
+                            Array.isArray(message.audio)
+                              ? message.audio
+                              : message.audio
+                                ? [message.audio]
+                                : [],
+                          );
                           const visualToolCalls = message.toolCalls.filter(
                             (toolCall: ToolCallEvent) => {
                               const display = getResultDisplay(toolCall.result);
                               if (!display) return false;
-                              return !(
+                              if (
                                 display.kind === "image" &&
                                 messageImageUrls.has(display.url)
-                              );
+                              ) {
+                                return false;
+                              }
+                              if (
+                                display.kind === "audio" &&
+                                messageAudioUrls.has(display.url)
+                              ) {
+                                return false;
+                              }
+                              return true;
                             },
                           );
                           if (visualToolCalls.length === 0) return null;

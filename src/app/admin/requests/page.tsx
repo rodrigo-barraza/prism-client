@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import {
-  Download,
-  Filter,
-} from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Download, Filter } from "lucide-react";
 import IrisService from "../../../services/IrisService";
 import { formatNumber, formatTokensPerSec } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../../utils/utilities";
@@ -18,9 +16,9 @@ import {
 } from "@rodrigo-barraza/components-library";
 
 import { ErrorMessage } from "../../../components/StateMessageComponent";
-import { FilterInputComponent } from "../../../components/FilterBarComponent";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
-import useProjectFilter from "../../../hooks/useProjectFilter";
+import AdminFiltersCardComponent from "../../../components/AdminFiltersCardComponent";
+import { LOCAL_STORAGE_KEY_ADMIN_PROJECT_FILTER } from "../../../constants";
 import styles from "./page.module.css";
 
 const POLL_INTERVAL = 5000;
@@ -28,18 +26,29 @@ import { TransformedRequestItem } from "../../../types/types";
 
 type RequestItem = TransformedRequestItem;
 
+// Page-specific filters that aren't part of the shared filter card.
 interface RequestFilters {
-  provider: string[];
-  model: string;
   endpoint: string[];
   operation: string[];
   success: string[];
 }
 
+const EMPTY_FILTERS: RequestFilters = {
+  endpoint: [],
+  operation: [],
+  success: [],
+};
+
 export default function RequestsPage() {
-  const { projectFilter, projectOptions, handleProjectChange } =
-    useProjectFilter();
-  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  // Shared filters are driven by the URL + header context (via the filter card)
+  const projectFilter = searchParams.get("project") || null;
+  const providerFilter = searchParams.get("provider") || null;
+  const modelFilter = searchParams.get("model") || null;
+  const { setTitleBadge, dateRange, setDateRange, agentFilter } =
+    useAdminHeader();
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -47,13 +56,7 @@ export default function RequestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState("createdAt");
   const [order, setOrder] = useState("desc");
-  const [filters, setFilters] = useState<RequestFilters>({
-    provider: [],
-    model: "",
-    endpoint: [],
-    operation: [],
-    success: [],
-  });
+  const [filters, setFilters] = useState<RequestFilters>(EMPTY_FILTERS);
 
   const [hoveredConversationId, setHoveredConversationId] = useState<
     string | null
@@ -134,13 +137,11 @@ export default function RequestsPage() {
       };
       if (projectFilter) params.project = projectFilter;
       if (agentFilter) params.agent = agentFilter;
+      if (providerFilter) params.provider = providerFilter;
+      if (modelFilter) params.model = modelFilter;
 
       Object.entries(filters).forEach(([key, filterValue]) => {
-        if (Array.isArray(filterValue)) {
-          if (filterValue.length > 0) params[key] = filterValue.join(",");
-        } else if (filterValue) {
-          params[key] = filterValue;
-        }
+        if (filterValue.length > 0) params[key] = filterValue.join(",");
       });
       Object.assign(params, buildDateRangeParams(dateRange));
 
@@ -158,7 +159,7 @@ export default function RequestsPage() {
         setIsLoading(false);
       }
     }
-  }, [page, sort, order, filters, dateRange, projectFilter, agentFilter]);
+  }, [page, sort, order, filters, dateRange, projectFilter, agentFilter, providerFilter, modelFilter]);
 
   useEffect(() => {
     // Bump generation to invalidate any in-flight requests from previous effect
@@ -216,31 +217,23 @@ export default function RequestsPage() {
     [],
   );
 
-  const handleModelFilterChange = useCallback((value: string) => {
-    setFilters((previous: RequestFilters) => ({ ...previous, model: value }));
+  // Reset every filter — the page-specific selects plus the shared,
+  // URL/context-driven filters owned by the filter card.
+  const clearFilters = useCallback(() => {
+    setFilters(EMPTY_FILTERS);
     setPage(1);
-  }, []);
-
-  function clearFilters() {
-    setFilters({
-      provider: [],
-      model: "",
-      endpoint: [],
-      operation: [],
-      success: [],
-    });
-    setPage(1);
-  }
-
-  const providerFilterOptions = useMemo(
-    () => [
-      { value: "openai", label: "OpenAI" },
-      { value: "anthropic", label: "Anthropic" },
-      { value: "google", label: "Google" },
-      { value: "elevenlabs", label: "ElevenLabs" },
-    ],
-    [],
-  );
+    const params = new URLSearchParams(searchParams.toString());
+    ["project", "provider", "model", "agent"].forEach((key) =>
+      params.delete(key),
+    );
+    router.replace(`${pathname}?${params.toString()}`);
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY_ADMIN_PROJECT_FILTER);
+    } catch {
+      /* localStorage unavailable */
+    }
+    setDateRange({ from: "", to: "" });
+  }, [searchParams, router, pathname, setDateRange]);
 
   const endpointFilterOptions = useMemo(
     () => [
@@ -320,35 +313,12 @@ export default function RequestsPage() {
 
   const totalPages = Math.ceil(total / LIMIT);
 
-  // Inject controls into AdminShell header
-  useEffect(() => {
-    setControls(
-      <>
-        <ErrorMessage message={error} />
-        <SelectComponent
-          value={projectFilter || ""}
-          options={projectOptions}
-          onChange={handleProjectChange}
-          placeholder="All Projects"
-        />
-      </>,
-    );
-  }, [
-    setControls,
-    total,
-    error,
-    projectFilter,
-    projectOptions,
-    handleProjectChange,
-  ]);
-
-  // Cleanup on unmount
+  // Cleanup title badge on unmount
   useEffect(() => {
     return () => {
-      setControls(null);
       setTitleBadge(null);
     };
-  }, [setControls, setTitleBadge]);
+  }, [setTitleBadge]);
 
   // Set title badge with total count
   useEffect(() => {
@@ -358,80 +328,63 @@ export default function RequestsPage() {
   return (
     <div className={styles['page']}>
       {/* Filters */}
-      <div className={styles['filter-bar']}>
-        <div className={styles['filter-layout-row']}>
-          <SelectComponent
-            multiple
-            label="Provider"
-            icon={<Filter size={12} />}
-            value={filters.provider}
-            options={providerFilterOptions}
-            onChange={(values: string[]) =>
-              handleMultiFilterChange("provider", values)
-            }
-            allLabel="All Providers"
-            compact
-          />
-          <div className={styles['filter-label-group']}>
-            <span className={styles['filter-label-text']}>Model</span>
-            <FilterInputComponent
-              placeholder="Filter by model…"
-              value={filters.model}
-              onChange={handleModelFilterChange}
-            />
-          </div>
-        </div>
-        <div className={styles['filter-layout-row']}>
-          <SelectComponent
-            multiple
-            label="Endpoint"
-            icon={<Filter size={12} />}
-            value={filters.endpoint}
-            options={endpointFilterOptions}
-            onChange={(values: string[]) =>
-              handleMultiFilterChange("endpoint", values)
-            }
-            allLabel="All Endpoints"
-            compact
-          />
-          <SelectComponent
-            multiple
-            label="Operation"
-            icon={<Filter size={12} />}
-            value={filters.operation}
-            options={operationFilterOptions}
-            onChange={(values: string[]) =>
-              handleMultiFilterChange("operation", values)
-            }
-            allLabel="All Operations"
-            compact
-          />
-          <SelectComponent
-            multiple
-            label="Status"
-            icon={<Filter size={12} />}
-            value={filters.success}
-            options={statusFilterOptions}
-            onChange={(values: string[]) =>
-              handleMultiFilterChange("success", values)
-            }
-            allLabel="All Statuses"
-            compact
-          />
-        </div>
-        <div className={styles['filter-actions']}>
-          <ButtonComponent variant="ghost" onClick={clearFilters}>
-            Clear
-          </ButtonComponent>
-          <ButtonComponent
-            variant="secondary"
-            icon={Download}
-            onClick={exportCSV}
-          >
-            Export CSV
-          </ButtonComponent>
-        </div>
-      </div>
+      <AdminFiltersCardComponent
+        show={{ workspace: false }}
+        actions={
+          <>
+            <ButtonComponent variant="ghost" onClick={clearFilters}>
+              Clear
+            </ButtonComponent>
+            <ButtonComponent
+              variant="secondary"
+              icon={Download}
+              onClick={exportCSV}
+            >
+              Export CSV
+            </ButtonComponent>
+          </>
+        }
+      >
+        <SelectComponent
+          multiple
+          value={filters.endpoint}
+          options={endpointFilterOptions}
+          onChange={(values: string[]) =>
+            handleMultiFilterChange("endpoint", values)
+          }
+          placeholder="All Endpoints"
+          allLabel="All Endpoints"
+          icon={<Filter size={14} />}
+          compact
+        />
+        <SelectComponent
+          multiple
+          value={filters.operation}
+          options={operationFilterOptions}
+          onChange={(values: string[]) =>
+            handleMultiFilterChange("operation", values)
+          }
+          placeholder="All Operations"
+          allLabel="All Operations"
+          icon={<Filter size={14} />}
+          compact
+          searchable
+        />
+        <SelectComponent
+          multiple
+          value={filters.success}
+          options={statusFilterOptions}
+          onChange={(values: string[]) =>
+            handleMultiFilterChange("success", values)
+          }
+          placeholder="All Statuses"
+          allLabel="All Statuses"
+          icon={<Filter size={14} />}
+          compact
+        />
+      </AdminFiltersCardComponent>
+
+      <ErrorMessage message={error} />
 
       {/* Table */}
       <div className={styles['table-wrapper']}>

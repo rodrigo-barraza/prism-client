@@ -1,4 +1,7 @@
 .page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   animation: fade-in var(--transition-normal) ease-out;
 }
 

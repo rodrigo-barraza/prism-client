@@ -51,7 +51,6 @@ export function ToolResultDisplayView({
   if (display.kind === "audio") {
     return (
       <div className={styles['visual-tool-image-container']}>
-        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <audio
           src={PrismService.getFileUrl(display.url)}
           controls

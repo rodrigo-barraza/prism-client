@@ -1,39 +1,38 @@
 "use client";
 
 import { useEffect } from "react";
-import { SelectComponent } from "@rodrigo-barraza/components-library";
+import { useSearchParams } from "next/navigation";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
-import useProjectFilter from "../../../hooks/useProjectFilter";
+import AdminFiltersCardComponent from "../../../components/AdminFiltersCardComponent";
 import ModelsPageComponent from "../../../components/ModelsPageComponent";
 
 export default function AdminModelsPage() {
-  const { projectFilter, projectOptions, handleProjectChange } =
-    useProjectFilter();
-  const { setControls, setTitleBadge } = useAdminHeader();
-
-  useEffect(() => {
-    setControls(
-      <SelectComponent
-        value={projectFilter || ""}
-        options={projectOptions}
-        onChange={handleProjectChange}
-        placeholder="All Projects"
-      />,
-    );
-  }, [setControls, projectFilter, projectOptions, handleProjectChange]);
+  const searchParams = useSearchParams();
+  const projectFilter = searchParams.get("project") || null;
+  const { setTitleBadge } = useAdminHeader();
 
   useEffect(() => {
     return () => {
-      setControls(null);
       setTitleBadge(null);
     };
-  }, [setControls, setTitleBadge]);
+  }, [setTitleBadge]);
 
   return (
-    <ModelsPageComponent
-      mode="admin"
-      project={projectFilter}
-      onCountChange={setTitleBadge}
-    />
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <AdminFiltersCardComponent
+        show={{
+          provider: false,
+          model: false,
+          agent: false,
+          workspace: false,
+          date: false,
+        }}
+      />
+      <ModelsPageComponent
+        mode="admin"
+        project={projectFilter}
+        onCountChange={setTitleBadge}
+      />
+    </div>
   );
 }

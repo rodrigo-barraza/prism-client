@@ -1,40 +1,35 @@
 "use client";
 
 import { useEffect } from "react";
-import { SelectComponent } from "@rodrigo-barraza/components-library";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
-import useProjectFilter from "../../../hooks/useProjectFilter";
+import AdminFiltersCardComponent from "../../../components/AdminFiltersCardComponent";
 import TextPageComponent from "../../../components/TextPageComponent";
 
 export default function AdminTextPage() {
-  const { projectFilter, projectOptions, handleProjectChange } =
-    useProjectFilter();
-  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
-
-  useEffect(() => {
-    setControls(
-      <SelectComponent
-        value={projectFilter || ""}
-        options={projectOptions}
-        onChange={handleProjectChange}
-        placeholder="All Projects"
-      />,
-    );
-  }, [setControls, projectFilter, projectOptions, handleProjectChange]);
+  const { setTitleBadge, dateRange, agentFilter } = useAdminHeader();
 
   useEffect(() => {
     return () => {
-      setControls(null);
       setTitleBadge(null);
     };
-  }, [setControls, setTitleBadge]);
+  }, [setTitleBadge]);
 
   return (
-    <TextPageComponent
-      mode="admin"
-      dateRange={dateRange}
-      agent={agentFilter ?? undefined}
-      onCountChange={setTitleBadge}
-    />
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <AdminFiltersCardComponent
+        show={{
+          project: false,
+          provider: false,
+          model: false,
+          workspace: false,
+        }}
+      />
+      <TextPageComponent
+        mode="admin"
+        dateRange={dateRange}
+        agent={agentFilter ?? undefined}
+        onCountChange={setTitleBadge}
+      />
+    </div>
   );
 }

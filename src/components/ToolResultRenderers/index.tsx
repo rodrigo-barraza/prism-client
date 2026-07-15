@@ -48,25 +48,22 @@ const TOOL_RESULT_RENDERER_REGISTRY: Record<
   // Browser
   control_browser: { Renderer: Renderers.BrowserActionRenderer },
 
-  // Turtle Graphics
+  // Turtle Graphics — kept for the replay button (postMessage into the embed)
   draw_turtle_graphics: { Renderer: Renderers.TurtleDrawRenderer },
-  create_vector_animation: { Renderer: Renderers.VectorAnimationRenderer },
 
-  // 3D Tools
-  create_3d_scene: { Renderer: Renderers.ThreeSceneRenderer },
-  create_3d_mesh: { Renderer: Renderers.ThreeMeshRenderer },
-  create_3d_voxel: { Renderer: Renderers.ThreeVoxelRenderer },
+  // NOTE: purely display-driven visual tools (3D, vector animation, qr,
+  // latex, diagram, gif, map, chart, ...) intentionally have NO registry
+  // entry — their results carry self-describing `display` metadata and
+  // render via GenericRenderer/ToolResultDisplayView. Do not re-add
+  // per-tool media renderers here; they shadow the display path and
+  // drift on tool renames.
 
-  // Visual Compute Tools
-  generate_qr_code: { Renderer: Renderers.QrCodeRenderer },
-  render_latex: { Renderer: Renderers.LatexRenderer },
-  generate_diagram: { Renderer: Renderers.DiagramRenderer },
+  // Image manipulation — kept for its metadata-only mode (action=metadata
+  // returns no display; the renderer shows a key/value grid instead)
   manipulate_image: { Renderer: Renderers.ImageManipulationRenderer },
-  convert_video_to_gif: { Renderer: Renderers.VideoToGifRenderer },
-  generate_map: { Renderer: Renderers.MapRenderer },
-  generate_chart: { Renderer: Renderers.ChartRenderer },
 
-  // Image to ASCII Art
+  // Image to ASCII Art — kept for the text-mode branch (renders `ascii`
+  // directly as <pre> when present)
   convert_image_to_ascii: { Renderer: Renderers.AsciiImageRenderer },
 
   // Emoji Kitchen

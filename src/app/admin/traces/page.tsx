@@ -8,10 +8,10 @@ import IrisService, {
 } from "../../../services/IrisService";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import { PaginationComponent } from "@rodrigo-barraza/components-library";
+import { useSearchParams } from "next/navigation";
 import TracesTableComponent from "../../../components/TracesTableComponent";
-import { SelectComponent } from "@rodrigo-barraza/components-library";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
-import useProjectFilter from "../../../hooks/useProjectFilter";
+import AdminFiltersCardComponent from "../../../components/AdminFiltersCardComponent";
 
 import styles from "./page.module.css";
 
@@ -20,9 +20,9 @@ const POLL_INTERVAL = 5000; // 5s
 
 
 export default function TracesPage() {
-  const { projectFilter, projectOptions, handleProjectChange } =
-    useProjectFilter();
-  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
+  const searchParams = useSearchParams();
+  const projectFilter = searchParams.get("project") || null;
+  const { setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const [traces, setTraces] = useState<IrisRequestEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -126,45 +126,27 @@ export default function TracesPage() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  // Inject controls into AdminShell header
-  useEffect(() => {
-    setControls(
-      <>
-        <SelectComponent
-          value={projectFilter || ""}
-          options={projectOptions}
-          onChange={handleProjectChange}
-          placeholder="All Projects"
-        />
-      </>,
-    );
-  }, [setControls, total, projectFilter, projectOptions, handleProjectChange]);
-
   useEffect(() => {
     return () => {
-      setControls(null);
       setTitleBadge(null);
     };
-  }, [setControls, setTitleBadge]);
+  }, [setTitleBadge]);
 
   // Set title badge with total count
   useEffect(() => {
     setTitleBadge(total);
   }, [setTitleBadge, total]);
 
-  if (loading) {
-    return (
-      <div className={styles['page']}>
+  return (
+    <div className={styles['page']}>
+      <AdminFiltersCardComponent
+        show={{ provider: false, model: false, workspace: false }}
+      />
+      {loading ? (
         <div className={styles['is-loading-state']}>
           <PanelLoadingSpinner size="large" />
         </div>
-      </div>
-    );
-  }
-
-  if (traces.length === 0) {
-    return (
-      <div className={styles['page']}>
+      ) : traces.length === 0 ? (
         <div className={styles['empty']}>
           <FolderOpen size={36} style={{ opacity: 0.3 }} />
           <div>No traces yet</div>
@@ -172,32 +154,30 @@ export default function TracesPage() {
             Traces are created when AI calls are grouped together
           </div>
         </div>
-      </div>
-    );
-  }
+      ) : (
+        <>
+          <TracesTableComponent
+            traces={traces}
+            emptyText="No traces"
+            sortKey={sort}
+            sortDir={order}
+            onSort={(key: string, dir: string) => {
+              setSort(key);
+              setOrder(dir);
+              setPage(1);
+            }}
+          />
 
-  return (
-    <div className={styles['page']}>
-      <TracesTableComponent
-        traces={traces}
-        emptyText="No traces"
-        sortKey={sort}
-        sortDir={order}
-        onSort={(key: string, dir: string) => {
-          setSort(key);
-          setOrder(dir);
-          setPage(1);
-        }}
-      />
-
-      {/* Pagination */}
-      <PaginationComponent
-        page={page}
-        totalPages={totalPages}
-        totalItems={total}
-        onPageChange={setPage}
-        limit={PAGE_SIZE}
-      />
+          {/* Pagination */}
+          <PaginationComponent
+            page={page}
+            totalPages={totalPages}
+            totalItems={total}
+            onPageChange={setPage}
+            limit={PAGE_SIZE}
+          />
+        </>
+      )}
     </div>
   );
 }

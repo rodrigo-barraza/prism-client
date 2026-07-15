@@ -25,10 +25,21 @@
   min-width: 140px;
 }
 
-/* DatePicker should not stretch beyond its natural width */
-.filters-grid > *:last-child {
+/* DatePicker and the actions cluster keep their natural width rather than
+   stretching like the selects. Higher specificity than `.filters-grid > *`
+   so these overrides also hold inside the responsive breakpoints below. */
+.filters-grid > .filter-date,
+.filters-grid > .filters-actions {
   flex: 0 0 auto;
   min-width: auto;
+}
+
+/* Right-aligned page actions (Clear / Export CSV, …) */
+.filters-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
 }
 
 @media (max-width: 1200px) {

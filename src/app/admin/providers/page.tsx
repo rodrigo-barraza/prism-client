@@ -7,10 +7,8 @@ import IrisService, {
 } from "../../../services/IrisService";
 import type { IrisProviderStat } from "@/types/types";
 import PrismService from "../../../services/PrismService";
-import {
-  SelectComponent,
-  TableComponent,
-} from "@rodrigo-barraza/components-library";
+import { TableComponent } from "@rodrigo-barraza/components-library";
+import { useSearchParams } from "next/navigation";
 import { resolveProviderLabel } from "../../../components/ProviderLogosComponent";
 
 import {
@@ -21,7 +19,7 @@ import { formatNumber, formatCost, formatLatency, formatTokensPerSec, formatComp
 import { buildDateRangeParams } from "../../../utils/utilities";
 import { PROVIDER_COLORS } from "../../../constants";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
-import useProjectFilter from "../../../hooks/useProjectFilter";
+import AdminFiltersCardComponent from "../../../components/AdminFiltersCardComponent";
 import styles from "./page.module.css";
 
 interface ModelStat {
@@ -45,9 +43,9 @@ interface ProviderStat {
 }
 
 export default function ProvidersPage() {
-  const { projectFilter, projectOptions, handleProjectChange } =
-    useProjectFilter();
-  const { setControls, setTitleBadge, dateRange, agentFilter } = useAdminHeader();
+  const searchParams = useSearchParams();
+  const projectFilter = searchParams.get("project") || null;
+  const { setTitleBadge, dateRange, agentFilter } = useAdminHeader();
   const [modelStats, setModelStats] = useState<ModelStat[]>([]);
   // Provider-level rollups (true weighted averages) from the server's
   // /stats/costs `providers` facet — not re-derived from per-model averages.
@@ -167,25 +165,10 @@ export default function ProvidersPage() {
   );
 
   useEffect(() => {
-    setControls(
-      <>
-        <SelectComponent
-          value={projectFilter || ""}
-          options={projectOptions}
-          onChange={handleProjectChange}
-          placeholder="All Projects"
-        />
-        <ErrorMessage message={error} />
-      </>,
-    );
-  }, [setControls, projectFilter, projectOptions, handleProjectChange, error]);
-
-  useEffect(() => {
     return () => {
-      setControls(null);
       setTitleBadge(null);
     };
-  }, [setControls, setTitleBadge]);
+  }, [setTitleBadge]);
 
   // Set title badge with provider count
   useEffect(() => {
@@ -194,6 +177,10 @@ export default function ProvidersPage() {
 
   return (
     <div className={styles['page']}>
+      <AdminFiltersCardComponent
+        show={{ provider: false, model: false, workspace: false }}
+      />
+      <ErrorMessage message={error} />
       {loading && <LoadingMessage message="Loading provider data..." />}
 
       <div className={styles['provider-list']}>
