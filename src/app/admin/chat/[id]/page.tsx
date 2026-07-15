@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useParams } from "next/navigation";
-import ChatConversationComponent from "../../../../components/ChatConversationComponent";
+import AgentChatComponent from "../../../../components/AgentChatComponent";
 
 export default function AdminChatDetailPage() {
   const params = useParams();
@@ -10,7 +10,7 @@ export default function AdminChatDetailPage() {
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
   return (
     <Suspense>
-      <ChatConversationComponent isAdmin initialId={id} />
+      <AgentChatComponent isAdmin initialId={id} />
     </Suspense>
   );
 }

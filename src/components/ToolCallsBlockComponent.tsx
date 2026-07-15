@@ -18,6 +18,9 @@ interface ToolCallsBlockProps {
   isAutoCollapsed?: boolean;
   onOpenFileInViewer?: (_absolutePath: string) => void;
   toolDisplayMetadataMap?: Record<string, ToolDisplayMetadata> | null;
+  // Minimal "Chat" view: render a compact, non-expandable summary pill
+  // instead of the expandable disclosure block.
+  minimal?: boolean;
 }
 
 export default function ToolCallsBlockComponent({
@@ -27,6 +30,7 @@ export default function ToolCallsBlockComponent({
   isAutoCollapsed,
   onOpenFileInViewer,
   toolDisplayMetadataMap,
+  minimal = false,
 }: ToolCallsBlockProps) {
   const isCurrentlyCalling = toolCall.status === "calling" || toolCall.status === "streaming";
   const hasActiveSubAgents = detectActiveSubAgents(toolCall, subAgentToolActivity);
@@ -176,13 +180,33 @@ export default function ToolCallsBlockComponent({
   }, [isBlockActive]);
 
   const teamMembers = useMemo(() => parseTeamToolResult(toolCall.result), [toolCall.result]);
-  const teamToolActivity = useMemo(() => 
+  const teamToolActivity = useMemo(() =>
     aggregateTeamToolUsage(
-      teamMembers, 
-      subAgentToolActivity, 
+      teamMembers,
+      subAgentToolActivity,
       toolCall.args as { members?: Array<{ description?: string }> }
     ),
   [teamMembers, subAgentToolActivity, toolCall.args]);
+
+  const toolEmojiNode = (() => {
+    const emoji = resolveToolEmoji(toolCall.name);
+    return isEmojiImageUrl(emoji)
+      ? <img src={emoji} alt="" className={styles['tool-calls-toggle-emoji-image']} />
+      : emoji;
+  })();
+
+  // Minimal "Chat" view — a non-expandable summary pill. No chevron, no
+  // disclosure, not a button, so the tool call cannot be expanded.
+  if (minimal) {
+    return (
+      <div
+        className={`tool-calls-block-component ${styles['tool-calls-pill']}${isBlockActive ? ` ${styles['tool-calls-pill-active']}` : ""}`}
+      >
+        <span className={styles['tool-calls-toggle-emoji']}>{toolEmojiNode}</span>
+        <span className={styles['tool-calls-pill-label']}>{headerLabelContent}</span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -198,14 +222,7 @@ export default function ToolCallsBlockComponent({
           });
         }}
       >
-        <span className={styles['tool-calls-toggle-emoji']}>
-          {(() => {
-            const emoji = resolveToolEmoji(toolCall.name);
-            return isEmojiImageUrl(emoji)
-              ? <img src={emoji} alt="" className={styles['tool-calls-toggle-emoji-image']} />
-              : emoji;
-          })()}
-        </span>
+        <span className={styles['tool-calls-toggle-emoji']}>{toolEmojiNode}</span>
         <span>{headerLabelContent}</span>
         <ChevronDown size={14} className={`${styles['tool-calls-chevron']}${isHeaderCollapsed ? ` ${styles['tool-calls-chevron-collapsed']}` : ''}`} />
       </button>

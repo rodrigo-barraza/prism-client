@@ -13,7 +13,7 @@ import {
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import ChatConversationComponent from "../../components/ChatConversationComponent";
+import AgentChatComponent from "../../components/AgentChatComponent";
 import PrismService from "../../services/PrismService";
 import { AgentPersona } from "../../types/types";
 import styles from "./page.module.css";
@@ -131,7 +131,7 @@ function AgentsPageInner() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Listen for agent:switch events from ChatConversationComponent
+  // Listen for agent:switch events from AgentChatComponent
   const handleAgentSwitch = useCallback(
     (e: Event) => {
       const customEvent = e as CustomEvent;
@@ -152,7 +152,7 @@ function AgentsPageInner() {
     [activeAgentId, router, searchParams],
   );
 
-  // Listen for model:change events from ChatConversationComponent — sync URL
+  // Listen for model:change events from AgentChatComponent — sync URL
   const handleModelChange = useCallback(
     (e: Event) => {
       const customEvent = e as CustomEvent;
@@ -170,7 +170,7 @@ function AgentsPageInner() {
 
   // When a conversation is active, strip model from URL but keep agent — the
   // conversation data is the source of truth for the model, and we keep agent
-  // in the URL to prevent ChatConversationComponent remounting.
+  // in the URL to prevent AgentChatComponent remounting.
   const handleConversationChange = useCallback(
     (e: Event) => {
       const customEvent = e as CustomEvent;
@@ -291,7 +291,7 @@ function AgentsPageInner() {
 
   return (
     <main className={styles['container']}>
-      <ChatConversationComponent
+      <AgentChatComponent
         key={activeAgentId}
         agentId={activeAgentId}
         agents={agents}

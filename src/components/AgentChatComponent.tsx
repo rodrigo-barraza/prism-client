@@ -467,7 +467,7 @@ interface ClientMessage extends Message {
   _terminationReason?: string;
 }
 
-export interface ChatConversationComponentProps {
+export interface AgentChatComponentProps {
   agentId?: string;
   agents?: Array<
     AgentPersona | (Partial<AgentPersona> & { id: string; name: string })
@@ -483,7 +483,7 @@ export interface ChatConversationComponentProps {
   initialId?: string | null;
 }
 
-export default function ChatConversationComponent({
+export default function AgentChatComponent({
   agentId: propAgentId = AGENT_IDS.CODING,
   agents: propAgents = [],
   initialFcEnabled = false,
@@ -495,7 +495,7 @@ export default function ChatConversationComponent({
   initialViewMode = null,
   isAdmin = false,
   initialId = null,
-}: ChatConversationComponentProps) {
+}: AgentChatComponentProps) {
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef<boolean>(false);
   // Track whether the URL conversation param has been consumed
@@ -637,13 +637,17 @@ export default function ChatConversationComponent({
     }
     return "settings";
   });
-  const [chatAreaTab, setChatAreaTab] = useState<"chat" | "nodes">(() => {
+  // Single source of truth for the chat-area view mode. `showRaw` and the
+  // Nodes checks below are derived from this so no impossible state combos
+  // exist (previously two independent booleans: chatAreaTab + showRaw).
+  const [viewMode, setViewMode] = useState<ChatViewMode>(() => {
     if (initialViewMode === "nodes") return "nodes";
+    if (initialViewMode === "raw") return "raw";
+    if (initialViewMode === "clean") return "clean";
+    // Minimal, friendly Chat view is the default.
     return "chat";
   });
-  const [showRaw, setShowRaw] = useState(() => {
-    return initialViewMode === "raw";
-  });
+  const showRaw = viewMode === "raw";
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const toolDisplayMetadataMap = useMemo(() => {
     const map: Record<string, ToolDisplayMetadata> = {};
@@ -778,13 +782,12 @@ export default function ChatConversationComponent({
   }, [leftTabBottom]);
 
   useEffect(() => {
-    const currentViewMode = chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean";
     window.dispatchEvent(
       new CustomEvent(EVENT_NAME_VIEW_MODE_CHANGE, {
-        detail: { viewMode: currentViewMode },
+        detail: { viewMode },
       }),
     );
-  }, [chatAreaTab, showRaw]);
+  }, [viewMode]);
 
   useEffect(() => {
     if (initialTabKey) {
@@ -8096,17 +8099,12 @@ export default function ChatConversationComponent({
         </div>
         <div className={chatStyles['chat-header-actions']}>
           <ChatViewModeControlComponent
-              viewMode={chatAreaTab === "nodes" ? "nodes" : showRaw ? "raw" : "clean"}
+              viewMode={viewMode}
               onViewModeChange={(mode: ChatViewMode) => {
-                if (mode === "nodes") {
-                  setChatAreaTab("nodes");
-                } else {
-                  setChatAreaTab("chat");
-                  setShowRaw(mode === "raw");
-                }
+                setViewMode(mode);
                 if (isAdmin) {
                   const searchParameters = new URLSearchParams(window.location.search);
-                  if (mode === "clean") {
+                  if (mode === "chat") {
                     searchParameters.delete("view");
                   } else {
                     searchParameters.set("view", mode);
@@ -8155,7 +8153,7 @@ export default function ChatConversationComponent({
         </div>
       </div>
       {/* Nodes tab — inline conversation graph */}
-      {chatAreaTab === "nodes" && (
+      {viewMode === "nodes" && (
         <ChatConversationGraphComponent
           conversationId={activeId}
           toolActivity={toolActivity}
@@ -8163,7 +8161,7 @@ export default function ChatConversationComponent({
           graphState={conversationGraphState}
         />
       )}
-      {chatAreaTab !== "nodes" && !isAdmin && (
+      {viewMode !== "nodes" && !isAdmin && (
         <PixelTransitionComponent
           phase={pixelTransition}
           duration={
@@ -8179,7 +8177,7 @@ export default function ChatConversationComponent({
         />
       )}
       {/* Messages (hidden when Nodes tab is active) */}
-      {isAdmin && chatAreaTab !== "nodes" ? (
+      {isAdmin && viewMode !== "nodes" ? (
         <div className={adminPageStyles['viewer-body']} ref={adminViewerBodyRef}>
           {!activeId && !adminLoadingDetail ? (
             <div className={adminPageStyles['empty-viewer']}>
@@ -8198,6 +8196,7 @@ export default function ChatConversationComponent({
               messages={filteredMessages}
               readOnly
               showRaw={showRaw}
+              minimal={viewMode === "chat"}
               activeAgent={resolvedConversationAgent}
               systemPrompt={
                 showRaw
@@ -8214,7 +8213,7 @@ export default function ChatConversationComponent({
         </div>
       ) : (
       <div
-        className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""} ${chatAreaTab === "nodes" ? chatStyles['messages-list-hidden'] : ""}`}
+        className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""} ${viewMode === "nodes" ? chatStyles['messages-list-hidden'] : ""}`}
         ref={messagesListRef}
         style={
           agentBackgroundImage
@@ -8248,6 +8247,7 @@ export default function ChatConversationComponent({
         <MessageList
           messages={filteredMessages}
           showRaw={showRaw}
+          minimal={viewMode === "chat"}
           systemPrompt={showRaw ? (previewSystemPrompt || settings.systemPrompt) : undefined}
           onSystemPromptEdit={
             isNoAgent

@@ -643,6 +643,8 @@ export interface MessageListProps {
   onPlanReject?: () => void;
   knownPaths?: string[];
   showRaw?: boolean;
+  // Minimal "Chat" view: render tool calls as non-expandable summary pills.
+  minimal?: boolean;
   queuedNextTurn?: QueuedNextTurn | null;
   onCancelQueuedTurn?: () => void;
 
@@ -675,6 +677,7 @@ export default function MessageList({
   onPlanReject,
   knownPaths,
   showRaw = false,
+  minimal = false,
   queuedNextTurn,
   onCancelQueuedTurn,
 
@@ -1479,6 +1482,7 @@ export default function MessageList({
                                         subAgentToolActivity={subAgentToolActivity}
                                         onOpenFileInViewer={onOpenFileInViewer}
                                         toolDisplayMetadataMap={toolDisplayMetadataMap}
+                                        minimal={minimal}
                                       />
                                     ))}
                                   {groupMessage.images && groupMessage.images.length > 0 && (
@@ -1794,6 +1798,7 @@ export default function MessageList({
                                   }
                                   onOpenFileInViewer={onOpenFileInViewer}
                                   toolDisplayMetadataMap={toolDisplayMetadataMap}
+                                  minimal={minimal}
                                 />
                               ));
                             }
@@ -2103,6 +2108,7 @@ export default function MessageList({
                                 }
                                 onOpenFileInViewer={onOpenFileInViewer}
                                 toolDisplayMetadataMap={toolDisplayMetadataMap}
+                                minimal={minimal}
                               />
                             ))}
 
