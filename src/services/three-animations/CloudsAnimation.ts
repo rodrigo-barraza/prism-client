@@ -671,7 +671,10 @@ export function createCloudsAnimation(
   // a true overhead arc would hide them for hours around noon/midnight.
   const MAX_SUN_ELEVATION = 0.62; // radians (~35°)
   const MAX_MOON_ELEVATION = 0.5; // radians (~29°)
-  const AZIMUTH_SWING = Math.PI * 0.5;
+  // Narrow horizontal swing keeps the disc inside the ~±26° horizontal frame
+  // when it is low enough to clear the frame top — so the sun/moon read as
+  // rising front-left in the morning and setting front-right in the evening.
+  const AZIMUTH_SWING = 0.55; // radians (~±16° across daylight hours)
 
   const applySkyState = (hours: number) => {
     // Sun arc: 0 at 06:00, peak at 12:00, 0 at 18:00, lowest at 00:00
