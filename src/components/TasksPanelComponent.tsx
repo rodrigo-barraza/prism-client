@@ -390,6 +390,8 @@ export default function TasksPanel({
       )}
 
       {/* -- Task list --------------------------------------- */}
+      {filteredTasks.length > 0 && (
+        <div className={styles['list']}>
       {filteredTasks.map((task) => {
         const config =
           STATUS_CONFIG[task.status ?? "pending"] || STATUS_CONFIG.pending;
@@ -516,6 +518,8 @@ export default function TasksPanel({
           </div>
         );
       })}
+        </div>
+      )}
     </div>
   );
 }

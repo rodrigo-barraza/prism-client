@@ -18,12 +18,17 @@ import {
 import Link from "next/link";
 import IrisService from "../services/IrisService";
 import PrismService from "../services/PrismService";
-import MediaCardComponent from "./MediaCardComponent";
+import MediaCardComponent, {
+  MediaTypeIcon,
+  OriginBadge,
+  resolveUrl,
+} from "./MediaCardComponent";
 import SearchFilterComponent from "./SearchFilterComponent";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import {
+  PageHeroComponent,
   PaginationComponent,
   SearchInputComponent,
   TableComponent,
@@ -38,7 +43,12 @@ import {
 import { MODALITY_COLORS } from "./WorkflowNodeConstantsComponent";
 import { buildDateRangeParams } from "../utils/utilities";
 import styles from "./MediaPageComponent.module.css";
-import { LOCAL_STORAGE_KEY_DATE_RANGE, LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE } from "../constants";
+import {
+  LOCAL_STORAGE_KEY_DATE_RANGE,
+  LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE,
+  LOCAL_STORAGE_KEY_MEDIA_VIEW_MODE_PREFIX,
+  TIMING,
+} from "../constants";
 
 const ORIGIN_FILTERS = [
   { key: "user", label: "Uploaded", icon: User },
@@ -57,44 +67,14 @@ const TYPE_FILTERS = [
   { key: "pdf", label: "PDF", icon: FileText, color: MODALITY_COLORS.pdf },
 ];
 
-function resolveUrl(url: string | undefined | null) {
-  if (!url || typeof url !== "string") return null;
-  return PrismService.getFileUrl(url);
-}
+const VIEW_MODES = {
+  GRID: "grid",
+  LIST: "list",
+} as const;
 
-function MediaTypeIcon({ type, size = 32 }: { type: string; size?: number }) {
-  const color =
-    (MODALITY_COLORS as Record<string, string>)[type] ||
-    (MODALITY_COLORS as Record<string, string>).image;
-  if (type === "audio") return <Music size={size} style={{ color }} />;
-  if (type === "video") return <Film size={size} style={{ color }} />;
-  if (type === "pdf") return <FileText size={size} style={{ color }} />;
-  return <ImageIcon size={size} style={{ color }} />;
-}
-
-function OriginBadge({
-  origin,
-  className,
-}: {
-  origin: string;
-  className?: string;
-}) {
-  return (
-    <span
-      className={`${className} ${origin === "ai" ? styles['origin-ai'] : styles['origin-user']}`}
-    >
-      {origin === "ai" ? (
-        <>
-          <Sparkles size={10} /> Generated
-        </>
-      ) : (
-        <>
-          <User size={10} /> Uploaded
-        </>
-      )}
-    </span>
-  );
-}
+const PAGE_SIZE = 60;
+const LIST_THUMB_ICON_SIZE = 16;
+const CONVERSATION_BASE_PATH = "/admin/chat";
 
 export interface MediaItem {
   convId: string;
@@ -124,7 +104,7 @@ export default function MediaPageComponent({
   onCountChange,
 }: MediaPageComponentProps) {
   const isAdmin = mode === "admin";
-  const convBasePath = "/admin/chat";
+  const convBasePath = CONVERSATION_BASE_PATH;
 
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -141,8 +121,8 @@ export default function MediaPageComponent({
   const [providers, setProviders] = useState<string[]>([]);
   const [models, setModels] = useState<string[]>([]);
   const [viewMode, setViewMode] = usePersistedState(
-    `media-page:view-mode:${mode}`,
-    "grid",
+    `${LOCAL_STORAGE_KEY_MEDIA_VIEW_MODE_PREFIX}${mode}`,
+    VIEW_MODES.GRID as string,
   );
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -155,7 +135,6 @@ export default function MediaPageComponent({
   const dateRange = externalDateRange ?? internalDateRange;
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const PAGE_SIZE = 60;
   const searchTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const loadMedia = useCallback(async () => {
@@ -278,7 +257,7 @@ export default function MediaPageComponent({
               />
             ) : (
               <div className={styles['list-thumb-placeholder']}>
-                <MediaTypeIcon type={mediaRow.mediaType} size={16} />
+                <MediaTypeIcon type={mediaRow.mediaType} size={LIST_THUMB_ICON_SIZE} />
               </div>
             )}
           </div>
@@ -301,7 +280,7 @@ export default function MediaPageComponent({
       key: "source",
       label: "Source",
       render: (mediaRow: MediaItem) => (
-        <OriginBadge origin={mediaRow.origin} className={styles['origin-pill']} />
+        <OriginBadge origin={mediaRow.origin} />
       ),
     },
     {
@@ -353,427 +332,227 @@ export default function MediaPageComponent({
     },
   ];
 
+  const searchControl = (
+    <SearchInputComponent
+      value={searchInput}
+      onChange={(searchValue: string) => {
+        setSearchInput(searchValue);
+        clearTimeout(searchTimerRef.current);
+        searchTimerRef.current = setTimeout(() => {
+          setSearch(searchValue);
+          setPage(1);
+        }, TIMING.DEBOUNCE_SEARCH);
+      }}
+      placeholder="Search titles & conversations…"
+      compact
+      className={styles['search-wrapper']}
+    />
+  );
+
+  const filterBar = (
+    <FilterBarComponent>
+      <FilterDropdownComponent
+        groups={[
+          {
+            label: "Source",
+            items: ORIGIN_FILTERS.map((file) => ({
+              key: file.key,
+              icon: file.icon,
+              title: file.label,
+            })),
+            activeKeys: origin === "all" ? null : origin,
+            isSingleSelect: true,
+            onToggle: (toggledValue: string | null) => {
+              setOrigin(toggledValue || "all");
+              setPage(1);
+            },
+          },
+          {
+            label: "Type",
+            items: TYPE_FILTERS.map((file) => ({
+              key: file.key,
+              icon: file.icon,
+              color: file.color,
+              title: file.label,
+            })),
+            activeKeys: type === "all" ? null : type,
+            isSingleSelect: true,
+            onToggle: (toggledValue: string | null) => {
+              setType(toggledValue || "all");
+              setPage(1);
+            },
+          },
+          ...(providers.length >= 2
+            ? [
+                {
+                  label: "Providers",
+                  items: providers.map((providerOption) => ({
+                    key: providerOption,
+                    icon: () => <ProviderLogo provider={providerOption} size={13} />,
+                    title: resolveProviderLabel(providerOption),
+                  })),
+                  activeKeys: provider || null,
+                  isSingleSelect: true,
+                  onToggle: (toggledValue: string | null) => {
+                    setProvider(toggledValue || "");
+                    setModel("");
+                    setPage(1);
+                  },
+                },
+              ]
+            : []),
+          ...(models.length >= 2
+            ? [
+                {
+                  label: "Models",
+                  items: models.map((modelOption) => ({
+                    key: modelOption,
+                    icon: Bot,
+                    title: modelOption,
+                  })),
+                  activeKeys: model || null,
+                  isSingleSelect: true,
+                  onToggle: (toggledValue: string | null) => {
+                    setModel(toggledValue || "");
+                    setPage(1);
+                  },
+                },
+              ]
+            : []),
+          {
+            label: "Favorites",
+            items: [
+              { key: "favorites", icon: Star, title: "Favorites Only" },
+            ],
+            activeKeys: showFavoritesOnly ? "favorites" : null,
+            isSingleSelect: true,
+            onToggle: (toggledValue: string | null) => setShowFavoritesOnly(toggledValue === "favorites"),
+          },
+        ]}
+        dateRange={!externalDateRange ? dateRange : undefined}
+        onDateChange={
+          !externalDateRange
+            ? (value) => {
+                setInternalDateRange(value);
+                setPage(1);
+              }
+            : undefined
+        }
+        dateStorageKey={
+          !externalDateRange
+            ? isAdmin
+              ? LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE
+              : LOCAL_STORAGE_KEY_DATE_RANGE
+            : undefined
+        }
+      />
+
+      {isAdmin && externalProject === undefined && (
+        <SearchFilterComponent
+          options={projects}
+          value={project}
+          onChange={(value) => {
+            setInternalProject(value);
+            setPage(1);
+          }}
+          placeholder="All Projects"
+          allLabel="All Projects"
+        />
+      )}
+
+      {isAdmin && (
+        <SearchFilterComponent
+          options={usernames}
+          value={username}
+          onChange={(value) => {
+            setUsername(value);
+            setPage(1);
+          }}
+          placeholder="All Users"
+          allLabel="All Users"
+          icon={User}
+        />
+      )}
+
+      <ViewModeToggleComponent
+        mode={viewMode}
+        onChange={setViewMode}
+        modes={[
+          { key: VIEW_MODES.GRID, icon: Grid, title: "Grid view" },
+          { key: VIEW_MODES.LIST, icon: List, title: "List view" },
+        ]}
+      />
+    </FilterBarComponent>
+  );
+
+  const resultsView = (
+    <>
+      {loading && <LoadingMessage message="Loading media..." />}
+
+      {!loading && viewMode === VIEW_MODES.GRID && (
+        <div className={styles['media-grid']}>
+          {displayMedia.map((mediaItem, i) => {
+            const mediaKey = getMediaKey(mediaItem, i);
+            const isFav = favoriteKeys.includes(mediaKey);
+            return (
+              <MediaCardComponent
+                key={`${mediaItem.convId}-${i}`}
+                media={mediaItem}
+                convBasePath={convBasePath}
+                showFavorite
+                isFavorite={isFav}
+                onFavorite={() => toggleFavorite(mediaKey)}
+                onImageClick={(imageUrl: string) => setLightboxSrc(imageUrl)}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {!loading && viewMode === VIEW_MODES.LIST && (
+        <div className={styles['list-wrapper']}>
+          <TableComponent
+            columns={listColumns}
+            data={displayMedia}
+            getRowKey={(row: MediaItem, rowIndex: number) => `${row.convId}-${rowIndex}`}
+          />
+        </div>
+      )}
+
+      {!loading && displayMedia.length === 0 && (
+        <EmptyMessage message="No media found" />
+      )}
+
+      <PaginationComponent
+        page={page}
+        totalPages={totalPages}
+        totalItems={total}
+        onPageChange={setPage}
+      />
+    </>
+  );
+
   return (
     <>
       {!isAdmin ? (
         <div className={`media-page-component ${styles['container']}`}>
-          {/* Header */}
-          <div className={styles['header']}>
-            <div className={styles['header-left']}>
-              <h1 className={styles['title']}>
-                <ImageIcon className={styles['title-icon']} size={22} />
-                Media
-              </h1>
-              <p className={styles['subtitle']}>
-                All uploaded and generated files across your conversations.
-              </p>
-            </div>
-
-            <div className={styles['header-right']}>
-              {/* Stats */}
-              <div className={styles['stats-badges']}>
-                <div className={styles['stat-badge']}>
-                  <span className={styles['stat-value']}>{total}</span> files
-                </div>
-              </div>
-            </div>
-          </div>
-
+          <PageHeroComponent
+            icon={ImageIcon}
+            title="Media"
+            subtitle="All uploaded and generated files across your conversations."
+            stats={[{ value: total, label: "files" }]}
+          />
           <div className={styles['content']}>
-            <SearchInputComponent
-              value={searchInput}
-              onChange={(searchValue: string) => {
-                setSearchInput(searchValue);
-                clearTimeout(searchTimerRef.current);
-                searchTimerRef.current = setTimeout(() => {
-                  setSearch(searchValue);
-                  setPage(1);
-                }, 300);
-              }}
-              placeholder="Search titles & conversations…"
-              compact
-              className={styles['search-wrapper']}
-            />
-
-            {/* Filters */}
-            <FilterBarComponent>
-              <FilterDropdownComponent
-                groups={[
-                  {
-                    label: "Source",
-                    items: ORIGIN_FILTERS.map((file) => ({
-                      key: file.key,
-                      icon: file.icon,
-                      title: file.label,
-                    })),
-                    activeKeys: origin === "all" ? null : origin,
-                    isSingleSelect: true,
-                    onToggle: (toggledValue: string | null) => {
-                      setOrigin(toggledValue || "all");
-                      setPage(1);
-                    },
-                  },
-                  {
-                    label: "Type",
-                    items: TYPE_FILTERS.map((file) => ({
-                      key: file.key,
-                      icon: file.icon,
-                      color: file.color,
-                      title: file.label,
-                    })),
-                    activeKeys: type === "all" ? null : type,
-                    isSingleSelect: true,
-                    onToggle: (toggledValue: string | null) => {
-                      setType(toggledValue || "all");
-                      setPage(1);
-                    },
-                  },
-                  ...(providers.length >= 2
-                    ? [
-                        {
-                          label: "Providers",
-                          items: providers.map((provider) => ({
-                            key: provider,
-                            icon: () => <ProviderLogo provider={provider} size={13} />,
-                            title: resolveProviderLabel(provider),
-                          })),
-                          activeKeys: provider || null,
-                          isSingleSelect: true,
-                          onToggle: (toggledValue: string | null) => {
-                            setProvider(toggledValue || "");
-                            setModel("");
-                            setPage(1);
-                          },
-                        },
-                      ]
-                    : []),
-                  ...(models.length >= 2
-                    ? [
-                        {
-                          label: "Models",
-                          items: models.map((mediaItem) => ({
-                            key: mediaItem,
-                            icon: Bot,
-                            title: mediaItem,
-                          })),
-                          activeKeys: model || null,
-                          isSingleSelect: true,
-                          onToggle: (toggledValue: string | null) => {
-                            setModel(toggledValue || "");
-                            setPage(1);
-                          },
-                        },
-                      ]
-                    : []),
-                  {
-                    label: "Favorites",
-                    items: [
-                      { key: "favorites", icon: Star, title: "Favorites Only" },
-                    ],
-                    activeKeys: showFavoritesOnly ? "favorites" : null,
-                    isSingleSelect: true,
-                    onToggle: (toggledValue: string | null) => setShowFavoritesOnly(toggledValue === "favorites"),
-                  },
-                ]}
-                dateRange={!externalDateRange ? dateRange : undefined}
-                onDateChange={
-                  !externalDateRange
-                    ? (value) => {
-                        setInternalDateRange(value);
-                        setPage(1);
-                      }
-                    : undefined
-                }
-                dateStorageKey={
-                  !externalDateRange
-                    ? isAdmin
-                      ? LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE
-                      : LOCAL_STORAGE_KEY_DATE_RANGE
-                    : undefined
-                }
-              />
-
-              {isAdmin && externalProject === undefined && (
-                <SearchFilterComponent
-                  options={projects}
-                  value={project}
-                  onChange={(value) => {
-                    setInternalProject(value);
-                    setPage(1);
-                  }}
-                  placeholder="All Projects"
-                  allLabel="All Projects"
-                />
-              )}
-
-              {isAdmin && (
-                <SearchFilterComponent
-                  options={usernames}
-                  value={username}
-                  onChange={(value) => {
-                    setUsername(value);
-                    setPage(1);
-                  }}
-                  placeholder="All Users"
-                  allLabel="All Users"
-                  icon={User}
-                />
-              )}
-
-              <ViewModeToggleComponent
-                mode={viewMode}
-                onChange={setViewMode}
-                modes={[
-                  { key: "grid", icon: Grid, title: "Grid view" },
-                  { key: "list", icon: List, title: "List view" },
-                ]}
-              />
-            </FilterBarComponent>
-
-            {loading && <LoadingMessage message="Loading media..." />}
-
-            {/* -- Grid View -- */}
-            {!loading && viewMode === "grid" && (
-              <div className={styles['media-grid']}>
-                {displayMedia.map((mediaItem, i) => {
-                  const mediaKey = getMediaKey(mediaItem, i);
-                  const isFav = favoriteKeys.includes(mediaKey);
-                  return (
-                    <MediaCardComponent
-                      key={`${mediaItem.convId}-${i}`}
-                      media={mediaItem}
-                      convBasePath={convBasePath}
-                      showFavorite
-                      isFavorite={isFav}
-                      onFavorite={() => toggleFavorite(mediaKey)}
-                      onImageClick={(imageUrl: string) => setLightboxSrc(imageUrl)}
-                    />
-                  );
-                })}
-              </div>
-            )}
-
-            {/* -- List View -- */}
-            {!loading && viewMode === "list" && (
-              <div className={styles['list-wrapper']}>
-                <TableComponent
-                  columns={listColumns}
-                  data={displayMedia}
-                  getRowKey={(row: MediaItem, rowIndex: number) => `${row.convId}-${rowIndex}`}
-                />
-              </div>
-            )}
-
-            {!loading && displayMedia.length === 0 && (
-              <EmptyMessage message="No media found" />
-            )}
-
-            {/* Pagination */}
-            <PaginationComponent
-              page={page}
-              totalPages={totalPages}
-              totalItems={total}
-              onPageChange={setPage}
-            />
+            {searchControl}
+            {filterBar}
+            {resultsView}
           </div>
         </div>
       ) : (
         <div className={styles['admin-content']}>
-          <SearchInputComponent
-            value={searchInput}
-            onChange={(searchValue: string) => {
-              setSearchInput(searchValue);
-              clearTimeout(searchTimerRef.current);
-              searchTimerRef.current = setTimeout(() => {
-                setSearch(searchValue);
-                setPage(1);
-              }, 300);
-            }}
-            placeholder="Search titles & conversations…"
-            compact
-            className={styles['search-wrapper']}
-          />
-
-          {/* Filters */}
-          <FilterBarComponent>
-            <FilterDropdownComponent
-              groups={[
-                {
-                  label: "Source",
-                  items: ORIGIN_FILTERS.map((file) => ({
-                    key: file.key,
-                    icon: file.icon,
-                    title: file.label,
-                  })),
-                  activeKeys: origin === "all" ? null : origin,
-                  isSingleSelect: true,
-                  onToggle: (toggledValue: string | null) => {
-                    setOrigin(toggledValue || "all");
-                    setPage(1);
-                  },
-                },
-                {
-                  label: "Type",
-                  items: TYPE_FILTERS.map((file) => ({
-                    key: file.key,
-                    icon: file.icon,
-                    color: file.color,
-                    title: file.label,
-                  })),
-                  activeKeys: type === "all" ? null : type,
-                  isSingleSelect: true,
-                  onToggle: (toggledValue: string | null) => {
-                    setType(toggledValue || "all");
-                    setPage(1);
-                  },
-                },
-                ...(providers.length >= 2
-                  ? [
-                      {
-                        label: "Providers",
-                        items: providers.map((provider) => ({
-                          key: provider,
-                          icon: () => <ProviderLogo provider={provider} size={13} />,
-                          title: resolveProviderLabel(provider),
-                        })),
-                        activeKeys: provider || null,
-                        isSingleSelect: true,
-                        onToggle: (toggledValue: string | null) => {
-                          setProvider(toggledValue || "");
-                          setModel("");
-                          setPage(1);
-                        },
-                      },
-                    ]
-                  : []),
-                ...(models.length >= 2
-                  ? [
-                      {
-                        label: "Models",
-                        items: models.map((mediaItem) => ({
-                          key: mediaItem,
-                          icon: Bot,
-                          title: mediaItem,
-                        })),
-                        activeKeys: model || null,
-                        isSingleSelect: true,
-                        onToggle: (toggledValue: string | null) => {
-                          setModel(toggledValue || "");
-                          setPage(1);
-                        },
-                      },
-                    ]
-                  : []),
-                {
-                  label: "Favorites",
-                  items: [
-                    { key: "favorites", icon: Star, title: "Favorites Only" },
-                  ],
-                  activeKeys: showFavoritesOnly ? "favorites" : null,
-                  isSingleSelect: true,
-                  onToggle: (toggledValue: string | null) => setShowFavoritesOnly(toggledValue === "favorites"),
-                },
-              ]}
-              dateRange={!externalDateRange ? dateRange : undefined}
-              onDateChange={
-                !externalDateRange
-                  ? (value) => {
-                      setInternalDateRange(value);
-                      setPage(1);
-                    }
-                  : undefined
-              }
-              dateStorageKey={
-                !externalDateRange
-                  ? isAdmin
-                    ? LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE
-                    : LOCAL_STORAGE_KEY_DATE_RANGE
-                  : undefined
-              }
-            />
-
-            {isAdmin && externalProject === undefined && (
-              <SearchFilterComponent
-                options={projects}
-                value={project}
-                onChange={(value) => {
-                  setInternalProject(value);
-                  setPage(1);
-                }}
-                placeholder="All Projects"
-                allLabel="All Projects"
-              />
-            )}
-
-            {isAdmin && (
-              <SearchFilterComponent
-                options={usernames}
-                value={username}
-                onChange={(value) => {
-                  setUsername(value);
-                  setPage(1);
-                }}
-                placeholder="All Users"
-                allLabel="All Users"
-                icon={User}
-              />
-            )}
-
-            <ViewModeToggleComponent
-              mode={viewMode}
-              onChange={setViewMode}
-              modes={[
-                { key: "grid", icon: Grid, title: "Grid view" },
-                { key: "list", icon: List, title: "List view" },
-              ]}
-            />
-          </FilterBarComponent>
-
-          {loading && <LoadingMessage message="Loading media..." />}
-
-          {/* -- Grid View -- */}
-          {!loading && viewMode === "grid" && (
-            <div className={styles['media-grid']}>
-              {displayMedia.map((mediaItem, i) => {
-                const mediaKey = getMediaKey(mediaItem, i);
-                const isFav = favoriteKeys.includes(mediaKey);
-                return (
-                  <MediaCardComponent
-                    key={`${mediaItem.convId}-${i}`}
-                    media={mediaItem}
-                    convBasePath={convBasePath}
-                    showFavorite
-                    isFavorite={isFav}
-                    onFavorite={() => toggleFavorite(mediaKey)}
-                    onImageClick={(imageUrl: string) => setLightboxSrc(imageUrl)}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {/* -- List View -- */}
-          {!loading && viewMode === "list" && (
-            <div className={styles['list-wrapper']}>
-              <TableComponent
-                columns={listColumns}
-                data={displayMedia}
-                getRowKey={(row: MediaItem, rowIndex: number) => `${row.convId}-${rowIndex}`}
-              />
-            </div>
-          )}
-
-          {!loading && displayMedia.length === 0 && (
-            <EmptyMessage message="No media found" />
-          )}
-
-          {/* Pagination */}
-          <PaginationComponent
-            page={page}
-            totalPages={totalPages}
-            totalItems={total}
-            onPageChange={setPage}
-          />
+          {searchControl}
+          {filterBar}
+          {resultsView}
         </div>
       )}
 

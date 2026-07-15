@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Star,
   User,
@@ -35,18 +36,26 @@ function MediaTypeIcon({ type, size = 32 }: { type: string; size?: number }) {
   return <ImageIcon size={size} style={{ color }} />;
 }
 
-function OriginBadge({ origin }: { origin: string }) {
+const ORIGIN_BADGE_ICON_SIZE = 10;
+
+function OriginBadge({
+  origin,
+  className,
+}: {
+  origin: string;
+  className?: string;
+}) {
   return (
     <span
-      className={`${styles['origin-badge']} ${origin === "ai" ? styles['origin-ai'] : styles['origin-user']}`}
+      className={`${styles['origin-chip']} ${origin === "ai" ? styles['origin-ai'] : styles['origin-user']}${className ? ` ${className}` : ""}`}
     >
       {origin === "ai" ? (
         <>
-          <Sparkles size={10} /> Generated
+          <Sparkles size={ORIGIN_BADGE_ICON_SIZE} /> Generated
         </>
       ) : (
         <>
-          <User size={10} /> Uploaded
+          <User size={ORIGIN_BADGE_ICON_SIZE} /> Uploaded
         </>
       )}
     </span>
@@ -80,7 +89,7 @@ export default function MediaCardComponent({
   onImageClick,
 }: MediaCardProps) {
   const resolvedUrl = resolveUrl(media.url);
-
+  const [imageFailed, setImageFailed] = useState(false);
 
   const cardClasses = [
     "media-card-component",
@@ -107,26 +116,14 @@ export default function MediaCardComponent({
       )}
 
       <div className={styles['preview']}>
-        {media.mediaType === "image" && resolvedUrl ? (
-           
+        {media.mediaType === "image" && resolvedUrl && !imageFailed ? (
           <img
             src={resolvedUrl}
             alt=""
             className={styles['preview-image']}
             loading="lazy"
             onClick={() => onImageClick?.(resolvedUrl)}
-            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = "none";
-              if (target.parentElement) {
-                target.parentElement.classList.add(styles['placeholder']);
-                const icon = document.createElement("span");
-                icon.textContent = "🖼";
-                icon.style.fontSize = "32px";
-                icon.style.opacity = "0.3";
-                target.parentElement.appendChild(icon);
-              }
-            }}
+            onError={() => setImageFailed(true)}
           />
         ) : media.mediaType === "video" && resolvedUrl ? (
           <video
@@ -165,7 +162,7 @@ export default function MediaCardComponent({
         )}
 
         {showOrigin && media.origin && (
-          <OriginBadge origin={media.origin} />
+          <OriginBadge origin={media.origin} className={styles['origin-overlay']} />
         )}
       </div>
 

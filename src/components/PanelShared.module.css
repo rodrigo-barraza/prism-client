@@ -96,3 +96,173 @@
   transition: all 0.15s ease;
   border: 1px solid transparent;
 }
+
+/* ════════════════════════════════════════════════════════════
+   Sidebar Row — shared list-row language
+   Mirrors HistoryItemComponent.item so every panel's list items
+   read as one system. Panels compose these classes instead of
+   reinventing their own card styling.
+   ════════════════════════════════════════════════════════════ */
+
+/* Full-bleed list wrapper: cancels the .container padding so rows
+   run edge-to-edge with divider lines (like the history list). */
+.list {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-inline: calc(-1 * var(--sidebar-row-padding-inline));
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: var(--sidebar-row-padding-block) var(--sidebar-row-padding-inline);
+  border-bottom: 1px solid var(--sidebar-row-divider);
+  border-left: var(--sidebar-row-accent-width) solid transparent;
+  background: var(--background-base);
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+  min-width: 0;
+
+  &:hover .row-actions {
+    opacity: 1;
+  }
+}
+
+.row-interactive {
+  cursor: pointer;
+
+  &:hover {
+    background: var(--sidebar-row-hover-bg);
+    border-left-color: var(--calculated-border-medium);
+  }
+}
+
+.row-active {
+  background: var(--sidebar-row-active-bg);
+  border-left-color: var(--accent-primary);
+
+  &:hover {
+    background: var(--sidebar-row-active-bg);
+    border-left-color: var(--accent-primary);
+  }
+}
+
+.row-disabled {
+  opacity: 0.5;
+}
+
+.row-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sidebar-row-gap);
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Line 1: title (left) · trailing (right) */
+.row-title-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.row-title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.row-title-text {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* A muted horizontal strip of metadata (time, counts, chips). */
+.row-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  min-width: 0;
+}
+
+.row-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.row-meta-item svg {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+/* Secondary description line (single-line, ellipsised). */
+.row-subtitle {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  line-height: 1.4;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Generic chip / pill used inside rows. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: var(--sidebar-row-chip-radius);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.5;
+  background: var(--sidebar-row-chip-bg);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.chip-mono {
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  font-weight: 500;
+  text-transform: none;
+}
+
+/* Hover-revealed action cluster on the right of a row. */
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.row-leading-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: color-mix(in oklch, var(--panel-accent, var(--accent-primary)) 12%, transparent);
+  color: var(--panel-accent, var(--accent-primary));
+}

@@ -12,11 +12,12 @@ import ToolDetailModalComponent, {
   type ToolDetailStats,
 } from "./ToolDetailModalComponent";
 
+import { Wrench, RefreshCw } from "lucide-react";
 import {
-  Wrench,
-  RefreshCw,
-  AlertCircle,
-} from "lucide-react";
+  ButtonComponent,
+  PageHeroComponent,
+} from "@rodrigo-barraza/components-library";
+import { ErrorMessage } from "./StateMessageComponent";
 import PanelLoadingSpinner from "./PanelLoadingSpinnerComponent";
 import styles from "./ToolsPageComponent.module.css";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
@@ -226,14 +227,16 @@ export default function ToolsPageComponent() {
     if (!isAdministratorMode) return;
 
     setControls(
-      <button
-        className={`${styles['refresh-button']} ${refreshing ? styles['spinning'] : ""}`}
+      <ButtonComponent
+        variant="secondary"
+        size="small"
+        icon={RefreshCw}
         onClick={handleRefresh}
-        disabled={refreshing}
+        loading={refreshing}
         title="Re-fetch schemas from tools-api"
       >
-        <RefreshCw /> Refresh
-      </button>,
+        Refresh
+      </ButtonComponent>,
     );
 
     return () => {
@@ -287,47 +290,32 @@ export default function ToolsPageComponent() {
       hideHeader={isAdministratorMode}
       headerControls={
         isAdministratorMode ? null : (
-          <button
-            className={`${styles['refresh-button']} ${refreshing ? styles['spinning'] : ""}`}
+          <ButtonComponent
+            variant="secondary"
+            size="small"
+            icon={RefreshCw}
             onClick={handleRefresh}
-            disabled={refreshing}
+            loading={refreshing}
             title="Re-fetch schemas from tools-api"
           >
-            <RefreshCw /> Refresh
-          </button>
+            Refresh
+          </ButtonComponent>
         )
       }
     >
       <div className={styles['container']} ref={scrollContainerRef}>
-        <div className={styles['header']}>
-          <div className={styles['header-left']}>
-            <h2 className={styles['title']}>
-              <Wrench className={styles['title-icon']} size={20} />
-              Tools
-            </h2>
-            <p className={styles['subtitle']}>
-              All available tool schemas from the Tools API — used for agentic function calling.
-            </p>
-          </div>
-        </div>
+        <PageHeroComponent
+          icon={Wrench}
+          title="Tools"
+          subtitle="All available tool schemas from the Tools API — used for agentic function calling."
+          stats={[
+            { value: tools.length, label: "tools" },
+            { value: allDomains.length, label: "domains" },
+          ]}
+          className={styles['page-hero']}
+        />
 
-        <div className={styles['stats-badges']}>
-          <div className={styles['stat-badge']}>
-            <span className={styles['stat-value']}>{tools.length}</span> tools
-          </div>
-          <div className={styles['stat-badge']}>
-            <span className={styles['stat-value']}>{allDomains.length}</span>{" "}
-            domains
-          </div>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div className={styles['error']}>
-            <AlertCircle />
-            {error}
-          </div>
-        )}
+        <ErrorMessage message={error} />
 
         <ToolsTableComponent
           tools={tools}

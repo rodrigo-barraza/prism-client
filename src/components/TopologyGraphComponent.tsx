@@ -9,7 +9,19 @@ import styles from "./TopologyGraphComponent.module.css";
    sub-agents coordinate under each multi-agent topology. Designed to
    fit inside the rich tooltip (max-width: 320px) used by the
    SelectComponent in Settings → Agent Defaults → Subagent Topology.
+
+   Node colors are semantic roles resolved to theme tokens in the
+   module CSS, so diagrams adapt to the active theme.
    ═══════════════════════════════════════════════════════════════════ */
+
+/** Semantic node roles — each maps to a theme token in the module CSS. */
+type TopologyNodeRole =
+  | "orchestrator"
+  | "agent"
+  | "action"
+  | "merge"
+  | "result"
+  | "validation";
 
 interface TopologyNode {
   id: string;
@@ -17,7 +29,7 @@ interface TopologyNode {
   positionX: number;
   positionY: number;
   radius: number;
-  fillColor: string;
+  role: TopologyNodeRole;
 }
 
 interface TopologyEdge {
@@ -33,21 +45,32 @@ interface TopologyDefinition {
   edges: TopologyEdge[];
 }
 
-const ORCHESTRATOR_COLOR = "oklch(0.60 0.18 280)";
-const AGENT_COLOR = "oklch(0.60 0.16 160)";
-const RESULT_COLOR = "oklch(0.55 0.14 45)";
-const MERGE_COLOR = "oklch(0.58 0.16 330)";
+/** Node radius scale — larger radius = higher visual prominence. */
+const NODE_RADIUS = {
+  hub: 16,
+  featured: 15,
+  standard: 14,
+  compact: 13,
+  small: 12,
+  nested: 11,
+} as const;
+
+const VIEW_BOX_WIDTH = 280;
+const CENTER_X = VIEW_BOX_WIDTH / 2;
+
+const ARROWHEAD_WIDTH = 6;
+const ARROWHEAD_HEIGHT = 5;
 
 function buildSequentialTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 180,
     nodes: [
-      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "agent-a", label: "A", positionX: 140, positionY: 52, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-b", label: "B", positionX: 140, positionY: 84, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-c", label: "C", positionX: 140, positionY: 116, radius: 14, fillColor: AGENT_COLOR },
-      { id: "results", label: "Result", positionX: 140, positionY: 152, radius: 14, fillColor: RESULT_COLOR },
+      { id: "orchestrator", label: "Orch", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "agent-a", label: "A", positionX: CENTER_X, positionY: 52, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-b", label: "B", positionX: CENTER_X, positionY: 84, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-c", label: "C", positionX: CENTER_X, positionY: 116, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "results", label: "Result", positionX: CENTER_X, positionY: 152, radius: NODE_RADIUS.standard, role: "result" },
     ],
     edges: [
       { sourceId: "orchestrator", targetId: "agent-a" },
@@ -60,14 +83,14 @@ function buildSequentialTopology(): TopologyDefinition {
 
 function buildHierarchicalTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 162,
     nodes: [
-      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "agent-a", label: "A", positionX: 60, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-b", label: "B", positionX: 140, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-c", label: "C", positionX: 220, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
-      { id: "results", label: "Winner", positionX: 140, positionY: 130, radius: 14, fillColor: RESULT_COLOR },
+      { id: "orchestrator", label: "Orch", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "agent-a", label: "A", positionX: 60, positionY: 70, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-b", label: "B", positionX: CENTER_X, positionY: 70, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-c", label: "C", positionX: 220, positionY: 70, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "results", label: "Winner", positionX: CENTER_X, positionY: 130, radius: NODE_RADIUS.standard, role: "result" },
     ],
     edges: [
       { sourceId: "orchestrator", targetId: "agent-a" },
@@ -82,15 +105,15 @@ function buildHierarchicalTopology(): TopologyDefinition {
 
 function buildAggregationTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 184,
     nodes: [
-      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "agent-a", label: "A", positionX: 60, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-b", label: "B", positionX: 140, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-c", label: "C", positionX: 220, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
-      { id: "merge", label: "Merge", positionX: 140, positionY: 122, radius: 15, fillColor: MERGE_COLOR },
-      { id: "results", label: "Result", positionX: 140, positionY: 158, radius: 14, fillColor: RESULT_COLOR },
+      { id: "orchestrator", label: "Orch", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "agent-a", label: "A", positionX: 60, positionY: 70, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-b", label: "B", positionX: CENTER_X, positionY: 70, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-c", label: "C", positionX: 220, positionY: 70, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "merge", label: "Merge", positionX: CENTER_X, positionY: 122, radius: NODE_RADIUS.featured, role: "merge" },
+      { id: "results", label: "Result", positionX: CENTER_X, positionY: 158, radius: NODE_RADIUS.standard, role: "result" },
     ],
     edges: [
       { sourceId: "orchestrator", targetId: "agent-a" },
@@ -105,26 +128,25 @@ function buildAggregationTopology(): TopologyDefinition {
 }
 
 function buildPeerToPeerTopology(): TopologyDefinition {
-  const centerX = 140;
   const centerY = 88;
   const meshRadius = 50;
 
-  const agentAPositionX = centerX + Math.cos(-Math.PI / 6) * meshRadius;
+  const agentAPositionX = CENTER_X + Math.cos(-Math.PI / 6) * meshRadius;
   const agentAPositionY = centerY + Math.sin(-Math.PI / 6) * meshRadius;
-  const agentBPositionX = centerX + Math.cos((7 * Math.PI) / 6) * meshRadius;
+  const agentBPositionX = CENTER_X + Math.cos((7 * Math.PI) / 6) * meshRadius;
   const agentBPositionY = centerY + Math.sin((7 * Math.PI) / 6) * meshRadius;
-  const agentCPositionX = centerX + Math.cos(Math.PI / 2) * meshRadius;
+  const agentCPositionX = CENTER_X + Math.cos(Math.PI / 2) * meshRadius;
   const agentCPositionY = centerY + Math.sin(Math.PI / 2) * meshRadius;
 
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 190,
     nodes: [
-      { id: "orchestrator", label: "Orch", positionX: centerX, positionY: 18, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "agent-a", label: "A", positionX: agentAPositionX, positionY: agentAPositionY, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-b", label: "B", positionX: agentBPositionX, positionY: agentBPositionY, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-c", label: "C", positionX: agentCPositionX, positionY: agentCPositionY, radius: 14, fillColor: AGENT_COLOR },
-      { id: "results", label: "Result", positionX: centerX, positionY: 162, radius: 14, fillColor: RESULT_COLOR },
+      { id: "orchestrator", label: "Orch", positionX: CENTER_X, positionY: 18, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "agent-a", label: "A", positionX: agentAPositionX, positionY: agentAPositionY, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-b", label: "B", positionX: agentBPositionX, positionY: agentBPositionY, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-c", label: "C", positionX: agentCPositionX, positionY: agentCPositionY, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "results", label: "Result", positionX: CENTER_X, positionY: 162, radius: NODE_RADIUS.standard, role: "result" },
     ],
     edges: [
       { sourceId: "orchestrator", targetId: "agent-a" },
@@ -142,15 +164,15 @@ function buildPeerToPeerTopology(): TopologyDefinition {
 
 function buildChainOfThoughtTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 204,
     nodes: [
-      { id: "prompt", label: "Prompt", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "reason-1", label: "Reason", positionX: 140, positionY: 54, radius: 14, fillColor: AGENT_COLOR },
-      { id: "act", label: "Act", positionX: 140, positionY: 88, radius: 14, fillColor: "oklch(0.58 0.15 200)" },
-      { id: "observe", label: "Observe", positionX: 140, positionY: 122, radius: 14, fillColor: MERGE_COLOR },
-      { id: "reason-2", label: "Reason", positionX: 140, positionY: 152, radius: 12, fillColor: AGENT_COLOR },
-      { id: "answer", label: "Answer", positionX: 140, positionY: 182, radius: 14, fillColor: RESULT_COLOR },
+      { id: "prompt", label: "Prompt", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "reason-1", label: "Reason", positionX: CENTER_X, positionY: 54, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "act", label: "Act", positionX: CENTER_X, positionY: 88, radius: NODE_RADIUS.standard, role: "action" },
+      { id: "observe", label: "Observe", positionX: CENTER_X, positionY: 122, radius: NODE_RADIUS.standard, role: "merge" },
+      { id: "reason-2", label: "Reason", positionX: CENTER_X, positionY: 152, radius: NODE_RADIUS.small, role: "agent" },
+      { id: "answer", label: "Answer", positionX: CENTER_X, positionY: 182, radius: NODE_RADIUS.standard, role: "result" },
     ],
     edges: [
       { sourceId: "prompt", targetId: "reason-1" },
@@ -164,17 +186,17 @@ function buildChainOfThoughtTopology(): TopologyDefinition {
 
 function buildTreeOfThoughtsTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 224,
     nodes: [
-      { id: "prompt", label: "Prompt", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "branch-a", label: "A", positionX: 60, positionY: 60, radius: 13, fillColor: AGENT_COLOR },
-      { id: "branch-b", label: "B", positionX: 140, positionY: 60, radius: 13, fillColor: AGENT_COLOR },
-      { id: "branch-c", label: "C", positionX: 220, positionY: 60, radius: 13, fillColor: AGENT_COLOR },
-      { id: "score", label: "Score", positionX: 140, positionY: 98, radius: 14, fillColor: MERGE_COLOR },
-      { id: "best", label: "Best", positionX: 140, positionY: 130, radius: 13, fillColor: RESULT_COLOR },
-      { id: "act", label: "Act", positionX: 140, positionY: 160, radius: 13, fillColor: "oklch(0.58 0.15 200)" },
-      { id: "validate", label: "Valid?", positionX: 140, positionY: 192, radius: 14, fillColor: "oklch(0.55 0.14 90)" },
+      { id: "prompt", label: "Prompt", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "branch-a", label: "A", positionX: 60, positionY: 60, radius: NODE_RADIUS.compact, role: "agent" },
+      { id: "branch-b", label: "B", positionX: CENTER_X, positionY: 60, radius: NODE_RADIUS.compact, role: "agent" },
+      { id: "branch-c", label: "C", positionX: 220, positionY: 60, radius: NODE_RADIUS.compact, role: "agent" },
+      { id: "score", label: "Score", positionX: CENTER_X, positionY: 98, radius: NODE_RADIUS.standard, role: "merge" },
+      { id: "best", label: "Best", positionX: CENTER_X, positionY: 130, radius: NODE_RADIUS.compact, role: "result" },
+      { id: "act", label: "Act", positionX: CENTER_X, positionY: 160, radius: NODE_RADIUS.compact, role: "action" },
+      { id: "validate", label: "Valid?", positionX: CENTER_X, positionY: 192, radius: NODE_RADIUS.standard, role: "validation" },
     ],
     edges: [
       { sourceId: "prompt", targetId: "branch-a" },
@@ -192,17 +214,17 @@ function buildTreeOfThoughtsTopology(): TopologyDefinition {
 
 function buildGraphOfThoughtsTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 224,
     nodes: [
-      { id: "prompt", label: "Prompt", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "branch-a", label: "A", positionX: 60, positionY: 60, radius: 13, fillColor: AGENT_COLOR },
-      { id: "branch-b", label: "B", positionX: 140, positionY: 60, radius: 13, fillColor: AGENT_COLOR },
-      { id: "branch-c", label: "C", positionX: 220, positionY: 60, radius: 13, fillColor: AGENT_COLOR },
-      { id: "score", label: "Score", positionX: 140, positionY: 98, radius: 14, fillColor: MERGE_COLOR },
-      { id: "merge", label: "Merge", positionX: 140, positionY: 130, radius: 14, fillColor: "oklch(0.58 0.16 330)" },
-      { id: "synth", label: "Synth", positionX: 140, positionY: 162, radius: 13, fillColor: RESULT_COLOR },
-      { id: "act", label: "Act", positionX: 140, positionY: 194, radius: 13, fillColor: "oklch(0.58 0.15 200)" },
+      { id: "prompt", label: "Prompt", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "branch-a", label: "A", positionX: 60, positionY: 60, radius: NODE_RADIUS.compact, role: "agent" },
+      { id: "branch-b", label: "B", positionX: CENTER_X, positionY: 60, radius: NODE_RADIUS.compact, role: "agent" },
+      { id: "branch-c", label: "C", positionX: 220, positionY: 60, radius: NODE_RADIUS.compact, role: "agent" },
+      { id: "score", label: "Score", positionX: CENTER_X, positionY: 98, radius: NODE_RADIUS.standard, role: "merge" },
+      { id: "merge", label: "Merge", positionX: CENTER_X, positionY: 130, radius: NODE_RADIUS.standard, role: "merge" },
+      { id: "synth", label: "Synth", positionX: CENTER_X, positionY: 162, radius: NODE_RADIUS.compact, role: "result" },
+      { id: "act", label: "Act", positionX: CENTER_X, positionY: 194, radius: NODE_RADIUS.compact, role: "action" },
     ],
     edges: [
       { sourceId: "prompt", targetId: "branch-a" },
@@ -220,15 +242,15 @@ function buildGraphOfThoughtsTopology(): TopologyDefinition {
 
 function buildTournamentTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 194,
     nodes: [
-      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "agent-a", label: "A", positionX: 60, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-b", label: "B", positionX: 140, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
-      { id: "agent-c", label: "C", positionX: 220, positionY: 70, radius: 14, fillColor: AGENT_COLOR },
-      { id: "judge", label: "Judge", positionX: 140, positionY: 126, radius: 15, fillColor: MERGE_COLOR },
-      { id: "winner", label: "Winner", positionX: 140, positionY: 168, radius: 14, fillColor: RESULT_COLOR },
+      { id: "orchestrator", label: "Orch", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "agent-a", label: "A", positionX: 60, positionY: 70, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-b", label: "B", positionX: CENTER_X, positionY: 70, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "agent-c", label: "C", positionX: 220, positionY: 70, radius: NODE_RADIUS.standard, role: "agent" },
+      { id: "judge", label: "Judge", positionX: CENTER_X, positionY: 126, radius: NODE_RADIUS.featured, role: "merge" },
+      { id: "winner", label: "Winner", positionX: CENTER_X, positionY: 168, radius: NODE_RADIUS.standard, role: "result" },
     ],
     edges: [
       { sourceId: "orchestrator", targetId: "agent-a" },
@@ -244,13 +266,13 @@ function buildTournamentTopology(): TopologyDefinition {
 
 function buildCriticLoopTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 194,
     nodes: [
-      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "actor", label: "Actor", positionX: 140, positionY: 68, radius: 15, fillColor: AGENT_COLOR },
-      { id: "critic", label: "Critic", positionX: 140, positionY: 118, radius: 15, fillColor: MERGE_COLOR },
-      { id: "result", label: "Pass", positionX: 140, positionY: 168, radius: 14, fillColor: RESULT_COLOR },
+      { id: "orchestrator", label: "Orch", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "actor", label: "Actor", positionX: CENTER_X, positionY: 68, radius: NODE_RADIUS.featured, role: "agent" },
+      { id: "critic", label: "Critic", positionX: CENTER_X, positionY: 118, radius: NODE_RADIUS.featured, role: "merge" },
+      { id: "result", label: "Pass", positionX: CENTER_X, positionY: 168, radius: NODE_RADIUS.standard, role: "result" },
     ],
     edges: [
       { sourceId: "orchestrator", targetId: "actor" },
@@ -262,16 +284,16 @@ function buildCriticLoopTopology(): TopologyDefinition {
 
 function buildDivideAndConquerTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 214,
     nodes: [
-      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "planner", label: "Plan", positionX: 140, positionY: 60, radius: 14, fillColor: "oklch(0.58 0.15 200)" },
-      { id: "task-a", label: "T₁", positionX: 60, positionY: 108, radius: 13, fillColor: AGENT_COLOR },
-      { id: "task-b", label: "T₂", positionX: 140, positionY: 108, radius: 13, fillColor: AGENT_COLOR },
-      { id: "task-c", label: "T₃", positionX: 220, positionY: 108, radius: 13, fillColor: AGENT_COLOR },
-      { id: "synth", label: "Synth", positionX: 140, positionY: 154, radius: 15, fillColor: MERGE_COLOR },
-      { id: "result", label: "Result", positionX: 140, positionY: 192, radius: 14, fillColor: RESULT_COLOR },
+      { id: "orchestrator", label: "Orch", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "planner", label: "Plan", positionX: CENTER_X, positionY: 60, radius: NODE_RADIUS.standard, role: "action" },
+      { id: "task-a", label: "T₁", positionX: 60, positionY: 108, radius: NODE_RADIUS.compact, role: "agent" },
+      { id: "task-b", label: "T₂", positionX: CENTER_X, positionY: 108, radius: NODE_RADIUS.compact, role: "agent" },
+      { id: "task-c", label: "T₃", positionX: 220, positionY: 108, radius: NODE_RADIUS.compact, role: "agent" },
+      { id: "synth", label: "Synth", positionX: CENTER_X, positionY: 154, radius: NODE_RADIUS.featured, role: "merge" },
+      { id: "result", label: "Result", positionX: CENTER_X, positionY: 192, radius: NODE_RADIUS.standard, role: "result" },
     ],
     edges: [
       { sourceId: "orchestrator", targetId: "planner" },
@@ -288,18 +310,18 @@ function buildDivideAndConquerTopology(): TopologyDefinition {
 
 function buildMCTSTopology(): TopologyDefinition {
   return {
-    viewBoxWidth: 280,
+    viewBoxWidth: VIEW_BOX_WIDTH,
     viewBoxHeight: 234,
     nodes: [
-      { id: "orchestrator", label: "Orch", positionX: 140, positionY: 20, radius: 16, fillColor: ORCHESTRATOR_COLOR },
-      { id: "branch-a1", label: "B₁", positionX: 60, positionY: 62, radius: 12, fillColor: AGENT_COLOR },
-      { id: "branch-b1", label: "B₂", positionX: 140, positionY: 62, radius: 12, fillColor: AGENT_COLOR },
-      { id: "branch-c1", label: "B₃", positionX: 220, positionY: 62, radius: 12, fillColor: AGENT_COLOR },
-      { id: "eval-1", label: "Eval", positionX: 140, positionY: 102, radius: 13, fillColor: MERGE_COLOR },
-      { id: "best-1", label: "Best", positionX: 140, positionY: 138, radius: 12, fillColor: RESULT_COLOR },
-      { id: "branch-a2", label: "B₁'", positionX: 80, positionY: 172, radius: 11, fillColor: AGENT_COLOR },
-      { id: "branch-b2", label: "B₂'", positionX: 200, positionY: 172, radius: 11, fillColor: AGENT_COLOR },
-      { id: "eval-2", label: "Eval", positionX: 140, positionY: 204, radius: 13, fillColor: MERGE_COLOR },
+      { id: "orchestrator", label: "Orch", positionX: CENTER_X, positionY: 20, radius: NODE_RADIUS.hub, role: "orchestrator" },
+      { id: "branch-a1", label: "B₁", positionX: 60, positionY: 62, radius: NODE_RADIUS.small, role: "agent" },
+      { id: "branch-b1", label: "B₂", positionX: CENTER_X, positionY: 62, radius: NODE_RADIUS.small, role: "agent" },
+      { id: "branch-c1", label: "B₃", positionX: 220, positionY: 62, radius: NODE_RADIUS.small, role: "agent" },
+      { id: "eval-1", label: "Eval", positionX: CENTER_X, positionY: 102, radius: NODE_RADIUS.compact, role: "merge" },
+      { id: "best-1", label: "Best", positionX: CENTER_X, positionY: 138, radius: NODE_RADIUS.small, role: "result" },
+      { id: "branch-a2", label: "B₁'", positionX: 80, positionY: 172, radius: NODE_RADIUS.nested, role: "agent" },
+      { id: "branch-b2", label: "B₂'", positionX: 200, positionY: 172, radius: NODE_RADIUS.nested, role: "agent" },
+      { id: "eval-2", label: "Eval", positionX: CENTER_X, positionY: 204, radius: NODE_RADIUS.compact, role: "merge" },
     ],
     edges: [
       { sourceId: "orchestrator", targetId: "branch-a1" },
@@ -371,15 +393,15 @@ export default function TopologyGraphComponent({ topologyId }: TopologyGraphComp
         <defs>
           <marker
             id={`topology-arrowhead-${topologyId}`}
-            markerWidth="6"
-            markerHeight="5"
-            refX="5"
-            refY="2.5"
+            markerWidth={ARROWHEAD_WIDTH}
+            markerHeight={ARROWHEAD_HEIGHT}
+            refX={ARROWHEAD_WIDTH - 1}
+            refY={ARROWHEAD_HEIGHT / 2}
             orient="auto"
           >
             <polygon
-              points="0 0, 6 2.5, 0 5"
-              fill="oklch(0.7 0 0 / 0.6)"
+              points={`0 0, ${ARROWHEAD_WIDTH} ${ARROWHEAD_HEIGHT / 2}, 0 ${ARROWHEAD_HEIGHT}`}
+              className={styles["topology-arrowhead"]}
             />
           </marker>
         </defs>
@@ -396,8 +418,6 @@ export default function TopologyGraphComponent({ topologyId }: TopologyGraphComp
             <g key={edgeKey}>
               <path
                 d={edgePath}
-                stroke="oklch(0.7 0 0 / 0.25)"
-                strokeWidth={1.5}
                 fill="none"
                 className={styles["topology-edge-line"]}
                 markerEnd={`url(#topology-arrowhead-${topologyId})`}
@@ -405,8 +425,6 @@ export default function TopologyGraphComponent({ topologyId }: TopologyGraphComp
               {edge.isBidirectional && (
                 <path
                   d={edgePath}
-                  stroke="oklch(0.7 0 0 / 0.15)"
-                  strokeWidth={1}
                   fill="none"
                   className={styles["topology-edge-flow-line"]}
                 />
@@ -424,16 +442,14 @@ export default function TopologyGraphComponent({ topologyId }: TopologyGraphComp
               cx={node.positionX}
               cy={node.positionY}
               r={node.radius}
-              fill={node.fillColor}
-              opacity={0.9}
+              className={`${styles["topology-node-fill"]} ${styles[`topology-node--${node.role}`]}`}
             />
             <circle
               cx={node.positionX}
               cy={node.positionY}
               r={node.radius}
               fill="none"
-              stroke="oklch(1 0 0 / 0.12)"
-              strokeWidth={1}
+              className={styles["topology-node-ring"]}
             />
             <text
               x={node.positionX}

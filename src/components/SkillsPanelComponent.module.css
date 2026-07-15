@@ -26,88 +26,70 @@
   composes: empty-subtitle from "./PanelShared.module.css";
 }
 
-/* ── Skill Card ─────────────────────────────────────────────── */
+/* ── Skill Row (shared sidebar-row language) ────────────────── */
 
-.skill-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: 8px;
-  transition: all 0.2s ease;
+.list {
+  composes: list from "./PanelShared.module.css";
+}
+
+.skill-row {
+  composes: row from "./PanelShared.module.css";
 
   &:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--color-purple) 30%,
-      var(--calculated-border-color)
-    );
-    box-shadow: 0 2px 8px
-      color-mix(in oklch, var(--color-purple) 8%, transparent);
+    background: var(--sidebar-row-hover-bg);
   }
 }
 
-.skill-card-disabled {
-  opacity: 0.5;
+.skill-row-disabled {
+  composes: row-disabled from "./PanelShared.module.css";
 }
 
-.skill-card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.skill-leading-icon {
+  composes: row-leading-icon from "./PanelShared.module.css";
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
 }
 
-.skill-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: color-mix(in oklch, var(--color-purple) 12%, transparent);
-  color: var(--color-purple);
-  flex-shrink: 0;
+.skill-body {
+  composes: row-content from "./PanelShared.module.css";
 }
 
-.skill-info {
-  flex: 1;
-  min-width: 0;
+.skill-title-line {
+  composes: row-title-line from "./PanelShared.module.css";
 }
 
 .skill-name {
-  font-size: var(--font-size-sm);
+  composes: row-title-text from "./PanelShared.module.css";
+  flex: 1;
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .skill-description {
-  font-size: var(--font-size-xs);
+  composes: row-subtitle from "./PanelShared.module.css";
+}
+
+.skill-meta {
+  font-size: 0.625rem;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
+}
+
+.skill-char-count-warn {
+  color: var(--color-warning);
 }
 
 .skill-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
+  composes: row-actions from "./PanelShared.module.css";
 }
 
 .skill-action-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
   background: transparent;
   color: var(--text-muted);
   border: none;
@@ -123,29 +105,6 @@
 .skill-delete-button:hover {
   color: var(--color-rose) !important;
   background: color-mix(in oklch, var(--color-rose) 12%, transparent) !important;
-}
-
-.skill-content-preview {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  line-height: 1.5;
-  white-space: pre-wrap;
-  padding: 8px;
-  background: color-mix(in oklch, var(--background-elevated) 60%, transparent);
-  border-radius: 6px;
-  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
-  border: 1px solid
-    color-mix(in oklch, var(--calculated-border-color) 50%, transparent);
-}
-
-.skill-char-count {
-  font-size: 0.625rem;
-  color: var(--text-muted);
-  text-align: right;
-}
-
-.skill-char-count-warn {
-  color: var(--color-warning);
 }
 
 /* ── Confirm Delete ─────────────────────────────────────────── */

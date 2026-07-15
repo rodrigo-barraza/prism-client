@@ -347,71 +347,81 @@ export default function HistoryItemComponent({
         </button>
       )}
       <div className={styles['content']}>
-        {/* Row 1: time + tags (left) · agentBadge + cost (right) */}
-        <div className={styles['top-layout-row']}>
-          <div className={styles['top-left']}>
-            <BadgeComponent type="dateTime" date={itemDate} />
-            {admin &&
-              item.username &&
-              item.username !== "unknown" &&
-              item.username !== DEFAULT_USERNAME && (
-                <span className={styles['username-tag']}>{item.username}</span>
-              )}
-            {item.tags?.map((tag: HistoryItemTag) => (
-              <span key={tag.label} className={styles['tag']} style={tag.style}>
-                {tag.label}
-              </span>
-            ))}
+        {/* Line 1: title (left, with status dot + NEW) · cost (right) */}
+        <div className={styles['title-layout-row']}>
+          <div className={styles['title']}>
+            {(conversationIsActive !== false || isGenerating) && (
+              <span
+                className={`${styles['generating-dot']} ${isGenerating ? styles['generating-dot-is-animating'] : styles['generating-dot-is-idle']}`}
+                style={{ "--generating-dot-phase-color": resolvedDotColor } as React.CSSProperties}
+              />
+            )}
+            <span className={styles['title-text']}>{item.title || "Untitled"}</span>
+            {isNew && <span className={styles['new-badge']}>NEW</span>}
           </div>
-          <div className={styles['top-right']}>
-            {item.agent &&
-              (() => {
-                const agentId =
-                  typeof item.agent === "string"
-                    ? item.agent
-                    : item.agent.id || "";
-                if (!agentId || agentId === AGENT_IDS.NONE) return null;
-
-                const resolvedAgent =
-                  typeof item.agent === "string"
-                    ? { id: item.agent, name: item.agent }
-                    : item.agent;
-
-                return (
-                  <span
-                    className={styles['agent-badge']}
-                    data-agent-identifier={agentId}
-                  >
-                    <BadgeComponent
-                      type="agent"
-                      agent={resolvedAgent}
-                      size={14}
-                      iconSize={9}
-                    />
-                    <span className={styles['agent-badge-name']}>
-                      {getAgentDisplayName(item.agent)}
-                    </span>
-                  </span>
-                );
-              })()}
-          </div>
-        </div>
-
-        {/* Row 2: title */}
-        <div className={styles['title']}>
-          {(conversationIsActive !== false || isGenerating) && (
-            <span
-              className={`${styles['generating-dot']} ${isGenerating ? styles['generating-dot-is-animating'] : styles['generating-dot-is-idle']}`}
-              style={{ "--generating-dot-phase-color": resolvedDotColor } as React.CSSProperties}
+          {item.totalCost !== undefined && item.totalCost > 0 && (
+            <BadgeComponent
+              type="cost"
+              cost={item.totalCost ?? 0}
+              showIcon={false}
+              className={styles['cost-badge']}
             />
           )}
-          {item.title || "Untitled"}
-          {isNew && <span className={styles['new-badge']}>NEW</span>}
         </div>
 
-        {/* Row 3: model badge & cost badge (when condensed) */}
-        {(hasModel || (isCondensed && item.totalCost !== undefined && item.totalCost > 0)) && (
-          <div className={styles['model-badge-and-cost-container']}>
+        {/* Line 2: identity — time · agent · tags/username */}
+        <div className={styles['identity-layout-row']}>
+          <BadgeComponent type="dateTime" date={itemDate} />
+          {admin &&
+            item.username &&
+            item.username !== "unknown" &&
+            item.username !== DEFAULT_USERNAME && (
+              <span className={styles['username-tag']}>{item.username}</span>
+            )}
+          {item.agent &&
+            (() => {
+              const agentId =
+                typeof item.agent === "string"
+                  ? item.agent
+                  : item.agent.id || "";
+              if (!agentId || agentId === AGENT_IDS.NONE) return null;
+
+              const resolvedAgent =
+                typeof item.agent === "string"
+                  ? { id: item.agent, name: item.agent }
+                  : item.agent;
+
+              return (
+                <span
+                  className={styles['agent-badge']}
+                  data-agent-identifier={agentId}
+                >
+                  <BadgeComponent
+                    type="agent"
+                    agent={resolvedAgent}
+                    size={14}
+                    iconSize={9}
+                  />
+                  <span className={styles['agent-badge-name']}>
+                    {getAgentDisplayName(item.agent)}
+                  </span>
+                </span>
+              );
+            })()}
+          {item.tags?.map((tag: HistoryItemTag) => (
+            <span key={tag.label} className={styles['tag']} style={tag.style}>
+              {tag.label}
+            </span>
+          ))}
+        </div>
+
+        {/* Line 3: signals — model · modalities · tools · sub-agent markers */}
+        {(hasModel ||
+          item.parentConversationId ||
+          item.hasSubAgents ||
+          hasSpawnedSubAgents ||
+          (!isCondensed && (hasInputOutputModalities || hasActiveTools))) && (
+          <div className={styles['signals-layout-row']}>
             {hasModel && (
               <BadgeComponent
                 type="model"
@@ -425,78 +435,51 @@ export default function HistoryItemComponent({
                 noHover
               />
             )}
-            {isCondensed && item.totalCost !== undefined && item.totalCost > 0 && (
-              <BadgeComponent
-                type="cost"
-                cost={item.totalCost ?? 0}
-                showIcon={false}
-                className={styles['cost-badge-right-aligned']}
-              />
+            {!isCondensed && hasInputOutputModalities && (
+              <ModalityIconComponent modalities={modalities} />
             )}
-          </div>
-        )}
-
-        {/* Row 3b: sub-agent indicator emojis + collapse toggle */}
-        {(item.parentConversationId || item.hasSubAgents || hasSpawnedSubAgents) && (
-          <div className={styles['sub-agent-indicators-row']}>
-            {(item.hasSubAgents || hasSpawnedSubAgents) && (
-              <button
-                className={`${styles['sub-agent-collapse-toggle']} ${hasSpawnedSubAgents && isSubAgentsCollapsed ? styles['sub-agent-collapse-toggle-is-collapsed'] : ''}`}
-                onClick={hasSpawnedSubAgents && onToggleSubAgents ? (event: React.MouseEvent) => {
-                  event.stopPropagation();
-                  onToggleSubAgents();
-                } : undefined}
-                title={hasSpawnedSubAgents && onToggleSubAgents
-                  ? (isSubAgentsCollapsed ? 'Show sub-agents' : 'Hide sub-agents')
-                  : 'Parent Agent (spawned sub-agents)'}
-                aria-expanded={hasSpawnedSubAgents ? !isSubAgentsCollapsed : undefined}
-                aria-label={hasSpawnedSubAgents
-                  ? (isSubAgentsCollapsed ? 'Expand sub-agent tree' : 'Collapse sub-agent tree')
-                  : 'Parent agent'}
-                style={!hasSpawnedSubAgents || !onToggleSubAgents ? { cursor: 'default' } : undefined}
-              >
-                <span className={styles['parent-agent-emoji']}>
-                  {hasSpawnedSubAgents && isSubAgentsCollapsed ? '📁' : '📂'}
-                </span>
-              </button>
+            {!isCondensed && hasActiveTools && (
+              <ModelToolsRow tools={modalities} variant="condensed" />
             )}
-            {item.parentConversationId && (
-              <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
-                {resolveSubAgentEmoji(subAgentDepth ?? 1)}{subAgentNumber != null && (
-                  <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
+            {(item.parentConversationId || item.hasSubAgents || hasSpawnedSubAgents) && (
+              <span className={styles['sub-agent-indicators']}>
+                {(item.hasSubAgents || hasSpawnedSubAgents) && (
+                  <button
+                    className={`${styles['sub-agent-collapse-toggle']} ${hasSpawnedSubAgents && isSubAgentsCollapsed ? styles['sub-agent-collapse-toggle-is-collapsed'] : ''}`}
+                    onClick={hasSpawnedSubAgents && onToggleSubAgents ? (event: React.MouseEvent) => {
+                      event.stopPropagation();
+                      onToggleSubAgents();
+                    } : undefined}
+                    title={hasSpawnedSubAgents && onToggleSubAgents
+                      ? (isSubAgentsCollapsed ? 'Show sub-agents' : 'Hide sub-agents')
+                      : 'Parent Agent (spawned sub-agents)'}
+                    aria-expanded={hasSpawnedSubAgents ? !isSubAgentsCollapsed : undefined}
+                    aria-label={hasSpawnedSubAgents
+                      ? (isSubAgentsCollapsed ? 'Expand sub-agent tree' : 'Collapse sub-agent tree')
+                      : 'Parent agent'}
+                    style={!hasSpawnedSubAgents || !onToggleSubAgents ? { cursor: 'default' } : undefined}
+                  >
+                    <span className={styles['parent-agent-emoji']}>
+                      {hasSpawnedSubAgents && isSubAgentsCollapsed ? '📁' : '📂'}
+                    </span>
+                  </button>
                 )}
-              </span>
-            )}
-            {item.parentConversationId && subAgentDepth != null && subAgentDepth > 0 && (
-              <span className={styles['sub-agent-depth-emoji']} title={`Nesting Depth: ${subAgentDepth}`}>
-                🪜<span className={styles['sub-agent-depth-number']}>{subAgentDepth}</span>
+                {item.parentConversationId && (
+                  <span className={styles['sub-agent-hat-emoji']} title="Sub-Agent">
+                    {resolveSubAgentEmoji(subAgentDepth ?? 1)}{subAgentNumber != null && (
+                      <span className={styles['sub-agent-number']}>{subAgentNumber}</span>
+                    )}
+                  </span>
+                )}
+                {item.parentConversationId && subAgentDepth != null && subAgentDepth > 0 && (
+                  <span className={styles['sub-agent-depth-emoji']} title={`Nesting Depth: ${subAgentDepth}`}>
+                    🪜<span className={styles['sub-agent-depth-number']}>{subAgentDepth}</span>
+                  </span>
+                )}
               </span>
             )}
           </div>
         )}
-
-        {/* Row 4: tool badge row */}
-        {!isCondensed && hasActiveTools && (
-          <ModelToolsRow tools={modalities} variant="condensed" />
-        )}
-
-        {/* Row 5: very bottom row - modalities (left) & cost badge (right) */}
-        {!isCondensed &&
-          (hasInputOutputModalities ||
-            (item.totalCost !== undefined && item.totalCost > 0)) && (
-            <div className={styles['bottom-layout-row']}>
-              <div className={styles['bottom-left']}>
-                {hasInputOutputModalities && (
-                  <ModalityIconComponent modalities={modalities} />
-                )}
-              </div>
-              <BadgeComponent
-                type="cost"
-                cost={item.totalCost ?? 0}
-                showIcon={false}
-              />
-            </div>
-          )}
 
         {children}
       </div>

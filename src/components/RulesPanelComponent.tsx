@@ -348,84 +348,85 @@ export default function RulesPanel({
         </div>
       )}
 
-      {filteredRules.map((rule: Rule) => {
-        const ruleId = rule.id || rule._id?.toString() || "";
-        const isConfirming = confirmingDeleteId === ruleId;
+      {filteredRules.length > 0 && (
+        <div className={styles["list"]}>
+          {filteredRules.map((rule: Rule) => {
+            const ruleId = rule.id || rule._id?.toString() || "";
+            const isConfirming = confirmingDeleteId === ruleId;
 
-        return (
-          <div
-            key={ruleId}
-            className={`${styles["rule-card"]} ${!rule.enabled ? styles["rule-card-disabled"] : ""}`}
-          >
-            <div className={styles["rule-card-header"]}>
-              <div className={styles["rule-icon"]}>
-                <ScrollText size={14} />
-              </div>
-              <div className={styles["rule-info"]}>
-                <div className={styles["rule-name"]}>{rule.name}</div>
-                <div className={styles["rule-slash-command"]}>/{rule.name}</div>
-                {rule.description && (
-                  <div className={styles["rule-description"]}>
-                    {rule.description}
-                  </div>
-                )}
-              </div>
-              {!readOnly && (
-                <div className={styles["rule-actions"]}>
-                  <button
-                    className={styles["rule-action-button"]}
-                    onClick={() => handleEdit(rule)}
-                    title="Edit rule"
-                  >
-                    <Edit3 size={13} />
-                  </button>
-                  <button
-                    className={`${styles["rule-action-button"]} ${styles["rule-delete-button"]}`}
-                    onClick={() => handleDelete(ruleId)}
-                    title="Delete rule"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {rule.content && (
-              <div className={styles["rule-content-preview"]}>
-                {rule.content}
-              </div>
-            )}
-
-            {rule.content && (
+            return (
               <div
-                className={`${styles["rule-character-count"]} ${rule.content.length > CONTENT_WARN_CHARS ? styles["rule-character-count-warning"] : ""}`}
+                key={ruleId}
+                className={`${styles["rule-row"]} ${!rule.enabled ? styles["rule-row-disabled"] : ""}`}
               >
-                {rule.content.length.toLocaleString()} chars
-              </div>
-            )}
+                <div className={styles["rule-leading-icon"]}>
+                  <ScrollText size={13} />
+                </div>
+                <div className={styles["rule-body"]}>
+                  <div className={styles["rule-title-line"]}>
+                    <span className={styles["rule-name"]}>{rule.name}</span>
+                    {!readOnly && (
+                      <div className={styles["rule-actions"]}>
+                        <button
+                          className={styles["rule-action-button"]}
+                          onClick={() => handleEdit(rule)}
+                          title="Edit rule"
+                        >
+                          <Edit3 size={12} />
+                        </button>
+                        <button
+                          className={`${styles["rule-action-button"]} ${styles["rule-delete-button"]}`}
+                          onClick={() => handleDelete(ruleId)}
+                          title="Delete rule"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
-            {isConfirming && (
-              <div className={styles["confirm-layout-row"]}>
-                <span className={styles["confirm-label"]}>
-                  Delete &ldquo;{rule.name}&rdquo;?
-                </span>
-                <button
-                  className={`${styles["confirm-button"]} ${styles["confirm-button-yes"]}`}
-                  onClick={() => confirmDelete(ruleId)}
-                >
-                  Delete
-                </button>
-                <button
-                  className={`${styles["confirm-button"]} ${styles["confirm-button-no"]}`}
-                  onClick={() => setConfirmingDeleteId(null)}
-                >
-                  Cancel
-                </button>
+                  {rule.description && (
+                    <div className={styles["rule-description"]}>
+                      {rule.description}
+                    </div>
+                  )}
+
+                  <div className={styles["rule-meta"]}>
+                    <span className={styles["rule-slash-command"]}>/{rule.name}</span>
+                    {rule.content && (
+                      <span
+                        className={`${styles["rule-character-count"]} ${rule.content.length > CONTENT_WARN_CHARS ? styles["rule-character-count-warning"] : ""}`}
+                      >
+                        {rule.content.length.toLocaleString()} chars
+                      </span>
+                    )}
+                  </div>
+
+                  {isConfirming && (
+                    <div className={styles["confirm-layout-row"]}>
+                      <span className={styles["confirm-label"]}>
+                        Delete &ldquo;{rule.name}&rdquo;?
+                      </span>
+                      <button
+                        className={`${styles["confirm-button"]} ${styles["confirm-button-yes"]}`}
+                        onClick={() => confirmDelete(ruleId)}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        className={`${styles["confirm-button"]} ${styles["confirm-button-no"]}`}
+                        onClick={() => setConfirmingDeleteId(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

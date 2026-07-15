@@ -142,10 +142,15 @@ export const LAYOUT = {
 
 export const TIMING = {
   DEBOUNCE_FAST: 150,
+  DEBOUNCE_SEARCH: 300,
   DEBOUNCE_STANDARD: 500,
   GRAPH_REBUILD_THROTTLE_MILLISECONDS: 400,
   POLL_SLOW: 10000,
   ANIMATION_DURATION: 600,
+  /** Per-item delay for staggered card entrance animations. */
+  ENTRANCE_STAGGER_MILLISECONDS: 60,
+  /** Cards beyond this index enter together (no additional stagger). */
+  ENTRANCE_STAGGER_MAX_INDEX: 8,
 } as const;
 
 // -- Execution & Lifecycle Statuses -------------------------------
@@ -194,6 +199,8 @@ export const TRUNCATION_LIMITS = {
 export const LOCAL_STORAGE_KEY_THEME = "prism:theme";
 export const LOCAL_STORAGE_KEY_AVATAR = "prism:avatar";
 export const LOCAL_STORAGE_KEY_CUSTOM_THEMES = "prism:custom-themes";
+export const LOCAL_STORAGE_KEY_MEDIA_VIEW_MODE_PREFIX = "media-page:view-mode:";
+export const LOCAL_STORAGE_KEY_PROMPTS_VIEW_MODE = "prompts-page:view-mode";
 
 
 // -- Chart / UI color palette -------------------------------------

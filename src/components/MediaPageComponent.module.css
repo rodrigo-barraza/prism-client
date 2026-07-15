@@ -28,80 +28,10 @@
 .project-tag {
   font-size: var(--font-size-xs);
   padding: 2px 6px;
-  border-radius: 2px;
+  border-radius: var(--border-radius-sm);
   background: var(--calculated-accent-primary-subtle);
   color: var(--accent-primary);
   font-weight: 500;
-}
-
-/* ── Header ────────────────────────────────────────────────── */
-
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  flex-shrink: 0;
-}
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  & .title-icon {
-    color: var(--accent-primary);
-    opacity: 0.8;
-  }
-}
-
-.subtitle {
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-  font-weight: 400;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-/* ── Stats Badges ──────────────────────────────────────────── */
-
-.stats-badges {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.stat-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: var(--background-elevated);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-
-  & .stat-value {
-    color: var(--text-primary);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
 }
 
 /* ── Grid View ── */
@@ -109,27 +39,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px;
-}
-
-/* List-view origin pill (table) */
-.origin-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 3px 8px;
-  border-radius: 3px;
-  font-size: 0.625rem;
-  font-weight: 600;
-}
-
-.origin-user {
-  background: oklch(58.5% 0.2041 277.1 / 0.15);
-  color: var(--accent-primary);
-}
-
-.origin-ai {
-  background: oklch(62.7% 0.2326 303.9 / 0.15);
-  color: var(--color-purple);
 }
 
 .conversation-link {
@@ -153,9 +62,9 @@
 }
 
 .model-tag {
-  font-size: 0.625rem;
+  font-size: var(--font-size-xs);
   padding: 1px 5px;
-  border-radius: 2px;
+  border-radius: var(--border-radius-sm);
   background: var(--background-elevated);
   color: var(--text-muted);
   max-width: 120px;
@@ -189,7 +98,7 @@
 .list-thumb {
   width: 40px;
   height: 40px;
-  border-radius: 4px;
+  border-radius: var(--border-radius-sm);
   overflow: hidden;
   background: var(--background-elevated);
   display: flex;
@@ -216,7 +125,8 @@
   height: 100%;
   border: none;
   pointer-events: none;
-  background: oklch(1 0 0);
+  /* PDF pages are white documents regardless of theme. */
+  background: var(--color-white);
 }
 
 .list-thumb-audio {
@@ -234,11 +144,6 @@
   .container {
     padding: 20px 16px;
     gap: 16px;
-  }
-
-  .header {
-    flex-direction: column;
-    gap: 12px;
   }
 
   .media-grid {

@@ -29,6 +29,7 @@ import {
   type NavigationItem,
   type NavigationSection,
 } from "../utils/PageIconMap";
+import { hasAdminRole, isPrivateHost } from "../utils/adminAccess";
 import {
   useTheme,
   ThemePickerComponent,
@@ -112,7 +113,7 @@ export default function NavigationSidebarComponent({
   const [navReady, setNavReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isLocal, setIsLocal] = useState(false);
+  const [isPrivateNetworkHost, setIsPrivateNetworkHost] = useState(false);
   const [settingsWarningCount, setSettingsWarningCount] = useState<number>(0);
   const [cronJobNotificationsCount, setCronJobNotificationsCount] = useState(0);
   const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
@@ -217,7 +218,7 @@ export default function NavigationSidebarComponent({
   useEffect(() => {
     // Resolve on client only — prevents SSR hydration flash of admin link
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
-    setIsLocal(!window.location.hostname.endsWith(".com"));
+    setIsPrivateNetworkHost(isPrivateHost(window.location.host));
   }, []);
 
   useEffect(() => {
@@ -654,6 +655,10 @@ export default function NavigationSidebarComponent({
 
   const navSections = mode === "admin" ? ADMIN_NAV_SECTIONS : USER_NAV_SECTIONS;
   const isAdmin = mode === "admin";
+  // Admin Side entry: persisted admin role (stamped into the session at
+  // sign-in) or a private-network host, where auth is bypassed entirely.
+  const showAdminSide =
+    hasAdminRole(userSession?.user?.roles) || isPrivateNetworkHost;
 
   /* -- Mobile: render floating hamburger + compact popover menu -- */
   if (isMobile) {
@@ -868,7 +873,7 @@ export default function NavigationSidebarComponent({
                       </span>
                     </span>
                   </Link>
-                ) : isLocal ? (
+                ) : showAdminSide ? (
                   <Link
                     href="/admin"
                     className={styles['navigation-link']}
@@ -1131,7 +1136,7 @@ export default function NavigationSidebarComponent({
                 </span>
               </Link>
             </TooltipComponent>
-          ) : isLocal ? (
+          ) : showAdminSide ? (
             <TooltipComponent
               label="Admin Side"
               position="right"

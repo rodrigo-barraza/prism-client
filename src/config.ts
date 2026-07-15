@@ -128,3 +128,8 @@ export const AUTH_ALLOWED_EMAILS = (
   .map((allowedEmailEntry) => allowedEmailEntry.trim().toLowerCase())
   .filter(Boolean);
 
+// Shared secret for accounts-service internal endpoints (roles lookup at
+// sign-in). Server-only — deliberately no NEXT_PUBLIC_ fallback.
+export const ACCOUNTS_SERVICE_API_SECRET =
+  process.env.ACCOUNTS_SERVICE_API_SECRET || "";
+

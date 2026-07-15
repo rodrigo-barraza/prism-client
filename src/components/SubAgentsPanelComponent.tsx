@@ -42,12 +42,12 @@ const EXECUTION_STATUS_CLASSES: Record<string, string> = {
   [EXECUTION_STATUS.PENDING]: "status-pending",
 };
 
-const CARD_STATE_CLASSES: Record<string, string> = {
-  running: "sub-agent-card-running",
-  complete: "sub-agent-card-complete",
-  completed: "sub-agent-card-complete",
-  failed: "sub-agent-card-failed",
-  stopped: "sub-agent-card-stopped",
+const ROW_STATE_CLASSES: Record<string, string> = {
+  running: "row-running",
+  complete: "row-complete",
+  completed: "row-complete",
+  failed: "row-failed",
+  stopped: "row-stopped",
 };
 
 
@@ -195,151 +195,155 @@ export default function SubAgentsPanelComponent({
       {subAgentList.map((subAgentItem, subAgentIndex) => {
         const executionStatusLabel = EXECUTION_STATUS_LABELS[subAgentItem.status] || subAgentItem.status;
         const executionStatusClass = EXECUTION_STATUS_CLASSES[subAgentItem.status] || "status-pending";
-        const subAgentCardClass = CARD_STATE_CLASSES[subAgentItem.status] || "";
+        const subAgentRowClass = ROW_STATE_CLASSES[subAgentItem.status] || "";
         const isSubAgentRunning = subAgentItem.status === EXECUTION_STATUS.RUNNING;
         const isSubAgentComplete = subAgentItem.status === EXECUTION_STATUS.COMPLETE || subAgentItem.status === EXECUTION_STATUS.COMPLETED;
 
         // Sub-agents are text-in → text-out agents
         const subAgentModalities = { textIn: true, textOut: true };
 
+        const totalToolCallCount = (() => {
+          const subAgentAgentId = subAgentItem.agentId ?? subAgentItem.id;
+          const liveSubAgentActivity = subAgentToolActivity[subAgentAgentId];
+          return Math.max(
+            liveSubAgentActivity?.toolCount || 0,
+            subAgentItem.toolCallCount || 0,
+          );
+        })();
+        const hasDepth =
+          typeof subAgentItem.recursionDepth === "number" && subAgentItem.recursionDepth > 0;
+        const hasToolNames =
+          !!subAgentItem.toolNames && Object.keys(subAgentItem.toolNames).length > 0;
+
         return (
           <div
             key={subAgentItem.agentId}
-            className={`${styles['sub-agent-card']} ${subAgentCardClass ? styles[subAgentCardClass] : ""}`}
+            className={`${styles['row']} ${subAgentRowClass ? styles[subAgentRowClass] : ""}`}
           >
-            {/* -- Title row (HistoryItem-style) --------------- */}
-            <div className={styles['title-layout-row']}>
-              <span className={styles['agent-badge']}>
-                Agent {subAgentItem.globalSpawnIndex != null ? subAgentItem.globalSpawnIndex + 1 : subAgentIndex + 1}
-              </span>
-              {typeof subAgentItem.recursionDepth === "number" && subAgentItem.recursionDepth > 0 && (
-                <span className={styles['depth-badge']}>
-                  <Layers size={9} />
-                  Depth {subAgentItem.recursionDepth}
+            <div className={styles['content']}>
+              {/* Line 1: agent badge · description · status */}
+              <div className={styles['title-layout-row']}>
+                <span className={styles['agent-badge']}>
+                  Agent {subAgentItem.globalSpawnIndex != null ? subAgentItem.globalSpawnIndex + 1 : subAgentIndex + 1}
                 </span>
-              )}
-              <span className={`${styles['sub-agent-status']} ${styles[executionStatusClass]}`}>
-                {executionStatusLabel}
-              </span>
-            </div>
-
-            {/* Description */}
-            {subAgentItem.description && (
-              <div className={styles['sub-agent-description']}>
-                {subAgentItem.description}
+                <span className={styles['description']}>
+                  {subAgentItem.description || "Sub-agent"}
+                </span>
+                <span className={`${styles['sub-agent-status']} ${styles[executionStatusClass]}`}>
+                  {executionStatusLabel}
+                </span>
               </div>
-            )}
 
-            {/* -- Meta row (time, cost — HistoryItem-style) -- */}
-            <div className={styles['meta']}>
-              {(subAgentItem.durationMs ?? 0) > 0 && (
-                <span
-                  className={`${styles['meta-item']} ${isSubAgentRunning ? styles['duration-live'] : ""}`}
-                >
-                  <Clock size={10} />
-                  {formatDuration(subAgentItem.durationMs ?? 0)}
-                </span>
-              )}
-              <BadgeComponent
-                type="cost"
-                cost={subAgentItem.totalCost}
-                mini
-                showIcon={false}
-              />
-              {/* Live tool count from SSE (or fallback to API count) */}
-              {(() => {
-                const subAgentAgentId = subAgentItem.agentId ?? subAgentItem.id;
-                const liveSubAgentActivity = subAgentToolActivity[subAgentAgentId];
-                const totalToolCallCount = Math.max(
-                  liveSubAgentActivity?.toolCount || 0,
-                  subAgentItem.toolCallCount || 0,
-                );
-                return totalToolCallCount > 0 ? (
+              {/* Line 2: meta — duration · cost · tools · depth · branch */}
+              <div className={styles['meta']}>
+                {(subAgentItem.durationMs ?? 0) > 0 && (
+                  <span
+                    className={`${styles['meta-item']} ${isSubAgentRunning ? styles['duration-live'] : ""}`}
+                  >
+                    <Clock size={10} />
+                    {formatDuration(subAgentItem.durationMs ?? 0)}
+                  </span>
+                )}
+                <BadgeComponent
+                  type="cost"
+                  cost={subAgentItem.totalCost}
+                  mini
+                  showIcon={false}
+                />
+                {totalToolCallCount > 0 && (
                   <span className={styles['meta-item']}>
                     <Wrench size={10} />
                     {totalToolCallCount} tool{totalToolCallCount !== 1 ? "s" : ""}
                   </span>
-                ) : null;
-              })()}
-              {subAgentItem.branchName && (
-                <span className={styles['meta-item']}>
-                  <GitBranch size={10} />
-                  {subAgentItem.branchName}
-                </span>
-              )}
-            </div>
-
-            {/* -- Model badge ---------------------------------- */}
-            {subAgentItem.resolvedModel && (
-              <BadgeComponent
-                type="model"
-                models={[subAgentItem.resolvedModel.replace(/-\d{8}$/, "")]}
-                provider={subAgentItem.provider}
-                mini
-                className={styles['model-badge']}
-              />
-            )}
-
-            {/* -- Modality icons ------------------------------- */}
-            {isSubAgentComplete && (
-              <ModalityIconComponent modalities={subAgentModalities} size={10} />
-            )}
-
-            {/* -- Live tool activity (SSE-driven) -------------- */}
-            {isSubAgentRunning && (() => {
-              const subAgentAgentId = subAgentItem.agentId ?? subAgentItem.id;
-              const liveSubAgentActivity = subAgentToolActivity[subAgentAgentId];
-              if (!liveSubAgentActivity?.currentTool) return null;
-              return (
-                <div className={styles['live-activity']}>
-                  <span className={styles['live-dot']} />
-                  <Wrench size={9} />
-                  <span className={styles['live-tool-name']}>
-                    {renderToolName(liveSubAgentActivity.currentTool)}
+                )}
+                {hasDepth && (
+                  <span className={styles['depth-badge']}>
+                    <Layers size={9} />
+                    Depth {subAgentItem.recursionDepth}
                   </span>
-                  {(liveSubAgentActivity.iteration ?? 0) > 0 && (
-                    <span className={styles['live-iteration']}>
-                      iter {liveSubAgentActivity.iteration}
-                    </span>
+                )}
+                {subAgentItem.branchName && (
+                  <span className={styles['meta-item']}>
+                    <GitBranch size={10} />
+                    {subAgentItem.branchName}
+                  </span>
+                )}
+              </div>
+
+              {/* Line 3: signals — model · modalities */}
+              {(subAgentItem.resolvedModel || isSubAgentComplete) && (
+                <div className={styles['signals']}>
+                  {subAgentItem.resolvedModel && (
+                    <BadgeComponent
+                      type="model"
+                      models={[subAgentItem.resolvedModel.replace(/-\d{8}$/, "")]}
+                      provider={subAgentItem.provider}
+                      mini
+                      className={styles['model-badge']}
+                    />
+                  )}
+                  {isSubAgentComplete && (
+                    <ModalityIconComponent modalities={subAgentModalities} size={10} />
                   )}
                 </div>
-              );
-            })()}
+              )}
 
-            {/* -- Tool names breakdown ─────────────────────── */}
-            {subAgentItem.toolNames && Object.keys(subAgentItem.toolNames).length > 0 && (
-              <div className={styles['tool-names-row']}>
-                {Object.entries(subAgentItem.toolNames)
-                  .sort(([, countA], [, countB]) => countB - countA)
-                  .map(([toolName, toolCallFrequency]) => (
-                    <span key={toolName} className={styles['tool-name-pill']}>
-                      {renderToolName(toolName)}
-                      {toolCallFrequency > 1 && (
-                        <span className={styles['tool-name-count']}>×{toolCallFrequency}</span>
-                      )}
+              {/* Live tool activity (SSE-driven) */}
+              {isSubAgentRunning && (() => {
+                const subAgentAgentId = subAgentItem.agentId ?? subAgentItem.id;
+                const liveSubAgentActivity = subAgentToolActivity[subAgentAgentId];
+                if (!liveSubAgentActivity?.currentTool) return null;
+                return (
+                  <div className={styles['live-activity']}>
+                    <span className={styles['live-dot']} />
+                    <Wrench size={9} />
+                    <span className={styles['live-tool-name']}>
+                      {renderToolName(liveSubAgentActivity.currentTool)}
+                    </span>
+                    {(liveSubAgentActivity.iteration ?? 0) > 0 && (
+                      <span className={styles['live-iteration']}>
+                        iter {liveSubAgentActivity.iteration}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Tool names breakdown */}
+              {hasToolNames && (
+                <div className={styles['tool-names-row']}>
+                  {Object.entries(subAgentItem.toolNames!)
+                    .sort(([, countA], [, countB]) => countB - countA)
+                    .map(([toolName, toolCallFrequency]) => (
+                      <span key={toolName} className={styles['tool-name-pill']}>
+                        {renderToolName(toolName)}
+                        {toolCallFrequency > 1 && (
+                          <span className={styles['tool-name-count']}>×{toolCallFrequency}</span>
+                        )}
+                      </span>
+                    ))}
+                </div>
+              )}
+
+              {/* Files */}
+              {(subAgentItem.files?.length ?? 0) > 0 && (
+                <div className={styles['sub-agent-files']}>
+                  {subAgentItem.files!.map((filePath: string, fileIndex: number) => (
+                    <span key={fileIndex} className={styles['sub-agent-file']} title={filePath}>
+                      <FileCode
+                        size={9}
+                        style={{
+                          display: "inline",
+                          verticalAlign: "middle",
+                          marginRight: 2,
+                        }}
+                      />
+                      {filePath.split("/").pop()}
                     </span>
                   ))}
-              </div>
-            )}
-
-            {/* Files */}
-            {(subAgentItem.files?.length ?? 0) > 0 && (
-              <div className={styles['sub-agent-files']}>
-                {subAgentItem.files!.map((filePath: string, fileIndex: number) => (
-                  <span key={fileIndex} className={styles['sub-agent-file']} title={filePath}>
-                    <FileCode
-                      size={9}
-                      style={{
-                        display: "inline",
-                        verticalAlign: "middle",
-                        marginRight: 2,
-                      }}
-                    />
-                    {filePath.split("/").pop()}
-                  </span>
-                ))}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         );
       })}

@@ -17,17 +17,23 @@ import {
 import PrismService from "../services/PrismService";
 import {
   ButtonComponent,
-  CloseButtonComponent,
+  EmptyStateComponent,
   IconButtonComponent,
+  InputComponent,
+  ModalComponent,
+  PageHeroComponent,
   PaginationComponent,
   SearchInputComponent,
   SegmentedControlComponent,
   TableComponent,
+  TextAreaComponent,
 } from "@rodrigo-barraza/components-library";
+import { FEEDBACK_STANDARD_MILLISECONDS } from "@rodrigo-barraza/utilities-library";
 
 import { LoadingMessage } from "./StateMessageComponent";
 import { usePersistedState } from "../hooks/usePersistedState";
 import MarkdownContent from "./MarkdownContentComponent";
+import { LOCAL_STORAGE_KEY_PROMPTS_VIEW_MODE } from "../constants";
 import styles from "./PromptsPageComponent.module.css";
 
 import type { Prompt } from "../types/types";
@@ -37,6 +43,17 @@ type PromptDocument = Prompt;
 const PAGE_SIZE = 30;
 
 const ESTIMATED_TOKENS_PER_WORD = 1.33;
+
+const VIEW_MODES = {
+  CARD: "card",
+  LIST: "list",
+  TABLE: "table",
+} as const;
+
+const TABLE_STORAGE_KEY = "prompts-table";
+const ACTION_ICON_SIZE = 13;
+const SEGMENT_ICON_SIZE = 14;
+const COLOR_CHECK_ICON_SIZE = 12;
 
 const COLOR_OPTIONS = [
   { name: "Muted", value: "oklch(0.53 0.03 240)" },
@@ -78,7 +95,7 @@ export default function PromptsPageComponent() {
   const [formColor, setFormColor] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const [viewMode, setViewMode] = usePersistedState("prompts-page:view-mode", "card");
+  const [viewMode, setViewMode] = usePersistedState(LOCAL_STORAGE_KEY_PROMPTS_VIEW_MODE, VIEW_MODES.CARD as string);
 
   const [modalPrompt, setModalPrompt] = useState<PromptDocument | null>(null);
   const [modalEditMode, setModalEditMode] = useState(false);
@@ -156,7 +173,7 @@ export default function PromptsPageComponent() {
     try {
       await navigator.clipboard.writeText(prompt.content);
       setCopiedPromptId(prompt.id);
-      setTimeout(() => setCopiedPromptId(null), 2000);
+      setTimeout(() => setCopiedPromptId(null), FEEDBACK_STANDARD_MILLISECONDS);
     } catch {
       /* clipboard API may fail in non-secure contexts */
     }
@@ -272,7 +289,7 @@ export default function PromptsPageComponent() {
             onClick={(event) => event.stopPropagation()}
           >
             <IconButtonComponent
-              icon={isCopied ? <Check size={13} /> : <Copy size={13} />}
+              icon={isCopied ? <Check size={ACTION_ICON_SIZE} /> : <Copy size={ACTION_ICON_SIZE} />}
               onClick={() => handleCopyToClipboard(row)}
               tooltip={isCopied ? "Copied!" : "Copy to clipboard"}
               active={isCopied}
@@ -329,7 +346,7 @@ export default function PromptsPageComponent() {
                 onClick={() => setFormColor(option.value)}
                 title={option.name}
               >
-                {formColor === option.value && <Check size={12} />}
+                {formColor === option.value && <Check size={COLOR_CHECK_ICON_SIZE} />}
               </button>
             ))}
             {formColor && (
@@ -371,10 +388,7 @@ export default function PromptsPageComponent() {
       <div
         key={prompt.id}
         className={styles["prompt-card"]}
-        style={{
-          borderLeft: prompt.color ? `4px solid ${prompt.color}` : undefined,
-          "--prompt-color": prompt.color || undefined,
-        } as React.CSSProperties}
+        style={{ "--prompt-color": prompt.color || undefined } as React.CSSProperties}
         onClick={() => openPromptModal(prompt)}
         role="button"
         tabIndex={0}
@@ -417,18 +431,18 @@ export default function PromptsPageComponent() {
             onClick={(event) => event.stopPropagation()}
           >
             <IconButtonComponent
-              icon={isCopied ? <Check size={13} /> : <Copy size={13} />}
+              icon={isCopied ? <Check size={ACTION_ICON_SIZE} /> : <Copy size={ACTION_ICON_SIZE} />}
               onClick={() => handleCopyToClipboard(prompt)}
               tooltip={isCopied ? "Copied!" : "Copy to clipboard"}
               active={isCopied}
             />
             <IconButtonComponent
-              icon={<Pencil size={13} />}
+              icon={<Pencil size={ACTION_ICON_SIZE} />}
               onClick={() => openPromptModal(prompt, true)}
               tooltip="Edit prompt"
             />
             <IconButtonComponent
-              icon={<Trash2 size={13} />}
+              icon={<Trash2 size={ACTION_ICON_SIZE} />}
               onClick={() => setDeletingPromptId(prompt.id)}
               tooltip="Delete prompt"
               variant="destructive"
@@ -474,9 +488,7 @@ export default function PromptsPageComponent() {
       <div
         key={prompt.id}
         className={styles["list-item"]}
-        style={{
-          borderLeft: prompt.color ? `4px solid ${prompt.color}` : undefined,
-        } as React.CSSProperties}
+        style={{ "--prompt-color": prompt.color || undefined } as React.CSSProperties}
         onClick={() => openPromptModal(prompt)}
         role="button"
         tabIndex={0}
@@ -510,18 +522,18 @@ export default function PromptsPageComponent() {
           onClick={(event) => event.stopPropagation()}
         >
           <IconButtonComponent
-            icon={isCopied ? <Check size={13} /> : <Copy size={13} />}
+            icon={isCopied ? <Check size={ACTION_ICON_SIZE} /> : <Copy size={ACTION_ICON_SIZE} />}
             onClick={() => handleCopyToClipboard(prompt)}
             tooltip={isCopied ? "Copied!" : "Copy to clipboard"}
             active={isCopied}
           />
           <IconButtonComponent
-            icon={<Pencil size={13} />}
+            icon={<Pencil size={ACTION_ICON_SIZE} />}
             onClick={() => openPromptModal(prompt, true)}
             tooltip="Edit prompt"
           />
           <IconButtonComponent
-            icon={<Trash2 size={13} />}
+            icon={<Trash2 size={ACTION_ICON_SIZE} />}
             onClick={() => setDeletingPromptId(prompt.id)}
             tooltip="Delete prompt"
             variant="destructive"
@@ -581,9 +593,9 @@ export default function PromptsPageComponent() {
             onChange={setViewMode}
             compact
             segments={[
-              { value: "card", icon: <LayoutGrid size={14} />, label: "Cards" },
-              { value: "list", icon: <List size={14} />, label: "List" },
-              { value: "table", icon: <Table size={14} />, label: "Table" },
+              { value: VIEW_MODES.CARD, icon: <LayoutGrid size={SEGMENT_ICON_SIZE} />, label: "Cards" },
+              { value: VIEW_MODES.LIST, icon: <List size={SEGMENT_ICON_SIZE} />, label: "List" },
+              { value: VIEW_MODES.TABLE, icon: <Table size={SEGMENT_ICON_SIZE} />, label: "Table" },
             ]}
           />
         </div>
@@ -594,21 +606,21 @@ export default function PromptsPageComponent() {
         {isLoading && <LoadingMessage message="Loading prompts..." />}
 
         {/* Card View */}
-        {!isLoading && viewMode === "card" && (
+        {!isLoading && viewMode === VIEW_MODES.CARD && (
           <div className={styles["prompt-list"]}>
             {prompts.map((prompt) => renderPromptCard(prompt))}
           </div>
         )}
 
         {/* List View */}
-        {!isLoading && viewMode === "list" && (
+        {!isLoading && viewMode === VIEW_MODES.LIST && (
           <div className={styles["prompt-list-view"]}>
             {prompts.map((prompt) => renderListItem(prompt))}
           </div>
         )}
 
         {/* Table View */}
-        {!isLoading && viewMode === "table" && (
+        {!isLoading && viewMode === VIEW_MODES.TABLE && (
           <div className={styles["table-wrapper"]}>
             <TableComponent
               columns={tableColumns}
@@ -616,7 +628,7 @@ export default function PromptsPageComponent() {
               getRowKey={(row: PromptDocument) => row.id}
               emptyText="No prompts found."
               onRowClick={(row: PromptDocument) => openPromptModal(row)}
-              storageKey="prompts-table"
+              storageKey={TABLE_STORAGE_KEY}
             />
           </div>
         )}
@@ -778,7 +790,7 @@ export default function PromptsPageComponent() {
                         onClick={() => setModalColor(option.value)}
                         title={option.name}
                       >
-                        {modalColor === option.value && <Check size={12} />}
+                        {modalColor === option.value && <Check size={COLOR_CHECK_ICON_SIZE} />}
                       </button>
                     ))}
                     {modalColor && (

@@ -334,79 +334,80 @@ export default function SkillsPanel({
         </div>
       )}
 
-      {filteredSkills.map((skill: Skill) => {
-        const skillId = skill.id || skill._id?.toString() || "";
-        const isConfirming = confirmingDeleteId === skillId;
+      {filteredSkills.length > 0 && (
+        <div className={styles['list']}>
+          {filteredSkills.map((skill: Skill) => {
+            const skillId = skill.id || skill._id?.toString() || "";
+            const isConfirming = confirmingDeleteId === skillId;
 
-        return (
-          <div
-            key={skillId}
-            className={`${styles['skill-card']} ${!skill.enabled ? styles['skill-card-disabled'] : ""}`}
-          >
-            <div className={styles['skill-card-header']}>
-              <div className={styles['skill-icon']}>
-                <BookOpen size={14} />
-              </div>
-              <div className={styles['skill-info']}>
-                <div className={styles['skill-name']}>{skill.name}</div>
-                {skill.description && (
-                  <div className={styles['skill-description']}>
-                    {skill.description}
-                  </div>
-                )}
-              </div>
-              <div className={styles['skill-actions']}>
-                <button
-                  className={styles['skill-action-button']}
-                  onClick={() => handleEdit(skill)}
-                  title="Edit skill"
-                >
-                  <Edit3 size={13} />
-                </button>
-                <button
-                  className={`${styles['skill-action-button']} ${styles['skill-delete-button']}`}
-                  onClick={() => handleDelete(skillId)}
-                  title="Delete skill"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </div>
-
-            {skill.content && (
-              <div className={styles['skill-content-preview']}>{skill.content}</div>
-            )}
-
-            {skill.content && (
+            return (
               <div
-                className={`${styles['skill-char-count']} ${skill.content.length > CONTENT_WARN_CHARS ? styles['skill-char-count-warn'] : ""}`}
+                key={skillId}
+                className={`${styles['skill-row']} ${!skill.enabled ? styles['skill-row-disabled'] : ""}`}
               >
-                {skill.content.length.toLocaleString()} chars
-              </div>
-            )}
+                <div className={styles['skill-leading-icon']}>
+                  <BookOpen size={13} />
+                </div>
+                <div className={styles['skill-body']}>
+                  <div className={styles['skill-title-line']}>
+                    <span className={styles['skill-name']}>{skill.name}</span>
+                    <div className={styles['skill-actions']}>
+                      <button
+                        className={styles['skill-action-button']}
+                        onClick={() => handleEdit(skill)}
+                        title="Edit skill"
+                      >
+                        <Edit3 size={12} />
+                      </button>
+                      <button
+                        className={`${styles['skill-action-button']} ${styles['skill-delete-button']}`}
+                        onClick={() => handleDelete(skillId)}
+                        title="Delete skill"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
 
-            {isConfirming && (
-              <div className={styles['confirm-layout-row']}>
-                <span className={styles['confirm-label']}>
-                  Delete &ldquo;{skill.name}&rdquo;?
-                </span>
-                <button
-                  className={`${styles['confirm-button']} ${styles['confirm-button-element-yes']}`}
-                  onClick={() => confirmDelete(skillId)}
-                >
-                  Delete
-                </button>
-                <button
-                  className={`${styles['confirm-button']} ${styles['confirm-button-element-no']}`}
-                  onClick={() => setConfirmingDeleteId(null)}
-                >
-                  Cancel
-                </button>
+                  {skill.description && (
+                    <div className={styles['skill-description']}>
+                      {skill.description}
+                    </div>
+                  )}
+
+                  {skill.content && (
+                    <div
+                      className={`${styles['skill-meta']} ${skill.content.length > CONTENT_WARN_CHARS ? styles['skill-char-count-warn'] : ""}`}
+                    >
+                      {skill.content.length.toLocaleString()} chars
+                    </div>
+                  )}
+
+                  {isConfirming && (
+                    <div className={styles['confirm-layout-row']}>
+                      <span className={styles['confirm-label']}>
+                        Delete &ldquo;{skill.name}&rdquo;?
+                      </span>
+                      <button
+                        className={`${styles['confirm-button']} ${styles['confirm-button-element-yes']}`}
+                        onClick={() => confirmDelete(skillId)}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        className={`${styles['confirm-button']} ${styles['confirm-button-element-no']}`}
+                        onClick={() => setConfirmingDeleteId(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

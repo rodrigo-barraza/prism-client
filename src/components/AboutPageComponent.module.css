@@ -2,8 +2,6 @@
    AboutPageComponent — Research Paper Implementation Showcase
    ════════════════════════════════════════════════════════════ */
 
-/* ── Hero Section ──────────────────────────────────────────── */
-
 .about-page-container {
   padding-block: 48px 80px;
   padding-inline: 48px;
@@ -11,34 +9,10 @@
   margin-inline: auto;
 }
 
+/* ── Hero Section ──────────────────────────────────────────── */
+
 .hero-section {
-  text-align: center;
   margin-block-end: 64px;
-}
-
-.hero-title {
-  font-size: 2.75rem;
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  margin-block-end: 16px;
-  background: linear-gradient(
-    135deg,
-    var(--accent-primary),
-    var(--accent-secondary),
-    var(--accent-tertiary)
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-subtitle {
-  font-size: 1.125rem;
-  line-height: 1.6;
-  color: var(--text-secondary);
-  max-inline-size: 680px;
-  margin-inline: auto;
 }
 
 .hero-cross-reference-link {
@@ -62,7 +36,7 @@
 .category-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-md);
   margin-block-end: 28px;
 }
 
@@ -73,7 +47,7 @@
   inline-size: 44px;
   block-size: 44px;
   border-radius: var(--border-radius-md);
-  font-size: 1.375rem;
+  color: var(--accent-primary);
   flex-shrink: 0;
   background: var(--calculated-accent-primary-subtle);
   border: 1px solid var(--calculated-border-color);
@@ -81,7 +55,7 @@
 
 .category-title {
   font-size: 1.375rem;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
@@ -92,9 +66,9 @@
   justify-content: center;
   inline-size: 28px;
   block-size: 28px;
-  border-radius: var(--border-radius-pill, 100px);
+  border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--text-tertiary);
   background: var(--background-base);
   border: 1px solid var(--calculated-border-color);
@@ -141,22 +115,20 @@
   inline-size: 100%;
   block-size: 100%;
   min-inline-size: 0;
-  padding: 24px;
+  padding: var(--space-lg);
   border-radius: var(--border-radius-md);
   border: 1px solid var(--calculated-border-color);
   background: var(--background-surface);
   transition:
-    translate 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    translate var(--transition-normal),
+    box-shadow var(--transition-normal),
     border-color var(--transition-fast);
   animation: card-entrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) var(--card-entrance-delay) both;
 }
 
 .paper-card:hover {
   translate: 0 -3px;
-  box-shadow:
-    0 8px 24px oklch(0 0 0 / 0.08),
-    0 2px 8px oklch(0 0 0 / 0.04);
+  box-shadow: var(--calculated-shadow-md);
   border-color: var(--accent-primary);
   z-index: 1;
 }
@@ -184,7 +156,7 @@
 
 .paper-title {
   font-size: var(--font-size-md, 1rem);
-  font-weight: 620;
+  font-weight: 600;
   line-height: 1.35;
   color: var(--text-primary);
   letter-spacing: -0.01em;
@@ -210,12 +182,11 @@
 .external-link-icon {
   display: inline-block;
   margin-inline-start: 5px;
-  font-size: var(--font-size-xs, 0.75rem);
   opacity: 0.4;
   transition:
     opacity var(--transition-fast),
     translate var(--transition-fast);
-  vertical-align: super;
+  vertical-align: text-top;
 }
 
 /* ── Category Badge ────────────────────────────────────────── */
@@ -225,150 +196,72 @@
   align-items: center;
   padding-block: 3px;
   padding-inline: 10px;
-  border-radius: var(--border-radius-pill, 100px);
-  font-size: var(--font-size-xxs, 0.6875rem);
-  font-weight: 550;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
   letter-spacing: 0.01em;
   white-space: nowrap;
   flex-shrink: 0;
   line-height: 1.4;
   border: 1px solid var(--calculated-border-color);
+  background: oklch(from var(--badge-tone, var(--color-neutral)) l c h / 0.12);
+  color: var(--badge-tone, var(--color-neutral));
 }
 
-.badge-core-harness {
-  background: oklch(58.5% 0.2041 277.1 / 0.12);
-  color: oklch(58.5% 0.2041 277.1);
+/* Badge tones — each maps a data tone to a theme color token. */
+
+.badge-tone-indigo {
+  --badge-tone: var(--color-indigo);
 }
 
-.badge-sequential-reasoning {
-  background: oklch(65.5% 0.18 230 / 0.12);
-  color: oklch(60.0% 0.19 230);
+.badge-tone-info {
+  --badge-tone: var(--color-info);
 }
 
-.badge-thought-structure {
-  background: oklch(70.9% 0.1592 293.5 / 0.12);
-  color: oklch(70.9% 0.1592 293.5);
+.badge-tone-violet {
+  --badge-tone: var(--color-violet);
 }
 
-.badge-self-correction {
-  background: oklch(76.9% 0.1646 70.1 / 0.12);
-  color: oklch(70.5% 0.1867 47.6);
+.badge-tone-warning {
+  --badge-tone: var(--color-warning);
 }
 
-.badge-tree-search {
-  background: oklch(77.3% 0.1535 163.3 / 0.12);
-  color: oklch(69.6% 0.1491 162.5);
+.badge-tone-emerald {
+  --badge-tone: var(--color-emerald);
 }
 
-.badge-task-decomposition {
-  background: oklch(75.3% 0.1391 232.7 / 0.12);
-  color: oklch(71.5% 0.1258 215.2);
+.badge-tone-cyan {
+  --badge-tone: var(--color-cyan);
 }
 
-.badge-iterative-refinement {
-  background: oklch(64.5% 0.2154 16.4 / 0.12);
-  color: oklch(64.5% 0.2154 16.4);
+.badge-tone-rose {
+  --badge-tone: var(--color-rose);
 }
 
-.badge-selection {
-  background: oklch(62.7% 0.2326 303.9 / 0.12);
-  color: oklch(62.7% 0.2326 303.9);
+.badge-tone-purple {
+  --badge-tone: var(--color-purple);
 }
 
-.badge-synthesis {
-  background: oklch(78.5% 0.1325 181.9 / 0.12);
-  color: oklch(69.6% 0.1491 162.5);
+.badge-tone-teal {
+  --badge-tone: var(--color-teal);
 }
 
-.badge-multi-agent-debate {
-  background: oklch(71.4% 0.1435 254.6 / 0.12);
-  color: oklch(62.3% 0.1881 259.8);
+.badge-tone-danger {
+  --badge-tone: var(--color-danger);
 }
 
-.badge-safety {
-  background: oklch(63.7% 0.2078 25.3 / 0.12);
-  color: oklch(63.7% 0.2078 25.3);
+.badge-tone-success {
+  --badge-tone: var(--color-success);
 }
 
-.badge-memory {
-  background: oklch(70.9% 0.1592 293.5 / 0.12);
-  color: oklch(62.7% 0.2326 303.9);
-}
-
-.badge-context-management {
-  background: oklch(71.5% 0.1258 215.2 / 0.12);
-  color: oklch(63.2% 0.2019 254.1);
-}
-
-.badge-workflow {
-  background: oklch(80.0% 0.182 151.7 / 0.12);
-  color: oklch(72.3% 0.192 149.6);
-}
-
-.badge-multimodal {
-  background: oklch(76.9% 0.1646 70.1 / 0.12);
-  color: oklch(66.6% 0.1574 58.3);
-}
-
-.badge-affect {
-  background: oklch(72.0% 0.16 340 / 0.12);
-  color: oklch(65.0% 0.19 340);
-}
-
-.badge-semantic-search {
-  background: oklch(68.0% 0.15 200 / 0.12);
-  color: oklch(62.0% 0.18 200);
-}
-
-.badge-hierarchical {
-  background: oklch(64.0% 0.17 262 / 0.12);
-  color: oklch(60.0% 0.19 262);
-}
-
-.badge-checkpointing {
-  background: oklch(66.0% 0.11 245 / 0.12);
-  color: oklch(61.0% 0.13 245);
-}
-
-.badge-reliability {
-  background: oklch(72.0% 0.12 190 / 0.12);
-  color: oklch(65.0% 0.13 190);
-}
-
-.badge-error-recovery {
-  background: oklch(74.0% 0.15 65 / 0.12);
-  color: oklch(67.0% 0.16 58);
-}
-
-.badge-validation {
-  background: oklch(74.0% 0.16 135 / 0.12);
-  color: oklch(66.0% 0.17 140);
-}
-
-.badge-continuation {
-  background: oklch(72.0% 0.12 220 / 0.12);
-  color: oklch(64.0% 0.14 220);
-}
-
-.badge-loop-detection {
-  background: oklch(65.0% 0.19 12 / 0.12);
-  color: oklch(63.0% 0.2 12);
-}
-
-.badge-cost-control {
-  background: oklch(76.0% 0.14 95 / 0.12);
-  color: oklch(66.0% 0.15 88);
-}
-
-.badge-planning {
-  background: oklch(66.0% 0.17 300 / 0.12);
-  color: oklch(63.0% 0.19 300);
+.badge-tone-orange {
+  --badge-tone: var(--color-orange);
 }
 
 /* ── Card Metadata ─────────────────────────────────────────── */
 
 .paper-authors {
-  font-size: var(--font-size-sm, 0.8125rem);
+  font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   margin-block-end: 10px;
   line-height: 1.45;
@@ -383,7 +276,7 @@
   font-size: var(--font-size-base, 0.875rem);
   color: var(--text-secondary);
   line-height: 1.55;
-  margin-block-end: 16px;
+  margin-block-end: var(--space-md);
   flex: 1;
 }
 
@@ -395,9 +288,9 @@
   gap: 6px;
   padding-block: 6px;
   padding-inline: 12px;
-  border-radius: var(--border-radius-sm, 8px);
-  font-size: var(--font-size-xs, 0.75rem);
-  font-family: var(--font-mono, "SF Mono", "Cascadia Code", "Fira Code", monospace);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--background-base);
@@ -410,41 +303,8 @@
 }
 
 .implementation-icon {
-  font-size: var(--font-size-sm, 0.8125rem);
-  opacity: 0.7;
-}
-
-/* ── Footer Stats ──────────────────────────────────────────── */
-
-.footer-stats-section {
-  margin-block-start: 24px;
-  padding-block-start: 32px;
-  border-block-start: 1px solid var(--calculated-border-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
-  flex-wrap: wrap;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.stat-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--accent-primary);
-}
-
-.stat-label {
-  font-size: var(--font-size-sm, 0.8125rem);
   color: var(--text-tertiary);
-  font-weight: 500;
+  flex-shrink: 0;
 }
 
 /* ── Implementation Badge Row ──────────────────────────────── */
@@ -453,7 +313,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-sm);
   margin-block-start: auto;
 }
 
@@ -462,20 +322,20 @@
   align-items: center;
   padding-block: 3px;
   padding-inline: 8px;
-  border-radius: var(--border-radius-sm, 6px);
-  font-size: 0.625rem;
-  font-weight: 550;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: nowrap;
-  background: oklch(58.5% 0.2041 277.1 / 0.1);
-  color: oklch(58.5% 0.2041 277.1);
-  border: 1px solid oklch(58.5% 0.2041 277.1 / 0.15);
+  background: var(--calculated-accent-primary-subtle);
+  color: var(--accent-primary);
+  border: 1px solid var(--calculated-accent-primary-subtle);
   opacity: 0;
   translate: 0 4px;
   transition:
-    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    translate 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity var(--transition-base),
+    translate var(--transition-base);
 }
 
 .paper-card-has-alignment:hover .alignment-hint-badge {
@@ -511,29 +371,29 @@
   justify-content: center;
   inline-size: 22px;
   block-size: 22px;
-  border-radius: var(--border-radius-sm, 6px);
-  font-size: var(--font-size-xs, 0.75rem);
-  font-weight: 650;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
   line-height: 1;
 }
 
 .alignment-stat-count[data-status="aligned"] {
-  background: oklch(80.0% 0.182 151.7 / 0.18);
-  color: oklch(72.3% 0.192 149.6);
+  background: oklch(from var(--color-success) l c h / 0.18);
+  color: var(--color-success);
 }
 
 .alignment-stat-count[data-status="simplified"] {
-  background: oklch(76.9% 0.1646 70.1 / 0.18);
-  color: oklch(70.5% 0.1867 47.6);
+  background: oklch(from var(--color-warning) l c h / 0.18);
+  color: var(--color-warning);
 }
 
 .alignment-stat-count[data-status="extended"] {
-  background: oklch(58.5% 0.2041 277.1 / 0.15);
-  color: oklch(65.0% 0.19 277.1);
+  background: oklch(from var(--color-info) l c h / 0.18);
+  color: var(--color-info);
 }
 
 .alignment-stat-label {
-  font-size: var(--font-size-xxs, 0.6875rem);
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--text-tertiary);
 }
@@ -553,14 +413,12 @@
 .alignment-tooltip-entry {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--space-sm);
   line-height: 1.4;
 }
 
 .alignment-entry-indicator {
-  flex-shrink: 0;
-  font-size: var(--font-size-sm, 0.8125rem);
-  line-height: 1.4;
+  margin-block-start: 1px;
 }
 
 .alignment-entry-body {
@@ -571,14 +429,14 @@
 }
 
 .alignment-entry-component {
-  font-size: var(--font-size-xs, 0.75rem);
+  font-size: var(--font-size-xs);
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.35;
 }
 
 .alignment-entry-detail {
-  font-size: var(--font-size-xxs, 0.6875rem);
+  font-size: var(--font-size-xs);
   font-weight: 400;
   color: var(--text-secondary);
   line-height: 1.4;
@@ -586,25 +444,13 @@
 
 /* ── Responsive ────────────────────────────────────────────── */
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .about-page-container {
     padding-block: 32px 56px;
     padding-inline: 20px;
   }
 
-  .hero-title {
-    font-size: 2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-
   .paper-card-grid {
     grid-template-columns: 1fr;
-  }
-
-  .footer-stats-section {
-    gap: 24px;
   }
 }

@@ -245,42 +245,40 @@
   composes: empty-subtitle from "./PanelShared.module.css";
 }
 
-/* ── Task Card ───────────────────────────────────────────────── */
+/* ── Task Row (shared sidebar-row language) ──────────────────── */
+
+.list {
+  composes: list from "./PanelShared.module.css";
+}
 
 .task-card {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 10px 12px;
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  padding: var(--sidebar-row-padding-block) var(--sidebar-row-padding-inline);
+  background: var(--background-base);
+  border-bottom: 1px solid var(--sidebar-row-divider);
+  border-left: var(--sidebar-row-accent-width) solid transparent;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
 
   &:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--color-violet) 30%,
-      var(--calculated-border-color)
-    );
-    box-shadow: 0 2px 8px
-      color-mix(in oklch, var(--color-violet) 6%, transparent);
+    background: var(--sidebar-row-hover-bg);
   }
 }
 
 /* Status-specific left accent via border-left */
 .status-pending-card {
-  border-left: 2px solid
-    color-mix(in oklch, var(--color-neutral) 40%, transparent);
+  border-left-color: color-mix(in oklch, var(--color-neutral) 45%, transparent);
 }
 
 .status-in-progress-card {
-  border-left: 2px solid color-mix(in oklch, var(--color-info) 50%, transparent);
+  border-left-color: var(--color-info);
 }
 
 .status-completed-card {
-  border-left: 2px solid
-    color-mix(in oklch, var(--color-success) 40%, transparent);
+  border-left-color: color-mix(in oklch, var(--color-success) 55%, transparent);
 }
 
 .task-card-header {

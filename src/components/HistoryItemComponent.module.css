@@ -1,23 +1,25 @@
-/* ── History Item ── */
+/* ── History Item — canonical sidebar row ──
+   The reference implementation for the unified sidebar row language.
+   Layout: 3 tight lines — title+cost, identity (time·agent), signals
+   (model·modalities·tools·sub-agent markers). Edge-to-edge, divided,
+   left-accent on the active row. */
 .item {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px 10px 9px;
+  gap: 8px;
+  padding: var(--sidebar-row-padding-block) var(--sidebar-row-padding-inline);
   cursor: pointer;
-  border-bottom: 1px solid var(--calculated-border-color);
-  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--sidebar-row-divider);
+  border-left: var(--sidebar-row-accent-width) solid transparent;
   background: var(--background-base);
   transition:
-    background 0.2s,
-    border-color 0.2s,
-    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background 0.18s ease,
+    border-color 0.18s ease;
   position: relative;
-  will-change: transform;
   min-width: 0;
 
   &:hover {
-    background: var(--background-elevated);
+    background: var(--sidebar-row-hover-bg);
     border-left-color: var(--calculated-border-medium);
   }
 
@@ -32,13 +34,12 @@
 }
 
 .is-active-state {
-  background: var(--background-surface);
+  background: var(--sidebar-row-active-bg);
   border-left-color: var(--accent-primary);
-  transform: translateX(-6px);
 }
 
 .is-active-state:hover {
-  background: var(--background-surface);
+  background: var(--sidebar-row-active-bg);
   border-left-color: var(--accent-primary);
 }
 
@@ -50,52 +51,64 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sidebar-row-gap);
   overflow: hidden;
   min-width: 0;
 }
 
-/* ── Row 1: time (left) · cost (right) ── */
-.top-layout-row {
+/* ── Line 1: title (left) · cost (right) ── */
+.title-layout-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 8px;
 }
 
-.top-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.top-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-/* ── Row 1b: sub-agent indicators (right-aligned) ── */
-.sub-agent-indicators-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-}
-
-/* ── Row 2: title ── */
 .title {
   font-size: 0.8125rem;
   font-weight: 500;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
   color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.title-text {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.cost-badge {
+  flex-shrink: 0;
+}
+
+/* ── Line 2: identity — time · agent · tags ── */
+.identity-layout-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+/* ── Line 3: signals — model · modalities · tools · sub-agent markers ── */
+.signals-layout-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.sub-agent-indicators {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
 }
 
 .new-badge {
@@ -158,34 +171,6 @@
 
 .model-badge span {
   max-width: none;
-}
-
-.model-badge-and-cost-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  width: 100%;
-}
-
-.cost-badge-right-aligned {
-  margin-inline-start: auto;
-  flex-shrink: 0;
-}
-
-/* ── Row 4: modalities (left) · tools (right) ── */
-.bottom-layout-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-}
-
-.bottom-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
 }
 
 /* ── Tags ── */

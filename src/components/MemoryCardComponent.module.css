@@ -3,70 +3,51 @@
    ============================================================ */
 
 .memory-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 12px;
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: 4px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  composes: row from "./PanelShared.module.css";
+  cursor: default;
 
   &:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--color-warning) 30%,
-      var(--calculated-border-color)
-    );
-    box-shadow: 0 2px 8px
-      color-mix(in srgb, var(--color-warning) 6%, transparent);
+    background: var(--sidebar-row-hover-bg);
   }
 }
 
 .is-new-memory {
-  border-color: var(--color-warning);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-warning) 20%, transparent);
+  border-left-color: var(--color-warning);
+  background: color-mix(in oklch, var(--color-warning) 7%, transparent);
   animation: memory-glow 2s ease-in-out 3;
 
   &:hover {
-    border-color: var(--color-warning);
-    box-shadow: 0 0 16px
-      color-mix(in srgb, var(--color-warning) 30%, transparent);
+    background: color-mix(in oklch, var(--color-warning) 11%, transparent);
   }
 }
 
 @keyframes memory-glow {
   0%,
   100% {
-    border-color: var(--color-warning);
-    box-shadow: 0 0 8px
-      color-mix(in srgb, var(--color-warning) 15%, transparent);
+    box-shadow: inset 2px 0 0 var(--color-warning),
+      0 0 8px color-mix(in srgb, var(--color-warning) 12%, transparent);
   }
   50% {
-    border-color: color-mix(in srgb, var(--color-warning) 70%, transparent);
-    box-shadow: 0 0 18px
-      color-mix(in srgb, var(--color-warning) 30%, transparent);
+    box-shadow: inset 2px 0 0 var(--color-warning),
+      0 0 16px color-mix(in srgb, var(--color-warning) 26%, transparent);
   }
 }
 
-/* ── Card Header ───────────────────────────────────────────── */
+/* ── Row body ──────────────────────────────────────────────── */
 
-.memory-card-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
+.memory-body {
+  composes: row-content from "./PanelShared.module.css";
+}
+
+.memory-title-line {
+  composes: row-title-line from "./PanelShared.module.css";
 }
 
 .memory-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  flex-shrink: 0;
+  composes: row-leading-icon from "./PanelShared.module.css";
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
   font-size: var(--font-size-xs);
   font-weight: 700;
   text-transform: uppercase;
@@ -96,13 +77,10 @@
 
 /* ── Memory Info ───────────────────────────────────────────── */
 
-.memory-info {
+.memory-title {
   flex: 1;
   min-width: 0;
-}
-
-.memory-title {
-  font-size: var(--font-size-sm);
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.4;
@@ -114,10 +92,11 @@
 }
 
 .memory-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 2px;
+  composes: row-meta from "./PanelShared.module.css";
+}
+
+.memory-actions {
+  composes: row-actions from "./PanelShared.module.css";
 }
 
 .memory-type-badge {
@@ -158,12 +137,11 @@
   color: var(--text-secondary);
   line-height: 1.5;
   white-space: pre-wrap;
-  padding: 8px;
-  background: color-mix(in srgb, var(--background-elevated) 60%, transparent);
-  border-radius: 4px;
-  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
-  border: 1px solid
-    color-mix(in srgb, var(--calculated-border-color) 50%, transparent);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ── Delete Button ─────────────────────────────────────────── */
@@ -174,18 +152,13 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: 4px;
+  border-radius: 5px;
   background: transparent;
   color: var(--text-muted);
   border: none;
   cursor: pointer;
   flex-shrink: 0;
-  opacity: 0;
   transition: all 0.15s ease;
-
-  .memory-card:hover & {
-    opacity: 1;
-  }
 
   &:hover {
     color: var(--color-rose);

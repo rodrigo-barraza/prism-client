@@ -3,6 +3,7 @@ import "next-auth/jwt";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { ACCOUNTS_SERVICE_URL, AUTH_ALLOWED_EMAILS as ALLOWED_EMAILS, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET } from "./config";
+import { fetchAccountRoles } from "./services/accountRoles";
 
 declare module "next-auth" {
   // eslint-disable-next-line no-unused-vars -- module augmentation via declaration merging
@@ -10,6 +11,8 @@ declare module "next-auth" {
     user: {
       id: string;
       image?: string | null;
+      /** Persisted roles from accounts-service (e.g. "admin"), stamped at sign-in. */
+      roles?: string[];
     } & DefaultSession["user"];
   }
 }
@@ -19,6 +22,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     picture?: string | null;
+    roles?: string[];
   }
 }
 
@@ -96,6 +100,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.picture = user.image;
+        // Sign-in: resolve persisted roles from accounts-service. Role
+        // changes take effect on the next sign-in, not mid-session.
+        token.roles = await fetchAccountRoles(user.email);
+      } else if (token.roles === undefined && token.email) {
+        // Sessions issued before roles existed — backfill once.
+        token.roles = await fetchAccountRoles(token.email);
       }
       return token;
     },
@@ -104,6 +114,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id || "";
         session.user.image = token.picture || null;
+        session.user.roles = token.roles ?? [];
       }
       return session;
     },

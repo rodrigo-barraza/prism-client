@@ -2,72 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { SearchInputComponent } from "@rodrigo-barraza/components-library";
-import {
-  Wrench,
-  Cloud,
-  Zap,
-  Gamepad2,
-  Database,
-  Globe,
-  Package,
-  Brain,
-  Palette,
-  Heart,
-  Navigation,
-  Cog,
-  Cpu,
-  Ship,
-  Lightbulb,
-  MessageCircle,
-  Bot,
-  FolderOpen,
-  Layers,
-  Shield,
-  Clock,
-  Braces,
-} from "lucide-react";
+import { getDomainIcon } from "../utils/toolDomainIcons";
 import styles from "./ToolsSidebarNavigationComponent.module.css";
-
-const DOMAIN_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
-  "Weather & Environment": Cloud,
-  Events: Zap,
-  Sports: Gamepad2,
-  "Markets & Commodities": Database,
-  Trends: Globe,
-  Products: Package,
-  Finance: Database,
-  Knowledge: Brain,
-  "Movies & TV": Palette,
-  Health: Heart,
-  Transit: Navigation,
-  Utilities: Cog,
-  Compute: Cpu,
-  Maritime: Ship,
-  Energy: Lightbulb,
-  Communication: MessageCircle,
-  Creative: Palette,
-  Discord: MessageCircle,
-  "Smart Home": Lightbulb,
-  Reasoning: Brain,
-  Coordinator: Bot,
-  Workspace: FolderOpen,
-  Web: Globe,
-  Browser: Globe,
-  "Task Management": Layers,
-  Memory: Brain,
-  "Agent Management": Bot,
-  "Model Context Protocol": Cpu,
-  Meta: Cog,
-  "Scheduled Tasks": Clock,
-  Timers: Clock,
-  Skills: Zap,
-  "Control Flow": Shield,
-  "Structured Output": Braces,
-};
-
-function getDomainIcon(domain: string) {
-  return DOMAIN_ICONS[domain] || Wrench;
-}
 
 interface ToolsSidebarNavigationProps {
   domains: string[];

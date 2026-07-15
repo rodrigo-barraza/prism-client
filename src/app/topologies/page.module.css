@@ -1,0 +1,7 @@
+.page-content-area {
+  flex: 1;
+  min-block-size: 0;
+  min-inline-size: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}

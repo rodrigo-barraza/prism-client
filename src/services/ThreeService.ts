@@ -112,6 +112,58 @@ const instances = new Map<string, ThreeInstance>();
 let nextId = 0;
 let rafId: number | null = null;
 
+// --- Environment Map Cache -----------------------------------------
+
+interface EnvironmentCacheEntry {
+  texture: Texture;
+  renderTarget: { dispose(): void };
+}
+
+// PMREM environment textures are tied to a WebGL context, so they are
+// cached per renderer and disposed alongside it in destroy().
+const environmentCache = new WeakMap<WebGLRenderer, EnvironmentCacheEntry>();
+
+/**
+ * Build a tiny procedural "studio" scene — a dark room with a few soft
+ * light cards. Run through PMREMGenerator it produces the reflection
+ * gradients that make metallic/glossy materials read as 3D, without
+ * shipping an HDR asset.
+ */
+function buildStudioEnvironmentScene(): Scene {
+  const scene = new THREE.Scene();
+
+  const room = new THREE.Mesh(
+    new THREE.BoxGeometry(20, 20, 20),
+    new THREE.MeshBasicMaterial({ color: "#0b0d14", side: THREE.BackSide }),
+  );
+  scene.add(room);
+
+  const addLightCard = (
+    color: string,
+    intensity: number,
+    width: number,
+    height: number,
+    position: [number, number, number],
+    lookAtOrigin = true,
+  ) => {
+    const material = new THREE.MeshBasicMaterial({ color });
+    material.color.multiplyScalar(intensity);
+    const card = new THREE.Mesh(new THREE.PlaneGeometry(width, height), material);
+    card.position.set(...position);
+    if (lookAtOrigin) card.lookAt(0, 0, 0);
+    scene.add(card);
+  };
+
+  // Key softbox (upper front-left), cool fill (right), warm kicker (back)
+  addLightCard("#ffffff", 6, 8, 5, [-4, 6, 6]);
+  addLightCard("#9db4ff", 2.5, 6, 6, [7, 1, 2]);
+  addLightCard("#ffd9a8", 3.5, 5, 4, [-2, 2, -7]);
+  // Faint floor bounce so under-sides aren't pitch black
+  addLightCard("#3a4258", 1.2, 10, 10, [0, -8, 0]);
+
+  return scene;
+}
+
 // --- RAF Loop ------------------------------------------------------
 
 function loop(timestamp: number): void {
@@ -354,6 +406,31 @@ const ThreeService = {
     };
   },
 
+  /**
+   * Get (or lazily build) a shared PBR environment texture for a renderer.
+   *
+   * Assign the result to `scene.environment` to give MeshStandard/Physical
+   * materials studio-style reflections. Cached per renderer (environment
+   * textures are context-bound) and disposed automatically in destroy().
+   */
+  getEnvironment(renderer: WebGLRenderer): Texture {
+    const cached = environmentCache.get(renderer);
+    if (cached) return cached.texture;
+
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    const environmentScene = buildStudioEnvironmentScene();
+    const renderTarget = pmremGenerator.fromScene(environmentScene, 0.04);
+    pmremGenerator.dispose();
+    disposeSceneGraph(environmentScene);
+
+    const entry: EnvironmentCacheEntry = {
+      texture: renderTarget.texture,
+      renderTarget,
+    };
+    environmentCache.set(renderer, entry);
+    return entry.texture;
+  },
+
   // -- Scene Graph Helpers ---------------------------------------
 
   /**
@@ -441,6 +518,13 @@ const ThreeService = {
 
     // Dispose scene graph (geometries, materials, textures)
     disposeSceneGraph(instance.scene);
+
+    // Dispose the cached environment map bound to this renderer
+    const environmentEntry = environmentCache.get(instance.renderer);
+    if (environmentEntry) {
+      environmentEntry.renderTarget.dispose();
+      environmentCache.delete(instance.renderer);
+    }
 
     // Dispose renderer (WebGL context)
     instance.renderer.dispose();

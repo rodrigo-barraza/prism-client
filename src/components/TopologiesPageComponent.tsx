@@ -1,9 +1,22 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { LoadingStateComponent } from "@rodrigo-barraza/components-library";
+import {
+  ArrowRight,
+  ExternalLink,
+  FileCode,
+  Network,
+} from "lucide-react";
+import {
+  LoadingStateComponent,
+  PageHeroComponent,
+} from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import TopologyGraphComponent from "./TopologyGraphComponent";
+import AlignmentStatusIndicatorComponent from "./AlignmentStatusIndicatorComponent";
+import { ErrorMessage } from "./StateMessageComponent";
+import { getErrorMessage } from "../utils/errorMessage";
+import { TIMING } from "../constants";
 import type {
   TopologyDefinition,
   TopologyAlignmentEntry,
@@ -11,11 +24,7 @@ import type {
 } from "../types/types";
 import styles from "./TopologiesPageComponent.module.css";
 
-const STATUS_INDICATORS: Record<TopologyAlignmentEntry["status"], { icon: string; label: string }> = {
-  aligned: { icon: "✅", label: "Aligned" },
-  simplified: { icon: "⚠️", label: "Simplified" },
-  extended: { icon: "🔧", label: "Extended" },
-};
+const INLINE_ICON_SIZE = 13;
 
 function TopologyAlignmentChecklist({ alignment }: { alignment: TopologyAlignmentEntry[] }) {
   return (
@@ -27,9 +36,10 @@ function TopologyAlignmentChecklist({ alignment }: { alignment: TopologyAlignmen
             key={entry.component}
             className={styles["alignment-entry"]}
           >
-            <span className={styles["alignment-indicator"]}>
-              {STATUS_INDICATORS[entry.status].icon}
-            </span>
+            <AlignmentStatusIndicatorComponent
+              status={entry.status}
+              className={styles["alignment-indicator"]}
+            />
             <span className={styles["alignment-body"]}>
               <span className={styles["alignment-component-name"]}>
                 {entry.component}
@@ -87,10 +97,10 @@ function TopologyPhasesPipeline({ phases }: { phases: string[] }) {
       <span className={styles["section-label"]}>Execution Phases</span>
       <div className={styles["phases-pipeline"]}>
         {phases.map((phase, phaseIndex) => (
-          <span key={phase}>
+          <span key={phase} className={styles["phase-item"]}>
             <span className={styles["phase-step"]}>{phase}</span>
             {phaseIndex < phases.length - 1 && (
-              <span className={styles["phase-arrow"]}>→</span>
+              <ArrowRight className={styles["phase-arrow"]} size={INLINE_ICON_SIZE} />
             )}
           </span>
         ))}
@@ -158,7 +168,7 @@ function TopologyCard({
                 className={styles["paper-link"]}
               >
                 {topology.paperTitle}
-                <span className={styles["paper-external-icon"]}> ↗</span>
+                <ExternalLink className={styles["paper-external-icon"]} size={INLINE_ICON_SIZE} />
               </a>
             ) : (
               <span className={styles["paper-link"]}>{topology.paperTitle}</span>
@@ -191,7 +201,7 @@ function TopologyCard({
 
         {/* Implementation File */}
         <div className={styles["implementation-badge"]}>
-          <span className={styles["implementation-icon"]}>📄</span>
+          <FileCode className={styles["implementation-icon"]} size={INLINE_ICON_SIZE} />
           {topology.implementationFile}
         </div>
       </div>
@@ -211,8 +221,7 @@ export default function TopologiesPageComponent() {
         setIsLoading(false);
       })
       .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : "Failed to load topologies";
-        setErrorMessage(message);
+        setErrorMessage(getErrorMessage(error));
         setIsLoading(false);
       });
   }, []);
@@ -241,7 +250,7 @@ export default function TopologiesPageComponent() {
     return (
       <article className={styles["topologies-page-container"]}>
         <div className={styles["error-state-container"]}>
-          <span>⚠️ {errorMessage}</span>
+          <ErrorMessage message={errorMessage} />
         </div>
       </article>
     );
@@ -249,16 +258,21 @@ export default function TopologiesPageComponent() {
 
   return (
     <article className={styles["topologies-page-container"]}>
-      {/* Hero Section */}
-      <section className={styles["hero-section"]}>
-        <h1 className={styles["hero-title"]}>Sub-Agent Topologies</h1>
-        <p className={styles["hero-subtitle"]}>
-          Every multi-agent coordination topology available in the orchestrator.
+      <PageHeroComponent
+        variant="display"
+        icon={Network}
+        title="Sub-Agent Topologies"
+        subtitle="Every multi-agent coordination topology available in the orchestrator.
           Each topology defines how sub-agents are spawned, communicate, and
           synthesize their results — from simple parallel fan-out to iterative
-          MCTS-guided search.
-        </p>
-      </section>
+          MCTS-guided search."
+        stats={[
+          { value: topologies.length, label: "topologies" },
+          { value: academicPaperCount, label: "academic papers" },
+          { value: totalConfigOptions, label: "config options" },
+        ]}
+        className={styles["hero-section"]}
+      />
 
       {/* Topology Cards */}
       <div className={styles["topology-card-list"]}>
@@ -266,26 +280,10 @@ export default function TopologiesPageComponent() {
           <TopologyCard
             key={topology.id}
             topology={topology}
-            entranceDelayMilliseconds={topologyIndex * 80}
+            entranceDelayMilliseconds={topologyIndex * TIMING.ENTRANCE_STAGGER_MILLISECONDS}
           />
         ))}
       </div>
-
-      {/* Footer Stats */}
-      <footer className={styles["footer-stats-section"]}>
-        <div className={styles["stat-item"]}>
-          <span className={styles["stat-value"]}>{topologies.length}</span>
-          <span className={styles["stat-label"]}>Topologies</span>
-        </div>
-        <div className={styles["stat-item"]}>
-          <span className={styles["stat-value"]}>{academicPaperCount}</span>
-          <span className={styles["stat-label"]}>Academic Papers</span>
-        </div>
-        <div className={styles["stat-item"]}>
-          <span className={styles["stat-value"]}>{totalConfigOptions}</span>
-          <span className={styles["stat-label"]}>Config Options</span>
-        </div>
-      </footer>
     </article>
   );
 }

@@ -9,7 +9,6 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import * as THREE from "three";
 import {
   Coins,
   Hash,
@@ -33,7 +32,14 @@ import {
 } from "@rodrigo-barraza/components-library";
 
 import { renderAgentIcon } from "./AgentPickerComponent";
-import ThreeCanvasComponent from "./ThreeCanvasComponent";
+import { resolveAgentGradient } from "../utils/agentUiMap";
+import ThreeAnimationComponent from "./ThreeAnimationComponent";
+import {
+  createCoinAnimation,
+  extractRenderableFromContainer,
+  type CoinAnimationOptions,
+  type ThreeAnimationHandle,
+} from "@/services/three-animations";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import { formatCost, formatElapsedTime, renderToolName } from "@rodrigo-barraza/utilities-library";
 import {
@@ -332,29 +338,12 @@ const MODEL_TYPE_META = {
   embed: { icon: Cpu, label: "Embed" },
 };
 
-const AGENT_GRADIENTS: Record<string, string[]> = {
-  NONE: ["oklch(0.5 0.03 260)", "oklch(0.65 0.03 260)"],
-  CODING: ["oklch(0.585 0.233 277.117)", "oklch(0.65 0.2 277)"],
-  OMNI: ["oklch(0.4 0.2 25)", "oklch(0.5 0.22 25)"],
-  BENDER: ["oklch(0.5 0.04 240)", "oklch(0.68 0.05 240)"],
-  LUPOS: ["oklch(0.5 0.25 290)", "oklch(0.6 0.23 290)"],
-  STICKERS: ["oklch(0.705 0.191 165.574)", "oklch(0.8 0.15 165)"],
-  DIGEST: ["oklch(0.769 0.188 70.08)", "oklch(0.585 0.22 25)"],
-  LIGHTS: ["oklch(0.769 0.177 90.046)", "oklch(0.769 0.188 70.08)"],
-  OOG: ["oklch(0.5 0.02 60)", "oklch(0.65 0.02 60)"],
-  IMAGE: ["oklch(0.627 0.231 348.347)", "oklch(0.606 0.25 293.528)"],
-};
-const FALLBACK_GRADIENT = ["oklch(0.606 0.25 293.528)", "oklch(0.7 0.15 195)"];
-
 function resolveGradient(agent?: string | ClientAgent | null): string[] {
   if (typeof agent === "string") {
-    return (AGENT_GRADIENTS as Record<string, string[]>)[agent] || FALLBACK_GRADIENT;
+    return resolveAgentGradient(agent);
   }
   if (agent?.color) return [agent.color, agent.color];
-  return (
-    (agent?.id && (AGENT_GRADIENTS as Record<string, string[]>)[agent.id]) ||
-    FALLBACK_GRADIENT
-  );
+  return resolveAgentGradient(agent?.id);
 }
 
 const TEXTURE_SIZE = 256;

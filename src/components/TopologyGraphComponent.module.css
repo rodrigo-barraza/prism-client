@@ -2,6 +2,7 @@
    TopologyGraphComponent — Mini SVG topology diagrams for tooltips
    Renders static node-and-edge graphs illustrating multi-agent
    coordination patterns (sequential, hierarchical, aggregation, mesh).
+   All colors resolve from theme tokens so diagrams follow the theme.
    ═══════════════════════════════════════════════════════════════════ */
 
 .topology-graph-container {
@@ -17,17 +18,72 @@
   height: auto;
 }
 
+/* ── Node role fills (semantic → theme tokens) ───────────── */
+
+.topology-node-fill {
+  fill-opacity: 0.9;
+}
+
+.topology-node--orchestrator {
+  fill: var(--accent-primary);
+}
+
+.topology-node--agent {
+  fill: var(--color-emerald);
+}
+
+.topology-node--action {
+  fill: var(--color-cyan);
+}
+
+.topology-node--merge {
+  fill: var(--color-rose);
+}
+
+.topology-node--result {
+  fill: var(--color-orange);
+}
+
+.topology-node--validation {
+  fill: var(--color-warning);
+}
+
+.topology-node-ring {
+  stroke: var(--color-white);
+  stroke-opacity: 0.12;
+  stroke-width: 1;
+}
+
 /* ── Node labels ─────────────────────────────────────────── */
 
 .topology-node-label {
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  fill: oklch(0.95 0 0);
+  fill: var(--color-white);
   text-anchor: middle;
   dominant-baseline: central;
   pointer-events: none;
   user-select: none;
+}
+
+/* ── Edges & arrowheads ──────────────────────────────────── */
+
+.topology-arrowhead {
+  fill: var(--text-muted);
+  fill-opacity: 0.65;
+}
+
+.topology-edge-line {
+  stroke: var(--text-muted);
+  stroke-opacity: 0.4;
+  stroke-width: 1.5;
+}
+
+.topology-edge-flow-line {
+  stroke: var(--text-muted);
+  stroke-opacity: 0.25;
+  stroke-width: 1;
 }
 
 /* ── Entrance animation for nodes ────────────────────────── */

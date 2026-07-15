@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ButtonComponent,
+  ModalComponent,
 } from "@rodrigo-barraza/components-library";
 import StorageService from "../services/StorageService";
 import { STORAGE_KEY_TOOL_MEMORY_AGENT_PREFIX, AGENT_IDS } from "../constants";
 import {
-  X,
   Play,
   Bot,
   BarChart3,
   Activity,
+  ChevronDown,
   DollarSign,
   TrendingUp,
   Calendar,
@@ -22,6 +23,7 @@ import {
   Clock,
   Zap,
 } from "lucide-react";
+import { resolveAgentAccentColor } from "../utils/agentUiMap";
 import {
   humanizeToolName,
   formatCostAdaptive,
@@ -88,23 +90,14 @@ interface ToolDetailModalComponentProps {
   allTools: ToolDetailSchema[];
 }
 
-/* -- Agent color mapping ------------------------------------- */
+/* -- Constants ------------------------------------------------ */
 
-const AGENT_COLORS: Record<string, string> = {
-  CODING: "oklch(0.588 0.158 241.966)",
-  OMNI: "oklch(0.5 0.22 25)",
-  BENDER: "oklch(0.6 0.05 240)",
-  OOG: "oklch(0.7 0.15 280)",
-  LUPOS: "oklch(0.585 0.22 25)",
-  STICKERS: "oklch(0.769 0.188 70.08)",
-  LIGHTS: "oklch(0.7 0.17 145)",
-  DIGEST: "oklch(0.697 0.148 185.045)",
-  IMAGE: "oklch(0.627 0.231 348.347)",
-};
+const SECTION_ICON_SIZE = 12;
+const STAT_ICON_SIZE = 14;
+const AGENT_BADGE_ICON_SIZE = 10;
 
-function getAgentColor(agentId: string) {
-  return AGENT_COLORS[agentId] || "var(--accent-primary)";
-}
+/** Direct-chat route preconfigured for single-tool testing. */
+const TRY_TOOL_CHAT_ROUTE = `/chat?agent=${AGENT_IDS.NONE}&fc=true&thinking=true`;
 
 /* -- Helpers ------------------------------------------------- */
 
@@ -165,16 +158,8 @@ export default function ToolDetailModalComponent({
       `${STORAGE_KEY_TOOL_MEMORY_AGENT_PREFIX}${AGENT_IDS.NONE}`,
       { disabledTools },
     );
-    router.push("/chat?agent=NONE&fc=true&thinking=true");
+    router.push(TRY_TOOL_CHAT_ROUTE);
   };
-
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
 
   const successRate = stats
     ? ((stats.successCount || 0) /
@@ -182,87 +167,73 @@ export default function ToolDetailModalComponent({
         100 || 0
     : 0;
 
-  return (
-    <div className={styles['detail-overlay']} onClick={onClose}>
-      <div
-        className={styles['detail-panel']}
-        onClick={(event: React.MouseEvent) => event.stopPropagation()}
-      >
-        {/* Header */}
-        <div className={styles['detail-header']}>
-          <div className={styles['detail-title-block']}>
-            <div className={styles['detail-clean-name']}>
-              {(() => {
-                const resolvedEmoji = Array.isArray(tool.emoji)
-                  ? tool.emoji[0]
-                  : tool.emoji;
-                return (
-                  resolvedEmoji &&
-                  (resolvedEmoji.startsWith("http") ? (
-                    <img
-                      src={resolvedEmoji}
-                      alt={tool.name}
-                      className={styles['detail-emoji-image']}
-                    />
-                  ) : (
-                    <span className={styles['detail-emoji']}>
-                      {resolvedEmoji}
-                    </span>
-                  ))
-                );
-              })()}
-              {cleanName}
-            </div>
-            <div className={styles['detail-title']}>{tool.name}</div>
-            <div className={styles['detail-domain-layout-row']}>
-              {tool.domain && (
-                <span className={styles['tool-domain']}>{tool.domain}</span>
-              )}
-              {tool.dataSource && (
-                <span className={styles['data-source-badge']}>
-                  <span className={styles['data-source-type']}>
-                    {tool.dataSource.type}
-                  </span>
-                  {tool.dataSource.provider && (
-                    <span className={styles['data-source-provider']}>
-                      {tool.dataSource.provider}
-                    </span>
-                  )}
-                  {tool.dataSource.intervalSeconds && (
-                    <span className={styles['data-source-interval']}>
-                      ~{tool.dataSource.intervalSeconds}s
-                    </span>
-                  )}
-                </span>
-              )}
-              {agents?.length > 0 &&
-                agents.map((agent: { id: string; name: string }) => (
-                  <span
-                    key={agent.id}
-                    className={styles['agent-badge']}
-                    style={
-                      {
-                        "--agent-color": getAgentColor(agent.id),
-                      } as React.CSSProperties
-                    }
-                  >
-                    <Bot size={10} />
-                    {agent.name}
-                  </span>
-                ))}
-            </div>
-          </div>
-          <button
-            className={styles['detail-close']}
-            onClick={onClose}
-            title="Close"
-          >
-            <X />
-          </button>
-        </div>
+  const resolvedEmoji = Array.isArray(tool.emoji) ? tool.emoji[0] : tool.emoji;
 
-        {/* Body */}
-        <div className={styles['detail-body']}>
+  const modalTitle = (
+    <div className={styles['detail-title-block']}>
+      <div className={styles['detail-clean-name']}>
+        {resolvedEmoji &&
+          (resolvedEmoji.startsWith("http") ? (
+            <img
+              src={resolvedEmoji}
+              alt={tool.name}
+              className={styles['detail-emoji-image']}
+            />
+          ) : (
+            <span className={styles['detail-emoji']}>{resolvedEmoji}</span>
+          ))}
+        {cleanName}
+      </div>
+      <div className={styles['detail-title']}>{tool.name}</div>
+      <div className={styles['detail-domain-layout-row']}>
+        {tool.domain && (
+          <span className={styles['tool-domain']}>{tool.domain}</span>
+        )}
+        {tool.dataSource && (
+          <span className={styles['data-source-badge']}>
+            <span className={styles['data-source-type']}>
+              {tool.dataSource.type}
+            </span>
+            {tool.dataSource.provider && (
+              <span className={styles['data-source-provider']}>
+                {tool.dataSource.provider}
+              </span>
+            )}
+            {tool.dataSource.intervalSeconds && (
+              <span className={styles['data-source-interval']}>
+                ~{tool.dataSource.intervalSeconds}s
+              </span>
+            )}
+          </span>
+        )}
+        {agents?.length > 0 &&
+          agents.map((agent: { id: string; name: string }) => (
+            <span
+              key={agent.id}
+              className={styles['agent-badge']}
+              style={
+                {
+                  "--agent-color": resolveAgentAccentColor(agent.id),
+                } as React.CSSProperties
+              }
+            >
+              <Bot size={AGENT_BADGE_ICON_SIZE} />
+              {agent.name}
+            </span>
+          ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <ModalComponent
+      title={modalTitle}
+      onClose={onClose}
+      size="lg"
+      id="tool-detail-modal"
+      className="tool-detail-modal-component"
+    >
+      <div className={styles['detail-body']}>
           <ButtonComponent
             variant="primary"
             icon={Play}
@@ -280,13 +251,13 @@ export default function ToolDetailModalComponent({
           {/* Lifetime Stats */}
           <div className={styles['detail-section']}>
             <div className={styles['detail-section-title']}>
-              <BarChart3 size={12} /> Lifetime Usage Stats
+              <BarChart3 size={SECTION_ICON_SIZE} /> Lifetime Usage Stats
             </div>
             {stats ? (
               <>
                 <div className={styles['stats-grid']}>
                   <div className={styles['stat-cell']}>
-                    <Hash size={14} className={styles['stat-cell-icon']} />
+                    <Hash size={STAT_ICON_SIZE} className={styles['stat-cell-icon']} />
                     <div className={styles['stat-cell-value']}>
                       {formatCompact(stats.totalCalls)}
                     </div>
@@ -294,7 +265,7 @@ export default function ToolDetailModalComponent({
                   </div>
                   <div className={styles['stat-cell']}>
                     <Activity
-                      size={14}
+                      size={STAT_ICON_SIZE}
                       className={styles['stat-cell-icon']}
                     />
                     <div className={styles['stat-cell-value']}>
@@ -304,7 +275,7 @@ export default function ToolDetailModalComponent({
                   </div>
                   <div className={styles['stat-cell']}>
                     <DollarSign
-                      size={14}
+                      size={STAT_ICON_SIZE}
                       className={styles['stat-cell-icon']}
                     />
                     <div className={styles['stat-cell-value']}>
@@ -314,7 +285,7 @@ export default function ToolDetailModalComponent({
                   </div>
                   <div className={styles['stat-cell']}>
                     <TrendingUp
-                      size={14}
+                      size={STAT_ICON_SIZE}
                       className={styles['stat-cell-icon']}
                     />
                     <div className={styles['stat-cell-value']}>
@@ -325,7 +296,7 @@ export default function ToolDetailModalComponent({
                     </div>
                   </div>
                   <div className={styles['stat-cell']}>
-                    <Zap size={14} className={styles['stat-cell-icon']} />
+                    <Zap size={STAT_ICON_SIZE} className={styles['stat-cell-icon']} />
                     <div className={styles['stat-cell-value']}>
                       {formatCompact(
                         (stats.totalInputTokens || 0) +
@@ -338,7 +309,7 @@ export default function ToolDetailModalComponent({
                   </div>
                   <div className={styles['stat-cell']}>
                     <CheckCircle2
-                      size={14}
+                      size={STAT_ICON_SIZE}
                       className={styles['stat-cell-icon']}
                     />
                     <div className={styles['stat-cell-value']}>
@@ -353,7 +324,7 @@ export default function ToolDetailModalComponent({
                 {/* Time Range */}
                 <div className={styles['stats-time-range']}>
                   <div className={styles['stats-time-item']}>
-                    <Calendar size={12} />
+                    <Calendar size={SECTION_ICON_SIZE} />
                     <span className={styles['stats-time-label']}>
                       First used
                     </span>
@@ -362,7 +333,7 @@ export default function ToolDetailModalComponent({
                     </span>
                   </div>
                   <div className={styles['stats-time-item']}>
-                    <Clock size={12} />
+                    <Clock size={SECTION_ICON_SIZE} />
                     <span className={styles['stats-time-label']}>
                       Last used
                     </span>
@@ -372,7 +343,7 @@ export default function ToolDetailModalComponent({
                   </div>
                   {(stats.failureCount || 0) > 0 && (
                     <div className={styles['stats-time-item']}>
-                      <XCircle size={12} />
+                      <XCircle size={SECTION_ICON_SIZE} />
                       <span className={styles['stats-time-label']}>
                         Failures
                       </span>
@@ -440,7 +411,7 @@ export default function ToolDetailModalComponent({
               </>
             ) : (
               <div className={styles['stats-empty']}>
-                <Activity size={16} />
+                <Activity size={STAT_ICON_SIZE} />
                 No usage data recorded yet
               </div>
             )}
@@ -527,12 +498,11 @@ export default function ToolDetailModalComponent({
               <span className={styles['detail-section-title']}>
                 Raw Schema
               </span>
-              <span
+              <ChevronDown
+                size={SECTION_ICON_SIZE}
                 className={styles['raw-chevron']}
                 data-is-open={isRawSchemaVisible}
-              >
-                ▾
-              </span>
+              />
             </button>
             {isRawSchemaVisible && (
               <pre className={styles['json-block']}>
@@ -540,8 +510,7 @@ export default function ToolDetailModalComponent({
               </pre>
             )}
           </div>
-        </div>
       </div>
-    </div>
+    </ModalComponent>
   );
 }

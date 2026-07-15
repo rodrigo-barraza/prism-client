@@ -3,7 +3,7 @@
 import NavigationSidebarComponent from "../../components/NavigationSidebarComponent";
 import ThreePanelLayout from "../../components/ThreePanelLayoutComponent";
 import TopologiesPageComponent from "../../components/TopologiesPageComponent";
-import styles from "../about/page.module.css";
+import styles from "./page.module.css";
 
 export default function TopologiesPage() {
   return (

@@ -59,56 +59,58 @@ export default function MemoryCardComponent({
     <div
       className={`memory-card-component ${styles["memory-card"]} ${isNew ? styles["is-new-memory"] : ""}`}
     >
-      <div className={styles["memory-card-header"]}>
-        <div className={`${styles["memory-icon"]} ${styles[iconClass]}`}>
-          <IconComponent size={14} />
-        </div>
-        <div className={styles["memory-info"]}>
-          <div className={styles["memory-title"]}>
+      <div className={`${styles["memory-icon"]} ${styles[iconClass]}`}>
+        <IconComponent size={13} />
+      </div>
+      <div className={styles["memory-body"]}>
+        <div className={styles["memory-title-line"]}>
+          <span className={styles["memory-title"]}>
             {memory.title ||
               (memory.content ? memory.content.substring(0, 60) : "Untitled")}
-          </div>
-          <div className={styles["memory-meta"]}>
-            <span
-              className={`${styles["memory-type-badge"]} ${styles[badgeClass]}`}
+          </span>
+          <div className={styles["memory-actions"]}>
+            <button
+              className={styles["delete-button"]}
+              onClick={() => onDeleteRequest(isConfirmingDelete ? "" : memoryId)}
+              title="Delete memory"
             >
-              {type}
-            </span>
-            {memory.createdAt && (
-              <BadgeComponent type="dateTime" date={memory.createdAt} />
-            )}
+              <Trash2 size={12} />
+            </button>
           </div>
         </div>
-        <button
-          className={styles["delete-button"]}
-          onClick={() => onDeleteRequest(isConfirmingDelete ? "" : memoryId)}
-          title="Delete memory"
-        >
-          <Trash2 size={12} />
-        </button>
-      </div>
-
-      {memory.content && (
-        <div className={styles["memory-content"]}>{memory.content}</div>
-      )}
-
-      {isConfirmingDelete && (
-        <div className={styles["confirm-layout-row"]}>
-          <span className={styles["confirm-label"]}>Delete this memory?</span>
-          <button
-            className={`${styles["confirm-button"]} ${styles["confirm-button-yes"]}`}
-            onClick={() => onDeleteConfirm(memoryId)}
+        <div className={styles["memory-meta"]}>
+          <span
+            className={`${styles["memory-type-badge"]} ${styles[badgeClass]}`}
           >
-            Delete
-          </button>
-          <button
-            className={`${styles["confirm-button"]} ${styles["confirm-button-no"]}`}
-            onClick={onDeleteCancel}
-          >
-            Cancel
-          </button>
+            {type}
+          </span>
+          {memory.createdAt && (
+            <BadgeComponent type="dateTime" date={memory.createdAt} />
+          )}
         </div>
-      )}
+
+        {memory.content && (
+          <div className={styles["memory-content"]}>{memory.content}</div>
+        )}
+
+        {isConfirmingDelete && (
+          <div className={styles["confirm-layout-row"]}>
+            <span className={styles["confirm-label"]}>Delete this memory?</span>
+            <button
+              className={`${styles["confirm-button"]} ${styles["confirm-button-yes"]}`}
+              onClick={() => onDeleteConfirm(memoryId)}
+            >
+              Delete
+            </button>
+            <button
+              className={`${styles["confirm-button"]} ${styles["confirm-button-no"]}`}
+              onClick={onDeleteCancel}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

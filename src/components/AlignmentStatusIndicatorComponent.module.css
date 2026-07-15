@@ -1,0 +1,19 @@
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.status-aligned {
+  color: var(--color-success);
+}
+
+.status-simplified {
+  color: var(--color-warning);
+}
+
+.status-extended {
+  color: var(--color-info);
+}

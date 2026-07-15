@@ -75,6 +75,20 @@
   --color-neutral: oklch(71.1% 0.0352 256.8);
   --color-white: oklch(100.0% 0.0001 263.3);
   --color-github-green: oklch(69.5% 0.1809 145.6);
+
+  /* ── Sidebar Row System ───────────────────────────────────
+     Single source of truth for the unified sidebar list-row look
+     shared by HistoryItem, Sub-Agents, and all sidebar panels.
+     Keeping these here prevents per-panel drift. */
+  --sidebar-row-padding-block: 8px;
+  --sidebar-row-padding-inline: 12px;
+  --sidebar-row-gap: 4px;
+  --sidebar-row-accent-width: 2px;
+  --sidebar-row-divider: color-mix(in oklch, var(--calculated-border-color) 65%, transparent);
+  --sidebar-row-hover-bg: var(--background-elevated);
+  --sidebar-row-active-bg: var(--calculated-accent-primary-subtle);
+  --sidebar-row-chip-radius: 4px;
+  --sidebar-row-chip-bg: color-mix(in oklch, var(--background-elevated) 60%, transparent);
 }
 
 /* ── Daylight Mode ─────────────────────────────────────────── */

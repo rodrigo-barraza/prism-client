@@ -2,25 +2,46 @@
 
 import { useState, useMemo } from "react";
 import {
+  EmptyStateComponent,
   SearchInputComponent,
+  SegmentedControlComponent,
   SelectComponent,
   ToolCardComponent as ToolSchemaCard,
   TableComponent,
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "./BadgeComponent";
 import {
-  Wrench,
   Search,
   LayoutGrid,
   List,
   Table,
   Braces,
+  Wrench,
 } from "lucide-react";
 import {
   formatCompact,
   formatLatencyMilliseconds,
 } from "@rodrigo-barraza/utilities-library";
+import { getDomainIcon } from "../utils/toolDomainIcons";
 import styles from "./ToolsTableComponent.module.css";
+
+/* -- Constants ------------------------------------------------ */
+
+const VIEW_MODES = {
+  GRID: "grid",
+  LIST: "list",
+  TABLE: "table",
+} as const;
+
+type ViewMode = (typeof VIEW_MODES)[keyof typeof VIEW_MODES];
+
+const VIEW_MODE_ICON_SIZE = 14;
+
+const TABLE_STORAGE_KEY = "tools-explorer-table";
+
+/** Error rates above this percentage render as danger instead of warning. */
+const ERROR_RATE_WARNING_MAX_PERCENT = 15;
+const DOMAIN_TABLE_STORAGE_KEY_PREFIX = "tools-list-";
 
 /* -- Types --------------------------------------------------- */
 
@@ -114,72 +135,11 @@ function buildToolAgentMap(agents: AgentMinimal[]) {
   return map;
 }
 
-// Domain → Icon mapping
-import {
-  Cloud,
-  Zap,
-  Gamepad2,
-  Database,
-  Globe,
-  Package,
-  Brain,
-  Palette,
-  Heart,
-  Navigation,
-  Cog,
-  Cpu,
-  Ship,
-  Lightbulb,
-  MessageCircle,
-  Bot,
-  FolderOpen,
-  Layers,
-  Clock,
-  Shield,
-} from "lucide-react";
-
-const DOMAIN_ICONS: Record<string, React.ElementType> = {
-  "Weather & Environment": Cloud,
-  Events: Zap,
-  Sports: Gamepad2,
-  "Markets & Commodities": Database,
-  Trends: Globe,
-  Products: Package,
-  Finance: Database,
-  Knowledge: Brain,
-  "Movies & TV": Palette,
-  Health: Heart,
-  Transit: Navigation,
-  Utilities: Cog,
-  Compute: Cpu,
-  Maritime: Ship,
-  Energy: Lightbulb,
-  Communication: MessageCircle,
-  Creative: Palette,
-  Discord: MessageCircle,
-  "Smart Home": Lightbulb,
-  Reasoning: Brain,
-  Coordinator: Bot,
-  Workspace: FolderOpen,
-  Web: Globe,
-  Browser: Globe,
-  "Task Management": Layers,
-  Memory: Brain,
-  "Agent Management": Bot,
-  "Model Context Protocol": Cpu,
-  Meta: Cog,
-  "Scheduled Tasks": Clock,
-  Timers: Clock,
-  Skills: Zap,
-  "Control Flow": Shield,
-  "Structured Output": Braces,
-};
-
-function getDomainIcon(domain: string): React.ElementType {
-  return DOMAIN_ICONS[domain] || Wrench;
-}
-
 /* -- Sub-components ------------------------------------------ */
+
+function MutedCell({ children = "\u2014" }: { children?: React.ReactNode }) {
+  return <span className={styles['muted-cell']}>{children}</span>;
+}
 
 function ToolCard({
   tool,
@@ -239,7 +199,7 @@ export default function ToolsTableComponent({
   const [searchQuery, setSearchQuery] = useState("");
   const [domainFilter, setDomainFilter] = useState<string[]>([]);
   const [agentFilter, setAgentFilter] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "table">("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODES.GRID);
 
   const toolAgentMap = useMemo(() => buildToolAgentMap(agents), [agents]);
   const allDomains = useMemo(() => extractDomains(tools), [tools]);
@@ -311,13 +271,13 @@ export default function ToolsTableComponent({
               <img
                 src={resolvedEmoji}
                 alt={row.name}
-                style={{ width: "1.25rem", height: "1.25rem", objectFit: "contain" }}
+                className={styles['table-emoji-image']}
               />
             ) : (
-              <span style={{ fontSize: "1.1rem" }}>{resolvedEmoji}</span>
+              <span className={styles['table-emoji-glyph']}>{resolvedEmoji}</span>
             )
           ) : (
-            <Wrench size={14} style={{ opacity: 0.4 }} />
+            <Wrench size={VIEW_MODE_ICON_SIZE} className={styles['table-emoji-fallback']} />
           );
         },
       },
@@ -339,7 +299,7 @@ export default function ToolsTableComponent({
           row.domain ? (
             <span className={styles['tool-domain']}>{row.domain}</span>
           ) : (
-            <span style={{ color: "var(--text-muted)" }}>—</span>
+            <MutedCell />
           ),
       },
       {
@@ -354,7 +314,7 @@ export default function ToolsTableComponent({
               <Braces size={12} /> {paramCount}
             </span>
           ) : (
-            <span style={{ color: "var(--text-muted)" }}>0</span>
+            <MutedCell>0</MutedCell>
           );
         },
       },
@@ -371,7 +331,7 @@ export default function ToolsTableComponent({
           return rowAgents.length > 0 ? (
             <BadgeComponent type="agent" agents={rowAgents} size={20} iconSize={11} />
           ) : (
-            <span style={{ color: "var(--text-muted)" }}>—</span>
+            <MutedCell />
           );
         },
       },
@@ -391,7 +351,7 @@ export default function ToolsTableComponent({
               {formatCompact(stat.totalCalls)}
             </span>
           ) : (
-            <span style={{ color: "var(--text-muted)" }}>—</span>
+            <MutedCell />
           );
         },
       },
@@ -411,7 +371,7 @@ export default function ToolsTableComponent({
               {formatLatencyMilliseconds(stat.avgLatency)}
             </span>
           ) : (
-            <span style={{ color: "var(--text-muted)" }}>—</span>
+            <MutedCell />
           );
         },
       },
@@ -431,7 +391,7 @@ export default function ToolsTableComponent({
               {formatLatencyMilliseconds(stat.minLatency)}
             </span>
           ) : (
-            <span style={{ color: "var(--text-muted)" }}>—</span>
+            <MutedCell />
           );
         },
       },
@@ -451,7 +411,7 @@ export default function ToolsTableComponent({
               {formatLatencyMilliseconds(stat.maxLatency)}
             </span>
           ) : (
-            <span style={{ color: "var(--text-muted)" }}>—</span>
+            <MutedCell />
           );
         },
       },
@@ -467,16 +427,16 @@ export default function ToolsTableComponent({
         render: (row: ToolSchema) => {
           const stat = toolStats[row.name];
           if (!stat || stat.totalCalls === 0)
-            return <span style={{ color: "var(--text-muted)" }}>—</span>;
+            return <MutedCell />;
           const rate = stat.errorRate ?? 0;
-          const color =
+          const rateClass =
             rate === 0
-              ? "var(--color-success)"
-              : rate <= 15
-                ? "var(--color-warning)"
-                : "var(--color-danger)";
+              ? styles['error-rate-none']
+              : rate <= ERROR_RATE_WARNING_MAX_PERCENT
+                ? styles['error-rate-warning']
+                : styles['error-rate-danger'];
           return (
-            <span style={{ fontWeight: 600, color, fontVariantNumeric: "tabular-nums" }}>
+            <span className={`${styles['error-rate-cell']} ${rateClass}`}>
               {rate.toFixed(0)}%
             </span>
           );
@@ -498,7 +458,7 @@ export default function ToolsTableComponent({
               {formatCompact(stat.totalTransferBytes)}
             </span>
           ) : (
-            <span style={{ color: "var(--text-muted)" }}>—</span>
+            <MutedCell />
           );
         },
       },
@@ -565,37 +525,25 @@ export default function ToolsTableComponent({
           onChange={(value: string[]) => setAgentFilter(value)}
         />
 
-        <div className={styles['view-toggle']}>
-          <button
-            className={`${styles['view-button']} ${viewMode === "grid" ? styles['view-is-active-state'] : ""}`}
-            onClick={() => setViewMode("grid")}
-            title="Grid view"
-          >
-            <LayoutGrid />
-          </button>
-          <button
-            className={`${styles['view-button']} ${viewMode === "list" ? styles['view-is-active-state'] : ""}`}
-            onClick={() => setViewMode("list")}
-            title="List view"
-          >
-            <List />
-          </button>
-          <button
-            className={`${styles['view-button']} ${viewMode === "table" ? styles['view-is-active-state'] : ""}`}
-            onClick={() => setViewMode("table")}
-            title="Table view"
-          >
-            <Table />
-          </button>
-        </div>
+        <SegmentedControlComponent
+          value={viewMode}
+          onChange={(value: string) => setViewMode(value as ViewMode)}
+          compact
+          segments={[
+            { value: VIEW_MODES.GRID, icon: <LayoutGrid size={VIEW_MODE_ICON_SIZE} /> },
+            { value: VIEW_MODES.LIST, icon: <List size={VIEW_MODE_ICON_SIZE} /> },
+            { value: VIEW_MODES.TABLE, icon: <Table size={VIEW_MODE_ICON_SIZE} /> },
+          ]}
+          className={styles['view-toggle']}
+        />
       </div>
 
       {filteredTools.length === 0 ? (
-        <div className={styles['empty-state']}>
-          <Search />
-          <p>{emptyText || "No tools match your filters."}</p>
-        </div>
-      ) : viewMode === "table" ? (
+        <EmptyStateComponent
+          icon={<Search />}
+          subtitle={emptyText || "No tools match your filters."}
+        />
+      ) : viewMode === VIEW_MODES.TABLE ? (
         <div className={styles['table-wrapper']}>
           <TableComponent
             columns={tableColumns}
@@ -603,7 +551,7 @@ export default function ToolsTableComponent({
             getRowKey={(tool: ToolSchema) => tool.name}
             emptyText={emptyText || "No tools match your filters."}
             onRowClick={(tool: ToolSchema) => handleToolClick(tool)}
-            storageKey="tools-explorer-table"
+            storageKey={TABLE_STORAGE_KEY}
           />
         </div>
       ) : (
@@ -624,7 +572,7 @@ export default function ToolsTableComponent({
                   </span>
                 </div>
 
-                {viewMode === "grid" ? (
+                {viewMode === VIEW_MODES.GRID ? (
                   <div className={styles['tool-grid']}>
                     {domainTools.map((tool: ToolSchema) => (
                       <ToolCard
@@ -643,7 +591,7 @@ export default function ToolsTableComponent({
                       getRowKey={(tool: ToolSchema) => tool.name}
                       emptyText="No tools in this domain."
                       onRowClick={(tool: ToolSchema) => handleToolClick(tool)}
-                      storageKey={`tools-list-${domain}`}
+                      storageKey={`${DOMAIN_TABLE_STORAGE_KEY_PREFIX}${domain}`}
                     />
                   </div>
                 )}

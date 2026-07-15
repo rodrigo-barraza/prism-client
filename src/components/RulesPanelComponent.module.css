@@ -26,98 +26,82 @@
   composes: empty-subtitle from "./PanelShared.module.css";
 }
 
-/* ── Rule Card ──────────────────────────────────────────────── */
+/* ── Rule Row (shared sidebar-row language) ─────────────────── */
 
-.rule-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  background: var(--background-surface);
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  transition: all 0.2s ease;
+.list {
+  composes: list from "./PanelShared.module.css";
+}
+
+.rule-row {
+  composes: row from "./PanelShared.module.css";
 
   &:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--color-amber) 30%,
-      var(--calculated-border-color)
-    );
-    box-shadow: 0 2px 8px color-mix(in oklch, var(--color-amber) 8%, transparent);
+    background: var(--sidebar-row-hover-bg);
   }
 }
 
-.rule-card-disabled {
-  opacity: 0.5;
+.rule-row-disabled {
+  composes: row-disabled from "./PanelShared.module.css";
 }
 
-.rule-card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.rule-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+.rule-leading-icon {
+  composes: row-leading-icon from "./PanelShared.module.css";
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
   background: color-mix(in oklch, var(--color-amber) 12%, transparent);
   color: var(--color-amber);
-  flex-shrink: 0;
 }
 
-.rule-info {
-  flex: 1;
-  min-width: 0;
+.rule-body {
+  composes: row-content from "./PanelShared.module.css";
+}
+
+.rule-title-line {
+  composes: row-title-line from "./PanelShared.module.css";
 }
 
 .rule-name {
-  font-size: var(--font-size-sm);
+  composes: row-title-text from "./PanelShared.module.css";
+  flex: 1;
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rule-slash-command {
-  font-size: var(--font-size-xs);
-  color: var(--color-amber);
-  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
-  opacity: 0.85;
 }
 
 .rule-description {
-  font-size: var(--font-size-xs);
+  composes: row-subtitle from "./PanelShared.module.css";
+}
+
+.rule-meta {
+  composes: row-meta from "./PanelShared.module.css";
+}
+
+.rule-slash-command {
+  composes: chip chip-mono from "./PanelShared.module.css";
+  color: var(--color-amber);
+  background: color-mix(in oklch, var(--color-amber) 10%, transparent);
+}
+
+.rule-character-count {
+  font-size: 0.625rem;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
+}
+
+.rule-character-count-warning {
+  color: var(--color-warning);
 }
 
 .rule-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
+  composes: row-actions from "./PanelShared.module.css";
 }
 
 .rule-action-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
   background: transparent;
   color: var(--text-muted);
   border: none;
@@ -133,33 +117,6 @@
 .rule-delete-button:hover {
   color: var(--color-rose) !important;
   background: color-mix(in oklch, var(--color-rose) 12%, transparent) !important;
-}
-
-.rule-content-preview {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  line-height: 1.5;
-  white-space: pre-wrap;
-  padding: 8px;
-  background: color-mix(in oklch, var(--background-elevated) 60%, transparent);
-  border-radius: 6px;
-  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
-  border: 1px solid
-    color-mix(in oklch, var(--calculated-border-color) 50%, transparent);
-  max-height: 80px;
-  overflow: hidden;
-  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-}
-
-.rule-character-count {
-  font-size: 0.625rem;
-  color: var(--text-muted);
-  text-align: right;
-}
-
-.rule-character-count-warning {
-  color: var(--color-warning);
 }
 
 /* ── Confirm Delete ─────────────────────────────────────────── */

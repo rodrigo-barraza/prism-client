@@ -31,42 +31,46 @@
 /* ── View Toggle ───────────────────────────────────────────── */
 
 .view-toggle {
-  display: flex;
-  border: 1px solid var(--calculated-border-color);
-  border-radius: var(--border-radius-sm);
-  overflow: hidden;
   flex: 0 0 auto !important;
   min-width: 0 !important;
   margin-inline-start: auto;
 }
 
-.view-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  color: var(--text-tertiary);
-  background: var(--background-elevated);
-  border: none;
-  transition:
-    color var(--transition-fast),
-    background var(--transition-fast);
+/* ── Table Cells ───────────────────────────────────────────── */
 
-  & svg {
-    width: 16px;
-    height: 16px;
-  }
+.muted-cell {
+  color: var(--text-muted);
+}
 
-  &:hover {
-    color: var(--text-secondary);
-    background: var(--background-surface);
-  }
+.table-emoji-image {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
 
-  &.view-is-active-state {
-    color: var(--accent-primary);
-    background: var(--calculated-accent-primary-subtle);
-  }
+.table-emoji-glyph {
+  font-size: var(--font-size-lg);
+}
+
+.table-emoji-fallback {
+  opacity: 0.4;
+}
+
+.error-rate-cell {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.error-rate-none {
+  color: var(--color-success);
+}
+
+.error-rate-warning {
+  color: var(--color-warning);
+}
+
+.error-rate-danger {
+  color: var(--color-danger);
 }
 
 /* ── Domain Sections (Grid / List) ─────────────────────────── */
@@ -233,7 +237,7 @@
   font-size: 1rem;
   line-height: 1;
   flex-shrink: 0;
-  filter: drop-shadow(0 1px 2px oklch(0 0 0 / 0.15));
+  filter: drop-shadow(var(--calculated-shadow-sm));
 }
 
 .tool-layout-row-emoji-image {
@@ -267,30 +271,6 @@
   gap: 8px;
   flex-shrink: 0;
   justify-content: flex-start;
-}
-
-/* ── Empty State ───────────────────────────────────────────── */
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 80px 24px;
-  text-align: center;
-
-  & svg {
-    width: 40px;
-    height: 40px;
-    color: var(--text-muted);
-    opacity: 0.5;
-  }
-
-  & p {
-    font-size: var(--font-size-base);
-    color: var(--text-tertiary);
-  }
 }
 
 /* ── Animations ────────────────────────────────────────────── */
