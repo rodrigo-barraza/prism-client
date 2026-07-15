@@ -3,6 +3,7 @@ import { AGENT_IDS, EVENT_NAME_PANEL_DISMISS_SIDEBARS } from "@/constants";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
+  Beer,
   Bot,
   Wrench,
   Check,
@@ -48,6 +49,7 @@ const AGENT_ICONS: Record<string, React.ElementType> = {
   NONE: MessageSquare,
   CODING: Bot,
   OMNI: Infinity,
+  BENDER: Beer,
   LUPOS: Skull,
   STICKERS: Sticker,
   DIGEST: Apple,

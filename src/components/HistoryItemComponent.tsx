@@ -300,6 +300,7 @@ export default function HistoryItemComponent({
     LIGHTS: "Lights",
     OOG: "Oog",
     OMNI: "Omni",
+    BENDER: "Bender",
     IMAGE: "Image Agent",
   };
 

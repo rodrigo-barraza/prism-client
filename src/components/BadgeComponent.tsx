@@ -336,6 +336,7 @@ const AGENT_GRADIENTS: Record<string, string[]> = {
   NONE: ["oklch(0.5 0.03 260)", "oklch(0.65 0.03 260)"],
   CODING: ["oklch(0.585 0.233 277.117)", "oklch(0.65 0.2 277)"],
   OMNI: ["oklch(0.4 0.2 25)", "oklch(0.5 0.22 25)"],
+  BENDER: ["oklch(0.5 0.04 240)", "oklch(0.68 0.05 240)"],
   LUPOS: ["oklch(0.5 0.25 290)", "oklch(0.6 0.23 290)"],
   STICKERS: ["oklch(0.705 0.191 165.574)", "oklch(0.8 0.15 165)"],
   DIGEST: ["oklch(0.769 0.188 70.08)", "oklch(0.585 0.22 25)"],

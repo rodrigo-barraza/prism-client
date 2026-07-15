@@ -93,6 +93,7 @@ interface ToolDetailModalComponentProps {
 const AGENT_COLORS: Record<string, string> = {
   CODING: "oklch(0.588 0.158 241.966)",
   OMNI: "oklch(0.5 0.22 25)",
+  BENDER: "oklch(0.6 0.05 240)",
   OOG: "oklch(0.7 0.15 280)",
   LUPOS: "oklch(0.585 0.22 25)",
   STICKERS: "oklch(0.769 0.188 70.08)",
