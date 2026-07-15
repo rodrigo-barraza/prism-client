@@ -243,6 +243,8 @@ interface ThinkingBlockProps {
   streamKeepVisible?: boolean;
   thinkingDurationSeconds?: number;
   children?: React.ReactNode;
+  // Minimal "Chat" view: render a compact, non-expandable pill.
+  minimal?: boolean;
 }
 
 function ThinkingBlock({
@@ -251,6 +253,7 @@ function ThinkingBlock({
   streamKeepVisible,
   thinkingDurationSeconds,
   children,
+  minimal = false,
 }: ThinkingBlockProps) {
   // User can manually toggle after streaming has finished
   const [manualOpen, setManualOpen] = useState(false);
@@ -331,6 +334,18 @@ function ThinkingBlock({
     }
     return "Thoughts";
   })();
+
+  // Minimal "Chat" view — a non-expandable pill mirroring the tool-call pill.
+  if (minimal) {
+    return (
+      <div
+        className={`${styles['thinking-pill']}${isStreaming ? ` ${styles['thinking-pill-active']}` : ""}`}
+      >
+        <span className={styles['thinking-toggle-emoji']}>🧠</span>
+        <span className={styles['thinking-pill-label']}>{thinkingLabel}</span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -1471,6 +1486,7 @@ export default function MessageList({
                                       thinking={groupMessage.thinking}
                                       isStreaming={false}
                                       thinkingDurationSeconds={groupMessage.thinkingDurationSeconds}
+                                      minimal={minimal}
                                     />
                                   )}
                                   {groupMessage.toolCalls &&
@@ -1927,6 +1943,7 @@ export default function MessageList({
                                           isStreaming={false}
                                           thinking={fragment}
                                           thinkingDurationSeconds={message.thinkingDurationSeconds}
+                                          minimal={minimal}
                                         />
                                       );
                                     })}
@@ -2008,6 +2025,7 @@ export default function MessageList({
                                         }
                                         thinking={fragment}
                                         thinkingDurationSeconds={message.thinkingDurationSeconds}
+                                        minimal={minimal}
                                       />
                                     );
                                   }
@@ -2087,6 +2105,7 @@ export default function MessageList({
                                 !message.content
                               }
                               thinkingDurationSeconds={message.thinkingDurationSeconds}
+                              minimal={minimal}
                             />
                           )}
 
