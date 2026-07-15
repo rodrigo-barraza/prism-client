@@ -2068,7 +2068,11 @@ export default function MessageList({
                         })()
                       ) : (
                         <>
-                          {/* Thinking block (persisted conversations without segments) */}
+                          {/* Structural render path: this branch handles all user messages
+                              (inline editing / raw view / mentions, below) and any message that
+                              has no contentSegments. The thinking + tool-call blocks additionally
+                              cover assistant messages persisted before contentSegments existed. */}
+                          {/* Thinking block (segment-less assistant messages) */}
                           {message.thinking && (
                             <ThinkingBlock
                               thinking={message.thinking}
