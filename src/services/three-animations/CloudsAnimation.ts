@@ -72,13 +72,13 @@ export interface CloudsAnimationOptions {
 
 /** Colors sampled from the reference image (bright blue-shifted alpine sky). */
 const DEFAULT_PALETTE: CloudsPalette = {
-  skyZenith: "#0e59b7",
-  skyHorizon: "#cfe9f8",
+  skyZenith: "#0c55c0",
+  skyHorizon: "#c2e0f5",
   abyss: "#16407e",
   cloudBright: "#ffffff",
-  cloudMid: "#b4cfec",
-  cloudShadow: "#5c88c4",
-  haze: "#bdddf4",
+  cloudMid: "#9fc0e6",
+  cloudShadow: "#4f7fc2",
+  haze: "#9cc4e8",
   sun: "#fff6e8",
   cirrus: "#e8f4fc",
 };
@@ -226,8 +226,8 @@ float cloudDensity(vec3 p, float heightFraction, float clump, int octaves) {
   float density = uCoverage + 0.38 * clump + 0.68 * shape;
   // Vertical profile: erode upward for cauliflower tops, soften bases
   density -= 0.85 * pow(heightFraction, 1.35);
-  density -= 0.28 * pow(1.0 - heightFraction, 3.0);
-  return clamp(density * 1.35, 0.0, 1.0);
+  density -= 0.22 * pow(1.0 - heightFraction, 3.0);
+  return clamp(density * 1.5, 0.0, 1.0);
 }
 
 float hash12(vec2 p) {
@@ -248,15 +248,19 @@ vec3 skyColor(vec3 rayDirection) {
   vec3 depth = mix(uSkyHorizon, uAbyss, clamp(-up * 7.0, 0.0, 1.0));
   sky = mix(depth, sky, step(0.0, up));
 
+  // Converge to the haze tint at the horizon so the grazing band between
+  // sky and the far cloud deck blends without a seam.
+  sky = mix(uHaze, sky, smoothstep(0.0, 0.04, abs(up)));
+
   // Sun: small overexposed disc + tight glow + wide subtle veil
   float sunDot = clamp(dot(rayDirection, uSunDirection), 0.0, 1.0);
   sky += uSunColor * (
     pow(sunDot, 18000.0) * 2.2 +
-    pow(sunDot, 800.0) * 0.30 +
-    pow(sunDot, 24.0) * 0.06
+    pow(sunDot, 800.0) * 0.16 +
+    pow(sunDot, 24.0) * 0.035
   );
 
-  // Faint stretched cirrus sheet high above
+  // Faint stretched cirrus sheet high above — barely-there wisps
   if (up > 0.01) {
     float tCirrus = (CIRRUS_HEIGHT - CAMERA_HEIGHT) / up;
     vec2 sheet = rayDirection.xz * tCirrus;
@@ -265,7 +269,7 @@ vec3 skyColor(vec3 rayDirection) {
       7.7 + uSeed.z * 9.0,
       sheet.y * 0.00030
     ), 4);
-    float cirrus = smoothstep(0.12, 0.62, streaks) * 0.22;
+    float cirrus = smoothstep(0.30, 0.85, streaks) * 0.10;
     cirrus *= smoothstep(0.005, 0.12, up);
     sky = mix(sky, uCirrusColor, cirrus);
   }
@@ -274,8 +278,13 @@ vec3 skyColor(vec3 rayDirection) {
 
 // -- Volumetric march ---------------------------------------------------
 vec4 marchClouds(vec3 rayOrigin, vec3 rayDirection, float dither) {
+  // Upward rays only rise relative to the curved shell — they can never
+  // enter the deck (their quadratic roots are both behind the camera, and
+  // marching backwards samples garbage). Sky pixels skip the march.
+  if (rayDirection.y >= 0.0) return vec4(0.0);
+
   // Slab entry with planet curvature: solve A*t^2 + rd.y*t + (h - TOP) = 0.
-  // No real root = the ray passes above the cloud shell (pure sky).
+  // No real root = the ray grazes above the cloud shell (horizon dip band).
   float A = 1.0 / (2.0 * EARTH_RADIUS);
   float aboveTop = rayOrigin.y - CLOUD_TOP;
   float discriminant = rayDirection.y * rayDirection.y - 4.0 * A * aboveTop;
@@ -314,7 +323,7 @@ vec4 marchClouds(vec3 rayOrigin, vec3 rayDirection, float dither) {
           (lightShellY - CLOUD_BASE) / (CLOUD_TOP - CLOUD_BASE), 0.0, 1.0);
         float lightDensity = cloudDensity(
           lightPoint, lightHeight, clump, max(octaves - 2, 2));
-        float sunlight = clamp((density - lightDensity) * 2.4 + 0.06, 0.0, 1.0);
+        float sunlight = clamp((density - lightDensity) * 3.4 + 0.02, 0.0, 1.0);
 
         // Blue-shifted ambient by height inside the cloud + white sun term
         vec3 cloudColor = mix(uCloudShadow, uCloudMid, heightFraction)
@@ -393,7 +402,7 @@ export function createCloudsAnimation(
 
   // Sun sits high in frame, slightly left of center (reference image);
   // cloud shading uses a steeper light so tops read sunlit from above.
-  const sunDirection = new THREE.Vector3(-0.096, 0.234, 0.967).normalize();
+  const sunDirection = new THREE.Vector3(-0.04, 0.234, 0.967).normalize();
   const lightDirection = new THREE.Vector3(-0.096, 0.62, 0.75).normalize();
 
   const colorUniform = (hex: string) => ({
