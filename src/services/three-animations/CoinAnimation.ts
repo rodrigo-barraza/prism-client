@@ -131,17 +131,19 @@ export function createCoinAnimation(
   // -- Materials -----------------------------------------------------
   scene.environment = ThreeService.getEnvironment(renderer);
 
+  // Faces stay mostly diffuse so brand colors and icons read bright and
+  // true — the metallic look comes from the rim rings and edge strip.
   const frontMaterial = new THREE.MeshStandardMaterial({
     map: faceTexture,
-    metalness: 0.35,
-    roughness: 0.34,
-    envMapIntensity: 0.9,
+    metalness: 0.22,
+    roughness: 0.4,
+    envMapIntensity: 0.85,
   });
   const backMaterial = new THREE.MeshStandardMaterial({
     map: backTexture,
-    metalness: 0.35,
-    roughness: 0.34,
-    envMapIntensity: 0.9,
+    metalness: 0.22,
+    roughness: 0.4,
+    envMapIntensity: 0.85,
   });
   const sideMaterial = new THREE.MeshStandardMaterial({
     map: rimTexture,
@@ -204,7 +206,7 @@ export function createCoinAnimation(
   scene.add(pivot);
 
   // -- Lights (the shared environment map provides the base) ---------
-  const keyLight = new THREE.DirectionalLight("#ffffff", 1.3);
+  const keyLight = new THREE.DirectionalLight("#ffffff", 1.55);
   keyLight.position.set(2.5, 3, 4);
   scene.add(keyLight);
 
