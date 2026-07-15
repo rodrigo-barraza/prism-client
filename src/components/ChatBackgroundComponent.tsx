@@ -14,7 +14,8 @@ import styles from "./ChatBackgroundComponent.module.css";
 
 // Each keystroke kicks the forward fly-through speed by this much (the preset
 // accumulates it toward its cap and decays back), mirroring the coin's spin.
-const TYPE_IMPULSE_PER_KEYSTROKE = 2.6;
+// Large so even a few keystrokes launch a fast fly-through through the clouds.
+const TYPE_IMPULSE_PER_KEYSTROKE = 26;
 
 interface ChatBackgroundScene {
   // Registry holds heterogeneous option shapes — erased to `any` on purpose

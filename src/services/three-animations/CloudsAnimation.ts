@@ -119,9 +119,11 @@ const NIGHT_PALETTE: CloudsPalette = {
 const NOISE_TEXTURE_SIZE = 256;
 
 // Forward fly-through: idle drift speed and how a typing "impulse" ramps it.
+// Idle stays slow (the scene should "drift by slowly"); typing kicks the
+// camera into a fast fly-through that decays back to the calm drift.
 const BASE_FORWARD_SPEED = 3.0; // units/sec — the calm idle drift
 const FORWARD_BOOST_DECAY_PER_SECOND = 1.5; // eases back to idle after typing
-const MAX_FORWARD_BOOST = 18.0; // cap so sustained typing tops out
+const MAX_FORWARD_BOOST = 180.0; // cap so sustained typing tops out (~540 u/s)
 
 /**
  * Deterministic PRNG (mulberry32) — the noise texture is identical every
