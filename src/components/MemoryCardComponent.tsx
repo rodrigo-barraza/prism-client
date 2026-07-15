@@ -6,6 +6,8 @@ import {
   MessageSquare,
   FolderKanban,
   ExternalLink,
+  AtSign,
+  MessageCircle,
 } from "lucide-react";
 import type { MemoryType, AgentMemory } from "../types/types";
 import BadgeComponent from "./BadgeComponent";
@@ -39,6 +41,10 @@ interface MemoryCardComponentProps {
   onDeleteRequest: (_memoryId: string) => void;
   onDeleteConfirm: (_memoryId: string) => void;
   onDeleteCancel: () => void;
+  /** Filter the list to memories about this Discord user (LUPOS memories). */
+  onFilterAboutUser?: (_userId: string) => void;
+  /** Filter the list to memories revealed by this Discord user. */
+  onFilterSourceUser?: (_userId: string) => void;
 }
 
 export default function MemoryCardComponent({
@@ -48,12 +54,20 @@ export default function MemoryCardComponent({
   onDeleteRequest,
   onDeleteConfirm,
   onDeleteCancel,
+  onFilterAboutUser,
+  onFilterSourceUser,
 }: MemoryCardComponentProps) {
   const memoryId = memory.id || memory._id;
   const type = (memory.type || "project") as MemoryType;
   const IconComponent = TYPE_ICONS[type] || FolderKanban;
   const iconClass = TYPE_ICON_CLASSES[type] || "memory-icon-project";
   const badgeClass = TYPE_BADGE_CLASSES[type] || "badge-project";
+
+  // Discord (LUPOS) attribution — who the memory is about, and who said it
+  const aboutName = memory.aboutUsername || memory.aboutUserId;
+  const sourceName = memory.sourceUsername || memory.sourceUserId;
+  const isSelfReported =
+    memory.aboutUserId && memory.aboutUserId === memory.sourceUserId;
 
   return (
     <div
@@ -84,6 +98,38 @@ export default function MemoryCardComponent({
           >
             {type}
           </span>
+          {aboutName && (
+            <button
+              type="button"
+              className={styles["memory-user-badge"]}
+              onClick={
+                memory.aboutUserId && onFilterAboutUser
+                  ? () => onFilterAboutUser(memory.aboutUserId!)
+                  : undefined
+              }
+              disabled={!memory.aboutUserId || !onFilterAboutUser}
+              title={`About ${aboutName}${memory.aboutUserId ? ` (${memory.aboutUserId})` : ""}${isSelfReported ? " — self-reported" : ""}`}
+            >
+              <AtSign size={9} />
+              {aboutName}
+            </button>
+          )}
+          {sourceName && !isSelfReported && (
+            <button
+              type="button"
+              className={`${styles["memory-user-badge"]} ${styles["memory-user-badge-source"]}`}
+              onClick={
+                memory.sourceUserId && onFilterSourceUser
+                  ? () => onFilterSourceUser(memory.sourceUserId!)
+                  : undefined
+              }
+              disabled={!memory.sourceUserId || !onFilterSourceUser}
+              title={`Said by ${sourceName}${memory.sourceUserId ? ` (${memory.sourceUserId})` : ""}`}
+            >
+              <MessageCircle size={9} />
+              by {sourceName}
+            </button>
+          )}
           {memory.createdAt && (
             <BadgeComponent type="dateTime" date={memory.createdAt} />
           )}

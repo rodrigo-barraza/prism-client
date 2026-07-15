@@ -130,6 +130,41 @@
   color: var(--color-cyan);
 }
 
+/* ── Discord User Attribution Badges ───────────────────────── */
+
+.memory-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--color-indigo) 10%, transparent);
+  color: var(--color-indigo);
+  transition: background 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-indigo) 20%, transparent);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.memory-user-badge-source {
+  background: color-mix(in srgb, var(--color-emerald) 10%, transparent);
+  color: var(--color-emerald);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-emerald) 20%, transparent);
+  }
+}
+
 /* ── Memory Content ────────────────────────────────────────── */
 
 .memory-content {

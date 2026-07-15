@@ -1013,11 +1013,38 @@ export interface AgentMemory {
   source?: string;
   createdAt: string;
   updatedAt?: string;
+  // Discord (LUPOS) memories: who the fact is about and who revealed it
+  username?: string | null;
+  guildId?: string;
+  channelId?: string;
+  aboutUserId?: string;
+  aboutUsername?: string;
+  sourceUserId?: string;
+  sourceUsername?: string;
+  confidence?: number;
+  sourceMessageId?: string;
 }
 
 export interface AgentMemoryListResponse {
   memories: AgentMemory[];
   total: number;
+}
+
+export interface MemoryTypeFacet {
+  type: string;
+  count: number;
+}
+
+export interface MemoryUserFacet {
+  userId: string;
+  username?: string | null;
+  count: number;
+}
+
+export interface AgentMemoryFacets {
+  types: MemoryTypeFacet[];
+  aboutUsers: MemoryUserFacet[];
+  sourceUsers: MemoryUserFacet[];
 }
 
 export interface ConsolidationHistoryEntry {

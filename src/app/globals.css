@@ -54,15 +54,16 @@
   --provider-elevenlabs: oklch(71.5% 0.1258 215.2);
 
   /* ── Semantic Domain Colors ───────────────────────────── */
-  --color-success: oklch(77.3% 0.1535 163.3);
+  /* NOTE: --color-success/danger/warning/info themselves come from
+     base.css, which themes them per palette. Redefining them here at
+     :root would clobber every theme's values (this block sits after the
+     @import in the cascade) — on Daylight that meant 77%-lightness mint
+     text on white. Only prism-specific shades live here. */
   --color-success-bright: oklch(72.3% 0.192 149.6);
   --color-success-muted: oklch(69.6% 0.1491 162.5);
-  --color-danger: oklch(63.7% 0.2078 25.3);
   --color-danger-light: oklch(71.1% 0.1661 22.2);
   --color-danger-strong: oklch(57.7% 0.2151 27.3);
-  --color-warning: oklch(76.9% 0.1646 70.1);
   --color-warning-light: oklch(83.7% 0.1643 84.4);
-  --color-info: oklch(71.4% 0.1435 254.6);
   --color-info-strong: oklch(62.3% 0.1881 259.8);
   --color-rose: oklch(64.5% 0.2154 16.4);
   --color-orange: oklch(70.5% 0.1867 47.6);
@@ -167,7 +168,8 @@
   --calculated-accent-primary-hover: oklch(60.6% 0.2371 358.9);
   --calculated-accent-primary-glow: oklch(66.7% 0.2514 355.4 / 0.45);
   --calculated-accent-primary-subtle: oklch(66.7% 0.2514 355.4 / 0.12);
-  --calculated-accent-primary-contrast: oklch(100.0% 0.0001 263.3 / 0.92);
+  /* Dark label on the hot-fuchsia accent — white only hits ~3.1:1 */
+  --calculated-accent-primary-contrast: oklch(0.0% 0.0 0.0 / 0.87);
   --calculated-shadow-glow: 0 0 24px oklch(66.7% 0.2514 355.4 / 0.22);
 
   --accent-secondary: oklch(80.4% 0.1557 82.5);
@@ -285,6 +287,38 @@
   --calculated-accent-secondary-glow: oklch(55.0% 0.0 0.0 / 0.2);
   --calculated-accent-secondary-subtle: oklch(55.0% 0.0 0.0 / 0.08);
   --accent-tertiary: oklch(45.0% 0.0 0.0);
+}
+
+/* ── Daylight/Overcast Palette Corrections ─────────────────── */
+/* The :root provider/domain palette is tuned for dark surfaces (63–84%
+   lightness) and drops as low as 1.4:1 on light ones. Same hues at
+   ~52% lightness — ≥ 4.4:1 on both Daylight and Overcast surfaces. */
+
+[data-theme="light"],
+[data-theme="muted"] {
+  --provider-anthropic: oklch(55.0% 0.2154 16.4);
+  --provider-google: oklch(52.9% 0.1146 70.1);
+  --provider-openai: oklch(52.9% 0.1435 254.6);
+  --provider-local: oklch(53.9% 0.1592 293.5);
+  --provider-elevenlabs: oklch(51.5% 0.0898 215.2);
+
+  --color-success-bright: oklch(50.8% 0.14 149.6);
+  --color-success-muted: oklch(51.1% 0.1111 162.5);
+  --color-danger-light: oklch(54.6% 0.1661 22.2);
+  --color-danger-strong: oklch(55.2% 0.2151 27.3);
+  --color-warning-light: oklch(52.7% 0.1063 84.4);
+  --color-info-strong: oklch(53.3% 0.1881 259.8);
+
+  --color-rose: oklch(55.0% 0.2154 16.4);
+  --color-orange: oklch(54.0% 0.1467 47.6);
+  --color-purple: oklch(55.2% 0.2326 303.9);
+  --color-violet: oklch(53.9% 0.1592 293.5);
+  --color-indigo: oklch(54.0% 0.2041 277.1);
+  --color-cyan: oklch(51.5% 0.0898 215.2);
+  --color-teal: oklch(51.5% 0.0905 181.9);
+  --color-emerald: oklch(51.1% 0.1111 162.5);
+  --color-neutral: oklch(52.6% 0.0352 256.8);
+  --color-github-green: oklch(51.0% 0.1569 145.6);
 }
 
 /* ── Body Overrides ────────────────────────────────────────── */

@@ -46,6 +46,18 @@ export interface ThreeCreateOptions {
   toneMapping?: keyof typeof TONE_MAPPING_MAP;
   toneMappingExposure?: number;
   shadowMap?: boolean;
+  /**
+   * Upper bound on the device pixel ratio used for the drawing buffer.
+   * Values below 1 render at reduced resolution and CSS-upscale — the
+   * budget knob for expensive full-screen shaders. Default 2.
+   */
+  maxPixelRatio?: number;
+  /**
+   * Cap the render rate for this instance (frames per second). The shared
+   * RAF loop skips render+tick until the interval elapses, so slow ambient
+   * scenes don't burn GPU at display rate. 0 (default) = uncapped.
+   */
+  maxFps?: number;
 }
 
 export interface TickState {
@@ -91,6 +103,10 @@ interface ThreeInstance {
   width: number;
   height: number;
   paused: boolean;
+  maxPixelRatio: number;
+  /** Minimum milliseconds between rendered frames (0 = every RAF). */
+  minFrameMs: number;
+  lastFrameTimestamp: number;
 }
 
 // --- Constants ----------------------------------------------
@@ -170,6 +186,16 @@ function loop(timestamp: number): void {
   for (const instance of instances.values()) {
     if (instance.paused) continue;
 
+    // Per-instance FPS cap — skip until the frame interval elapses.
+    // The timer is not updated on skipped frames, so deltas stay correct.
+    if (
+      instance.minFrameMs > 0 &&
+      timestamp - instance.lastFrameTimestamp < instance.minFrameMs
+    ) {
+      continue;
+    }
+    instance.lastFrameTimestamp = timestamp;
+
     instance.timer.update(timestamp);
 
     if (instance.tick) {
@@ -221,7 +247,10 @@ function handleResize(instance: ThreeInstance): void {
   instance.width = canvasWidth;
   instance.height = canvasHeight;
 
-  const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+  const devicePixelRatio = Math.min(
+    window.devicePixelRatio || 1,
+    instance.maxPixelRatio,
+  );
   instance.renderer.setSize(canvasWidth, canvasHeight, false);
   instance.renderer.setPixelRatio(devicePixelRatio);
   canvas.style.width = `${canvasWidth}px`;
@@ -294,6 +323,8 @@ const ThreeService = {
       toneMapping = "ACESFilmic",
       toneMappingExposure = 1,
       shadowMap = false,
+      maxPixelRatio = 2,
+      maxFps = 0,
     } = options;
 
     const id = `three-${nextId++}`;
@@ -345,6 +376,9 @@ const ThreeService = {
       width: 0,
       height: 0,
       paused: false,
+      maxPixelRatio: Math.max(0.1, maxPixelRatio),
+      minFrameMs: maxFps > 0 ? 1000 / maxFps : 0,
+      lastFrameTimestamp: -Infinity,
     };
 
     instances.set(id, instance);

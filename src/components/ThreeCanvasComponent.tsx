@@ -52,6 +52,8 @@ export default function ThreeCanvasComponent({
   toneMapping = "ACESFilmic",
   toneMappingExposure = 1,
   shadowMap = false,
+  maxPixelRatio = 2,
+  maxFps = 0,
   paused = false,
   className = "",
   style,
@@ -89,6 +91,8 @@ export default function ThreeCanvasComponent({
     toneMapping,
     toneMappingExposure,
     shadowMap,
+    maxPixelRatio,
+    maxFps,
   });
 
   useEffect(() => {
@@ -103,6 +107,8 @@ export default function ThreeCanvasComponent({
       toneMapping,
       toneMappingExposure,
       shadowMap,
+      maxPixelRatio,
+      maxFps,
     };
   });
 
@@ -127,6 +133,8 @@ export default function ThreeCanvasComponent({
       toneMapping: tone,
       toneMappingExposure: exp,
       shadowMap: shadow,
+      maxPixelRatio: pixelRatioCap,
+      maxFps: fpsCap,
     } = propsRef.current;
 
     // Create the Three.js instance
@@ -140,6 +148,8 @@ export default function ThreeCanvasComponent({
       toneMapping: tone as ThreeCreateOptions["toneMapping"],
       toneMappingExposure: exp,
       shadowMap: shadow,
+      maxPixelRatio: pixelRatioCap,
+      maxFps: fpsCap,
     });
 
     instanceIdRef.current = instanceId;

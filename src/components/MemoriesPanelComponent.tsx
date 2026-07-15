@@ -14,6 +14,17 @@ import {
   GitMerge,
   Settings,
   Trash2,
+  AtSign,
+  MessageCircle,
+  Heart,
+  Gamepad2,
+  Briefcase,
+  Users,
+  Palette,
+  MapPin,
+  HeartHandshake,
+  Trophy,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 import {

@@ -20,6 +20,7 @@ import type {
   Skill,
   Rule,
   AgentMemoryListResponse,
+  AgentMemoryFacets,
   PrismSettings,
   MCPServer,
   CoordinatorSubAgent,
@@ -678,6 +679,8 @@ export default class PrismService {
     agent?: string,
     skip = 0,
     type?: string,
+    aboutUserId?: string,
+    sourceUserId?: string,
   ): Promise<AgentMemoryListResponse> {
     const queryString = new URLSearchParams();
     if (project) queryString.set("project", project);
@@ -685,8 +688,27 @@ export default class PrismService {
     if (agent) queryString.set("agent", agent);
     if (skip) queryString.set("skip", String(skip));
     if (type) queryString.set("type", type);
+    if (aboutUserId) queryString.set("aboutUserId", aboutUserId);
+    if (sourceUserId) queryString.set("sourceUserId", sourceUserId);
     return PrismService._request<AgentMemoryListResponse>(
       `/agent-memories?${queryString}`,
+      { method: HTTP_METHODS.GET },
+    );
+  }
+
+  /**
+   * Distinct memory types and Discord users (about/source) with counts —
+   * powers the Memories tab filter dropdown.
+   */
+  static async getAgentMemoryFacets(
+    project?: string,
+    agent?: string,
+  ): Promise<AgentMemoryFacets> {
+    const queryString = new URLSearchParams();
+    if (project) queryString.set("project", project);
+    if (agent) queryString.set("agent", agent);
+    return PrismService._request<AgentMemoryFacets>(
+      `/agent-memories/facets?${queryString}`,
       { method: HTTP_METHODS.GET },
     );
   }
