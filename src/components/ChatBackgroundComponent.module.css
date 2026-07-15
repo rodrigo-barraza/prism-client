@@ -3,7 +3,10 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: 0;
+  /* Negative z-index inside the isolated messages-list: paints above the
+     list's own opaque background-color but below ALL in-flow content
+     (empty state, system prompt in raw view, messages). */
+  z-index: -1;
   animation: chat-background-fade-in 600ms ease-out;
 }
 

@@ -8224,7 +8224,7 @@ export default function AgentChatComponent({
         </div>
       ) : (
       <div
-        className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""} ${viewMode === "nodes" ? chatStyles['messages-list-hidden'] : ""}`}
+        className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""} ${showsChatBackgroundScene ? chatStyles['has-scene'] : ""} ${viewMode === "nodes" ? chatStyles['messages-list-hidden'] : ""}`}
         ref={messagesListRef}
         style={
           agentBackgroundImage
@@ -8239,7 +8239,7 @@ export default function AgentChatComponent({
         )}
         {messages.length === 0 && activeAgentData && (
           <EmptyStateComponent
-            className={`${chatStyles['empty-state-raised']} ${showsChatBackgroundScene ? chatStyles['empty-state-over-scene'] : ""}`}
+            className={showsChatBackgroundScene ? chatStyles['empty-state-over-scene'] : ""}
             icon={
               <BadgeComponent
                 type="agent"

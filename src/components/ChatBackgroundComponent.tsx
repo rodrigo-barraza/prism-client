@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import ThreeBackgroundComponent from "./ThreeBackgroundComponent";
 import {
   createCloudsAnimation,
@@ -38,6 +39,25 @@ const CHAT_BACKGROUND_SCENES: Partial<
   },
 };
 
+/**
+ * QA affordance: set localStorage["prism:sky-hour"] to a number (0..24) to
+ * pin the clouds scene to that local hour for screenshots. Unset/invalid
+ * follows the real client clock.
+ */
+const DEBUG_SKY_HOUR_KEY = "prism:sky-hour";
+
+function readDebugSkyHour(): number | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const raw = window.localStorage.getItem(DEBUG_SKY_HOUR_KEY);
+    if (raw === null || raw.trim() === "") return undefined;
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export interface ChatBackgroundComponentProps {
   background: ChatBackgroundName;
 }
@@ -53,6 +73,20 @@ export default function ChatBackgroundComponent({
   background,
 }: ChatBackgroundComponentProps) {
   const scene = CHAT_BACKGROUND_SCENES[background];
+
+  // Options are captured once at mount by the bridge, so compute here.
+  const options = useMemo(() => {
+    if (!scene) return undefined;
+    if (background === "clouds") {
+      const debugHour = readDebugSkyHour();
+      const cloudsOptions = scene.options as CloudsAnimationOptions;
+      return debugHour !== undefined
+        ? { ...cloudsOptions, debugHour }
+        : cloudsOptions;
+    }
+    return scene.options;
+  }, [scene, background]);
+
   if (!scene) return null;
 
   return (
@@ -60,7 +94,7 @@ export default function ChatBackgroundComponent({
       <div className={`${styles["fallback"]} ${scene.fallbackClassName}`} />
       <ThreeBackgroundComponent
         animation={scene.animation}
-        options={scene.options}
+        options={options}
         maxPixelRatio={scene.maxPixelRatio}
         maxFps={scene.maxFps}
       />

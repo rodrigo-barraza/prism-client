@@ -185,6 +185,13 @@
   animation: fade-in 0.2s ease-out;
 }
 
+/* When the ambient scene is active, make the list its own stacking context
+   so the scene's z-index:-1 canvas stays scoped beneath the list's content
+   but above its background-color. */
+.messages-list.has-scene {
+  isolation: isolate;
+}
+
 /* Responsive spacing for mobile devices */
 @media (max-width: 767px) {
   .messages-list {
@@ -226,21 +233,30 @@
 }
 
 /* ── Ambient scene backdrop (empty state) ────────────────────── */
-/* The 3D backdrop is absolutely positioned at z-index 0; in-flow
-   content needs a positioned z-index >= 1 to paint above it. */
+/* The 3D backdrop paints at z-index:-1 inside the isolated messages-list,
+   so all in-flow content sits above it automatically. */
 
-.empty-state-raised {
+/* Legibility over the scene (bright cloud deck by day, dark sky by night):
+   a soft dark halo separates the text in both cases, and a faint frosted
+   scrim behind the content keeps contrast consistent as the sky changes. */
+.empty-state-over-scene {
   position: relative;
-  z-index: 1;
+  border-radius: 20px;
+  background: radial-gradient(
+    120% 100% at 50% 45%,
+    oklch(20% 0.03 255 / 0.28),
+    transparent 72%
+  );
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
-/* Legibility over the bright sky scene: a soft deep-blue halo that
-   separates both light and dark theme text from the cloud deck. */
 .empty-state-over-scene h2,
 .empty-state-over-scene p {
+  color: #f4f8ff;
   text-shadow:
-    0 1px 2px oklch(32% 0.07 255 / 0.3),
-    0 2px 16px oklch(32% 0.08 255 / 0.22);
+    0 1px 3px oklch(20% 0.05 255 / 0.55),
+    0 2px 18px oklch(20% 0.06 255 / 0.4);
 }
 
 .welcome {
