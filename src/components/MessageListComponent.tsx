@@ -413,7 +413,7 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
 
   if (cat === "image") {
     return (
-      /* eslint-disable-next-line @next/next/no-img-element */
+       
       <img
         src={sourceUrl}
         alt="Attached"

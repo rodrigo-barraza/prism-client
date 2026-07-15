@@ -67,7 +67,7 @@ export default function UserAvatarDropdownComponent() {
       >
         {isAuthenticated ? (
           userProfile?.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
+             
             <img
               className={styles["avatar-image-element"]}
               src={userProfile.image}

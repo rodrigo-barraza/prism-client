@@ -4,7 +4,6 @@ import React, { useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Bot,
-  Wrench,
   X,
   Check,
   AlertCircle,
@@ -193,12 +192,12 @@ interface AgentsDetailPanelComponentProps {
   errorMessage: string | null;
   availableTools: ToolSchema[];
   builtInAgentTools?: ToolSchema[] | null;
-  onUpdateField: <K extends keyof EditableAgent>(field: K, value: EditableAgent[K]) => void;
+  onUpdateField: <K extends keyof EditableAgent>(_field: K, _value: EditableAgent[K]) => void;
   onSave: () => void;
   onCancelEdit: () => void;
   onDeleteAgent: () => void;
-  onConfirmDeleteToggle: (confirming: boolean) => void;
-  onDuplicateAgent: (sourceAgent: AgentPersona) => void;
+  onConfirmDeleteToggle: (_confirming: boolean) => void;
+  onDuplicateAgent: (_sourceAgent: AgentPersona) => void;
 }
 
 export default function AgentsDetailPanelComponent({

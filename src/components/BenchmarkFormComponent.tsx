@@ -54,7 +54,7 @@ export interface MatchModeOption {
 
 interface BenchmarkFormComponentProps {
   form: BenchmarkFormState;
-  onChange: (toolFunction: (prev: BenchmarkFormState) => BenchmarkFormState) => void;
+  onChange: (_toolFunction: (_prev: BenchmarkFormState) => BenchmarkFormState) => void;
   matchModes: MatchModeOption[];
 }
 

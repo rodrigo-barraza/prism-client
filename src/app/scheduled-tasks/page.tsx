@@ -131,12 +131,12 @@ const NONE_AGENT: AgentPersona = {
 interface CronJobDetailPanelProps {
   task: Task;
   onClose: () => void;
-  onTrigger: (task: Task) => void;
-  onDelete: (task: Task) => void;
-  onToggle: (task: Task) => void;
-  onEdit: (task: Task) => void;
+  onTrigger: (_task: Task) => void;
+  onDelete: (_task: Task) => void;
+  onToggle: (_task: Task) => void;
+  onEdit: (_task: Task) => void;
   agentName: string;
-  formatScheduleText: (task: Task) => string;
+  formatScheduleText: (_task: Task) => string;
   allToolNames: string[];
 }
 
@@ -145,7 +145,6 @@ function CronJobDetailPanel({
   onClose,
   onTrigger,
   onDelete,
-  onToggle,
   onEdit,
   agentName,
   formatScheduleText,
@@ -419,7 +418,7 @@ export function ScheduledTasksPage({ mode = "user" }: ScheduledTasksPageProps) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [agents, setAgents] = useState<AgentPersona[]>([]);
   const [modelsMap, setModelsMap] = useState<Record<string, Model[]>>({});
-  const [providers, setProviders] = useState<string[]>([]);
+  const [_providers, setProviders] = useState<string[]>([]);
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [favoriteKeys, setFavoriteKeys] = useState<string[]>([]);
 

@@ -887,7 +887,7 @@ export default function FileViewerPanelComponent({
           <div className={styles['media-viewer']}>
             {cached.mediaType === "image" && (
               <div className={styles['media-image-wrap']}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src={cached.rawUrl}
                   alt={getBasename(activeFile?.path)}
@@ -935,7 +935,7 @@ export default function FileViewerPanelComponent({
           svgViewMode[activeFileId] === "preview" && (
             <div className={styles['media-viewer']}>
               <div className={styles['media-image-wrap']}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(cached.content)}`}
                   alt={getBasename(activeFile?.path)}

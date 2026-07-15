@@ -45,8 +45,8 @@ export interface AgentAssertion {
 interface AgentAssertionsComponentProps {
   assertions: AgentAssertion[];
   assertionOperator?: string;
-  onAssertionsChange: (assertions: AgentAssertion[]) => void;
-  onOperatorChange: (operator: string) => void;
+  onAssertionsChange: (_assertions: AgentAssertion[]) => void;
+  onOperatorChange: (_operator: string) => void;
 }
 
 /**

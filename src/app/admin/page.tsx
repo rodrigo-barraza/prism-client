@@ -85,7 +85,7 @@ export default function DashboardPage() {
 
   const [timeline, setTimeline] = useState<IrisTimelineEntry[]>([]);
   const [timelineGranularity, setTimelineGranularity] = useState<string | null>(null);
-  const [activeGranularity, setActiveGranularity] = useState<string | undefined>(undefined);
+  const [_activeGranularity, setActiveGranularity] = useState<string | undefined>(undefined);
   const [defaultGranularity, setDefaultGranularity] = useState<string | undefined>(undefined);
   const [validGranularities, setValidGranularities] = useState<string[]>([]);
   const [recentRequests, setRecentRequests] = useState<IrisRequestEntry[]>([]);
@@ -388,7 +388,7 @@ export default function DashboardPage() {
             tickLabel = secondsNumber % 30 === 0 ? label : "";
           } else if (colonCount === 1) {
             // Has minutes: 1min, 5min, or 15min bins — "22:05"
-            const [hoursString, minutesString] = timePart.split(":");
+            const [_hoursString, minutesString] = timePart.split(":");
             const paddedKey = key.slice(0, 14) + (minutesString || "0").padStart(2, "0");
             const date = new Date(paddedKey + ":00Z");
             label = date.toLocaleTimeString("en-US", {

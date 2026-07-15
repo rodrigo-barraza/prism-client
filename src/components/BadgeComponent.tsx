@@ -44,12 +44,8 @@ import {
 import { resolveToolVisuals, isEmojiImageUrl } from "./WorkflowNodeConstantsComponent";
 
 // Scoped Stylesheets from individual components
-import costStyles from "./CostBadgeComponent.module.css";
-import tokenStyles from "./TokenCountBadgeComponent.module.css";
-import requestStyles from "./RequestCountBadgeComponent.module.css";
 import throughputStyles from "./ThroughputBadgeComponent.module.css";
 import stopwatchStyles from "./StopwatchBadgeComponent.module.css";
-import messageStyles from "./MessageCountBadgeComponent.module.css";
 import wordStyles from "./WordBadgeComponent.module.css";
 import toolStyles from "./ToolCountBadgeComponent.module.css";
 import toolItemStyles from "./ToolBadgeComponent.module.css";
@@ -98,7 +94,7 @@ export type BadgeProps =
       showIcon?: boolean;
       className?: string;
       mini?: boolean;
-      formatFn?: (value: number) => string;
+      formatFn?: (_value: number) => string;
     }
   | {
       type: "tokens";
@@ -198,7 +194,7 @@ export type BadgeProps =
       lineEnd?: number | null;
       stale?: boolean;
       knownPaths?: Set<string> | null;
-      onFileOpen?: (path: string) => void;
+      onFileOpen?: (_path: string) => void;
     }
   | {
       type: "tool-item";

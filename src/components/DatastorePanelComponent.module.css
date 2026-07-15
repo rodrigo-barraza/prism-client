@@ -1,0 +1,435 @@
+/* ============================================================
+   Datastore Panel — structured record store browser
+   Follows the same design language as TasksPanel / MemoriesPanel
+   ============================================================ */
+
+.container {
+  composes: container from "./PanelShared.module.css";
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+
+.header-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Filter Controls ─────────────────────────────────────────── */
+
+.filter-controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.search-input-wrapper {
+  width: 100%;
+}
+
+/* ── Empty State ─────────────────────────────────────────────── */
+
+.empty-state {
+  composes: empty-state from "./PanelShared.module.css";
+}
+
+.empty-icon {
+  composes: empty-icon from "./PanelShared.module.css";
+}
+
+.empty-title {
+  composes: empty-title from "./PanelShared.module.css";
+}
+
+.empty-subtitle {
+  composes: empty-subtitle from "./PanelShared.module.css";
+}
+
+/* ── Namespace Card ──────────────────────────────────────────── */
+
+.namespace-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: color-mix(
+      in srgb,
+      var(--color-violet) 30%,
+      var(--calculated-border-color)
+    );
+    box-shadow: 0 2px 8px
+      color-mix(in oklch, var(--color-violet) 6%, transparent);
+  }
+}
+
+.namespace-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.namespace-info {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.namespace-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+}
+
+.namespace-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.record-count-badge {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: color-mix(in oklch, var(--color-violet) 14%, transparent);
+  color: var(--color-violet);
+}
+
+.namespace-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.field-tag {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  background: color-mix(in oklch, var(--background-elevated) 80%, transparent);
+  border: 1px solid
+    color-mix(in oklch, var(--calculated-border-color) 60%, transparent);
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+}
+
+.expand-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.15s ease;
+
+  .namespace-card:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    color: var(--color-rose);
+    background: color-mix(in oklch, var(--color-rose) 12%, transparent);
+  }
+}
+
+/* ── Record List (expanded namespace) ────────────────────────── */
+
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 12px;
+  animation: slide-in 0.15s ease-out;
+}
+
+.records-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+.record-row {
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  border: 1px solid
+    color-mix(in oklch, var(--calculated-border-color) 50%, transparent);
+  background: color-mix(in oklch, var(--background-elevated) 40%, transparent);
+}
+
+.record-row-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  min-width: 0;
+
+  &:hover {
+    background: color-mix(in oklch, var(--background-elevated) 80%, transparent);
+  }
+}
+
+.record-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--color-amber, #d97706);
+  background: color-mix(in oklch, var(--color-amber, #d97706) 10%, transparent);
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+}
+
+.record-preview {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+}
+
+.record-delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.15s ease;
+
+  .record-row:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    color: var(--color-rose);
+    background: color-mix(in oklch, var(--color-rose) 12%, transparent);
+  }
+}
+
+.record-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-top: 1px solid
+    color-mix(in oklch, var(--calculated-border-color) 50%, transparent);
+}
+
+.record-json {
+  margin: 0;
+  font-size: 0.625rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.record-provenance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  border: 1px solid
+    color-mix(in oklch, var(--calculated-border-color) 60%, transparent);
+}
+
+.meta-key {
+  padding: 1px 5px;
+  background: color-mix(in oklch, var(--background-elevated) 80%, transparent);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.meta-value {
+  padding: 1px 5px;
+  color: var(--text-secondary);
+}
+
+.load-more-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px dashed var(--calculated-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Confirm Delete ──────────────────────────────────────────── */
+
+.confirm-layout-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0 0 30px;
+}
+
+.confirm-label {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  color: var(--color-rose);
+  font-weight: 500;
+}
+
+.confirm-button {
+  composes: confirm-button from "./PanelShared.module.css";
+}
+
+.confirm-button-element-yes {
+  background: color-mix(in oklch, var(--color-rose) 15%, transparent);
+  color: var(--color-rose);
+  border-color: color-mix(in oklch, var(--color-rose) 30%, transparent);
+
+  &:hover {
+    background: color-mix(in oklch, var(--color-rose) 25%, transparent);
+  }
+}
+
+.confirm-button-element-no {
+  background: transparent;
+  color: var(--text-muted);
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+/* ── Loading & Error ─────────────────────────────────────────── */
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  font-size: var(--font-size-sm);
+  color: var(--color-rose);
+  background: color-mix(in oklch, var(--color-rose) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-rose) 20%, transparent);
+  border-radius: 6px;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

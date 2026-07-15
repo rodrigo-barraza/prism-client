@@ -582,7 +582,7 @@ export default function CustomAgentsPanel({
             </span>
             {editingAgent.backgroundImage && (
               <div className={styles['background-preview']}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src={editingAgent.backgroundImage}
                   alt="Background preview"

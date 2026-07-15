@@ -140,7 +140,7 @@ export function QrCodeRenderer({ result }: RendererProps) {
       {hasQrError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasQrError && qrCodeImageUrl && (
         <div className={styles['visual-tool-image-container']}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           <img
             src={qrCodeImageUrl}
             alt="Generated QR Code"
@@ -240,7 +240,7 @@ export function ImageManipulationRenderer({ result }: RendererProps) {
       {hasImageError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasImageError && manipulatedImageUrl && (
         <div className={styles['visual-tool-image-container']}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           <img
             src={manipulatedImageUrl}
             alt="Processed image"
@@ -284,7 +284,7 @@ export function VideoToGifRenderer({ result }: RendererProps) {
       {hasConversionError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasConversionError && gifImageUrl && (
         <div className={styles['visual-tool-image-container']}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           <img
             src={gifImageUrl}
             alt="Converted GIF"
@@ -353,7 +353,7 @@ export function ChartRenderer({ result }: RendererProps) {
       {hasChartError && <div className={styles['error-text']}>{parsed.error}</div>}
       {!hasChartError && chartImageUrl && (
         <div className={styles['visual-tool-image-container']}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           <img
             src={chartImageUrl}
             alt="Generated chart"
@@ -446,7 +446,7 @@ export function EmojiCombinationRenderer({ result }: RendererProps) {
         </div>
         <div className={styles['emoji-merged-container']}>
           <div className={styles['merged-backdrop-glow']} />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           <img
             src={gStaticUrl}
             alt={alt || "Emoji Kitchen mashup"}
@@ -500,7 +500,7 @@ export function EmojiCombinationsRenderer({ result, args }: RendererProps) {
               <span className={styles['bubble-emoji-char-mini']}>{combo.emoji}</span>
             </div>
             <div className={styles['merged-emoji-mini']}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              { }
               <img
                 src={combo.combination.gStaticUrl}
                 alt={combo.combination.alt}

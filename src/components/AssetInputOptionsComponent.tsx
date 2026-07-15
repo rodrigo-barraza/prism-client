@@ -8,8 +8,8 @@ import styles from "./AssetInputOptionsComponent.module.css";
 
 interface AssetInputOptionsProps {
   onFile?: (
-    dataUrl: string | ArrayBuffer | null,
-    mimeType: string | null,
+    _dataUrl: string | ArrayBuffer | null,
+    _mimeType: string | null,
   ) => void;
   compact?: boolean;
 }

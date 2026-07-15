@@ -26,11 +26,11 @@ import styles from "./AgentPickerComponent.module.css";
 interface AgentPickerComponentProps {
   agents?: ClientAgent[];
   activeAgentId?: string;
-  onSelect?: (agentId: string) => void;
+  onSelect?: (_agentId: string) => void;
   disabled?: boolean;
   addMode?: boolean;
   addCount?: number;
-  onAddAgent?: (agent: ClientAgent) => void;
+  onAddAgent?: (_agent: ClientAgent) => void;
 }
 
 /** Image-based agent icons (rendered as <img> instead of SVG). */

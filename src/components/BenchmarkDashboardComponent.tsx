@@ -455,12 +455,12 @@ export default function BenchmarkDashboardComponent({
             <ModelsTableComponent
               models={modelRows}
               mode="benchmark"
-              onSelect={handleRowClick as unknown as (model: RawModel) => void}
+              onSelect={handleRowClick as unknown as (_model: RawModel) => void}
               showSearch={true}
               showProviderFilter={true}
               favorites={favoriteKeys}
               onToggleFavorite={handleToggleFavorite}
-              getRowClassName={getRowClassName as unknown as (row: RowData) => string}
+              getRowClassName={getRowClassName as unknown as (_row: RowData) => string}
               emptyText={
                 activeTab === "agents"
                   ? "No agent benchmark data yet"

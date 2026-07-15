@@ -21,7 +21,7 @@ interface TabItem {
 interface ChartTabsProps {
   tabs?: TabItem[];
   activeTab: string;
-  onChange: (key: string) => void;
+  onChange: (_key: string) => void;
 }
 
 export default function ChartTabsComponent({

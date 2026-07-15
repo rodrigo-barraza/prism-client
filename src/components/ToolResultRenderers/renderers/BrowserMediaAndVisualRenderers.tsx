@@ -61,7 +61,7 @@ export function BrowserActionRenderer({ result, args }: RendererProps) {
 
       {screenshotSourceUrl && (
         <div className={styles['browser-screenshot']}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           <img
             src={screenshotSourceUrl}
             alt={`Screenshot of ${parsed.url || "page"}`}

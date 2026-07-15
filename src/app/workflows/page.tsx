@@ -48,7 +48,6 @@ import type {
   PrismConfig,
   Message,
   ModelOption,
-  WorkflowNodeStatus,
 } from "../../types/types";
 import { getErrorMessage } from "../../utils/errorMessage";
 
@@ -1435,7 +1434,7 @@ export default function WorkflowsPage({
           connections={edges as unknown as WorkflowConnection[]}
           onUpdateNodePosition={handleUpdateNodePosition}
           onDeleteNode={handleDeleteNode}
-          onAddConnection={handleAddEdge as unknown as (conn: { sourceNodeId: string; sourceModality: string; targetNodeId: string; targetModality: string }) => void}
+          onAddConnection={handleAddEdge as unknown as (_conn: { sourceNodeId: string; sourceModality: string; targetNodeId: string; targetModality: string }) => void}
           onDeleteConnection={handleDeleteEdge}
           onUpdateNodeContent={handleUpdateNodeContent}
           onUpdateNodeConfig={handleUpdateNodeConfig}

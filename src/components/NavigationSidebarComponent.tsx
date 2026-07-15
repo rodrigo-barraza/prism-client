@@ -784,7 +784,7 @@ export default function NavigationSidebarComponent({
                     >
                       <div className={styles['user-profile-avatar']}>
                         {userProfile?.image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
+                           
                           <img
                             className={styles['user-profile-avatar-image']}
                             src={userProfile.image}
@@ -901,7 +901,7 @@ export default function NavigationSidebarComponent({
         <div className={styles['logo-banner']} ref={bannerRef}>
           <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
           {miniCats.map((cat: MiniCat) => (
-            // eslint-disable-next-line @next/next/no-img-element
+             
             <img
               key={cat.id}
               ref={(element: HTMLImageElement | null) => {
@@ -1031,7 +1031,7 @@ export default function NavigationSidebarComponent({
               >
                 <div className={styles['user-profile-avatar']}>
                   {userProfile?.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
+                     
                     <img
                       className={styles['user-profile-avatar-image']}
                       src={userProfile.image}

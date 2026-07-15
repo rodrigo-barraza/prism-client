@@ -24,7 +24,7 @@ interface AgentsSidebarPanelComponentProps {
   builtInAgents: AgentPersona[];
   customAgents: EditableAgentSummary[];
   selectedAgentId: string | null;
-  onSelectAgent: (agentId: string, isCustom: boolean) => void;
+  onSelectAgent: (_agentId: string, _isCustom: boolean) => void;
   onCreateNewAgent: () => void;
   availableTools?: ToolSchema[];
 }

@@ -178,7 +178,7 @@ describe("useToolToggles Hook", () => {
 
     // Enable search_web first (removes from disabled set)
     fireEvent.click(toggleButton);
-    let disabledList = disabledToolsDiv.textContent?.split(",") || [];
+    const disabledList = disabledToolsDiv.textContent?.split(",") || [];
     expect(disabledList).not.toContain("search_web");
     expect(disabledList).toContain("get_weather");
 

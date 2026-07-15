@@ -616,7 +616,7 @@ export default function WorkflowInspector({
               {node.content ? (
                 <div className={styles['preview-container']}>
                   {node.modality === "image" ? (
-                    <img /* eslint-disable-line @next/next/no-img-element */
+                    <img  
                       src={PrismService.getFileUrl(node.content as string)}
                       alt="Input asset"
                       className={styles['preview-image']}
@@ -913,7 +913,7 @@ export default function WorkflowInspector({
               <div className={styles['result-block']}>
                 <span className={styles['result-type']}>Image</span>
                 <div className={styles['result-image-container']}>
-                  <img /* eslint-disable-line @next/next/no-img-element */
+                  <img  
                     src={PrismService.getFileUrl(results.image)}
                     alt="Generated image"
                     className={styles['result-image']}
@@ -997,7 +997,7 @@ export default function WorkflowInspector({
                 <div className={styles['result-block']}>
                   <span className={styles['result-type']}>Image Content</span>
                   <div className={styles['result-image-container']}>
-                    <img /* eslint-disable-line @next/next/no-img-element */
+                    <img  
                       src={PrismService.getFileUrl(receivedOutputs.image)}
                       alt="Received image"
                       className={styles['result-image']}

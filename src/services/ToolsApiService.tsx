@@ -55,6 +55,32 @@ export interface AgenticTaskListResponse {
   summary: Record<string, number>;
 }
 
+export interface DatastoreNamespaceInfo {
+  namespace: string;
+  count: number;
+  lastUpdated?: string;
+  fields: string[];
+}
+
+export interface DatastoreRecordItem {
+  id: string | null;
+  key: string | null;
+  data: Record<string, JsonValue>;
+  agent?: string | null;
+  username?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DatastoreQueryResponse {
+  namespaces?: DatastoreNamespaceInfo[];
+  namespace?: string;
+  records?: DatastoreRecordItem[];
+  count?: number;
+  total?: number;
+  skip?: number;
+}
+
 export interface FileReadResponse {
   path: string;
   content: string;
@@ -211,6 +237,50 @@ export default class ToolsApiService {
       taskId: string;
       message: string;
     }>("/agentic/task/delete", { project, taskId });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Structured Datastore
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Query the structured datastore. Without a namespace, lists all
+   * namespaces for the project with counts and sample field names.
+   */
+  static async queryDatastore(
+    project: string,
+    {
+      namespace,
+      filter,
+      sort,
+      limit,
+      skip,
+    }: {
+      namespace?: string;
+      filter?: Record<string, JsonValue>;
+      sort?: Record<string, 1 | -1>;
+      limit?: number;
+      skip?: number;
+    } = {},
+  ): Promise<DatastoreQueryResponse> {
+    return ToolsApiService._post<DatastoreQueryResponse>(
+      "/agentic/datastore/query",
+      { project, namespace, filter, sort, limit, skip },
+    );
+  }
+
+  /**
+   * Delete datastore records by id, or an entire namespace with all=true.
+   */
+  static async deleteDatastoreRecords(
+    project: string,
+    namespace: string,
+    { ids, all }: { ids?: string[]; all?: boolean } = {},
+  ): Promise<{ namespace: string; deleted: number }> {
+    return ToolsApiService._post<{ namespace: string; deleted: number }>(
+      "/agentic/datastore/delete",
+      { project, namespace, ids, all },
+    );
   }
 
   // ---------------------------------------------------------------------------

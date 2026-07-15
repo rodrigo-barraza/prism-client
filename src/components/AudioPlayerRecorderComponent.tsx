@@ -102,7 +102,7 @@ async function decodePeaks(
  */
 export interface AudioPlayerRecorderProps {
   sourceUrl?: string | null;
-  onRecordingComplete?: (data: string | ArrayBuffer | null) => void;
+  onRecordingComplete?: (_data: string | ArrayBuffer | null) => void;
   onRemove?: () => void;
   compact?: boolean;
   square?: boolean;

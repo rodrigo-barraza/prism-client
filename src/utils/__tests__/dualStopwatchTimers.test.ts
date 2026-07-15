@@ -199,7 +199,7 @@ describe("Conversation timer (conversationStartTime derivation)", () => {
       { role: "user", content: "Hello", timestamp: "2026-05-31T10:00:00Z" },
       { role: "assistant", content: "Hi!", timestamp: "2026-05-31T10:00:03Z" },
     ];
-    expect(deriveConversationStartTime(messages)).toBe("2026-05-31T10:00:00Z");
+    expect(deriveConversationStartTime(messages as Message[])).toBe("2026-05-31T10:00:00Z");
   });
 
   it("returns null when first message has no timestamp", () => {
@@ -208,7 +208,7 @@ describe("Conversation timer (conversationStartTime derivation)", () => {
       { role: "user", content: "Hello", timestamp: "2026-05-31T10:00:00Z" },
     ];
     // System message has no timestamp, so conversationStartTime is null
-    expect(deriveConversationStartTime(messages)).toBeNull();
+    expect(deriveConversationStartTime(messages as Message[])).toBeNull();
   });
 
   it("uses system message timestamp if it is the first message and has one", () => {
@@ -217,7 +217,7 @@ describe("Conversation timer (conversationStartTime derivation)", () => {
       { role: "user", content: "Hello", timestamp: "2026-05-31T10:00:00Z" },
     ];
     // First message is system with a timestamp — that's the anchor
-    expect(deriveConversationStartTime(messages)).toBe("2026-05-31T09:59:58Z");
+    expect(deriveConversationStartTime(messages as Message[])).toBe("2026-05-31T09:59:58Z");
   });
 
   it("conversation timer differs from processing timer for multi-turn sessions", () => {
@@ -238,7 +238,7 @@ describe("Conversation timer (conversationStartTime derivation)", () => {
       },
     ];
 
-    const conversationStartTime = deriveConversationStartTime(messages);
+    const conversationStartTime = deriveConversationStartTime(messages as Message[]);
     const processingTime = getConversationElapsedTime(messages as Message[]);
 
     // Conversation timer anchor: 10:00:00 — the wall-clock start

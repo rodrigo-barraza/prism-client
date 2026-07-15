@@ -18,13 +18,13 @@ export interface DateRange {
 
 export interface AdminHeaderContextType {
   controls: React.ReactNode;
-  setControls: (node: React.ReactNode) => void;
+  setControls: (_node: React.ReactNode) => void;
   titleBadge: string | number | null;
-  setTitleBadge: (value: string | number | null) => void;
+  setTitleBadge: (_value: string | number | null) => void;
   dateRange: DateRange;
-  setDateRange: (value: DateRange) => void;
+  setDateRange: (_value: DateRange) => void;
   traceFilter: string | null;
-  setTraceFilter: (value: string | null) => void;
+  setTraceFilter: (_value: string | null) => void;
   agentFilter: string | null;
 }
 

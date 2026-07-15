@@ -71,6 +71,7 @@ import ToolSelectionComponent from "./ToolSelectionComponent";
 import RulesPanel from "./RulesPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
+import DatastorePanel from "./DatastorePanelComponent";
 import WorkflowMemoriesPanel from "./WorkflowMemoriesPanelComponent";
 
 import SubAgentsPanel from "./SubAgentsPanelComponent";
@@ -669,6 +670,7 @@ export default function ChatConversationComponent({
   const [slashCommandQuery, setSlashCommandQuery] = useState("");
   const [memoriesRefreshKey, setMemoriesRefreshKey] = useState(0);
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0);
+  const [datastoreRefreshKey, setDatastoreRefreshKey] = useState(0);
   const [workspaceTreeRefreshKey, setWorkspaceTreeRefreshKey] = useState(0);
   // When a loaded conversation references a workspace that isn't currently connected,
   // store the path so the UI can show "workspace not available" instead of looping errors.
@@ -729,6 +731,8 @@ export default function ChatConversationComponent({
     useState<ReactNode>(null);
   const [rulesHeaderActions, setRulesHeaderActions] = useState<ReactNode>(null);
   const [tasksHeaderActions, setTasksHeaderActions] = useState<ReactNode>(null);
+  const [datastoreHeaderActions, setDatastoreHeaderActions] =
+    useState<ReactNode>(null);
   const [workflowMemoriesCount, setWorkflowMemoriesCount] = useState(0);
   const [workflowMemoriesHeaderActions, setWorkflowMemoriesHeaderActions] =
     useState<ReactNode>(null);
@@ -869,6 +873,7 @@ export default function ChatConversationComponent({
     return phaseMap;
   }, [subAgentToolActivity]);
   const [tasksCount, setTasksCount] = useState(0);
+  const [datastoreCount, setDatastoreCount] = useState(0);
   const [memoryConfigured, setMemoryConfigured] = useState(false);
   const [hasAnyMemoryModelSet, setHasAnyMemoryModelSet] = useState(false);
   const [imageModelConfigured, setImageModelConfigured] = useState(false);
@@ -2579,7 +2584,7 @@ export default function ChatConversationComponent({
     adminGeneratingCount,
     adminError,
     adminTraceFilter,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+  ]);  
 
   // Admin: title badge and cleanup
   useEffect(() => {
@@ -2906,6 +2911,20 @@ export default function ChatConversationComponent({
       .then((result) => setTasksCount(result.summary?.total || (result.tasks || []).length))
       .catch(() => {});
   }, [conversationId, tasksRefreshKey, isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin || !agentProject) return;
+    ToolsApiService.queryDatastore(agentProject)
+      .then((result) =>
+        setDatastoreCount(
+          (result.namespaces || []).reduce(
+            (sum, namespaceInfo) => sum + namespaceInfo.count,
+            0,
+          ),
+        ),
+      )
+      .catch(() => {});
+  }, [agentProject, datastoreRefreshKey, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) return;
@@ -3937,6 +3956,15 @@ export default function ChatConversationComponent({
             toolInput.name.includes("_task")
           ) {
             setTasksRefreshKey((k) => k + 1);
+          }
+
+          // Auto-refresh datastore panel when any datastore tool completes
+          if (
+            toolInput.status !== "calling" &&
+            toolInput.name &&
+            toolInput.name.includes("_datastore")
+          ) {
+            setDatastoreRefreshKey((k) => k + 1);
           }
 
           // Increment scheduled task notification badge when agent creates a cron job
@@ -7951,6 +7979,12 @@ export default function ChatConversationComponent({
                   ...badgeProps(tasksCount, "tasks"),
                   tooltip: "Tasks",
                 },
+                {
+                  key: "datastore",
+                  icon: <span className={tabBarStyles['tab-emoji-icon']}>🗄️</span>,
+                  ...badgeProps(datastoreCount, "datastore"),
+                  tooltip: "Datastore",
+                },
               ]
             : []),
 
@@ -8059,6 +8093,18 @@ export default function ChatConversationComponent({
             conversationId={conversationId}
             onCountChange={setTasksCount}
             onActionsChange={setTasksHeaderActions}
+          />
+        </>
+      )}
+
+      {leftTabBottom === "datastore" && (
+        <>
+          <SidebarTabHeaderComponent icon="🗄️" title="Datastore" count={datastoreCount} actions={datastoreHeaderActions} />
+          <DatastorePanel
+            project={agentProject}
+            refreshKey={datastoreRefreshKey}
+            onCountChange={setDatastoreCount}
+            onActionsChange={setDatastoreHeaderActions}
           />
         </>
       )}
@@ -8693,7 +8739,7 @@ export default function ChatConversationComponent({
             <div className={chatStyles['pending-images']}>
               {pendingImages.map((dataUrl, i) => (
                 <div key={`img-${i}`} className={chatStyles['pending-attachment-wrap']}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  { }
                   <img
                     src={dataUrl}
                     alt="Attached"

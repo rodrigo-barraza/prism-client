@@ -160,7 +160,7 @@ function resolveModelKeyForContent(
 
 interface BenchmarkDetailPageComponentProps {
   benchmarkId: string | string[] | undefined;
-  onRunningChange?: (running: boolean) => void;
+  onRunningChange?: (_running: boolean) => void;
   navSidebar?: ReactNode;
   rightSidebar?: ReactNode;
 }
@@ -1550,7 +1550,7 @@ export default function BenchmarkDetailPageComponent({
                       results={streamingResults}
                       expectedValue={benchmark.expectedValue}
                       modelConfigMap={modelConfigMap as unknown as Record<string, Record<string, unknown>>}
-                      onRowClick={handleStreamingRowClick as unknown as (row: BenchmarkRunResult | Partial<BenchmarkRunResult>) => void}
+                      onRowClick={handleStreamingRowClick as unknown as (_row: BenchmarkRunResult | Partial<BenchmarkRunResult>) => void}
                       activeRowKey={getActiveKey(streamingResults)}
                       activeModels={activeModels}
                       pendingTargets={pendingTargets}
@@ -1657,7 +1657,7 @@ export default function BenchmarkDetailPageComponent({
                 results={latestRun.models}
                 expectedValue={benchmark.expectedValue}
                 modelConfigMap={modelConfigMap as unknown as Record<string, Record<string, unknown>>}
-                onRowClick={setSelectedResult as unknown as (row: BenchmarkRunResult | Partial<BenchmarkRunResult>) => void}
+                onRowClick={setSelectedResult as unknown as (_row: BenchmarkRunResult | Partial<BenchmarkRunResult>) => void}
                 activeRowKey={getActiveKey(latestRun.models || [])}
               />
             </div>

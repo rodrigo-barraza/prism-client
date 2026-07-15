@@ -108,7 +108,7 @@ export default function MediaCardComponent({
 
       <div className={styles['preview']}>
         {media.mediaType === "image" && resolvedUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
+           
           <img
             src={resolvedUrl}
             alt=""

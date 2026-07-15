@@ -305,7 +305,6 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
 
   const {
     controls,
-    titleBadge,
     traceFilter,
     setTraceFilter,
   } = useAdminHeader();

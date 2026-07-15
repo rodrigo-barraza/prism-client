@@ -40,7 +40,7 @@ export default function BenchmarkModeSelector({
   onChange,
 }: {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (_value: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [pillStyle, setPillStyle] = useState<React.CSSProperties>({});

@@ -48,8 +48,8 @@ interface BenchmarksTableComponentProps {
   maxHeight?: number;
   sortKey?: string;
   sortDir?: string;
-  onSort?: (key: string, direction: string) => void;
-  onRowClick?: (row: BenchmarkRunResult | BenchmarkDisplayRow) => void;
+  onSort?: (_key: string, _direction: string) => void;
+  onRowClick?: (_row: BenchmarkRunResult | BenchmarkDisplayRow) => void;
   activeRowKey?: string;
   activeModels?: Map<string, ActiveModelEntry>;
   pendingTargets?: PendingTarget[];
