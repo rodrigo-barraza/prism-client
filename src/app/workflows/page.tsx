@@ -312,7 +312,7 @@ export default function WorkflowsPage({
     } catch (error: unknown) {
       console.error("Failed to import conversation:", error);
     }
-  }, []);
+  }, [addToast]);
 
   // Keep a ref with the latest state so pushUndo never goes stale
   const currentStateRef = useRef<UndoSnapshot>({
@@ -499,7 +499,7 @@ export default function WorkflowsPage({
       setNodes((prev) => [...prev, newNode as unknown as WorkflowNode]);
       setSelectedNodeId(newNode.id);
     },
-    [nodes.length, modelsWithModalities],
+    [pushUndo, nodes.length, modelsWithModalities],
   );
 
   // Update content of an asset node
@@ -559,7 +559,7 @@ export default function WorkflowsPage({
       // Base64 data URLs are kept in-memory until save — Prism backend
       // handles the upload to MinIO when the workflow is persisted.
     },
-    [],
+    [pushUndo],
   );
 
   // Update config of a model node (systemPrompt, staticInputs, etc.)
@@ -732,7 +732,7 @@ export default function WorkflowsPage({
     } finally {
       setIsRunning(false);
     }
-  }, [nodes, edges, workflowId, workflowName]);
+  }, [workflowId, nodes, edges, workflowName, addToast]);
 
   const handleStopWorkflow = useCallback(() => {
     abortRef.current = true;
@@ -775,7 +775,7 @@ export default function WorkflowsPage({
         (connection) => connection.sourceNodeId !== nodeId && connection.targetNodeId !== nodeId,
       ),
     );
-  }, []);
+  }, [pushUndo]);
 
   // Add an edge
   const handleAddEdge = useCallback(
@@ -848,7 +848,7 @@ export default function WorkflowsPage({
         return prev;
       });
     },
-    [nodeResults],
+    [nodeResults, pushUndo],
   );
 
   // Delete an edge
@@ -920,7 +920,7 @@ export default function WorkflowsPage({
 
       return remaining;
     });
-  }, []);
+  }, [pushUndo]);
 
   // Save current workflow
   const handleSaveWorkflow = useCallback(async () => {
@@ -952,7 +952,7 @@ export default function WorkflowsPage({
     } catch (error: unknown) {
       addToast(`Failed to save: ${getErrorMessage(error)}`, "error");
     }
-  }, [workflowId, workflowName, nodes, edges, nodeResults, nodeStatuses]);
+  }, [workflowId, workflowName, nodes, edges, nodeResults, nodeStatuses, addToast]);
 
   // Load a saved workflow
   const handleLoadWorkflow = useCallback(async (id: string) => {
@@ -990,7 +990,7 @@ export default function WorkflowsPage({
     } catch (error: unknown) {
       addToast(`Failed to load: ${getErrorMessage(error)}`, "error");
     }
-  }, []);
+  }, [addToast, pushUndo]);
 
   // Delete a saved workflow
   const handleDeleteWorkflow = useCallback(
@@ -1013,7 +1013,7 @@ export default function WorkflowsPage({
         addToast(`Failed to delete: ${getErrorMessage(error)}`, "error");
       }
     },
-    [workflowId],
+    [addToast, workflowId],
   );
 
   // Change the model on an existing node
@@ -1097,7 +1097,7 @@ export default function WorkflowsPage({
       newNode as WorkflowNode & { receivedOutputs?: unknown };
     setNodes((prev) => [...prev, cleanNode as WorkflowNode]);
     setSelectedNodeId(newNode.id);
-  }, []);
+  }, [pushUndo]);
 
   // -- Dirty-tracking: is the current state different from last saved? --
   const hasUnsavedChanges = useMemo(() => {
@@ -1158,7 +1158,7 @@ export default function WorkflowsPage({
     } catch (error: unknown) {
       addToast(`Download failed: ${getErrorMessage(error)}`, "error");
     }
-  }, []);
+  }, [addToast]);
 
   const handleCopyWorkflow = useCallback(async (id: string) => {
     try {
@@ -1169,7 +1169,7 @@ export default function WorkflowsPage({
     } catch (error: unknown) {
       addToast(`Copy failed: ${getErrorMessage(error)}`, "error");
     }
-  }, []);
+  }, [addToast]);
 
   const handleToggleFavorite = useCallback(
     async (wfId: string) => {

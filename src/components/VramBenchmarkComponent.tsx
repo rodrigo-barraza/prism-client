@@ -2961,7 +2961,7 @@ export default function VramBenchmarkComponent() {
         },
       },
     });
-  }, [models]);
+  }, [chartRefs.quantDist, models]);
 
   // -- Context Length Leaderboard ----------------------------
   // Dual-axis horizontal floating range bars — matches VRAM/TPS chart pattern.
@@ -3348,7 +3348,7 @@ export default function VramBenchmarkComponent() {
         },
       },
     });
-  }, [models, ctxRanges, tpsRanges]);
+  }, [chartRefs.ctxLeaderboard, models, ctxRanges, tpsRanges]);
 
   // -- Context Length Scaling --------------------------------
 
@@ -3569,7 +3569,7 @@ export default function VramBenchmarkComponent() {
         },
       },
     });
-  }, [allFilteredData, machineFilter]);
+  }, [allFilteredData, chartRefs.context, machineFilter]);
 
   // -- Destroy chart when switching tabs --
   const prevViewRef = useRef<ChartViewKey>(activeView);

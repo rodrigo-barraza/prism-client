@@ -185,6 +185,9 @@ import {
 } from "../utils/mentionUtils";
 import SoundService from "../services/SoundService";
 
+// Stable default so non-admin renders do not churn admin callback deps
+const EMPTY_ADMIN_DATE_RANGE = { from: "", to: "" };
+
 const DEFAULT_EMPTY_STATE: EmptyStateConfig = {
   title: "Agent",
   subtitle: "AI-powered agent with tool access.",
@@ -553,7 +556,7 @@ export default function ChatConversationComponent({
   const adminProviderFilter = isAdmin ? (adminSearchParams.get("provider") || null) : null;
   const adminModelFilter = isAdmin ? (adminSearchParams.get("model") || null) : null;
   const adminAgentParam = isAdmin ? (adminSearchParams.get("agent") || null) : null;
-  const adminDateRange = isAdmin ? adminHeaderContext.dateRange : { from: "", to: "" };
+  const adminDateRange = isAdmin ? adminHeaderContext.dateRange : EMPTY_ADMIN_DATE_RANGE;
   const adminTraceFilter = isAdmin ? adminHeaderContext.traceFilter : null;
   const adminActiveAgentId = adminAgentParam || "ALL";
   const adminIsAllMode = adminActiveAgentId === "ALL";
@@ -689,8 +692,9 @@ export default function ChatConversationComponent({
 
   // Clean up deletion timeouts on unmount
   useEffect(() => {
+    const pendingDeletions = pendingDeletionsRef.current;
     return () => {
-      pendingDeletionsRef.current.forEach((pending) => {
+      pendingDeletions.forEach((pending) => {
         clearTimeout(pending.timeoutId);
       });
     };

@@ -177,7 +177,7 @@ function AdminWorkflowsPageInner() {
     } catch (error: unknown) {
       addToast(`Download failed: ${getErrorMessage(error)}`, "error");
     }
-  }, []);
+  }, [addToast]);
 
   // Copy workflow JSON to clipboard
   const handleCopyWorkflow = useCallback(async (id: string) => {
@@ -190,7 +190,7 @@ function AdminWorkflowsPageInner() {
     } catch (error: unknown) {
       addToast(`Copy failed: ${getErrorMessage(error)}`, "error");
     }
-  }, []);
+  }, [addToast]);
 
   // Inject controls into AdminShell header
   useEffect(() => {

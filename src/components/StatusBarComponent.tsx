@@ -134,6 +134,7 @@ export default function StatusBarComponent({
     }, SYNTHETIC_TICK_MS);
 
     return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initialElapsedMilliseconds is a mount-time seed, not a live dependency
   }, [active, progress, phase, isCompletingPhase, clearCompletionTimer]);
 
   useEffect(() => {

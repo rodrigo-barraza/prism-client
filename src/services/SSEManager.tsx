@@ -72,4 +72,6 @@ export function subscribe(
   };
 }
 
-export default { subscribe };
+const SSEManager = { subscribe };
+
+export default SSEManager;

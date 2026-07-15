@@ -77,6 +77,7 @@ export default function ImageCropperComponent({
 
     setTranslateX(clampedTranslateX);
     setTranslateY(clampedTranslateY);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-clamps pan only when zoom changes by design
   }, [zoom]);
 
   // Dragging event handlers for desktop mouse

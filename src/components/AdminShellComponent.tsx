@@ -294,6 +294,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       if (tracesAbortController) tracesAbortController.abort();
       if (requestsAbortController) requestsAbortController.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only SSE subscription; pathname read is a snapshot by design
   }, []);
 
   const handleNavClick = useCallback((href: string) => {

@@ -377,14 +377,15 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
       }
     };
 
+    const collisionInstanceId = collisionInstanceIdRef.current;
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (fitAnimationFrameRef.current) cancelAnimationFrame(fitAnimationFrameRef.current);
-      if (collisionOwnerRef.current === collisionInstanceIdRef.current) {
+      if (collisionOwnerRef.current === collisionInstanceId) {
         collisionOwnerRef.current = null;
       }
     };
-  }, []);
+  }, [collisionOwnerRef, draggedNodeIdRef, nodesRef, setGraphData]);
 
   const startCollisionLoop = useCallback((frames = 30) => {
     // Skip when another instance already owns (and runs) the loop
@@ -394,7 +395,7 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
       settleCountRef.current = frames;
       rafRef.current = requestAnimationFrame(collisionTickRef.current as FrameRequestCallback);
     }
-  }, []);
+  }, [collisionOwnerRef]);
 
   useEffect(() => {
     if (draggedNode) {
@@ -403,7 +404,7 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
       collisionOwnerRef.current = collisionInstanceIdRef.current;
       startCollisionLoop(30);
     }
-  }, [draggedNode, startCollisionLoop]);
+  }, [collisionOwnerRef, draggedNode, startCollisionLoop]);
 
   // Start collision settlement when new graph data arrives from the hook
   useEffect(() => {
@@ -467,7 +468,7 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
     };
 
     fitAnimationFrameRef.current = requestAnimationFrame(animationStep);
-  }, [dimensions.width, dimensions.height]);
+  }, [nodesRef, dimensions.width, dimensions.height]);
 
   // -- Reactive auto-fit on node arrival -------------------------
   useEffect(() => {
@@ -546,7 +547,7 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
         setPanOffset((previous) => ({ x: previous.x + deltaX / zoom, y: previous.y + deltaY / zoom }));
       }
     },
-    [draggedNode, isPanning, screenToSvg, zoom],
+    [draggedNode, isPanning, screenToSvg, setGraphData, zoom],
   );
 
   const handleGlobalMouseUp = useCallback(() => {
@@ -586,7 +587,7 @@ export default function ChatConversationGraphComponent({ conversationId, isGener
     // animateToFitTransform reads positions from nodesRef
     nodesRef.current = graphData.nodes;
     animateToFitTransform();
-  }, [graphData, animateToFitTransform]);
+  }, [graphData, nodesRef, animateToFitTransform]);
 
   const animateCenterOnNode = useCallback((targetNode: GraphNode) => {
     const viewportWidth = dimensions.width;

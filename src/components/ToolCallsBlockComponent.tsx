@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
 import { resolveToolEmoji, isEmojiImageUrl } from "./WorkflowNodeConstantsComponent";
 import { ToolResultView } from "./ToolResultRenderers";
@@ -39,10 +39,10 @@ export default function ToolCallsBlockComponent({
     : renderToolName(toolCall.name);
 
   // Live counter for active tool execution
-  const computeElapsedSeconds = (): number => {
+  const computeElapsedSeconds = useCallback((): number => {
     if (!toolCall.timestamp) return 0;
     return Math.round((Date.now() - toolCall.timestamp) / 1000);
-  };
+  }, [toolCall.timestamp]);
 
   const [liveToolElapsedSeconds, setLiveToolElapsedSeconds] = useState(() =>
     isBlockActive ? computeElapsedSeconds() : 0,
@@ -63,7 +63,7 @@ export default function ToolCallsBlockComponent({
       return () => clearInterval(timerIntervalId);
     }
     setLiveToolElapsedSeconds(0);
-  }, [isBlockActive, toolCall.timestamp]);
+  }, [isBlockActive, toolCall.timestamp, computeElapsedSeconds]);
 
   useEffect(() => {
     if (previousIsBlockActiveForDuration.current && !isBlockActive && isSubAgentTool && toolCall.timestamp) {
@@ -156,7 +156,7 @@ export default function ToolCallsBlockComponent({
       return <>{completedSummary.verb} {subjectElement(completedSummary)}{durationLabel}</>;
     }
     return <>{toolDisplayName}{durationLabel}</>;
-  }, [isBlockActive, liveToolElapsedSeconds, toolDisplayName, effectiveDurationMs, toolCall.name, toolCall.args, handleSubjectClick]);
+  }, [toolCall.name, toolCall.args, displayMetadata, isBlockActive, effectiveDurationMs, toolDisplayName, handleSubjectClick, liveToolElapsedSeconds]);
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(!isBlockActive);
   const wasHeaderManuallyExpanded = useRef(false);

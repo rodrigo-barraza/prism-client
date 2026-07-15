@@ -79,6 +79,7 @@ export default function RequestsPage() {
       if (age < 5000 && age > -10000) ids.add(response.requestId || response._id);
     }
     return ids;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- justNowTick intentionally drives recomputation so rows age out
   }, [requests, justNowTick]);
 
   // Tick every 1s while there are "just now" rows so they age out naturally

@@ -524,7 +524,7 @@ export default function HistoryList({
     }
 
     return groups;
-  }, [filtered, parentConversationIds, subAgentNumberMap]);
+  }, [filtered, subAgentNumberMap]);
 
 
   // -- Infinite scroll via IntersectionObserver -----------------
