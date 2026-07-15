@@ -41,20 +41,25 @@ import NavigationIndicatorComponent from "./NavigationIndicatorComponent";
 import { LOCAL_STORAGE_KEY_PANEL_NAV, LOCAL_STORAGE_KEY_PANEL_LEFT, LOCAL_STORAGE_KEY_PANEL_RIGHT, LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT, EVENT_NAME_CRON_JOB_SCHEDULED, EVENT_NAME_PRISM_SETTINGS_UPDATED, EXECUTION_STATUS } from "../constants";
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
 import RainbowCanvasComponent from "./RainbowCanvasComponent";
+import ShimmerSweepComponent from "./ShimmerSweepComponent";
+import useAuroraPalette from "@/hooks/useAuroraPalette";
 import SoundService from "@/services/SoundService";
 import { CustomThemeService } from "@rodrigo-barraza/components-library";
 
-function RainbowCanvas({
+/** Theme-accent aurora drift — calm tonal waves instead of the old rainbow. */
+function AuroraCanvas({
   turbo = false,
   greyscale = false,
 }: {
   turbo?: boolean;
   greyscale?: boolean;
 }) {
+  const auroraPalette = useAuroraPalette();
   return (
     <RainbowCanvasComponent
       turbo={turbo}
       greyscale={greyscale}
+      palette={auroraPalette}
       className={styles['rainbow-canvas']}
     />
   );
@@ -670,10 +675,10 @@ export default function NavigationSidebarComponent({
           onClick={() => setMobileOpen((isOpenState) => !isOpenState)}
           title={mobileOpen ? "Close navigation" : "Open navigation"}
         >
-          {/* Spinning circle with rainbow ring */}
+          {/* Spinning circle with aurora ring */}
           <span className={styles['circle-spin']}>
             <span className={styles['triangle-outer']}>
-              <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
+              <AuroraCanvas turbo={isGenerating} greyscale={!isGenerating} />
             </span>
             <span className={styles['triangle-inner']} />
           </span>
@@ -691,9 +696,10 @@ export default function NavigationSidebarComponent({
               onClick={() => setMobileOpen(false)}
             />
             <div className={styles['mobile-popover']}>
-              {/* Rainbow strip */}
+              {/* Aurora strip */}
               <div className={styles['rainbow-strip']}>
-                <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
+                <AuroraCanvas turbo={isGenerating} greyscale={!isGenerating} />
+                <ShimmerSweepComponent active={isGenerating} />
                 <SpinningCatComponent animate={isGenerating} />
               </div>
 
@@ -907,9 +913,10 @@ export default function NavigationSidebarComponent({
     >
       {/* Expanded sidebar */}
       <div ref={sidebarReference} className={styles['sidebar']}>
-        {/* Rainbow logo banner */}
+        {/* Aurora logo banner */}
         <div className={styles['logo-banner']} ref={bannerRef}>
-          <RainbowCanvas turbo={isGenerating} greyscale={!isGenerating} />
+          <AuroraCanvas turbo={isGenerating} greyscale={!isGenerating} />
+          <ShimmerSweepComponent active={isGenerating} />
           {miniCats.map((cat: MiniCat) => (
              
             <img
