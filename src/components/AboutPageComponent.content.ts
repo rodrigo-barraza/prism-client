@@ -644,6 +644,23 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         categoryLabel: "Data Extraction",
         badgeTone: "cyan",
       },
+      {
+        title: "Deterministic Seed Avatars (DiceBear)",
+        authors: "DiceBear — Florian Körner",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/dicebear/dicebear",
+        description:
+          "generate_avatar hashes any seed string into an avatar assembled from artist-drawn part libraries — 37 styles from pixel-art sprites to bottts robots to identicon marks. The same seed + style reproduces the identical face forever, so a name alone is a stable visual identity: custom agents, roleplay NPCs, and project icons get faces with nothing stored and nothing to pay. SVG is assembled in-process (DiceBear v10 core + JSON style packs) and rasterized to PNG via sharp for Discord-reliable embeds.",
+        implementationFile: "AvatarService.ts",
+        categoryLabel: "Creative Tools",
+        badgeTone: "emerald",
+        alignment: [
+          { component: "Deterministic assembly", status: "aligned", detail: "Seed → PRNG → part selection, DiceBear's core contract; determinism is verified by a byte-identity test in CI" },
+          { component: "v10 JSON style packs", status: "aligned", detail: "Styles load on demand from @dicebear/styles JSON exports and cache per-process — the legacy @dicebear/collection API is gone in v10" },
+          { component: "Style-list drift guard", status: "extended", detail: "The tool's 37-style enum is asserted against the installed package's dist listing in tests, so a DiceBear version bump that renames styles fails CI instead of erroring live" },
+        ],
+      },
     ],
   },
   {
