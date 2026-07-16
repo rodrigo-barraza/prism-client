@@ -41,6 +41,13 @@ interface ParetoPoint {
 const FRONTIER_COLOR = "var(--color-success)";
 const POINT_COLOR = "var(--accent-primary)";
 
+/** Compact tick label: "Free", "$0.004", "$0.02", "$1.20" — no trailing-zero noise. */
+function formatAxisCost(value: number): string {
+  if (value === 0) return "Free";
+  const decimals = value >= 1 ? 2 : value >= 0.01 ? 2 : value >= 0.001 ? 3 : 4;
+  return `$${Number.parseFloat(value.toFixed(decimals))}`;
+}
+
 function computePoints(stats: BenchmarkModelStat[]): ParetoPoint[] {
   const points: ParetoPoint[] = stats
     .filter((stat) => stat.total > 0)
@@ -158,11 +165,11 @@ export default function BenchmarkParetoChartComponent({
                 type="number"
                 dataKey="costPerTest"
                 name="Cost per test"
-                domain={[0, maxCost * 1.1 || 0.001]}
-                tickFormatter={(value: number) =>
-                  value === 0 ? "Free" : formatCost(value)
-                }
+                domain={[0, maxCost * 1.15 || 0.001]}
+                tickCount={6}
+                tickFormatter={formatAxisCost}
                 tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+                tickMargin={6}
                 stroke="var(--calculated-border-color)"
               />
               <YAxis

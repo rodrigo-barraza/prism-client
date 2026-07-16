@@ -7,6 +7,7 @@ import {
   Bot,
   CheckCircle2,
   Cpu,
+  Plus,
   XCircle,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
@@ -350,18 +351,11 @@ export default function BenchmarkDashboardComponent({
     <ThreePanelLayout
       className="benchmark-dashboard-component"
       navSidebar={navSidebar}
+      title="Benchmarks"
       leftPanel={sidebarDetail}
       leftTitle={selectedModel?.model || ""}
       rightPanel={rightSidebar}
       rightTitle="Benchmarks"
-      headerControls={
-        <ButtonComponent
-          variant="primary"
-          onClick={() => router.push("/benchmarks/new")}
-        >
-          New Benchmark
-        </ButtonComponent>
-      }
     >
       <div className={styles['container']}>
         {loading ? (
@@ -389,6 +383,15 @@ export default function BenchmarkDashboardComponent({
               icon={BarChart3}
               title="Model Leaderboard"
               subtitle="Latest pass/fail per model config across every benchmark — accuracy, tool behavior, speed, and spend."
+              actions={
+                <ButtonComponent
+                  variant="primary"
+                  icon={Plus}
+                  onClick={() => router.push("/benchmarks/new")}
+                >
+                  New Benchmark
+                </ButtonComponent>
+              }
               stats={[
                 { key: "configs", value: stats.totalModels, label: "Configs" },
                 {

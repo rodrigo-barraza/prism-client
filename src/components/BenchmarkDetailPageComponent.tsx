@@ -22,6 +22,8 @@ import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import RunHistorySidebarComponent from "./RunHistorySidebarComponent";
 import {
   ButtonComponent,
+  IconButtonComponent,
+  EmptyStateComponent,
   ModalComponent,
   SelectComponent,
   TooltipComponent,
@@ -1256,6 +1258,7 @@ export default function BenchmarkDetailPageComponent({
         leftPanel={null}
         rightPanel={rightSidebar}
         rightTitle="Benchmarks"
+        title="Benchmarks"
       >
         <div className={styles['content-main']}>
           <div className={styles['run-progress']}>
@@ -1274,6 +1277,7 @@ export default function BenchmarkDetailPageComponent({
         leftPanel={null}
         rightPanel={rightSidebar}
         rightTitle="Benchmarks"
+        title="Benchmarks"
       >
         <div className={styles['content-main']}>
           <div className={styles['run-progress']}>
@@ -1316,84 +1320,35 @@ export default function BenchmarkDetailPageComponent({
       }
       rightPanel={rightSidebar}
       rightTitle="Benchmarks"
-      headerCenter={
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <ModelPickerPopoverComponent
-            config={prismConfig}
-            multiSelect
-            selectedKeys={selectedModelKeys}
-            onSelectModel={handleModelSelect}
-            favorites={favoriteKeys}
-            onToggleFavorite={handleToggleFavorite}
-            triggerLabel={
-              selectedInstances.length === 0
-                ? "Select Models"
-                : selectedInstances.length === 1
-                  ? "1 Model Selected"
-                  : `${selectedInstances.length} Models Selected`
-            }
-          />
-          <AgentPickerComponent
-            agents={availableAgents}
-            addMode
-            addCount={agentInstances.length}
-            onAddAgent={handleAddAgent}
-          />
-        </div>
-      }
+      title="Benchmarks"
     >
       <div className={styles['content-main']}>
-        <div className={styles['content-main-header']}>
-          <ButtonComponent
-            variant="disabled"
-            icon={Trash2}
-            onClick={() => setShowDeleteModal(true)}
-          >
-            Delete
-          </ButtonComponent>
-          <ButtonComponent variant="disabled" icon={Copy} onClick={openClone}>
-            Clone
-          </ButtonComponent>
-          <ButtonComponent variant="disabled" icon={Pencil} onClick={openEdit}>
-            Edit
-          </ButtonComponent>
-          <TooltipComponent label="Run every target this many times — measures consistency, not just a single sample">
-            <div className={styles['trials-select']}>
-              <SelectComponent
-                value={String(trials)}
-                options={TRIAL_OPTIONS}
-                onChange={(value: string) =>
-                  setTrials(Number.parseInt(value, 10) || 1)
-                }
-                icon={<Repeat size={13} />}
-                compact
-                disabled={running}
-              />
-            </div>
-          </TooltipComponent>
-          <ButtonComponent
-            variant="primary"
-            icon={running ? Square : Play}
-            onClick={running ? handleStop : handleRun}
-            loading={running}
-            disabled={
-              !running &&
-              selectedModels.length === 0 &&
-              agentInstances.length === 0
-            }
-          >
-            {running
-              ? "Stop"
-              : selectedModels.length + agentInstances.length > 0
-                ? "Run Benchmark"
-                : "Select Models"}
-          </ButtonComponent>
-        </div>
-
         <div className={styles['detail-panel']}>
-          {/* -- Benchmark Info -- */}
+          {/* -- Benchmark Identity -- */}
           <div className={styles['detail-header']}>
-            <div className={styles['detail-title']}>{benchmark.name}</div>
+            <div className={styles['detail-title-row']}>
+              <div className={styles['detail-title']} title={benchmark.name}>
+                {benchmark.name}
+              </div>
+              <div className={styles['detail-quiet-actions']}>
+                <IconButtonComponent
+                  icon={<Pencil size={15} />}
+                  onClick={openEdit}
+                  tooltip="Edit benchmark"
+                />
+                <IconButtonComponent
+                  icon={<Copy size={15} />}
+                  onClick={openClone}
+                  tooltip="Clone benchmark"
+                />
+                <IconButtonComponent
+                  icon={<Trash2 size={15} />}
+                  onClick={() => setShowDeleteModal(true)}
+                  variant="destructive"
+                  tooltip="Delete benchmark"
+                />
+              </div>
+            </div>
             <div className={styles['detail-meta']}>
               {(() => {
                 const textAssertions = (
@@ -1477,6 +1432,74 @@ export default function BenchmarkDetailPageComponent({
                 </span>
               ))}
             </div>
+          </div>
+
+          {/* -- Run Bar: pick targets and launch, all in one place -- */}
+          <div className={styles['run-bar']}>
+            <ModelPickerPopoverComponent
+              config={prismConfig}
+              multiSelect
+              selectedKeys={selectedModelKeys}
+              onSelectModel={handleModelSelect}
+              favorites={favoriteKeys}
+              onToggleFavorite={handleToggleFavorite}
+              triggerLabel={
+                selectedInstances.length === 0
+                  ? "Select Models"
+                  : selectedInstances.length === 1
+                    ? "1 Model Selected"
+                    : `${selectedInstances.length} Models Selected`
+              }
+            />
+            <AgentPickerComponent
+              agents={availableAgents}
+              addMode
+              addCount={agentInstances.length}
+              onAddAgent={handleAddAgent}
+            />
+            <span
+              className={`${styles['run-bar-summary']} ${
+                selectedModels.length + agentInstances.length > 0
+                  ? styles['run-bar-summary-active']
+                  : ""
+              }`}
+            >
+              {selectedModels.length + agentInstances.length === 0
+                ? "Pick models or agents to benchmark"
+                : `${selectedModels.length + agentInstances.length} target${
+                    selectedModels.length + agentInstances.length === 1
+                      ? ""
+                      : "s"
+                  }${trials > 1 ? ` × ${trials} trials` : ""} — manage them in the left panel`}
+            </span>
+            <div className={styles['run-bar-spacer']} />
+            <TooltipComponent label="Run every target this many times — measures consistency, not just a single sample">
+              <div className={styles['trials-select']}>
+                <SelectComponent
+                  value={String(trials)}
+                  options={TRIAL_OPTIONS}
+                  onChange={(value: string) =>
+                    setTrials(Number.parseInt(value, 10) || 1)
+                  }
+                  icon={<Repeat size={13} />}
+                  compact
+                  disabled={running}
+                />
+              </div>
+            </TooltipComponent>
+            <ButtonComponent
+              variant={running ? "destructive" : "primary"}
+              icon={running ? Square : Play}
+              onClick={running ? handleStop : handleRun}
+              loading={running}
+              disabled={
+                !running &&
+                selectedModels.length === 0 &&
+                agentInstances.length === 0
+              }
+            >
+              {running ? "Stop" : "Run Benchmark"}
+            </ButtonComponent>
           </div>
 
           {/* -- Running Progress -- */}
@@ -1597,6 +1620,19 @@ export default function BenchmarkDetailPageComponent({
                 </div>
               );
             })()}
+
+          {/* -- Empty state: never run yet -- */}
+          {!latestRun && !running && (
+            <EmptyStateComponent
+              icon={<Play size={36} />}
+              title="No runs yet"
+              subtitle={
+                selectedModels.length + agentInstances.length > 0
+                  ? "Your targets are ready — hit Run Benchmark above to get the first results."
+                  : "Pick models or agents in the bar above, then run this benchmark to see pass/fail results, tool traces, and timings."
+              }
+            />
+          )}
 
           {/* -- Results -- */}
           {latestRun && !running && (
