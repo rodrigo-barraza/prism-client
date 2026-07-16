@@ -505,15 +505,46 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         badgeTone: "violet",
       },
       {
-        title: "Context Pressure Management: Adaptive Compaction",
+        title: "Context Pressure Management: Rubric-Gated Compaction",
         authors: "Context Pattern",
         year: null,
         arxivUrl: null,
         description:
-          "Pressure-gated auto-compaction of conversation context to stay within model context windows while preserving critical reasoning history and tool results.",
+          "Auto-compaction where the pressure threshold is permission, not a command: compaction defers while the model has unread tool results or is recovering from a stall (up to hard ceilings), can be invoked by the model itself at safe boundaries via compact_context, and every summary is proofread by a judge pass before adoption.",
         implementationFile: "CompactionService.ts",
         categoryLabel: "Context Management",
         badgeTone: "cyan",
+      },
+      {
+        title: "Self-Compacting Language Model Agents",
+        authors: "Li, Zhang, Jurayj et al.",
+        year: 2026,
+        arxivUrl: "https://arxiv.org/abs/2606.23525",
+        description:
+          "Gives the model a compact tool paired with a natural-language rubric — fire when a sub-task resolves, suppress mid-derivation or when stuck. Matches or beats fixed-interval summarization at 30–70% lower per-question cost while raising accuracy; ablations show the tool and rubric are only effective together. Prism ships both halves: the compact_context tool with its rubric, and harness-side deferral guards that suppress threshold compaction mid-derivation.",
+        implementationFile: "CompactionDeferralGuard.ts",
+        categoryLabel: "Context Management",
+        badgeTone: "cyan",
+        alignment: [
+          { component: "Model-invoked compact tool", status: "aligned", detail: "compact_context returns a REQUEST_COMPACTION directive consumed at the next iteration boundary; bypasses the token threshold, keeps the minimum-message floor" },
+          { component: "Fire/suppress rubric", status: "aligned", detail: "Tool description carries the rubric (fire at sub-task resolution; never mid-derivation, while stuck, or on short conversations)" },
+          { component: "Harness-side suppression", status: "extended", detail: "Threshold compaction also defers on unread tool results or a recent stall warning, with hard pressure ceilings as the safety valve — the paper leaves suppression to the model alone" },
+        ],
+      },
+      {
+        title: "Slipstream: Trajectory-Grounded Compaction Validation for Long-Horizon Agents",
+        authors: "Chen, Pan, Dai & Netravali",
+        year: 2026,
+        arxivUrl: "https://arxiv.org/abs/2605.08580",
+        description:
+          "Validates candidate compaction summaries against the agent's actual next steps with a judge that patches omissions before adoption (+8.8 pts on SWE-bench Verified + BrowseComp). Prism adopts the synchronous judge slice only — one cheap utility call per compaction that appends missing critical facts — and deliberately skips the async parallel compactor, which spends extra tokens for a latency win that doesn't fit a single-GPU deployment.",
+        implementationFile: "CompactionService.ts",
+        categoryLabel: "Context Management",
+        badgeTone: "cyan",
+        alignment: [
+          { component: "Trajectory-grounded judge", status: "aligned", detail: "Judge checks the summary against the verbatim recent tail the agent continues from and appends flagged omissions; fail-open on any error" },
+          { component: "Async parallel compactor (paper)", status: "simplified", detail: "Not implemented — deliberately skipped: it spends more tokens in the overlap window and contends for the single local GPU" },
+        ],
       },
       {
         title: "Micro-Compaction: Lossless Tool-Result Eviction",
@@ -554,7 +585,7 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         alignment: [
           { component: "Recoverable eviction", status: "aligned", detail: "Evicted results stay byte-identical behind a stable offload id; retrieve_offloaded_content restores any slice on demand" },
           { component: "Model-controlled archive/restore", status: "simplified", detail: "Restore is model-invoked, but eviction is automatic (pressure-gated micro-compaction) rather than a model-invoked archive_block tool" },
-          { component: "Proprioceptive per-block dashboard", status: "simplified", detail: "Not implemented — per-block token/recency/access-history rendering into the prompt is future work (survey item A3, deliverable 2)" },
+          { component: "Proprioceptive per-block dashboard", status: "aligned", detail: "ContextLedgerInjector periodically renders total pressure, the largest inline tool results with token weights, and every offloaded stub with its recovery id as a tail system message — derived live from the message array, no LLM call" },
         ],
       },
       {
