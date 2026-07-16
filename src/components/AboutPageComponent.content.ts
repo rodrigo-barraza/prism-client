@@ -437,10 +437,61 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         year: null,
         arxivUrl: null,
         description:
-          "Periodic batch consolidation of agent memories using cosine similarity clustering, stale memory detection, and LLM-powered merge/delete decisions — preserving source attribution chains.",
+          "Periodic batch consolidation of agent memories using cosine similarity clustering, stale memory detection, and LLM-powered merge/invalidate decisions — non-destructive (sources are soft-closed, never deleted), lock-protected against concurrent runs, sanity-capped, and rollback-able per run, preserving source attribution chains.",
         implementationFile: "MemoryConsolidationService.ts",
         categoryLabel: "Memory",
         badgeTone: "violet",
+      },
+      {
+        title: "TOKI: A Bitemporal Operator Algebra for Contradiction Resolution in LLM-Agent Persistent Memory",
+        authors: "Wang",
+        year: 2026,
+        arxivUrl: "https://arxiv.org/abs/2606.06240",
+        description:
+          "Formalizes contradiction resolution as operations over a bitemporal memory schema: a superseded fact's valid-time window is closed rather than the row deleted, keeping history queryable. Prism's memories carry validTo/supersededBy/closedReason; every read path filters to current rows.",
+        implementationFile: "MemoryService.ts",
+        categoryLabel: "Memory",
+        badgeTone: "violet",
+        alignment: [
+          { component: "Valid-time close on supersession", status: "aligned", detail: "invalidate() sets validTo + supersededBy + closedReason instead of deleteOne; reopen() reverses it" },
+          { component: "History stays queryable", status: "aligned", detail: "Soft-closed rows remain in the collection; list(includeSuperseded) exposes them" },
+          { component: "Dual-row current+audit schema (paper)", status: "simplified", detail: "Single collection with validity fields rather than the paper's separate current/audit rows" },
+          { component: "Operator algebra (paper)", status: "simplified", detail: "Not implemented — consolidation LLM + write-time policy stand in for the formal operators" },
+        ],
+      },
+      {
+        title: "Graphiti: Bi-Temporal Knowledge-Graph Memory",
+        authors: "Zep",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/getzep/graphiti",
+        description:
+          "On contradiction, Graphiti closes the old edge's valid-time window and opens a new edge — never deleting, so \"moved cities\" updates don't destroy history. Prism's consolidation merges/invalidations follow the same close-don't-delete rule, making every run reversible.",
+        implementationFile: "MemoryConsolidationService.ts",
+        categoryLabel: "Memory",
+        badgeTone: "violet",
+        alignment: [
+          { component: "Edge invalidation on contradiction", status: "aligned", detail: "Consolidation invalidate action soft-closes the older memory with supersededById pointing at the newer one" },
+          { component: "Non-destructive merge", status: "aligned", detail: "Merge stores the combined memory first, then soft-closes sources pointing at it — rollbackRun() can undo the whole run" },
+          { component: "Knowledge graph structure (source)", status: "simplified", detail: "Flat document memories with supersession links, not a full temporal graph with entities and edges" },
+        ],
+      },
+      {
+        title: "Mem0: State of AI Agent Memory 2026",
+        authors: "Mem0",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://mem0.ai/blog/state-of-ai-agent-memory-2026",
+        description:
+          "Two shipped Mem0 v3 changes: single-pass ADD-only extraction (near-duplicate new facts are stored, not dropped — conflict resolution moves to read time) and hybrid retrieval fusing semantic, BM25 keyword, and entity matching into one score (LoCoMo 71.4→91.6). Prism implements both: ADD-only write-time dedup above an exact bar, and RRF-fused semantic + BM25 + exact + recency search.",
+        implementationFile: "HybridRetrieval.ts",
+        categoryLabel: "Memory",
+        badgeTone: "violet",
+        alignment: [
+          { component: "Single-pass ADD-only extraction", status: "aligned", detail: "store() keeps similar-but-different memories (0.92–0.97 band) instead of dropping them; only verbatim re-extractions are skipped" },
+          { component: "Hybrid multi-signal retrieval", status: "aligned", detail: "search() fuses cosine, BM25 (in-house Bm25ToolIndex), exact/entity hits, and recency via reciprocal-rank fusion" },
+          { component: "Drop the consolidation pass (source)", status: "extended", detail: "Prism keeps a background consolidation LLM — but made non-destructive, locked, and rollback-able — rather than fully deferring conflicts to read time" },
+        ],
       },
       {
         title: "Memory Extraction: CC-Style 4-Type Taxonomy",
@@ -610,7 +661,7 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         arxivUrl: null,
         sourceUrl: "https://www.philschmid.de/generate-stickers",
         description:
-          "Gemini image models output flat RGB with no alpha channel, so transparent cut-outs are recovered mathematically: the model is instructed to render the subject on a pure chromakey-green (#00FF00) background, which is then keyed out in HSV space — a hue-windowed mask, one-pixel dilation to swallow anti-aliased fringe, and a despill pass that strips the green cast from edge pixels. Powers generate_image's transparentBackground flag for both fresh generations and cut-outs of attached images.",
+          "Gemini image models output flat RGB with no alpha channel, so transparent cut-outs are recovered mathematically: the model is instructed to render the subject on a pure chromakey-green (#00FF00) background, which is then keyed out in HSV space — a hue-windowed mask, one-pixel dilation to swallow anti-aliased fringe, and a despill pass that strips the green cast from edge pixels. Powers generate_image's transparentBackground flag. Its pixel-faithful sibling, remove_background, skips generation entirely: Gemini vision segmentation masks (per-box base64 PNG probability maps) are resized, unioned into a soft alpha canvas, and applied to the ORIGINAL pixels.",
         implementationFile: "ImageService.ts",
         categoryLabel: "Creative Tools",
         badgeTone: "success",
