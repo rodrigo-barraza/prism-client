@@ -603,6 +603,47 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
           { component: "Liveness gating", status: "extended", detail: "Ping is gated on a queue-progress self-check (drain-start / per-item activity stamps), so a WEDGE trips the switch, not just a crash" },
         ],
       },
+      {
+        title: "Chromakey Alpha Recovery for Image Cut-Outs",
+        authors: "philschmid.de technique",
+        year: 2025,
+        arxivUrl: null,
+        sourceUrl: "https://www.philschmid.de/generate-stickers",
+        description:
+          "Gemini image models output flat RGB with no alpha channel, so transparent cut-outs are recovered mathematically: the model is instructed to render the subject on a pure chromakey-green (#00FF00) background, which is then keyed out in HSV space — a hue-windowed mask, one-pixel dilation to swallow anti-aliased fringe, and a despill pass that strips the green cast from edge pixels. Powers generate_image's transparentBackground flag for both fresh generations and cut-outs of attached images.",
+        implementationFile: "ImageService.ts",
+        categoryLabel: "Creative Tools",
+        badgeTone: "success",
+      },
+      {
+        title: "Code-to-Image Cards (carbon.now.sh pattern)",
+        authors: "Shiki; charmbracelet/freeze; Aloxaf/silicon",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/shikijs/shiki",
+        description:
+          "render_code turns any snippet into a shareable syntax-highlighted PNG card: Shiki tokenizes with real TextMate grammars (~200 languages plus ANSI terminal output), a macOS-style window card wraps the result, and the shared warm Playwright Chromium rasterizes it at 2× for retina crispness. Deterministic and free — no external API. Pattern popularized by carbon.now.sh and its CLI kin freeze (https://github.com/charmbracelet/freeze) and silicon (https://github.com/Aloxaf/silicon).",
+        implementationFile: "CodeImageService.ts",
+        categoryLabel: "Creative Tools",
+        badgeTone: "violet",
+        alignment: [
+          { component: "Syntax highlighting", status: "aligned", detail: "Shiki bundled grammars and themes load on demand from node_modules — no CDN at render time, unknown languages fall back to plaintext with an honest note in the result" },
+          { component: "Rasterization", status: "extended", detail: "Reuses the warm Chromium singleton from the browser-automation tools instead of a bespoke HTML renderer — full CSS fidelity for window chrome, shadows, and gradients at a per-call cost of one throwaway context" },
+          { component: "Window chrome + themes", status: "aligned", detail: "Traffic-light title bar, 8 curated themes, gradient/plain/transparent backdrops — the carbon.now.sh look, including transparent cards for compositing" },
+        ],
+      },
+      {
+        title: "Barcode & QR Decoding (ZXing-C++ via WASM)",
+        authors: "Sec-ant — zxing-wasm",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/Sec-ant/zxing-wasm",
+        description:
+          "scan_barcode is the inverse of generate_qr_code: it decodes QR, Aztec, DataMatrix, PDF417, and 1D retail barcodes (EAN/UPC/Code 128/39) from any photo or screenshot — multiple symbols per image, rotated or inverted included — fully local via the ZXing-C++ engine compiled to WebAssembly. Node cannot fetch() the module's wasm from disk, so the binary is read from the package and handed over once at first use, then cached for the process lifetime.",
+        implementationFile: "ImageService.ts",
+        categoryLabel: "Data Extraction",
+        badgeTone: "cyan",
+      },
     ],
   },
   {
