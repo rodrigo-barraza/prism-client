@@ -362,6 +362,52 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         categoryLabel: "Guardrails",
         badgeTone: "danger",
       },
+      {
+        title: "Rich Code-Interpreter Results (Jupyter/e2b Result Model)",
+        authors: "e2b — code-interpreter",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/e2b-dev/code-interpreter",
+        description:
+          "execute_python returns figures, not just text: an injected epilogue auto-saves open matplotlib figures (plus any image files the script writes into its sandbox working directory), which are uploaded and attached as image displays. Includes the enabling fix — the memory cap moved from RLIMIT_AS to RLIMIT_DATA with single-threaded BLAS, because numpy/OpenBLAS address-space reservations made `import matplotlib` hang under the old cap.",
+        implementationFile: "PythonInterpreterService.ts",
+        categoryLabel: "Tool Results",
+        badgeTone: "violet",
+        alignment: [
+          { component: "Figure auto-capture", status: "aligned", detail: "A script epilogue saves open figures (pyplot's own atexit hook destroys them before a preamble-registered atexit can run — LIFO order), plus a working-directory scan collects savefig() output" },
+          { component: "Rich result envelope", status: "simplified", detail: "Images only — e2b also captures DataFrame/HTML/LaTeX reprs of the last expression; print(df) covers tables in a script (non-REPL) sandbox" },
+          { component: "Display contract", status: "extended", detail: "Figures ride the self-describing display{kind:'image'} result convention, so web and Discord render them with zero client changes" },
+        ],
+      },
+      {
+        title: "Language-Server Diagnostics as an Agent Tool",
+        authors: "isaacphi — mcp-language-server; oraios — serena",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/isaacphi/mcp-language-server",
+        description:
+          "code_intel exposes the LSP subsystem (goToDefinition, findReferences, hover, documentSymbol — and now diagnostics) as a single agent tool, following mcp-language-server and serena (https://github.com/oraios/serena). Diagnostics close the edit-verify loop: after editing a file the agent gets real tsserver/pyright errors instead of editing blind. LSP pushes diagnostics rather than answering requests, so the server manager captures publishDiagnostics notifications and waiters block for a fresh publish, with a settle window for servers that publish syntax and semantic passes separately.",
+        implementationFile: "AgenticLspService.ts",
+        categoryLabel: "Code Intelligence",
+        badgeTone: "cyan",
+        alignment: [
+          { component: "Diagnostics after edit", status: "aligned", detail: "didChange with a monotonically increasing document version, then wait for a publish newer than the request — stale results are flagged rather than passed off as current" },
+          { component: "Full LSP surface", status: "aligned", detail: "One modal tool exposes definition/references/hover/outline alongside diagnostics, like serena's language-server toolbox" },
+          { component: "Multi-pass settle window", status: "extended", detail: "After the first fresh publish the waiter lingers briefly and returns the latest entry — resolving on the first publish would miss tsserver's separate semantic pass" },
+        ],
+      },
+      {
+        title: "Unified-Diff apply_patch Tool",
+        authors: "OpenAI — Codex CLI",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/openai/codex",
+        description:
+          "A patch-application editing tool in the shape of Codex's apply_patch: the agent submits a unified diff (@@ hunks with context lines) against one file, applied atomically via jsdiff (https://github.com/kpdecker/jsdiff) — context mismatch rejects the whole patch with no partial writes. Complements exact-string replace_in_file for multi-hunk edits and for applying diffs the agent already has (e.g. from run_git diff).",
+        implementationFile: "AgenticFileService.ts",
+        categoryLabel: "Editing",
+        badgeTone: "orange",
+      },
     ],
   },
   {
