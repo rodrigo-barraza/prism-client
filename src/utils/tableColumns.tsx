@@ -1304,6 +1304,9 @@ export const benchmarkMatchModeColumn = () => ({
   description:
     "Evaluation strategy used to compare response against expected value",
   sortable: false,
+  // The Assertions column carries per-assertion labels (incl. match modes),
+  // so this stays hidden by default to give the response column room.
+  defaultHidden: true,
   render: (row: TableRow) => (
     <BadgeComponent variant="info" mini>
       {MATCH_MODE_LABELS[row.matchMode as string] ??

@@ -671,6 +671,17 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
     icon: Shield,
     papers: [
       {
+        title: "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena",
+        authors: "Zheng et al.",
+        year: 2023,
+        arxivUrl: "https://arxiv.org/abs/2306.05685",
+        description:
+          "Rubric-based LLM-judge grading for benchmark runs: a judge model scores responses against a natural-language rubric (strict JSON verdict, 0–10 score, reasoning), enabling quality benchmarks that string matching can't express.",
+        implementationFile: "BenchmarkJudge.ts",
+        categoryLabel: "Evaluation",
+        badgeTone: "indigo",
+      },
+      {
         title: "Critic Gate: Multi-Model Safety Review",
         authors: "Safety Pattern",
         year: null,
