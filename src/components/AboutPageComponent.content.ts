@@ -696,6 +696,34 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         badgeTone: "cyan",
       },
       {
+        title: "FIGlet ASCII Banners",
+        authors: "patorjk — figlet.js",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/patorjk/figlet.js",
+        description:
+          "generate_ascii_banner renders short text as large ASCII-art lettering across 328 FIGfonts — the inverse of the existing image→ASCII converter. figlet.js implements the full FIGfont spec including kerning and smushing layout modes, pure JS with no native bindings; banners return as text and render in fenced code blocks in both web and Discord.",
+        implementationFile: "ComputeRoutes.ts",
+        categoryLabel: "Creative Tools",
+        badgeTone: "teal",
+      },
+      {
+        title: "Photo → Lighting Scene (Palette Transfer)",
+        authors: "Vibrant-Colors — node-vibrant",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/Vibrant-Colors/node-vibrant",
+        description:
+          "paint_lights_from_image sets the room to match a photo: node-vibrant extracts six semantic swatches (Vibrant/Muted/Dark/Light, weighted by pixel population), zero-population derived swatches are filtered out, and the top colors are distributed round-robin across the individually-addressed LIFX bulbs through the existing batch states endpoint — a sunset photo becomes a sunset room. A palette-strip PNG returns as a visual receipt of what was applied.",
+        implementationFile: "LightPainterService.ts",
+        categoryLabel: "Smart Home",
+        badgeTone: "warning",
+        alignment: [
+          { component: "Population-weighted palette", status: "aligned", detail: "Swatches sort by pixel coverage so the room reflects what the photo is mostly made of, not its accent colors" },
+          { component: "Per-bulb distribution", status: "extended", detail: "Lights are enumerated and addressed individually (id: selectors) so a multi-bulb room becomes the palette rather than one averaged color — node-vibrant only provides the swatches" },
+        ],
+      },
+      {
         title: "Deterministic Seed Avatars (DiceBear)",
         authors: "DiceBear — Florian Körner",
         year: 2026,
