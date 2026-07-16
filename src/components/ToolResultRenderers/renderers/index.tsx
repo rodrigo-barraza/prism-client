@@ -6,7 +6,7 @@ export * from "./CoordinatorAndMiscRenderers";
 
 import { RendererProps, ToolResultDisplay } from "../types";
 import { RawResultToggle } from "../SharedComponents";
-import { getResultDisplay } from "../utils";
+import { getResultDisplay, getCodeDisplayText } from "../utils";
 import { AutoResizeToolEmbed } from "./BrowserMediaAndVisualRenderers";
 import PrismService from "../../../services/PrismService";
 import styles from "../ToolResultRenderersComponent.module.css";
@@ -18,14 +18,72 @@ import React from "react";
  * for video/audio. This is the generic path that lets any tool surface
  * visual output without a dedicated renderer.
  */
+/**
+ * Whitespace-exact code/text block for `kind: "code"` displays, with a
+ * copy button so the user always has a byte-perfect copy of the tool
+ * output regardless of how the model transcribed it in its reply.
+ */
+function CodeDisplayBlock({
+  text,
+  title,
+  language,
+}: {
+  text: string;
+  title: string;
+  language?: string;
+}) {
+  const [isCopied, setIsCopied] = React.useState(false);
+  const handleCopy = React.useCallback(() => {
+    navigator.clipboard?.writeText(text).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 1500);
+    });
+  }, [text]);
+  return (
+    <div className={styles['code-display-container']}>
+      <div className={styles['code-display-header']}>
+        <span className={styles['code-display-title']}>{title}</span>
+        <button
+          type="button"
+          className={styles['code-display-copy']}
+          onClick={handleCopy}
+          aria-label="Copy to clipboard"
+        >
+          {isCopied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <pre
+        className={
+          language === "diff" ? styles['diff-block'] : styles['code-block']
+        }
+      >
+        <code>{text}</code>
+      </pre>
+    </div>
+  );
+}
+
 export function ToolResultDisplayView({
   display,
   toolName,
+  result,
 }: {
   display: ToolResultDisplay;
   toolName?: string;
+  result?: unknown;
 }) {
   const displayTitle = display.title || toolName || "Tool result";
+  if (display.kind === "code") {
+    const text = getCodeDisplayText(result, display);
+    if (!text) return null;
+    return (
+      <CodeDisplayBlock
+        text={text}
+        title={displayTitle}
+        language={display.language}
+      />
+    );
+  }
   if (display.kind === "embed") {
     return (
       <AutoResizeToolEmbed
@@ -76,7 +134,7 @@ export const GenericRenderer: React.FC<RendererProps> = ({ result, hideToggles }
   const display = getResultDisplay(result);
   return (
     <>
-      {display && <ToolResultDisplayView display={display} />}
+      {display && <ToolResultDisplayView display={display} result={result} />}
       {!hideToggles && <RawResultToggle result={result} />}
     </>
   );

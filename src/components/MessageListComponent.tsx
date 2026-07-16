@@ -2256,6 +2256,9 @@ export default function MessageList({
                             (toolCall: ToolCallEvent) => {
                               const display = getResultDisplay(toolCall.result);
                               if (!display) return false;
+                              // "code" stays in the tool card — the reply text
+                              // already carries the substituted verbatim copy.
+                              if (display.kind === "code") return false;
                               if (
                                 display.kind === "image" &&
                                 messageImageUrls.has(display.url)

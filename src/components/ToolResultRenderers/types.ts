@@ -223,10 +223,11 @@ export interface ParsedToolResult {
  * Any tool result with `display` renders inline in the conversation and
  * inside its tool card without needing a per-tool renderer: "embed"
  * becomes an auto-resizing iframe, "image" an <img>, "video"/"audio"
- * native media players. Emitted by tools-service (embed tools,
- * download_video) and prism-service (generated images, screenshots).
+ * native media players, "code" a whitespace-exact monospace block.
+ * Emitted by tools-service (embed tools, download_video) and
+ * prism-service (generated images, screenshots).
  */
-export interface ToolResultDisplay {
+export interface ToolResultMediaDisplay {
   kind: "embed" | "image" | "video" | "audio";
   url: string;
   /** Fallback iframe height in px until the embed reports its own size. */
@@ -235,6 +236,17 @@ export interface ToolResultDisplay {
   /** Poster image shown before a video plays (video only). */
   poster?: string;
 }
+
+export interface ToolResultCodeDisplay {
+  kind: "code";
+  /** Name of the top-level sibling result field holding the verbatim text. */
+  sourceField: string;
+  /** Syntax-highlight hint, e.g. "text", "diff", "python", "json". */
+  language?: string;
+  title?: string;
+}
+
+export type ToolResultDisplay = ToolResultMediaDisplay | ToolResultCodeDisplay;
 
 export interface RendererProps {
   result: unknown;

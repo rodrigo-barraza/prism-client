@@ -33,18 +33,37 @@ export function tryParse(result: unknown): ParsedToolResult | null {
  * Returns null unless the result carries a well-formed `display` object.
  */
 export function getResultDisplay(result: unknown): ToolResultDisplay | null {
-  const display = tryParse(result)?.display;
+  const display = tryParse(result)?.display as
+    | Record<string, unknown>
+    | undefined;
+  if (!display) return null;
   if (
-    display &&
     typeof display.url === "string" &&
     (display.kind === "embed" ||
       display.kind === "image" ||
       display.kind === "video" ||
       display.kind === "audio")
   ) {
-    return display;
+    return display as unknown as ToolResultDisplay;
+  }
+  if (display.kind === "code" && typeof display.sourceField === "string") {
+    return display as unknown as ToolResultDisplay;
   }
   return null;
+}
+
+/**
+ * Resolve the verbatim text a `kind: "code"` display points at — the
+ * sibling result field named by `sourceField`. Null when absent/non-string.
+ */
+export function getCodeDisplayText(
+  result: unknown,
+  display: ToolResultDisplay,
+): string | null {
+  if (display.kind !== "code") return null;
+  const parsed = tryParse(result) as Record<string, unknown> | null;
+  const value = parsed?.[display.sourceField];
+  return typeof value === "string" && value.length > 0 ? value : null;
 }
 
 /**

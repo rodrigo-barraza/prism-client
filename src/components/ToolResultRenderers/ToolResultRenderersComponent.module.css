@@ -97,6 +97,48 @@
   color: inherit;
 }
 
+/* ── Code display (kind: "code" tool results) ──────────────── */
+
+.code-display-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.code-display-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.code-display-title {
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono, monospace);
+  color: var(--text-tertiary, var(--text-secondary));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-display-copy {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--calculated-border-color);
+  background: var(--background-surface);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.code-display-copy:hover {
+  background: var(--background-elevated);
+  color: var(--text-primary);
+}
+
 /* ── Inline code ───────────────────────────────────────────── */
 
 .inline-code {
