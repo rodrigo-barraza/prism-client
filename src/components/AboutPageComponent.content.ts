@@ -408,6 +408,23 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         categoryLabel: "Editing",
         badgeTone: "orange",
       },
+      {
+        title: "Atomic Multi-Edit Transactions (MultiEdit)",
+        authors: "Anthropic — Claude Code",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://docs.anthropic.com/en/docs/claude-code",
+        description:
+          "replace_in_file gained Claude Code's MultiEdit contract: an ordered edits[] batch validated and folded against an in-memory buffer — later edits see earlier edits' output — then written to disk exactly once. Any failed match aborts the entire batch with zero changes, killing the half-applied-file failure class of issuing several single edits in a row.",
+        implementationFile: "AgenticFileService.ts",
+        categoryLabel: "Editing",
+        badgeTone: "info",
+        alignment: [
+          { component: "Sequential fold semantics", status: "aligned", detail: "Edit N+1 matches against the buffer produced by edit N, exactly like MultiEdit — error messages explain this when a later edit misses" },
+          { component: "All-or-nothing write", status: "aligned", detail: "One atomic write at the end; every validation failure names the offending edit index and guarantees the file is untouched" },
+          { component: "Per-edit allowMultiple", status: "extended", detail: "Each edit can opt into replace-all with the same ambiguity guard as single edits (non-overlapping match counting)" },
+        ],
+      },
     ],
   },
   {
@@ -652,10 +669,26 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         year: null,
         arxivUrl: null,
         description:
-          "Deterministic three-tier permission system — AUTO (read-only), WRITE (file mutations), DANGER (shell execution) — with declarative policy evaluation and full-auto override support.",
+          "Deterministic three-tier permission system — AUTO (read-only), WRITE (file mutations), DANGER (shell execution and third-party MCP tools) — with declarative policy evaluation and full-auto override support.",
         implementationFile: "AutoApprovalEngine.ts",
         categoryLabel: "Safety",
         badgeTone: "danger",
+      },
+      {
+        title: "VIPER-MCP: Detecting and Exploiting Taint-Style Vulnerabilities in Model Context Protocol Servers",
+        authors: "Sun, Jin, Huang et al.",
+        year: 2026,
+        arxivUrl: "https://arxiv.org/abs/2605.21392",
+        description:
+          "Found 106 zero-days across ~40k MCP server repos via static taint analysis — establishing that MCP packages must be treated as untrusted code. Prism hardens accordingly: stdio MCP children receive only a safe-inheritance environment (never prism-service's secrets — the process.env spread that leaked MONGO_URI and provider keys is gone), and MCP-namespaced tools default to the DANGER approval tier instead of auto-approvable WRITE. Motivated jointly by Unit 42's OpenClaw supply-chain incident report.",
+        implementationFile: "MCPClientService.ts",
+        categoryLabel: "Safety",
+        badgeTone: "danger",
+        alignment: [
+          { component: "MCP as untrusted code", status: "aligned", detail: "stdio children get the SDK's safe-inheritance env (PATH/HOME/...) plus only their own configured vars — secrets never cross the process boundary" },
+          { component: "Approval gating", status: "extended", detail: "mcp__ tools default to DANGER tier (human gate + CriticGate review) with per-tool overrides for trusted servers — beyond the paper's detection scope" },
+          { component: "Static taint scanning (paper)", status: "simplified", detail: "Not implemented — no pre-connect scan of MCP server code; the mitigation is containment rather than detection" },
+        ],
       },
       {
         title: "DAG-Based Workflow Orchestration",
@@ -752,6 +785,46 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         alignment: [
           { component: "Population-weighted palette", status: "aligned", detail: "Swatches sort by pixel coverage so the room reflects what the photo is mostly made of, not its accent colors" },
           { component: "Per-bulb distribution", status: "extended", detail: "Lights are enumerated and addressed individually (id: selectors) so a multi-bulb room becomes the palette rather than one averaged color — node-vibrant only provides the swatches" },
+        ],
+      },
+      {
+        title: "Email as a First-Class Assistant Channel (SMTP + IMAP)",
+        authors: "nodemailer / postalsys — imapflow",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/nodemailer/nodemailer",
+        description:
+          "send_email, search_email, and read_email close the last core-communication gap: Prism could text and push-notify but never touch a mailbox. nodemailer handles SMTP send and its sibling imapflow (https://github.com/postalsys/imapflow) handles IMAP search/read — a same-author pairing proven by codefuturist/email-mcp (https://github.com/codefuturist/email-mcp). Bodies are parsed with mailparser and HTML is stripped before reaching the LLM; the read tool's description explicitly marks email content as untrusted input. Tools are key-gated: without vault SMTP/IMAP credentials they are never advertised to the model.",
+        implementationFile: "EmailService.ts",
+        categoryLabel: "Communication",
+        badgeTone: "indigo",
+      },
+      {
+        title: "Verbatim OCR (Tesseract WASM)",
+        authors: "naptha — tesseract.js",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/naptha/tesseract.js",
+        description:
+          "read_image_text extracts the exact text from screenshots, signs, and scanned pages — the verbatim complement to the semantic describe_image. Tesseract compiled to WASM runs free on CPU with 100+ languages (packs download once and cache), returns a 0-100 confidence score the agent can act on, and can hand back the image annotated with word bounding boxes (green = confident, amber = uncertain). Structured so hard cases (tables, handwriting) can later route to olmOCR (https://github.com/allenai/olmocr) on the vLLM box.",
+        implementationFile: "OcrService.ts",
+        categoryLabel: "Data Extraction",
+        badgeTone: "purple",
+      },
+      {
+        title: "Server-Side Chart Engine (Apache ECharts SSR)",
+        authors: "Apache ECharts",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://echarts.apache.org",
+        description:
+          "generate_chart's renderer swapped from chartjs-node-canvas (native canvas dependency, three chart types) to Apache ECharts server-side SVG rendering rasterized via sharp — no browser, no native canvas. The catalog grew from bar/line/pie to twelve types including scatter, radar, heatmap, funnel, stacked variants, and candlestick (which pairs with the historical-prices tool). Every new type reuses the existing {labels, datasets} contract — heatmap rows are simply datasets — so the iterative chartId merge kept working unchanged.",
+        implementationFile: "ChartService.ts",
+        categoryLabel: "Data Viz",
+        badgeTone: "success",
+        alignment: [
+          { component: "SSR SVG rendering", status: "aligned", detail: "echarts.init(null, null, {renderer:'svg', ssr:true}) → renderToSVGString → sharp PNG, per the official server-side rendering guide" },
+          { component: "Uniform data contract", status: "extended", detail: "Exotic types were mapped onto the existing labels/datasets shape (heatmap rows-as-datasets, candlestick OHLC arrays, scatter pairs) instead of new payloads — legacy charts and the iterative merge needed zero migration" },
         ],
       },
       {
