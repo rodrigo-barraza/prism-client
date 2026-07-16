@@ -7,6 +7,8 @@
      list's own opaque background-color but below ALL in-flow content
      (empty state, system prompt in raw view, messages). */
   z-index: -1;
+  /* The component pins this to the scrollport with an inline translate3d
+     that tracks the list's scrollTop — content scrolls, the sky doesn't. */
   animation: chat-background-fade-in 600ms ease-out;
 }
 

@@ -4,7 +4,7 @@
    theme color tokens (see AboutPageComponent.module.css).
    ════════════════════════════════════════════════════════════ */
 
-import { Brain, Cog, Puzzle, Shield, Waypoints } from "lucide-react";
+import { Brain, Cog, PawPrint, Puzzle, Shield, Waypoints } from "lucide-react";
 import type { AlignmentStatus } from "./AlignmentStatusIndicatorComponent";
 
 /** Theme color token names available as category badge tones. */
@@ -33,6 +33,8 @@ export interface ResearchPaper {
   authors: string;
   year: number | null;
   arxivUrl: string | null;
+  /** Docs/GitHub link for industry (non-arXiv) sources — rendered like arxivUrl but excluded from the academic-paper count. */
+  sourceUrl?: string | null;
   description: string;
   implementationFile: string;
   categoryLabel: string;
@@ -417,15 +419,65 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         badgeTone: "cyan",
       },
       {
-        title: "Micro-Compaction: In-Memory Tool-Result Clearing",
+        title: "Micro-Compaction: Lossless Tool-Result Eviction",
         authors: "Context Pattern",
         year: null,
         arxivUrl: null,
         description:
-          "The lightest compaction layer — no LLM call required. Before sending to the model, large tool results from compactable read-only tools in old, unprotected turns are cleared, with recent turns always protected. Trims context while preserving the cacheable prompt prefix.",
+          "The lightest compaction layer — no LLM call required. Before sending to the model, large tool results from compactable read-only tools in old, unprotected turns are evicted, with recent turns always protected. Each evicted result is offloaded verbatim and replaced inline with a pointer stub (offload id + first-lines preview) that the model can dereference later — eviction is recoverable, not destructive.",
         implementationFile: "MicroCompactionService.ts",
         categoryLabel: "Context Management",
         badgeTone: "cyan",
+      },
+      {
+        title: "LCM: Lossless Context Management",
+        authors: "Ehrlich & Blackman",
+        year: 2026,
+        arxivUrl: "https://arxiv.org/abs/2605.04050",
+        description:
+          "Argues reduced context must retain lossless pointers to every original payload rather than destructively summarizing. Prism applies the lossless-pointer principle to tool-result eviction: micro-compacted results are persisted verbatim and replaced with retrievable pointer stubs.",
+        implementationFile: "ToolResultOffloadService.ts",
+        categoryLabel: "Context Management",
+        badgeTone: "cyan",
+        alignment: [
+          { component: "Lossless pointers to originals", status: "aligned", detail: "Every evicted tool result is persisted verbatim (Mongo, keyed by offload id) and its inline stub carries the dereferenceable pointer" },
+          { component: "Hierarchical summary DAG (paper)", status: "simplified", detail: "Not implemented — the paper builds a summary DAG over all messages; Prism offloads flat per-tool-result payloads only" },
+        ],
+      },
+      {
+        title: "LLM Agents Are Latent Context Managers (VISTA)",
+        authors: "Xu, Li & Zhang",
+        year: 2026,
+        arxivUrl: "https://arxiv.org/abs/2606.30005",
+        description:
+          "Shows recoverable eviction — archive a context block behind a stable handle, restore on demand — beats deletion, masking, and compression baselines, letting agents evict aggressively without acting on missing data. Prism's offload stubs + retrieve_offloaded_content implement the recoverable-eviction half.",
+        implementationFile: "RetrieveOffloadedContentTool.ts",
+        categoryLabel: "Context Management",
+        badgeTone: "cyan",
+        alignment: [
+          { component: "Recoverable eviction", status: "aligned", detail: "Evicted results stay byte-identical behind a stable offload id; retrieve_offloaded_content restores any slice on demand" },
+          { component: "Model-controlled archive/restore", status: "simplified", detail: "Restore is model-invoked, but eviction is automatic (pressure-gated micro-compaction) rather than a model-invoked archive_block tool" },
+          { component: "Proprioceptive per-block dashboard", status: "simplified", detail: "Not implemented — per-block token/recency/access-history rendering into the prompt is future work (survey item A3, deliverable 2)" },
+        ],
+      },
+      {
+        title: "Context Offloading: Pointer Stubs with Grep & Line-Range Retrieval",
+        authors: "AWS Strands Agents · LangChain DeepAgents",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl:
+          "https://strandsagents.com/docs/user-guide/concepts/plugins/context-offloader/",
+        description:
+          "Industry-converged offload pattern: content blocks above a token threshold move to a storage backend and are replaced inline with a truncated preview plus a per-block reference, retrievable via regex search with context lines, line-range random access, or head-N — mirroring Strands' ContextOffloader and DeepAgents' FilesystemMiddleware (github.com/langchain-ai/deepagents).",
+        implementationFile: "ToolResultOffloadService.ts",
+        categoryLabel: "Context Management",
+        badgeTone: "cyan",
+        alignment: [
+          { component: "Threshold-gated offload", status: "aligned", detail: "Reuses micro-compaction's existing eviction trigger (compactable tools, >500-token results, outside the protected recent window)" },
+          { component: "Preview + per-block reference", status: "aligned", detail: "Inline stub carries the offload id, line/token totals, and a first-lines preview" },
+          { component: "Regex / line-range / head retrieval", status: "aligned", detail: "retrieve_offloaded_content supports pattern + contextLines, startLine/endLine, and headLines with a bounded response size" },
+          { component: "Pluggable storage backends", status: "simplified", detail: "Single backend (MongoDB fronted by an in-memory stash) rather than Strands' pluggable backend interface" },
+        ],
       },
       {
         title: "Plan Mode: Tool-Based Planning State Machine",
@@ -489,6 +541,29 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         badgeTone: "success",
       },
       {
+        title: "Dead-Man's-Switch Heartbeat with Queue-Wedge Detection",
+        authors: "Healthchecks.io ops pattern",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://healthchecks.io/docs/",
+        description:
+          "Push-based liveness for the Discord bot: a per-minute ping to an external monitor that alerts when pings STOP — catching what a pull-based /health probe can't, a silently wedged process. The ping is gated on a reply-queue self-check, so one hung reply freezing the global serial queue signals the /fail endpoint like a crash.",
+        implementationFile: "HeartbeatService.ts",
+        categoryLabel: "Ops Reliability",
+        badgeTone: "warning",
+        alignment: [
+          { component: "Push pings + missed-ping alerting", status: "aligned", detail: "Per-minute POST to HEARTBEAT_URL; the external monitor owns the silence alarm — a wedged bot can't report its own silence" },
+          { component: "Failure signalling (/fail)", status: "aligned", detail: "A detected queue wedge pings the Healthchecks /fail variant with the reason, alerting immediately instead of waiting out the grace period" },
+          { component: "Liveness gating", status: "extended", detail: "Ping is gated on a queue-progress self-check (drain-start / per-item activity stamps), so a WEDGE trips the switch, not just a crash" },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Persona & Affect",
+    icon: PawPrint,
+    papers: [
+      {
         title: "Somatic State Engine: Plutchik's Wheel of Emotions",
         authors: "Affect Pattern",
         year: null,
@@ -498,6 +573,48 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         implementationFile: "EmotionalStateEngine.ts",
         categoryLabel: "Affect",
         badgeTone: "rose",
+      },
+      {
+        title:
+          "From Triggers to Emotions: A CPM-Grounded Appraisal Multi-Agent for Dynamic Emotional Evolution in Persona-Based Dialogue",
+        authors: "Cai et al.",
+        year: 2026,
+        arxivUrl: "https://arxiv.org/abs/2607.07824",
+        description:
+          "Grounds persona emotion in Scherer's Component Process Model: instead of mirroring the emotion a message expresses, the agent APPRAISES how the event bears on its own goals and standing before feeling anything. Prism's background emotion classifier is an appraisal call returning {emotion, why}, and the somatic prompt captions mood shifts with their trigger (\"anger — because they mocked my favorite game\").",
+        implementationFile: "SomaticStateService.ts",
+        categoryLabel: "Affect",
+        badgeTone: "rose",
+        alignment: [
+          { component: "Appraisal over surface emotion", status: "aligned", detail: "The classifier judges goal/standing relevance for the character (relevance → implication → norms) rather than classifying the text's own sentiment" },
+          { component: "Multi-agent appraisal recursion (paper)", status: "simplified", detail: "Downscoped to a single cheap background call per message — the paper runs a 4-agent recursive appraisal loop" },
+          { component: "Legible emotion causes", status: "extended", detail: "The appraised trigger is threaded into the prompt's mood-shift line; decay-driven drift stays caption-free so the \"because\" clause is honest" },
+        ],
+      },
+      {
+        title: "Human-Texting Cadence Rules (Poke Guidelines)",
+        authors: "Interaction Co. — leaked product guidelines",
+        year: 2025,
+        arxivUrl: null,
+        sourceUrl:
+          "https://github.com/EliFuzz/awesome-system-prompts/blob/main/leaks/poke/2025-09-15_prompt_guidelines.md",
+        description:
+          "Cadence rules from a shipped AI-texting product, cherry-picked into the Lupos persona where they fit a loud group-chat wolf: never end with assistant postamble (\"let me know if you need anything else\"), one joke per message maximum, an explicit anti-sycophancy line, and optional lowercase mirroring of the room's typing energy.",
+        implementationFile: "LuposPersona.ts",
+        categoryLabel: "Persona Voice",
+        badgeTone: "orange",
+      },
+      {
+        title: "Reference-Conditioned Self-Portraits (Nano Banana)",
+        authors: "Google — Gemini Image Generation",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://ai.google.dev/gemini-api/docs/image-generation",
+        description:
+          "Character-consistent self-portraits: a canonical reference image (a pinned still of the bot's Discord avatar) is attached whenever Lupos is asked to draw himself, so the image model keeps him the SAME recognizable wolf across renders — with persona rules folding his live somatic state (drunk, starving, smug) into every selfie.",
+        implementationFile: "ImageIntent.ts",
+        categoryLabel: "Media Consistency",
+        badgeTone: "purple",
       },
     ],
   },

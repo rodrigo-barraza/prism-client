@@ -140,6 +140,8 @@ function PaperCard({
   entranceDelayMilliseconds: number;
 }) {
   const hasAlignment = paper.alignment && paper.alignment.length > 0;
+  // arXiv link when the source is a paper; docs/GitHub link otherwise
+  const sourceLink = paper.arxivUrl ?? paper.sourceUrl ?? null;
 
   const cardContent = (
     <article
@@ -150,9 +152,9 @@ function PaperCard({
     >
       <div className={styles["card-header-row"]}>
         <h3 className={styles["paper-title"]}>
-          {paper.arxivUrl ? (
+          {sourceLink ? (
             <a
-              href={paper.arxivUrl}
+              href={sourceLink}
               target="_blank"
               rel="noopener noreferrer"
               className={styles["paper-title-link"]}

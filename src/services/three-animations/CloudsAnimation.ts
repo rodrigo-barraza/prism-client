@@ -15,7 +15,8 @@
  *   - Day: bright blue-shifted sky, small overexposed sun, sunlit tops.
  *   - Golden hour: warm horizon, golden cloud tops, long shadows.
  *   - Night: dark sky, moonlit clouds, procedural 3D star field + a subtle
- *     Milky Way band and a soft moon disc.
+ *     Milky Way band and a moon disc showing the real current lunar phase
+ *     (terminator + earthshine); moonlight dims toward the new moon.
  *
  * Optimizations (this shader is designed for a *background*):
  *   - march only inside analytically-intersected cloud slabs; sky pixels
@@ -34,6 +35,8 @@
  *   - "timeScale": number — cloud drift speed multiplier (default 1)
  *   - "timeOfDayHours": number|null — force a local hour (0..24) for the
  *     sky, or null to follow the real clock again
+ *   - "moonPhase": number|null — force a lunar phase (0 new … 0.5 full …
+ *     wraps at 1), or null to follow the real calendar again
  *   - "typeImpulse": number — kick the forward fly-through speed (typing
  *     feedback); accumulates toward a cap and decays back to the idle drift,
  *     mirroring the agent coin's "spinImpulse"
@@ -76,6 +79,12 @@ export interface CloudsAnimationOptions {
    * previews/QA; leave undefined in production to follow real time.
    */
   debugHour?: number;
+  /**
+   * Force a lunar phase (0 = new, 0.25 = first quarter, 0.5 = full,
+   * 0.75 = last quarter) instead of computing it from the date. For
+   * previews/QA; leave undefined in production to follow the calendar.
+   */
+  debugMoonPhase?: number;
 }
 
 type Rgb = [number, number, number];
@@ -189,6 +198,19 @@ function currentLocalHour(): number {
   );
 }
 
+// Mean synodic month + a known new-moon epoch (2000-01-06 18:14 UTC). The
+// mean-cycle approximation is within ~half a day of the true phase — more
+// than enough for a backdrop moon.
+const SYNODIC_MONTH_DAYS = 29.530588853;
+const NEW_MOON_EPOCH_MS = Date.UTC(2000, 0, 6, 18, 14);
+
+/** Lunar phase in [0, 1): 0 = new, 0.5 = full. */
+function currentMoonPhase(): number {
+  const days = (Date.now() - NEW_MOON_EPOCH_MS) / 86_400_000;
+  const phase = (days / SYNODIC_MONTH_DAYS) % 1;
+  return phase < 0 ? phase + 1 : phase;
+}
+
 // -- Precomputed palette tables (RGB, indexed by CloudsPalette key) ------
 
 type PaletteTable = Record<keyof CloudsPalette, Rgb>;
@@ -250,6 +272,13 @@ uniform float uSunDiscAmount;
 uniform float uMoonDiscAmount;
 uniform float uNightAmount;
 
+// Moon disc frame + phase. Basis X points toward the sun's side of the sky
+// (bright-limb direction), basis Y completes the disc plane. uMoonPhase
+// packs (sin(elongation), cos(phase angle), illuminated fraction).
+uniform vec3 uMoonBasisX;
+uniform vec3 uMoonBasisY;
+uniform vec3 uMoonPhase;
+
 // -- Camera / world constants (meters) ------------------------------
 const float CAMERA_HEIGHT = 430.0;
 const float CLOUD_BASE = -140.0;
@@ -264,6 +293,9 @@ const float PITCH_SIN = 0.0785;    // ~4.5 deg downward pitch
 const float PITCH_COS = 0.9969;
 const int MAX_STEPS = 96;
 const int HIGH_STEPS = 44;
+// Stylized moon size (real moon is ~0.0045 rad) — shared by the disc edge,
+// limb darkening, and the phase terminator's disc-plane coordinates.
+const float MOON_ANGULAR_RADIUS = 0.0088;
 
 // -- Hashes ----------------------------------------------------------
 float hash12(vec2 p) {
@@ -421,20 +453,44 @@ vec3 skyColor(vec3 rayDirection) {
     pow(sunDot, 24.0) * 0.04
   );
 
-  // Moon: soft disc with limb darkening + subtle maria + halo
-  if (uMoonDiscAmount > 0.001) {
-    float moonDot = clamp(dot(rayDirection, uMoonDir), 0.0, 1.0);
-    float ang = acos(min(moonDot, 1.0));
-    float disc = 1.0 - smoothstep(0.0075, 0.0088, ang);
-    float limb = sqrt(clamp(1.0 - pow(ang / 0.0088, 2.0), 0.0, 1.0));
-    float maria = 0.72 + 0.28 * fbm(rayDirection * 380.0 + uSeed, 3);
-    sky += uSunColor * uMoonDiscAmount * (
-      disc * (0.5 + 0.5 * limb) * maria * 1.5 +
-      pow(moonDot, 5000.0) * 0.4 +
-      pow(moonDot, 40.0) * 0.03
-    );
-  }
   return sky;
+}
+
+// -- Moon --------------------------------------------------------------
+// Phase-lit disc (terminator + earthshine) with limb darkening, subtle
+// maria and a halo that dims toward the new moon. Composited separately in
+// main() with partial transmittance through the high cloud layer, so the
+// moon glows through thin cumulus instead of vanishing behind it.
+vec3 moonLight(vec3 rayDirection) {
+  if (uMoonDiscAmount <= 0.001) return vec3(0.0);
+
+  float moonDot = clamp(dot(rayDirection, uMoonDir), 0.0, 1.0);
+  float ang = acos(min(moonDot, 1.0));
+  float disc = 1.0 - smoothstep(0.0075, MOON_ANGULAR_RADIUS, ang);
+
+  // Disc-plane coordinates (x toward the bright limb) → sphere normal z
+  vec3 offAxis = rayDirection - uMoonDir * moonDot;
+  float discX = dot(offAxis, uMoonBasisX) / MOON_ANGULAR_RADIUS;
+  float discY = dot(offAxis, uMoonBasisY) / MOON_ANGULAR_RADIUS;
+  float discZ = sqrt(max(0.0, 1.0 - discX * discX - discY * discY));
+
+  // Terminator: a sphere point is lit when its normal faces the sun.
+  // Driven by the real lunar phase; softened band, earthshine floor so a
+  // thin crescent still shows a ghost of the full disc.
+  float lit = smoothstep(
+    -0.10, 0.14, discX * uMoonPhase.x - discZ * uMoonPhase.y);
+  float shade = 0.07 + 0.93 * lit;
+
+  // Gentle limb darkening — kept shallow so a crescent's lit limb stays
+  // bright enough to read against the night sky.
+  float limb = sqrt(clamp(
+    1.0 - pow(ang / MOON_ANGULAR_RADIUS, 2.0), 0.0, 1.0));
+  float maria = 0.72 + 0.28 * fbm(rayDirection * 380.0 + uSeed, 3);
+  float halo = 0.25 + 0.75 * uMoonPhase.z;
+  return uSunColor * uMoonDiscAmount * (
+    disc * (0.62 + 0.38 * limb) * maria * shade * 1.5 +
+    (pow(moonDot, 5000.0) * 0.4 + pow(moonDot, 40.0) * 0.03) * halo
+  );
 }
 
 // -- Low deck volumetric march ---------------------------------------
@@ -584,6 +640,10 @@ void main() {
   vec4 high = marchHighClouds(rayOrigin, rayDirection, dither);
   color = color * (1.0 - high.a) + high.rgb;
 
+  // The moon punches partially through the high layer — behind cumulus it
+  // dims to a diffuse glow instead of disappearing for hours at a time.
+  color += moonLight(rayDirection) * (1.0 - 0.72 * high.a);
+
   vec4 deck = marchDeck(rayOrigin, rayDirection, dither);
   color = color * (1.0 - deck.a) + deck.rgb;
 
@@ -606,6 +666,7 @@ export function createCloudsAnimation(
     timeScale = 1,
     palette: paletteOverride,
     debugHour,
+    debugMoonPhase,
   } = options;
 
   // -- Noise lookup texture -----------------------------------------
@@ -659,6 +720,9 @@ export function createCloudsAnimation(
     uSunDiscAmount: { value: 1 },
     uMoonDiscAmount: { value: 0 },
     uNightAmount: { value: 0 },
+    uMoonBasisX: { value: new THREE.Vector3(1, 0, 0) },
+    uMoonBasisY: { value: new THREE.Vector3(0, 1, 0) },
+    uMoonPhase: { value: new THREE.Vector3(0, -1, 1) },
   };
 
   // -- Time-of-day → uniforms --------------------------------------
@@ -687,7 +751,9 @@ export function createCloudsAnimation(
   // most of the day/night (the visible band tops out near +21° elevation);
   // a true overhead arc would hide them for hours around noon/midnight.
   const MAX_SUN_ELEVATION = 0.62; // radians (~35°)
-  const MAX_MOON_ELEVATION = 0.5; // radians (~29°)
+  // Kept under the ~21° frame top so the moon stays visible through the
+  // whole night instead of arcing out of frame around midnight.
+  const MAX_MOON_ELEVATION = 0.3; // radians (~17°)
   // Narrow horizontal swing keeps the disc inside the ~±26° horizontal frame
   // when it is low enough to clear the frame top — so the sun/moon read as
   // rising front-left in the morning and setting front-right in the evening.
@@ -717,13 +783,54 @@ export function createCloudsAnimation(
     uniforms.uSunDir.value.set(sunDir[0], sunDir[1], sunDir[2]);
     uniforms.uMoonDir.value.set(moonDir[0], moonDir[1], moonDir[2]);
 
+    // Real lunar phase → terminator shape and how bright the night is.
+    // The shader's terminator uses the elongation form (|sin|), so waxing
+    // vs waning shows up through the bright-limb basis below, which tracks
+    // the sun's (possibly below-horizon) side of the sky.
+    const moonPhase = forcedMoonPhase ?? currentMoonPhase();
+    const phaseAngle = moonPhase * Math.PI * 2;
+    const phaseCos = Math.cos(phaseAngle);
+    const elongationSin = Math.abs(Math.sin(phaseAngle));
+    const moonIllumination = 0.5 * (1 - phaseCos);
+
+    // Bright-limb axis: sun direction projected off the moon axis…
+    const sunAlongMoon =
+      sunDir[0] * moonDir[0] + sunDir[1] * moonDir[1] + sunDir[2] * moonDir[2];
+    let basisX: Rgb = [
+      sunDir[0] - moonDir[0] * sunAlongMoon,
+      sunDir[1] - moonDir[1] * sunAlongMoon,
+      sunDir[2] - moonDir[2] * sunAlongMoon,
+    ];
+    const basisLength = Math.hypot(basisX[0], basisX[1], basisX[2]);
+    basisX =
+      basisLength > 1e-4
+        ? [
+            basisX[0] / basisLength,
+            basisX[1] / basisLength,
+            basisX[2] / basisLength,
+          ]
+        : [1, 0, 0]; // sun collinear with the moon — orientation is moot
+    // …and its perpendicular completes the disc-plane frame
+    const basisY: Rgb = [
+      moonDir[1] * basisX[2] - moonDir[2] * basisX[1],
+      moonDir[2] * basisX[0] - moonDir[0] * basisX[2],
+      moonDir[0] * basisX[1] - moonDir[1] * basisX[0],
+    ];
+    uniforms.uMoonBasisX.value.set(basisX[0], basisX[1], basisX[2]);
+    uniforms.uMoonBasisY.value.set(basisY[0], basisY[1], basisY[2]);
+    uniforms.uMoonPhase.value.set(elongationSin, phaseCos, moonIllumination);
+
     // Light comes from whichever body is up (blended across the transition)
     const lightWeight = smoothstep(-0.05, 0.05, sunHeight);
     const lx = moonDir[0] + (sunDir[0] - moonDir[0]) * lightWeight;
     const ly = moonDir[1] + (sunDir[1] - moonDir[1]) * lightWeight;
     const lz = moonDir[2] + (sunDir[2] - moonDir[2]) * lightWeight;
     uniforms.uLightDir.value.set(lx, ly, lz).normalize();
-    uniforms.uLightIntensity.value = 0.3 + 0.7 * dayAmount;
+    // Night floor scales with the moon's illumination — a full-moon night
+    // matches the old 0.3, a new-moon night drops noticeably darker.
+    const nightIntensity = 0.16 + 0.14 * moonIllumination;
+    uniforms.uLightIntensity.value =
+      nightIntensity + (1 - nightIntensity) * dayAmount;
 
     setVecFromKey(uniforms.uSkyZenith, "skyZenith", dayAmount, twilightAmount);
     setVecFromKey(uniforms.uSkyHorizon, "skyHorizon", dayAmount, twilightAmount);
@@ -750,6 +857,10 @@ export function createCloudsAnimation(
 
   let forcedHour: number | null =
     typeof debugHour === "number" ? debugHour : null;
+  let forcedMoonPhase: number | null =
+    typeof debugMoonPhase === "number"
+      ? ((debugMoonPhase % 1) + 1) % 1
+      : null;
 
   applySkyState(resolveHour());
 
@@ -817,6 +928,12 @@ export function createCloudsAnimation(
     if (key === "timeOfDayHours") {
       forcedHour =
         typeof value === "number" ? ((value % 24) + 24) % 24 : null;
+      applySkyState(forcedHour ?? currentLocalHour());
+      return;
+    }
+    if (key === "moonPhase") {
+      forcedMoonPhase =
+        typeof value === "number" ? ((value % 1) + 1) % 1 : null;
       applySkyState(forcedHour ?? currentLocalHour());
     }
   };
