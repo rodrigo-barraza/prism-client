@@ -625,6 +625,24 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         ],
       },
       {
+        title: "Context Engineering: KV-Cache-Stable Prompt Prefix",
+        authors: "Manus",
+        year: 2025,
+        arxivUrl: null,
+        sourceUrl:
+          "https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus",
+        description:
+          "Manus's first production lesson: KV-cache hit rate is the most important metric for an agent in production — one volatile byte early in the prompt re-prices everything after it. Prism keeps the cached prefix byte-stable: per-turn runtime state (clock crew, stickers, emotion, visual appearance, lights) is tail-injected as a self-context system message just before the latest user input instead of being appended to the cached system prompt, and cache breakpoints pin the stable system and tool-definition blocks.",
+        implementationFile: "system-prompt/index.ts",
+        categoryLabel: "Context Management",
+        badgeTone: "cyan",
+        alignment: [
+          { component: "Volatile state out of the cached prefix", status: "aligned", detail: "clockCrew/stickers/emotion/visual/lights context rides the tail-injected SELF_CONTEXT message, so the system-prompt hash is identical turn-to-turn" },
+          { component: "Cache breakpoints on stable blocks", status: "aligned", detail: "applyCacheBreakpoints pins the last tool definition and the system block, with a moving marker on the latest message" },
+          { component: "Mask, don't remove, tools (source)", status: "simplified", detail: "Not adopted — mid-conversation tool enable/disable still rebuilds the native tool array; KVCacheReporter measures the invalidation cost instead of preventing it" },
+        ],
+      },
+      {
         title: "Plan Mode: Tool-Based Planning State Machine",
         authors: "Workflow Pattern",
         year: null,
