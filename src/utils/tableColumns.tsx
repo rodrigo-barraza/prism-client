@@ -112,6 +112,20 @@ export interface TableRow {
   usage?: TokenUsage;
   /** Server-persisted generation-only throughput (benchmark rows). */
   tokensPerSecond?: number;
+  /** Milliseconds until first streamed content (benchmark rows). */
+  ttftMs?: number | null;
+  /** Per-assertion pass/fail breakdown (benchmark rows). */
+  assertionResults?: Array<{
+    kind: string;
+    label: string;
+    passed: boolean;
+    error?: string;
+  }>;
+  /** Trial index/count when a target ran multiple times (benchmark rows). */
+  trial?: number;
+  trialCount?: number;
+  /** LLM-judge spend for this result (benchmark rows). */
+  judgeCost?: number;
   estimatedCost?: number;
   completedAt?: string;
   total?: number;
@@ -890,7 +904,17 @@ export const benchmarkModelColumn = () => ({
     <span
       className={`${styles['benchmark-model-cell']} ${row._pending ? styles['benchmark-model-pending'] : ""}`}
     >
-      <span className={styles['benchmark-model-name']}>{row.label as string}</span>
+      <span className={styles['benchmark-model-name']}>
+        {row.label as string}
+        {!!row.trial && !!row.trialCount && row.trialCount > 1 && (
+          <span
+            className={styles['benchmark-trial-chip']}
+            title={`Trial ${row.trial} of ${row.trialCount}`}
+          >
+            T{row.trial}
+          </span>
+        )}
+      </span>
       <span className={styles['benchmark-model-provider-layout-row']}>
         <span className={styles['benchmark-model-provider']}>
           {resolveProviderLabel(row.provider as string | undefined)}
@@ -903,6 +927,70 @@ export const benchmarkModelColumn = () => ({
       </span>
     </span>
   ),
+});
+
+/**
+ * Per-assertion pass/fail summary for a benchmark result row.
+ * Shows "n/m" with a tooltip listing each assertion outcome.
+ */
+export const benchmarkAssertionsColumn = () => ({
+  key: "assertions",
+  label: "Assertions",
+  description: "How many of the benchmark's assertions this result passed",
+  sortable: true,
+  sortValue: (row: TableRow) => {
+    const results = row.assertionResults;
+    if (!results?.length) return -1;
+    return results.filter((assertion) => assertion.passed).length / results.length;
+  },
+  align: "center" as const,
+  render: (row: TableRow) => {
+    const results = row.assertionResults;
+    if (!results?.length) return emptyDash();
+    const passedCount = results.filter((assertion) => assertion.passed).length;
+    const allPassed = passedCount === results.length;
+    const chip = (
+      <span
+        className={`${styles['benchmark-assertion-chip']} ${
+          allPassed
+            ? styles['benchmark-assertion-chip-pass']
+            : styles['benchmark-assertion-chip-fail']
+        }`}
+      >
+        {passedCount}/{results.length}
+      </span>
+    );
+    return (
+      <TooltipComponent
+        label={results
+          .map((assertion) => `${assertion.passed ? "✓" : "✗"} ${assertion.label}`)
+          .join("\n")}
+      >
+        {chip}
+      </TooltipComponent>
+    );
+  },
+});
+
+/** Time-to-first-token column for benchmark result rows. */
+export const benchmarkTtftColumn = () => ({
+  key: "ttftMs",
+  label: "TTFT",
+  description: "Time to first streamed token (queue + prompt processing)",
+  sortable: true,
+  sortValue: (row: TableRow) => row.ttftMs ?? Number.MAX_SAFE_INTEGER,
+  align: "right" as const,
+  defaultHidden: true,
+  render: (row: TableRow) => {
+    const ttftMs = row.ttftMs;
+    if (ttftMs == null || ttftMs <= 0) return emptyDash();
+    return (
+      <span className={styles['benchmark-tps-cell']}>
+        <Zap size={10} />
+        {ttftMs >= 1000 ? `${(ttftMs / 1000).toFixed(2)}s` : `${ttftMs}ms`}
+      </span>
+    );
+  },
 });
 
 export const benchmarkToolsColumn = () => ({

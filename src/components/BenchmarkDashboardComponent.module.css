@@ -12,21 +12,10 @@
   min-height: 0;
 }
 
-/* ── Sticky Summary Bar ───────────────────────────────────── */
+/* ── Page Hero ────────────────────────────────────────────── */
 
-.sticky-bar {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  margin: 0 -20px;
-  padding: 0 20px;
-  background: linear-gradient(
-    to bottom,
-    var(--background-base) 0%,
-    var(--background-base) 85%,
-    transparent 100%
-  );
-  padding-bottom: 8px;
+.page-hero {
+  flex-shrink: 0;
 }
 
 /* ── Segmented Control (All / Models / Agents) ────────────── */

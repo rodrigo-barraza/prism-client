@@ -6,18 +6,18 @@ import {
   BarChart3,
   Bot,
   CheckCircle2,
-  Coins,
   Cpu,
   XCircle,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
-import SummaryBarComponent from "./SummaryBarComponent";
 import ModelsTableComponent from "./ModelsTableComponent";
+import BenchmarkParetoChartComponent from "./BenchmarkParetoChartComponent";
 
 import {
   ButtonComponent,
   EmptyStateComponent,
+  PageHeroComponent,
 } from "@rodrigo-barraza/components-library";
 import { formatCost } from "@rodrigo-barraza/utilities-library";
 import styles from "./BenchmarkDashboardComponent.module.css";
@@ -383,54 +383,62 @@ export default function BenchmarkDashboardComponent({
           </EmptyStateComponent>
         ) : (
           <>
-            {/* -- Summary Bar (sticky) ------------- */}
-            <div className={styles['sticky-bar']}>
-              <SummaryBarComponent
-                items={[
-                  {
-                    value: stats.totalModels,
-                    label: "Configs Tested",
-                  },
-                  {
-                    value: stats.totalBenchmarks,
-                    label: "Benchmarks",
-                  },
-                  { value: totals!.total, label: "Total Tests" },
-                  {
-                    value: totals!.passed,
-                    label: "Passed",
-                    color: "var(--color-success)",
-                  },
-                  {
-                    value: totals!.failed + totals!.errored,
-                    label: "Failed",
-                    color: "var(--color-danger)",
-                  },
-                  {
-                    bar:
-                      totals!.total > 0
-                        ? (totals!.passed / totals!.total) * 100
-                        : 0,
-                    barPassed: totals!.passed,
-                    barTotal: totals!.total,
-                    label:
-                      totals!.total > 0
-                        ? `${Math.round((totals!.passed / totals!.total) * 100)}%`
-                        : "—",
-                  },
-                  ...(totals!.cost > 0
-                    ? [
-                        {
-                          value: formatCost(totals!.cost),
-                          label: "Total Cost",
-                          color: "var(--color-success)",
-                          icon: <Coins size={14} />,
-                        },
-                      ]
-                    : []),
-                ]}
-              />
-            </div>
+            {/* -- Hero: leaderboard stats ---------- */}
+            <PageHeroComponent
+              className={styles['page-hero']}
+              icon={BarChart3}
+              title="Model Leaderboard"
+              subtitle="Latest pass/fail per model config across every benchmark — accuracy, tool behavior, speed, and spend."
+              stats={[
+                { key: "configs", value: stats.totalModels, label: "Configs" },
+                {
+                  key: "benchmarks",
+                  value: stats.totalBenchmarks,
+                  label: "Benchmarks",
+                },
+                { key: "tests", value: totals!.total, label: "Tests" },
+                {
+                  key: "passed",
+                  value: totals!.passed,
+                  label: "Passed",
+                  variant: "success" as const,
+                },
+                {
+                  key: "failed",
+                  value: totals!.failed + totals!.errored,
+                  label: "Failed",
+                  variant: "danger" as const,
+                },
+                {
+                  key: "rate",
+                  value:
+                    totals!.total > 0
+                      ? `${Math.round((totals!.passed / totals!.total) * 100)}%`
+                      : "—",
+                  label: "Pass Rate",
+                  variant:
+                    totals!.total > 0 && totals!.passed / totals!.total >= 0.8
+                      ? ("success" as const)
+                      : totals!.total > 0 &&
+                          totals!.passed / totals!.total >= 0.5
+                        ? ("warning" as const)
+                        : ("danger" as const),
+                },
+                ...(totals!.cost > 0
+                  ? [
+                      {
+                        key: "cost",
+                        value: formatCost(totals!.cost),
+                        label: "Total Spend",
+                        variant: "accent" as const,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+
+            {/* -- Cost vs. Accuracy Pareto --------- */}
+            <BenchmarkParetoChartComponent stats={stats.models} />
 
             {/* -- Segmented Control (Models / Agents) -- */}
             <div className={styles['segmented']}>

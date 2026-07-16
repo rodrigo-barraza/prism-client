@@ -1,0 +1,200 @@
+/* ── Benchmark Assertion Report ──────────────────────────── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+}
+
+/* ── Metric strip ────────────────────────────────────────── */
+
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: var(--font-size-xs);
+
+  & svg {
+    color: var(--accent-primary);
+    align-self: center;
+  }
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.metric-label {
+  color: var(--text-tertiary);
+}
+
+/* ── Assertion list ──────────────────────────────────────── */
+
+.assertions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.assertions-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-tertiary);
+
+  & svg {
+    color: var(--accent-primary);
+  }
+}
+
+.assertions-count {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 0.6875rem;
+}
+
+.count-pass {
+  color: var(--color-success);
+  background: color-mix(in oklch, var(--color-success) 12%, transparent);
+}
+
+.count-fail {
+  color: var(--color-danger);
+  background: color-mix(in oklch, var(--color-danger) 12%, transparent);
+}
+
+.assertion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.assertion-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.assertion-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px;
+  border-radius: var(--border-radius-sm);
+  min-width: 0;
+}
+
+.assertion-row-clickable {
+  cursor: pointer;
+
+  &:hover {
+    background: var(--background-surface);
+  }
+}
+
+.icon-pass {
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+
+.icon-fail {
+  color: var(--color-danger);
+  flex-shrink: 0;
+}
+
+.icon-error {
+  color: var(--color-warning);
+  flex-shrink: 0;
+}
+
+.assertion-kind {
+  display: inline-flex;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.assertion-label {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.assertion-actual {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assertion-error {
+  margin: 0 6px 4px 26px;
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+  font-style: italic;
+}
+
+/* ── Judge detail ────────────────────────────────────────── */
+
+.judge-chevron {
+  color: var(--text-tertiary);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.judge-chevron-open {
+  transform: rotate(180deg);
+}
+
+.judge-detail {
+  margin: 2px 6px 6px 26px;
+  padding: 8px 10px;
+  background: var(--background-surface);
+  border-left: 2px solid var(--accent-primary);
+  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.judge-reasoning {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.45;
+}
+
+.judge-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}

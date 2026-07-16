@@ -8,7 +8,10 @@ import {
   Loader2,
   ListChecks,
   AlertTriangle,
+  Activity,
   Cpu,
+  Trash2,
+  Wrench,
 } from "lucide-react";
 import AgentCardComponent from "./AgentCardComponent";
 import ModelCardComponent from "./ModelCardComponent";
@@ -22,6 +25,10 @@ import BadgeComponent from "./BadgeComponent";
 
 import BenchmarkBarComponent from "./BenchmarkBarComponent";
 import SoundService from "@/services/SoundService";
+import {
+  describeAgentAssertion,
+  describeTextAssertion,
+} from "../utils/benchmarkAssertions";
 import styles from "./RunHistorySidebarComponent.module.css";
 
 /**
@@ -66,6 +73,7 @@ interface RunHistorySidebarComponentProps {
   runHistory?: BenchmarkRun[];
   activeRunId?: string | null;
   onViewRun?: (_run: BenchmarkRun) => void;
+  onDeleteRun?: (_run: BenchmarkRun) => void;
   running?: boolean;
   streamingCompleted?: number;
   selectedModels?: SelectedModelInstance[];
@@ -88,6 +96,7 @@ export default function RunHistorySidebarComponent({
   runHistory = [],
   activeRunId,
   onViewRun,
+  onDeleteRun,
   running = false,
   streamingCompleted = 0,
   selectedModels = [],
@@ -144,12 +153,12 @@ export default function RunHistorySidebarComponent({
           ════════════════════════════════════════════════════ */}
       {activeTab === "general" ? (
         <div className={styles['tab-content']}>
-          {/* -- Assertions -------------------------------- */}
+          {/* -- Output Assertions -------------------------- */}
           {assertions.length > 0 ? (
             <div className={styles['assertions-section']}>
               <div className={styles['section-label']}>
                 <ListChecks size={12} />
-                Assertions
+                Output Assertions
               </div>
               <div className={styles['assertions-list']}>
                 {assertions.map((assertion: BenchmarkAssertion, assertionIndex: number) => (
@@ -157,20 +166,72 @@ export default function RunHistorySidebarComponent({
                     {assertionIndex > 0 ? (
                       <BadgeComponent
                         variant={operator === "OR" ? "warning" : "info"}
+                        mini
                       >
                         {operator}
                       </BadgeComponent>
                     ) : null}
-                    <BadgeComponent variant="accent">
-                      {assertion.matchMode || "contains"}
-                    </BadgeComponent>
                     <span
                       className={styles['assertion-value']}
-                      title={assertion.expectedValue}
+                      title={describeTextAssertion(assertion)}
                     >
-                      {assertion.expectedValue}
+                      {describeTextAssertion(assertion)}
                     </span>
                   </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* -- Behavior Assertions ------------------------ */}
+          {(benchmark.agentAssertions?.length ?? 0) > 0 ? (
+            <div className={styles['assertions-section']}>
+              <div className={styles['section-label']}>
+                <Activity size={12} />
+                Behavior Assertions
+              </div>
+              <div className={styles['assertions-list']}>
+                {benchmark.agentAssertions!.map((assertion, assertionIndex) => (
+                  <div
+                    key={`behavior-${assertionIndex}`}
+                    className={styles['assertion-layout-row']}
+                  >
+                    {assertionIndex > 0 ? (
+                      <BadgeComponent
+                        variant={
+                          (benchmark.agentAssertionOperator || "AND") === "OR"
+                            ? "warning"
+                            : "info"
+                        }
+                        mini
+                      >
+                        {benchmark.agentAssertionOperator || "AND"}
+                      </BadgeComponent>
+                    ) : null}
+                    <span
+                      className={styles['assertion-value']}
+                      title={describeAgentAssertion(assertion)}
+                    >
+                      {describeAgentAssertion(assertion)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* -- Tool Scope --------------------------------- */}
+          {(benchmark.enabledTools?.length ?? 0) > 0 ? (
+            <div className={styles['assertions-section']}>
+              <div className={styles['section-label']}>
+                <Wrench size={12} />
+                Tools ({benchmark.enabledTools!.length})
+              </div>
+              <div className={styles['tools-chip-list']}>
+                {benchmark.enabledTools!.map((toolName) => (
+                  <span key={toolName} className={styles['tool-chip']}>
+                    {toolName}
+                  </span>
                 ))}
               </div>
             </div>
@@ -326,6 +387,19 @@ export default function RunHistorySidebarComponent({
                             flexShrink: 0,
                           }}
                         />
+                      ) : null}
+                      {onDeleteRun ? (
+                        <button
+                          type="button"
+                          className={styles['run-delete-button']}
+                          title="Delete this run"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onDeleteRun(run);
+                          }}
+                        >
+                          <Trash2 size={11} />
+                        </button>
                       ) : null}
                     </div>
                     <div className={styles['run-stats']}>

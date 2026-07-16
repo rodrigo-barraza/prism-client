@@ -1316,10 +1316,15 @@ export interface ToolSchema {
 
 export interface BenchmarkPreset {
   name: string;
+  category: string;
+  description?: string;
   systemPrompt: string;
   prompt: string;
-  assertions: Array<{ expectedValue: string; matchMode: string }>;
-  assertionOperator: string;
+  assertions?: Array<{ expectedValue: string; matchMode: string }>;
+  assertionOperator?: string;
+  agentAssertions?: AgentBenchmarkAssertion[];
+  agentAssertionOperator?: string;
+  enabledTools?: string[];
 }
 
 // --- Benchmarks ---------------------------------------------
@@ -1338,8 +1343,35 @@ export interface AgentBenchmarkAssertion {
   type?: string;
   operator?: string;
   operand?: string | number;
+  /** Tool-scoped assertions (comma-separated list for tool_sequence) */
+  toolName?: string;
+  /** tool_sequence: require the exact full order */
+  exactOrder?: boolean;
   expectedValue?: string;
   matchMode?: string;
+  /** llm_judge: grading rubric */
+  rubric?: string;
+  /** llm_judge: optional "provider:model" judge override */
+  judgeModel?: string;
+}
+
+export interface BenchmarkJudgeVerdict {
+  passed: boolean;
+  score?: number;
+  reasoning?: string;
+  model?: string;
+  provider?: string;
+  cost?: number;
+  error?: string;
+}
+
+export interface BenchmarkAssertionResult {
+  kind: "text" | "behavior";
+  label: string;
+  passed: boolean;
+  actual?: string;
+  error?: string;
+  judge?: BenchmarkJudgeVerdict;
 }
 
 export interface Benchmark {
@@ -1362,9 +1394,15 @@ export interface Benchmark {
   assertionOperator?: string;
   agentAssertions?: AgentBenchmarkAssertion[];
   agentAssertionOperator?: string;
+  /** Tools exposed to tool-enabled targets during runs */
+  enabledTools?: string[];
+  /** Default repeated executions per target */
+  trials?: number;
   tags?: string[];
   /** Aggregated cost across all runs (enriched at list time) */
   cumulativeCost?: number;
+  /** Number of persisted runs (enriched at list time) */
+  runCount?: number;
 }
 
 export interface BenchmarkRunResult {
@@ -1374,6 +1412,10 @@ export interface BenchmarkRunResult {
   inputTokens?: number;
   outputTokens?: number;
   estimatedCost?: number;
+  /** LLM-judge spend for this result */
+  judgeCost?: number;
+  /** Wall-clock seconds (server-persisted) */
+  latency?: number;
   latencyMs?: number;
   ttftMs?: number;
   tokensPerSecond?: number;
@@ -1381,6 +1423,12 @@ export interface BenchmarkRunResult {
   label?: string;
   display_name?: string;
   passed?: boolean;
+  /** Per-assertion pass/fail breakdown */
+  assertionResults?: BenchmarkAssertionResult[];
+  turnCount?: number;
+  /** Trial index (1-based) when a target ran multiple times */
+  trial?: number;
+  trialCount?: number;
   thinking?: string;
   toolCalls?: Array<{
     id?: string;
@@ -1418,6 +1466,8 @@ export interface BenchmarkRun {
   startedAt?: string;
   completedAt?: string;
   aborted?: boolean;
+  /** Trials per target used for this run */
+  trials?: number;
   summary?: BenchmarkRunSummary;
 }
 
@@ -1446,7 +1496,9 @@ export interface BenchmarkModelStat {
   errored: number;
   passRate: number;
   avgLatency: number;
+  avgTtftMs?: number;
   totalCost: number;
+  runCount?: number;
   runs?: number;
   avgLatencyMs?: number;
   avgTokensPerSecond?: number;

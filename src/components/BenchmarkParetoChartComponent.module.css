@@ -1,0 +1,136 @@
+/* ── Benchmark Pareto Chart ──────────────────────────────── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+
+  & svg {
+    color: var(--accent-primary);
+    flex-shrink: 0;
+  }
+
+  &:hover .title {
+    color: var(--accent-primary);
+  }
+}
+
+.title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.subtitle {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chart-wrap {
+  padding: 0 8px 10px;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────── */
+
+.tooltip {
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 10px 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  max-width: 260px;
+}
+
+.tooltip-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.tooltip-frontier {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-success);
+  background: color-mix(in oklch, var(--color-success) 12%, transparent);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.tooltip-rows {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 3px 14px;
+  font-size: var(--font-size-xs);
+
+  & span {
+    color: var(--text-tertiary);
+  }
+
+  & strong {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    text-align: right;
+  }
+}
+
+/* ── Frontier legend ─────────────────────────────────────── */
+
+.frontier-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 6px 8px 2px;
+}
+
+.frontier-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.frontier-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-success);
+  flex-shrink: 0;
+}
+
+.frontier-meta {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.frontier-more {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}

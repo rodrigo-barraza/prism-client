@@ -1,0 +1,204 @@
+/* ── Benchmark Compare (side-by-side results) ────────────── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  max-height: 100%;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-tertiary);
+}
+
+/* ── Columns ─────────────────────────────────────────────── */
+
+.columns {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  min-height: 0;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 320px;
+  max-width: 320px;
+  padding: 12px;
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+  border-top: 3px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+  min-height: 0;
+}
+
+.column-pass {
+  border-top-color: var(--color-success);
+}
+
+.column-fail {
+  border-top-color: var(--color-danger);
+}
+
+.column-error {
+  border-top-color: var(--color-warning);
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.column-title {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.column-provider {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  text-transform: capitalize;
+}
+
+.trial-chip {
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--accent-primary);
+  background: var(--calculated-accent-primary-subtle);
+  padding: 0 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.icon-pass {
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+
+.icon-fail {
+  color: var(--color-danger);
+  flex-shrink: 0;
+}
+
+.icon-error {
+  color: var(--color-warning);
+  flex-shrink: 0;
+}
+
+/* ── Metrics ─────────────────────────────────────────────── */
+
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+
+  & span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  & svg {
+    color: var(--text-tertiary);
+  }
+}
+
+/* ── Assertions ──────────────────────────────────────────── */
+
+.assertions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.assertion-chip {
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  padding: 1px 6px;
+  border-radius: 3px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assertion-chip-pass {
+  color: var(--color-success);
+  background: color-mix(in oklch, var(--color-success) 10%, transparent);
+}
+
+.assertion-chip-fail {
+  color: var(--color-danger);
+  background: color-mix(in oklch, var(--color-danger) 10%, transparent);
+}
+
+.assertion-total {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+}
+
+/* ── Response body ───────────────────────────────────────── */
+
+.response {
+  flex: 1;
+  min-height: 80px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+
+  & :global(.markdown-content-component) {
+    font-size: var(--font-size-sm);
+  }
+}
+
+.error-text {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.empty-text {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+}

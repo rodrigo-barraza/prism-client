@@ -290,3 +290,39 @@
   font-size: var(--font-size-sm);
   min-width: 28px;
 }
+
+/* ── Benchmark trial + assertion chips ───────────────────── */
+
+.benchmark-trial-chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--accent-primary);
+  background: var(--calculated-accent-primary-subtle);
+  border: 1px solid color-mix(in oklch, var(--accent-primary) 25%, transparent);
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+.benchmark-assertion-chip {
+  display: inline-block;
+  padding: 1px 8px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  border-radius: 10px;
+  white-space: pre;
+}
+
+.benchmark-assertion-chip-pass {
+  color: var(--color-success);
+  background: color-mix(in oklch, var(--color-success) 12%, transparent);
+}
+
+.benchmark-assertion-chip-fail {
+  color: var(--color-danger);
+  background: color-mix(in oklch, var(--color-danger) 12%, transparent);
+}

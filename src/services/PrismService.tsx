@@ -2304,8 +2304,7 @@ export default class PrismService {
 
   /**
    * Stream a benchmark run via SSE, receiving per-model progress events.
-
-
+   * `trials` repeats every target N times within the run.
    */
   static streamBenchmarkRun(
     id: string,
@@ -2316,13 +2315,48 @@ export default class PrismService {
       thinkingEnabled?: boolean;
       toolsEnabled?: boolean;
       agent?: string;
+      enabledTools?: string[];
     }>,
     callbacks: SSECallbacks = {},
+    options: { trials?: number } = {},
   ): () => void {
     return PrismService._streamSSE(
       `/benchmark/${id}/run`,
-      { body: models ? { models } : {} },
+      {
+        body: {
+          ...(models ? { models } : {}),
+          ...(options.trials && options.trials > 1
+            ? { trials: options.trials }
+            : {}),
+        },
+      },
       callbacks,
+    );
+  }
+
+  /**
+   * Update an existing benchmark test.
+   */
+  static async updateBenchmark(
+    id: string,
+    data: Partial<Omit<Benchmark, "_id" | "createdAt">>,
+  ): Promise<Benchmark> {
+    return PrismService._request<Benchmark>(`/benchmark/${id}`, {
+      method: HTTP_METHODS.PUT,
+      body: data,
+    });
+  }
+
+  /**
+   * Delete a single benchmark run.
+   */
+  static async deleteBenchmarkRun(
+    benchmarkId: string,
+    runId: string,
+  ): Promise<{ deleted: boolean; id: string }> {
+    return PrismService._request<{ deleted: boolean; id: string }>(
+      `/benchmark/${benchmarkId}/runs/${runId}`,
+      { method: HTTP_METHODS.DELETE },
     );
   }
 

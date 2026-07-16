@@ -7,11 +7,15 @@ import {
   Copy,
   Coins,
   Loader2,
+  Pencil,
   Square,
   Trash2,
   Hash,
   CircleCheck,
   CircleX,
+  Columns3,
+  Repeat,
+  Wrench,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
@@ -19,15 +23,31 @@ import RunHistorySidebarComponent from "./RunHistorySidebarComponent";
 import {
   ButtonComponent,
   ModalComponent,
+  SelectComponent,
+  TooltipComponent,
 } from "@rodrigo-barraza/components-library";
 import BadgeComponent from "./BadgeComponent";
 
-import BenchmarkFormComponent from "./BenchmarkFormComponent";
+import BenchmarkFormComponent, {
+  INITIAL_BENCHMARK_FORM,
+  benchmarkToFormState,
+  type BenchmarkFormState,
+} from "./BenchmarkFormComponent";
 import SummaryBarComponent from "./SummaryBarComponent";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import AgentPickerComponent from "./AgentPickerComponent";
 import BenchmarksTableComponent from "./BenchmarksTableComponent";
 import ChatPreviewComponent from "./ChatPreviewComponent";
+import BenchmarkAssertionReportComponent from "./BenchmarkAssertionReportComponent";
+import BenchmarkCompareComponent from "./BenchmarkCompareComponent";
+import {
+  buildBenchmarkPayload,
+  isBenchmarkFormValid,
+} from "../utils/benchmarkForm";
+import {
+  describeAgentAssertion,
+  describeTextAssertion,
+} from "../utils/benchmarkAssertions";
 
 import StorageService from "../services/StorageService";
 import { STORAGE_KEY_MODEL_MEMORY_BENCHMARKS, AGENT_IDS, EXECUTION_STATUS, MESSAGE_ROLES } from "../constants";
@@ -50,7 +70,6 @@ import type {
   AgentInstance,
   ModelOptionWithProvider,
 } from "../types/types";
-import { type AgentAssertion } from "./AgentAssertionsComponent";
 import { type ClientAgent } from "./BadgeComponent";
 
 /** Per-model accumulated live data during streaming */
@@ -85,12 +104,10 @@ interface BenchmarkStorage {
   agents?: AgentInstance[];
 }
 
-const MATCH_MODES = [
-  { value: "contains", label: "Contains" },
-  { value: "exact", label: "Exact" },
-  { value: "startsWith", label: "Starts With" },
-  { value: "regex", label: "Regex" },
-];
+const TRIAL_OPTIONS = [1, 2, 3, 5, 10].map((count) => ({
+  value: String(count),
+  label: count === 1 ? "1 trial" : `${count} trials`,
+}));
 
 /**
  * Flatten config into a flat array for deriving selectedModels and modelConfigMap.
@@ -155,17 +172,6 @@ interface BenchmarkDetailPageComponentProps {
   rightSidebar?: ReactNode;
 }
 
-interface BenchmarkFormState {
-  name: string;
-  prompt: string;
-  systemPrompt: string;
-  benchmarkMode: string;
-  assertions: Array<{ expectedValue: string; matchMode: string }>;
-  assertionOperator: string;
-  agentAssertions: AgentAssertion[];
-  agentAssertionOperator: string;
-}
-
 export default function BenchmarkDetailPageComponent({
   benchmarkId: benchmarkIdProp,
   onRunningChange,
@@ -182,21 +188,15 @@ export default function BenchmarkDetailPageComponent({
   const [latestRun, setLatestRun] = useState<BenchmarkRun | null>(null);
   const [runHistory, setRunHistory] = useState<BenchmarkRun[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<"clone" | "edit" | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCompareModal, setShowCompareModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [form, setForm] = useState<BenchmarkFormState>({
-    name: "",
-    prompt: "",
-    systemPrompt: "",
-    benchmarkMode: "model",
-    assertions: [{ expectedValue: "", matchMode: "contains" }],
-    assertionOperator: "AND",
-    agentAssertions: [],
-    agentAssertionOperator: "AND",
-  });
+  const [form, setForm] = useState<BenchmarkFormState>(INITIAL_BENCHMARK_FORM);
   const [saving, setSaving] = useState(false);
   const [running, setRunning] = useState(false);
+  // Trials per target for the next run (seeded from the benchmark's default)
+  const [trials, setTrials] = useState(1);
 
   // Propagate running state to parent for sidebar animation
   useEffect(() => {
@@ -354,6 +354,7 @@ export default function BenchmarkDetailPageComponent({
     try {
       const detail = await PrismService.getBenchmark(benchmarkId);
       setBenchmark(detail);
+      setTrials(detail.trials || 1);
       if (detail.latestRun) {
         setLatestRun(detail.latestRun);
         setActiveRunId(detail.latestRun.id || null);
@@ -777,65 +778,65 @@ export default function BenchmarkDetailPageComponent({
     return map;
   }, [allModels]);
 
-  // -- Clone --------------------------------------------------
+  // -- Clone / Edit -------------------------------------------
   const openClone = useCallback(() => {
     if (!benchmark) return;
-    const assertions = benchmark.assertions?.length
-      ? benchmark.assertions
-      : [
-          {
-            expectedValue: benchmark.expectedValue || "",
-            matchMode: benchmark.matchMode || "contains",
-          },
-        ];
-    setForm({
-      name: `${benchmark.name} (copy)`,
-      prompt: benchmark.prompt || "",
-      systemPrompt: benchmark.systemPrompt || "",
-      benchmarkMode: benchmark.benchmarkMode || "model",
-      assertions,
-      assertionOperator: benchmark.assertionOperator || "AND",
-      agentAssertions: (benchmark.agentAssertions || []).map((assertion) => ({
-        ...assertion,
-        type: assertion.type || "",
-      })),
-      agentAssertionOperator: benchmark.agentAssertionOperator || "AND",
-    });
-    setShowModal(true);
+    const state = benchmarkToFormState(benchmark);
+    setForm({ ...state, name: `${state.name} (copy)` });
+    setModalMode("clone");
+  }, [benchmark]);
+
+  const openEdit = useCallback(() => {
+    if (!benchmark) return;
+    setForm(benchmarkToFormState(benchmark));
+    setModalMode("edit");
   }, [benchmark]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      const {
-        assertions,
-        assertionOperator,
-        agentAssertions,
-        agentAssertionOperator,
-        benchmarkMode,
-        ...rest
-      } = form;
-      const payload = {
-        ...rest,
-        benchmarkMode,
-        expectedValue: assertions[0]?.expectedValue || "",
-        matchMode: assertions[0]?.matchMode || "contains",
-        assertions,
-        assertionOperator,
-        agentAssertions: agentAssertions || [],
-        agentAssertionOperator: agentAssertionOperator || "AND",
-      };
-      const created = await PrismService.createBenchmark(payload);
-      setShowModal(false);
-      if (created?.id) {
-        router.push(`/benchmarks/${created.id}`);
+      const payload = buildBenchmarkPayload(form);
+      if (modalMode === "edit") {
+        await PrismService.updateBenchmark(benchmarkId, payload);
+        setModalMode(null);
+        await loadBenchmark();
+      } else {
+        const created = await PrismService.createBenchmark(payload);
+        setModalMode(null);
+        if (created?.id) {
+          router.push(`/benchmarks/${created.id}`);
+        }
       }
     } catch (error: unknown) {
-      console.error("Failed to clone benchmark:", error);
+      console.error(
+        `Failed to ${modalMode === "edit" ? "update" : "clone"} benchmark:`,
+        error,
+      );
     } finally {
       setSaving(false);
     }
-  }, [form, router]);
+  }, [form, modalMode, benchmarkId, router, loadBenchmark]);
+
+  // -- Delete a single run from history ------------------------
+  const handleDeleteRun = useCallback(
+    async (run: BenchmarkRun) => {
+      if (!run.id) return;
+      try {
+        await PrismService.deleteBenchmarkRun(benchmarkId, run.id);
+        setRunHistory((previous) =>
+          previous.filter((historyRun) => historyRun.id !== run.id),
+        );
+        if (activeRunId === run.id) {
+          setLatestRun(null);
+          setActiveRunId(null);
+          setSelectedResult(null);
+        }
+      } catch (error: unknown) {
+        console.error("Failed to delete run:", error);
+      }
+    },
+    [benchmarkId, activeRunId],
+  );
 
   // -- Run benchmark ------------------------------------------
   // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
@@ -877,8 +878,13 @@ export default function BenchmarkDetailPageComponent({
 
     const models = [...modelTargets, ...agentTargets];
 
-    // Pre-populate pending targets so the table shows all rows immediately
-    setPendingTargets(models);
+    // Pre-populate pending targets so the table shows all rows immediately.
+    // Trials repeat each target server-side in the same order.
+    const expectedRows =
+      trials > 1
+        ? models.flatMap((model) => Array.from({ length: trials }, () => model))
+        : models;
+    setPendingTargets(expectedRows);
 
     // Notify sidebar to begin polling for active state
     window.dispatchEvent(new Event("benchmark-run-started"));
@@ -919,6 +925,7 @@ export default function BenchmarkDetailPageComponent({
           abortRef.current = null;
         },
       }),
+      { trials },
     );
   }, [
     benchmark,
@@ -928,6 +935,7 @@ export default function BenchmarkDetailPageComponent({
     benchmarkId,
     thinkingMap,
     toolsMap,
+    trials,
     buildBenchmarkSSECallbacks,
     resetLiveState,
   ]);
@@ -1288,6 +1296,7 @@ export default function BenchmarkDetailPageComponent({
           runHistory={runHistory}
           activeRunId={activeRunId}
           onViewRun={viewRun}
+          onDeleteRun={handleDeleteRun}
           running={running}
           streamingCompleted={streamingResults.length}
           selectedModels={selectedModels}
@@ -1345,6 +1354,23 @@ export default function BenchmarkDetailPageComponent({
           <ButtonComponent variant="disabled" icon={Copy} onClick={openClone}>
             Clone
           </ButtonComponent>
+          <ButtonComponent variant="disabled" icon={Pencil} onClick={openEdit}>
+            Edit
+          </ButtonComponent>
+          <TooltipComponent label="Run every target this many times — measures consistency, not just a single sample">
+            <div className={styles['trials-select']}>
+              <SelectComponent
+                value={String(trials)}
+                options={TRIAL_OPTIONS}
+                onChange={(value: string) =>
+                  setTrials(Number.parseInt(value, 10) || 1)
+                }
+                icon={<Repeat size={13} />}
+                compact
+                disabled={running}
+              />
+            </div>
+          </TooltipComponent>
           <ButtonComponent
             variant="primary"
             icon={running ? Square : Play}
@@ -1369,68 +1395,82 @@ export default function BenchmarkDetailPageComponent({
           <div className={styles['detail-header']}>
             <div className={styles['detail-title']}>{benchmark.name}</div>
             <div className={styles['detail-meta']}>
-              <BadgeComponent variant="info">
-                {benchmark.benchmarkMode === "agent"
-                  ? "Agent"
-                  : benchmark.benchmarkMode === "combined"
-                    ? "Combined"
-                    : "Model"}
-              </BadgeComponent>
-              {/* Model assertions (text match) */}
-              {(benchmark.benchmarkMode || "model") !== "agent" &&
-                (() => {
-                  const assertions =
-                    (benchmark.assertions?.length ?? 0) > 0
-                      ? benchmark.assertions!
-                      : [
+              {(() => {
+                const textAssertions = (
+                  benchmark.assertions?.length
+                    ? benchmark.assertions
+                    : benchmark.expectedValue
+                      ? [
                           {
-                            expectedValue: benchmark.expectedValue || "",
+                            expectedValue: benchmark.expectedValue,
                             matchMode: benchmark.matchMode || "contains",
                           },
-                        ];
-                  const operator = benchmark.assertionOperator || "AND";
-                  return assertions.map((agent, i) => (
-                    <span key={i} style={{ display: "contents" }}>
-                      {i > 0 && (
-                        <BadgeComponent
-                          variant={operator === "OR" ? "warning" : "info"}
-                        >
-                          {operator}
+                        ]
+                      : []
+                ).filter(
+                  (assertion) =>
+                    assertion.expectedValue?.trim() ||
+                    assertion.matchMode === "jsonValid",
+                );
+                const behaviorAssertions = benchmark.agentAssertions || [];
+                const textOperator = benchmark.assertionOperator || "AND";
+                const behaviorOperator =
+                  benchmark.agentAssertionOperator || "AND";
+                return (
+                  <>
+                    {textAssertions.map((assertion, index) => (
+                      <span key={`text-${index}`} style={{ display: "contents" }}>
+                        {index > 0 && (
+                          <BadgeComponent
+                            variant={textOperator === "OR" ? "warning" : "info"}
+                            mini
+                          >
+                            {textOperator}
+                          </BadgeComponent>
+                        )}
+                        <BadgeComponent variant="accent">
+                          {describeTextAssertion(assertion)}
                         </BadgeComponent>
-                      )}
-                      <BadgeComponent variant="accent">
-                        {agent.matchMode || "contains"}
-                      </BadgeComponent>
-                      <span className={styles['expected-value']}>
-                        Expected: {agent.expectedValue}
                       </span>
-                    </span>
-                  ));
-                })()}
-              {/* Agent assertions (behavioral) */}
-              {(benchmark.benchmarkMode === "agent" ||
-                benchmark.benchmarkMode === "combined") &&
-                benchmark.agentAssertions?.map((agent, i) => (
-                  <span key={`agent-${i}`} style={{ display: "contents" }}>
-                    {(i > 0 ||
-                      (benchmark.benchmarkMode === "combined" &&
-                        (benchmark.assertions?.length ?? 0) > 0)) && (
-                      <BadgeComponent
-                        variant={
-                          (benchmark.agentAssertionOperator || "AND") === "OR"
-                            ? "warning"
-                            : "info"
-                        }
+                    ))}
+                    {behaviorAssertions.map((assertion, index) => (
+                      <span
+                        key={`behavior-${index}`}
+                        style={{ display: "contents" }}
                       >
-                        {benchmark.agentAssertionOperator || "AND"}
-                      </BadgeComponent>
+                        {(index > 0 || textAssertions.length > 0) && (
+                          <BadgeComponent
+                            variant={
+                              index === 0
+                                ? "info"
+                                : behaviorOperator === "OR"
+                                  ? "warning"
+                                  : "info"
+                            }
+                            mini
+                          >
+                            {index === 0 ? "AND" : behaviorOperator}
+                          </BadgeComponent>
+                        )}
+                        <BadgeComponent variant="info">
+                          {describeAgentAssertion(assertion)}
+                        </BadgeComponent>
+                      </span>
+                    ))}
+                    {(benchmark.enabledTools?.length ?? 0) > 0 && (
+                      <TooltipComponent
+                        label={benchmark.enabledTools!.join(", ")}
+                      >
+                        <BadgeComponent variant="warning">
+                          <Wrench size={10} />{" "}
+                          {benchmark.enabledTools!.length} tool
+                          {benchmark.enabledTools!.length === 1 ? "" : "s"}
+                        </BadgeComponent>
+                      </TooltipComponent>
                     )}
-                    <BadgeComponent variant="accent">
-                      {agent.type?.replace(/_/g, " ")}
-                      {agent.operand ? ` ${agent.operator || "≥"} ${agent.operand}` : ""}
-                    </BadgeComponent>
-                  </span>
-                ))}
+                  </>
+                );
+              })()}
               {benchmark.tags?.map((tag) => (
                 <span key={tag} className={styles['tag']}>
                   {tag}
@@ -1571,10 +1611,15 @@ export default function BenchmarkDetailPageComponent({
                   )}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {(latestRun.trials ?? 1) > 1 && (
+                    <BadgeComponent variant="accent">
+                      <Repeat size={10} /> {latestRun.trials} trials
+                    </BadgeComponent>
+                  )}
                   {(() => {
                     const totalDuration = (latestRun.models || []).reduce(
                       (sum: number, accumulator: BenchmarkRunResult) =>
-                        sum + (accumulator.latencyMs || 0),
+                        sum + (accumulator.latency || 0),
                       0,
                     );
                     return totalDuration > 0 ? (
@@ -1588,6 +1633,15 @@ export default function BenchmarkDetailPageComponent({
                     type="dateTime"
                     date={latestRun.completedAt}
                   />
+                  {(latestRun.models?.length ?? 0) > 1 && (
+                    <ButtonComponent
+                      variant="disabled"
+                      icon={Columns3}
+                      onClick={() => setShowCompareModal(true)}
+                    >
+                      Compare
+                    </ButtonComponent>
+                  )}
                 </div>
               </div>
 
@@ -1661,6 +1715,11 @@ export default function BenchmarkDetailPageComponent({
             </div>
           )}
 
+          {/* -- Assertion report for the selected result -- */}
+          {selectedResult && !running ? (
+            <BenchmarkAssertionReportComponent result={selectedResult} />
+          ) : null}
+
           {/* -- Chat Preview: selected result or live streaming -- */}
           {selectedResult || viewedActiveModel ? (
             <ChatPreviewComponent
@@ -1704,17 +1763,17 @@ export default function BenchmarkDetailPageComponent({
         </div>
       </div>
 
-      {/* -- Clone Modal -- */}
-      {showModal && (
+      {/* -- Clone / Edit Modal -- */}
+      {modalMode && (
         <ModalComponent
-          title="Clone Benchmark"
+          title={modalMode === "edit" ? "Edit Benchmark" : "Clone Benchmark"}
           size="xl"
-          onClose={() => setShowModal(false)}
+          onClose={() => setModalMode(null)}
           footer={
             <>
               <ButtonComponent
                 variant="secondary"
-                onClick={() => setShowModal(false)}
+                onClick={() => setModalMode(null)}
               >
                 Cancel
               </ButtonComponent>
@@ -1722,20 +1781,9 @@ export default function BenchmarkDetailPageComponent({
                 variant="primary"
                 onClick={handleSave}
                 loading={saving}
-                disabled={(() => {
-                  if (!form.name || !form.prompt) return true;
-                  const benchmarkMode = form.benchmarkMode || "model";
-                  if (benchmarkMode === "model")
-                    return !form.assertions?.some((agent) => agent.expectedValue);
-                  if (benchmarkMode === "agent")
-                    return !form.agentAssertions?.length;
-                  return (
-                    !form.assertions?.some((agent) => agent.expectedValue) &&
-                    !form.agentAssertions?.length
-                  );
-                })()}
+                disabled={!isBenchmarkFormValid(form)}
               >
-                Create Clone
+                {modalMode === "edit" ? "Save Changes" : "Create Clone"}
               </ButtonComponent>
             </>
           }
@@ -1743,10 +1791,21 @@ export default function BenchmarkDetailPageComponent({
           <BenchmarkFormComponent
             form={form}
             onChange={setForm}
-            matchModes={MATCH_MODES}
+            hidePresets={modalMode === "edit"}
           />
         </ModalComponent>
       )}
+
+      {/* -- Compare Modal -- */}
+      {showCompareModal && latestRun?.models?.length ? (
+        <ModalComponent
+          title={`Compare Outputs — ${benchmark.name}`}
+          size="xl"
+          onClose={() => setShowCompareModal(false)}
+        >
+          <BenchmarkCompareComponent results={latestRun.models} />
+        </ModalComponent>
+      ) : null}
 
       {/* -- Delete Confirmation Modal -- */}
       {showDeleteModal && (

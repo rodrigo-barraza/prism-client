@@ -231,3 +231,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Trials selector (run controls) ──────────────────────── */
+
+.trials-select {
+  display: flex;
+  align-items: center;
+  min-width: 110px;
+}
