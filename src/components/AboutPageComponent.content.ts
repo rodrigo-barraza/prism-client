@@ -691,6 +691,24 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         ],
       },
       {
+        title: "SSRF Guard: Deny-by-Default Egress into Private Address Space",
+        authors: "Anthropic sandbox-runtime · Claude Code sandboxing",
+        year: 2026,
+        arxivUrl: null,
+        sourceUrl: "https://github.com/anthropic-experimental/sandbox-runtime",
+        description:
+          "Agent-controlled URLs are fed by untrusted inputs (web pages, Discord messages, marketplace listings), so a prompt-injected link must not reach loopback services, the LAN, or cloud metadata endpoints. Every web fetch validates protocol and DNS resolution against private/reserved ranges (RFC1918, loopback, 169.254 metadata, CGNAT, IPv6 ULA/link-local, IPv4-mapped forms) and follows redirects manually, re-validating each hop — the network-egress slice of sandbox-runtime's deny-by-default model.",
+        implementationFile: "SsrfGuard.ts",
+        categoryLabel: "Safety",
+        badgeTone: "danger",
+        alignment: [
+          { component: "Private/metadata range denial", status: "aligned", detail: "validatePublicWebUrl rejects any hostname whose A/AAAA records land outside public address space, including IPv4-mapped IPv6 bypass forms" },
+          { component: "Per-hop redirect re-validation", status: "aligned", detail: "fetchPublicUrl follows redirects manually and re-validates each Location — a public URL redirecting to an internal one is the classic bypass" },
+          { component: "Interactive browser carve-out", status: "extended", detail: "The user-driven browser tool blocks only link-local/metadata ranges so LAN browsing stays possible; the auto-tier read_web_page gets the full guard" },
+          { component: "Proxy-enforced egress + domain allowlist (source)", status: "simplified", detail: "Validation happens in-process at fetch time, not via sandbox-runtime's OS-level proxy; DNS-rebinding (TOCTOU) needs a pinned-socket dispatcher and is a known residual" },
+        ],
+      },
+      {
         title: "DAG-Based Workflow Orchestration",
         authors: "Workflow Pattern",
         year: null,
