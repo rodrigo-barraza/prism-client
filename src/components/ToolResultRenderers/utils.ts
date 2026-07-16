@@ -100,6 +100,41 @@ export function substituteToolOutputTokens(
 }
 
 /**
+ * Collect media URLs already rendered inline as visual tool results by
+ * earlier assistant messages in the same coalesced turn (walking back over
+ * contiguous non-deleted assistant messages). Agentic turns persist tool
+ * calls (with `display` metadata) on intermediate assistant messages while
+ * promoting the same media to the final text message's images/audio fields
+ * — without this, generated media renders twice: once at the tool call's
+ * position and again in the final message's media row.
+ */
+export function collectPriorToolDisplayUrls(
+  messages: Array<{
+    role: string;
+    deleted?: boolean;
+    toolCalls?: Array<{ result?: unknown }>;
+  }>,
+  index: number,
+): Set<string> {
+  const urls = new Set<string>();
+  for (let j = index - 1; j >= 0; j--) {
+    const previous = messages[j];
+    if (!previous || previous.role !== "assistant" || previous.deleted) break;
+    for (const toolCall of previous.toolCalls || []) {
+      const display = getResultDisplay(toolCall?.result);
+      if (
+        display &&
+        (display.kind === "image" || display.kind === "audio") &&
+        typeof display.url === "string"
+      ) {
+        urls.add(display.url);
+      }
+    }
+  }
+  return urls;
+}
+
+/**
  * Language hint for syntax highlighting based on file extension.
  */
 export const EXT_LANG: Record<string, string> = {

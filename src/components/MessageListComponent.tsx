@@ -28,6 +28,7 @@ import {
 import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import { ToolResultView } from "./ToolResultRenderers";
 import {
+  collectPriorToolDisplayUrls,
   getResultDisplay,
   substituteToolOutputTokens,
 } from "./ToolResultRenderers/utils";
@@ -2303,27 +2304,38 @@ export default function MessageList({
                         message.images.length > 0 &&
                         !message.contentSegments?.some(
                           (segment) => segment.type === "image",
-                        ) && (
-                        <div className={styles['image-preview-layout-row']}>
-                          {message.images.map((rawUrl, j) => {
-                            const resolvedUrl = PrismService.getFileUrl(rawUrl);
-                            const cat = getMimeCategory(rawUrl);
-                            let clickHandler;
-                            if (cat === "image")
-                              clickHandler = () =>
-                                handleImageClick(resolvedUrl);
-                            else if (cat === "pdf" || cat === "text")
-                              clickHandler = () => onDocClick?.(resolvedUrl);
-                            return (
-                              <MediaPreview
-                                key={j}
-                                dataUrl={rawUrl}
-                                onClick={clickHandler}
-                              />
-                            );
-                          })}
-                        </div>
-                      )}
+                        ) &&
+                        (() => {
+                          // Skip media already rendered at its tool call's
+                          // position by an earlier message in this turn.
+                          const priorToolMediaUrls =
+                            collectPriorToolDisplayUrls(displayMessages, i);
+                          const rowImages = message.images.filter(
+                            (rawUrl) => !priorToolMediaUrls.has(rawUrl),
+                          );
+                          if (rowImages.length === 0) return null;
+                          return (
+                            <div className={styles['image-preview-layout-row']}>
+                              {rowImages.map((rawUrl, j) => {
+                                const resolvedUrl = PrismService.getFileUrl(rawUrl);
+                                const cat = getMimeCategory(rawUrl);
+                                let clickHandler;
+                                if (cat === "image")
+                                  clickHandler = () =>
+                                    handleImageClick(resolvedUrl);
+                                else if (cat === "pdf" || cat === "text")
+                                  clickHandler = () => onDocClick?.(resolvedUrl);
+                                return (
+                                  <MediaPreview
+                                    key={j}
+                                    dataUrl={rawUrl}
+                                    onClick={clickHandler}
+                                  />
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
 
                       {/* Streaming audio (live conversation in progress) */}
                       {!readOnly &&
@@ -2339,16 +2351,27 @@ export default function MessageList({
                       {message.audio &&
                         !message.contentSegments?.some(
                           (segment) => segment.type === "audio",
-                        ) && (
-                        <div className={styles['image-preview-layout-row']}>
-                          {(Array.isArray(message.audio)
-                            ? message.audio
-                            : [message.audio]
-                          ).map((rawUrl, j) => (
-                            <MediaPreview key={`aud-${j}`} dataUrl={rawUrl} />
-                          ))}
-                        </div>
-                      )}
+                        ) &&
+                        (() => {
+                          // Same cross-message dedup as images above.
+                          const priorToolMediaUrls =
+                            collectPriorToolDisplayUrls(displayMessages, i);
+                          const rowAudio = (
+                            Array.isArray(message.audio)
+                              ? message.audio
+                              : [message.audio]
+                          ).filter(
+                            (rawUrl) => !priorToolMediaUrls.has(rawUrl),
+                          );
+                          if (rowAudio.length === 0) return null;
+                          return (
+                            <div className={styles['image-preview-layout-row']}>
+                              {rowAudio.map((rawUrl, j) => (
+                                <MediaPreview key={`aud-${j}`} dataUrl={rawUrl} />
+                              ))}
+                            </div>
+                          );
+                        })()}
 
                       {/* Video */}
                       {message.video &&
