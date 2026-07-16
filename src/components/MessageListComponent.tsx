@@ -27,7 +27,10 @@ import {
 } from "lucide-react";
 import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import { ToolResultView } from "./ToolResultRenderers";
-import { getResultDisplay } from "./ToolResultRenderers/utils";
+import {
+  getResultDisplay,
+  substituteToolOutputTokens,
+} from "./ToolResultRenderers/utils";
 import MarkdownContent from "./MarkdownContentComponent";
 import StreamingCursorComponent from "./StreamingCursorComponent";
 import { splitStreamingTail } from "../utils/streamingText";
@@ -1820,10 +1823,16 @@ export default function MessageList({
                               ));
                             }
                             if (seg.type === "text") {
-                              const fragmentText =
+                              const rawFragment =
                                 message.textFragments?.[
                                   seg.fragmentIndex ?? 0
                                 ]?.trim();
+                              const fragmentText = rawFragment
+                                ? substituteToolOutputTokens(
+                                    rawFragment,
+                                    message.toolCalls,
+                                  )
+                                : rawFragment;
                               const isLastTextSeg = !!opts.isLastText;
                               const showCursor =
                                 !opts.insideThinking && !opts.suppressCursor;
@@ -2209,9 +2218,14 @@ export default function MessageList({
                             })()
                           ) : message.content ? (
                             (() => {
+                              const substitutedContent =
+                                substituteToolOutputTokens(
+                                  message.content,
+                                  message.toolCalls,
+                                );
                               const { body, token } = isStreaming
-                                ? splitStreamingTail(message.content)
-                                : { body: message.content, token: "" };
+                                ? splitStreamingTail(substitutedContent)
+                                : { body: substitutedContent, token: "" };
                               return (
                                 <MarkdownContent
                                   content={body}

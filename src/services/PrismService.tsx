@@ -681,6 +681,7 @@ export default class PrismService {
     type?: string,
     aboutUserId?: string,
     sourceUserId?: string,
+    includeSuperseded = false,
   ): Promise<AgentMemoryListResponse> {
     const queryString = new URLSearchParams();
     if (project) queryString.set("project", project);
@@ -690,10 +691,28 @@ export default class PrismService {
     if (type) queryString.set("type", type);
     if (aboutUserId) queryString.set("aboutUserId", aboutUserId);
     if (sourceUserId) queryString.set("sourceUserId", sourceUserId);
+    if (includeSuperseded) queryString.set("includeSuperseded", "true");
     return PrismService._request<AgentMemoryListResponse>(
       `/agent-memories?${queryString}`,
       { method: HTTP_METHODS.GET },
     );
+  }
+
+  /**
+   * Undo a consolidation run by runId — reopens the memories it soft-closed
+   * and invalidates the merged docs it created.
+   */
+  static async rollbackConsolidation(
+    runId: string,
+  ): Promise<{ rolledBack: boolean; reason?: string; reopened?: number }> {
+    return PrismService._request<{
+      rolledBack: boolean;
+      reason?: string;
+      reopened?: number;
+    }>("/agent-memories/consolidation-rollback", {
+      method: HTTP_METHODS.POST,
+      body: { runId },
+    });
   }
 
   /**

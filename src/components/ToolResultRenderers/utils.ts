@@ -66,6 +66,39 @@ export function getCodeDisplayText(
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
+// ── {{tool_output:field}} substitution ───────────────────────────
+// Mirrors prism-service ToolOutputSubstituter: verbatim-critical tools
+// (ASCII banners, hashes, diffs) instruct the model to emit a placeholder
+// instead of retyping their output, and the exact value is spliced in from
+// the tool result. The server substitutes before persisting; this client
+// copy covers live streaming, where the raw token would otherwise be
+// visible until the conversation reloads.
+const TOOL_OUTPUT_TOKEN = /\{\{tool_output:([A-Za-z0-9_][A-Za-z0-9_.-]*)\}\}/g;
+
+function resolveFieldPath(source: unknown, path: string): unknown {
+  let current: unknown = source;
+  for (const key of path.split(".")) {
+    if (current === null || typeof current !== "object") return undefined;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
+}
+
+export function substituteToolOutputTokens(
+  text: string,
+  toolCalls?: Array<{ result?: unknown }> | null,
+): string {
+  if (!text || !text.includes("{{tool_output:")) return text;
+  if (!toolCalls || toolCalls.length === 0) return text;
+  return text.replace(TOOL_OUTPUT_TOKEN, (token, field: string) => {
+    for (let i = toolCalls.length - 1; i >= 0; i--) {
+      const value = resolveFieldPath(tryParse(toolCalls[i]?.result), field);
+      if (typeof value === "string" && value.length > 0) return value;
+    }
+    return token;
+  });
+}
+
 /**
  * Language hint for syntax highlighting based on file extension.
  */

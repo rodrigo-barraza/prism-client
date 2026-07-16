@@ -259,6 +259,11 @@
   }
 }
 
+.history-rolled-back {
+  font-style: italic;
+  color: var(--color-amber, #d97706);
+}
+
 /* ── Infinite Scroll Sentinel & Footer ─────────────────────── */
 
 .sentinel {

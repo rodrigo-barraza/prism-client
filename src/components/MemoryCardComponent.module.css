@@ -110,6 +110,24 @@
   border-radius: 3px;
 }
 
+/* Superseded (soft-closed) memory — kept for history, dimmed in the list */
+.is-superseded {
+  opacity: 0.6;
+}
+
+.memory-superseded-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-amber, #d97706) 14%, transparent);
+  color: var(--color-amber, #d97706);
+}
+
 .badge-user {
   background: color-mix(in srgb, var(--color-indigo) 12%, transparent);
   color: var(--color-indigo);

@@ -1023,6 +1023,11 @@ export interface AgentMemory {
   sourceUsername?: string;
   confidence?: number;
   sourceMessageId?: string;
+  // Bi-temporal validity — set when a memory is superseded/invalidated
+  // (soft-closed) by consolidation rather than deleted.
+  validTo?: string | null;
+  supersededBy?: string | null;
+  closedReason?: string | null;
 }
 
 export interface AgentMemoryListResponse {
@@ -1049,6 +1054,7 @@ export interface AgentMemoryFacets {
 
 export interface ConsolidationHistoryEntry {
   _id?: string;
+  runId?: string;
   project?: string;
   trigger?: string;
   runAt?: string;
@@ -1060,6 +1066,10 @@ export interface ConsolidationHistoryEntry {
   memoriesBefore?: number;
   memoriesAfter?: number;
   durationMs?: number;
+  // Soft-close bookkeeping — presence enables rollback
+  closedIds?: string[];
+  createdIds?: string[];
+  rolledBackAt?: string | null;
 }
 
 export interface ConsolidationHistoryResponse {

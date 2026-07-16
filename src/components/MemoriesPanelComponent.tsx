@@ -11,6 +11,8 @@ import {
   ExternalLink,
   Sparkles,
   History,
+  Archive,
+  Undo2,
   GitMerge,
   Settings,
   Trash2,
@@ -175,6 +177,8 @@ export default function MemoriesPanel({
   const [selectedSourceUserId, setSelectedSourceUserId] = useState<
     string | null
   >(null);
+  // History view: include soft-closed (superseded/invalidated) memories
+  const [showSuperseded, setShowSuperseded] = useState(false);
 
   // Distinct types + Discord users (about/source) for the filter dropdown
   const [facets, setFacets] = useState<AgentMemoryFacets | null>(null);
@@ -210,6 +214,7 @@ export default function MemoriesPanel({
           typeParam,
           selectedAboutUserId || undefined,
           selectedSourceUserId || undefined,
+          showSuperseded,
         );
         const fetched = result.memories || [];
 
@@ -252,7 +257,7 @@ export default function MemoriesPanel({
         setLoadingMore(false);
       }
     },
-    [project, agent, selectedType, selectedAboutUserId, selectedSourceUserId],
+    [project, agent, selectedType, selectedAboutUserId, selectedSourceUserId, showSuperseded],
   );
 
   const loadFacets = useCallback(async () => {
@@ -291,7 +296,34 @@ export default function MemoriesPanel({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadMemories(false);
-  }, [loadMemories, refreshKey, selectedType]);
+  }, [loadMemories, refreshKey, selectedType, showSuperseded]);
+
+  const handleRollback = useCallback(
+    async (run: ConsolidationHistoryEntry) => {
+      if (!run.runId) return;
+      try {
+        const result = await PrismService.rollbackConsolidation(run.runId);
+        if (result.rolledBack) {
+          setToast({
+            type: "success",
+            text: `Rolled back — reopened ${result.reopened ?? 0} memories`,
+          });
+          loadMemories(false);
+          loadHistory();
+        } else {
+          setToast({
+            type: "error",
+            text: `Rollback skipped: ${result.reason ?? "unknown"}`,
+          });
+        }
+      } catch (error: unknown) {
+        setToast({ type: "error", text: getErrorMessage(error) });
+      } finally {
+        setTimeout(() => setToast(null), TOAST_DURATION_MILLISECONDS);
+      }
+    },
+    [loadMemories, loadHistory],
+  );
 
   // Load history when expanded
   useEffect(() => {
@@ -544,6 +576,18 @@ export default function MemoriesPanel({
           title="Consolidate memories — merge duplicates and clean stale entries"
         />
         <ButtonComponent
+          variant={showSuperseded ? "tonal" : "text"}
+          size="small"
+          icon={Archive}
+          iconSize={11}
+          onClick={() => setShowSuperseded((previous) => !previous)}
+          title={
+            showSuperseded
+              ? "Hide superseded memories"
+              : "Show superseded (soft-closed) memories"
+          }
+        />
+        <ButtonComponent
           variant={historyOpen ? "tonal" : "text"}
           size="small"
           icon={History}
@@ -599,6 +643,7 @@ export default function MemoriesPanel({
     consolidating,
     total,
     historyOpen,
+    showSuperseded,
     loading,
     loadMemories,
     error,
@@ -779,6 +824,25 @@ export default function MemoriesPanel({
                 </span>
                 {run.durationMs && (
                   <span>{formatLatencyMilliseconds(run.durationMs)}</span>
+                )}
+                {run.rolledBackAt ? (
+                  <span className={styles['history-rolled-back']}>
+                    rolled back
+                  </span>
+                ) : (
+                  run.runId &&
+                  (run.closedIds?.length || run.createdIds?.length) ? (
+                    <ButtonComponent
+                      variant="text"
+                      size="small"
+                      icon={Undo2}
+                      iconSize={9}
+                      onClick={() => handleRollback(run)}
+                      title="Undo this consolidation run — reopen closed memories"
+                    >
+                      Undo
+                    </ButtonComponent>
+                  ) : null
                 )}
               </div>
             </div>

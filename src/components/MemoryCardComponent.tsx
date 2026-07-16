@@ -68,10 +68,11 @@ export default function MemoryCardComponent({
   const sourceName = memory.sourceUsername || memory.sourceUserId;
   const isSelfReported =
     memory.aboutUserId && memory.aboutUserId === memory.sourceUserId;
+  const isSuperseded = Boolean(memory.validTo);
 
   return (
     <div
-      className={`memory-card-component ${styles["memory-card"]} ${isNew ? styles["is-new-memory"] : ""}`}
+      className={`memory-card-component ${styles["memory-card"]} ${isNew ? styles["is-new-memory"] : ""} ${isSuperseded ? styles["is-superseded"] : ""}`}
     >
       <div className={`${styles["memory-icon"]} ${styles[iconClass]}`}>
         <IconComponent size={13} />
@@ -132,6 +133,14 @@ export default function MemoryCardComponent({
           )}
           {memory.createdAt && (
             <BadgeComponent type="dateTime" date={memory.createdAt} />
+          )}
+          {isSuperseded && (
+            <span
+              className={styles["memory-superseded-badge"]}
+              title={`Superseded${memory.closedReason ? ` — ${memory.closedReason}` : ""}. Kept for history; excluded from active recall.`}
+            >
+              superseded
+            </span>
           )}
         </div>
 
