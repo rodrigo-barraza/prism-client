@@ -246,7 +246,17 @@ export interface ToolResultCodeDisplay {
   title?: string;
 }
 
-export type ToolResultDisplay = ToolResultMediaDisplay | ToolResultCodeDisplay;
+export interface ToolResultArtifactDisplay {
+  kind: "artifact";
+  /** Id of the agent_artifacts document to fetch and render inline. */
+  artifactId: string;
+  title?: string;
+}
+
+export type ToolResultDisplay =
+  | ToolResultMediaDisplay
+  | ToolResultCodeDisplay
+  | ToolResultArtifactDisplay;
 
 export interface RendererProps {
   result: unknown;

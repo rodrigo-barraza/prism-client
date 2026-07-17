@@ -9,6 +9,8 @@ import { RawResultToggle } from "../SharedComponents";
 import { getResultDisplay, getCodeDisplayText } from "../utils";
 import { AutoResizeToolEmbed } from "./BrowserMediaAndVisualRenderers";
 import PrismService from "../../../services/PrismService";
+import MarkdownContent from "../../MarkdownContentComponent";
+import type { ArtifactItem } from "../../../types/types";
 import styles from "../ToolResultRenderersComponent.module.css";
 import React from "react";
 
@@ -63,6 +65,78 @@ function CodeDisplayBlock({
   );
 }
 
+/**
+ * Inline view of a document artifact (create_artifact / update_artifact
+ * results). Fetches the artifact by id and renders markdown natively or
+ * html in a sandboxed iframe, with a link out to the /artifacts gallery.
+ */
+function ArtifactDisplayBlock({
+  artifactId,
+  title,
+}: {
+  artifactId: string;
+  title?: string;
+}) {
+  const [artifact, setArtifact] = React.useState<ArtifactItem | null>(null);
+  const [loadFailed, setLoadFailed] = React.useState(false);
+
+  // No reset-on-change needed: the caller keys this block by artifactId,
+  // so a different artifact remounts with fresh state.
+  React.useEffect(() => {
+    let cancelled = false;
+    PrismService.getArtifact(artifactId)
+      .then((fetched) => {
+        if (!cancelled) setArtifact(fetched);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [artifactId]);
+
+  const headerTitle = artifact?.title || title || "Artifact";
+
+  return (
+    <div className={styles['artifact-display-container']}>
+      <div className={styles['artifact-display-header']}>
+        <span className={styles['artifact-display-title']}>{headerTitle}</span>
+        <span className={styles['artifact-display-meta']}>
+          {artifact && artifact.version > 1 && <span>v{artifact.version}</span>}
+          <a
+            href={`/artifacts/${encodeURIComponent(artifactId)}`}
+            target="_blank"
+            rel="noreferrer"
+            className={styles['artifact-display-link']}
+          >
+            Open in Artifacts
+          </a>
+        </span>
+      </div>
+      {loadFailed && (
+        <div className={styles['artifact-display-error']}>
+          Artifact unavailable — it may have been deleted.
+        </div>
+      )}
+      {artifact && artifact.kind === "html" && (
+        <iframe
+          srcDoc={artifact.content || ""}
+          sandbox="allow-scripts"
+          title={headerTitle}
+          className={styles['artifact-display-frame']}
+          style={{ height: artifact.height ?? 480 }}
+        />
+      )}
+      {artifact && artifact.kind !== "html" && (
+        <div className={styles['artifact-display-body']}>
+          <MarkdownContent content={artifact.content || ""} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ToolResultDisplayView({
   display,
   toolName,
@@ -73,6 +147,15 @@ export function ToolResultDisplayView({
   result?: unknown;
 }) {
   const displayTitle = display.title || toolName || "Tool result";
+  if (display.kind === "artifact") {
+    return (
+      <ArtifactDisplayBlock
+        key={display.artifactId}
+        artifactId={display.artifactId}
+        title={display.title}
+      />
+    );
+  }
   if (display.kind === "code") {
     const text = getCodeDisplayText(result, display);
     if (!text) return null;

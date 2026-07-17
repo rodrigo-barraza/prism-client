@@ -49,6 +49,9 @@ export function getResultDisplay(result: unknown): ToolResultDisplay | null {
   if (display.kind === "code" && typeof display.sourceField === "string") {
     return display as unknown as ToolResultDisplay;
   }
+  if (display.kind === "artifact" && typeof display.artifactId === "string") {
+    return display as unknown as ToolResultDisplay;
+  }
   return null;
 }
 

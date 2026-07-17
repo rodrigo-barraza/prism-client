@@ -1749,6 +1749,47 @@ export interface MediaListResponse {
   usernames?: string[];
 }
 
+// --- Artifacts ----------------------------------------------
+
+export type ArtifactKind =
+  | "markdown"
+  | "html"
+  | "image"
+  | "video"
+  | "audio"
+  | "embed";
+
+export interface ArtifactItem {
+  id: string;
+  project: string;
+  username: string;
+  agent?: string | null;
+  conversationId?: string | null;
+  agentConversationId?: string | null;
+  source: "document" | "tool";
+  kind: ArtifactKind;
+  title: string;
+  /** Inline body — document artifacts only; detail responses only. */
+  content?: string;
+  /** First ~400 chars of content — list responses only. */
+  preview?: string;
+  /** Asset URL — tool-captured media/embed artifacts only. */
+  url?: string;
+  toolName?: string;
+  height?: number;
+  version: number;
+  versions?: Array<{ content: string; title: string; updatedAt: string }>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArtifactListResponse {
+  data: ArtifactItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 // --- Text Content -------------------------------------------
 
 export interface TextContentItem {

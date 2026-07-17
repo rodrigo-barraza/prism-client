@@ -29,6 +29,7 @@ import {
   Users,
   Layers,
   GitBranch,
+  Package,
 } from "lucide-react";
 
 export interface PageIconEntry {
@@ -49,6 +50,7 @@ const PAGE_ICON_ENTRIES: PageIconEntry[] = [
   { icon: Server, aliases: ["models"] },
   { icon: Wrench, aliases: ["tools", "tool requests"] },
   { icon: ImageIcon, aliases: ["media"] },
+  { icon: Package, aliases: ["artifacts", "artifact"] },
   { icon: Type, aliases: ["text"] },
   { icon: BookText, aliases: ["prompts"] },
   { icon: Eye, aliases: ["vision"] },
@@ -143,6 +145,7 @@ export const USER_NAV_SECTIONS: NavigationSection[] = [
     label: "Data",
     items: [
       { href: "/media", label: "Media", icon: ImageIcon },
+      { href: "/artifacts", label: "Artifacts", icon: Package },
     ],
   },
   {

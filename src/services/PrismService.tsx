@@ -36,6 +36,8 @@ import type {
   Workflow,
   SynthesisRun,
   MediaListResponse,
+  ArtifactListResponse,
+  ArtifactItem,
   TextListResponse,
   LmStudioModel,
   LmStudioVramEstimate,
@@ -2006,6 +2008,48 @@ export default class PrismService {
       `/media${query ? `?${query}` : ""}`,
       {
         method: HTTP_METHODS.GET,
+      },
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Artifacts
+  // ---------------------------------------------------------------------------
+
+  /**
+   * List artifacts (agent-authored documents + captured visual outputs)
+   * for the caller's project.
+   */
+  static async getArtifacts(
+    parameters: Record<string, string | number | boolean> = {},
+  ): Promise<ArtifactListResponse> {
+    const stringParameters: Record<string, string> = {};
+    for (const [key, value] of Object.entries(parameters)) stringParameters[key] = String(value);
+    const query = new URLSearchParams(stringParameters).toString();
+    return PrismService._request<ArtifactListResponse>(
+      `/artifacts${query ? `?${query}` : ""}`,
+      {
+        method: HTTP_METHODS.GET,
+      },
+    );
+  }
+
+  /** Fetch a single artifact including document content and version history. */
+  static async getArtifact(artifactId: string): Promise<ArtifactItem> {
+    return PrismService._request<ArtifactItem>(
+      `/artifacts/${encodeURIComponent(artifactId)}`,
+      {
+        method: HTTP_METHODS.GET,
+      },
+    );
+  }
+
+  /** Delete an artifact from the gallery. */
+  static async deleteArtifact(artifactId: string): Promise<{ success: boolean }> {
+    return PrismService._request<{ success: boolean }>(
+      `/artifacts/${encodeURIComponent(artifactId)}`,
+      {
+        method: HTTP_METHODS.DELETE,
       },
     );
   }

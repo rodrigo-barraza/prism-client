@@ -201,6 +201,7 @@ export const LOCAL_STORAGE_KEY_THEME = "prism:theme";
 export const LOCAL_STORAGE_KEY_AVATAR = "prism:avatar";
 export const LOCAL_STORAGE_KEY_CUSTOM_THEMES = "prism:custom-themes";
 export const LOCAL_STORAGE_KEY_MEDIA_VIEW_MODE_PREFIX = "media-page:view-mode:";
+export const LOCAL_STORAGE_KEY_ARTIFACTS_VIEW_MODE_PREFIX = "artifacts-page:view-mode:";
 export const LOCAL_STORAGE_KEY_PROMPTS_VIEW_MODE = "prompts-page:view-mode";
 
 
