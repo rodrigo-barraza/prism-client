@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
+import { clamp } from "@rodrigo-barraza/utilities-library";
 import {
   X,
   FileCode,
@@ -586,7 +587,7 @@ export default function FileViewerPanelComponent({
 
       const onMove = (mouseEvent: MouseEvent) => {
         const delta = mouseEvent.clientX - startX;
-        const newWidth = Math.max(300, Math.min(startWidth + delta, 1200));
+        const newWidth = clamp(startWidth + delta, 300, 1200);
         onWidthChange?.(newWidth);
       };
 

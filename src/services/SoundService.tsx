@@ -18,6 +18,8 @@ interface StereoOptions {
   right?: number;
 }
 
+import { clamp } from "@rodrigo-barraza/utilities-library";
+
 interface SpatialResult {
   left: number;
   right: number;
@@ -368,7 +370,7 @@ function spatialFromEvent(event: Event | undefined): SpatialResult {
 
   const rect = targetElement.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
-  const ratio = Math.max(0, Math.min(1, centerX / window.innerWidth));
+  const ratio = clamp(centerX / window.innerWidth, 0, 1);
 
   return {
     left: Math.round((1 - ratio) * 100),

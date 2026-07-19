@@ -15,6 +15,7 @@ import {
   SegmentedControlComponent,
 } from "@rodrigo-barraza/components-library";
 import {
+  cx,
   MILLISECONDS_PER_DAY,
   MILLISECONDS_PER_WEEK,
 } from "@rodrigo-barraza/utilities-library";
@@ -468,10 +469,6 @@ function formatPopoverDateLabel(date: Date): string {
   });
 }
 
-function classNames(...values: (string | false | null | undefined)[]): string {
-  return values.filter(Boolean).join(" ");
-}
-
 function getCronHours(cronExpression: string): number[] {
   const fields = cronExpression.trim().split(/\s+/);
   if (fields.length < 2) return [];
@@ -800,7 +797,7 @@ export default function ScheduledTaskCalendarComponent({
       {/* -- Days Grid -- */}
       {activeView !== CALENDAR_VIEWS.DAY && (
         <div
-          className={classNames(
+          className={cx(
             styles["calendar-days-grid"],
             activeView === CALENDAR_VIEWS.WEEK && styles["is-week-view-grid"],
           )}
@@ -820,7 +817,7 @@ export default function ScheduledTaskCalendarComponent({
             return (
               <div
                 key={dayKey}
-                className={classNames(
+                className={cx(
                   styles["calendar-day-cell"],
                   !calendarDay.isCurrentMonth && styles["is-outside-month"],
                   calendarDay.isToday && styles["is-today-cell"],
@@ -840,7 +837,7 @@ export default function ScheduledTaskCalendarComponent({
                     {visibleEvents.map((event, eventIndex) => (
                       <div
                         key={`${event.taskId}-${eventIndex}`}
-                        className={classNames(
+                        className={cx(
                           styles["calendar-event-chip"],
                           getColorVariantClassName(event.scheduleType),
                           !event.isEnabled && styles["is-disabled-task"],
@@ -856,7 +853,7 @@ export default function ScheduledTaskCalendarComponent({
                         }}
                       >
                         <span
-                          className={classNames(
+                          className={cx(
                             styles["calendar-event-chip-dot"],
                             getColorVariantClassName(event.scheduleType),
                           )}
@@ -912,7 +909,7 @@ export default function ScheduledTaskCalendarComponent({
                         {calendarDay.events.map((event, eventIndex) => (
                           <div
                             key={`${event.taskId}-${eventIndex}`}
-                            className={classNames(
+                            className={cx(
                               styles["calendar-popover-event-item"],
                               !event.isEnabled && styles["is-disabled-task"],
                             )}
@@ -922,7 +919,7 @@ export default function ScheduledTaskCalendarComponent({
                             }}
                           >
                             <span
-                              className={classNames(
+                              className={cx(
                                 styles["calendar-popover-event-dot"],
                                 getColorVariantClassName(event.scheduleType),
                               )}
@@ -975,7 +972,7 @@ export default function ScheduledTaskCalendarComponent({
                     {allDayEvents.map((event, eventIndex) => (
                       <div
                         key={`${event.taskId}-${eventIndex}`}
-                        className={classNames(
+                        className={cx(
                           styles["calendar-event-chip"],
                           getColorVariantClassName(event.scheduleType),
                           !event.isEnabled && styles["is-disabled-task"],
@@ -989,7 +986,7 @@ export default function ScheduledTaskCalendarComponent({
                         onClick={() => onEventClick?.(event.taskId)}
                       >
                         <span
-                          className={classNames(
+                          className={cx(
                             styles["calendar-event-chip-dot"],
                             getColorVariantClassName(event.scheduleType),
                           )}
@@ -1032,7 +1029,7 @@ export default function ScheduledTaskCalendarComponent({
                             {eventsForHour.map((event, eventIndex) => (
                               <div
                                 key={`${event.taskId}-${eventIndex}`}
-                                className={classNames(
+                                className={cx(
                                   styles["calendar-timeline-event-card"],
                                   getColorVariantClassName(event.scheduleType),
                                   !event.isEnabled && styles["is-disabled-task"],
@@ -1097,7 +1094,7 @@ export default function ScheduledTaskCalendarComponent({
           {activeScheduleTypes.map((scheduleType) => (
             <div key={scheduleType} className={styles["calendar-legend-item"]}>
               <span
-                className={classNames(
+                className={cx(
                   styles["calendar-legend-dot"],
                   getColorVariantClassName(scheduleType),
                 )}

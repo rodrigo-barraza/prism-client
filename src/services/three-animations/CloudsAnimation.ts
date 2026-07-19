@@ -42,6 +42,7 @@
  *     mirroring the agent coin's "spinImpulse"
  */
 
+import { clamp } from "@rodrigo-barraza/utilities-library";
 import type { TickState } from "../ThreeService";
 import type {
   ThreeAnimationContext,
@@ -186,7 +187,7 @@ function hexToRgb(hex: string): Rgb {
 }
 
 function smoothstep(edge0: number, edge1: number, x: number): number {
-  const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
+  const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
   return t * t * (3 - 2 * t);
 }
 
@@ -893,7 +894,7 @@ export function createCloudsAnimation(
     activeRenderer.getDrawingBufferSize(drawingBufferSize);
     uniforms.uResolution.value.copy(drawingBufferSize);
 
-    const delta = Math.min(Math.max(deltaTime, 0), 0.25);
+    const delta = clamp(deltaTime, 0, 0.25);
 
     // Refresh the time-of-day roughly every 4s — the sun moves slowly and
     // this keeps `new Date()` off the per-frame path.

@@ -3,7 +3,9 @@
 // ============================================================
 // Prism-specific helpers. Shared workspace functions should be
 // imported directly from @rodrigo-barraza/utilities-library at
-// each call site — never re-exported through this file.
+// each call site — never re-exported through this file (the sole
+// exception is copyToClipboard, kept as a compatibility re-export
+// after its promotion to the library).
 // ============================================================
 
 import type {
@@ -116,44 +118,10 @@ export function buildDateRangeParams(
 
 /**
  * Copy text to clipboard with error handling.
- * Uses the modern Clipboard API with a legacy execCommand fallback
- * for insecure contexts (plain HTTP on non-localhost origins).
- * Returns true on success, false on failure.
+ * Promoted verbatim to @rodrigo-barraza/utilities-library (v0.7.0, plus an
+ * SSR guard); re-exported here so existing import sites keep working.
  */
-export async function copyToClipboard(text: string): Promise<boolean> {
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch {
-      return copyViaLegacyExecCommand(text);
-    }
-  }
-  return copyViaLegacyExecCommand(text);
-}
-
-function copyViaLegacyExecCommand(text: string): boolean {
-  const textAreaElement = document.createElement("textarea");
-  textAreaElement.value = text;
-  textAreaElement.setAttribute("readonly", "");
-  textAreaElement.style.position = "fixed";
-  textAreaElement.style.left = "-9999px";
-  textAreaElement.style.opacity = "0";
-  document.body.appendChild(textAreaElement);
-
-  textAreaElement.select();
-  textAreaElement.setSelectionRange(0, text.length);
-
-  let isSuccessful = false;
-  try {
-    isSuccessful = document.execCommand("copy");
-  } catch {
-    isSuccessful = false;
-  }
-
-  document.body.removeChild(textAreaElement);
-  return isSuccessful;
-}
+export { copyToClipboard } from "@rodrigo-barraza/utilities-library";
 
 /**
  * Constructs the settings defaults from the server-provided parameter descriptors.

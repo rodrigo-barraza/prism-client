@@ -10,6 +10,7 @@ import PrismService from "../services/PrismService";
 import { EXECUTION_STATUS, LAYOUT, TIMING } from "../constants";
 import type { AgentConversation, ConversationStats, ToolSchema } from "../types/types";
 import type { GraphData, GraphNode, GraphEdge } from "@rodrigo-barraza/utilities-library/graph";
+import { COLLECTIONS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import {
   PROACTIVE_PENDING_REQUEST_NODE_ID,
   PROACTIVE_PENDING_TURN_NODE_ID,
@@ -697,7 +698,7 @@ export default function useConversationGraphData(
         }
       },
       onChange: (changeEvent: IrisCollectionChangeEvent) => {
-        if (changeEvent.collection === "requests") {
+        if (changeEvent.collection === COLLECTIONS.requests) {
           const eventConversationId = changeEvent.conversationId;
           const isRootMatch = eventConversationId === conversationId;
           const isSubAgentMatch = eventConversationId

@@ -66,6 +66,7 @@ vi.mock("@rodrigo-barraza/utilities-library", () => ({
   renderToolName: (name: string) => name.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase()),
   resolveToolDisplaySummary: () => null,
   formatLatencyMilliseconds: (milliseconds: number) => `${milliseconds}ms`,
+  clamp: (value: number, min: number, max: number) => Math.min(Math.max(value, min), max),
 }));
 
 vi.mock("@rodrigo-barraza/utilities-library/taxonomy", () => ({

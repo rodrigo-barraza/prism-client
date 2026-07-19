@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useCallback } from "react";
 import type { CSSProperties } from "react";
+import { clamp } from "@rodrigo-barraza/utilities-library";
 
 /**
  * StarfieldComponent — Deep-field starry sky with Milky Way band,
@@ -639,7 +640,7 @@ export default function StarfieldComponent({
     const area = w * h;
     // Dense deep-field: ~1.2 stars per 1000px²
     const density = 0.0012;
-    const count = Math.max(800, Math.min(8000, Math.floor(area * density)));
+    const count = clamp(Math.floor(area * density), 800, 8000);
     const rng = seededRandom(42);
     starsRef.current = generateFieldStars(count, w, h, rng);
 

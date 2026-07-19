@@ -4,7 +4,7 @@ import { resolveToolEmoji, isEmojiImageUrl } from "./WorkflowNodeConstantsCompon
 import { ToolResultView } from "./ToolResultRenderers";
 import { ToolBadgeRow } from "./ToolBadgeComponent";
 
-import { renderToolName, resolveToolDisplaySummary, type ToolDisplayMetadata } from "@rodrigo-barraza/utilities-library";
+import { clamp, renderToolName, resolveToolDisplaySummary, type ToolDisplayMetadata } from "@rodrigo-barraza/utilities-library";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { ToolCallEvent } from "../types/types";
 import type { SubAgentToolActivityItem } from "./MessageListComponent";
@@ -148,7 +148,7 @@ export default function ToolCallsBlockComponent({
           const totalDurationSeconds = Math.round(effectiveDurationMs / 1000);
           if (totalDurationSeconds < 1) {
             const exactSeconds = effectiveDurationMs / 1000;
-            const decimalPlaces = Math.min(Math.max(Math.ceil(-Math.log10(exactSeconds)), 1), 6);
+            const decimalPlaces = clamp(Math.ceil(-Math.log10(exactSeconds)), 1, 6);
             const roundedValue = parseFloat(exactSeconds.toFixed(decimalPlaces));
             return ` for ${roundedValue} seconds`;
           }

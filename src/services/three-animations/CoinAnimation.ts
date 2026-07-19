@@ -24,6 +24,7 @@
  *   - "pointerTilt":  { x, y } in [-1, 1] — parallax tilt toward pointer
  */
 
+import { clamp } from "@rodrigo-barraza/utilities-library";
 import ThreeService from "../ThreeService";
 import type { TickState } from "../ThreeService";
 import type {
@@ -229,7 +230,7 @@ export function createCoinAnimation(
   }
 
   const update = ({ deltaTime }: TickState) => {
-    const delta = Math.min(Math.max(deltaTime, 0), MAXIMUM_DELTA_SECONDS);
+    const delta = clamp(deltaTime, 0, MAXIMUM_DELTA_SECONDS);
     elapsedSeconds += delta;
 
     // Entrance: scale in with a slight overshoot

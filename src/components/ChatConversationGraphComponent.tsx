@@ -31,6 +31,7 @@ import {
   PROJECT_EMOJI,
 } from "../utils/subAgentEmojis";
 import {
+  clamp,
   formatNumber,
   formatCost,
   formatElapsedTime,
@@ -177,7 +178,7 @@ function computeFitToGraphTransform(
   const verticalZoom = viewportHeight / graphHeight;
   // Cap auto-fit at 1.0 so the graph never appears zoomed-in beyond 1:1.
   // The user can manually zoom in for detail via scroll wheel.
-  const fittedZoom = Math.max(MINIMUM_ZOOM, Math.min(1.0, Math.min(horizontalZoom, verticalZoom)));
+  const fittedZoom = clamp(Math.min(horizontalZoom, verticalZoom), MINIMUM_ZOOM, 1.0);
 
   const graphCenterX = (minimumX + maximumX) / 2;
   const graphCenterY = (minimumY + maximumY) / 2;

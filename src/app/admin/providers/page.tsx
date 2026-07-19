@@ -15,7 +15,7 @@ import {
   LoadingMessage,
   ErrorMessage,
 } from "../../../components/StateMessageComponent";
-import { formatNumber, formatCost, formatLatency, formatTokensPerSec, formatCompact, timeAgo as formatTimeAgo } from "@rodrigo-barraza/utilities-library";
+import { clamp, formatNumber, formatCost, formatLatency, formatTokensPerSec, formatCompact, timeAgo as formatTimeAgo } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../../utils/utilities";
 import { PROVIDER_COLORS } from "../../../constants";
 import { useAdminHeader } from "../../../components/AdminHeaderContextComponent";
@@ -399,7 +399,7 @@ function LimitBar({
   if (limit == null || limit === 0) return null;
 
   const rem = remaining ?? 0;
-  const percentage = Math.max(0, Math.min(100, (rem / limit) * 100));
+  const percentage = clamp((rem / limit) * 100, 0, 100);
   // HSL gradient: green (>60%) → yellow (30-60%) → red (<30%)
   const hue = Math.round((percentage / 100) * 120);
 

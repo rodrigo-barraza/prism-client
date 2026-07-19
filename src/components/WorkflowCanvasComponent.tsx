@@ -6,6 +6,7 @@ import {
 } from "../types/types";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { X, Eye, EyeOff, PanelLeftClose, PanelLeft } from "lucide-react";
+import { clamp } from "@rodrigo-barraza/utilities-library";
 import WorkflowNode from "./WorkflowNodeComponent";
 import StarfieldComponent from "./StarfieldComponent";
 import {
@@ -472,7 +473,7 @@ export default function WorkflowCanvas({
 
     const currentZoom = zoomRef.current;
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, currentZoom * delta));
+    const newZoom = clamp(currentZoom * delta, MIN_ZOOM, MAX_ZOOM);
     const ratio = newZoom / currentZoom;
 
     // Update ref synchronously so next wheel event sees the latest value

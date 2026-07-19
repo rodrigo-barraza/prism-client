@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { clamp } from "@rodrigo-barraza/utilities-library";
 import {
   Mic2,
   Volume2,
@@ -254,7 +255,7 @@ export default function AudioPlayerRecorderComponent({
         }
         const rms = Math.sqrt(sum / bufferLength);
         // Amplify heavily and add a small noise floor
-        const peak = Math.min(1, Math.max(0.05, rms * 8));
+        const peak = clamp(rms * 8, 0.05, 1);
 
         recPeaksRef.current.push(peak);
         if (recPeaksRef.current.length > maxBars) {
