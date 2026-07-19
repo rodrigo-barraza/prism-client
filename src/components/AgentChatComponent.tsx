@@ -604,10 +604,6 @@ export default function AgentChatComponent({
     null,
   );
 
-  // Empty conversation → show the ambient scene (unless the agent brings
-  // its own background image, or the user turned scenes off).
-  const showsChatBackgroundScene =
-    messages.length === 0 && !agentBackgroundImage && chatBackground !== "none";
   const inputValueRef = useRef<string>("");
   const [hasInput, setHasInput] = useState(false);
   const [draftInputLength, setDraftInputLength] = useState(0);
@@ -655,10 +651,20 @@ export default function AgentChatComponent({
     if (initialViewMode === "nodes") return "nodes";
     if (initialViewMode === "raw") return "raw";
     if (initialViewMode === "clean") return "clean";
+    if (initialViewMode === "terminal") return "terminal";
     // Minimal, friendly Chat view is the default.
     return "chat";
   });
   const showRaw = viewMode === "raw";
+  const isTerminalView = viewMode === "terminal";
+  // Empty conversation → show the ambient scene (unless the agent brings
+  // its own background image, the user turned scenes off, or the flat
+  // Terminal view is active).
+  const showsChatBackgroundScene =
+    messages.length === 0 &&
+    !agentBackgroundImage &&
+    chatBackground !== "none" &&
+    !isTerminalView;
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
   const toolDisplayMetadataMap = useMemo(() => {
     const map: Record<string, ToolDisplayMetadata> = {};
@@ -8101,8 +8107,13 @@ export default function AgentChatComponent({
   );
 
   // -- Center: chat area ---------------------------------------
+  // `chat-terminal-mode` is a global (non-module) class so the terminal
+  // skin in each child component's CSS module can scope under it via
+  // :global(.chat-terminal-mode).
   const chatContent = (
-    <div className={chatStyles['container']}>
+    <div
+      className={`${chatStyles['container']}${isTerminalView ? " chat-terminal-mode" : ""}`}
+    >
       {/* -- Chat header bar (always visible "New Conversation") -- */}
       <div className={chatStyles['chat-header']}>
         <div className={chatStyles['chat-header-title']}>
@@ -8207,7 +8218,7 @@ export default function AgentChatComponent({
               messages={filteredMessages}
               readOnly
               showRaw={showRaw}
-              minimal={viewMode === "chat"}
+              minimal={viewMode === "chat" || isTerminalView}
               activeAgent={resolvedConversationAgent}
               systemPrompt={
                 showRaw
@@ -8224,7 +8235,7 @@ export default function AgentChatComponent({
         </div>
       ) : (
       <div
-        className={`${chatStyles['messages-list']} ${agentBackgroundImage ? chatStyles['has-background'] : ""} ${showsChatBackgroundScene ? chatStyles['has-scene'] : ""} ${viewMode === "nodes" ? chatStyles['messages-list-hidden'] : ""}`}
+        className={`${chatStyles['messages-list']} ${agentBackgroundImage && !isTerminalView ? chatStyles['has-background'] : ""} ${showsChatBackgroundScene ? chatStyles['has-scene'] : ""} ${viewMode === "nodes" ? chatStyles['messages-list-hidden'] : ""}`}
         ref={messagesListRef}
         style={
           agentBackgroundImage
@@ -8262,7 +8273,7 @@ export default function AgentChatComponent({
         <MessageList
           messages={filteredMessages}
           showRaw={showRaw}
-          minimal={viewMode === "chat"}
+          minimal={viewMode === "chat" || isTerminalView}
           systemPrompt={showRaw ? (previewSystemPrompt || settings.systemPrompt) : undefined}
           onSystemPromptEdit={
             isNoAgent

@@ -349,3 +349,23 @@
 }
 
 
+
+/* ═══ Terminal view mode ═════════════════════════════════════ */
+/* Active under the global .chat-terminal-mode class stamped on the
+   chat container (see ChatAreaComponent.module.css for the palette). */
+
+:global(.chat-terminal-mode) .tool-calls-pill {
+  background: transparent;
+  border: 1px dashed var(--terminal-border);
+  border-radius: 0;
+  padding: 3px 10px;
+  font-family: var(--terminal-font, ui-monospace, monospace);
+  font-size: 11.5px;
+  letter-spacing: 0;
+  color: var(--terminal-amber);
+}
+
+:global(.chat-terminal-mode) .tool-calls-pill-active {
+  color: var(--terminal-text);
+  border-color: var(--terminal-amber);
+}

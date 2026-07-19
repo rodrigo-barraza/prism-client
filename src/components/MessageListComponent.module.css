@@ -1161,3 +1161,144 @@
     translate: 0 0;
   }
 }
+/* ═══ Terminal view mode ═════════════════════════════════════ */
+/* Scoped under the global .chat-terminal-mode class stamped on the
+   chat container while the Terminal view is active. Variables are
+   defined on that container in ChatAreaComponent.module.css. */
+
+:global(.chat-terminal-mode) .messages-list {
+  font-family: var(--terminal-font, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--terminal-text);
+  gap: 18px;
+}
+
+/* No avatars in a terminal — the role prefix glyph carries identity */
+:global(.chat-terminal-mode) .message {
+  gap: 0;
+}
+
+:global(.chat-terminal-mode) .message > .avatar {
+  display: none;
+}
+
+:global(.chat-terminal-mode) .content {
+  padding-top: 0;
+  gap: 4px;
+}
+
+/* Role labels rendered like shell prompt lines */
+:global(.chat-terminal-mode) .role-label {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--terminal-dim);
+}
+
+:global(.chat-terminal-mode) .role-label::before {
+  font-weight: 700;
+}
+
+:global(.chat-terminal-mode) .user-node .role-label {
+  color: var(--terminal-green);
+}
+
+:global(.chat-terminal-mode) .user-node .role-label::before {
+  content: "❯";
+}
+
+:global(.chat-terminal-mode) .assistant-node .role-label {
+  color: var(--terminal-cyan);
+}
+
+:global(.chat-terminal-mode) .assistant-node .role-label::before {
+  content: "⏺";
+}
+
+:global(.chat-terminal-mode) .system-node .role-label {
+  color: var(--terminal-amber);
+}
+
+:global(.chat-terminal-mode) .system-node .role-label::before {
+  content: "#";
+}
+
+:global(.chat-terminal-mode) .message-timestamp {
+  font-size: 10.5px;
+  color: var(--terminal-dim);
+  opacity: 0.75;
+}
+
+/* Markdown body: inherit the mono stack, flatten code surfaces */
+:global(.chat-terminal-mode) .messages-list :global(.markdown-content-component) {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: var(--terminal-text);
+}
+
+:global(.chat-terminal-mode) .messages-list :global(.markdown-content-component) pre {
+  background: var(--terminal-surface);
+  border: 1px solid var(--terminal-border);
+  border-radius: 0;
+}
+
+:global(.chat-terminal-mode) .messages-list :global(.markdown-content-component) code {
+  font-family: inherit;
+  border-radius: 0;
+}
+
+:global(.chat-terminal-mode) .messages-list :global(.markdown-content-component) a {
+  color: var(--terminal-cyan);
+}
+
+:global(.chat-terminal-mode) .messages-list :global(.markdown-content-component) blockquote {
+  border-inline-start: 2px solid var(--terminal-border);
+  color: var(--terminal-dim);
+}
+
+/* Compact status pills → bracketed terminal lines */
+:global(.chat-terminal-mode) .thinking-pill {
+  background: transparent;
+  border: 1px dashed var(--terminal-border);
+  border-radius: 0;
+  padding: 3px 10px;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--terminal-dim);
+}
+
+:global(.chat-terminal-mode) .thinking-pill-active {
+  color: var(--terminal-text);
+  border-color: var(--terminal-dim);
+}
+
+:global(.chat-terminal-mode) .message-image {
+  border-radius: 0;
+  border: 1px solid var(--terminal-border);
+}
+
+:global(.chat-terminal-mode) .error-block {
+  border-radius: 0;
+  font-family: inherit;
+}
+
+:global(.chat-terminal-mode) .termination-notice {
+  border-radius: 0;
+  background: var(--terminal-surface);
+  color: var(--terminal-dim);
+}
+
+/* Pinned (sticky) user message bar */
+:global(.chat-terminal-mode) .sticky-user-message {
+  background: var(--terminal-surface);
+  border: 1px solid var(--terminal-border);
+  border-radius: 0;
+  font-family: var(--terminal-font, ui-monospace, monospace);
+  color: var(--terminal-text);
+}

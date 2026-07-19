@@ -252,3 +252,46 @@
     opacity: 1;
   }
 }
+
+/* ═══ Terminal view mode ═════════════════════════════════════ */
+/* Token estimator restyled as a terminal readout. Active under the
+   global .chat-terminal-mode class stamped on the chat container
+   (see ChatAreaComponent.module.css for the palette). */
+
+:global(.chat-terminal-mode) .context-budget-indicator {
+  font-family: var(--terminal-font, ui-monospace, monospace);
+  --free-color: var(--terminal-border);
+}
+
+:global(.chat-terminal-mode) .context-budget-header,
+:global(.chat-terminal-mode) .legend-item {
+  color: var(--terminal-dim);
+}
+
+:global(.chat-terminal-mode) .context-budget-usage {
+  color: var(--terminal-green);
+}
+
+:global(.chat-terminal-mode) .context-budget-bar {
+  height: 8px;
+  border-radius: 0;
+  border: 1px solid var(--terminal-border);
+  background: var(--terminal-surface);
+}
+
+:global(.chat-terminal-mode) .context-budget-bar > div,
+:global(.chat-terminal-mode) .context-budget-bar > div:first-child {
+  border-radius: 0;
+}
+
+:global(.chat-terminal-mode) .legend-dot {
+  border-radius: 0;
+  width: 6px;
+  height: 6px;
+}
+
+:global(.chat-terminal-mode) .context-budget-source-badge,
+:global(.chat-terminal-mode) .context-budget-clamped-badge {
+  border-radius: 0;
+  font-family: inherit;
+}

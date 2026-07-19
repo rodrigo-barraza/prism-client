@@ -1,10 +1,10 @@
 "use client";
 
-import { MessageSquare, Network } from "lucide-react";
+import { MessageSquare, Network, SquareTerminal } from "lucide-react";
 import { SegmentedControlComponent } from "@rodrigo-barraza/components-library";
 import chatStyles from "./ChatAreaComponent.module.css";
 
-export type ChatViewMode = "chat" | "clean" | "raw" | "nodes";
+export type ChatViewMode = "chat" | "clean" | "terminal" | "raw" | "nodes";
 
 interface ChatViewModeControlComponentProps {
   viewMode: ChatViewMode;
@@ -24,6 +24,7 @@ export default function ChatViewModeControlComponent({
         segments={[
           { value: "chat", icon: <MessageSquare size={12} />, label: "Chat" },
           { value: "clean", label: "Clean" },
+          { value: "terminal", icon: <SquareTerminal size={12} />, label: "Terminal" },
           { value: "raw", label: "Raw" },
           { value: "nodes", icon: <Network size={12} />, label: "Nodes" },
         ]}
