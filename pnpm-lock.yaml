@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@rodrigo-barraza/components-library':
         specifier: github:rodrigo-barraza/components-library
-        version: https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/625d8edf9eeba604d773bc50a190c5dd4f1400e3(lucide-react@1.24.0(react@19.2.7))(luxon@3.7.2)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/7da614b914cd10490f93fa77644e2a72fdfb5d9f(@types/react@19.2.17)(lucide-react@1.24.0(react@19.2.7))(luxon@3.7.2)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@rodrigo-barraza/utilities-library':
         specifier: github:rodrigo-barraza/utilities-library
         version: https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/772feb4cfa8721c3e3eb9164a0b1b6866d262ed1
@@ -624,14 +624,23 @@ packages:
       react-redux:
         optional: true
 
-  '@rodrigo-barraza/components-library@https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/625d8edf9eeba604d773bc50a190c5dd4f1400e3':
-    resolution: {gitHosted: true, integrity: sha512-OOL9NZVPAKHdCGenSZJD2d+p+1zHfweGxERFa6vbVDpVP+6gUa66rWy8A0ZWzCOyWdfYEMTwtFJ1v3WVClQ2Wg==, tarball: https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/625d8edf9eeba604d773bc50a190c5dd4f1400e3}
+  '@rodrigo-barraza/components-library@https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/7da614b914cd10490f93fa77644e2a72fdfb5d9f':
+    resolution: {gitHosted: true, integrity: sha512-pMOCEDuDoNUpEHCncbcG1LjfSU3fMfJBnV8J9hUdDWT1nClRlDzYL4GwArK50RG4jIOFIO66THhOMK888eFbqw==, tarball: https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/7da614b914cd10490f93fa77644e2a72fdfb5d9f}
     version: 0.2.0
     peerDependencies:
       lucide-react: '>=0.300.0'
       luxon: '>=3.0.0'
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
+
+  '@rodrigo-barraza/utilities-library@https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/0ef937e0571adb7c82aabfb5b1f7b2b2597a4fed':
+    resolution: {gitHosted: true, integrity: sha512-h8ag9yEkOxLBhPNrfVDVnhhLNwnVVYDKhVLD9vTP4PLVKiRH4FmzPa2uK7X4Un91oaS+o/F8gXhQXAkd4jRbuA==, tarball: https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/0ef937e0571adb7c82aabfb5b1f7b2b2597a4fed}
+    version: 0.6.0
+    peerDependencies:
+      express: '>=5.0.0'
+    peerDependenciesMeta:
+      express:
+        optional: true
 
   '@rodrigo-barraza/utilities-library@https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/772feb4cfa8721c3e3eb9164a0b1b6866d262ed1':
     resolution: {gitHosted: true, tarball: https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/772feb4cfa8721c3e3eb9164a0b1b6866d262ed1}
@@ -3718,17 +3727,39 @@ snapshots:
       react: 19.2.7
       react-redux: 9.3.0(@types/react@19.2.17)(react@19.2.7)(redux@5.0.1)
 
-  '@rodrigo-barraza/components-library@https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/625d8edf9eeba604d773bc50a190c5dd4f1400e3(lucide-react@1.24.0(react@19.2.7))(luxon@3.7.2)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@rodrigo-barraza/components-library@https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/7da614b914cd10490f93fa77644e2a72fdfb5d9f(@types/react@19.2.17)(lucide-react@1.24.0(react@19.2.7))(luxon@3.7.2)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
-      '@rodrigo-barraza/utilities-library': https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/772feb4cfa8721c3e3eb9164a0b1b6866d262ed1
+      '@rodrigo-barraza/utilities-library': https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/0ef937e0571adb7c82aabfb5b1f7b2b2597a4fed
+      katex: 0.17.0
       lucide-react: 1.24.0(react@19.2.7)
       luxon: 3.7.2
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
+      react-markdown: 10.1.0(@types/react@19.2.17)(react@19.2.7)
+      react-syntax-highlighter: 16.1.1(react@19.2.7)
+      rehype-katex: 7.0.1
+      remark-gfm: 4.0.1
+      remark-math: 6.0.0
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
       - '@mongodb-js/zstd'
+      - '@types/react'
       - express
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+      - supports-color
+
+  '@rodrigo-barraza/utilities-library@https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/0ef937e0571adb7c82aabfb5b1f7b2b2597a4fed':
+    dependencies:
+      mongodb: 7.5.0
+      nanoid: 5.1.16
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
       - gcp-metadata
       - kerberos
       - mongodb-client-encryption

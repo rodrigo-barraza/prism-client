@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { ChevronRight, Check, XCircle, FileText } from "lucide-react";
-import MarkdownContent from "../MarkdownContentComponent";
+import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
 import JsonViewerComponent from "../JsonViewerComponent";
 import { ToolArgs } from "./types";
 import styles from "./ToolResultRenderersComponent.module.css";

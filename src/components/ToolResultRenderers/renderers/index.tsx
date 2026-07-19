@@ -9,7 +9,7 @@ import { RawResultToggle } from "../SharedComponents";
 import { getResultDisplay, getCodeDisplayText } from "../utils";
 import { AutoResizeToolEmbed } from "./BrowserMediaAndVisualRenderers";
 import PrismService from "../../../services/PrismService";
-import MarkdownContent from "../../MarkdownContentComponent";
+import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
 import type { ArtifactItem } from "../../../types/types";
 import styles from "../ToolResultRenderersComponent.module.css";
 import React from "react";

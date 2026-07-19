@@ -32,7 +32,7 @@ import { FEEDBACK_STANDARD_MILLISECONDS } from "@rodrigo-barraza/utilities-libra
 
 import { LoadingMessage } from "./StateMessageComponent";
 import { usePersistedState } from "../hooks/usePersistedState";
-import MarkdownContent from "./MarkdownContentComponent";
+import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
 import { LOCAL_STORAGE_KEY_PROMPTS_VIEW_MODE } from "../constants";
 import styles from "./PromptsPageComponent.module.css";
 

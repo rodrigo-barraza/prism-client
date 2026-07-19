@@ -32,9 +32,9 @@ import {
   getResultDisplay,
   substituteToolOutputTokens,
 } from "./ToolResultRenderers/utils";
-import MarkdownContent from "./MarkdownContentComponent";
-import StreamingCursorComponent from "./StreamingCursorComponent";
-import { splitStreamingTail } from "../utils/streamingText";
+import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
+import { StreamingCursorComponent } from "@rodrigo-barraza/components-library";
+import { splitStreamingTail } from "@rodrigo-barraza/components-library";
 
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 

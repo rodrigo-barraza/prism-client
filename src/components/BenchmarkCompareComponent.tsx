@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { formatCost, formatLatency } from "@rodrigo-barraza/utilities-library";
 import { SegmentedControlComponent } from "@rodrigo-barraza/components-library";
-import MarkdownContentComponent from "./MarkdownContentComponent";
+import { MarkdownContentComponent } from "@rodrigo-barraza/components-library";
 import type { BenchmarkRunResult } from "../types/types";
 import styles from "./BenchmarkCompareComponent.module.css";
 

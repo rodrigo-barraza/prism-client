@@ -19,7 +19,7 @@ import ProviderLogo from "./ProviderLogosComponent";
 import { MODALITY_ICONS } from "./WorkflowNodeConstantsComponent";
 import { renderToolName } from "@rodrigo-barraza/utilities-library";
 import { copyToClipboard } from "../utils/utilities";
-import MarkdownContent from "./MarkdownContentComponent";
+import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
 import TextContentComponent from "./TextContentComponent";
 import MessageList from "./MessageListComponent";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";

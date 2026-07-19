@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Trash2, History } from "lucide-react";
 import PrismService from "../services/PrismService";
-import MarkdownContent from "./MarkdownContentComponent";
+import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
 import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
 import { AutoResizeToolEmbed } from "./ToolResultRenderers/renderers/BrowserMediaAndVisualRenderers";
 import { ArtifactKindIcon } from "./ArtifactsPageComponent";

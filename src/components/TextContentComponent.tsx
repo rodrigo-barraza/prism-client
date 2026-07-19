@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { Code, BookOpen } from "lucide-react";
-import MarkdownContent from "./MarkdownContentComponent";
+import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
 import { TextAreaComponent } from "@rodrigo-barraza/components-library";
 import styles from "./TextContentComponent.module.css";
 

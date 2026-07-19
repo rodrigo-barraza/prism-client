@@ -1,7 +1,7 @@
 "use client";
 
 import { Wrench, Trash2 } from "lucide-react";
-import MarkdownContent from "./MarkdownContentComponent";
+import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
 
 import { formatDuration } from "@rodrigo-barraza/utilities-library";
 import styles from "./SubAgentNotificationComponent.module.css";
