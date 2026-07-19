@@ -219,10 +219,10 @@ describe("fileIntake", () => {
       expect(filter).toContain(".heif");
     });
 
-    it("includes text/code extensions and MIMEs for the document modality", () => {
+    it("includes office extensions for the document modality and textual ones always", () => {
       const filter = buildAcceptFilter(new Set(["document"]));
-      expect(filter).toContain(".docx,.doc,.xlsx,.xls,.csv,.tsv");
-      for (const extension of [".txt", ".md", ".json", ".yaml", ".py", ".sh", ".sql", ".log"]) {
+      expect(filter).toContain(".docx,.doc,.xlsx,.xls");
+      for (const extension of [".csv", ".tsv", ".txt", ".md", ".json", ".yaml", ".py", ".sh", ".sql", ".log"]) {
         expect(filter.split(",")).toContain(extension);
       }
       expect(filter).toContain("text/plain");
@@ -230,12 +230,23 @@ describe("fileIntake", () => {
       expect(filter).toContain("application/json");
     });
 
-    it("omits filters for unsupported modalities", () => {
+    it("omits binary filters for unsupported modalities but keeps textual files", () => {
       const filter = buildAcceptFilter(new Set(["audio", "pdf"]));
       expect(filter).toContain("audio/*");
       expect(filter).toContain(".pdf,application/pdf");
       expect(filter).not.toContain("image/*");
-      expect(filter.split(",")).not.toContain(".py");
+      expect(filter).not.toContain(".docx");
+      // Text/code files are universally supported — always offered.
+      expect(filter.split(",")).toContain(".py");
+      expect(filter.split(",")).toContain(".csv");
+    });
+
+    it("offers textual files even with no supported modalities", () => {
+      const filter = buildAcceptFilter(new Set());
+      expect(filter.split(",")).toContain(".py");
+      expect(filter).toContain("text/plain");
+      expect(filter).not.toContain("image/*");
+      expect(filter).not.toContain(".docx");
     });
   });
 });

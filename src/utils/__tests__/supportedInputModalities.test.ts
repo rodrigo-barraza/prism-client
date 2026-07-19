@@ -108,7 +108,8 @@ describe("Client-side Input Modalities logic", () => {
 
     expect(filter).toContain("image/*");
     expect(filter).toContain(".pdf,application/pdf");
-    expect(filter).toContain(".docx,.doc,.xlsx,.xls,.csv,.tsv");
+    expect(filter).toContain(".docx,.doc,.xlsx,.xls");
+    expect(filter.split(",")).toContain(".csv");
     // Text/code widening + explicit image extensions
     expect(filter.split(",")).toContain(".py");
     expect(filter.split(",")).toContain(".svg");

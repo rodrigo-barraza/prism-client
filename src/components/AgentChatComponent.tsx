@@ -153,6 +153,7 @@ import {
   buildAcceptFilter,
   classifyIntakeFile,
   getTextualFileKind,
+  isUniversallyReadableMime,
   normalizeDataUrlMimeType,
 } from "../utils/fileIntake";
 import { shouldOpenSubAgentLiveStream } from "../utils/subAgentLiveStreamGate";
@@ -1417,7 +1418,15 @@ export default function AgentChatComponent({
       const modelDef = models.find(
         (model: ModelOption) => model.name === settings.model,
       ) as (ModelOption & { inputTypes?: string[] }) | undefined;
-      if (modelDef?.inputTypes?.includes("image")) modalities.add("image");
+      // Honor every attachment-capable modality the model declares —
+      // e.g. Gemini models list audio/video/pdf alongside image.
+      // ("text" is not an attachment modality; office documents stay
+      // tool-gated via inputModalities below.)
+      for (const inputType of modelDef?.inputTypes ?? []) {
+        if (["image", "audio", "video", "pdf"].includes(inputType)) {
+          modalities.add(inputType);
+        }
+      }
     }
     // Tool-level modality support (from enabled tools)
     for (const tool of builtInTools) {
@@ -3768,7 +3777,7 @@ export default function AgentChatComponent({
         routeFileToState(file, modality, mimeType);
       }
     },
-    [classifyFileModality, supportedInputModalities, addToast, routeFileToState],
+    [classifyFileModality, attachmentKindsLabel, addToast, routeFileToState],
   );
 
   const handleFileSelect = useCallback(
@@ -8913,7 +8922,7 @@ export default function AgentChatComponent({
                 />
                 <ChatInputButton
                   onClick={() => fileInputRef.current?.click()}
-                  label={`Attach files (${[...supportedInputModalities].join(", ")})`}
+                  label={`Attach files (${attachmentKindsLabel})`}
                   icon="paperclip"
                   uploadTypes={
                     activeUploadTypes.length > 1
