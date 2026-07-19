@@ -362,6 +362,8 @@ export interface Message {
   _liveGenProgress?: {
     outputTokens?: number;
     tokensPerSecond?: number;
+    /** Live server-estimated cost of the in-flight generation (USD) */
+    estimatedCost?: number | null;
   };
   _streamingStartTime?: number;
   _streamingLastChunkTime?: number;
@@ -2207,6 +2209,8 @@ export interface LiveConversationStatus {
   outputTokens: number;
   inputTokens: number;
   totalTokens: number;
+  /** Live server-estimated cost of the in-flight generation (USD). */
+  estimatedCost?: number;
   subAgents: Record<string, LiveSubAgentStatus>;
 }
 

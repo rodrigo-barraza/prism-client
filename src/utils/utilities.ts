@@ -483,12 +483,17 @@ export function resolveConversationCost(
   const backgroundCost = backgroundUsage?.cost || 0;
 
   // activeMessageCost is included only if backend stats are known to be stale
-  // (e.g. during or immediately after a turn before the next polling tick)
+  // (e.g. during or immediately after a turn before the next polling tick).
+  // Prefer whichever live signal is highest: the streaming tracker estimate
+  // (_liveGenProgress, updates continuously mid-generation), the per-iteration
+  // usage_update cost, or the final message cost.
   const activeMessageCost =
     activeMessage?.role === "assistant" && isStale
-      ? activeMessage.estimatedCost ||
-        activeMessage._intermediateEstimatedCost ||
-        0
+      ? Math.max(
+          activeMessage.estimatedCost || 0,
+          activeMessage._liveGenProgress?.estimatedCost || 0,
+          activeMessage._intermediateEstimatedCost || 0,
+        )
       : 0;
 
   return backendCost + backgroundCost + activeMessageCost;

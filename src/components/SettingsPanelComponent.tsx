@@ -508,70 +508,42 @@ export default function SettingsPanel({
           const hasCachedTokens = cacheRead + cacheWrite > 0;
           const uncachedInputTokens = Math.max(0, stats.totalTokens.input - cacheRead - cacheWrite);
           const reasoning = stats.totalTokens.reasoning || 0;
-          const outputTokens = stats.totalTokens.output || 0;
 
-          let inputTokensLabel = "tokens in";
-          if (hasCachedTokens) {
-            const labelParts = [];
-            if (uncachedInputTokens) {
-              labelParts.push(`${uncachedInputTokens.toLocaleString()} new`);
-            }
-            if (cacheRead) {
-              labelParts.push(`${cacheRead.toLocaleString()} read`);
-            }
-            if (cacheWrite) {
-              labelParts.push(`${cacheWrite.toLocaleString()} write`);
-            }
-            inputTokensLabel = `tokens in (${labelParts.join(" · ")})`;
-          }
-
-          let outputTokensLabel = "tokens out";
-          if (reasoning > 0) {
-            outputTokensLabel = `tokens out (${reasoning.toLocaleString()} reasoning)`;
-          }
-
-          let totalTokensLabel = "tokens total";
-          if (hasCachedTokens || reasoning > 0) {
-            const labelParts = [];
-            if (uncachedInputTokens) {
-              labelParts.push(`${uncachedInputTokens.toLocaleString()} new`);
-            }
-            if (cacheRead) {
-              labelParts.push(`${cacheRead.toLocaleString()} read`);
-            }
-            if (cacheWrite) {
-              labelParts.push(`${cacheWrite.toLocaleString()} write`);
-            }
-            if (outputTokens) {
-              if (reasoning > 0) {
-                const nonReasoningOutput = Math.max(0, outputTokens - reasoning);
-                if (nonReasoningOutput > 0) {
-                  labelParts.push(`${nonReasoningOutput.toLocaleString()} out`);
-                }
-                labelParts.push(`${reasoning.toLocaleString()} reasoning`);
-              } else {
-                labelParts.push(`${outputTokens.toLocaleString()} out`);
-              }
-            }
-            totalTokensLabel = `tokens total (${labelParts.join(" · ")})`;
-          }
-
+          // Each token category gets its own compact badge instead of one
+          // wide parenthetical label. Breakdown badges (new / cache read /
+          // cache write / reasoning) only render when they carry a value.
           return (
             <>
               <BadgeComponent
                 type="tokens"
                 value={stats.totalTokens.input}
-                label={inputTokensLabel}
+                label="tokens in"
               />
+              {hasCachedTokens && uncachedInputTokens > 0 && (
+                <BadgeComponent
+                  type="tokens"
+                  value={uncachedInputTokens}
+                  label="new"
+                />
+              )}
+              {cacheRead > 0 && (
+                <BadgeComponent type="tokens" value={cacheRead} label="cache read" />
+              )}
+              {cacheWrite > 0 && (
+                <BadgeComponent type="tokens" value={cacheWrite} label="cache write" />
+              )}
               <BadgeComponent
                 type="tokens"
                 value={stats.totalTokens.output}
-                label={outputTokensLabel}
+                label="tokens out"
               />
+              {reasoning > 0 && (
+                <BadgeComponent type="tokens" value={reasoning} label="reasoning" />
+              )}
               <BadgeComponent
                 type="tokens"
                 value={stats.totalTokens.total}
-                label={totalTokensLabel}
+                label="tokens total"
               />
             </>
           );

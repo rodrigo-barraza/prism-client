@@ -489,6 +489,8 @@ interface ClientMessage extends Message {
     activeRequests?: number;
     totalTokens?: number;
     avgTtft?: number;
+    /** Live server-estimated cost of the in-flight generation (USD) */
+    estimatedCost?: number | null;
     timestamp?: number;
   };
   _fromSnapshot?: boolean;
@@ -4648,12 +4650,21 @@ export default function AgentChatComponent({
                   updated[updated.length - 1] = {
                     ...last,
                     _liveGenProgress: {
-                      tokensPerSecond: (statusData as any).tokensPerSecond,
+                      // Server emits `tokPerSec`; accept the legacy alias too.
+                      tokensPerSecond:
+                        (statusData as any).tokPerSec ??
+                        (statusData as any).tokensPerSecond,
                       activeRequests: (statusData as any).activeRequests,
                       outputTokens: (statusData as any).outputTokens,
                       inputTokens: (statusData as any).inputTokens,
                       totalTokens: (statusData as any).totalTokens,
                       avgTtft: (statusData as any).avgTtft,
+                      // Live server-estimated cost — monotonic per turn (server
+                      // emits a high-water mark). Keep the previous value when a
+                      // frame arrives without one.
+                      estimatedCost:
+                        (statusData as any).estimatedCost ??
+                        last._liveGenProgress?.estimatedCost,
                       timestamp: performance.now(),
                     },
                   };
@@ -5020,7 +5031,11 @@ export default function AgentChatComponent({
                           (data as any).outputTokens ||
                           existing.totalOutputTokens,
                         // Per-sub-agent tok/s from burst counters
-                        tokensPerSecond: (data as any).tokensPerSecond ?? existing.tokensPerSecond,
+                        // (server emits `tokPerSec`; accept the legacy alias)
+                        tokensPerSecond:
+                          (data as any).tokPerSec ??
+                          (data as any).tokensPerSecond ??
+                          existing.tokensPerSecond,
                         ...((data as any).inputTokens != null && {
                           inputTokens: (data as any).inputTokens,
                         }),
@@ -6296,6 +6311,10 @@ export default function AgentChatComponent({
           startedAt?: string;
           phaseStartedAt?: string;
           tokensPerSecond?: number | null;
+          outputTokens?: number;
+          inputTokens?: number;
+          totalTokens?: number;
+          estimatedCost?: number;
           subAgents?: Record<string, SubStatus>;
         }
         const fullRecord = full as unknown as Record<string, unknown>;
@@ -6330,6 +6349,20 @@ export default function AgentChatComponent({
               displayMessages[displayMessages.length - 1] = {
                 ...lastDisplayMessage,
                 statusPhase: liveStatus.phase,
+                // Rehydrate live token/cost progress from the status registry
+                // so the stats badges resume mid-generation after a refresh
+                // instead of sitting at zero until the next progress frame.
+                ...(liveStatus.totalTokens || liveStatus.estimatedCost
+                  ? {
+                      _liveGenProgress: {
+                        tokensPerSecond: liveStatus.tokensPerSecond ?? undefined,
+                        outputTokens: liveStatus.outputTokens,
+                        inputTokens: liveStatus.inputTokens,
+                        totalTokens: liveStatus.totalTokens,
+                        estimatedCost: liveStatus.estimatedCost,
+                      },
+                    }
+                  : {}),
               } as ClientMessage;
             }
           }
@@ -7675,11 +7708,19 @@ export default function AgentChatComponent({
                       // (memory extraction, consolidation) as they complete.
                       // When done, use backendConversationStats which includes everything.
                       const lastMessage = messages[messages.length - 1];
+                      // Live cost signals for the in-flight turn, best first:
+                      // _liveGenProgress.estimatedCost streams continuously from
+                      // the tracker (covers orchestrator + sub-agents + tool
+                      // sub-requests, all providers); usage_update and the final
+                      // message cost arrive at iteration/turn boundaries. Take
+                      // the max so the badge ticks live and never regresses.
                       const activeMessageCost =
                         lastMessage?.role === "assistant" && isBackendStatsStale
-                          ? lastMessage.estimatedCost ||
-                            lastMessage._intermediateEstimatedCost ||
-                            0
+                          ? Math.max(
+                              lastMessage.estimatedCost || 0,
+                              lastMessage._liveGenProgress?.estimatedCost || 0,
+                              lastMessage._intermediateEstimatedCost || 0,
+                            )
                           : 0;
                       const liveGP =
                         lastMessage?.role === "assistant"
@@ -7879,7 +7920,16 @@ export default function AgentChatComponent({
                         })(),
                         totalCost:
                           (totalCost as number) +
-                          ((bgUsage?.cost || 0) as number),
+                          ((bgUsage?.cost || 0) as number) +
+                          // Live in-flight turn cost — the conversation doc's
+                          // totalCost only updates once the turn persists.
+                          (lastMessage?.role === "assistant"
+                            ? Math.max(
+                                lastMessage.estimatedCost || 0,
+                                (gp as any)?.estimatedCost || 0,
+                                lastMessage._intermediateEstimatedCost || 0,
+                              )
+                            : 0),
                         originalTotalCost: 0,
                         // No backend stats yet — use client-derived tool counts as fallback
                         usedTools: buildUnifiedToolCounts(

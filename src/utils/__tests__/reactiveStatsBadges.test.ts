@@ -133,3 +133,59 @@ describe("Session cost consistency between sidebar and settings panel", () => {
     expect(resolvedCost).toBe(statsTotalCost);
   });
 });
+
+describe("Live streaming cost (generation_progress estimatedCost)", () => {
+  const bgUsage = { cost: 0.05 };
+
+  it("includes the live tracker estimate while the turn streams (no usage yet)", () => {
+    const streamingMessage = {
+      role: "assistant",
+      _liveGenProgress: { estimatedCost: 0.12 },
+    } as unknown as Message;
+
+    const resolvedCost = resolveConversationCost(
+      { totalCost: 0.5 },
+      bgUsage,
+      streamingMessage,
+      true,
+    );
+
+    expect(resolvedCost).toBeCloseTo(0.5 + 0.05 + 0.12, 8);
+  });
+
+  it("takes the max of live estimate and per-iteration usage_update cost", () => {
+    const streamingMessage = {
+      role: "assistant",
+      _intermediateEstimatedCost: 0.10,
+      // Tracker estimate is higher — it also covers sub-agents and the
+      // in-flight iteration, so it wins.
+      _liveGenProgress: { estimatedCost: 0.18 },
+    } as unknown as Message;
+
+    const resolvedCost = resolveConversationCost(
+      { totalCost: 0.5 },
+      bgUsage,
+      streamingMessage,
+      true,
+    );
+
+    expect(resolvedCost).toBeCloseTo(0.5 + 0.05 + 0.18, 8);
+  });
+
+  it("ignores the live estimate once backend stats are fresh", () => {
+    const completedMessage = {
+      role: "assistant",
+      estimatedCost: 0.2,
+      _liveGenProgress: { estimatedCost: 0.18 },
+    } as unknown as Message;
+
+    const resolvedCost = resolveConversationCost(
+      { totalCost: 0.75 },
+      bgUsage,
+      completedMessage,
+      false,
+    );
+
+    expect(resolvedCost).toBeCloseTo(0.75 + 0.05, 8);
+  });
+});
