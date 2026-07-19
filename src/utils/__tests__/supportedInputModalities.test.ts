@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import type { ToolSchema as ToolOption, PrismConfig as FilteredConfig } from "../../types/types";
+import { buildAcceptFilter, classifyIntakeFile } from "../fileIntake";
 
 function computeSupportedInputModalities(
   filteredConfig: Partial<FilteredConfig> | null,
@@ -33,55 +34,21 @@ function computeSupportedInputModalities(
   return modalities;
 }
 
-function computeAcceptFilter(supportedInputModalities: Set<string>): string {
-  const filters: string[] = [];
-  if (supportedInputModalities.has("image")) {
-    filters.push("image/*");
+/**
+ * Mirrors the component-level gate in AgentChatComponent: classify via
+ * the shared util, then reject files whose modality the active model
+ * does not support.
+ */
+function classifyFileModality(
+  fileName: string,
+  mimeType: string,
+  supportedInputModalities: Set<string>
+): string | null {
+  const classification = classifyIntakeFile(fileName, mimeType);
+  if (!classification || !supportedInputModalities.has(classification.modality)) {
+    return null;
   }
-  if (supportedInputModalities.has("audio")) {
-    filters.push("audio/*");
-  }
-  if (supportedInputModalities.has("video")) {
-    filters.push("video/*");
-  }
-  if (supportedInputModalities.has("pdf")) {
-    filters.push(".pdf,application/pdf");
-  }
-  if (supportedInputModalities.has("document")) {
-    filters.push(
-      ".docx,.doc,.xlsx,.xls,.csv,.tsv,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
-    );
-  }
-  return filters.join(",");
-}
-
-function classifyFileModality(mimeType: string, supportedInputModalities: Set<string>): string | null {
-  if (mimeType.startsWith("image/") && supportedInputModalities.has("image")) {
-    return "image";
-  }
-  if (mimeType.startsWith("audio/") && supportedInputModalities.has("audio")) {
-    return "audio";
-  }
-  if (mimeType.startsWith("video/") && supportedInputModalities.has("video")) {
-    return "video";
-  }
-  if (mimeType === "application/pdf" && supportedInputModalities.has("pdf")) {
-    return "pdf";
-  }
-
-  const documentMimeTypes = [
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "application/vnd.ms-excel",
-    "text/csv",
-    "text/tab-separated-values",
-  ];
-  if (documentMimeTypes.includes(mimeType) && supportedInputModalities.has("document")) {
-    return "document";
-  }
-
-  return null;
+  return classification.modality;
 }
 
 describe("Client-side Input Modalities logic", () => {
@@ -137,11 +104,15 @@ describe("Client-side Input Modalities logic", () => {
 
   it("correctly computes file picker accept filters based on modalities", () => {
     const modalities = new Set(["image", "pdf", "document"]);
-    const filter = computeAcceptFilter(modalities);
+    const filter = buildAcceptFilter(modalities);
 
     expect(filter).toContain("image/*");
     expect(filter).toContain(".pdf,application/pdf");
     expect(filter).toContain(".docx,.doc,.xlsx,.xls,.csv,.tsv");
+    // Text/code widening + explicit image extensions
+    expect(filter.split(",")).toContain(".py");
+    expect(filter.split(",")).toContain(".svg");
+    expect(filter).toContain("text/plain");
     expect(filter).not.toContain("audio/*");
     expect(filter).not.toContain("video/*");
   });
@@ -150,11 +121,22 @@ describe("Client-side Input Modalities logic", () => {
     const supportedModalities = new Set(["audio", "pdf"]);
 
     // Supported
-    expect(classifyFileModality("audio/mpeg", supportedModalities)).toBe("audio");
-    expect(classifyFileModality("application/pdf", supportedModalities)).toBe("pdf");
+    expect(classifyFileModality("song.mp3", "audio/mpeg", supportedModalities)).toBe("audio");
+    expect(classifyFileModality("paper.pdf", "application/pdf", supportedModalities)).toBe("pdf");
 
     // Unsupported because not in the set
-    expect(classifyFileModality("image/png", supportedModalities)).toBeNull();
-    expect(classifyFileModality("text/csv", supportedModalities)).toBeNull();
+    expect(classifyFileModality("photo.png", "image/png", supportedModalities)).toBeNull();
+    expect(classifyFileModality("table.csv", "text/csv", supportedModalities)).toBeNull();
+  });
+
+  it("gates extension-fallback classification on the supported set too", () => {
+    // .py falls back to the document modality — only allowed when the
+    // model supports documents.
+    expect(classifyFileModality("main.py", "", new Set(["document"]))).toBe("document");
+    expect(classifyFileModality("main.py", "", new Set(["image"]))).toBeNull();
+    // .svg falls back to image even with a generic MIME
+    expect(
+      classifyFileModality("logo.svg", "application/octet-stream", new Set(["image"]))
+    ).toBe("image");
   });
 });

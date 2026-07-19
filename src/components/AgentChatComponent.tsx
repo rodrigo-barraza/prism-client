@@ -16,6 +16,7 @@ import {
   FolderOpen,
   Plus,
   ShieldCheck,
+  FileCode,
   FileText,
   FileSpreadsheet,
   Volume2,
@@ -148,6 +149,12 @@ import requestsTableStyles from "./RequestsTableComponent.module.css";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 import useProjectFilter from "../hooks/useProjectFilter";
 import { getErrorMessage } from "../utils/errorMessage";
+import {
+  buildAcceptFilter,
+  classifyIntakeFile,
+  getTextualFileKind,
+  normalizeDataUrlMimeType,
+} from "../utils/fileIntake";
 import { shouldOpenSubAgentLiveStream } from "../utils/subAgentLiveStreamGate";
 import {
   shouldApplySnapshotRefresh,
@@ -1437,19 +1444,10 @@ export default function AgentChatComponent({
       .filter(Boolean);
   }, [supportedInputModalities]);
 
-  const acceptFilter = useMemo(() => {
-    const filters: string[] = [];
-    if (supportedInputModalities.has("image")) filters.push("image/*");
-    if (supportedInputModalities.has("audio")) filters.push("audio/*");
-    if (supportedInputModalities.has("video")) filters.push("video/*");
-    if (supportedInputModalities.has("pdf"))
-      filters.push(".pdf,application/pdf");
-    if (supportedInputModalities.has("document"))
-      filters.push(
-        ".docx,.doc,.xlsx,.xls,.csv,.tsv,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv",
-      );
-    return filters.join(",");
-  }, [supportedInputModalities]);
+  const acceptFilter = useMemo(
+    () => buildAcceptFilter(supportedInputModalities),
+    [supportedInputModalities],
+  );
 
   // -- Session binding: lock model/agent when a conversation is active --
   // Once a conversation has messages, the user should not switch model or agent
@@ -3662,39 +3660,45 @@ export default function AgentChatComponent({
   );
 
   // -- File/image handlers --------------------------------------
+  // MIME → modality classification with an extension fallback for the
+  // odd/empty MIME types browsers report for code and config files
+  // (see utils/fileIntake). Returns the modality plus the effective
+  // MIME type — normalized from the fallback table when the browser's
+  // was generic — or null when the active model can't take the file.
   const classifyFileModality = useCallback(
-    (mimeType: string): string | null => {
-      if (mimeType.startsWith("image/") && supportedInputModalities.has("image")) return "image";
-      if (mimeType.startsWith("audio/") && supportedInputModalities.has("audio")) return "audio";
-      if (mimeType.startsWith("video/") && supportedInputModalities.has("video")) return "video";
-      if (mimeType === "application/pdf" && supportedInputModalities.has("pdf")) return "pdf";
-      const documentMimeTypes = [
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "application/vnd.ms-excel",
-        "text/csv",
-        "text/tab-separated-values",
-      ];
-      if (documentMimeTypes.includes(mimeType) && supportedInputModalities.has("document")) return "document";
-      return null;
+    (file: { name: string; type: string }) => {
+      const classification = classifyIntakeFile(file.name, file.type);
+      if (
+        !classification ||
+        !supportedInputModalities.has(classification.modality)
+      ) {
+        return null;
+      }
+      return classification;
     },
     [supportedInputModalities],
   );
 
   const routeFileToState = useCallback(
-    (file: globalThis.File, modality: string) => {
+    (file: globalThis.File, modality: string, mimeType: string) => {
       const reader = new FileReader();
       reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
         if (!readerEvent.target?.result) return;
-        const dataUrl = readerEvent.target.result as string;
+        // Rewrite generic data-URL MIMEs (application/octet-stream,
+        // empty) to the effective type — the server upload allowlist
+        // blocks octet-stream by design and relies on the client
+        // normalizing. The original filename rides on the attachment.
+        const dataUrl = normalizeDataUrlMimeType(
+          readerEvent.target.result as string,
+          mimeType,
+        );
 
         if (modality === "image") {
           setPendingImages((previous) => [...previous, dataUrl]);
         } else {
           setPendingFiles((previous) => [
             ...previous,
-            { name: file.name, mimeType: file.type, dataUrl, modality },
+            { name: file.name, mimeType, dataUrl, modality },
           ]);
         }
       };
@@ -3713,8 +3717,8 @@ export default function AgentChatComponent({
       let totalAttachments =
         pendingImagesRef.current.length + pendingFilesRef.current.length;
       for (const file of incomingFiles) {
-        const modality = classifyFileModality(file.type);
-        if (!modality) {
+        const classification = classifyFileModality(file);
+        if (!classification) {
           const supportedLabels = [...supportedInputModalities]
             .map((supported) => MODALITY_PLURAL_LABELS[supported] || supported)
             .join(", ");
@@ -3725,6 +3729,7 @@ export default function AgentChatComponent({
           );
           continue;
         }
+        const { modality, mimeType } = classification;
         const byteLimit =
           modality === "image"
             ? MAX_IMAGE_ATTACHMENT_BYTES
@@ -3744,7 +3749,7 @@ export default function AgentChatComponent({
           continue;
         }
         totalAttachments++;
-        routeFileToState(file, modality);
+        routeFileToState(file, modality, mimeType);
       }
     },
     [classifyFileModality, supportedInputModalities, addToast, routeFileToState],
@@ -8842,10 +8847,18 @@ export default function AgentChatComponent({
                 </div>
               ))}
               {pendingFiles.map((pendingFile, i) => {
+                // Text/code documents get code-flavoured icons; other
+                // documents (docx/xlsx/csv) keep the spreadsheet icon.
+                const textualKind =
+                  pendingFile.modality === "document"
+                    ? getTextualFileKind(pendingFile.name)
+                    : null;
                 const FileIcon =
                   pendingFile.modality === "audio" ? Volume2
                   : pendingFile.modality === "video" ? Video
                   : pendingFile.modality === "pdf" ? FileText
+                  : textualKind === "code" ? FileCode
+                  : textualKind === "text" ? FileText
                   : pendingFile.modality === "document" ? FileSpreadsheet
                   : File;
                 return (

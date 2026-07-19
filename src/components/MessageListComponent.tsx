@@ -14,6 +14,7 @@ import {
   Clock,
   Download,
   File as FileIcon,
+  FileCode,
   FileSpreadsheet,
   FileText,
   Paperclip,
@@ -60,6 +61,7 @@ import SoundService from "@/services/SoundService";
 import { APPROVAL_STATUS } from "../constants";
 import { getTotalInputTokens } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
+import { getTextualFileKind } from "../utils/fileIntake";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 import type {
@@ -192,23 +194,46 @@ function getMimeCategory(ref: string | undefined | null) {
     try {
       const pathname = new URL(targetUrl).pathname;
       const ext = pathname.split(".").pop()?.toLowerCase();
-      if (ext && ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext))
+      if (
+        ext &&
+        ["png", "jpg", "jpeg", "gif", "webp", "svg", "heic", "heif"].includes(
+          ext,
+        )
+      )
         return "image";
       if (ext && ["wav", "mp3", "webm", "ogg"].includes(ext)) return "audio";
       if (ext && ["mp4", "mov", "avi"].includes(ext)) return "video";
       if (ext === "pdf") return "pdf";
-      if (ext === "txt") return "text";
+      // Any recognized text/code extension (.txt, .md, .py, .log, …)
+      if (ext === "txt" || getTextualFileKind(pathname)) return "text";
     } catch {
       // URL parse failed, fall through
     }
     return "image"; // Default assumption for HTTP URLs in images array
   }
-  const match = targetUrl.match(/^data:([\w-]+)\//);
+  const match = targetUrl.match(/^data:([^;,]+)/);
   if (!match) return "file";
-  const type = match[1];
+  const mime = match[1];
+  if (mime === "application/json") return "text";
+  const type = mime.split("/")[0];
   if (type === "application") return "pdf";
   if (type === "text") return "text";
   return type;
+}
+
+/**
+ * Category from an explicit MIME type — used when the caller knows the
+ * attachment's MIME (message.files) and the URL alone is unreliable
+ * (MinIO object names may not keep the original extension).
+ */
+function getCategoryFromMimeType(mimeType: string): string {
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType.startsWith("audio/")) return "audio";
+  if (mimeType.startsWith("video/")) return "video";
+  if (mimeType === "application/pdf") return "pdf";
+  if (mimeType.startsWith("text/") || mimeType === "application/json")
+    return "text";
+  return "file";
 }
 
 /* -- Message time formatter ------------------------------------
@@ -398,14 +423,74 @@ function ThinkingBlock({
   );
 }
 
+/* Inline preview of a text/code attachment — fetches the source
+ * (fetch() handles data: URLs too) and renders it in a scrollable
+ * monospace block. Content is capped so a huge log can't lock up the
+ * message list. */
+const TEXT_PREVIEW_MAX_CHARS = 100_000;
+
+function TextFilePreview({ sourceUrl }: { sourceUrl: string }) {
+  // Callers key this component on sourceUrl, so a URL change remounts
+  // it and the loading state resets without any in-effect setState.
+  const [textContent, setTextContent] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(sourceUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+      })
+      .then((text) => {
+        if (cancelled) return;
+        setTextContent(
+          text.length > TEXT_PREVIEW_MAX_CHARS
+            ? text.slice(0, TEXT_PREVIEW_MAX_CHARS) + "\n… (truncated)"
+            : text,
+        );
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setLoadError(
+          error instanceof Error ? error.message : "failed to load",
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceUrl]);
+
+  return (
+    <div className={styles['text-file-preview']}>
+      {loadError ? (
+        <div className={styles['text-file-status']}>
+          Could not load preview ({loadError})
+        </div>
+      ) : textContent === null ? (
+        <div className={styles['text-file-status']}>Loading…</div>
+      ) : (
+        <pre className={styles['text-file-content']}>{textContent}</pre>
+      )}
+    </div>
+  );
+}
+
 interface MediaPreviewProps {
   dataUrl: string;
+  /**
+   * Known MIME type of the attachment. When provided it decides the
+   * preview category directly — more reliable than sniffing the URL,
+   * whose extension may be lost on MinIO uploads.
+   */
+  mimeType?: string;
   onClick?: () => void;
 }
 
-function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
+function MediaPreview({ dataUrl: rawUrl, mimeType, onClick }: MediaPreviewProps) {
   const sourceUrl = PrismService.getFileUrl(rawUrl);
-  const cat = getMimeCategory(rawUrl);
+  const mimeCategory = mimeType ? getCategoryFromMimeType(mimeType) : "file";
+  const cat = mimeCategory !== "file" ? mimeCategory : getMimeCategory(rawUrl);
 
   if (cat === "image") {
     return (
@@ -461,16 +546,7 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
     );
   }
   if (cat === "text") {
-    return (
-      <div
-        className={styles['media-card']}
-        onClick={onClick}
-        style={onClick ? { cursor: "pointer" } : undefined}
-      >
-        <FileText size={22} className={styles['media-card-icon']} />
-        <span className={styles['media-card-label']}>{cat.toUpperCase()}</span>
-      </div>
-    );
+    return <TextFilePreview key={sourceUrl} sourceUrl={sourceUrl} />;
   }
   return (
     <div className={styles['media-card']}>
@@ -502,7 +578,14 @@ function renderAttachmentChipIcon(file: FileAttachment) {
   if (kind === "audio") return <Volume2 {...iconProps} />;
   if (kind === "video") return <VideoIcon {...iconProps} />;
   if (kind === "pdf") return <FileText {...iconProps} />;
+  // Text/code files get code-flavoured icons regardless of modality
+  // bucket; other documents (docx/xlsx/csv) keep the spreadsheet icon.
+  const textualKind = getTextualFileKind(file.name || "");
+  if (textualKind === "code") return <FileCode {...iconProps} />;
+  if (textualKind === "text") return <FileText {...iconProps} />;
   if (kind === "document") return <FileSpreadsheet {...iconProps} />;
+  if (mimeType.startsWith("text/") || mimeType === "application/json")
+    return <FileText {...iconProps} />;
   return <FileIcon {...iconProps} />;
 }
 
@@ -512,7 +595,8 @@ function getAttachmentCategory(file: FileAttachment): string {
   if (mimeType.startsWith("audio/")) return "audio";
   if (mimeType.startsWith("video/")) return "video";
   if (mimeType === "application/pdf") return "pdf";
-  if (mimeType.startsWith("text/")) return "text";
+  if (mimeType.startsWith("text/") || mimeType === "application/json")
+    return "text";
   return "file";
 }
 
@@ -522,6 +606,7 @@ const PREVIEWABLE_ATTACHMENT_CATEGORIES = new Set([
   "audio",
   "video",
   "pdf",
+  "text",
 ]);
 
 function FileAttachmentChip({ file }: { file: FileAttachment }) {
@@ -568,7 +653,7 @@ function FileAttachmentChip({ file }: { file: FileAttachment }) {
       </div>
       {expanded && canPreview && file.url && (
         <div className={styles['file-attachment-preview']}>
-          <MediaPreview dataUrl={file.url} />
+          <MediaPreview dataUrl={file.url} mimeType={file.mimeType} />
         </div>
       )}
     </div>

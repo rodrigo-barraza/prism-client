@@ -585,6 +585,33 @@ button.file-chip-main:hover {
   /* PDF renderer needs light background */
 }
 
+/* ── Text file preview ── */
+.text-file-preview {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--calculated-border-color);
+  background: var(--background-elevated);
+  overflow: hidden;
+}
+
+.text-file-content {
+  margin: 0;
+  padding: 10px 12px;
+  max-height: 320px;
+  overflow: auto;
+  font-family: var(--terminal-font, ui-monospace, monospace);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--text-primary);
+  white-space: pre;
+}
+
+.text-file-status {
+  padding: 10px 12px;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
 /* ── Text / Markdown ── */
 .text {
   font-size: var(--font-size-base);
