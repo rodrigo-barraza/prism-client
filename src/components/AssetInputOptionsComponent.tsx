@@ -175,7 +175,7 @@ export default function AssetInputOptions({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,audio/*,video/*,.pdf,.txt,.sizeMedium,.json,.csv"
+          accept="image/*,audio/*,video/*,.pdf,.txt,.md,.json,.csv"
           className={styles['hidden-input']}
           onChange={handleFileChange}
         />
@@ -231,7 +231,7 @@ export default function AssetInputOptions({
           <span>Drop or upload file</span>
           <input
             type="file"
-            accept="image/*,audio/*,video/*,.pdf,.txt,.sizeMedium,.json,.csv"
+            accept="image/*,audio/*,video/*,.pdf,.txt,.md,.json,.csv"
             className={styles['hidden-input']}
             onChange={handleFileChange}
           />

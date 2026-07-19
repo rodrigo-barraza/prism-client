@@ -430,6 +430,81 @@
   color: var(--text-secondary);
 }
 
+/* ── Sent file attachment chips ──
+ * Mirrors the pending-attachment chip styling in the input box. */
+.file-attachment-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.file-attachment {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 2px;
+  border: 1px solid var(--calculated-border-color);
+  background: var(--background-elevated);
+  color: var(--text-secondary);
+  max-width: 260px;
+}
+
+.file-chip-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+
+button.file-chip-main {
+  cursor: pointer;
+}
+
+button.file-chip-main:hover {
+  color: var(--text-primary);
+}
+
+.file-chip-icon {
+  flex-shrink: 0;
+}
+
+.file-chip-name {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-chip-open {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.file-chip-open:hover {
+  color: var(--text-primary);
+}
+
+.file-attachment-preview {
+  max-width: 480px;
+}
+
 /* ── Video ── */
 .video-card {
   width: 100%;

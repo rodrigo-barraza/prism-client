@@ -190,14 +190,24 @@ export function ToolResultDisplayView({
     );
   }
   if (display.kind === "audio") {
+    const audioSourceUrl = PrismService.getFileUrl(display.url);
     return (
       <div className={styles['visual-tool-image-container']}>
         <audio
-          src={PrismService.getFileUrl(display.url)}
+          src={audioSourceUrl}
           controls
           preload="metadata"
           className={styles['visual-tool-audio']}
         />
+        <a
+          href={audioSourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          download
+          className={styles['visual-tool-audio-download']}
+        >
+          Download audio ↓
+        </a>
       </div>
     );
   }

@@ -75,7 +75,10 @@ import WorkspaceTreePanelComponent from "./WorkspaceTreePanelComponent";
 import WorkspaceSwitcherButtonComponent from "./WorkspaceSwitcherButtonComponent";
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
-import MessageList, { type QueuedNextTurn } from "./MessageListComponent";
+import MessageList, {
+  type QueuedNextTurn,
+  type PendingFileAttachment,
+} from "./MessageListComponent";
 import { resolveDisplayMessages } from "../utils/messageHelpers";
 import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
@@ -190,6 +193,27 @@ import SoundService from "../services/SoundService";
 
 // Stable default so non-admin renders do not churn admin callback deps
 const EMPTY_ADMIN_DATE_RANGE = { from: "", to: "" };
+
+// -- Attachment guardrails ---------------------------------------
+// Enforced at intake (file picker, drag-drop, paste) so oversized or
+// excess attachments are rejected with feedback instead of silently
+// bloating the payload. Images travel inline as base64; other files
+// upload to MinIO before send.
+const MAX_IMAGE_ATTACHMENT_BYTES = 20 * 1024 * 1024; // 20MB per image
+const MAX_FILE_ATTACHMENT_BYTES = 40 * 1024 * 1024; // 40MB per non-image file
+const MAX_ATTACHMENTS_PER_MESSAGE = 10;
+
+const MODALITY_PLURAL_LABELS: Record<string, string> = {
+  image: "images",
+  audio: "audio",
+  video: "video",
+  pdf: "PDFs",
+  document: "documents",
+};
+
+function formatByteLimit(bytes: number): string {
+  return `${Math.round(bytes / (1024 * 1024))}MB`;
+}
 
 const DEFAULT_EMPTY_STATE: EmptyStateConfig = {
   title: "Agent",
@@ -955,9 +979,16 @@ export default function AgentChatComponent({
     useState<LlamaCppServerProps | null>(null);
 
   const [pendingImages, setPendingImages] = useState<string[]>([]);
-  const [pendingFiles, setPendingFiles] = useState<
-    { name: string; mimeType: string; dataUrl: string; modality: string }[]
-  >([]);
+  const [pendingFiles, setPendingFiles] = useState<PendingFileAttachment[]>([]);
+  // Refs mirror the pending attachment state so intake validation and
+  // handleSend can read current values without re-creating callbacks on
+  // every attachment change (the main cause of input lag).
+  const pendingImagesRef = useRef<string[]>(pendingImages);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
+  pendingImagesRef.current = pendingImages;
+  const pendingFilesRef = useRef<typeof pendingFiles>(pendingFiles);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
+  pendingFilesRef.current = pendingFiles;
   const [lightboxSourceUrl, setLightboxSourceUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef<number>(0);
@@ -3652,10 +3683,7 @@ export default function AgentChatComponent({
   );
 
   const routeFileToState = useCallback(
-    (file: globalThis.File) => {
-      const modality = classifyFileModality(file.type);
-      if (!modality) return;
-
+    (file: globalThis.File, modality: string) => {
       const reader = new FileReader();
       reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
         if (!readerEvent.target?.result) return;
@@ -3672,18 +3700,63 @@ export default function AgentChatComponent({
       };
       reader.readAsDataURL(file);
     },
-    [classifyFileModality],
+    [],
+  );
+
+  // Single validated intake path for every attachment source (picker,
+  // drag-drop, paste). Rejections always surface a toast — files are
+  // never silently dropped.
+  const intakeFiles = useCallback(
+    (incomingFiles: globalThis.File[]) => {
+      // Running total so a single multi-file drop can't blow past the
+      // attachment cap before React state catches up.
+      let totalAttachments =
+        pendingImagesRef.current.length + pendingFilesRef.current.length;
+      for (const file of incomingFiles) {
+        const modality = classifyFileModality(file.type);
+        if (!modality) {
+          const supportedLabels = [...supportedInputModalities]
+            .map((supported) => MODALITY_PLURAL_LABELS[supported] || supported)
+            .join(", ");
+          addToast(
+            `"${file.name}" isn't supported by the current model` +
+              (supportedLabels ? ` (supports: ${supportedLabels})` : ""),
+            "warning",
+          );
+          continue;
+        }
+        const byteLimit =
+          modality === "image"
+            ? MAX_IMAGE_ATTACHMENT_BYTES
+            : MAX_FILE_ATTACHMENT_BYTES;
+        if (file.size > byteLimit) {
+          addToast(
+            `"${file.name}" is too large (${formatByteLimit(file.size)}) — the limit is ${formatByteLimit(byteLimit)} per ${modality === "image" ? "image" : "file"}`,
+            "warning",
+          );
+          continue;
+        }
+        if (totalAttachments >= MAX_ATTACHMENTS_PER_MESSAGE) {
+          addToast(
+            `"${file.name}" not attached — a message can have at most ${MAX_ATTACHMENTS_PER_MESSAGE} attachments`,
+            "warning",
+          );
+          continue;
+        }
+        totalAttachments++;
+        routeFileToState(file, modality);
+      }
+    },
+    [classifyFileModality, supportedInputModalities, addToast, routeFileToState],
   );
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
-      for (const file of files) {
-        routeFileToState(file);
-      }
+      intakeFiles(files);
       e.target.value = "";
     },
-    [routeFileToState],
+    [intakeFiles],
   );
 
   const removeImage = useCallback((index: number) => {
@@ -3732,11 +3805,9 @@ export default function AgentChatComponent({
       dragCounter.current = 0;
       if (!supportsAnyFileInput) return;
       const files = Array.from(e.dataTransfer?.files || []);
-      for (const file of files) {
-        routeFileToState(file);
-      }
+      intakeFiles(files);
     },
-    [supportsAnyFileInput, routeFileToState],
+    [supportsAnyFileInput, intakeFiles],
   );
 
   const handlePaste = useCallback(
@@ -3744,19 +3815,14 @@ export default function AgentChatComponent({
       if (!supportsAnyFileInput) return;
       const items = Array.from(e.clipboardData?.items || []);
       const files = items
-        .filter((item) => {
-          if (item.kind !== "file") return false;
-          return classifyFileModality(item.type) !== null;
-        })
+        .filter((item) => item.kind === "file")
         .map((item) => item.getAsFile())
         .filter((file): file is globalThis.File => file !== null);
       if (files.length === 0) return;
       e.preventDefault();
-      for (const file of files) {
-        routeFileToState(file);
-      }
+      intakeFiles(files);
     },
-    [supportsAnyFileInput, classifyFileModality, routeFileToState],
+    [supportsAnyFileInput, intakeFiles],
   );
 
   // -- Orchestration loop ---------------------------------------
@@ -5354,12 +5420,6 @@ export default function AgentChatComponent({
   // -- Send handler ---------------------------------------------
   // Read inputValue from ref at send-time to avoid re-creating
   // handleSend on every keystroke (the main cause of input lag).
-  const pendingImagesRef = useRef<string[]>(pendingImages);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  pendingImagesRef.current = pendingImages;
-  const pendingFilesRef = useRef<typeof pendingFiles>(pendingFiles);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  pendingFilesRef.current = pendingFiles;
   const messagesRef = useRef<ClientMessage[]>(messages);
   // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   messagesRef.current = messages;
@@ -5372,7 +5432,11 @@ export default function AgentChatComponent({
       e?: React.FormEvent<HTMLFormElement> | null,
       fetchOptions: {
         isQueueing?: boolean;
-        overridePayload?: { text: string; images: string[] } | null;
+        overridePayload?: {
+          text: string;
+          images: string[];
+          files?: PendingFileAttachment[];
+        } | null;
       } = {},
     ) => {
       if (e && typeof e.preventDefault === "function") e.preventDefault();
@@ -5390,16 +5454,58 @@ export default function AgentChatComponent({
       const currentImages = overridePayload
         ? overridePayload.images
         : [...pendingImagesRef.current];
-      const currentFiles = overridePayload ? [] : [...pendingFilesRef.current];
+      const currentFiles = overridePayload
+        ? [...(overridePayload.files ?? [])]
+        : [...pendingFilesRef.current];
 
       if (!text && currentImages.length === 0 && currentFiles.length === 0) return;
 
       if (isQueueing) {
-        setQueuedNextTurn({ text, images: currentImages });
+        setQueuedNextTurn({ text, images: currentImages, files: currentFiles });
         setTextareaValue("");
         setPendingImages([]);
         setPendingFiles([]);
         return;
+      }
+
+      // Upload non-image files to MinIO BEFORE any destructive state
+      // changes (clearing the input, optimistic conversation entries) so
+      // a failed upload aborts the send with everything still intact —
+      // the user keeps their text + attachments and can simply retry.
+      let uploadedFileUrls: {
+        url: string;
+        name: string;
+        mimeType: string;
+        modality: string;
+      }[] = [];
+      if (currentFiles.length > 0) {
+        try {
+          uploadedFileUrls = await Promise.all(
+            currentFiles.map(async (pendingFile) => {
+              const result = await PrismService.uploadFile(pendingFile.dataUrl);
+              return {
+                url: result.url,
+                name: pendingFile.name,
+                mimeType: pendingFile.mimeType,
+                modality: pendingFile.modality,
+              };
+            }),
+          );
+        } catch (uploadError) {
+          console.error("[handleSend] File upload to MinIO failed:", uploadError);
+          if (overridePayload) {
+            // The queued payload already cleared the input when it was
+            // queued — put it back so nothing is lost.
+            setTextareaValue(text);
+            setPendingImages(currentImages);
+            setPendingFiles(currentFiles);
+          }
+          addToast(
+            `File upload failed — message not sent. ${getErrorMessage(uploadError)}`,
+            "error",
+          );
+          return;
+        }
       }
 
       if (!overridePayload) {
@@ -5508,27 +5614,6 @@ export default function AgentChatComponent({
           } else {
             turnActiveRuleNames.push(...enabledRules.map((rule) => rule.name));
           }
-        }
-      }
-
-      // Upload non-image files to MinIO and collect their URLs
-      let uploadedFileUrls: { url: string; name: string; mimeType: string; modality: string }[] = [];
-      if (currentFiles.length > 0) {
-        try {
-          const uploadResults = await Promise.all(
-            currentFiles.map(async (pendingFile) => {
-              const result = await PrismService.uploadFile(pendingFile.dataUrl);
-              return {
-                url: result.url,
-                name: pendingFile.name,
-                mimeType: pendingFile.mimeType,
-                modality: pendingFile.modality,
-              };
-            }),
-          );
-          uploadedFileUrls = uploadResults;
-        } catch (uploadError) {
-          console.error("[handleSend] File upload to MinIO failed:", uploadError);
         }
       }
 
@@ -5825,6 +5910,7 @@ export default function AgentChatComponent({
       setTextareaValue,
       runOrchestrationLoop,
       loadConversations,
+      addToast,
     ],
   );
 
@@ -8303,6 +8389,7 @@ export default function AgentChatComponent({
           onCancelQueuedTurn={() => {
             setTextareaValue(queuedNextTurn?.text || "");
             setPendingImages(queuedNextTurn?.images || []);
+            setPendingFiles(queuedNextTurn?.files || []);
             setQueuedNextTurn(null);
           }}
           onMentionFileOpen={(relativePath: string) => {

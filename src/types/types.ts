@@ -897,12 +897,19 @@ export interface WebSearchResult {
 
 // --- Files / Attachments ------------------------------------
 
+/**
+ * A non-image attachment on a sent message. Files are uploaded to
+ * MinIO at send time — `url` is the resolved (or minio://) reference
+ * the backend and renderers consume. `modality` is the input modality
+ * bucket the file was classified into at intake (audio | video | pdf |
+ * document); optional because messages persisted before the modality
+ * plumbing lack it.
+ */
 export interface FileAttachment {
   name: string;
   mimeType: string;
-  data?: string;
-  url?: string;
-  size?: number;
+  url: string;
+  modality?: string;
 }
 
 

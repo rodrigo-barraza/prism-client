@@ -1446,6 +1446,19 @@
   padding: 10px 12px;
 }
 
+.visual-tool-audio-download {
+  display: inline-block;
+  padding: 0 12px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.visual-tool-audio-download:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
 .visual-tool-embed-wrapper {
   margin-block-start: 6px;
   border-radius: 8px;

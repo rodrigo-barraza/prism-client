@@ -12,11 +12,16 @@ import {
   ChevronRight,
   Check,
   Clock,
+  Download,
+  File as FileIcon,
+  FileSpreadsheet,
   FileText,
   Paperclip,
   Trash2,
   Pencil,
   RotateCcw,
+  Video as VideoIcon,
+  Volume2,
   X as XIcon,
   RefreshCw,
   Undo2,
@@ -57,7 +62,12 @@ import { getTotalInputTokens } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 
-import type { Message, ToolCallEvent, ContentSegment } from "../types/types";
+import type {
+  Message,
+  ToolCallEvent,
+  ContentSegment,
+  FileAttachment,
+} from "../types/types";
 
 export interface SubAgentToolActivityItem {
   toolNames?: string[] | Record<string, number> | Record<string, string>;
@@ -470,6 +480,101 @@ function MediaPreview({ dataUrl: rawUrl, onClick }: MediaPreviewProps) {
   );
 }
 
+/* -- Sent non-image file attachments ---------------------------
+ * message.files carries {url, name, mimeType, modality} refs for
+ * files uploaded to MinIO at send time. Each renders as a compact
+ * chip (mirroring the pending-attachment chips in the input box);
+ * previewable categories expand an inline MediaPreview on click,
+ * everything else gets a download / open-in-new-tab link.       */
+
+function renderAttachmentChipIcon(file: FileAttachment) {
+  const mimeType = file.mimeType || "";
+  const kind =
+    file.modality ||
+    (mimeType.startsWith("audio/")
+      ? "audio"
+      : mimeType.startsWith("video/")
+        ? "video"
+        : mimeType === "application/pdf"
+          ? "pdf"
+          : undefined);
+  const iconProps = { size: 14, className: styles['file-chip-icon'] };
+  if (kind === "audio") return <Volume2 {...iconProps} />;
+  if (kind === "video") return <VideoIcon {...iconProps} />;
+  if (kind === "pdf") return <FileText {...iconProps} />;
+  if (kind === "document") return <FileSpreadsheet {...iconProps} />;
+  return <FileIcon {...iconProps} />;
+}
+
+function getAttachmentCategory(file: FileAttachment): string {
+  const mimeType = file.mimeType || "";
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType.startsWith("audio/")) return "audio";
+  if (mimeType.startsWith("video/")) return "video";
+  if (mimeType === "application/pdf") return "pdf";
+  if (mimeType.startsWith("text/")) return "text";
+  return "file";
+}
+
+// Categories MediaPreview can render meaningfully inline.
+const PREVIEWABLE_ATTACHMENT_CATEGORIES = new Set([
+  "image",
+  "audio",
+  "video",
+  "pdf",
+]);
+
+function FileAttachmentChip({ file }: { file: FileAttachment }) {
+  const [expanded, setExpanded] = useState(false);
+  const resolvedUrl = file.url ? PrismService.getFileUrl(file.url) : null;
+  const category = getAttachmentCategory(file);
+  const canPreview =
+    Boolean(file.url) && PREVIEWABLE_ATTACHMENT_CATEGORIES.has(category);
+  const chipBody = (
+    <>
+      {renderAttachmentChipIcon(file)}
+      <span className={styles['file-chip-name']}>{file.name}</span>
+    </>
+  );
+  return (
+    <div className={styles['file-attachment']}>
+      <div className={styles['file-chip']}>
+        {canPreview ? (
+          <button
+            type="button"
+            className={styles['file-chip-main']}
+            onClick={() => setExpanded((wasExpanded) => !wasExpanded)}
+            title={`${file.name} — click to ${expanded ? "hide" : "show"} preview`}
+          >
+            {chipBody}
+          </button>
+        ) : (
+          <span className={styles['file-chip-main']} title={file.name}>
+            {chipBody}
+          </span>
+        )}
+        {resolvedUrl && (
+          <a
+            href={resolvedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={file.name}
+            className={styles['file-chip-open']}
+            title={`Download / open ${file.name}`}
+          >
+            <Download size={13} />
+          </a>
+        )}
+      </div>
+      {expanded && canPreview && file.url && (
+        <div className={styles['file-attachment-preview']}>
+          <MediaPreview dataUrl={file.url} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* -- Inline edit for messages ---------------------------------- */
 
 interface EditableMessageProps {
@@ -643,9 +748,18 @@ function EditableMessage({
 
 /* -- Main export ----------------------------------------------- */
 
+/** A non-image file staged in the input box, not yet uploaded. */
+export interface PendingFileAttachment {
+  name: string;
+  mimeType: string;
+  dataUrl: string;
+  modality: string;
+}
+
 export interface QueuedNextTurn {
   text: string;
   images: string[];
+  files?: PendingFileAttachment[];
 }
 
 export interface MessageListProps {
@@ -2337,6 +2451,18 @@ export default function MessageList({
                           );
                         })()}
 
+                      {/* Non-image file attachments (uploaded refs) */}
+                      {message.files && message.files.length > 0 && (
+                        <div className={styles['file-attachment-row']}>
+                          {message.files.map((attachedFile, j) => (
+                            <FileAttachmentChip
+                              key={`file-${j}`}
+                              file={attachedFile}
+                            />
+                          ))}
+                        </div>
+                      )}
+
                       {/* Streaming audio (live conversation in progress) */}
                       {!readOnly &&
                         message.role === "assistant" &&
@@ -2659,12 +2785,18 @@ export default function MessageList({
                 </div>
               )}
             </div>
-            {queuedNextTurn.images?.length > 0 && (
-              <div className={styles['queued-attachments-indicator']}>
-                <Paperclip size={12} />
-                {queuedNextTurn.images.length} image{queuedNextTurn.images.length > 1 ? "s" : ""} attached
-              </div>
-            )}
+            {(() => {
+              const queuedAttachmentCount =
+                (queuedNextTurn.images?.length || 0) +
+                (queuedNextTurn.files?.length || 0);
+              if (queuedAttachmentCount === 0) return null;
+              return (
+                <div className={styles['queued-attachments-indicator']}>
+                  <Paperclip size={12} />
+                  {queuedAttachmentCount} attachment{queuedAttachmentCount > 1 ? "s" : ""} attached
+                </div>
+              );
+            })()}
             {queuedNextTurn.text && (
               <div className={styles['queued-message-text']}>
                 {queuedNextTurn.text}
