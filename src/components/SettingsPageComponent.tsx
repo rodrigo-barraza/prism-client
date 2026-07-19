@@ -37,6 +37,7 @@ import {
   Workflow,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MILLISECONDS } from "@rodrigo-barraza/utilities-library";
+import { SERVICE_PORTS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import PrismService from "../services/PrismService";
 import WorkspaceService, {
   type WorkspaceValidateResponse,
@@ -117,6 +118,14 @@ type SetupGuideMethodKey = "tray" | "desktop" | "download" | "docker" | "local";
 interface PlatformDefinition {
   label: string;
   methods: SetupGuideMethodKey[];
+}
+
+// Example WORKSPACE_BACKEND for the setup guide — prism-client is served
+// from the same host as tools-service, so the visitor's hostname is the
+// right address on any network (localhost in dev, the LAN host in prod).
+function workspaceBackendExample(): string {
+  const hostname = typeof window !== "undefined" ? window.location.hostname : "localhost";
+  return `ws://${hostname}:${SERVICE_PORTS["tools-service"]}`;
 }
 
 const SETUP_GUIDE_PLATFORMS: [SetupGuidePlatformKey, PlatformDefinition][] = [
@@ -1964,7 +1973,7 @@ export default function SettingsPageComponent() {
                                   >
                                     WebSocket URL of tools-service (e.g.{" "}
                                     <code className={styles["inline-code"]}>
-                                      ws://192.168.86.2:5590
+                                      {workspaceBackendExample()}
                                     </code>
                                     )
                                   </span>
@@ -2078,7 +2087,7 @@ export default function SettingsPageComponent() {
                                   </span>
                                   <div className={styles["code-block"]}>
                                     <code>
-                                      WORKSPACE_BACKEND=ws://192.168.86.2:5590
+                                      WORKSPACE_BACKEND={workspaceBackendExample()}
                                       {"\n"}
                                       WORKSPACE_ROOTS=
                                       {getWorkspacePathExample(
@@ -2090,7 +2099,7 @@ export default function SettingsPageComponent() {
                                       title="Copy"
                                       onClick={() => {
                                         navigator.clipboard.writeText(
-                                          `WORKSPACE_BACKEND=ws://192.168.86.2:5590\nWORKSPACE_ROOTS=${getWorkspacePathExample(selectedPlatform)}`,
+                                          `WORKSPACE_BACKEND=${workspaceBackendExample()}\nWORKSPACE_ROOTS=${getWorkspacePathExample(selectedPlatform)}`,
                                         );
                                         setCopiedBlock("local-2b");
                                         setTimeout(
