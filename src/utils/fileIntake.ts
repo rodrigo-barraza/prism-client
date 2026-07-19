@@ -183,6 +183,19 @@ export function normalizeDataUrlMimeType(
 }
 
 /**
+ * Text-like payloads are universally supported: the server inlines
+ * text documents (≤256KB) into the model payload for every provider,
+ * so no model-modality or reader-tool support is required. Only
+ * binary documents (docx/xlsx/pdf) depend on the document/pdf
+ * modality being available. The check runs on the *effective* MIME
+ * type — the extension fallback table has already normalized code
+ * and config files to text/* or application/json.
+ */
+export function isUniversallyReadableMime(mimeType: string): boolean {
+  return mimeType.startsWith("text/") || mimeType === "application/json";
+}
+
+/**
  * Icon bucket for text-like files: "code" (FileCode), "text"
  * (FileText), or null when the file is not a recognized text/code
  * type (callers keep their modality-based icon).
@@ -197,11 +210,9 @@ export function getTextualFileKind(fileName: string): "code" | "text" | null {
 
 /* -- File-picker accept string --------------------------------- */
 
-const documentAcceptExtensions = [
-  ".docx",
-  ".doc",
-  ".xlsx",
-  ".xls",
+/* Text-like files — always offered, regardless of model modalities
+ * (see isUniversallyReadableMime). */
+const textualAcceptExtensions = [
   ".csv",
   ".tsv",
   ...TEXT_EXTENSIONS.map((extension) => `.${extension}`),
@@ -212,20 +223,28 @@ const documentAcceptExtensions = [
   ".example",
 ];
 
-const documentAcceptMimeTypes = [
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+const textualAcceptMimeTypes = [
   "text/csv",
   "text/plain",
   "text/markdown",
   "application/json",
 ];
 
+/* Binary office documents — need the document modality (reader tools). */
+const officeAcceptExtensions = [".docx", ".doc", ".xlsx", ".xls"];
+
+const officeAcceptMimeTypes = [
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+];
+
 /**
  * Build the file-picker accept string from the active model's
- * supported input modalities. Image adds explicit `.svg,.heic,.heif`
- * extensions because pickers on platforms with missing MIME mappings
- * would otherwise exclude them despite `image/*`.
+ * supported input modalities. Text/code files are always included —
+ * they inline as plain text for every provider. Image adds explicit
+ * `.svg,.heic,.heif` extensions because pickers on platforms with
+ * missing MIME mappings would otherwise exclude them despite
+ * `image/*`.
  */
 export function buildAcceptFilter(
   supportedInputModalities: Set<string>,
@@ -238,7 +257,10 @@ export function buildAcceptFilter(
   if (supportedInputModalities.has("pdf")) filters.push(".pdf,application/pdf");
   if (supportedInputModalities.has("document"))
     filters.push(
-      [...documentAcceptExtensions, ...documentAcceptMimeTypes].join(","),
+      [...officeAcceptExtensions, ...officeAcceptMimeTypes].join(","),
     );
+  filters.push(
+    [...textualAcceptExtensions, ...textualAcceptMimeTypes].join(","),
+  );
   return filters.join(",");
 }

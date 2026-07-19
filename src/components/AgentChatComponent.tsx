@@ -1429,7 +1429,22 @@ export default function AgentChatComponent({
     return modalities;
   }, [filteredConfig, settings.provider, settings.model, builtInTools, disabledTools]);
 
-  const supportsAnyFileInput = supportedInputModalities.size > 0;
+  // Text/code files are always accepted (inlined server-side for every
+  // provider), so file input is never fully unavailable.
+  const supportsAnyFileInput = true;
+
+  // Human-readable list of what can currently be attached — the
+  // modality labels plus the always-supported text/code files.
+  const attachmentKindsLabel = useMemo(
+    () =>
+      [
+        ...[...supportedInputModalities].map(
+          (modality) => MODALITY_PLURAL_LABELS[modality] || modality,
+        ),
+        "text/code files",
+      ].join(", "),
+    [supportedInputModalities],
+  );
 
   const activeUploadTypes = useMemo(() => {
     const modalityToUploadType: Record<string, string> = {
@@ -3668,9 +3683,14 @@ export default function AgentChatComponent({
   const classifyFileModality = useCallback(
     (file: { name: string; type: string }) => {
       const classification = classifyIntakeFile(file.name, file.type);
+      if (!classification) return null;
+      // Text/code files are universally supported — the server inlines
+      // them as plain text for every provider, so they bypass the
+      // model-modality gate. Binary media (images/audio/video/pdf and
+      // office documents) still require the modality.
       if (
-        !classification ||
-        !supportedInputModalities.has(classification.modality)
+        !supportedInputModalities.has(classification.modality) &&
+        !isUniversallyReadableMime(classification.mimeType)
       ) {
         return null;
       }
@@ -3719,12 +3739,8 @@ export default function AgentChatComponent({
       for (const file of incomingFiles) {
         const classification = classifyFileModality(file);
         if (!classification) {
-          const supportedLabels = [...supportedInputModalities]
-            .map((supported) => MODALITY_PLURAL_LABELS[supported] || supported)
-            .join(", ");
           addToast(
-            `"${file.name}" isn't supported by the current model` +
-              (supportedLabels ? ` (supports: ${supportedLabels})` : ""),
+            `"${file.name}" isn't supported by the current model (supports: ${attachmentKindsLabel})`,
             "warning",
           );
           continue;
@@ -8822,7 +8838,7 @@ export default function AgentChatComponent({
             <div className={chatStyles['drag-overlay']}>
               <Paperclip size={20} />
               <span>
-                Drop {[...supportedInputModalities].join(", ")} files here
+                Drop files here ({attachmentKindsLabel})
               </span>
             </div>
           )}
