@@ -61,7 +61,7 @@ import SoundService from "@/services/SoundService";
 import { APPROVAL_STATUS } from "../constants";
 import { getTotalInputTokens } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
-import { getTextualFileKind } from "../utils/fileIntake";
+import { getTextualFileKind, formatFileSize } from "../utils/fileIntake";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 import type {
@@ -619,6 +619,11 @@ function FileAttachmentChip({ file }: { file: FileAttachment }) {
     <>
       {renderAttachmentChipIcon(file)}
       <span className={styles['file-chip-name']}>{file.name}</span>
+      {file.sizeBytes != null && file.sizeBytes > 0 && (
+        <span className={styles['file-chip-size']}>
+          {formatFileSize(file.sizeBytes)}
+        </span>
+      )}
     </>
   );
   return (
@@ -839,6 +844,7 @@ export interface PendingFileAttachment {
   mimeType: string;
   dataUrl: string;
   modality: string;
+  sizeBytes?: number;
 }
 
 export interface QueuedNextTurn {

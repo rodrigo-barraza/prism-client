@@ -153,6 +153,7 @@ import {
   buildAcceptFilter,
   classifyIntakeFile,
   getTextualFileKind,
+  formatFileSize,
   isUniversallyReadableMime,
   normalizeDataUrlMimeType,
 } from "../utils/fileIntake";
@@ -3729,7 +3730,7 @@ export default function AgentChatComponent({
         } else {
           setPendingFiles((previous) => [
             ...previous,
-            { name: file.name, mimeType, dataUrl, modality },
+            { name: file.name, mimeType, dataUrl, modality, sizeBytes: file.size },
           ]);
         }
       };
@@ -5522,6 +5523,7 @@ export default function AgentChatComponent({
         name: string;
         mimeType: string;
         modality: string;
+        sizeBytes?: number;
       }[] = [];
       if (currentFiles.length > 0) {
         try {
@@ -5533,6 +5535,9 @@ export default function AgentChatComponent({
                 name: pendingFile.name,
                 mimeType: pendingFile.mimeType,
                 modality: pendingFile.modality,
+                ...(pendingFile.sizeBytes != null
+                  ? { sizeBytes: pendingFile.sizeBytes }
+                  : {}),
               };
             }),
           );
@@ -8945,6 +8950,11 @@ export default function AgentChatComponent({
                           ? pendingFile.name.slice(0, 7) + "..."
                           : pendingFile.name}
                       </span>
+                      {pendingFile.sizeBytes != null && pendingFile.sizeBytes > 0 && (
+                        <span style={{ fontSize: "0.5625rem", opacity: 0.65, whiteSpace: "nowrap" }}>
+                          {formatFileSize(pendingFile.sizeBytes)}
+                        </span>
+                      )}
                     </div>
                     <button
                       type="button"

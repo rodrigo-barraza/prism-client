@@ -912,6 +912,8 @@ export interface FileAttachment {
   mimeType: string;
   url: string;
   modality?: string;
+  /** File size in bytes, captured at intake; absent on older messages. */
+  sizeBytes?: number;
 }
 
 

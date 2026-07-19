@@ -264,3 +264,17 @@ export function buildAcceptFilter(
   );
   return filters.join(",");
 }
+
+/**
+ * Human-readable file size for attachment chips: bytes below 1 KB,
+ * one decimal for KB/MB (trailing .0 trimmed), e.g. "612 B",
+ * "30.4 KB", "2.1 MB".
+ */
+export function formatFileSize(sizeBytes: number): string {
+  if (!Number.isFinite(sizeBytes) || sizeBytes < 0) return "";
+  if (sizeBytes < 1024) return `${Math.round(sizeBytes)} B`;
+  const trim = (value: number) =>
+    value.toFixed(1).replace(/\.0$/, "");
+  if (sizeBytes < 1024 * 1024) return `${trim(sizeBytes / 1024)} KB`;
+  return `${trim(sizeBytes / (1024 * 1024))} MB`;
+}

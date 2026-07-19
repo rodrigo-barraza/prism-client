@@ -490,6 +490,14 @@ button.file-chip-main:hover {
   white-space: nowrap;
 }
 
+.file-chip-size {
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  color: var(--color-text-tertiary, var(--color-text-secondary));
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .file-chip-open {
   display: inline-flex;
   align-items: center;
