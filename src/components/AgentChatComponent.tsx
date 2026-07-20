@@ -157,7 +157,7 @@ import {
   isUniversallyReadableMime,
   normalizeDataUrlMimeType,
 } from "../utils/fileIntake";
-import { shouldOpenSubAgentLiveStream } from "../utils/subAgentLiveStreamGate";
+import { shouldOpenViewerLiveStream } from "../utils/viewerLiveStreamGate";
 import {
   shouldApplySnapshotRefresh,
   seedStreamAccumulators,
@@ -1137,14 +1137,26 @@ export default function AgentChatComponent({
   isGeneratingRef.current = isGenerating;
   // Distinguish client-initiated generation (active SSE via handleSend)
   // from server-initiated generation (timer/scheduled task, passive DB load).
-  // Change-stream refresh is safe to skip only for client-driven generation.
-  const isClientDrivenGenerationRef = useRef<boolean>(false);
+  // The conversation whose running generation THIS client initiated via
+  // handleSend (its SSE stream is attached and driving `messages`). Tracked
+  // by id — a global boolean went stale on conversation switches (it stayed
+  // raised after switching away, wrongly blocking the viewer live-stream for
+  // every other conversation, and forever if the turn finished off-screen).
+  const clientDrivenConversationIdRef = useRef<string | null>(null);
   const isWebSocketStreamingRef = useRef<boolean>(false);
   // True only once the live WebSocket stream has actually delivered content
   // for the viewed conversation. DB-snapshot refreshes are suppressed only
   // then — a silent subscription (e.g. service without direct-viewer
   // broadcast support) must NOT block boundary refreshes.
   const webSocketHasStreamedContentRef = useRef<boolean>(false);
+  // Conversation whose partially-streamed content is still sitting in
+  // `messages` after a viewer subscription tear-down (effect churn mid-turn).
+  // The next subscription for the SAME conversation seeds its accumulators
+  // from the trailing bubble to continue it seamlessly; a subscription for
+  // any other conversation must NOT seed — the trailing assistant bubble it
+  // sees is a COMPLETED reply from the snapshot, and appending the new
+  // turn's chunks to it corrupts that bubble.
+  const interruptedStreamConversationIdRef = useRef<string | null>(null);
   const previousModelRef = useRef<string | null>(null);
   // Track which conversations have active background generation (for history indicator)
   const [generatingConversationIds, setGeneratingConversationIds] = useState(
@@ -5567,11 +5579,11 @@ export default function AgentChatComponent({
       setIsUserExplicitlyStopped(false);
       setIsGenerating(true);
       SoundService.playGenerationStart();
-      isClientDrivenGenerationRef.current = true;
       // Re-engage sticky scroll when the user sends a message
       isUserNearBottomRef.current = true;
       // Track this conversation as generating (for history indicator even after switching away)
       const genId = conversationIdRef.current;
+      clientDrivenConversationIdRef.current = genId;
       console.debug(
         `[handleSend] starting generation, conversationId=${genId}, currentMessages=${messagesRef.current.length}`,
       );
@@ -5897,11 +5909,16 @@ export default function AgentChatComponent({
         });
         // Clean up the background snapshot — conversation is now persisted to backend
         backgroundConversationsRef.current.delete(genId);
+        // This client no longer drives the conversation — release it even
+        // when the user switched away (a display-gated release left the
+        // flag stuck and blocked viewer live-streams on every conversation).
+        if (clientDrivenConversationIdRef.current === genId) {
+          clientDrivenConversationIdRef.current = null;
+        }
         // Only update local UI state if this conversation is still displayed
         if (conversationIdRef.current === genId) {
           setIsGenerating(false);
           SoundService.playGenerationEnd();
-          isClientDrivenGenerationRef.current = false;
           abortRef.current = null;
           setCurrentTurnStart(null);
 
@@ -6296,8 +6313,10 @@ export default function AgentChatComponent({
         }
         setIsUserExplicitlyStopped(false);
         setIsGenerating(!!full.isGenerating && !isGeneratingFlagStale);
-        // Passive DB load — no active SSE connection for this generation
-        isClientDrivenGenerationRef.current = false;
+        // NOTE: clientDrivenConversationIdRef is deliberately NOT touched
+        // here — it is scoped to the conversation whose SSE this client
+        // drives, and a passive DB load of some (possibly other)
+        // conversation says nothing about that stream.
 
         // Hydrate StatusBar state from the backend's live status registry
         // so the progress bar, phase, and iteration resume at the correct
@@ -6712,18 +6731,33 @@ export default function AgentChatComponent({
   const refreshActiveConversation = useCallback(
     async (targetConversationId: string) => {
       if (!targetConversationId || targetConversationId !== conversationIdRef.current) return;
-      // Skip change-stream refresh while actively generating — the SSE
-      // streaming callbacks are the source of truth for message state.
-      // Without this guard, a MongoDB change event (triggered when the
-      // backend writes the user message) would overwrite the local
+      // Skip change-stream refresh while a live event stream owns message
+      // state. Without this guard, a MongoDB change event (triggered when
+      // the backend writes the user message) would overwrite the local
       // optimistic messages with stale/incomplete database data, causing
       // the user's latest message and assistant placeholder to vanish.
-      if (isGeneratingRef.current && isClientDrivenGenerationRef.current) {
-        // Only skip for client-driven generation (active SSE connection).
-        // Server-initiated generation (timers, scheduled tasks) has no SSE
-        // connection, so change-stream refresh is the only way to update.
+      // Two owners are possible:
+      //   1. This client's own SSE stream (it initiated the generation).
+      //   2. The viewer WebSocket subscription — but ONLY while it has
+      //      actually delivered content; a silent subscription must never
+      //      block boundary refreshes (see shouldApplySnapshotRefresh).
+      // Server-initiated generation with no local stream (timers,
+      // scheduled tasks) refreshes normally — the change stream is its
+      // only update path.
+      if (clientDrivenConversationIdRef.current === targetConversationId) {
         console.debug(
           `[refreshActiveConversation] skipping — conversation ${targetConversationId} is currently generating (client-driven)`,
+        );
+        return;
+      }
+      if (
+        !shouldApplySnapshotRefresh({
+          isStreamOpen: isWebSocketStreamingRef.current,
+          hasStreamedContent: webSocketHasStreamedContentRef.current,
+        })
+      ) {
+        console.debug(
+          `[refreshActiveConversation] skipping — viewer stream is delivering content for ${targetConversationId}`,
         );
         return;
       }
@@ -6823,7 +6857,12 @@ export default function AgentChatComponent({
     // Only poll when the conversation is running but NOT driven by a
     // local SSE stream (which would already be updating state directly),
     // and NOT already being streamed via WebSocket.
-    if (isClientDrivenGenerationRef.current || isWebSocketStreamingRef.current) return;
+    if (
+      clientDrivenConversationIdRef.current === activeId ||
+      isWebSocketStreamingRef.current
+    ) {
+      return;
+    }
     if (!isConversationRunning) return;
 
     const SUB_AGENT_LIVE_STATUS_POLL_INTERVAL_MILLISECONDS = 2000;
@@ -6930,17 +6969,20 @@ export default function AgentChatComponent({
     applyConversationData,
   ]);
 
-  // ── Live WebSocket stream for viewed sub-agent conversations ──────
-  // When the user navigates directly to a sub-agent conversation that
-  // is still actively running, open a WebSocket subscription to receive
-  // the raw SSE events (chunk, thinking, tool_execution, tool_output,
-  // status, done) that the sub-agent's agentic loop emits. This makes
-  // the conversation stream live — text appears as it's generated,
-  // thinking blocks expand, and tool activity renders in real-time.
+  // ── Live WebSocket stream for viewed conversations ────────────────
+  // When the user opens or switches into ANY conversation that is running
+  // and not driven by this client — a sub-agent, another device, another
+  // user's turn, a lupos/scheduled generation — open a WebSocket
+  // subscription to receive the raw SSE events (user_message, chunk,
+  // thinking, tool_execution, tool_output, status, done) its generation
+  // emits. The service replays the active turn's buffered events on
+  // subscribe (LiveTurnBuffer), so a mid-turn join renders everything
+  // generated so far, then streams live from there.
   //
-  // The backend's SubAgentTelemetryEmitter broadcasts these events to
-  // any WebSocket subscriber registered for the sub-agent's own
-  // conversationId via WebSocketConnectionRegistry.
+  // The backend mirrors main-conversation events to direct subscribers via
+  // withDirectViewerBroadcast and sub-agent events via
+  // SubAgentTelemetryEmitter, both keyed by the conversation's own id in
+  // WebSocketConnectionRegistry.
   // Admin's subscription is always-on for the viewed conversation, so its
   // gate must not depend on the (change-stream-lagged) running flag — a
   // constant here keeps the effect from tearing the socket down mid-turn
@@ -6950,10 +6992,10 @@ export default function AgentChatComponent({
   useEffect(() => {
     if (!activeId) return;
     if (
-      !shouldOpenSubAgentLiveStream({
+      !shouldOpenViewerLiveStream({
         activeConversationId: activeId,
-        isSubAgentConversation: isActiveConversationSubAgent,
-        isClientDrivenGeneration: isClientDrivenGenerationRef.current,
+        isClientDrivenGeneration:
+          clientDrivenConversationIdRef.current === activeId,
         isConversationRunning: liveStreamConversationRunning,
         // The admin viewer never drives generation — it live-streams ANY
         // conversation (the service mirrors main-conversation events to
@@ -6968,17 +7010,34 @@ export default function AgentChatComponent({
     // Coordination with other effects and the change-stream guard
     isWebSocketStreamingRef.current = true;
     webSocketHasStreamedContentRef.current = false;
-    isClientDrivenGenerationRef.current = true;
 
     // Mutable streaming state (avoids stale closures in callbacks).
-    // Seeds ONLY from a trailing in-flight assistant bubble (joining a
-    // generation already mid-stream) — see seedStreamAccumulators.
-    const seeded = seedStreamAccumulators(messagesRef.current);
+    // Seed ONLY when this subscription continues a stream the previous
+    // subscription for the SAME conversation left mid-turn (effect churn) —
+    // the trailing assistant bubble then holds partial streamed content to
+    // extend. On a fresh join the trailing assistant bubble is a COMPLETED
+    // reply from the snapshot; seeding from it would append the new turn's
+    // chunks to the old reply. The service replays the active turn's
+    // buffered events on subscribe, so a fresh mid-turn join still renders
+    // everything generated so far.
+    const isContinuationOfInterruptedStream =
+      interruptedStreamConversationIdRef.current === activeId;
+    interruptedStreamConversationIdRef.current = null;
+    const seeded = isContinuationOfInterruptedStream
+      ? seedStreamAccumulators(messagesRef.current)
+      : { streamedText: "", streamedThinking: "" };
     let streamedText = seeded.streamedText;
     let streamedThinking = seeded.streamedThinking;
+    // Whether the trailing assistant bubble was written by THIS stream (or
+    // seeded as a continuation of it). Chunks may only overwrite a bubble
+    // the stream owns — otherwise they push a new bubble instead of
+    // corrupting a snapshot-loaded completed reply.
+    let ownsTrailingAssistantBubble =
+      isContinuationOfInterruptedStream &&
+      (streamedText !== "" || streamedThinking !== "");
     let isSubscriptionActive = true;
 
-    // Non-admin (viewed sub-agent): the gate guarantees a generation is
+    // Non-admin (viewed conversation): the gate guarantees a generation is
     // running, so show the active state immediately. Admin: the always-on
     // subscription is mostly idle — the flag raises lazily when events
     // actually arrive (markStreamDelivering) and clears on done.
@@ -7007,6 +7066,9 @@ export default function AgentChatComponent({
         markStreamDelivering();
         streamedText = "";
         streamedThinking = "";
+        // The next assistant content belongs to a NEW bubble after this
+        // user message — never to a previous turn's trailing bubble.
+        ownsTrailingAssistantBubble = false;
         const userMessageContent = (data.content as string) || "";
         if (!userMessageContent) return;
         setMessages((previousMessages) => {
@@ -7035,11 +7097,13 @@ export default function AgentChatComponent({
         markStreamDelivering();
         streamedText += content;
         const trimmedText = streamedText.trim();
+        const canOverwriteTrailingBubble = ownsTrailingAssistantBubble;
+        ownsTrailingAssistantBubble = true;
 
         setMessages((previousMessages) => {
           const updated = [...previousMessages];
           const lastMessage = updated[updated.length - 1];
-          if (lastMessage?.role === "assistant") {
+          if (lastMessage?.role === "assistant" && canOverwriteTrailingBubble) {
             updated[updated.length - 1] = {
               ...lastMessage,
               content: trimmedText,
@@ -7058,11 +7122,13 @@ export default function AgentChatComponent({
         if (!isSubscriptionActive) return;
         markStreamDelivering();
         streamedThinking += content;
+        const canOverwriteTrailingBubble = ownsTrailingAssistantBubble;
+        ownsTrailingAssistantBubble = true;
 
         setMessages((previousMessages) => {
           const updated = [...previousMessages];
           const lastMessage = updated[updated.length - 1];
-          if (lastMessage?.role === "assistant") {
+          if (lastMessage?.role === "assistant" && canOverwriteTrailingBubble) {
             updated[updated.length - 1] = {
               ...lastMessage,
               thinking: streamedThinking,
@@ -7208,13 +7274,15 @@ export default function AgentChatComponent({
         // Generation finished — do a final full refresh from DB
         // to get the canonical message state with all metadata.
         setIsGenerating(false);
-        isClientDrivenGenerationRef.current = false;
         isWebSocketStreamingRef.current = false;
         // Release `messages` ownership so snapshot refreshes flow again
         // between turns of an always-on (admin) subscription.
         webSocketHasStreamedContentRef.current = false;
         streamedText = "";
         streamedThinking = "";
+        // The refreshed canonical trailing bubble is not stream-written —
+        // the next turn's chunks must open a fresh bubble.
+        ownsTrailingAssistantBubble = false;
 
         // The admin viewer reads cross-user documents through the admin
         // fetchers — the username-scoped PrismService endpoints would miss
@@ -7245,7 +7313,6 @@ export default function AgentChatComponent({
         if (!isSubscriptionActive) return;
         // WebSocket error — fall back to change-stream updates
         setIsGenerating(false);
-        isClientDrivenGenerationRef.current = false;
         isWebSocketStreamingRef.current = false;
       },
     });
@@ -7256,8 +7323,13 @@ export default function AgentChatComponent({
       const hadStreamedContent = webSocketHasStreamedContentRef.current;
       isWebSocketStreamingRef.current = false;
       webSocketHasStreamedContentRef.current = false;
-      isClientDrivenGenerationRef.current = false;
       setIsGenerating(false);
+      // Torn down mid-turn with partial streamed content in `messages`?
+      // Remember the conversation so an immediate re-subscription for it
+      // (effect churn) seeds its accumulators and continues the bubble.
+      interruptedStreamConversationIdRef.current = hadStreamedContent
+        ? streamedConversationId
+        : null;
       // Admin viewer: always land on the canonical DB state once the live
       // stream closes (gate closed / selection changed). Without this, a
       // subscription that streamed partial content — or suppressed a
@@ -7268,7 +7340,6 @@ export default function AgentChatComponent({
     };
   }, [
     activeId,
-    isActiveConversationSubAgent,
     liveStreamConversationRunning,
     isNoAgent,
     isAdmin,
