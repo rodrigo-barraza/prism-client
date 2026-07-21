@@ -8484,6 +8484,7 @@ export default function AgentChatComponent({
               readOnly
               showRaw={showRaw}
               minimal={viewMode === "chat" || isTerminalView}
+              isGenerating={isGenerating}
               activeAgent={resolvedConversationAgent}
               systemPrompt={
                 showRaw
