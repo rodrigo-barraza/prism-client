@@ -2467,7 +2467,11 @@ export default function AgentChatComponent({
     [isAdmin, adminUpsertConversationEntry],
   );
 
-  // Admin: initial detail load by ID
+  // Admin: initial detail load by ID.
+  // On failure the deep-linked id STILL becomes activeId — the always-on
+  // viewer WebSocket then subscribes and renders the active turn's
+  // LiveTurnBuffer replay, instead of the page dying with no subscription
+  // and staying empty until the conversation finalizes.
   useEffect(() => {
     if (!isAdmin || !initialId) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
@@ -2487,6 +2491,8 @@ export default function AgentChatComponent({
       })
       .catch(() => {
         setMessages([]);
+        setActiveId(initialId);
+        setConversationId(initialId);
       })
       .finally(() => setAdminLoadingDetail(false));
   }, [isAdmin, initialId]);
@@ -6989,6 +6995,23 @@ export default function AgentChatComponent({
   // every time the persisted flag flips.
   const liveStreamConversationRunning = isAdmin ? false : isConversationRunning;
 
+  // Ref mirrors so the subscription effect below does NOT depend on these
+  // identities. applyConversationData / adminRefreshSelectedEntry are
+  // recreated whenever their own inputs shift (workspaces, tool-toggle
+  // callbacks), which happens repeatedly DURING a viewed generation — with
+  // them in the dep array the WebSocket was torn down and reopened every
+  // couple of seconds, dying before the turn's chunks could arrive, so
+  // viewers only ever saw the finalize snapshot.
+  const applyConversationDataRef = useRef(applyConversationData);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
+  applyConversationDataRef.current = applyConversationData;
+  const adminRefreshSelectedEntryRef = useRef(adminRefreshSelectedEntry);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
+  adminRefreshSelectedEntryRef.current = adminRefreshSelectedEntry;
+  const agentProjectRef = useRef(agentProject);
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
+  agentProjectRef.current = agentProject;
+
   useEffect(() => {
     if (!activeId) return;
     if (
@@ -7288,7 +7311,7 @@ export default function AgentChatComponent({
         // fetchers — the username-scoped PrismService endpoints would miss
         // another user's conversation entirely.
         if (isAdmin) {
-          adminRefreshSelectedEntry(activeId, adminSelectedSourceRef.current);
+          adminRefreshSelectedEntryRef.current(activeId, adminSelectedSourceRef.current);
           return;
         }
 
@@ -7296,12 +7319,12 @@ export default function AgentChatComponent({
           try {
             const finalConversation = isNoAgent
               ? await PrismService.getConversation(activeId)
-              : await PrismService.getAgentConversation(activeId, agentProject!);
+              : await PrismService.getAgentConversation(activeId, agentProjectRef.current!);
             if (
               finalConversation &&
               finalConversation.id === conversationIdRef.current
             ) {
-              applyConversationData(finalConversation);
+              applyConversationDataRef.current(finalConversation);
             }
           } catch {
             // Non-critical — the change stream will catch up
@@ -7335,17 +7358,17 @@ export default function AgentChatComponent({
       // subscription that streamed partial content — or suppressed a
       // boundary refresh — would leave the viewer stale until manual reload.
       if (isAdmin && hadStreamedContent) {
-        adminRefreshSelectedEntry(streamedConversationId, streamedAdminSource);
+        adminRefreshSelectedEntryRef.current(streamedConversationId, streamedAdminSource);
       }
     };
+    // applyConversationData / adminRefreshSelectedEntry / agentProject are
+    // read through ref mirrors above — including them here churned the
+    // subscription mid-turn (see comment on the refs).
   }, [
     activeId,
     liveStreamConversationRunning,
     isNoAgent,
     isAdmin,
-    agentProject,
-    applyConversationData,
-    adminRefreshSelectedEntry,
   ]);
 
   // -- Visibility Recovery (Mobile Screen Lock) -------------------
