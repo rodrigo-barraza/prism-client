@@ -236,6 +236,7 @@ const STATIC_MODEL_LABELS: Record<string, string> = {
   "gpt-5.4": "GPT 5.4",
   "claude-fable-5": "Fable 5",
   "claude-opus-4-8": "Opus 4.8",
+  "gemini-3.6-flash": "Gemini 3.6 Flash",
   "gemini-3.5-flash": "Gemini 3.5 Flash",
   "gemini-3-pro-preview": "Gemini 3 Pro",
 };
