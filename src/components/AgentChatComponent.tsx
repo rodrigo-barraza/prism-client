@@ -330,6 +330,14 @@ const BOTTOM_PANEL_TABS = new Set(["tools", "skills", "rules", "memories", "task
 
 
 const ADMIN_POLL_INTERVAL = 5000;
+// Minimum spacing between change-event-driven admin reloads. Every reload is
+// a cache-miss recompute on the service (writes invalidate its StatsCache),
+// so this directly caps admin-page load on the shared NAS MongoDB.
+const ADMIN_CHANGE_RELOAD_DEBOUNCE_MILLISECONDS = 2500;
+// Conversations fetched per page in the admin list. Each list row forces the
+// service to read the full conversation document (avg 80–180KB), so small
+// pages keep the query cheap; infinite scroll loads more on demand.
+const ADMIN_ENTRIES_PAGE_SIZE = 25;
 
 const ADMIN_ALL_AGENT = {
   id: "ALL",
@@ -2180,7 +2188,7 @@ export default function AgentChatComponent({
     try {
       const parameters: Record<string, string | number | boolean> = {
         page: 1,
-        limit: 200,
+        limit: ADMIN_ENTRIES_PAGE_SIZE,
         sort: "updatedAt",
         order: "desc",
       };
@@ -2278,7 +2286,7 @@ export default function AgentChatComponent({
       const nextPage = adminEntriesPageRef.current + 1;
       const parameters: Record<string, string | number | boolean> = {
         page: nextPage,
-        limit: 200,
+        limit: ADMIN_ENTRIES_PAGE_SIZE,
         sort: "updatedAt",
         order: "desc",
       };
@@ -2406,10 +2414,13 @@ export default function AgentChatComponent({
           if (conversationSettings?.model) nextSettings.model = conversationSettings.model;
           if (fullEntry.systemPrompt != null) nextSettings.systemPrompt = fullEntry.systemPrompt;
 
-          // Fallback: extract from last assistant message
-          if (!nextSettings.model && fullEntry.messages?.length) {
-            for (let i = fullEntry.messages.length - 1; i >= 0; i--) {
-              const message = fullEntry.messages[i];
+          // Fallback: extract from last assistant message. Admin detail
+          // responses no longer carry raw `messages` (displayMessages is the
+          // single serve-time form), and assistant entries survive display
+          // preparation with model/provider intact.
+          if (!nextSettings.model && displayMessages.length) {
+            for (let i = displayMessages.length - 1; i >= 0; i--) {
+              const message = displayMessages[i];
               if (message.role === "assistant" && message.model) {
                 nextSettings.model = message.model;
                 nextSettings.provider = message.provider || nextSettings.provider;
@@ -2594,13 +2605,67 @@ export default function AgentChatComponent({
 
     adminLoadEntries();
 
+    // Change events arrive per Mongo write — several per agent turn, and
+    // background generations (lupos etc.) write around the clock. Reloading
+    // the list on every event kept the NAS Mongo saturated with back-to-back
+    // multi-second list recomputes. Trailing debounce + in-flight coalescing
+    // caps the reload rate regardless of event volume.
+    let reloadDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let isReloadInFlight = false;
+    let hasQueuedReload = false;
+    const runDebouncedListReload = async () => {
+      if (isReloadInFlight) {
+        hasQueuedReload = true;
+        return;
+      }
+      isReloadInFlight = true;
+      try {
+        await adminLoadEntries();
+      } finally {
+        isReloadInFlight = false;
+        if (hasQueuedReload) {
+          hasQueuedReload = false;
+          scheduleListReload();
+        }
+      }
+    };
+    const scheduleListReload = () => {
+      if (reloadDebounceTimer) return;
+      reloadDebounceTimer = setTimeout(() => {
+        reloadDebounceTimer = null;
+        runDebouncedListReload();
+      }, ADMIN_CHANGE_RELOAD_DEBOUNCE_MILLISECONDS);
+    };
+
+    // Same treatment for the viewed conversation's full-document refresh —
+    // it ships the whole displayMessages payload, so per-event refetches of
+    // a large conversation multiply into megabytes during a generation.
+    let selectedRefreshDebounceTimer: ReturnType<typeof setTimeout> | null =
+      null;
+    const scheduleSelectedEntryRefresh = () => {
+      if (selectedRefreshDebounceTimer) return;
+      selectedRefreshDebounceTimer = setTimeout(() => {
+        selectedRefreshDebounceTimer = null;
+        const currentActiveId = activeIdRef.current;
+        if (currentActiveId) {
+          adminRefreshSelectedEntry(
+            currentActiveId,
+            adminSelectedSourceRef.current,
+          );
+        }
+      }, ADMIN_CHANGE_RELOAD_DEBOUNCE_MILLISECONDS);
+    };
+
     let pollInterval: NodeJS.Timeout | null = null;
     const sseSubscription = IrisService.subscribeCollectionChanges({
       onStatus: (data: { changeStreams?: boolean }) => {
         setAdminChangeStreamsActive(!!data.changeStreams);
         if (!data.changeStreams) {
           if (!pollInterval) {
-            pollInterval = setInterval(adminLoadEntries, ADMIN_POLL_INTERVAL);
+            pollInterval = setInterval(
+              scheduleListReload,
+              ADMIN_POLL_INTERVAL,
+            );
           }
         }
       },
@@ -2609,18 +2674,14 @@ export default function AgentChatComponent({
           event.collection === "model_conversations" ||
           event.collection === "agent_conversations"
         ) {
-          adminLoadEntries();
+          scheduleListReload();
           // Also refresh selected entry if it matches. Read the CURRENT
           // selection through refs — this subscription lives for the whole
           // admin session, so closing over activeId state would compare
           // against the selection at subscribe time (always null) and the
           // viewed conversation would never refresh.
-          const currentActiveId = activeIdRef.current;
-          if (event.id && event.id === currentActiveId) {
-            adminRefreshSelectedEntry(
-              currentActiveId,
-              adminSelectedSourceRef.current,
-            );
+          if (event.id && event.id === activeIdRef.current) {
+            scheduleSelectedEntryRefresh();
           }
         }
       },
@@ -2629,6 +2690,9 @@ export default function AgentChatComponent({
     return () => {
       sseSubscription.close();
       if (pollInterval) clearInterval(pollInterval);
+      if (reloadDebounceTimer) clearTimeout(reloadDebounceTimer);
+      if (selectedRefreshDebounceTimer)
+        clearTimeout(selectedRefreshDebounceTimer);
     };
   }, [isAdmin, adminLoadEntries]); // eslint-disable-line react-hooks/exhaustive-deps
 

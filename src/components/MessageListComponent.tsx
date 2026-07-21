@@ -2461,17 +2461,19 @@ export default function MessageList({
                         (() => {
                           // A tool result renders inline when it carries
                           // self-describing `display` metadata — except media
-                          // already promoted to message.images / message.audio
-                          // (generated images, screenshots, TTS audio), which
-                          // the media rows below render.
+                          // already rendered inline at its true position:
+                          // images promoted to message.images (media row
+                          // below), and audio covered by inline audio
+                          // segments. During streaming every tool clip also
+                          // arrives as an `audio` SSE event that renders an
+                          // inline player right after its tool chip, so
+                          // repeating it here would pile every clip up at
+                          // the bottom of the in-flight message.
                           const messageImageUrls = new Set(message.images || []);
-                          const messageAudioUrls = new Set(
-                            Array.isArray(message.audio)
-                              ? message.audio
-                              : message.audio
-                                ? [message.audio]
-                                : [],
-                          );
+                          const hasInlineAudioSegments =
+                            !!message.contentSegments?.some(
+                              (segment) => segment.type === "audio",
+                            );
                           const visualToolCalls = message.toolCalls.filter(
                             (toolCall: ToolCallEvent) => {
                               const display = getResultDisplay(toolCall.result);
@@ -2487,7 +2489,7 @@ export default function MessageList({
                               }
                               if (
                                 display.kind === "audio" &&
-                                messageAudioUrls.has(display.url)
+                                hasInlineAudioSegments
                               ) {
                                 return false;
                               }
@@ -2570,9 +2572,18 @@ export default function MessageList({
                           (segment) => segment.type === "audio",
                         ) &&
                         (() => {
-                          // Same cross-message dedup as images above.
+                          // Same cross-message dedup as images above — plus
+                          // this message's OWN audio tool results, which the
+                          // visual-tool-result stack above already renders
+                          // with their descriptive header (Synth/TTS card).
                           const priorToolMediaUrls =
                             collectPriorToolDisplayUrls(displayMessages, i);
+                          for (const toolCall of message.toolCalls || []) {
+                            const display = getResultDisplay(toolCall.result);
+                            if (display?.kind === "audio") {
+                              priorToolMediaUrls.add(display.url);
+                            }
+                          }
                           const rowAudio = (
                             Array.isArray(message.audio)
                               ? message.audio
