@@ -30,6 +30,18 @@ const LOGOS = {
       <path d="M13.827 3.52h3.603L24 20.48h-3.603l-6.57-16.96zm-7.258 0h3.767L16.906 20.48h-3.674l-1.508-4.116H5.248l-1.508 4.116H0L6.569 3.52zm1.04 3.878L5.248 13.406h4.722L7.61 7.398z" />
     </svg>
   ),
+  // Moonshot AI (Kimi) — crescent-moon mark, monochrome to inherit text color.
+  moonshot: (size: number) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      style={{ flexShrink: 0 }}
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  ),
   google: (size: number) => (
     <svg
       width={size}

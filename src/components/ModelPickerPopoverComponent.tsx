@@ -793,6 +793,7 @@ const PROVIDER_ORG_MAP = {
   mistral: "Mistral AI",
   xai: "xAI",
   "together-ai": "Together AI",
+  moonshot: "Moonshot AI",
   "lm-studio": null,
   ollama: null,
   "llama-cpp": null,
