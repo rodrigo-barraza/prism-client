@@ -8,5 +8,5 @@ export default function SessionTrackerComponent() {
   const { data: userSession } = useSession();
   const userId = userSession?.user?.email || userSession?.user?.name || null;
 
-  return <LibrarySessionTracker projectId={PROJECT_NAME} userId={userId} />;
+  return <LibrarySessionTracker projectId={PROJECT_NAME} userId={userId} replay heatmap />;
 }
