@@ -324,6 +324,23 @@ export default class PrismService {
   }
 
   /**
+   * Lightweight lifecycle-flag snapshot for pollers — avoids fetching the
+   * full conversation document (displayMessages payload) every tick.
+   */
+  static async getConversationStatus(id: string): Promise<{
+    id: string;
+    isActive?: boolean;
+    isGenerating?: boolean;
+    pendingBackgroundTasks?: number;
+    updatedAt?: string;
+    type: "direct" | "agent";
+  }> {
+    return PrismService._request(`/conversations/${id}/status`, {
+      method: HTTP_METHODS.GET,
+    });
+  }
+
+  /**
    * Delete a conversation.
 
 

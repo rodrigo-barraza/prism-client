@@ -1224,13 +1224,11 @@ export default function AgentChatComponent({
 
     const backgroundTaskPollInterval = setInterval(async () => {
       try {
-        const freshConversation = await PrismService.getConversation(activeId);
-        const freshPendingCount =
-          (freshConversation as unknown as { pendingBackgroundTasks?: number })
-            ?.pendingBackgroundTasks ?? 0;
-        const freshIsActive =
-          (freshConversation as unknown as { isActive?: boolean })
-            ?.isActive;
+        // Status-only fetch — polling the full conversation document shipped
+        // the entire displayMessages payload every 3s for a two-field check.
+        const freshStatus = await PrismService.getConversationStatus(activeId);
+        const freshPendingCount = freshStatus?.pendingBackgroundTasks ?? 0;
+        const freshIsActive = freshStatus?.isActive;
         setConversations((previousConversations) =>
           previousConversations.map((entry) => {
             if (entry.id !== activeId) return entry;
@@ -1991,7 +1989,10 @@ export default function AgentChatComponent({
         setToolActivity([]);
         setSubAgentToolActivity({});
 
-        const lastAssistant = [...(full.messages || [])]
+        // displayMessages is the response's only message form (raw `messages`
+        // are no longer shipped); assistant entries keep model/provider/
+        // generationSettings through display preparation.
+        const lastAssistant = [...displayMessages]
           .reverse()
           .find((message) => message.role === "assistant" && message.provider);
         const urlLoadConversationSettings = full.settings as Record<string, unknown> | undefined;
@@ -5798,10 +5799,10 @@ export default function AgentChatComponent({
                   agentProject!,
                 );
             console.debug(
-              `[PostStream refresh] attempt=${attempt} full?.messages?.length=${full?.messages?.length},`,
+              `[PostStream refresh] attempt=${attempt} full?.messageCount=${(full as unknown as { messageCount?: number })?.messageCount},`,
               `conversationMatch=${conversationIdRef.current === genId}`,
             );
-            if (full && (full.displayMessages || full.messages) && conversationIdRef.current === genId) {
+            if (full && full.displayMessages && conversationIdRef.current === genId) {
               const displayMessages = resolveDisplayMessages(full);
               const currentCount = messagesRef.current.length;
               console.debug(
@@ -5925,15 +5926,18 @@ export default function AgentChatComponent({
 
                 if (
                   recoveredConversation &&
-                  (recoveredConversation.displayMessages || recoveredConversation.messages) &&
+                  recoveredConversation.displayMessages &&
                   conversationIdRef.current === genId
                 ) {
                   const displayMessages = resolveDisplayMessages(recoveredConversation);
                   setMessages(displayMessages);
 
-                  // Check if generation completed (last message is assistant with content)
+                  // Check if generation completed (last message is assistant
+                  // with content). displayMessages pre-filters tool-role
+                  // messages and empty stubs, so the final assistant message
+                  // is the last entry once the turn has landed.
                   const lastRecoveredMessage =
-                    recoveredConversation.messages[recoveredConversation.messages.length - 1];
+                    displayMessages[displayMessages.length - 1];
                   const isGenerationComplete =
                     lastRecoveredMessage?.role === "assistant" &&
                     lastRecoveredMessage.content;
@@ -6492,7 +6496,7 @@ export default function AgentChatComponent({
         const pendingApprovalData = full.pendingApproval;
         if (pendingApprovalData && pendingApprovalData.isPending) {
           if (pendingApprovalData.type === "plan") {
-            const lastAssistantMessage = [...(full.messages || [])]
+            const lastAssistantMessage = [...displayMessages]
               .reverse()
               .find((message) => message.role === "assistant");
             if (lastAssistantMessage && lastAssistantMessage.content) {
@@ -6553,7 +6557,7 @@ export default function AgentChatComponent({
         setToolActivity([]);
         setSubAgentToolActivity({});
 
-        const lastAssistant = [...(full.messages || [])]
+        const lastAssistant = [...displayMessages]
           .reverse()
           .find((message) => message.role === "assistant" && message.provider);
         const conversationSettings = full.settings as

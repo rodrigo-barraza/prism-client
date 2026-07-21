@@ -596,7 +596,9 @@ export default function SynthesisComponent() {
       if (run.conversationId) {
         try {
           const full = await PrismService.getConversation(run.conversationId);
-          const msgs = (full.messages || []).filter((message) => message.role !== "system");
+          // displayMessages is the response's only message form (raw
+          // `messages` are no longer shipped on GET /conversations/:id)
+          const msgs = (full.displayMessages || []).filter((message) => message.role !== "system");
           setGeneratedMessages(msgs);
           if (msgs.length > 0) setLeftTab("output");
         } catch {
