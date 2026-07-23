@@ -14,8 +14,6 @@
 /* ── Sidebar Tab Navigation ──────────────────────────────────── */
 
 .sidebar-tab-navigation {
-  display: flex;
-  align-items: stretch;
   border-block-end: 1px solid var(--calculated-border-color);
   flex-shrink: 0;
 }

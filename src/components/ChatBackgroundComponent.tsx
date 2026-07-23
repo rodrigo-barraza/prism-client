@@ -48,7 +48,8 @@ const CHAT_BACKGROUND_SCENES: Partial<
 
 /**
  * QA affordances: set localStorage["prism:sky-hour"] to a number (0..24) to
- * pin the clouds scene to that local hour, and/or
+ * pin the clouds scene to that canonical solar hour (6 = sunrise, 12 = noon,
+ * 18 = sunset, regardless of the real sun times), and/or
  * localStorage["prism:moon-phase"] to a number (0 new … 0.5 full) to pin the
  * lunar phase for screenshots. Unset/invalid follows the real clock/calendar.
  */

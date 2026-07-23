@@ -9,7 +9,11 @@
  *   - a higher, sparser CUMULUS layer that upward rays hit — the puffy
  *     clouds that sit above the horizon line in a separate pressure layer.
  * Over an analytic sky whose sun arcs across the sky, moon, star field,
- * and palette are all driven by the *client's local time of day*.
+ * and palette are all driven by the *client's real sun times*: the local
+ * clock is warped through today's sunrise/sunset (shared NOAA sun math from
+ * the components library, coordinates estimated from the IANA timezone) so
+ * golden hour on screen lines up with golden hour out the window, in any
+ * timezone and season.
  *
  * Time of day (computed on the CPU from `new Date()`, fed as uniforms):
  *   - Day: bright blue-shifted sky, small overexposed sun, sunlit tops.
@@ -33,8 +37,9 @@
  *
  * Runtime parameters (setParameter):
  *   - "timeScale": number — cloud drift speed multiplier (default 1)
- *   - "timeOfDayHours": number|null — force a local hour (0..24) for the
- *     sky, or null to follow the real clock again
+ *   - "timeOfDayHours": number|null — force a canonical solar hour (0..24,
+ *     6 = sunrise, 12 = noon, 18 = sunset) for the sky, or null to follow
+ *     the real clock again
  *   - "moonPhase": number|null — force a lunar phase (0 new … 0.5 full …
  *     wraps at 1), or null to follow the real calendar again
  *   - "typeImpulse": number — kick the forward fly-through speed (typing
@@ -43,6 +48,10 @@
  */
 
 import { clamp } from "@rodrigo-barraza/utilities-library";
+import {
+  autoDayWindowMinutes,
+  estimateClientCoordinates,
+} from "@rodrigo-barraza/components-library";
 import type { TickState } from "../ThreeService";
 import type {
   ThreeAnimationContext,
@@ -76,8 +85,9 @@ export interface CloudsAnimationOptions {
   /** Daytime palette overrides — defaults match the blue reference artwork. */
   palette?: Partial<CloudsPalette>;
   /**
-   * Force a local hour (0..24) instead of reading the client clock. For
-   * previews/QA; leave undefined in production to follow real time.
+   * Force a canonical solar hour (0..24, 6 = sunrise, 12 = noon,
+   * 18 = sunset) instead of reading the client clock. For previews/QA;
+   * leave undefined in production to follow real time.
    */
   debugHour?: number;
   /**
@@ -191,12 +201,36 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
   return t * t * (3 - 2 * t);
 }
 
-/** Local hour in [0, 24) from the client clock. */
-function currentLocalHour(): number {
+// Client coordinates estimated once from the IANA timezone (city-level, no
+// geolocation prompt) — they anchor the scene's sunrise/sunset to the sky
+// the user can actually see.
+const CLIENT_COORDINATES = estimateClientCoordinates();
+
+/**
+ * Canonical solar hour in [0, 24): the real clock warped so today's actual
+ * sunrise lands on 6, solar noon on 12, and sunset on 18 — the fixed points
+ * all the sun-arc/palette math below is written against. The night span is
+ * stretched to fill sunset→sunrise the same way. During polar day/night
+ * autoDayWindowMinutes falls back to fixed 07:00/19:00 bounds.
+ */
+function currentSolarHour(): number {
   const now = new Date();
-  return (
-    now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600
+  const minutes =
+    now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  const { dayStart, dayEnd } = autoDayWindowMinutes(
+    now,
+    CLIENT_COORDINATES.latitude,
+    CLIENT_COORDINATES.longitude,
   );
+  if (minutes >= dayStart && minutes < dayEnd) {
+    return 6 + (12 * (minutes - dayStart)) / (dayEnd - dayStart);
+  }
+  // Night: sunset→sunrise mapped onto 18→30 (mod 24). Today's window stands
+  // in for the adjacent days' — sun times drift only ~1 minute per day.
+  const nightLength = 1440 - (dayEnd - dayStart);
+  const sinceSunset =
+    minutes >= dayEnd ? minutes - dayEnd : minutes + 1440 - dayEnd;
+  return (18 + (12 * sinceSunset) / nightLength) % 24;
 }
 
 // Mean synodic month + a known new-moon epoch (2000-01-06 18:14 UTC). The
@@ -761,7 +795,8 @@ export function createCloudsAnimation(
   const AZIMUTH_SWING = 0.55; // radians (~±16° across daylight hours)
 
   const applySkyState = (hours: number) => {
-    // Sun arc: 0 at 06:00, peak at 12:00, 0 at 18:00, lowest at 00:00
+    // `hours` is the canonical solar hour (see currentSolarHour): sun arc
+    // rises at 6, peaks at 12, sets at 18, bottoms out at 0/24.
     const sunProgress = (hours - 6) / 12;
     const sunElevation = Math.sin(sunProgress * Math.PI) * MAX_SUN_ELEVATION;
     const sunAzimuth = ((hours - 12) / 12) * AZIMUTH_SWING;
@@ -854,7 +889,7 @@ export function createCloudsAnimation(
   };
 
   const resolveHour = (): number =>
-    typeof debugHour === "number" ? debugHour : currentLocalHour();
+    typeof debugHour === "number" ? debugHour : currentSolarHour();
 
   let forcedHour: number | null =
     typeof debugHour === "number" ? debugHour : null;
@@ -901,7 +936,7 @@ export function createCloudsAnimation(
     skyRefreshAccumulator += delta;
     if (skyRefreshAccumulator >= 4) {
       skyRefreshAccumulator = 0;
-      applySkyState(forcedHour ?? currentLocalHour());
+      applySkyState(forcedHour ?? currentSolarHour());
     }
 
     if (reducedMotion) return;
@@ -929,13 +964,13 @@ export function createCloudsAnimation(
     if (key === "timeOfDayHours") {
       forcedHour =
         typeof value === "number" ? ((value % 24) + 24) % 24 : null;
-      applySkyState(forcedHour ?? currentLocalHour());
+      applySkyState(forcedHour ?? currentSolarHour());
       return;
     }
     if (key === "moonPhase") {
       forcedMoonPhase =
         typeof value === "number" ? ((value % 1) + 1) % 1 : null;
-      applySkyState(forcedHour ?? currentLocalHour());
+      applySkyState(forcedHour ?? currentSolarHour());
     }
   };
 
