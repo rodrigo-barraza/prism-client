@@ -30,6 +30,7 @@ vi.mock("@rodrigo-barraza/components-library", () => ({
     copy: mockCopyToClipboardHandler,
     copied: false,
   }),
+  estimateClientCoordinates: () => ({ latitude: 49.28, longitude: -123.12 }),
 }));
 
 const mockPrismSettings: PrismSettings = {

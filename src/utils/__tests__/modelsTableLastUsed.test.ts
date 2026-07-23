@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import React from "react";
 
-vi.mock("@rodrigo-barraza/components-library", () => ({}));
+vi.mock("@rodrigo-barraza/components-library", () => ({
+  estimateClientCoordinates: () => ({ latitude: 49.28, longitude: -123.12 }),
+}));
 
 import BadgeComponent from "../../components/BadgeComponent";
 
