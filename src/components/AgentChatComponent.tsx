@@ -152,10 +152,12 @@ import { getErrorMessage } from "../utils/errorMessage";
 import {
   buildAcceptFilter,
   classifyIntakeFile,
+  downscaleImageForAttachment,
   getTextualFileKind,
   formatFileSize,
   isUniversallyReadableMime,
   normalizeDataUrlMimeType,
+  shouldDownscaleImage,
 } from "../utils/fileIntake";
 import { shouldOpenViewerLiveStream } from "../utils/viewerLiveStreamGate";
 import {
@@ -208,9 +210,16 @@ const EMPTY_ADMIN_DATE_RANGE = { from: "", to: "" };
 // excess attachments are rejected with feedback instead of silently
 // bloating the payload. Images travel inline as base64; other files
 // upload to MinIO before send.
+// The file cap must leave its base64 data URL (×4/3) under the
+// service's 50MB JSON body limit, or /files/upload 413s at the body
+// parser before the endpoint's friendly validation can run.
 const MAX_IMAGE_ATTACHMENT_BYTES = 20 * 1024 * 1024; // 20MB per image
-const MAX_FILE_ATTACHMENT_BYTES = 40 * 1024 * 1024; // 40MB per non-image file
+const MAX_FILE_ATTACHMENT_BYTES = 35 * 1024 * 1024; // 35MB per non-image file (~46.7MB as base64)
 const MAX_ATTACHMENTS_PER_MESSAGE = 10;
+// Aggregate cap on inline message content (text + base64 image data
+// URLs) — several borderline-sized images can jointly exceed the
+// service's 50MB JSON limit even though each passed the per-image gate.
+const MAX_INLINE_PAYLOAD_BYTES = 45 * 1024 * 1024;
 
 const MODALITY_PLURAL_LABELS: Record<string, string> = {
   image: "images",
@@ -3794,7 +3803,7 @@ export default function AgentChatComponent({
     [supportedInputModalities],
   );
 
-  const routeFileToState = useCallback(
+  const readFileToState = useCallback(
     (file: globalThis.File, modality: string, mimeType: string) => {
       const reader = new FileReader();
       reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
@@ -3820,6 +3829,29 @@ export default function AgentChatComponent({
       reader.readAsDataURL(file);
     },
     [],
+  );
+
+  const routeFileToState = useCallback(
+    (file: globalThis.File, modality: string, mimeType: string) => {
+      // Large raster images are downscaled in-browser (≤2576px long
+      // edge, WebP/JPEG re-encode) before joining the payload — images
+      // travel inline as base64 in the agent request body, so a few
+      // full-resolution photos would otherwise blow the service's 50MB
+      // JSON limit. Undecodable formats (e.g. HEIC) fall back to the
+      // original bytes; the service converts and clamps those.
+      if (modality === "image" && shouldDownscaleImage(mimeType, file.size)) {
+        void downscaleImageForAttachment(file).then((downscaledDataUrl) => {
+          if (downscaledDataUrl) {
+            setPendingImages((previous) => [...previous, downscaledDataUrl]);
+          } else {
+            readFileToState(file, modality, mimeType);
+          }
+        });
+        return;
+      }
+      readFileToState(file, modality, mimeType);
+    },
+    [readFileToState],
   );
 
   // Single validated intake path for every attachment source (picker,
@@ -5588,6 +5620,29 @@ export default function AgentChatComponent({
         : [...pendingFilesRef.current];
 
       if (!text && currentImages.length === 0 && currentFiles.length === 0) return;
+
+      // Aggregate inline-payload guard: images ride the /agent body as
+      // base64 data URLs, so several borderline-sized images can jointly
+      // exceed the service's 50MB JSON limit even though each passed the
+      // per-image intake gate. Reject up-front with everything intact
+      // instead of letting the body parser 413 with an opaque error.
+      const inlineBytes =
+        text.length +
+        currentImages.reduce((sum, dataUrl) => sum + dataUrl.length, 0);
+      if (inlineBytes > MAX_INLINE_PAYLOAD_BYTES) {
+        if (overridePayload) {
+          // The queued payload already cleared the input when it was
+          // queued — put it back so nothing is lost.
+          setTextareaValue(text);
+          setPendingImages(currentImages);
+          setPendingFiles(currentFiles);
+        }
+        addToast(
+          `Message is too large to send (${formatByteLimit(inlineBytes)} inline) — the limit is ${formatByteLimit(MAX_INLINE_PAYLOAD_BYTES)}. Remove or shrink some images.`,
+          "warning",
+        );
+        return;
+      }
 
       if (isQueueing) {
         setQueuedNextTurn({ text, images: currentImages, files: currentFiles });

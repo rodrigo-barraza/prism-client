@@ -278,3 +278,125 @@ export function formatFileSize(sizeBytes: number): string {
   if (sizeBytes < 1024 * 1024) return `${trim(sizeBytes / 1024)} KB`;
   return `${trim(sizeBytes / (1024 * 1024))} MB`;
 }
+
+// -- Client-side image downscaling ------------------------------
+
+/**
+ * Long-edge pixel cap for client-side re-encoding. Matches the
+ * service's high-resolution Anthropic ceiling (2576px) so no model
+ * tier loses detail — the service still clamps each image to the
+ * active model's own dimension limit afterwards.
+ */
+export const IMAGE_DOWNSCALE_MAX_DIMENSION = 2576;
+
+/**
+ * Raw file size past which an attached image is re-encoded before it
+ * joins the pending payload. Images travel inline as base64 in the
+ * agent request body (50 MB JSON limit service-side), so keeping each
+ * one to a few MB stops multi-image messages from 413ing.
+ */
+export const IMAGE_DOWNSCALE_TRIGGER_BYTES = 4 * 1024 * 1024;
+
+/** Post-downscale byte budget per image (encoded blob size). */
+const DOWNSCALE_TARGET_BYTES = 4 * 1024 * 1024;
+
+/** Encode qualities tried in order until the result fits the budget. */
+const DOWNSCALE_QUALITY_LADDER = [0.92, 0.85, 0.75, 0.6];
+
+/**
+ * Raster formats only — re-encoding a GIF drops its animation and
+ * rasterizing an SVG destroys its scalability, so both pass through
+ * untouched (the service handles GIF resizing with ffmpeg).
+ */
+const NON_DOWNSCALABLE_IMAGE_MIMES = new Set(["image/gif", "image/svg+xml"]);
+
+/**
+ * Whether an attached image should be downscaled in-browser before
+ * joining the payload: raster format, over the size trigger.
+ */
+export function shouldDownscaleImage(
+  mimeType: string,
+  sizeBytes: number,
+): boolean {
+  return (
+    mimeType.startsWith("image/") &&
+    !NON_DOWNSCALABLE_IMAGE_MIMES.has(mimeType) &&
+    sizeBytes > IMAGE_DOWNSCALE_TRIGGER_BYTES
+  );
+}
+
+/** Promisified canvas.toBlob. */
+function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  mimeType: string,
+  quality: number,
+): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), mimeType, quality);
+  });
+}
+
+/** Read a Blob back out as a base64 data URL. */
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Downscale + re-encode an image file for attachment: decode, cap the
+ * long edge at IMAGE_DOWNSCALE_MAX_DIMENSION, and encode as WebP
+ * (falling back to PNG/JPEG where the browser can't encode WebP),
+ * stepping down the quality ladder until the result fits the budget.
+ *
+ * Returns the re-encoded data URL, or null when the caller should fall
+ * back to the original bytes: decode failure (e.g. HEIC, which
+ * browsers can't decode — the service converts it), an unavailable
+ * canvas, or a re-encode that came out no smaller than the source.
+ */
+export async function downscaleImageForAttachment(
+  file: globalThis.File,
+): Promise<string | null> {
+  if (typeof createImageBitmap !== "function") return null;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(
+      1,
+      IMAGE_DOWNSCALE_MAX_DIMENSION / Math.max(bitmap.width, bitmap.height),
+    );
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) return null;
+    context.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+
+    let encodeType = "image/webp";
+    let result: Blob | null = null;
+    for (const quality of DOWNSCALE_QUALITY_LADDER) {
+      let blob = await canvasToBlob(canvas, encodeType, quality);
+      if (blob && blob.type !== encodeType) {
+        // toBlob silently falls back to PNG when it can't encode the
+        // requested type — keep PNG for PNG sources (preserves alpha),
+        // JPEG for everything else.
+        encodeType = file.type === "image/png" ? "image/png" : "image/jpeg";
+        blob = await canvasToBlob(canvas, encodeType, quality);
+      }
+      if (!blob) return null;
+      result = blob;
+      if (blob.size <= DOWNSCALE_TARGET_BYTES) break;
+    }
+
+    if (!result || result.size >= file.size) return null;
+    return await blobToDataUrl(result);
+  } catch {
+    return null;
+  }
+}

@@ -2,13 +2,16 @@ import { describe, it, expect } from "vitest";
 
 import {
   EXTENSION_FALLBACK_TABLE,
+  IMAGE_DOWNSCALE_TRIGGER_BYTES,
   buildAcceptFilter,
   classifyIntakeFile,
   classifyMimeType,
+  downscaleImageForAttachment,
   getFileExtension,
   getTextualFileKind,
   isGenericMimeType,
   normalizeDataUrlMimeType,
+  shouldDownscaleImage,
 } from "../fileIntake";
 
 describe("fileIntake", () => {
@@ -247,6 +250,45 @@ describe("fileIntake", () => {
       expect(filter).toContain("text/plain");
       expect(filter).not.toContain("image/*");
       expect(filter).not.toContain(".docx");
+    });
+  });
+
+  describe("shouldDownscaleImage", () => {
+    const overTrigger = IMAGE_DOWNSCALE_TRIGGER_BYTES + 1;
+
+    it("downscales large raster images", () => {
+      expect(shouldDownscaleImage("image/jpeg", overTrigger)).toBe(true);
+      expect(shouldDownscaleImage("image/png", overTrigger)).toBe(true);
+      expect(shouldDownscaleImage("image/webp", overTrigger)).toBe(true);
+    });
+
+    it("leaves images at or under the trigger untouched", () => {
+      expect(
+        shouldDownscaleImage("image/jpeg", IMAGE_DOWNSCALE_TRIGGER_BYTES),
+      ).toBe(false);
+      expect(shouldDownscaleImage("image/png", 1024)).toBe(false);
+    });
+
+    it("never touches GIFs (animation) or SVGs (vector)", () => {
+      expect(shouldDownscaleImage("image/gif", overTrigger)).toBe(false);
+      expect(shouldDownscaleImage("image/svg+xml", overTrigger)).toBe(false);
+    });
+
+    it("ignores non-image MIME types regardless of size", () => {
+      expect(shouldDownscaleImage("application/pdf", overTrigger)).toBe(false);
+      expect(shouldDownscaleImage("video/mp4", overTrigger)).toBe(false);
+    });
+  });
+
+  describe("downscaleImageForAttachment", () => {
+    it("returns null (caller falls back to original bytes) when the browser canvas pipeline is unavailable", async () => {
+      // jsdom has no createImageBitmap/canvas encoder — the util must
+      // signal fallback rather than throw, matching the HEIC/decode-
+      // failure path in real browsers.
+      const file = new File([new Uint8Array(64)], "photo.jpg", {
+        type: "image/jpeg",
+      });
+      await expect(downscaleImageForAttachment(file)).resolves.toBeNull();
     });
   });
 });
