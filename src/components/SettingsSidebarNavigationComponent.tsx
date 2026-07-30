@@ -11,6 +11,8 @@ import {
   Volume2,
   Lock,
   Workflow,
+  FileText,
+  Webhook,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import { useWorkspace } from "./WorkspaceContextComponent";
@@ -35,6 +37,8 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: "agent-defaults", label: "Agent Defaults", icon: Network },
   { id: "security-sandboxing", label: "Security & Sandboxing", icon: Lock },
   { id: "mcp-servers", label: "MCP Servers", icon: Plug },
+  { id: "project-instructions", label: "Project Instructions", icon: FileText },
+  { id: "hooks", label: "Hooks", icon: Webhook },
   { id: "custom-themes", label: "Custom Themes", icon: Palette },
 ];
 

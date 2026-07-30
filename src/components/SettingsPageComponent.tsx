@@ -35,6 +35,8 @@ import {
   AppWindow,
   MemoryStick,
   Workflow,
+  FileText,
+  Webhook,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MILLISECONDS } from "@rodrigo-barraza/utilities-library";
 import { SERVICE_PORTS } from "@rodrigo-barraza/utilities-library/taxonomy";
@@ -48,6 +50,8 @@ import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
 import AvatarSelectorComponent from "./AvatarSelectorComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
+import HooksPanel from "./HooksPanelComponent";
+import ProjectInstructionsPanel from "./ProjectInstructionsPanelComponent";
 import {
   ButtonComponent,
   CardComponent,
@@ -66,6 +70,8 @@ import type {
   AgenticHarness,
   MCPServer,
   PrismConfig,
+  Hook,
+  ProjectInstructions,
 } from "../types/types";
 
 interface MachineInfo {
@@ -262,6 +268,11 @@ export default function SettingsPageComponent() {
 
   // -- MCP Servers state -----------------------------------------------
   const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
+
+  // -- Hooks + Project Instructions state ------------------------------
+  const [hooks, setHooks] = useState<Hook[]>([]);
+  const [projectInstructions, setProjectInstructions] =
+    useState<ProjectInstructions | null>(null);
 
   // -- Workspace state ------------------------------------------------
   const { refreshWorkspaces } = useWorkspace();
@@ -756,6 +767,32 @@ export default function SettingsPageComponent() {
       console.error("Failed to load MCP servers:", error);
     }
   }, []);
+
+  // -- Hooks refresh ---------------------------------------------------
+  const loadHooks = useCallback(async () => {
+    try {
+      const loadedHooks = await PrismService.getHooks();
+      setHooks(loadedHooks || []);
+    } catch (error: unknown) {
+      console.error("Failed to load hooks:", error);
+    }
+  }, []);
+
+  // -- Project instructions refresh ------------------------------------
+  const loadProjectInstructions = useCallback(async () => {
+    try {
+      const loadedInstructions = await PrismService.getProjectInstructions();
+      setProjectInstructions(loadedInstructions);
+    } catch (error: unknown) {
+      console.error("Failed to load project instructions:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
+    loadHooks();
+    loadProjectInstructions();
+  }, [loadHooks, loadProjectInstructions]);
 
   // -- Derived workspace data -----------------------------------------
   const userRoots = wsWorkspaces.filter(
@@ -2912,6 +2949,34 @@ export default function SettingsPageComponent() {
           servers={mcpServers}
           onServersChange={loadMCPServers}
         />
+      </CardComponent>
+
+      {/* -- Project Instructions Section ------------------------------ */}
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="project-instructions"
+      >
+        <CardComponent.Header
+          icon={FileText}
+          title="Project Instructions"
+          subtitle="PRISM.md — always-on instructions injected into every conversation in this project. The agent can update this document itself."
+        />
+
+        <ProjectInstructionsPanel
+          instructions={projectInstructions}
+          onInstructionsChange={loadProjectInstructions}
+        />
+      </CardComponent>
+
+      {/* -- Hooks Section --------------------------------------------- */}
+      <CardComponent className={styles["section"]} data-settings-section="hooks">
+        <CardComponent.Header
+          icon={Webhook}
+          title="Hooks"
+          subtitle="Run a prompt, an HTTP endpoint, or an MCP tool at a lifecycle event. Only PreToolUse and UserPromptSubmit can block — every other event observes or transforms."
+        />
+
+        <HooksPanel hooks={hooks} onHooksChange={loadHooks} />
       </CardComponent>
 
       {/* -- Custom Themes Section ------------------------------------ */}

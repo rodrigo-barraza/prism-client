@@ -19,6 +19,10 @@ import type {
   AgentPersona,
   Skill,
   Rule,
+  Hook,
+  HookTestResult,
+  ProjectInstructions,
+  ProjectInstructionsVersion,
   AgentMemoryListResponse,
   AgentMemoryFacets,
   PrismSettings,
@@ -681,6 +685,125 @@ export default class PrismService {
     return PrismService._request<{ success: boolean }>(`/rules/${id}`, {
       method: HTTP_METHODS.DELETE,
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Hooks (Configurable Lifecycle Handlers)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * List hooks, optionally narrowed to one agent and/or one lifecycle event.
+   * Project / username scoping is implicit via the identity headers.
+   */
+  static async getHooks(agent?: string, event?: string): Promise<Hook[]> {
+    const queryString = new URLSearchParams();
+    if (agent) queryString.set("agent", agent);
+    if (event) queryString.set("event", event);
+    const query = queryString.toString();
+    return PrismService._request<Hook[]>(
+      `/hooks${query ? `?${query}` : ""}`,
+      { method: HTTP_METHODS.GET },
+    );
+  }
+
+  static async createHook(hook: Omit<Hook, "_id">): Promise<Hook> {
+    return PrismService._request<Hook>("/hooks", {
+      method: HTTP_METHODS.POST,
+      body: hook,
+    });
+  }
+
+  static async updateHook(id: string, updates: Partial<Hook>): Promise<Hook> {
+    return PrismService._request<Hook>(`/hooks/${encodeURIComponent(id)}`, {
+      method: HTTP_METHODS.PUT,
+      body: updates,
+    });
+  }
+
+  static async deleteHook(id: string): Promise<{ success: boolean }> {
+    return PrismService._request<{ success: boolean }>(
+      `/hooks/${encodeURIComponent(id)}`,
+      { method: HTTP_METHODS.DELETE },
+    );
+  }
+
+  /**
+   * Dry-run one hook against a sample event payload — returns the decision the
+   * handler produced plus how long it took, without touching a live session.
+   */
+  static async testHook(
+    id: string,
+    payload?: Record<string, unknown>,
+  ): Promise<HookTestResult> {
+    return PrismService._request<HookTestResult>(
+      `/hooks/${encodeURIComponent(id)}/test`,
+      { method: HTTP_METHODS.POST, body: { payload } },
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Project Instructions (PRISM.md)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Fetch the single self-updating instructions doc for the current scope.
+   * Omit `agent` for the project-wide doc.
+   */
+  static async getProjectInstructions(
+    agent?: string,
+  ): Promise<ProjectInstructions> {
+    const queryString = agent ? `?agent=${encodeURIComponent(agent)}` : "";
+    return PrismService._request<ProjectInstructions>(
+      `/project-instructions${queryString}`,
+      { method: HTTP_METHODS.GET },
+    );
+  }
+
+  /** Replace the doc body — the server closes the old version and bumps. */
+  static async updateProjectInstructions(
+    content: string,
+    agent?: string,
+  ): Promise<ProjectInstructions> {
+    return PrismService._request<ProjectInstructions>("/project-instructions", {
+      method: HTTP_METHODS.PUT,
+      body: { content, agent },
+    });
+  }
+
+  /** Superseded revisions, newest first. */
+  static async getProjectInstructionsVersions(
+    agent?: string,
+    limit?: number,
+  ): Promise<ProjectInstructionsVersion[]> {
+    const queryString = new URLSearchParams();
+    if (agent) queryString.set("agent", agent);
+    if (limit) queryString.set("limit", String(limit));
+    const query = queryString.toString();
+    return PrismService._request<ProjectInstructionsVersion[]>(
+      `/project-instructions/versions${query ? `?${query}` : ""}`,
+      { method: HTTP_METHODS.GET },
+    );
+  }
+
+  /** Restore an earlier revision as a new current version. */
+  static async rollbackProjectInstructions(
+    version: number,
+    agent?: string,
+  ): Promise<ProjectInstructions> {
+    return PrismService._request<ProjectInstructions>(
+      "/project-instructions/rollback",
+      { method: HTTP_METHODS.POST, body: { version, agent } },
+    );
+  }
+
+  static async deleteProjectInstructions(
+    agent?: string,
+  ): Promise<{ success: boolean }> {
+    const queryString = agent ? `?agent=${encodeURIComponent(agent)}` : "";
+    return PrismService._request<{ success: boolean }>(
+      `/project-instructions${queryString}`,
+      { method: HTTP_METHODS.DELETE },
+    );
   }
 
   // ---------------------------------------------------------------------------

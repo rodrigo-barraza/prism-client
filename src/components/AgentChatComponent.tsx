@@ -38,6 +38,8 @@ import {
   AgentConversation,
   Skill,
   Rule,
+  Hook,
+  ProjectInstructions,
   ToolCallEvent,
   PrismSettings,
   Conversation,
@@ -64,6 +66,8 @@ import ModelInfoPanel from "./ModelInfoPanelComponent";
 import SkillsPanel from "./SkillsPanelComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
 import RulesPanel from "./RulesPanelComponent";
+import HooksPanel from "./HooksPanelComponent";
+import ProjectInstructionsPanel from "./ProjectInstructionsPanelComponent";
 import MemoriesPanel from "./MemoriesPanelComponent";
 import TasksPanel from "./TasksPanelComponent";
 import DatastorePanel from "./DatastorePanelComponent";
@@ -334,7 +338,15 @@ const WORKSPACE_FS_TOOLS: Set<string> = new Set([
   TOOL_NAMES.EDIT_NOTEBOOK,
 ]);
 
-const BOTTOM_PANEL_TABS = new Set(["tools", "skills", "rules", "memories", "tasks"]);
+const BOTTOM_PANEL_TABS = new Set([
+  "tools",
+  "skills",
+  "rules",
+  "hooks",
+  "instructions",
+  "memories",
+  "tasks",
+]);
 
 
 
@@ -730,6 +742,9 @@ export default function AgentChatComponent({
   const [skills, setSkills] = useState<Skill[]>([]);
   const [_injectedSkills, setInjectedSkills] = useState<Skill[]>([]);
   const [rules, setRules] = useState<Rule[]>([]);
+  const [hooks, setHooks] = useState<Hook[]>([]);
+  const [projectInstructions, setProjectInstructions] =
+    useState<ProjectInstructions | null>(null);
   // Active rules are tracked as inline badges in the contentEditable DOM.
   // At send time we extract names via extractSlashCommandNames().
   const [slashCommandOpen, setSlashCommandOpen] = useState(false);
@@ -798,6 +813,9 @@ export default function AgentChatComponent({
   const [skillsHeaderActions, setSkillsHeaderActions] =
     useState<ReactNode>(null);
   const [rulesHeaderActions, setRulesHeaderActions] = useState<ReactNode>(null);
+  const [hooksHeaderActions, setHooksHeaderActions] = useState<ReactNode>(null);
+  const [projectInstructionsHeaderActions, setProjectInstructionsHeaderActions] =
+    useState<ReactNode>(null);
   const [tasksHeaderActions, setTasksHeaderActions] = useState<ReactNode>(null);
   const [datastoreHeaderActions, setDatastoreHeaderActions] =
     useState<ReactNode>(null);
@@ -2817,6 +2835,36 @@ export default function AgentChatComponent({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     if (!isAdmin) loadRules();
   }, [loadRules, isAdmin]);
+
+  // Load hooks (per-agent lifecycle handlers)
+  const loadHooks = useCallback(async () => {
+    try {
+      const agentHooks = await PrismService.getHooks(agentId);
+      setHooks(agentHooks || []);
+    } catch (error: unknown) {
+      console.error("Failed to load hooks:", error);
+    }
+  }, [agentId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
+    if (!isAdmin) loadHooks();
+  }, [loadHooks, isAdmin]);
+
+  // Load project instructions (PRISM.md — the agent can rewrite this itself)
+  const loadProjectInstructions = useCallback(async () => {
+    try {
+      const instructions = await PrismService.getProjectInstructions(agentId);
+      setProjectInstructions(instructions);
+    } catch (error: unknown) {
+      console.error("Failed to load project instructions:", error);
+    }
+  }, [agentId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
+    if (!isAdmin) loadProjectInstructions();
+  }, [loadProjectInstructions, isAdmin]);
 
 
 
@@ -8333,6 +8381,26 @@ export default function AgentChatComponent({
                   ),
                   tooltip: "Rules",
                 },
+                {
+                  key: "instructions",
+                  icon: <span className={tabBarStyles['tab-emoji-icon']}>📋</span>,
+                  // The badge is a version, not a count — render it as "v3" so
+                  // it is never misread as "3 instructions".
+                  ...badgeProps(projectInstructions?.version ?? 0, "instructions"),
+                  badge: projectInstructions?.version
+                    ? `v${projectInstructions.version}`
+                    : 0,
+                  tooltip: "Project Instructions",
+                },
+                {
+                  key: "hooks",
+                  icon: <span className={tabBarStyles['tab-emoji-icon']}>🪝</span>,
+                  ...badgeProps(
+                    hooks.filter((hook) => hook.enabled).length,
+                    "hooks",
+                  ),
+                  tooltip: "Hooks",
+                },
                 ...(hasAnyMemoryModelSet
                   ? [
                       {
@@ -8434,6 +8502,46 @@ export default function AgentChatComponent({
             onRulesChange={loadRules}
             agent={agentId}
             onActionsChange={setRulesHeaderActions}
+          />
+        </>
+      )}
+
+      {leftTabBottom === "instructions" && (
+        <>
+          <SidebarTabHeaderComponent
+            icon="📋"
+            title="Project Instructions"
+            count={
+              projectInstructions?.version
+                ? `v${projectInstructions.version}`
+                : null
+            }
+            actions={projectInstructionsHeaderActions}
+          />
+          <ProjectInstructionsPanel
+            readOnly={isAdmin}
+            instructions={projectInstructions}
+            onInstructionsChange={loadProjectInstructions}
+            agent={agentId}
+            onActionsChange={setProjectInstructionsHeaderActions}
+          />
+        </>
+      )}
+
+      {leftTabBottom === "hooks" && (
+        <>
+          <SidebarTabHeaderComponent
+            icon="🪝"
+            title="Hooks"
+            count={hooks.length}
+            actions={hooksHeaderActions}
+          />
+          <HooksPanel
+            readOnly={isAdmin}
+            hooks={hooks}
+            onHooksChange={loadHooks}
+            agent={agentId}
+            onActionsChange={setHooksHeaderActions}
           />
         </>
       )}

@@ -1011,6 +1011,124 @@ export interface Rule {
   updatedAt?: string;
 }
 
+// --- Hooks (Configurable Lifecycle Handlers) ----------------
+
+/** Lifecycle point a hook fires on. */
+export type HookEventName =
+  | "SessionStart"
+  | "UserPromptSubmit"
+  | "PreToolUse"
+  | "PostToolUse"
+  | "PostToolUseFailure"
+  | "Stop"
+  | "SubagentStart"
+  | "SubagentStop"
+  | "PreCompact"
+  | "PostCompact"
+  | "Notification"
+  | "SessionEnd"
+  | "Error";
+
+/**
+ * Every hook event, in canonical order — the single source the UI picker
+ * reads so the list is never duplicated per-component.
+ */
+export const HOOK_EVENT_NAMES: HookEventName[] = [
+  "SessionStart",
+  "UserPromptSubmit",
+  "PreToolUse",
+  "PostToolUse",
+  "PostToolUseFailure",
+  "Stop",
+  "SubagentStart",
+  "SubagentStop",
+  "PreCompact",
+  "PostCompact",
+  "Notification",
+  "SessionEnd",
+  "Error",
+];
+
+/** Ask a model for the decision. */
+export interface HookPromptHandler {
+  type: "prompt";
+  prompt: string;
+  provider?: string;
+  model?: string;
+}
+
+/** POST the event payload to a URL and use the response as the decision. */
+export interface HookHttpHandler {
+  type: "http";
+  url: string;
+  headers?: Record<string, string>;
+}
+
+/** Call an MCP tool and use its result as the decision. */
+export interface HookMcpToolHandler {
+  type: "mcp_tool";
+  server: string;
+  tool: string;
+  input?: Record<string, unknown>;
+}
+
+export type HookHandlerConfig =
+  | HookPromptHandler
+  | HookHttpHandler
+  | HookMcpToolHandler;
+
+export interface Hook {
+  _id?: ObjectId;
+  id?: string;
+  name: string;
+  description?: string;
+  event: HookEventName;
+  /**
+   * Tool-name matcher — only meaningful on PreToolUse / PostToolUse /
+   * PostToolUseFailure, where it filters which tool triggers the hook.
+   */
+  matcher?: string;
+  handler: HookHandlerConfig;
+  /** null = every agent. */
+  agent?: string | null;
+  enabled?: boolean;
+  timeoutMilliseconds?: number;
+  project?: string;
+  username?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** Result of a one-off hook dry run. */
+export interface HookTestResult {
+  decision: Record<string, unknown>;
+  durationMilliseconds: number;
+  error?: string;
+}
+
+// --- Project Instructions (PRISM.md) ------------------------
+
+/** The single self-updating markdown doc for a scope. */
+export interface ProjectInstructions {
+  id?: string;
+  content: string;
+  version: number;
+  /** null = the project-wide doc rather than an agent-specific one. */
+  agent?: string | null;
+  updatedBy?: "user" | "agent";
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** A superseded revision, kept for the history list and rollback. */
+export interface ProjectInstructionsVersion {
+  version: number;
+  content: string;
+  updatedBy?: string;
+  updatedAt?: string;
+  closedReason?: string;
+}
+
 // --- Agent Memories -----------------------------------------
 
 export interface AgentMemory {

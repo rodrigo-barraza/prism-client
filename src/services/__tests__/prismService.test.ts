@@ -248,6 +248,96 @@ describe("PrismService", () => {
     });
   });
 
+  describe("Hooks Operations", () => {
+    it("getHooks, createHook, updateHook, deleteHook", async () => {
+      await PrismService.getHooks();
+      expect(lastUrl).toContain("/hooks");
+      // no filters → no trailing "?" left dangling on the path
+      expect(lastUrl.endsWith("/hooks")).toBe(true);
+      expect(lastOptions?.method).toBe("GET");
+
+      await PrismService.getHooks("coding");
+      expect(lastUrl).toContain("/hooks?agent=coding");
+
+      await PrismService.getHooks("coding", "PreToolUse");
+      expect(lastUrl).toContain("/hooks?agent=coding&event=PreToolUse");
+
+      await PrismService.getHooks(undefined, "SessionStart");
+      expect(lastUrl).toContain("/hooks?event=SessionStart");
+
+      await PrismService.createHook({
+        name: "hook-a",
+        event: "PreToolUse",
+        handler: { type: "prompt", prompt: "check it" },
+      });
+      expect(lastUrl).toContain("/hooks");
+      expect(lastOptions?.method).toBe("POST");
+
+      await PrismService.updateHook("hook-123", { name: "hook-updated" });
+      expect(lastUrl).toContain("/hooks/hook-123");
+      expect(lastOptions?.method).toBe("PUT");
+
+      await PrismService.deleteHook("hook-123");
+      expect(lastUrl).toContain("/hooks/hook-123");
+      expect(lastOptions?.method).toBe("DELETE");
+    });
+
+    it("testHook", async () => {
+      fetchResult = {
+        ok: true,
+        json: async () => ({ decision: { allow: true }, durationMilliseconds: 12 }),
+      };
+      const result = await PrismService.testHook("hook-123", { toolName: "Read" });
+      expect(lastUrl).toContain("/hooks/hook-123/test");
+      expect(lastOptions?.method).toBe("POST");
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({
+        payload: { toolName: "Read" },
+      });
+      expect(result.decision).toEqual({ allow: true });
+      expect(result.durationMilliseconds).toBe(12);
+    });
+  });
+
+  describe("Project Instructions Operations", () => {
+    it("getProjectInstructions, updateProjectInstructions, deleteProjectInstructions", async () => {
+      await PrismService.getProjectInstructions();
+      expect(lastUrl).toContain("/project-instructions");
+      expect(lastOptions?.method).toBe("GET");
+
+      await PrismService.getProjectInstructions("coding");
+      expect(lastUrl).toContain("/project-instructions?agent=coding");
+
+      await PrismService.updateProjectInstructions("# PRISM\n\nnew body", "coding");
+      expect(lastUrl).toContain("/project-instructions");
+      expect(lastOptions?.method).toBe("PUT");
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({
+        content: "# PRISM\n\nnew body",
+        agent: "coding",
+      });
+
+      await PrismService.deleteProjectInstructions("coding");
+      expect(lastUrl).toContain("/project-instructions?agent=coding");
+      expect(lastOptions?.method).toBe("DELETE");
+    });
+
+    it("getProjectInstructionsVersions & rollbackProjectInstructions", async () => {
+      await PrismService.getProjectInstructionsVersions();
+      expect(lastUrl).toContain("/project-instructions/versions");
+      expect(lastOptions?.method).toBe("GET");
+
+      await PrismService.getProjectInstructionsVersions("coding", 5);
+      expect(lastUrl).toContain("/project-instructions/versions?agent=coding&limit=5");
+
+      await PrismService.rollbackProjectInstructions(3, "coding");
+      expect(lastUrl).toContain("/project-instructions/rollback");
+      expect(lastOptions?.method).toBe("POST");
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({
+        version: 3,
+        agent: "coding",
+      });
+    });
+  });
+
   describe("Agent Memories Operations", () => {
     it("getAgentMemories, deleteAgentMemory, consolidateMemories, getConsolidationHistory", async () => {
       await PrismService.getAgentMemories("project-a", 10, "coding", 0, "type-x");

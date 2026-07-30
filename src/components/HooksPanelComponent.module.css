@@ -1,0 +1,499 @@
+/* ============================================================
+   Hooks Panel — CRUD interface for lifecycle hooks
+   Follows the same design language as RulesPanelComponent
+   ============================================================ */
+
+.container {
+  composes: container from "./PanelShared.module.css";
+  --panel-accent: var(--color-cyan);
+}
+
+/* ── Empty State ────────────────────────────────────────────── */
+
+.empty-state {
+  composes: empty-state from "./PanelShared.module.css";
+}
+
+.empty-icon {
+  composes: empty-icon from "./PanelShared.module.css";
+}
+
+.empty-title {
+  composes: empty-title from "./PanelShared.module.css";
+}
+
+.empty-subtitle {
+  composes: empty-subtitle from "./PanelShared.module.css";
+  max-width: 340px;
+}
+
+/* ── Hook Row (shared sidebar-row language) ─────────────────── */
+
+.list {
+  composes: list from "./PanelShared.module.css";
+}
+
+.hook-row {
+  composes: row from "./PanelShared.module.css";
+
+  &:hover {
+    background: var(--sidebar-row-hover-bg);
+  }
+}
+
+.hook-row-disabled {
+  composes: row-disabled from "./PanelShared.module.css";
+}
+
+.hook-leading-icon {
+  composes: row-leading-icon from "./PanelShared.module.css";
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  background: color-mix(in oklch, var(--color-cyan) 12%, transparent);
+  color: var(--color-cyan);
+}
+
+.hook-body {
+  composes: row-content from "./PanelShared.module.css";
+}
+
+.hook-title-line {
+  composes: row-title-line from "./PanelShared.module.css";
+}
+
+.hook-name {
+  composes: row-title-text from "./PanelShared.module.css";
+  flex: 1;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hook-description {
+  composes: row-subtitle from "./PanelShared.module.css";
+}
+
+.hook-meta {
+  composes: row-meta from "./PanelShared.module.css";
+}
+
+/* ── Chips ──────────────────────────────────────────────────── */
+
+.hook-event-badge {
+  composes: chip from "./PanelShared.module.css";
+  gap: 4px;
+  color: var(--text-secondary);
+  background: color-mix(in oklch, var(--text-muted) 12%, transparent);
+}
+
+/* Only PreToolUse / UserPromptSubmit can deny — mark them loudly so the
+   list answers "which of these can actually stop something?" at a glance. */
+.hook-event-badge-blocking {
+  color: var(--color-orange);
+  background: color-mix(in oklch, var(--color-orange) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-orange) 28%, transparent);
+}
+
+.hook-handler-chip {
+  composes: chip chip-mono from "./PanelShared.module.css";
+  gap: 4px;
+  color: var(--color-cyan);
+  background: color-mix(in oklch, var(--color-cyan) 10%, transparent);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.hook-handler-target {
+  color: var(--text-muted);
+  font-weight: 400;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hook-matcher-chip {
+  composes: chip chip-mono from "./PanelShared.module.css";
+  color: var(--color-violet);
+  background: color-mix(in oklch, var(--color-violet) 10%, transparent);
+}
+
+.hook-agent-chip {
+  composes: chip from "./PanelShared.module.css";
+}
+
+/* ── Test Affordance ────────────────────────────────────────── */
+
+.hook-test-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  border-radius: var(--sidebar-row-chip-radius);
+  color: var(--color-cyan);
+  background: color-mix(in oklch, var(--color-cyan) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-cyan) 30%, transparent);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--color-cyan) 22%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.test-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--background-elevated);
+  border: 1px solid color-mix(in oklch, var(--color-cyan) 25%, transparent);
+  border-left: 2px solid var(--color-cyan);
+}
+
+.test-result-error {
+  border-color: color-mix(in oklch, var(--color-rose) 30%, transparent);
+  border-left-color: var(--color-rose);
+}
+
+.test-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.test-result-title {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.test-result-error .test-result-title {
+  color: var(--color-rose);
+}
+
+.test-result-duration {
+  font-size: 0.625rem;
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  color: var(--text-muted);
+}
+
+.test-result-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+    background: color-mix(in oklch, var(--text-muted) 12%, transparent);
+  }
+}
+
+/* A failure has to be readable, not truncated — this is the debug surface. */
+.test-result-message {
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+  color: var(--color-rose);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.test-result-json {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--background-base);
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow: auto;
+}
+
+/* ── Row Actions ────────────────────────────────────────────── */
+
+.hook-actions {
+  composes: row-actions from "./PanelShared.module.css";
+}
+
+.hook-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    background: color-mix(in oklch, var(--text-muted) 12%, transparent);
+  }
+}
+
+.hook-delete-button:hover {
+  color: var(--color-rose) !important;
+  background: color-mix(in oklch, var(--color-rose) 12%, transparent) !important;
+}
+
+/* ── Confirm Delete ─────────────────────────────────────────── */
+
+.confirm-layout-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.confirm-label {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  color: var(--color-rose);
+  font-weight: 500;
+}
+
+.confirm-button {
+  composes: confirm-button from "./PanelShared.module.css";
+}
+
+.confirm-button-yes {
+  background: color-mix(in oklch, var(--color-rose) 15%, transparent);
+  color: var(--color-rose);
+  border-color: color-mix(in oklch, var(--color-rose) 30%, transparent);
+
+  &:hover {
+    background: color-mix(in oklch, var(--color-rose) 25%, transparent);
+  }
+}
+
+.confirm-button-no {
+  background: transparent;
+  color: var(--text-muted);
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+/* ── Edit / Create Form ─────────────────────────────────────── */
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--calculated-border-color);
+  margin-bottom: 8px;
+  flex-shrink: 0;
+
+  h3 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+.cancel-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+    background: color-mix(in oklch, var(--text-muted) 12%, transparent);
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+/* The handler sub-form is the part that swaps with the type — box it so the
+   swap reads as one region changing rather than the whole form reflowing. */
+.handler-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: color-mix(in oklch, var(--color-cyan) 5%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-cyan) 18%, transparent);
+}
+
+.toggle-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.content-textarea {
+  min-height: 160px;
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  tab-size: 2;
+  white-space: pre-wrap;
+}
+
+.code-textarea {
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.hint-blocking {
+  color: var(--color-orange);
+}
+
+.field-error {
+  font-size: 0.625rem;
+  color: var(--color-rose);
+  line-height: 1.4;
+}
+
+.character-counter {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  text-align: right;
+  margin-top: -2px;
+}
+
+.character-counter-warning {
+  color: var(--color-warning);
+}
+
+.character-counter-danger {
+  color: var(--color-rose);
+}
+
+/* ── Form Actions ───────────────────────────────────────────── */
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--calculated-border-color);
+  flex-shrink: 0;
+}
+
+.save-button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--background-base, oklch(14.7% 0.0107 285));
+  background: var(--color-cyan);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--color-cyan) 90%, oklch(1 0 0));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px color-mix(in oklch, var(--color-cyan) 30%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.cancel-form-button {
+  padding: 8px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+  }
+}
