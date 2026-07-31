@@ -939,6 +939,45 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         badgeTone: "orange",
       },
       {
+        title:
+          "Beiträge zur Sozialpsychologie des Haushuhns (Contributions to the Social Psychology of the Domestic Fowl)",
+        authors: "Schjelderup-Ebbe, Zeitschrift für Psychologie 88, 225–252",
+        year: 1922,
+        arxivUrl:
+          "https://en.wikipedia.org/wiki/Thorleif_Schjelderup-Ebbe",
+        description:
+          "The paper the phrase \"pecking order\" was coined in — and it was never a metaphor there: Schjelderup-Ebbe recorded who pecked whom in real flocks and found the relation near-transitive (the birds line up almost linearly), stable while the flock is, re-fought whenever a bird is added or removed, and tracking temperament more closely than size. Paper Harvest's coop implements it literally: each bird's standing is earned from temper, age, mass and time in the flock, ranks are derived by sorting rather than stored, higher ranks eat first and take the better perch, and the bird at the bottom of an overcrowded coop eats less, stops laying and loses condition — which is the mechanism that teaches coop density. Predates arXiv; the link is the biographical record of the 1922 journal article.",
+        implementationFile: "paper-harvest/farming/barn/pecking.ts",
+        categoryLabel: "Social Hierarchy",
+        badgeTone: "teal",
+        alignment: [
+          {
+            component: "Order emerges rather than being assigned",
+            status: "aligned",
+            detail:
+              "Standing is computed from the bird's own make (temper, age, mass, arrival order); nothing is handed a rank, and rank is simply where a bird lands when the flock is sorted",
+          },
+          {
+            component: "Re-fought on any roster change",
+            status: "aligned",
+            detail:
+              "Seniority is measured against the flock as it stands today, so buying or losing a bird moves every seed and the order re-settles over the following nights — his most-repeated observation",
+          },
+          {
+            component: "Near-transitivity",
+            status: "simplified",
+            detail:
+              "Real flocks contain triangles; we model a strictly linear order and let contests between birds within a narrow band go either way, which is where a triangle would show as instability",
+          },
+          {
+            component: "Crowding as the dominant variable",
+            status: "extended",
+            detail:
+              "The paper observes the cost to the bottom bird; the game makes density the single lever — at or under the coop's perch count the order is display only, and every punitive term is multiplied by crowding pressure",
+          },
+        ],
+      },
+      {
         title: "Reference-Conditioned Self-Portraits (Nano Banana)",
         authors: "Google — Gemini Image Generation",
         year: 2026,
