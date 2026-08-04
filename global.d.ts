@@ -4,6 +4,8 @@ declare module "*.css" {
 }
 
 declare module "three";
+declare module "three/webgpu";
+declare module "three/tsl";
 
 // eslint-disable-next-line no-unused-vars -- global augmentation via declaration merging
 interface Window {

@@ -4,13 +4,17 @@ import { useRef, useEffect, useCallback } from "react";
 import type { CSSProperties } from "react";
 import * as THREE from "three";
 import ThreeService from "../services/ThreeService";
-import type { ThreeCreateOptions, TickState } from "../services/ThreeService";
+import type {
+  ThreeCreateOptions,
+  ThreeRenderer,
+  TickState,
+} from "../services/ThreeService";
 import styles from "./ThreeCanvasComponent.module.css";
 
 export interface SetupState {
   scene: InstanceType<typeof THREE.Scene>;
   camera: InstanceType<typeof THREE.PerspectiveCamera>;
-  renderer: InstanceType<typeof THREE.WebGLRenderer>;
+  renderer: ThreeRenderer;
   timer: InstanceType<typeof THREE.Timer>;
   THREE: typeof THREE;
 }
@@ -34,8 +38,9 @@ export interface ThreeCanvasComponentProps extends Omit<ThreeCreateOptions, "ton
  * scene setup and per-frame animation.
  *
  * Architecture:
- *   - `onSetup(state)` fires once after the Three.js instance is created.
- *     Use it to add meshes, lights, materials, etc.
+ *   - `onSetup(state)` fires once the instance's renderer is live (via
+ *     ThreeService.whenReady — immediate for WebGL, after async init for
+ *     `backend: "webgpu"`). Use it to add meshes, lights, materials, etc.
  *   - `onTick(state)` fires every frame. Use it for animation logic.
  *   - All GPU resources are deterministically disposed on unmount via
  *     ThreeService.destroy().
@@ -54,6 +59,8 @@ export default function ThreeCanvasComponent({
   shadowMap = false,
   maxPixelRatio = 2,
   maxFps = 0,
+  backend = "webgl",
+  outputColorSpace = "srgb",
   paused = false,
   className = "",
   style,
@@ -93,6 +100,8 @@ export default function ThreeCanvasComponent({
     shadowMap,
     maxPixelRatio,
     maxFps,
+    backend,
+    outputColorSpace,
   });
 
   useEffect(() => {
@@ -109,6 +118,8 @@ export default function ThreeCanvasComponent({
       shadowMap,
       maxPixelRatio,
       maxFps,
+      backend,
+      outputColorSpace,
     };
   });
 
@@ -135,6 +146,8 @@ export default function ThreeCanvasComponent({
       shadowMap: shadow,
       maxPixelRatio: pixelRatioCap,
       maxFps: fpsCap,
+      backend: gpuBackend,
+      outputColorSpace: outColorSpace,
     } = propsRef.current;
 
     // Create the Three.js instance
@@ -150,6 +163,8 @@ export default function ThreeCanvasComponent({
       shadowMap: shadow,
       maxPixelRatio: pixelRatioCap,
       maxFps: fpsCap,
+      backend: gpuBackend,
+      outputColorSpace: outColorSpace,
     });
 
     instanceIdRef.current = instanceId;
@@ -157,19 +172,28 @@ export default function ThreeCanvasComponent({
     // Register the tick callback
     ThreeService.setTick(instanceId, tickWrapper);
 
-    // Fire the setup callback — pass THREE so consumers don't import it
-    const instance = ThreeService.getInstance(instanceId);
-    if (instance && currentSetup) {
-      const cleanup = currentSetup({
-        ...instance,
-        THREE: ThreeService.THREE,
-      });
-      if (typeof cleanup === "function") {
-        setupCleanupRef.current = cleanup;
+    // Fire the setup callback once the renderer is live (immediately for
+    // WebGL; after async init for WebGPU). Pass THREE so consumers don't
+    // import it. `null` means init failed or we unmounted — bail quietly.
+    let unmounted = false;
+    void ThreeService.whenReady(instanceId).then((instance) => {
+      if (unmounted || !instance || instanceIdRef.current !== instanceId) {
+        return;
       }
-    }
+      if (currentSetup) {
+        const cleanup = currentSetup({
+          ...instance,
+          THREE: ThreeService.THREE,
+        });
+        if (typeof cleanup === "function") {
+          setupCleanupRef.current = cleanup;
+        }
+      }
+    });
 
     return () => {
+      unmounted = true;
+
       // Run user cleanup if provided
       setupCleanupRef.current?.();
       setupCleanupRef.current = null;

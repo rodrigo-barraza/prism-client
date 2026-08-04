@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
 import ThreeCanvasComponent from "./ThreeCanvasComponent";
 import type { SetupState } from "./ThreeCanvasComponent";
-import type { TickState } from "../services/ThreeService";
+import type { ThreeBackendName, TickState } from "../services/ThreeService";
 import type {
   ThreeAnimationFactory,
   ThreeAnimationHandle,
@@ -16,6 +16,13 @@ export interface ThreeBackgroundComponentProps<TOptions> {
   animation: ThreeAnimationFactory<TOptions>;
   /** Preset options — captured at mount; remount with a `key` to rebuild. */
   options: TOptions;
+  /**
+   * GPU backend the scene's materials are written for. "webgpu" scenes
+   * carry raw WGSL and require `navigator.gpu` — where it is missing the
+   * canvas never mounts and the caller's CSS fallback stays visible
+   * (there is deliberately no WebGL fallback for them). Default "webgl".
+   */
+  backend?: ThreeBackendName;
   /**
    * Drawing-buffer resolution cap. Backgrounds default to 1 (never render
    * at retina DPR) — full-screen raymarch cost scales with pixel count.
@@ -37,17 +44,24 @@ export interface ThreeBackgroundComponentProps<TOptions> {
  * meant for ambient scene backdrops (skies, weather, atmospheres).
  *
  * Behavior:
- *   - renders nothing until mounted client-side AND WebGL2 is available,
- *     so callers should paint a CSS gradient fallback behind it
+ *   - renders nothing until mounted client-side AND the required GPU
+ *     backend is available (WebGL2, or a WebGPU adapter for
+ *     `backend="webgpu"`), so callers should paint a CSS gradient
+ *     fallback behind it
  *   - fades the canvas in after the first rendered frame (no pop-in while
  *     shaders compile)
  *   - pauses the render loop when scrolled offscreen or `paused`
  *   - honors prefers-reduced-motion: the preset gets `reducedMotion: true`
  *     (static pose) and the loop idles once the first frames settle
+ *
+ * Backgrounds render with the identity output transform (no tone mapping,
+ * no sRGB encode) — their fullscreen shaders author display-ready color
+ * directly, exactly as the classic raw-ShaderMaterial path did.
  */
 export default function ThreeBackgroundComponent<TOptions>({
   animation,
   options,
+  backend = "webgl",
   maxPixelRatio = 1,
   maxFps = 30,
   paused = false,
@@ -74,10 +88,26 @@ export default function ThreeBackgroundComponent<TOptions>({
   }, []);
 
   // Mount gate: avoids SSR/hydration mismatch and skips devices without
-  // WebGL2 entirely (the CSS fallback behind us stays visible). Probed a
-  // frame after mount so it stays off the critical render path.
+  // the required backend entirely (the CSS fallback behind us stays
+  // visible). Probed a frame after mount so it stays off the critical
+  // render path. The WebGPU probe asks for a real adapter — `navigator.gpu`
+  // existing does not guarantee one (headless/software configs).
   useEffect(() => {
+    let cancelled = false;
     const frameId = requestAnimationFrame(() => {
+      if (backend === "webgpu") {
+        const gpu = (
+          navigator as { gpu?: { requestAdapter?(): Promise<unknown> } }
+        ).gpu;
+        if (!gpu?.requestAdapter) return;
+        gpu
+          .requestAdapter()
+          .then((adapter) => {
+            if (!cancelled && adapter) setCanRender(true);
+          })
+          .catch(() => {});
+        return;
+      }
       const probe = document.createElement("canvas");
       const gl = probe.getContext("webgl2");
       if (gl) {
@@ -85,8 +115,11 @@ export default function ThreeBackgroundComponent<TOptions>({
         setCanRender(true);
       }
     });
-    return () => cancelAnimationFrame(frameId);
-  }, []);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frameId);
+    };
+  }, [backend]);
 
   // Reduced motion renders a static frame — idle the loop once settled
   useEffect(() => {
@@ -154,6 +187,8 @@ export default function ThreeBackgroundComponent<TOptions>({
             alpha={false}
             antialias={false}
             toneMapping="None"
+            outputColorSpace="linear"
+            backend={backend}
             maxPixelRatio={maxPixelRatio}
             maxFps={maxFps}
             paused={paused || isOffscreen || isReducedIdle}

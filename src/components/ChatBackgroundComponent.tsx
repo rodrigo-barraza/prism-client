@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ThreeBackgroundComponent from "./ThreeBackgroundComponent";
-import {
-  createCloudsAnimation,
-  type CloudsAnimationOptions,
-  type ThreeAnimationFactory,
-  type ThreeAnimationHandle,
+import type {
+  CloudsAnimationOptions,
+  ThreeAnimationFactory,
+  ThreeAnimationHandle,
 } from "../services/three-animations";
+import type { ThreeBackendName } from "../services/ThreeService";
 import type { ChatBackgroundName } from "../hooks/useChatBackgroundSetting";
 import { EVENT_NAME_USER_TYPING } from "../constants";
 import styles from "./ChatBackgroundComponent.module.css";
@@ -18,10 +18,18 @@ import styles from "./ChatBackgroundComponent.module.css";
 const TYPE_IMPULSE_PER_KEYSTROKE = 26;
 
 interface ChatBackgroundScene {
+  /**
+   * Lazy module loader for the preset factory. Scenes load on demand
+   * because the clouds module statically imports `three/webgpu` (the
+   * node/WGSL system) — as a dynamic import it stays a separate chunk
+   * that only pages actually showing the backdrop ever fetch.
+   */
   // Registry holds heterogeneous option shapes — erased to `any` on purpose
-  animation: ThreeAnimationFactory<any>;
+  load: () => Promise<ThreeAnimationFactory<any>>;
+  /** GPU backend the scene's materials require (clouds carry raw WGSL). */
+  backend: ThreeBackendName;
   options: unknown;
-  /** CSS-gradient stand-in shown under the canvas (and without WebGL2). */
+  /** CSS-gradient stand-in shown under the canvas (and without a GPU). */
   fallbackClassName: string;
   maxPixelRatio: number;
   maxFps: number;
@@ -31,13 +39,18 @@ interface ChatBackgroundScene {
  * Scene registry for ambient chat backdrops. Adding a scene:
  *   1. Write a preset in src/services/three-animations.
  *   2. Add its name to CHAT_BACKGROUND_NAMES (useChatBackgroundSetting).
- *   3. Register it here with a CSS fallback gradient.
+ *   3. Register it here with a lazy loader + a CSS fallback gradient.
  */
 const CHAT_BACKGROUND_SCENES: Partial<
   Record<ChatBackgroundName, ChatBackgroundScene>
 > = {
   clouds: {
-    animation: createCloudsAnimation,
+    load: () =>
+      import("../services/three-animations/CloudsAnimation").then(
+        (module) => module.createCloudsAnimation,
+      ),
+    // Raw-WGSL shader — needs WebGPU; without it the gradient stays.
+    backend: "webgpu",
     options: {} satisfies CloudsAnimationOptions,
     fallbackClassName: styles["fallback-clouds"],
     // Full-screen raymarch: render at most at 1:1 CSS pixels, 30 fps
@@ -77,7 +90,9 @@ export interface ChatBackgroundComponentProps {
  *
  * Fills the messages list behind the empty-state content. Renders nothing
  * for "none" or unknown scenes. Mount only while the conversation is empty —
- * unmounting is what frees the GPU when messages arrive.
+ * unmounting is what frees the GPU when messages arrive. The CSS fallback
+ * gradient paints immediately; the canvas fades in over it once the scene
+ * module loads and its first frame renders.
  */
 export default function ChatBackgroundComponent({
   background,
@@ -85,6 +100,25 @@ export default function ChatBackgroundComponent({
   const scene = CHAT_BACKGROUND_SCENES[background];
   const handleRef = useRef<ThreeAnimationHandle | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [animation, setAnimation] =
+    useState<ThreeAnimationFactory<any> | null>(null);
+
+  // Load the scene's preset module (a separate chunk — see the registry).
+  useEffect(() => {
+    if (!scene) return;
+    let cancelled = false;
+    scene
+      .load()
+      .then((factory) => {
+        if (!cancelled) setAnimation(() => factory);
+      })
+      .catch((error) => {
+        console.warn("[ChatBackground] scene module failed to load:", error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [scene]);
 
   // Pin the backdrop to the scrollport: it is absolutely positioned inside
   // the scrollable messages list, so without this it would scroll away with
@@ -141,13 +175,16 @@ export default function ChatBackgroundComponent({
   return (
     <div ref={rootRef} className={styles["chat-background"]} aria-hidden>
       <div className={`${styles["fallback"]} ${scene.fallbackClassName}`} />
-      <ThreeBackgroundComponent
-        animation={scene.animation}
-        options={options}
-        maxPixelRatio={scene.maxPixelRatio}
-        maxFps={scene.maxFps}
-        handleRef={handleRef}
-      />
+      {animation && (
+        <ThreeBackgroundComponent
+          animation={animation}
+          options={options}
+          backend={scene.backend}
+          maxPixelRatio={scene.maxPixelRatio}
+          maxFps={scene.maxFps}
+          handleRef={handleRef}
+        />
+      )}
     </div>
   );
 }

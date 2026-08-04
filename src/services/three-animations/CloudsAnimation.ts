@@ -2,6 +2,20 @@
  * CloudsAnimation — hyper-real "above the clouds" background preset with a
  * full client-time-driven day/night cycle.
  *
+ * The shader is **raw WGSL** (three's `wgslFn` + `wgsl` helper blocks — the
+ * same idiom as games-client's volumetric clouds) on a WebGPU renderer.
+ * TSL appears only as inert wiring: uniforms in, one function call out.
+ * This preset therefore REQUIRES `backend: "webgpu"` on its Three instance
+ * (ChatBackgroundComponent mounts it that way); there is deliberately no
+ * WebGL/GLSL fallback — without WebGPU the CSS gradient behind it stays.
+ *
+ * ⚠ The WGSL lives inside JS template literals, so **no backtick may appear
+ * anywhere in it — comments included** (games-client lost an afternoon to
+ * one: the string closes early and the failure surfaces as a parse error
+ * pointing at prose). Name things the long way in here. A WGSL compile
+ * failure is also silent at runtime — the material simply draws nothing —
+ * so console-check the browser when touching shader code.
+ *
  * A single fullscreen triangle raymarches two volumetric cloud layers:
  *   - a near stratocumulus DECK just below the camera that recedes to a
  *     horizon ~70 km away (real planet-curvature term, so it sinks and
@@ -52,6 +66,16 @@ import {
   autoDayWindowMinutes,
   estimateClientCoordinates,
 } from "@rodrigo-barraza/components-library";
+import { NodeMaterial } from "three/webgpu";
+import {
+  positionGeometry,
+  sampler,
+  screenCoordinate,
+  texture,
+  uniform,
+  wgsl,
+  wgslFn,
+} from "three/tsl";
 import type { TickState } from "../ThreeService";
 import type {
   ThreeAnimationContext,
@@ -144,6 +168,29 @@ const NOISE_TEXTURE_SIZE = 256;
 const BASE_FORWARD_SPEED = 3.0; // units/sec — the calm idle drift
 const FORWARD_BOOST_DECAY_PER_SECOND = 1.5; // eases back to idle after typing
 const MAX_FORWARD_BOOST = 180.0; // cap so sustained typing tops out (~540 u/s)
+
+// -- Camera / world constants (meters) — baked into the WGSL below -----
+const CAMERA_HEIGHT = 430.0;
+const CLOUD_BASE = -140.0;
+const CLOUD_TOP = 330.0;
+const HIGH_BASE = 1500.0;
+const HIGH_TOP = 2650.0;
+const EARTH_RADIUS = 6371000.0;
+const CURVATURE = 1.0 / (2.0 * EARTH_RADIUS);
+const MAX_DISTANCE = 120000.0;
+const FOV_TAN = 0.4877; // vertical FOV ~52 deg
+const PITCH_SIN = 0.0785; // ~4.5 deg downward pitch
+const PITCH_COS = 0.9969;
+const MAX_STEPS = 96;
+const HIGH_STEPS = 44;
+// Stylized moon size (real moon is ~0.0045 rad) — shared by the disc edge,
+// limb darkening, and the phase terminator's disc-plane coordinates.
+const MOON_ANGULAR_RADIUS = 0.0088;
+
+/** Bake a JS number as a WGSL f32 literal ("430" becomes "430.0"). */
+function f(n: number): string {
+  return Number.isInteger(n) ? `${n}.0` : String(n);
+}
 
 /**
  * Deterministic PRNG (mulberry32) — the noise texture is identical every
@@ -272,424 +319,482 @@ function directionFromElevationAzimuth(
   return [Math.sin(azimuth) * cosE, Math.sin(elevation), Math.cos(azimuth) * cosE];
 }
 
-const VERTEX_SHADER = /* glsl */ `
-void main() {
-  gl_Position = vec4(position.xy, 0.0, 1.0);
-}
-`;
+// ==================================================================
+// The shader, in raw WGSL.
+//
+// Direct port of the original GLSL: identical constants, formulas, and
+// march structure. The mechanical differences are WGSL-shaped only —
+//   - scalars never broadcast across + and -, so additions splat through
+//     explicit vec constructors
+//   - no mod(): the floor-mod is written out where the noise lattice wraps
+//   - no writes through swizzles: the accumulation vec4 is rebuilt (from
+//     the PRE-update alpha, exactly as the GLSL read it)
+//   - ternaries become select(), textureLod becomes textureSampleLevel
+//   - the fragment coordinate runs top-down, so the ray flips it back
+// ==================================================================
 
-const FRAGMENT_SHADER = /* glsl */ `
-precision highp float;
+/** Shared world constants — one module-scope block every function reads. */
+const WGSL_CONSTANTS = wgsl(/* wgsl */ `
+const CLOUDS_CAMERA_HEIGHT: f32 = ${f(CAMERA_HEIGHT)};
+const CLOUDS_BASE: f32 = ${f(CLOUD_BASE)};
+const CLOUDS_TOP: f32 = ${f(CLOUD_TOP)};
+const CLOUDS_HIGH_BASE: f32 = ${f(HIGH_BASE)};
+const CLOUDS_HIGH_TOP: f32 = ${f(HIGH_TOP)};
+const CLOUDS_CURVATURE: f32 = ${f(CURVATURE)};
+const CLOUDS_MAX_DISTANCE: f32 = ${f(MAX_DISTANCE)};
+const CLOUDS_FOV_TAN: f32 = ${f(FOV_TAN)};
+const CLOUDS_PITCH_SIN: f32 = ${f(PITCH_SIN)};
+const CLOUDS_PITCH_COS: f32 = ${f(PITCH_COS)};
+const CLOUDS_MAX_STEPS: i32 = ${MAX_STEPS};
+const CLOUDS_HIGH_STEPS: i32 = ${HIGH_STEPS};
+const CLOUDS_MOON_RADIUS: f32 = ${f(MOON_ANGULAR_RADIUS)};
+`);
 
-uniform vec2 uResolution;
-uniform float uTime;
-uniform float uForward;
-uniform vec3 uSeed;
-uniform float uCoverage;
-uniform sampler2D uNoiseTexture;
-
-uniform vec3 uSunDir;
-uniform vec3 uMoonDir;
-uniform vec3 uLightDir;
-uniform float uLightIntensity;
-
-uniform vec3 uSkyZenith;
-uniform vec3 uSkyHorizon;
-uniform vec3 uAbyss;
-uniform vec3 uHaze;
-uniform vec3 uCloudBright;
-uniform vec3 uCloudMid;
-uniform vec3 uCloudShadow;
-uniform vec3 uSunColor;
-
-uniform float uStarAmount;
-uniform float uSunDiscAmount;
-uniform float uMoonDiscAmount;
-uniform float uNightAmount;
-
-// Moon disc frame + phase. Basis X points toward the sun's side of the sky
-// (bright-limb direction), basis Y completes the disc plane. uMoonPhase
-// packs (sin(elongation), cos(phase angle), illuminated fraction).
-uniform vec3 uMoonBasisX;
-uniform vec3 uMoonBasisY;
-uniform vec3 uMoonPhase;
-
-// -- Camera / world constants (meters) ------------------------------
-const float CAMERA_HEIGHT = 430.0;
-const float CLOUD_BASE = -140.0;
-const float CLOUD_TOP = 330.0;
-const float HIGH_BASE = 1500.0;
-const float HIGH_TOP = 2650.0;
-const float EARTH_RADIUS = 6371000.0;
-const float CURVATURE = 1.0 / (2.0 * EARTH_RADIUS);
-const float MAX_DISTANCE = 120000.0;
-const float FOV_TAN = 0.4877;      // vertical FOV ~52 deg
-const float PITCH_SIN = 0.0785;    // ~4.5 deg downward pitch
-const float PITCH_COS = 0.9969;
-const int MAX_STEPS = 96;
-const int HIGH_STEPS = 44;
-// Stylized moon size (real moon is ~0.0045 rad) — shared by the disc edge,
-// limb darkening, and the phase terminator's disc-plane coordinates.
-const float MOON_ANGULAR_RADIUS = 0.0088;
-
-// -- Hashes ----------------------------------------------------------
-float hash12(vec2 p) {
-  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
-  p3 += dot(p3, p3.yzx + 33.33);
+const WGSL_HASHES = wgsl(/* wgsl */ `
+fn cloudsHash12(p: vec2<f32>) -> f32 {
+  var p3 = fract(p.xyx * 0.1031);
+  p3 = p3 + vec3<f32>(dot(p3, p3.yzx + vec3<f32>(33.33)));
   return fract((p3.x + p3.y) * p3.z);
 }
-float hash13(vec3 p3) {
-  p3 = fract(p3 * 0.1031);
-  p3 += dot(p3, p3.zyx + 31.32);
+fn cloudsHash13(p: vec3<f32>) -> f32 {
+  var p3 = fract(p * 0.1031);
+  p3 = p3 + vec3<f32>(dot(p3, p3.zyx + vec3<f32>(31.32)));
   return fract((p3.x + p3.y) * p3.z);
 }
-vec3 hash33(vec3 p3) {
-  p3 = fract(p3 * vec3(0.1031, 0.1030, 0.0973));
-  p3 += dot(p3, p3.yxz + 33.33);
+fn cloudsHash33(p: vec3<f32>) -> vec3<f32> {
+  var p3 = fract(p * vec3<f32>(0.1031, 0.1030, 0.0973));
+  p3 = p3 + vec3<f32>(dot(p3, p3.yxz + vec3<f32>(33.33)));
   return fract((p3.xxy + p3.yxx) * p3.zyx);
 }
+`);
 
-// -- Noise -----------------------------------------------------------
 // Virtual 3D value noise from the packed 2D texture: R = slice z, G = slice
-// z+1, bilinear filtering interpolates x/y, mix() interpolates z.
-float noise3(vec3 x) {
-  vec3 cell = floor(x);
-  vec3 f = fract(x);
-  f = f * f * (3.0 - 2.0 * f);
-  // Wrap the integer lattice BEFORE adding the fraction — cell products are
-  // exact integers in float32, so this keeps texture coordinates small and
-  // precise even 100 km from the origin (avoids far-field banding).
-  vec2 uv = mod(cell.xy + vec2(37.0, 239.0) * cell.z, 256.0) + f.xy;
-  vec2 rg = textureLod(uNoiseTexture, (uv + 0.5) / 256.0, 0.0).rg;
-  return mix(rg.x, rg.y, f.z) * 2.0 - 1.0;
+// z+1, bilinear filtering interpolates x/y, mix() interpolates z. The
+// integer lattice wraps BEFORE adding the fraction — cell products are
+// exact integers in float32, so texture coordinates stay small and precise
+// even 100 km from the origin (avoids far-field banding).
+const WGSL_NOISE = wgsl(/* wgsl */ `
+fn cloudsNoise3(tex: texture_2d<f32>, samp: sampler, x: vec3<f32>) -> f32 {
+  let cell = floor(x);
+  var fr = fract(x);
+  fr = fr * fr * (vec3<f32>(3.0) - 2.0 * fr);
+  let lattice = cell.xy + vec2<f32>(37.0, 239.0) * cell.z;
+  let wrapped = lattice - 256.0 * floor(lattice / 256.0);
+  let uv = wrapped + fr.xy;
+  let rg = textureSampleLevel(tex, samp, (uv + vec2<f32>(0.5)) / 256.0, 0.0).rg;
+  return mix(rg.x, rg.y, fr.z) * 2.0 - 1.0;
 }
 
-const mat3 NOISE_ROTATION = mat3(
-   0.00,  0.80,  0.60,
-  -0.80,  0.36, -0.48,
-  -0.60, -0.48,  0.64
-);
-
-float fbm(vec3 p, int octaves) {
-  float value = 0.0;
-  float amplitude = 0.5;
-  for (int i = 0; i < 5; i++) {
-    if (i >= octaves) break;
-    value += amplitude * noise3(p);
-    p = NOISE_ROTATION * p * 2.04;
-    amplitude *= 0.46;
+fn cloudsFbm(tex: texture_2d<f32>, samp: sampler, pIn: vec3<f32>, octaves: i32) -> f32 {
+  let rotation = mat3x3<f32>(
+    vec3<f32>(0.0, 0.80, 0.60),
+    vec3<f32>(-0.80, 0.36, -0.48),
+    vec3<f32>(-0.60, -0.48, 0.64));
+  var p = pIn;
+  var value = 0.0;
+  var amplitude = 0.5;
+  for (var i = 0; i < 5; i = i + 1) {
+    if (i >= octaves) { break; }
+    value = value + amplitude * cloudsNoise3(tex, samp, p);
+    p = rotation * p * 2.04;
+    amplitude = amplitude * 0.46;
   }
   return value;
 }
+`);
 
-// -- Low deck density -------------------------------------------------
-// Ultra-low-frequency coverage: breaks the deck into distinct cloud
-// systems with blue gaps (~6 km wavelength).
-float clumpAt(vec3 p) {
-  return noise3(vec3(
-    p.x * 0.00016 + uSeed.x * 39.0,
-    3.7 + uSeed.y * 17.0,
-    p.z * 0.00016 + uSeed.z * 27.0
-  ));
+// Densities: ultra-low-frequency clump coverage breaks the deck into
+// distinct cloud systems with blue gaps (~6 km wavelength); the vertical
+// profiles erode upward for cauliflower tops (deck) and round the sparse
+// high cumulus toward their mid-slab.
+const WGSL_DENSITY = wgsl(/* wgsl */ `
+fn cloudsClumpAt(tex: texture_2d<f32>, samp: sampler, p: vec3<f32>, seed: vec3<f32>) -> f32 {
+  return cloudsNoise3(tex, samp, vec3<f32>(
+    p.x * 0.00016 + seed.x * 39.0,
+    3.7 + seed.y * 17.0,
+    p.z * 0.00016 + seed.z * 27.0));
 }
 
-float cloudDensity(vec3 p, float heightFraction, float clump, int octaves) {
-  vec3 q = p * 0.0016
-    + vec3(uTime * 0.030, 0.0, uTime * 0.011)
-    + uSeed * 23.0;
-  float shape = fbm(q, octaves);
-  float density = uCoverage + 0.38 * clump + 0.68 * shape;
-  // Vertical profile: erode upward for cauliflower tops, soften bases
-  density -= 0.85 * pow(heightFraction, 1.35);
-  density -= 0.22 * pow(1.0 - heightFraction, 3.0);
+fn cloudsDeckDensity(tex: texture_2d<f32>, samp: sampler, p: vec3<f32>,
+    heightFraction: f32, clump: f32, octaves: i32,
+    time: f32, seed: vec3<f32>, coverage: f32) -> f32 {
+  let q = p * 0.0016
+    + vec3<f32>(time * 0.030, 0.0, time * 0.011)
+    + seed * 23.0;
+  let shape = cloudsFbm(tex, samp, q, octaves);
+  var density = coverage + 0.38 * clump + 0.68 * shape;
+  density = density - 0.85 * pow(heightFraction, 1.35);
+  density = density - 0.22 * pow(1.0 - heightFraction, 3.0);
   return clamp(density * 1.5, 0.0, 1.0);
 }
 
-// -- High cumulus density (sparse, puffy, bigger scale) ---------------
-float highDensity(vec3 p, float heightFraction, int octaves) {
-  vec3 q = p * 0.00105
-    + vec3(uTime * 0.020, 0.0, uTime * 0.006)
-    + uSeed * 7.0;
-  float shape = fbm(q, octaves);
-  float clump = noise3(vec3(
-    p.x * 0.000085 + uSeed.z * 9.0,
+fn cloudsHighDensity(tex: texture_2d<f32>, samp: sampler, p: vec3<f32>,
+    heightFraction: f32, octaves: i32,
+    time: f32, seed: vec3<f32>, coverage: f32) -> f32 {
+  let q = p * 0.00105
+    + vec3<f32>(time * 0.020, 0.0, time * 0.006)
+    + seed * 7.0;
+  let shape = cloudsFbm(tex, samp, q, octaves);
+  let clump = cloudsNoise3(tex, samp, vec3<f32>(
+    p.x * 0.000085 + seed.z * 9.0,
     12.0,
-    p.z * 0.000085 + uSeed.x * 5.0
-  ));
-  float density = (uCoverage * 0.62 - 0.09) + 0.52 * clump + 0.62 * shape;
-  // Rounded cumulus profile — densest mid-slab, feathered top and bottom
-  float centered = (heightFraction - 0.46) * 2.0;
-  density -= 1.05 * centered * centered;
+    p.z * 0.000085 + seed.x * 5.0));
+  var density = (coverage * 0.62 - 0.09) + 0.52 * clump + 0.62 * shape;
+  let centered = (heightFraction - 0.46) * 2.0;
+  density = density - 1.05 * centered * centered;
   return clamp(density * 1.5, 0.0, 1.0);
 }
+`);
 
-// -- Star field (night sky) ------------------------------------------
-vec3 starField(vec3 rd) {
-  vec3 col = vec3(0.0);
-  for (int layer = 0; layer < 3; layer++) {
-    float scale = 110.0 + float(layer) * 95.0;
-    vec3 p = rd * scale;
-    vec3 cell = floor(p);
-    vec3 f = p - cell;
-    vec3 r = hash33(cell + vec3(float(layer) * 23.0));
-    float bright = hash13(cell * 1.31 + float(layer) * 7.0);
-    float present = smoothstep(0.80, 0.965, bright);
+// Star field: 3 cell-hash layers with diffraction spikes and twinkle, a
+// Milky Way dust band across a tilted great circle, and faint airglow so
+// the night sky is never a dead flat navy.
+const WGSL_STARS = wgsl(/* wgsl */ `
+fn cloudsStarField(tex: texture_2d<f32>, samp: sampler, rd: vec3<f32>,
+    time: f32, seed: vec3<f32>) -> vec3<f32> {
+  var col = vec3<f32>(0.0);
+  for (var starLayer = 0; starLayer < 3; starLayer = starLayer + 1) {
+    let scale = 110.0 + f32(starLayer) * 95.0;
+    let p = rd * scale;
+    let cell = floor(p);
+    let fr = p - cell;
+    let r = cloudsHash33(cell + vec3<f32>(f32(starLayer) * 23.0));
+    let bright = cloudsHash13(cell * 1.31 + vec3<f32>(f32(starLayer) * 7.0));
+    let present = smoothstep(0.80, 0.965, bright);
     if (present > 0.0) {
-      vec3 starPos = 0.25 + 0.5 * r;
-      float d = length(f - starPos);
-      float core = exp(-d * d * 300.0);
-      // Occasional four-point diffraction spike for the brightest stars
-      float spike = max(0.0, 1.0 - abs(f.x - starPos.x) * 42.0)
-                  + max(0.0, 1.0 - abs(f.y - starPos.y) * 42.0);
-      core += spike * smoothstep(0.93, 0.965, bright) * 0.18
+      let starPos = vec3<f32>(0.25) + 0.5 * r;
+      let d = length(fr - starPos);
+      var core = exp(-d * d * 300.0);
+      let spike = max(0.0, 1.0 - abs(fr.x - starPos.x) * 42.0)
+                + max(0.0, 1.0 - abs(fr.y - starPos.y) * 42.0);
+      core = core + spike * smoothstep(0.93, 0.965, bright) * 0.18
               * exp(-d * d * 40.0);
-      float twinkle = 0.55 + 0.45 * sin(uTime * 1.6 + r.x * 40.0);
-      vec3 tint = mix(vec3(0.70, 0.81, 1.0), vec3(1.0, 0.86, 0.68), r.z);
-      col += core * present * twinkle * tint * (0.7 + bright * 1.3);
+      let twinkle = 0.55 + 0.45 * sin(time * 1.6 + r.x * 40.0);
+      let tint = mix(vec3<f32>(0.70, 0.81, 1.0), vec3<f32>(1.0, 0.86, 0.68), r.z);
+      col = col + core * present * twinkle * tint * (0.7 + bright * 1.3);
     }
   }
-  // Milky Way — a soft dusty band across a tilted great circle
-  vec3 bandNormal = normalize(vec3(0.62, 0.34, -0.71));
-  float band = 1.0 - smoothstep(0.0, 0.40, abs(dot(rd, bandNormal)));
-  float glow = fbm(rd * 4.0 + uSeed * 5.0, 4) * 0.5 + 0.5;
-  float dust = fbm(rd * 9.0 + 11.0, 3) * 0.5 + 0.5;
-  col += band * band * glow * (1.0 - dust * 0.5) * vec3(0.40, 0.48, 0.70) * 0.16;
-  // Faint scattered airglow so the night sky is never a dead flat navy
-  col += vec3(0.02, 0.03, 0.055) * (fbm(rd * 2.2 + 7.0, 3) * 0.5 + 0.5);
+  let bandNormal = normalize(vec3<f32>(0.62, 0.34, -0.71));
+  let band = 1.0 - smoothstep(0.0, 0.40, abs(dot(rd, bandNormal)));
+  let glow = cloudsFbm(tex, samp, rd * 4.0 + seed * 5.0, 4) * 0.5 + 0.5;
+  let dust = cloudsFbm(tex, samp, rd * 9.0 + vec3<f32>(11.0), 3) * 0.5 + 0.5;
+  col = col + band * band * glow * (1.0 - dust * 0.5) * vec3<f32>(0.40, 0.48, 0.70) * 0.16;
+  col = col + vec3<f32>(0.02, 0.03, 0.055) * (cloudsFbm(tex, samp, rd * 2.2 + vec3<f32>(7.0), 3) * 0.5 + 0.5);
   return col;
 }
+`);
 
-// -- Sky --------------------------------------------------------------
-vec3 skyColor(vec3 rayDirection) {
-  float up = rayDirection.y;
-  vec3 sky = mix(
-    uSkyHorizon,
-    uSkyZenith,
-    pow(clamp(up * 1.25 + 0.14, 0.0, 1.0), 0.55)
-  );
-  // Below the horizon line: deep blue through-holes to the world below
-  vec3 depth = mix(uSkyHorizon, uAbyss, clamp(-up * 7.0, 0.0, 1.0));
+// Sky gradient with the abyss below the horizon line, a haze convergence
+// band that hides the sky/deck seam, night stars, and the sun as a small
+// overexposed disc + tight glow + wide subtle veil.
+const WGSL_SKY = wgsl(/* wgsl */ `
+fn cloudsSkyColor(tex: texture_2d<f32>, samp: sampler, rd: vec3<f32>,
+    time: f32, seed: vec3<f32>,
+    skyZenith: vec3<f32>, skyHorizon: vec3<f32>, abyss: vec3<f32>, haze: vec3<f32>,
+    starAmount: f32, sunDir: vec3<f32>, sunColor: vec3<f32>, sunDiscAmount: f32) -> vec3<f32> {
+  let up = rd.y;
+  var sky = mix(
+    skyHorizon,
+    skyZenith,
+    pow(clamp(up * 1.25 + 0.14, 0.0, 1.0), 0.55));
+  let depth = mix(skyHorizon, abyss, clamp(-up * 7.0, 0.0, 1.0));
   sky = mix(depth, sky, step(0.0, up));
-
-  // Converge to the haze tint at the horizon so the grazing band between
-  // sky and the far cloud deck blends without a seam.
-  sky = mix(uHaze, sky, smoothstep(0.0, 0.04, abs(up)));
-
-  // Stars + Milky Way (night only), above the horizon
-  if (uStarAmount > 0.001 && up > -0.02) {
-    sky += starField(rayDirection) * uStarAmount * smoothstep(-0.02, 0.06, up);
+  sky = mix(haze, sky, smoothstep(0.0, 0.04, abs(up)));
+  if (starAmount > 0.001 && up > -0.02) {
+    sky = sky + cloudsStarField(tex, samp, rd, time, seed) * starAmount
+        * smoothstep(-0.02, 0.06, up);
   }
-
-  // Sun: small overexposed disc + tight glow + wide subtle veil
-  float sunDot = clamp(dot(rayDirection, uSunDir), 0.0, 1.0);
-  sky += uSunColor * uSunDiscAmount * (
+  let sunDot = clamp(dot(rd, sunDir), 0.0, 1.0);
+  sky = sky + sunColor * sunDiscAmount * (
     pow(sunDot, 18000.0) * 2.4 +
     pow(sunDot, 800.0) * 0.16 +
-    pow(sunDot, 24.0) * 0.04
-  );
-
+    pow(sunDot, 24.0) * 0.04);
   return sky;
 }
+`);
 
-// -- Moon --------------------------------------------------------------
-// Phase-lit disc (terminator + earthshine) with limb darkening, subtle
-// maria and a halo that dims toward the new moon. Composited separately in
-// main() with partial transmittance through the high cloud layer, so the
-// moon glows through thin cumulus instead of vanishing behind it.
-vec3 moonLight(vec3 rayDirection) {
-  if (uMoonDiscAmount <= 0.001) return vec3(0.0);
+// Moon: phase-lit disc (terminator + earthshine) with limb darkening,
+// subtle maria and a halo that dims toward the new moon. Composited
+// separately in the main function with partial transmittance through the
+// high cloud layer, so the moon glows through thin cumulus instead of
+// vanishing behind it. moonPhase packs (sin elongation, cos phase angle,
+// illuminated fraction); basisX points toward the bright limb.
+const WGSL_MOON = wgsl(/* wgsl */ `
+fn cloudsMoonLight(tex: texture_2d<f32>, samp: sampler, rd: vec3<f32>, seed: vec3<f32>,
+    moonDir: vec3<f32>, moonBasisX: vec3<f32>, moonBasisY: vec3<f32>,
+    moonPhase: vec3<f32>, moonDiscAmount: f32, sunColor: vec3<f32>) -> vec3<f32> {
+  if (moonDiscAmount <= 0.001) { return vec3<f32>(0.0); }
 
-  float moonDot = clamp(dot(rayDirection, uMoonDir), 0.0, 1.0);
-  float ang = acos(min(moonDot, 1.0));
-  float disc = 1.0 - smoothstep(0.0075, MOON_ANGULAR_RADIUS, ang);
+  let moonDot = clamp(dot(rd, moonDir), 0.0, 1.0);
+  let ang = acos(min(moonDot, 1.0));
+  let disc = 1.0 - smoothstep(0.0075, CLOUDS_MOON_RADIUS, ang);
 
-  // Disc-plane coordinates (x toward the bright limb) → sphere normal z
-  vec3 offAxis = rayDirection - uMoonDir * moonDot;
-  float discX = dot(offAxis, uMoonBasisX) / MOON_ANGULAR_RADIUS;
-  float discY = dot(offAxis, uMoonBasisY) / MOON_ANGULAR_RADIUS;
-  float discZ = sqrt(max(0.0, 1.0 - discX * discX - discY * discY));
+  let offAxis = rd - moonDir * moonDot;
+  let discX = dot(offAxis, moonBasisX) / CLOUDS_MOON_RADIUS;
+  let discY = dot(offAxis, moonBasisY) / CLOUDS_MOON_RADIUS;
+  let discZ = sqrt(max(0.0, 1.0 - discX * discX - discY * discY));
 
-  // Terminator: a sphere point is lit when its normal faces the sun.
-  // Driven by the real lunar phase; softened band, earthshine floor so a
-  // thin crescent still shows a ghost of the full disc.
-  float lit = smoothstep(
-    -0.10, 0.14, discX * uMoonPhase.x - discZ * uMoonPhase.y);
-  float shade = 0.07 + 0.93 * lit;
+  let lit = smoothstep(-0.10, 0.14, discX * moonPhase.x - discZ * moonPhase.y);
+  let shade = 0.07 + 0.93 * lit;
 
-  // Gentle limb darkening — kept shallow so a crescent's lit limb stays
-  // bright enough to read against the night sky.
-  float limb = sqrt(clamp(
-    1.0 - pow(ang / MOON_ANGULAR_RADIUS, 2.0), 0.0, 1.0));
-  float maria = 0.72 + 0.28 * fbm(rayDirection * 380.0 + uSeed, 3);
-  float halo = 0.25 + 0.75 * uMoonPhase.z;
-  return uSunColor * uMoonDiscAmount * (
+  let limb = sqrt(clamp(1.0 - pow(ang / CLOUDS_MOON_RADIUS, 2.0), 0.0, 1.0));
+  let maria = 0.72 + 0.28 * cloudsFbm(tex, samp, rd * 380.0 + seed, 3);
+  let halo = 0.25 + 0.75 * moonPhase.z;
+  return sunColor * moonDiscAmount * (
     disc * (0.62 + 0.38 * limb) * maria * shade * 1.5 +
-    (pow(moonDot, 5000.0) * 0.4 + pow(moonDot, 40.0) * 0.03) * halo
-  );
+    (pow(moonDot, 5000.0) * 0.4 + pow(moonDot, 40.0) * 0.03) * halo);
 }
+`);
 
-// -- Low deck volumetric march ---------------------------------------
-vec4 marchDeck(vec3 rayOrigin, vec3 rayDirection, float dither) {
+// Low deck march: slab entry with planet curvature (a t*t + rd.y t +
+// (h - TOP) = 0), distance-growing steps, octave LOD by distance, one
+// light sample toward the sun for self-shadowed silver tops.
+const WGSL_MARCH_DECK = wgsl(/* wgsl */ `
+fn cloudsMarchDeck(tex: texture_2d<f32>, samp: sampler,
+    ro: vec3<f32>, rd: vec3<f32>, dither: f32,
+    time: f32, seed: vec3<f32>, coverage: f32,
+    lightDir: vec3<f32>, lightIntensity: f32,
+    cloudShadow: vec3<f32>, cloudMid: vec3<f32>, cloudBright: vec3<f32>,
+    haze: vec3<f32>) -> vec4<f32> {
   // Upward rays only rise relative to the curved shell — they can never
   // enter the deck below. Sky pixels skip the deck march.
-  if (rayDirection.y >= 0.0) return vec4(0.0);
+  if (rd.y >= 0.0) { return vec4<f32>(0.0); }
 
-  // Slab entry with planet curvature: A t^2 + rd.y t + (h - TOP) = 0.
-  float aboveTop = rayOrigin.y - CLOUD_TOP;
-  float discriminant =
-    rayDirection.y * rayDirection.y - 4.0 * CURVATURE * aboveTop;
-  if (discriminant < 0.0) return vec4(0.0);
+  let aboveTop = ro.y - CLOUDS_TOP;
+  let discriminant = rd.y * rd.y - 4.0 * CLOUDS_CURVATURE * aboveTop;
+  if (discriminant < 0.0) { return vec4<f32>(0.0); }
 
-  float sqrtDisc = sqrt(discriminant);
-  float tEnter = (-rayDirection.y - sqrtDisc) / (2.0 * CURVATURE);
-  float tExit =
-    min((-rayDirection.y + sqrtDisc) / (2.0 * CURVATURE), MAX_DISTANCE);
-  if (tEnter >= tExit) return vec4(0.0);
+  let sqrtDisc = sqrt(discriminant);
+  let tEnter = (-rd.y - sqrtDisc) / (2.0 * CLOUDS_CURVATURE);
+  let tExit = min((-rd.y + sqrtDisc) / (2.0 * CLOUDS_CURVATURE), CLOUDS_MAX_DISTANCE);
+  if (tEnter >= tExit) { return vec4<f32>(0.0); }
 
-  vec4 accumulated = vec4(0.0);
-  float t = tEnter + dither * max(14.0, tEnter * 0.024);
+  var accumulated = vec4<f32>(0.0);
+  var t = tEnter + dither * max(14.0, tEnter * 0.024);
 
-  for (int i = 0; i < MAX_STEPS; i++) {
-    if (accumulated.a > 0.985 || t > tExit) break;
+  for (var i = 0; i < CLOUDS_MAX_STEPS; i = i + 1) {
+    if (accumulated.a > 0.985 || t > tExit) { break; }
 
-    float stepLength = max(14.0, t * 0.024);
-    vec3 samplePoint = rayOrigin + rayDirection * t;
-    float shellY = samplePoint.y + (t * t) * CURVATURE;
+    let stepLength = max(14.0, t * 0.024);
+    let samplePoint = ro + rd * t;
+    let shellY = samplePoint.y + (t * t) * CLOUDS_CURVATURE;
 
-    if (shellY < CLOUD_BASE - 30.0) break;
+    if (shellY < CLOUDS_BASE - 30.0) { break; }
 
-    float heightFraction = (shellY - CLOUD_BASE) / (CLOUD_TOP - CLOUD_BASE);
+    let heightFraction = (shellY - CLOUDS_BASE) / (CLOUDS_TOP - CLOUDS_BASE);
     if (heightFraction >= 0.0 && heightFraction <= 1.0) {
-      float clump = clumpAt(samplePoint);
-      int octaves = t < 6000.0 ? 5 : (t < 22000.0 ? 4 : 3);
-      float density = cloudDensity(samplePoint, heightFraction, clump, octaves);
+      let clump = cloudsClumpAt(tex, samp, samplePoint, seed);
+      let octaves = select(select(3, 4, t < 22000.0), 5, t < 6000.0);
+      let density = cloudsDeckDensity(tex, samp, samplePoint, heightFraction,
+        clump, octaves, time, seed, coverage);
 
       if (density > 0.012) {
-        vec3 lightPoint = samplePoint + uLightDir * 55.0;
-        float lightShellY = lightPoint.y + (t * t) * CURVATURE;
-        float lightHeight = clamp(
-          (lightShellY - CLOUD_BASE) / (CLOUD_TOP - CLOUD_BASE), 0.0, 1.0);
-        float lightDensity = cloudDensity(
-          lightPoint, lightHeight, clump, max(octaves - 2, 2));
-        float sunlight = clamp((density - lightDensity) * 3.4 + 0.02, 0.0, 1.0);
+        let lightPoint = samplePoint + lightDir * 55.0;
+        let lightShellY = lightPoint.y + (t * t) * CLOUDS_CURVATURE;
+        let lightHeight = clamp(
+          (lightShellY - CLOUDS_BASE) / (CLOUDS_TOP - CLOUDS_BASE), 0.0, 1.0);
+        let lightDensity = cloudsDeckDensity(tex, samp, lightPoint, lightHeight,
+          clump, max(octaves - 2, 2), time, seed, coverage);
+        let sunlight = clamp((density - lightDensity) * 3.4 + 0.02, 0.0, 1.0);
 
-        vec3 cloudColor = mix(uCloudShadow, uCloudMid, heightFraction)
-          + uCloudBright * sunlight * uLightIntensity;
+        var cloudColor = mix(cloudShadow, cloudMid, heightFraction)
+          + cloudBright * sunlight * lightIntensity;
 
-        float hazeAmount = 1.0 - exp(-t * 0.000022);
-        cloudColor = mix(cloudColor, uHaze, hazeAmount);
+        let hazeAmount = 1.0 - exp(-t * 0.000022);
+        cloudColor = mix(cloudColor, haze, hazeAmount);
 
-        float alpha = 1.0 - exp(-density * stepLength * 0.016);
-        accumulated.rgb += cloudColor * alpha * (1.0 - accumulated.a);
-        accumulated.a += alpha * (1.0 - accumulated.a);
+        let alpha = 1.0 - exp(-density * stepLength * 0.016);
+        // Rebuilt from the PRE-update alpha on both lanes, exactly as the
+        // GLSL read it (rgb blended by the old coverage, then a updated).
+        let previousAlpha = accumulated.a;
+        accumulated = vec4<f32>(
+          accumulated.rgb + cloudColor * alpha * (1.0 - previousAlpha),
+          previousAlpha + alpha * (1.0 - previousAlpha));
 
-        t += stepLength;
+        t = t + stepLength;
         continue;
       }
     }
-    t += stepLength * 1.35;
+    t = t + stepLength * 1.35;
   }
   return accumulated;
 }
+`);
 
-// -- High cumulus volumetric march -----------------------------------
-vec4 marchHighClouds(vec3 rayOrigin, vec3 rayDirection, float dither) {
+// High cumulus march: forward crossings of the two shell heights (the
+// camera sits below both), fixed step count across the slab span.
+const WGSL_MARCH_HIGH = wgsl(/* wgsl */ `
+fn cloudsMarchHigh(tex: texture_2d<f32>, samp: sampler,
+    ro: vec3<f32>, rd: vec3<f32>, dither: f32,
+    time: f32, seed: vec3<f32>, coverage: f32,
+    lightDir: vec3<f32>, lightIntensity: f32,
+    cloudShadow: vec3<f32>, cloudMid: vec3<f32>, cloudBright: vec3<f32>,
+    haze: vec3<f32>) -> vec4<f32> {
   // Only rays aimed at or above the horizon reach the upper layer.
-  if (rayDirection.y < -0.02) return vec4(0.0);
+  if (rd.y < -0.02) { return vec4<f32>(0.0); }
 
-  // Forward crossings of the two shell heights (camera sits below both).
-  float belowBase = rayOrigin.y - HIGH_BASE;
-  float belowTop = rayOrigin.y - HIGH_TOP;
-  float discBase =
-    rayDirection.y * rayDirection.y - 4.0 * CURVATURE * belowBase;
-  if (discBase < 0.0) return vec4(0.0);
-  float tEnter = (-rayDirection.y + sqrt(discBase)) / (2.0 * CURVATURE);
-  if (tEnter > MAX_DISTANCE) return vec4(0.0);
+  let belowBase = ro.y - CLOUDS_HIGH_BASE;
+  let belowTop = ro.y - CLOUDS_HIGH_TOP;
+  let discBase = rd.y * rd.y - 4.0 * CLOUDS_CURVATURE * belowBase;
+  if (discBase < 0.0) { return vec4<f32>(0.0); }
+  let tEnter = (-rd.y + sqrt(discBase)) / (2.0 * CLOUDS_CURVATURE);
+  if (tEnter > CLOUDS_MAX_DISTANCE) { return vec4<f32>(0.0); }
 
-  float discTop = rayDirection.y * rayDirection.y - 4.0 * CURVATURE * belowTop;
-  float tExit = discTop < 0.0
-    ? MAX_DISTANCE
-    : (-rayDirection.y + sqrt(discTop)) / (2.0 * CURVATURE);
-  tExit = min(tExit, MAX_DISTANCE);
-  if (tEnter >= tExit) return vec4(0.0);
+  let discTop = rd.y * rd.y - 4.0 * CLOUDS_CURVATURE * belowTop;
+  var tExit = CLOUDS_MAX_DISTANCE;
+  if (discTop >= 0.0) {
+    tExit = (-rd.y + sqrt(discTop)) / (2.0 * CLOUDS_CURVATURE);
+  }
+  tExit = min(tExit, CLOUDS_MAX_DISTANCE);
+  if (tEnter >= tExit) { return vec4<f32>(0.0); }
 
-  vec4 accumulated = vec4(0.0);
-  float span = tExit - tEnter;
-  float stepLength = max(55.0, span / float(HIGH_STEPS));
-  float t = tEnter + dither * stepLength;
+  var accumulated = vec4<f32>(0.0);
+  let span = tExit - tEnter;
+  let stepLength = max(55.0, span / f32(CLOUDS_HIGH_STEPS));
+  var t = tEnter + dither * stepLength;
 
-  for (int i = 0; i < HIGH_STEPS; i++) {
-    if (accumulated.a > 0.97 || t > tExit) break;
+  for (var i = 0; i < CLOUDS_HIGH_STEPS; i = i + 1) {
+    if (accumulated.a > 0.97 || t > tExit) { break; }
 
-    vec3 samplePoint = rayOrigin + rayDirection * t;
-    float shellY = samplePoint.y + (t * t) * CURVATURE;
-    float heightFraction = (shellY - HIGH_BASE) / (HIGH_TOP - HIGH_BASE);
+    let samplePoint = ro + rd * t;
+    let shellY = samplePoint.y + (t * t) * CLOUDS_CURVATURE;
+    let heightFraction = (shellY - CLOUDS_HIGH_BASE) / (CLOUDS_HIGH_TOP - CLOUDS_HIGH_BASE);
 
     if (heightFraction >= 0.0 && heightFraction <= 1.0) {
-      int octaves = t < 16000.0 ? 4 : 3;
-      float density = highDensity(samplePoint, heightFraction, octaves);
+      let octaves = select(3, 4, t < 16000.0);
+      let density = cloudsHighDensity(tex, samp, samplePoint, heightFraction,
+        octaves, time, seed, coverage);
 
       if (density > 0.02) {
-        vec3 lightPoint = samplePoint + uLightDir * 90.0;
-        float lightShellY = lightPoint.y + (t * t) * CURVATURE;
-        float lightHeight = clamp(
-          (lightShellY - HIGH_BASE) / (HIGH_TOP - HIGH_BASE), 0.0, 1.0);
-        float lightDensity = highDensity(lightPoint, lightHeight, 2);
-        float sunlight = clamp((density - lightDensity) * 3.0 + 0.05, 0.0, 1.0);
+        let lightPoint = samplePoint + lightDir * 90.0;
+        let lightShellY = lightPoint.y + (t * t) * CLOUDS_CURVATURE;
+        let lightHeight = clamp(
+          (lightShellY - CLOUDS_HIGH_BASE) / (CLOUDS_HIGH_TOP - CLOUDS_HIGH_BASE), 0.0, 1.0);
+        let lightDensity = cloudsHighDensity(tex, samp, lightPoint, lightHeight,
+          2, time, seed, coverage);
+        let sunlight = clamp((density - lightDensity) * 3.0 + 0.05, 0.0, 1.0);
 
-        vec3 cloudColor = mix(uCloudShadow, uCloudMid, heightFraction)
-          + uCloudBright * sunlight * uLightIntensity;
+        var cloudColor = mix(cloudShadow, cloudMid, heightFraction)
+          + cloudBright * sunlight * lightIntensity;
 
-        float hazeAmount = 1.0 - exp(-t * 0.000013);
-        cloudColor = mix(cloudColor, uHaze, hazeAmount * 0.92);
+        let hazeAmount = 1.0 - exp(-t * 0.000013);
+        cloudColor = mix(cloudColor, haze, hazeAmount * 0.92);
 
-        float alpha = 1.0 - exp(-density * stepLength * 0.02);
-        accumulated.rgb += cloudColor * alpha * (1.0 - accumulated.a);
-        accumulated.a += alpha * (1.0 - accumulated.a);
+        let alpha = 1.0 - exp(-density * stepLength * 0.02);
+        let previousAlpha = accumulated.a;
+        accumulated = vec4<f32>(
+          accumulated.rgb + cloudColor * alpha * (1.0 - previousAlpha),
+          previousAlpha + alpha * (1.0 - previousAlpha));
       }
     }
-    t += stepLength;
+    t = t + stepLength;
   }
   return accumulated;
 }
+`);
 
-void main() {
-  vec2 ndc = (gl_FragCoord.xy * 2.0 - uResolution) / uResolution.y;
+/**
+ * The whole frame: fixed-basis ray, sky, far-to-near composite (high
+ * cumulus, moon punching partially through it, then the near deck), and
+ * the legibility vignette. One wgslFn — everything above rides in as
+ * includes; TSL's only job is delivering the uniforms.
+ */
+const CLOUDS_FRAGMENT = wgslFn(
+  /* wgsl */ `
+fn cloudsFragment(
+  pixel: vec2<f32>,
+  resolution: vec2<f32>,
+  time: f32,
+  forward: f32,
+  seed: vec3<f32>,
+  coverage: f32,
+  sunDir: vec3<f32>,
+  moonDir: vec3<f32>,
+  lightDir: vec3<f32>,
+  lightIntensity: f32,
+  skyZenith: vec3<f32>,
+  skyHorizon: vec3<f32>,
+  abyss: vec3<f32>,
+  haze: vec3<f32>,
+  cloudBright: vec3<f32>,
+  cloudMid: vec3<f32>,
+  cloudShadow: vec3<f32>,
+  sunColor: vec3<f32>,
+  starAmount: f32,
+  sunDiscAmount: f32,
+  moonDiscAmount: f32,
+  nightAmount: f32,
+  moonBasisX: vec3<f32>,
+  moonBasisY: vec3<f32>,
+  moonPhase: vec3<f32>,
+  noiseTex: texture_2d<f32>,
+  noiseSamp: sampler
+) -> vec4<f32> {
+  // Fragment coordinates run top-down on WebGPU; the camera math below is
+  // written y-up like the original, so flip before building the ray.
+  let frag = vec2<f32>(pixel.x, resolution.y - pixel.y);
+  let ndc = (frag * 2.0 - resolution) / resolution.y;
 
   // Fixed camera basis: forward +Z with a slight downward pitch
-  vec3 rayCamera = normalize(vec3(ndc.x * FOV_TAN, ndc.y * FOV_TAN, 1.0));
-  vec3 rayDirection = vec3(
+  let rayCamera = normalize(vec3<f32>(ndc.x * CLOUDS_FOV_TAN, ndc.y * CLOUDS_FOV_TAN, 1.0));
+  let rd = vec3<f32>(
     rayCamera.x,
-    rayCamera.y * PITCH_COS - rayCamera.z * PITCH_SIN,
-    rayCamera.y * PITCH_SIN + rayCamera.z * PITCH_COS
-  );
+    rayCamera.y * CLOUDS_PITCH_COS - rayCamera.z * CLOUDS_PITCH_SIN,
+    rayCamera.y * CLOUDS_PITCH_SIN + rayCamera.z * CLOUDS_PITCH_COS);
 
   // Forward fly-through position (accelerates while the user types)
-  vec3 rayOrigin = vec3(0.0, CAMERA_HEIGHT, uForward);
+  let ro = vec3<f32>(0.0, CLOUDS_CAMERA_HEIGHT, forward);
 
-  vec3 color = skyColor(rayDirection);
+  var color = cloudsSkyColor(noiseTex, noiseSamp, rd, time, seed,
+    skyZenith, skyHorizon, abyss, haze,
+    starAmount, sunDir, sunColor, sunDiscAmount);
 
-  float dither = hash12(gl_FragCoord.xy);
+  let dither = cloudsHash12(pixel);
 
-  // Composite far→near: high cumulus behind, then the near deck in front
-  vec4 high = marchHighClouds(rayOrigin, rayDirection, dither);
+  // Composite far to near: high cumulus behind, then the near deck in front
+  let high = cloudsMarchHigh(noiseTex, noiseSamp, ro, rd, dither,
+    time, seed, coverage, lightDir, lightIntensity,
+    cloudShadow, cloudMid, cloudBright, haze);
   color = color * (1.0 - high.a) + high.rgb;
 
   // The moon punches partially through the high layer — behind cumulus it
   // dims to a diffuse glow instead of disappearing for hours at a time.
-  color += moonLight(rayDirection) * (1.0 - 0.72 * high.a);
+  color = color + cloudsMoonLight(noiseTex, noiseSamp, rd, seed,
+    moonDir, moonBasisX, moonBasisY, moonPhase, moonDiscAmount, sunColor)
+    * (1.0 - 0.72 * high.a);
 
-  vec4 deck = marchDeck(rayOrigin, rayDirection, dither);
+  let deck = cloudsMarchDeck(noiseTex, noiseSamp, ro, rd, dither,
+    time, seed, coverage, lightDir, lightIntensity,
+    cloudShadow, cloudMid, cloudBright, haze);
   color = color * (1.0 - deck.a) + deck.rgb;
 
   // Gentle vignette keeps centered UI legible (softened at night)
-  vec2 vignetteUv = ndc * vec2(0.72, 0.85);
-  float vignette = 0.16 * (1.0 - 0.45 * uNightAmount);
-  color *= 1.0 - vignette * smoothstep(0.55, 1.35, length(vignetteUv));
+  let vignetteUv = ndc * vec2<f32>(0.72, 0.85);
+  let vignette = 0.16 * (1.0 - 0.45 * nightAmount);
+  color = color * (1.0 - vignette * smoothstep(0.55, 1.35, length(vignetteUv)));
 
-  gl_FragColor = vec4(color, 1.0);
+  return vec4<f32>(color, 1.0);
 }
-`;
+`,
+  [
+    WGSL_CONSTANTS,
+    WGSL_HASHES,
+    WGSL_NOISE,
+    WGSL_DENSITY,
+    WGSL_STARS,
+    WGSL_SKY,
+    WGSL_MOON,
+    WGSL_MARCH_DECK,
+    WGSL_MARCH_HIGH,
+  ],
+);
+
+/** Fullscreen triangle passthrough — positions are already clip-space. */
+const CLOUDS_VERTEX = wgslFn(/* wgsl */ `
+fn cloudsVertex(position: vec3<f32>) -> vec4<f32> {
+  return vec4<f32>(position.x, position.y, 0.0, 1.0);
+}
+`);
 
 export function createCloudsAnimation(
   context: ThreeAnimationContext,
@@ -728,36 +833,37 @@ export function createCloudsAnimation(
   const seed = new THREE.Vector3(Math.random(), Math.random(), Math.random());
 
   // Forward position starts at a per-mount offset (matches the old uTime*3
-   // drift seed) so every conversation flies through a different stretch.
+  // drift seed) so every conversation flies through a different stretch.
   let forwardDistance = seed.x * 1200;
   let forwardBoost = 1; // 1 = idle drift; typing kicks this up (see coin spin)
 
+  // TSL uniform nodes. Same keys and `.value` mutation semantics as the
+  // old ShaderMaterial uniforms — applySkyState/update below are untouched.
   const uniforms = {
-    uResolution: { value: new THREE.Vector2(1, 1) },
-    uTime: { value: reducedMotion ? 120 + seed.x * 400 : seed.x * 400 },
-    uForward: { value: forwardDistance },
-    uSeed: { value: seed },
-    uCoverage: { value: coverage },
-    uNoiseTexture: { value: noiseTexture },
-    uSunDir: { value: new THREE.Vector3(0, 1, 0) },
-    uMoonDir: { value: new THREE.Vector3(0, 1, 0) },
-    uLightDir: { value: new THREE.Vector3(0, 1, 0) },
-    uLightIntensity: { value: 1 },
-    uSkyZenith: { value: new THREE.Vector3() },
-    uSkyHorizon: { value: new THREE.Vector3() },
-    uAbyss: { value: new THREE.Vector3() },
-    uHaze: { value: new THREE.Vector3() },
-    uCloudBright: { value: new THREE.Vector3() },
-    uCloudMid: { value: new THREE.Vector3() },
-    uCloudShadow: { value: new THREE.Vector3() },
-    uSunColor: { value: new THREE.Vector3() },
-    uStarAmount: { value: 0 },
-    uSunDiscAmount: { value: 1 },
-    uMoonDiscAmount: { value: 0 },
-    uNightAmount: { value: 0 },
-    uMoonBasisX: { value: new THREE.Vector3(1, 0, 0) },
-    uMoonBasisY: { value: new THREE.Vector3(0, 1, 0) },
-    uMoonPhase: { value: new THREE.Vector3(0, -1, 1) },
+    uResolution: uniform(new THREE.Vector2(1, 1)),
+    uTime: uniform(reducedMotion ? 120 + seed.x * 400 : seed.x * 400),
+    uForward: uniform(forwardDistance),
+    uSeed: uniform(seed),
+    uCoverage: uniform(coverage),
+    uSunDir: uniform(new THREE.Vector3(0, 1, 0)),
+    uMoonDir: uniform(new THREE.Vector3(0, 1, 0)),
+    uLightDir: uniform(new THREE.Vector3(0, 1, 0)),
+    uLightIntensity: uniform(1),
+    uSkyZenith: uniform(new THREE.Vector3()),
+    uSkyHorizon: uniform(new THREE.Vector3()),
+    uAbyss: uniform(new THREE.Vector3()),
+    uHaze: uniform(new THREE.Vector3()),
+    uCloudBright: uniform(new THREE.Vector3()),
+    uCloudMid: uniform(new THREE.Vector3()),
+    uCloudShadow: uniform(new THREE.Vector3()),
+    uSunColor: uniform(new THREE.Vector3()),
+    uStarAmount: uniform(0),
+    uSunDiscAmount: uniform(1),
+    uMoonDiscAmount: uniform(0),
+    uNightAmount: uniform(0),
+    uMoonBasisX: uniform(new THREE.Vector3(1, 0, 0)),
+    uMoonBasisY: uniform(new THREE.Vector3(0, 1, 0)),
+    uMoonPhase: uniform(new THREE.Vector3(0, -1, 1)),
   };
 
   // -- Time-of-day → uniforms --------------------------------------
@@ -900,12 +1006,43 @@ export function createCloudsAnimation(
 
   applySkyState(resolveHour());
 
-  const material = new THREE.ShaderMaterial({
-    vertexShader: VERTEX_SHADER,
-    fragmentShader: FRAGMENT_SHADER,
-    depthTest: false,
-    depthWrite: false,
-    uniforms,
+  // -- Material: raw-WGSL fragment on a node material ----------------
+  // The instance renders with the identity output transform (see
+  // ThreeBackgroundComponent), so the shader's sRGB-authored palette
+  // reaches the canvas byte-for-byte like the old raw ShaderMaterial.
+  const material = new NodeMaterial();
+  material.depthTest = false;
+  material.depthWrite = false;
+  material.toneMapped = false;
+  material.vertexNode = CLOUDS_VERTEX({ position: positionGeometry });
+  material.fragmentNode = CLOUDS_FRAGMENT({
+    pixel: screenCoordinate,
+    resolution: uniforms.uResolution,
+    time: uniforms.uTime,
+    forward: uniforms.uForward,
+    seed: uniforms.uSeed,
+    coverage: uniforms.uCoverage,
+    sunDir: uniforms.uSunDir,
+    moonDir: uniforms.uMoonDir,
+    lightDir: uniforms.uLightDir,
+    lightIntensity: uniforms.uLightIntensity,
+    skyZenith: uniforms.uSkyZenith,
+    skyHorizon: uniforms.uSkyHorizon,
+    abyss: uniforms.uAbyss,
+    haze: uniforms.uHaze,
+    cloudBright: uniforms.uCloudBright,
+    cloudMid: uniforms.uCloudMid,
+    cloudShadow: uniforms.uCloudShadow,
+    sunColor: uniforms.uSunColor,
+    starAmount: uniforms.uStarAmount,
+    sunDiscAmount: uniforms.uSunDiscAmount,
+    moonDiscAmount: uniforms.uMoonDiscAmount,
+    nightAmount: uniforms.uNightAmount,
+    moonBasisX: uniforms.uMoonBasisX,
+    moonBasisY: uniforms.uMoonBasisY,
+    moonPhase: uniforms.uMoonPhase,
+    noiseTex: texture(noiseTexture),
+    noiseSamp: sampler(noiseTexture),
   });
 
   // Fullscreen triangle — covers the viewport with 3 vertices, no camera

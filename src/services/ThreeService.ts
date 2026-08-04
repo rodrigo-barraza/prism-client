@@ -1,16 +1,24 @@
 /**
  * ThreeService — Three.js lifecycle manager for Prism.
  *
- * Provides a clean API for creating WebGL renderers, scenes, cameras,
- * and lighting rigs. Manages a shared requestAnimationFrame loop with
- * per-instance tick callbacks, DPR-aware resize handling, and
- * deterministic GPU resource disposal.
+ * Provides a clean API for creating renderers (WebGL by default, WebGPU on
+ * request), scenes, cameras, and lighting rigs. Manages a shared
+ * requestAnimationFrame loop with per-instance tick callbacks, DPR-aware
+ * resize handling, and deterministic GPU resource disposal.
  *
  * Design:
  *   - Each "instance" gets its own renderer, scene, and camera, but they
  *     all share a single RAF loop to avoid frame budget contention.
  *   - The service is stateless/singleton — no React dependency. The
  *     ThreeCanvasComponent handles the React integration layer.
+ *   - `backend: "webgpu"` instances load `three/webgpu` on demand (it is a
+ *     separate chunk — the node/WGSL system never lands in bundles that only
+ *     use WebGL scenes) and initialize asynchronously. The shared loop skips
+ *     an instance until its renderer is ready; use `whenReady(id)` to run
+ *     scene setup against the live renderer. There is deliberately NO
+ *     silent WebGL fallback for these instances: their materials carry raw
+ *     WGSL, which only a real WebGPU backend can compile — callers gate on
+ *     `navigator.gpu` and keep their CSS fallback when it is absent.
  *
  * Usage:
  *   const id = ThreeService.create(canvas, { cameraFov: 60 });
@@ -36,6 +44,35 @@ type BufferGeometry = InstanceType<typeof THREE.BufferGeometry>;
 type Material = InstanceType<typeof THREE.Material>;
 type Texture = InstanceType<typeof THREE.Texture>;
 
+/**
+ * Structural stand-in for a `three/webgpu` WebGPURenderer — that module is
+ * ambient-any (global.d.ts), so this documents the subset the service and
+ * the presets actually touch.
+ */
+interface WebGpuRendererLike {
+  render(_scene: Scene, _camera: PerspectiveCamera): void;
+  setSize(_width: number, _height: number, _updateStyle?: boolean): void;
+  setPixelRatio(_ratio: number): void;
+  getDrawingBufferSize(_target: InstanceType<typeof THREE.Vector2>): unknown;
+  init(): Promise<unknown>;
+  dispose(): void;
+  toneMapping: number;
+  toneMappingExposure: number;
+  outputColorSpace: string;
+}
+
+/** Either renderer kind an instance may hold. Both share the subset the
+ *  loop and the presets touch (render/setSize/setPixelRatio/dispose/
+ *  getDrawingBufferSize/toneMapping/outputColorSpace). */
+export type ThreeRenderer = WebGLRenderer | WebGpuRendererLike;
+
+export type ThreeBackendName = "webgl" | "webgpu";
+
+/** Minimal structural view of `navigator.gpu` — lib.dom has no WebGPU types. */
+interface NavigatorGpuLike {
+  gpu?: { requestAdapter?(): Promise<unknown> };
+}
+
 export interface ThreeCreateOptions {
   cameraFov?: number;
   cameraNear?: number;
@@ -58,12 +95,28 @@ export interface ThreeCreateOptions {
    * scenes don't burn GPU at display rate. 0 (default) = uncapped.
    */
   maxFps?: number;
+  /**
+   * Which GPU API backs this instance. "webgl" (default) creates the
+   * renderer synchronously as before. "webgpu" dynamic-imports
+   * `three/webgpu` and initializes asynchronously — the instance renders
+   * nothing until init resolves (see `whenReady`), and it never falls back
+   * to WebGL (raw-WGSL materials cannot compile there).
+   */
+  backend?: ThreeBackendName;
+  /**
+   * Output transform of the renderer. "srgb" (default) keeps three's
+   * standard linear→sRGB encode. "linear" makes the output transform the
+   * identity — for scenes whose fragment output is already display-ready
+   * (raw fullscreen shaders authored in sRGB), matching what a classic
+   * no-chunks ShaderMaterial wrote to a WebGL canvas.
+   */
+  outputColorSpace?: "srgb" | "linear";
 }
 
 export interface TickState {
   scene: Scene;
   camera: PerspectiveCamera;
-  renderer: WebGLRenderer;
+  renderer: ThreeRenderer;
   timer: Timer;
   deltaTime: number;
   elapsed: number;
@@ -91,10 +144,19 @@ export interface LightingRig {
   rim: PointLight;
 }
 
+/** What `whenReady` resolves with once the renderer exists. */
+export interface ThreeInstanceHandles {
+  scene: Scene;
+  camera: PerspectiveCamera;
+  renderer: ThreeRenderer;
+  timer: Timer;
+}
+
 interface ThreeInstance {
   id: string;
   canvas: HTMLCanvasElement;
-  renderer: WebGLRenderer;
+  /** Null only while a webgpu backend is still initializing. */
+  renderer: ThreeRenderer | null;
   scene: Scene;
   camera: PerspectiveCamera;
   timer: Timer;
@@ -103,6 +165,10 @@ interface ThreeInstance {
   width: number;
   height: number;
   paused: boolean;
+  /** False until the renderer exists — the loop skips unready instances. */
+  ready: boolean;
+  readyPromise: Promise<ThreeInstanceHandles | null>;
+  resolveReady: (_handles: ThreeInstanceHandles | null) => void;
   maxPixelRatio: number;
   /** Minimum milliseconds between rendered frames (0 = every RAF). */
   minFrameMs: number;
@@ -137,7 +203,7 @@ interface EnvironmentCacheEntry {
 
 // PMREM environment textures are tied to a WebGL context, so they are
 // cached per renderer and disposed alongside it in destroy().
-const environmentCache = new WeakMap<WebGLRenderer, EnvironmentCacheEntry>();
+const environmentCache = new WeakMap<ThreeRenderer, EnvironmentCacheEntry>();
 
 /**
  * Build a tiny procedural "studio" scene — a dark room with a few soft
@@ -185,6 +251,9 @@ function buildStudioEnvironmentScene(): Scene {
 function loop(timestamp: number): void {
   for (const instance of instances.values()) {
     if (instance.paused) continue;
+
+    // WebGPU instances render nothing until their async init resolves.
+    if (!instance.ready || !instance.renderer) continue;
 
     // Per-instance FPS cap — skip until the frame interval elapses.
     // The timer is not updated on skipped frames, so deltas stay correct.
@@ -247,17 +316,103 @@ function handleResize(instance: ThreeInstance): void {
   instance.width = canvasWidth;
   instance.height = canvasHeight;
 
+  canvas.style.width = `${canvasWidth}px`;
+  canvas.style.height = `${canvasHeight}px`;
+
+  instance.camera.aspect = canvasWidth / canvasHeight;
+  instance.camera.updateProjectionMatrix();
+
+  // Renderer still initializing (webgpu): sizes are recorded above and
+  // applied by the forced resize when init completes.
+  if (!instance.renderer) return;
+
   const devicePixelRatio = Math.min(
     window.devicePixelRatio || 1,
     instance.maxPixelRatio,
   );
   instance.renderer.setSize(canvasWidth, canvasHeight, false);
   instance.renderer.setPixelRatio(devicePixelRatio);
-  canvas.style.width = `${canvasWidth}px`;
-  canvas.style.height = `${canvasHeight}px`;
+}
 
-  instance.camera.aspect = canvasWidth / canvasHeight;
-  instance.camera.updateProjectionMatrix();
+// --- WebGPU init ---------------------------------------------------
+
+interface RendererConfig {
+  antialias: boolean;
+  alpha: boolean;
+  toneMapping: keyof typeof TONE_MAPPING_MAP;
+  toneMappingExposure: number;
+  outputColorSpace: "srgb" | "linear";
+}
+
+function applyOutputSettings(
+  renderer: ThreeRenderer,
+  config: RendererConfig,
+): void {
+  renderer.toneMapping =
+    TONE_MAPPING_MAP[config.toneMapping] ?? THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = config.toneMappingExposure;
+  renderer.outputColorSpace =
+    config.outputColorSpace === "linear"
+      ? THREE.LinearSRGBColorSpace
+      : THREE.SRGBColorSpace;
+}
+
+/**
+ * Create + init a WebGPURenderer for an already-registered instance.
+ * On success the instance joins the render loop and `whenReady` resolves;
+ * on failure (no `navigator.gpu`, adapter refusal, context loss) the
+ * instance simply never renders — the caller's CSS fallback stays up.
+ */
+async function initializeWebGpuRenderer(
+  instance: ThreeInstance,
+  config: RendererConfig,
+): Promise<void> {
+  try {
+    const gpu =
+      typeof navigator !== "undefined"
+        ? (navigator as NavigatorGpuLike).gpu
+        : undefined;
+    if (!gpu) {
+      throw new Error("navigator.gpu is unavailable (no WebGL fallback by design)");
+    }
+
+    // Loaded on demand: keeps the node/WGSL system out of WebGL-only bundles.
+    const { WebGPURenderer } = await import("three/webgpu");
+    const renderer = new WebGPURenderer({
+      canvas: instance.canvas,
+      antialias: config.antialias,
+      alpha: config.alpha,
+      powerPreference: "high-performance",
+    });
+    applyOutputSettings(renderer as unknown as ThreeRenderer, config);
+
+    await renderer.init();
+
+    // Destroyed while initializing (unmount race): drop the renderer.
+    if (instances.get(instance.id) !== instance) {
+      renderer.dispose();
+      return;
+    }
+
+    instance.renderer = renderer as unknown as ThreeRenderer;
+    instance.ready = true;
+    // Re-apply the size recorded while the renderer was absent.
+    instance.width = 0;
+    instance.height = 0;
+    handleResize(instance);
+    instance.resolveReady({
+      scene: instance.scene,
+      camera: instance.camera,
+      renderer: instance.renderer,
+      timer: instance.timer,
+    });
+  } catch (error) {
+    console.warn(
+      "[ThreeService] WebGPU renderer failed to initialize — instance will not render:",
+      error,
+    );
+    instance.resolveReady(null);
+  }
 }
 
 // --- Disposal Helpers ----------------------------------------------
@@ -311,6 +466,10 @@ const ThreeService = {
 
   /**
    * Create a new Three.js instance bound to the given canvas element.
+   *
+   * Returns the instance id synchronously for both backends. A "webgpu"
+   * instance initializes in the background — renders are skipped and
+   * `whenReady(id)` resolves once its renderer exists.
    */
   create(canvas: HTMLCanvasElement, options: ThreeCreateOptions = {}): string {
     const {
@@ -325,27 +484,18 @@ const ThreeService = {
       shadowMap = false,
       maxPixelRatio = 2,
       maxFps = 0,
+      backend = "webgl",
+      outputColorSpace = "srgb",
     } = options;
 
     const id = `three-${nextId++}`;
-
-    // -- Renderer --
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
+    const rendererConfig: RendererConfig = {
       antialias,
       alpha,
-      powerPreference: "high-performance",
-    });
-
-    renderer.toneMapping =
-      TONE_MAPPING_MAP[toneMapping] ?? THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = toneMappingExposure;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-    if (shadowMap) {
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    }
+      toneMapping,
+      toneMappingExposure,
+      outputColorSpace,
+    };
 
     // -- Scene --
     const scene = new THREE.Scene();
@@ -364,10 +514,15 @@ const ThreeService = {
     if (typeof document !== "undefined") timer.connect(document);
 
     // -- Instance --
+    let resolveReady: (_handles: ThreeInstanceHandles | null) => void = () => {};
+    const readyPromise = new Promise<ThreeInstanceHandles | null>((resolve) => {
+      resolveReady = resolve;
+    });
+
     const instance: ThreeInstance = {
       id,
       canvas,
-      renderer,
+      renderer: null,
       scene,
       camera,
       timer,
@@ -376,15 +531,41 @@ const ThreeService = {
       width: 0,
       height: 0,
       paused: false,
+      ready: false,
+      readyPromise,
+      resolveReady,
       maxPixelRatio: Math.max(0.1, maxPixelRatio),
       minFrameMs: maxFps > 0 ? 1000 / maxFps : 0,
       lastFrameTimestamp: -Infinity,
     };
 
-    instances.set(id, instance);
+    if (backend === "webgpu") {
+      instances.set(id, instance);
+      handleResize(instance); // records layout size; applied after init
+      void initializeWebGpuRenderer(instance, rendererConfig);
+    } else {
+      // -- Renderer (classic synchronous WebGL path) --
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias,
+        alpha,
+        powerPreference: "high-performance",
+      });
+      applyOutputSettings(renderer, rendererConfig);
 
-    // Initial sizing
-    handleResize(instance);
+      if (shadowMap) {
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      }
+
+      instance.renderer = renderer;
+      instance.ready = true;
+      instances.set(id, instance);
+
+      // Initial sizing
+      handleResize(instance);
+      instance.resolveReady({ scene, camera, renderer, timer });
+    }
 
     // Observe container resizes
     const parent = canvas.parentElement;
@@ -395,6 +576,18 @@ const ThreeService = {
 
     ensureLoop();
     return id;
+  },
+
+  /**
+   * Resolves with the live scene/camera/renderer/timer once the instance's
+   * renderer exists — immediately for WebGL, after async init for WebGPU.
+   * Resolves null if initialization failed or the instance was destroyed
+   * first; callers should simply bail on null.
+   */
+  whenReady(id: string): Promise<ThreeInstanceHandles | null> {
+    const instance = instances.get(id);
+    if (!instance) return Promise.resolve(null);
+    return instance.readyPromise;
   },
 
   /**
@@ -426,10 +619,16 @@ const ThreeService = {
   /**
    * Get the scene, camera, and renderer for an instance.
    * Useful for imperative setup (adding meshes, lights, etc.).
+   * `renderer` is null while a webgpu instance is still initializing —
+   * prefer `whenReady` for anything that needs the live renderer.
    */
   getInstance(
     id: string,
-  ): Pick<ThreeInstance, "scene" | "camera" | "renderer" | "timer"> | null {
+  ):
+    | (Pick<ThreeInstance, "scene" | "camera" | "timer"> & {
+        renderer: ThreeRenderer | null;
+      })
+    | null {
     const instance = instances.get(id);
     if (!instance) return null;
     return {
@@ -446,12 +645,15 @@ const ThreeService = {
    * Assign the result to `scene.environment` to give MeshStandard/Physical
    * materials studio-style reflections. Cached per renderer (environment
    * textures are context-bound) and disposed automatically in destroy().
+   *
+   * WebGL only — PMREMGenerator drives a WebGLRenderer. Presets that call
+   * this (the coin) are WebGL-backend scenes by contract.
    */
-  getEnvironment(renderer: WebGLRenderer): Texture {
+  getEnvironment(renderer: ThreeRenderer): Texture {
     const cached = environmentCache.get(renderer);
     if (cached) return cached.texture;
 
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    const pmremGenerator = new THREE.PMREMGenerator(renderer as WebGLRenderer);
     const environmentScene = buildStudioEnvironmentScene();
     const renderTarget = pmremGenerator.fromScene(environmentScene, 0.04);
     pmremGenerator.dispose();
@@ -553,19 +755,26 @@ const ThreeService = {
     // Dispose scene graph (geometries, materials, textures)
     disposeSceneGraph(instance.scene);
 
-    // Dispose the cached environment map bound to this renderer
-    const environmentEntry = environmentCache.get(instance.renderer);
-    if (environmentEntry) {
-      environmentEntry.renderTarget.dispose();
-      environmentCache.delete(instance.renderer);
-    }
+    if (instance.renderer) {
+      // Dispose the cached environment map bound to this renderer
+      const environmentEntry = environmentCache.get(instance.renderer);
+      if (environmentEntry) {
+        environmentEntry.renderTarget.dispose();
+        environmentCache.delete(instance.renderer);
+      }
 
-    // Dispose renderer (WebGL context)
-    instance.renderer.dispose();
+      // Dispose renderer (GPU context)
+      instance.renderer.dispose();
+    }
+    // else: webgpu init still in flight — initializeWebGpuRenderer sees the
+    // registry no longer holds this instance and disposes what it built.
 
     // Remove from registry
     instances.delete(id);
     stopLoopIfEmpty();
+
+    // Anyone still awaiting readiness gets a null (bail) resolution.
+    instance.resolveReady(null);
   },
 
   /**

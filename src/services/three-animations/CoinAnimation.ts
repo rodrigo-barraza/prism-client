@@ -78,7 +78,11 @@ export function createCoinAnimation(
   context: ThreeAnimationContext,
   options: CoinAnimationOptions,
 ): ThreeAnimationHandle {
-  const { scene, camera, renderer, THREE, contentScale, reducedMotion } = context;
+  const { scene, camera, THREE, contentScale, reducedMotion } = context;
+  // The coin is a WebGL-backend preset by contract — its environment map
+  // comes from ThreeService's PMREMGenerator path — so narrow the
+  // renderer union once here.
+  const renderer = context.renderer as InstanceType<typeof THREE.WebGLRenderer>;
   const {
     gradient,
     baseSpinSpeed = 1.2,

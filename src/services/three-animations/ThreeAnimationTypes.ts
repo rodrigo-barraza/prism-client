@@ -13,16 +13,21 @@
  */
 
 import type * as THREE from "three";
-import type { TickState } from "../ThreeService";
+import type { ThreeRenderer, TickState } from "../ThreeService";
 
 type Scene = InstanceType<typeof THREE.Scene>;
 type PerspectiveCamera = InstanceType<typeof THREE.PerspectiveCamera>;
-type WebGLRenderer = InstanceType<typeof THREE.WebGLRenderer>;
 
 export interface ThreeAnimationContext {
   scene: Scene;
   camera: PerspectiveCamera;
-  renderer: WebGLRenderer;
+  /**
+   * The live renderer — WebGL or WebGPU depending on the instance's
+   * backend. A preset written for one backend (the coin leans on
+   * WebGL-only PMREM environments; the clouds carry raw WGSL) narrows
+   * this itself and is mounted only on that backend.
+   */
+  renderer: ThreeRenderer;
   THREE: typeof THREE;
   /**
    * Fraction of the canvas the logical content box occupies (0..1].
