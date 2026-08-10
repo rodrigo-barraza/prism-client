@@ -1,6 +1,7 @@
 import { useCallback, useRef, type Dispatch, type SetStateAction } from "react";
 import StorageService from "../services/StorageService";
 import { LOCAL_PROVIDERS, type ProviderType } from "../constants";
+import { profileScopedKey } from "../utils/profileScopedKey";
 import type { PrismConfig } from "../types/types";
 
 /**
@@ -27,7 +28,7 @@ export default function useModelMemory(storageKey: string) {
   const saveModel = useCallback(
     (provider: string, model: string) => {
       if (!provider || !model) return;
-      StorageService.set(storageKey, {
+      StorageService.set(profileScopedKey(storageKey), {
         provider,
         model,
         isLocal: LOCAL_PROVIDERS.has(provider as ProviderType),
@@ -56,7 +57,7 @@ export default function useModelMemory(storageKey: string) {
         provider: string;
         model: string;
         isLocal: boolean;
-      }>(storageKey);
+      }>(profileScopedKey(storageKey));
       if (!saved?.provider || !saved?.model) {
         // No saved preference — let the caller apply its own default.
         if (fallback) fallback(config);
