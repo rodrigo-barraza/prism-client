@@ -5,7 +5,13 @@
  */
 
 import { PROJECT_NAME } from "@/config";
-import { LOCAL_STORAGE_KEY_WORKSPACE_ROOT, LOCAL_STORAGE_KEY_USERNAME } from "@/constants";
+import {
+  LOCAL_STORAGE_KEY_WORKSPACE_ROOT,
+  LOCAL_STORAGE_KEY_USERNAME,
+  LOCAL_STORAGE_KEY_ACTIVE_PROFILE,
+  HEADER_PROFILE_ID,
+  DEFAULT_PROFILE_ID,
+} from "@/constants";
 import { IDENTITY_HEADERS } from "@rodrigo-barraza/utilities-library/taxonomy";
 
 export function getBaseHeaders(): Record<string, string> {
@@ -24,6 +30,13 @@ export function getBaseHeaders(): Record<string, string> {
     const username = localStorage.getItem(LOCAL_STORAGE_KEY_USERNAME);
     if (username) {
       headers[IDENTITY_HEADERS.username] = username;
+    }
+
+    // Active profile — partitions settings/memories/skills/conversations
+    // server-side as if each profile were a separate user.
+    const profileId = localStorage.getItem(LOCAL_STORAGE_KEY_ACTIVE_PROFILE);
+    if (profileId && profileId !== DEFAULT_PROFILE_ID) {
+      headers[HEADER_PROFILE_ID] = profileId;
     }
   }
 

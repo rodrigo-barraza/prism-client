@@ -92,6 +92,7 @@ export const LOCAL_STORAGE_KEY_WORKSPACE_ROOT = "prism:workspace";
 export const LOCAL_STORAGE_KEY_FILE_VIEWER_WIDTH = "prism:fileViewerWidth";
 export const LOCAL_STORAGE_KEY_LEFT_SIDEBAR_SPLIT_RATIO = "prism:leftSidebarSplitRatio";
 export const LOCAL_STORAGE_KEY_USERNAME = "prism:username";
+export const LOCAL_STORAGE_KEY_ACTIVE_PROFILE = "prism:profile";
 export const LOCAL_STORAGE_KEY_CHAT_BACKGROUND = "prism:chat-background";
 export const LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED = "agent:criticGateEnabled";
 export const LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED = "agent:autoApproveEnabled";
@@ -115,6 +116,13 @@ export const EVENT_NAME_USER_TYPING = "user:typing";
 export const EVENT_NAME_CONVERSATION_CHANGE = "conversation:change";
 export const EVENT_NAME_AGENT_SWITCH = "agent:switch";
 export const EVENT_NAME_MODEL_CHANGE = "model:change";
+export const EVENT_NAME_PROFILE_SWITCH = "profile:switch";
+
+// -- Profiles ------------------------------------------------------
+// x-profile-id is prism-local (not yet in the shared IDENTITY_HEADERS
+// taxonomy); prism-service allows it in CORS explicitly.
+export const HEADER_PROFILE_ID = "x-profile-id";
+export const DEFAULT_PROFILE_ID = "default";
 
 // -- Roles & Categories -------------------------------------------
 

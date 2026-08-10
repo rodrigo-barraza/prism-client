@@ -1,4 +1,4 @@
-import { EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS } from "@/constants";
+import { EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS, HEADER_PROFILE_ID } from "@/constants";
 import { SERVER_SENT_EVENT_TYPES, IDENTITY_HEADERS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { PRISM_SERVICE_URL, PRISM_WEBSOCKET_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
@@ -1858,6 +1858,11 @@ export default class PrismService {
       project: headers[IDENTITY_HEADERS.project] || "any",
       username: headers[IDENTITY_HEADERS.username] || "anonymous",
     });
+    // Browsers cannot set custom headers on WebSocket upgrades, so the
+    // active profile travels as a query param (mirrored server-side).
+    if (headers[HEADER_PROFILE_ID]) {
+      websocketUrlParameters.set("profileId", headers[HEADER_PROFILE_ID]);
+    }
     const websocketUrl = `${PRISM_WEBSOCKET_URL}/ws/chat?${websocketUrlParameters.toString()}`;
 
     let websocket: WebSocket | null = null;

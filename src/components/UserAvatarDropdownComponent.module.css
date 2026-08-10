@@ -252,6 +252,82 @@
   }
 }
 
+/* ── Profiles Section ─────────────────────────── */
+
+.profile-section-label {
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary, oklch(100.0% 0.0001 263.3 / 0.65));
+  padding-inline: 4px;
+}
+
+.profile-row-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.profile-row-button {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.profile-active-row {
+  background-color: var(--panel-hover-background-color, oklch(100.0% 0.0001 263.3 / 0.05));
+  color: var(--accent-secondary, oklch(0.65 0.22 300));
+}
+
+.profile-name-text {
+  flex: 1;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: var(--border-radius-sm, 6px);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, oklch(100.0% 0.0001 263.3 / 0.65));
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background-color 0.15s ease;
+
+  &:hover {
+    background-color: color-mix(in oklch, var(--error-color, oklch(0.60 0.18 20)) 12%, transparent);
+    color: var(--error-color, oklch(0.60 0.18 20));
+  }
+}
+
+.profile-create-form {
+  display: flex;
+  gap: 6px;
+}
+
+.profile-create-input {
+  flex: 1;
+  min-inline-size: 0;
+  padding-block: 6px;
+  padding-inline: 8px;
+  border-radius: var(--border-radius-sm, 6px);
+  border: 1px solid var(--panel-border-color, oklch(100.0% 0.0001 263.3 / 0.15));
+  background: transparent;
+  color: var(--text-primary, oklch(100.0% 0.0001 263.3 / 0.95));
+  font-size: var(--font-size-sm, 13px);
+
+  &:focus-visible {
+    outline: 1px solid var(--accent-secondary, oklch(0.65 0.22 300));
+    outline-offset: 0;
+  }
+}
+
 .dropdown-logout-action {
   color: var(--error-color, oklch(0.60 0.18 20));
 
