@@ -891,6 +891,25 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
           { component: "Style-list drift guard", status: "extended", detail: "The tool's 37-style enum is asserted against the installed package's dist listing in tests, so a DiceBear version bump that renames styles fails CI instead of erroring live" },
         ],
       },
+      {
+        title: "Sampling the GGX Distribution of Visible Normals (PMREM prefiltering)",
+        authors: "Heitz, Journal of Computer Graphics Techniques 7(4), 1–13; three.js r185 PMREMGenerator",
+        year: 2018,
+        arxivUrl: "https://jcgt.org/published/0007/04/01/",
+        sourceUrl:
+          "https://github.com/mrdoob/three.js/blob/dev/src/renderers/common/extras/PMREMGenerator.js",
+        description:
+          "The prefilter behind Paper Harvest's glass curios: one HDR panorama convolved into eleven roughnesses of the same room, so a gelatin cube reflects a sharp hall and the weathered plinth beside it reflects a smear. Heitz's VNDF sampling is what makes 512 taps enough — it draws half-vectors from the microfacets a viewer can actually see, so the estimate converges where uniform sampling would still be grainy. Ported off three's WebGPU PMREMGenerator onto raw WebGPU and hand-written WGSL (shaders/world/glass/curioPrefilter.wgsl): eleven render passes recorded straight onto the device, no node graph, nothing per-frame. The arithmetic is three's on purpose and the port is credited at both files' heads — the atlas is read back by a shader whose addressing is already three's cubeUV layout, so a writer that packed it differently would be wrong about every texel.",
+        implementationFile: "paper-harvest/world/glass/pmrem.ts",
+        categoryLabel: "Real-Time Rendering",
+        badgeTone: "orange",
+        alignment: [
+          { component: "GGX VNDF importance sampling", status: "aligned", detail: "Heitz §4.1–4.3 transcribed as written, view direction kept as a parameter rather than specialised to +Z so the WGSL still diffs against the paper" },
+          { component: "cubeUV atlas layout", status: "aligned", detail: "three r185's WebGPU packing — 3×2 face blocks per level, 1px gutters, six extra 16px lobe blocks marching right, and its non-identity face permutation, which the WebGL generator beside it does not share" },
+          { component: "One addressing function, not two", status: "extended", detail: "The prefilter samples the atlas through the same WGSL the material reads it with, compiled as one module; three keeps that property internally and a port is the moment it is usually lost" },
+          { component: "Pass orchestration", status: "simplified", detail: "A command encoder per level instead of a renderer driving throwaway materials — load-time only, and the schedule is what the Rust client compiles when it grows an environment prefilter of its own" },
+        ],
+      },
     ],
   },
   {
