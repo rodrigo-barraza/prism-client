@@ -910,26 +910,6 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
           { component: "Pass orchestration", status: "simplified", detail: "A command encoder per level instead of a renderer driving throwaway materials — load-time only, and the schedule is what the Rust client compiles when it grows an environment prefilter of its own" },
         ],
       },
-      {
-        title: "three.js linear-algebra and colour core (Paper Harvest's engine/math)",
-        authors: "mrdoob and the three.js contributors, r0.185.1 (MIT); Matrix4.invert after Brandon Jones / Toji, gl-matrix (MIT)",
-        year: 2026,
-        arxivUrl: null,
-        sourceUrl: "https://github.com/mrdoob/three.js/tree/dev/src/math",
-        description:
-          "Paper Harvest is leaving three.js, and the arithmetic has to leave first: the scene records, the WGSL binder and the device manager all need vectors, quaternions, matrices and a colour space that do not come from the library being removed. So three's src/math — Vector2/3/4, Quaternion, Euler, Matrix3/4, Color with its sRGB↔linear transfer pair, Box3, Sphere, Plane, Ray, Frustum — is ported expression-for-expression rather than rewritten. That is the whole design decision. A cleaner cross product, a fused rotate-and-translate, an x / l where three writes x * (1 / l): each is defensible and each moves a float, and this game's gates are pixel diffs, byte-compared meshes and pinned digests, so a port that is nearly right surfaces as red rows in files nobody touched, hours later. The proof is a differential test that asserts bit equality against three itself over a parameter sweep — Object.is, so -0 is not +0 — covering all six Euler orders, both slerp branches, the gimbal cutoffs and the 256-step colour curve. It can only be written while both implementations are on the tree, and it is deleted with three.",
-        implementationFile: "paper-harvest/engine/math/index.ts",
-        categoryLabel: "Real-Time Rendering",
-        badgeTone: "orange",
-        alignment: [
-          { component: "Arithmetic and expression order", status: "aligned", detail: "Copied method for method, three's grouping preserved — divideScalar stays multiplyScalar(1 / s), MathUtils.lerp stays (1 - t) * x + t * y, and Quaternion.slerp keeps r185's absence of a t === 0/1 early return. Each is a different float from its algebraic twin" },
-          { component: "sRGB transfer functions", status: "aligned", detail: "three's approximations, not the sRGB spec's — the pre-multiplied 0.0773993808 reciprocal and the 0.41666 exponent rather than 1/2.4. Every baked texture, golden frame and pinned digest in the repo was captured through exactly these constants, so correcting them toward the spec would move 83 textures and nine goldens at once" },
-          { component: "Coordinate system", status: "simplified", detail: "makePerspective/makeOrthographic and Frustum.setFromProjectionMatrix drop three's coordinateSystem argument and are WebGPU [0, 1] clip space only. three defaults those to WebGL; a native WebGPU-only engine has no fallback renderer to keep the branch for, so it is deleted rather than defaulted, and a test row asserts the result still DIFFERS from three's WebGL default so 'argument dropped' cannot decay into 'argument ignored'" },
-          { component: "No dice in the math layer", status: "extended", detail: "randInt/randFloat/seededRandom and every Vector.random() are deliberately absent. Rolls here go through a positional hash or a named RNG stream; a math helper drawing from the global stream is the exact shape that once held nine visual goldens red for weeks" },
-          { component: "Malformed input throws", status: "extended", detail: "An unknown Euler order, colour name or colour style throws instead of warning to a console channel nobody subscribes to and painting the wrong thing at full frame rate. The full colour-keyword table is ported, so nothing that worked before throws now" },
-          { component: "Scene-graph methods withheld", status: "simplified", detail: "Box3.setFromObject/expandByObject and Frustum.intersectsObject/intersectsSprite walk an Object3D tree rather than doing arithmetic. Stubbing them here would freeze three's node shape into the one file the exit exists to free, so they stay behind until the scene layer lands" },
-        ],
-      },
     ],
   },
   {
