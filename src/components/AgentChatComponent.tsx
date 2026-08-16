@@ -116,6 +116,7 @@ import {
 import { TOOL_NAMES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { buildUnifiedToolCounts, CAPABILITY_TOOL_NAMES, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams, buildSettingsDefaults, isNameBasedThinkingModel } from "../utils/utilities";
 import { buildResetConversationSettings } from "../utils/conversationReset";
+import { buildDirectChatConversationMeta } from "../utils/directChatMeta";
 import {
   MESSAGE_ROLES,
   EXECUTION_STATUS,
@@ -4074,11 +4075,12 @@ export default function AgentChatComponent({
               ...(settings.codeExecutionEnabled ? { codeExecution: true } : {}),
               ...(settings.urlContextEnabled ? { urlContext: true } : {}),
               conversationId,
-              // Title is derived server-side (ChatRoutes) — send only meta
-              // the server can't derive itself.
-              ...(settings.systemPrompt
-                ? { conversationMeta: { systemPrompt: settings.systemPrompt } }
-                : {}),
+              // Always present — its presence is the /chat turn-start marker
+              // that makes the service persist the user's own prompt. See
+              // buildDirectChatConversationMeta.
+              conversationMeta: buildDirectChatConversationMeta(
+                settings.systemPrompt,
+              ),
               // Omit project — falls back to x-project header ("prism"),
               // routing to the conversations collection
               traceId,
@@ -6265,7 +6267,11 @@ export default function AgentChatComponent({
     setIsGenerating(false);
     setContextBudget(null);
     setConversationId(generateUUID());
-    setTraceId(null);
+    // Mint a trace for the new conversation exactly as the initial mount
+    // does — a null traceId here left every "New Conversation" turn
+    // untraceable, and (before conversationMeta was made unconditional)
+    // stripped the last thing that told /chat to persist the user message.
+    setTraceId(generateUUID());
     setActiveId(null);
     setTitle(isNoAgent ? "Agentless Chat" : "Agent");
     setBackendConversationStats(null);
