@@ -70,6 +70,12 @@ export interface ModelOption {
   supportsThinking?: boolean;
   thinking?: boolean;
   thinkingLevels?: string[];
+  /**
+   * Server's explicit answer to "can thinking be switched off?", for models
+   * where the thinkingLevels list doesn't say. Absent = use the "declares a
+   * minimal level" heuristic. See canDisableThinking() in modelCapabilities.
+   */
+  canDisableThinking?: boolean;
   supportsWebSearch?: boolean;
   supportsPdf?: boolean;
   supportsSystemPrompt?: boolean;

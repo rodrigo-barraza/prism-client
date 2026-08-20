@@ -62,6 +62,7 @@ import HistoryPanel from "./HistoryPanelComponent";
 import SettingsPanel, {
   ConversationStats as DisplayConversationStats,
 } from "./SettingsPanelComponent";
+import { canDisableThinking } from "@/utils/modelCapabilities";
 import ModelInfoPanel from "./ModelInfoPanelComponent";
 import SkillsPanel from "./SkillsPanelComponent";
 import ToolSelectionComponent from "./ToolSelectionComponent";
@@ -1757,11 +1758,12 @@ export default function AgentChatComponent({
     previousModelRef.current = settings.model;
 
     // Always-on thinking is a model capability, fully derivable from the
-    // catalog: a thinking model whose thinkingLevels can't drop to "minimal"
-    // cannot have thinking disabled. (Previously also gated on
-    // `provider === "google"`, which was redundant with thinkingLevels.)
-    const canDisable =
-      !modelDef.thinkingLevels || modelDef.thinkingLevels.includes("minimal");
+    // catalog — but NOT from thinkingLevels alone. Gemini 3.7 Flash has no
+    // "minimal" rung yet switches thinking off via thinkingBudget: 0, so the
+    // old "can't drop to minimal ⇒ always on" reading would pin thinking on
+    // for the default model. The server states it outright where the level
+    // list is ambiguous; canDisableThinking() applies the fallback.
+    const canDisable = canDisableThinking(modelDef);
     const isThinkingAlwaysOn = !canDisable && modelDef.thinking;
 
     // Anthropic adaptive thinking models (Fable 5, Mythos 5, Opus 4.7+) have

@@ -34,6 +34,7 @@ import ModalityIconComponent from "./ModalityIconComponent";
 import SystemPromptModal from "./SystemPromptModalComponent";
 import styles from "./SettingsPanelComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
+import { canDisableThinking, resolveThinkingLevel } from "@/utils/modelCapabilities";
 import StatsTabBarComponent from "./StatsTabBarComponent";
 import { formatCost } from "@rodrigo-barraza/utilities-library";
 import { CAPABILITY_TOOL_NAMES, isNameBasedThinkingModel } from "../utils/utilities";
@@ -841,8 +842,7 @@ export default function SettingsPanel({
           selectedModelDef?.thinkingLevels &&
           !readOnly &&
           ((): React.ReactNode => {
-            const canDisable =
-              selectedModelDef.thinkingLevels!.includes("minimal");
+            const canDisable = canDisableThinking(selectedModelDef);
             const options = [
               ...(canDisable ? [{ value: "none", label: "No Thinking" }] : []),
               ...selectedModelDef.thinkingLevels!.map((level) => ({
@@ -853,7 +853,7 @@ export default function SettingsPanel({
             const currentValue =
               settings.thinkingEnabled === false && canDisable
                 ? "none"
-                : settings.thinkingLevel || "high";
+                : resolveThinkingLevel(selectedModelDef, settings.thinkingLevel);
             return (
               <div className={styles['form-group']}>
                 <label>Thinking Level</label>
@@ -904,8 +904,7 @@ export default function SettingsPanel({
           !readOnly &&
           selectedModelDef?.thinkingLevels &&
           ((): React.ReactNode => {
-            const canDisable =
-              selectedModelDef.thinkingLevels!.includes("minimal");
+            const canDisable = canDisableThinking(selectedModelDef);
             const options = [
               ...(canDisable ? [{ value: "none", label: "No Thinking" }] : []),
               ...selectedModelDef.thinkingLevels!.map((level) => ({
@@ -950,8 +949,7 @@ export default function SettingsPanel({
           selectedModelDef?.thinkingLevels
         ) &&
           (() => {
-            const canDisable =
-              selectedModelDef.thinkingLevels!.includes("minimal");
+            const canDisable = canDisableThinking(selectedModelDef);
             const currentValue =
               settings.liveThinkingLevel ||
               (canDisable ? "none" : selectedModelDef.thinkingLevels![0]);
@@ -976,12 +974,11 @@ export default function SettingsPanel({
           selectedModelDef?.thinkingLevels
         ) &&
           (() => {
-            const canDisable =
-              selectedModelDef.thinkingLevels!.includes("minimal");
+            const canDisable = canDisableThinking(selectedModelDef);
             const currentValue =
               settings.thinkingEnabled === false && canDisable
                 ? "none"
-                : settings.thinkingLevel || "high";
+                : resolveThinkingLevel(selectedModelDef, settings.thinkingLevel);
             return (
               <div className={styles['form-group']}>
                 <label>Thinking Level</label>
@@ -1068,9 +1065,7 @@ export default function SettingsPanel({
                     case "Thinking": {
                       const isLmStudioProvider = settings.provider === "lm-studio";
                       const isLive = selectedModelDef?.liveAPI;
-                      const canDisable =
-                        !selectedModelDef?.thinkingLevels ||
-                        selectedModelDef.thinkingLevels.includes("minimal");
+                      const canDisable = canDisableThinking(selectedModelDef);
                       const alwaysOn =
                         !canDisable && !!selectedModelDef?.thinkingLevels;
                       const nameBasedThinking = isNameBasedThinkingModel(
