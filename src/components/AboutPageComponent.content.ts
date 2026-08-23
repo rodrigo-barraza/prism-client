@@ -899,8 +899,8 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         sourceUrl:
           "https://github.com/mrdoob/three.js/blob/dev/src/renderers/common/extras/PMREMGenerator.js",
         description:
-          "The prefilter behind Paper Harvest's glass curios: one HDR panorama convolved into eleven roughnesses of the same room, so a gelatin cube reflects a sharp hall and the weathered plinth beside it reflects a smear. Heitz's VNDF sampling is what makes 512 taps enough — it draws half-vectors from the microfacets a viewer can actually see, so the estimate converges where uniform sampling would still be grainy. Ported off three's WebGPU PMREMGenerator onto raw WebGPU and hand-written WGSL (shaders/world/glass/curioPrefilter.wgsl): eleven render passes recorded straight onto the device, no node graph, nothing per-frame. The arithmetic is three's on purpose and the port is credited at both files' heads — the atlas is read back by a shader whose addressing is already three's cubeUV layout, so a writer that packed it differently would be wrong about every texel.",
-        implementationFile: "paper-harvest/world/glass/pmrem.ts",
+          "The prefilter behind Paper Tiles' glass curios: one HDR panorama convolved into eleven roughnesses of the same room, so a gelatin cube reflects a sharp hall and the weathered plinth beside it reflects a smear. Heitz's VNDF sampling is what makes 512 taps enough — it draws half-vectors from the microfacets a viewer can actually see, so the estimate converges where uniform sampling would still be grainy. Ported off three's WebGPU PMREMGenerator onto raw WebGPU and hand-written WGSL (shaders/world/glass/curioPrefilter.wgsl): eleven render passes recorded straight onto the device, no node graph, nothing per-frame. The arithmetic is three's on purpose and the port is credited at both files' heads — the atlas is read back by a shader whose addressing is already three's cubeUV layout, so a writer that packed it differently would be wrong about every texel.",
+        implementationFile: "paper-tiles/world/glass/pmrem.ts",
         categoryLabel: "Real-Time Rendering",
         badgeTone: "orange",
         alignment: [
@@ -965,8 +965,8 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         arxivUrl:
           "https://en.wikipedia.org/wiki/Thorleif_Schjelderup-Ebbe",
         description:
-          "The paper the phrase \"pecking order\" was coined in — and it was never a metaphor there: Schjelderup-Ebbe recorded who pecked whom in real flocks and found the relation near-transitive (the birds line up almost linearly), stable while the flock is, re-fought whenever a bird is added or removed, and tracking temperament more closely than size. Paper Harvest's coop implements it literally: each bird's standing is earned from temper, age, mass and time in the flock, ranks are derived by sorting rather than stored, higher ranks eat first and take the better perch, and the bird at the bottom of an overcrowded coop eats less, stops laying and loses condition — which is the mechanism that teaches coop density. Predates arXiv; the link is the biographical record of the 1922 journal article.",
-        implementationFile: "paper-harvest/farming/barn/pecking.ts",
+          "The paper the phrase \"pecking order\" was coined in — and it was never a metaphor there: Schjelderup-Ebbe recorded who pecked whom in real flocks and found the relation near-transitive (the birds line up almost linearly), stable while the flock is, re-fought whenever a bird is added or removed, and tracking temperament more closely than size. Paper Tiles' coop implements it literally: each bird's standing is earned from temper, age, mass and time in the flock, ranks are derived by sorting rather than stored, higher ranks eat first and take the better perch, and the bird at the bottom of an overcrowded coop eats less, stops laying and loses condition — which is the mechanism that teaches coop density. Predates arXiv; the link is the biographical record of the 1922 journal article.",
+        implementationFile: "paper-tiles/farming/barn/pecking.ts",
         categoryLabel: "Social Hierarchy",
         badgeTone: "teal",
         alignment: [
