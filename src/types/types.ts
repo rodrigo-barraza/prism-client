@@ -427,6 +427,13 @@ export interface Message {
   _notificationSource?: string;
   /** Idempotency key — prevents duplicate notification persistence during race conditions. */
   _notificationId?: string;
+  /**
+   * Mid-turn input (steering update / question answer) — set on the user
+   * bubble. Persisted ones carry `_notificationSource: "user-update" |
+   * "user-answer"` and wrap `content` in `<user-update>` / `<user-answer>`
+   * tags; render `rawContent` (the text the user typed), never the wrapper.
+   */
+  _turnInput?: MessageTurnInput;
 }
 
 export interface Conversation {
@@ -482,6 +489,8 @@ export interface Conversation {
   displayMessages?: Message[];
   /** Backend-computed canonical activity state — use for snapshot data only; live surfaces re-derive from SSE-patched fields */
   state?: import("../utils/agentConversationStates").AgentConversationState;
+  /** Long-running objective, if one was set (`PUT /conversations/:id/goal`). */
+  goal?: ConversationGoal | null;
 }
 
 export interface ConversationListResponse {
@@ -495,6 +504,8 @@ export interface ConversationListResponse {
 export interface AgentConversation {
   _id: ObjectId;
   id?: string;
+  /** Long-running objective, if one was set (`PUT /conversations/:id/goal`). */
+  goal?: ConversationGoal | null;
   project: string;
   agent?: string;
   model?: string;
@@ -592,14 +603,104 @@ export interface SSEPlanProposalEvent {
   plan: string;
 }
 
+/** One option of an agent question (`ask_user`); `preview` is optional detail shown on hover. */
+export interface UserQuestionOption {
+  label: string;
+  preview?: string | null;
+}
+
+/** One question inside a `user_question` event. */
+export interface UserQuestionItem {
+  question: string;
+  header?: string | null;
+  options: UserQuestionOption[];
+  multiSelect?: boolean;
+}
+
+/**
+ * Agent-initiated question. `blocking: false` means the agent keeps working
+ * while the card is open — the composer stays usable and several such cards
+ * (keyed by `questionId`) can be open at once. Answers go through
+ * `POST /agent/answer`; a 404 means the turn already ended.
+ */
 export interface SSEUserQuestionEvent {
   type: "user_question";
-  questions: Array<{
-    question: string;
-    type?: "text" | "single_select" | "multi_select";
-    options?: string[];
-    annotations?: string;
-  }>;
+  questionId: string;
+  blocking: boolean;
+  questions: UserQuestionItem[];
+  context: string | null;
+  seq?: number;
+}
+
+/** Where in the agentic loop a mid-turn input was applied. */
+export type TurnInputBoundary = "iteration_start" | "after_tools" | "before_end";
+
+/** What a mid-turn input was. */
+export type TurnInputKind =
+  | "user_update"
+  | "question_answer"
+  | "task_completion"
+  | "agent_message";
+
+/**
+ * The harness applied a mailbox entry (`POST /agent/input`) to the running
+ * turn. Arrives on the driving SSE and on the viewer WebSocket.
+ */
+export interface SSETurnInputEvent {
+  type: "turn_input";
+  id: string;
+  kind: TurnInputKind;
+  content: string;
+  images?: string[];
+  boundary: TurnInputBoundary;
+  iteration: number;
+  seq?: number;
+}
+
+/** Client-side tracking of a mid-turn input on its user bubble. */
+export interface MessageTurnInput {
+  /** Local temp id until the server's `inputId` replaces it. */
+  id: string;
+  kind: TurnInputKind;
+  receivedAt?: string;
+  /** Client lifecycle: sending → pending → applied (persisted ones are applied). */
+  status?: "sending" | "pending" | "applied";
+  boundary?: TurnInputBoundary;
+  iteration?: number;
+}
+
+export interface ConversationGoalBudget {
+  maxCostDollars?: number;
+  maxTurns?: number;
+  /** ISO timestamp */
+  deadline?: string;
+}
+
+export type ConversationGoalStatus = "active" | "paused" | "completed" | "blocked";
+
+/** Persisted long-running objective for a conversation (`/conversations/:id/goal`). */
+export interface ConversationGoal {
+  objective: string;
+  completionCriteria?: string;
+  budget?: ConversationGoalBudget;
+  progress: {
+    summary: string;
+    percent?: number | null;
+    updatedAt: string;
+  };
+  blockedOn?: string | null;
+  status: ConversationGoalStatus;
+  spentDollars: number;
+  turnsUsed: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SSEGoalUpdateEvent {
+  type: "goal_update";
+  goal: ConversationGoal | null;
+  change: "set" | "progress" | "status" | "cleared";
+  seq?: number;
 }
 
 export interface SSESubAgentStatusEvent {
@@ -671,6 +772,8 @@ export type SSEEvent =
   | SSEApprovalRequiredEvent
   | SSEPlanProposalEvent
   | SSEUserQuestionEvent
+  | SSETurnInputEvent
+  | SSEGoalUpdateEvent
   | SSESubAgentStatusEvent
   | SSEUsageUpdateEvent
   | SSEDoneEvent
@@ -701,12 +804,23 @@ export interface TransformedSSEData {
   plan?: string;
   steps?: string[];
   autoApproved?: boolean;
-  questions?: Array<{
-    question: string;
-    type?: "text" | "single_select" | "multi_select";
-    options?: string[];
-    annotations?: string;
-  }>;
+  questions?: UserQuestionItem[];
+  /** user_question: identifies the card; answers and `question_pending` status refer to it */
+  questionId?: string;
+  /** user_question: false → the agent keeps working while the card is open */
+  blocking?: boolean;
+  /** Monotonic per-conversation event cursor (see utils/liveTurnCursor) */
+  seq?: number;
+  /** turn_input: what the applied mailbox entry was */
+  kind?: TurnInputKind;
+  /** turn_input / status:turn_input_applied: where in the loop it was applied */
+  boundary?: TurnInputBoundary;
+  /** status:turn_input_applied: the mailbox entry id */
+  inputId?: string;
+  images?: string[];
+  /** goal_update */
+  goal?: ConversationGoal | null;
+  change?: "set" | "progress" | "status" | "cleared";
   subAgentId?: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -846,6 +960,10 @@ export interface SSECallbacks {
   onConversationStateUpdate?: (_event: SSEData) => void;
   onTodoUpdate?: (_event: SSEData) => void;
   onBriefUpdate?: (_event: SSEData) => void;
+  /** A mid-turn input was applied by the harness (`turn_input` event) */
+  onTurnInput?: (_event: SSEData) => void;
+  /** The conversation goal was set / progressed / paused / cleared (`goal_update`) */
+  onGoalUpdate?: (_event: SSEData) => void;
   onRunInfo?: (_event: SSEData) => void;
   onModelStart?: (_event: SSEData) => void;
   onModelComplete?: (_event: SSEData) => void;
@@ -870,6 +988,12 @@ export interface SSECallbacks {
   onStreamClosed?: (_info: { reason: "eof-without-done" | "stalled" }) => void;
   /** The stream was torn down by the caller's abort handle (user stop). */
   onAborted?: () => void;
+  /**
+   * WebSocket resubscribe: the server could not replay everything since
+   * the cursor this client sent (`droppedCount > 0` on the `subscribed`
+   * ack) — earlier output is missing from the live view.
+   */
+  onReplayTruncated?: (_info: { droppedCount: number }) => void;
 }
 
 export interface ContentSegment {

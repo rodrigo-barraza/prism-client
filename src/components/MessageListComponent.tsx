@@ -30,6 +30,7 @@ import {
   User,
   Bot,
   Terminal,
+  Zap,
 } from "lucide-react";
 import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import { ToolResultView } from "./ToolResultRenderers";
@@ -56,6 +57,13 @@ import SubAgentNotificationComponent from "./SubAgentNotificationComponent";
 import PlanCardComponent from "./PlanCardComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 import styles from "./MessageListComponent.module.css";
+import {
+  isUserAuthoredNotificationSource,
+  isTurnInputMessage,
+  resolveTurnInput,
+  turnInputBadgeLabel,
+  turnInputDisplayText,
+} from "../utils/turnInputRouting";
 import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
 import { APPROVAL_STATUS } from "../constants";
@@ -93,6 +101,11 @@ export interface SubAgentToolActivityItem {
  * fall back to content-based <task-notification> XML detection.  */
 
 function isNotificationMessage(message: Message): boolean {
+  // Mid-turn steering updates / question answers are persisted with a
+  // `_notificationSource` too ("user-update" | "user-answer"), but they
+  // are the USER's own words — rendered as a user bubble, never a card.
+  if (isUserAuthoredNotificationSource(message._notificationSource)) return false;
+  if (message._turnInput) return false;
   if (message._notificationSource) return true;
   if (!message.content) return false;
   return message.content.includes("<task-notification>");
@@ -1112,6 +1125,12 @@ export default function MessageList({
       })
       .map((message) => {
         if (message.role === "user") {
+          if (isTurnInputMessage(message)) {
+            return {
+              ...message,
+              content: showRaw ? message.content || "" : turnInputDisplayText(message),
+            };
+          }
           const { clean, raw } = getCleanAndRaw(message.content || "", message.rawContent);
           return {
             ...message,
@@ -1870,6 +1889,25 @@ export default function MessageList({
                               : message.role === "system"
                                 ? "System"
                                 : activeAgent?.name || "Model"}
+                            {(() => {
+                              if (message.role !== "user") return null;
+                              const turnInput = resolveTurnInput(message);
+                              if (!turnInput) return null;
+                              const isSettled = turnInput.status === "applied" || !turnInput.status;
+                              return (
+                                <span
+                                  className={`${styles['turn-input-badge']} ${isSettled ? "" : styles['turn-input-badge-pending']}`}
+                                  title={
+                                    turnInput.boundary
+                                      ? `Applied at ${turnInput.boundary.replace(/_/g, " ")}`
+                                      : undefined
+                                  }
+                                >
+                                  {isSettled ? <Zap size={11} /> : <Clock size={11} />}
+                                  {turnInputBadgeLabel(turnInput)}
+                                </span>
+                              );
+                            })()}
                             {(() => {
                               const formattedTime = formatMessageTime(message.timestamp);
                               if (!formattedTime) return null;

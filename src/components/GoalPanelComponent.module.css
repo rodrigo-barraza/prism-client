@@ -1,0 +1,246 @@
+/* ── Goal panel ─────────────────────────────────────────────── */
+/* Compact card above the composer: what the conversation is    */
+/* working towards and how far along it is. Same width as the   */
+/* context-budget indicator it sits beside.                     */
+
+.panel {
+  max-width: 800px;
+  margin: 0 auto;
+  margin-block-end: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid
+    color-mix(in oklch, var(--accent-primary) 30%, var(--calculated-border-color));
+  background: color-mix(in srgb, var(--accent-primary) 4%, var(--background-surface));
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.status-paused {
+  opacity: 0.8;
+  border-color: var(--calculated-border-subtle);
+}
+
+.status-completed {
+  border-color: color-mix(in oklch, var(--color-success) 40%, var(--calculated-border-color));
+}
+
+.status-blocked {
+  border-color: color-mix(in oklch, var(--color-danger) 45%, var(--calculated-border-color));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--accent-primary);
+}
+
+.label {
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.status-pill {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: color-mix(in oklch, var(--accent-primary) 15%, transparent);
+  color: var(--accent-primary);
+}
+
+.pill-paused {
+  background: color-mix(in oklch, var(--text-muted) 18%, transparent);
+  color: var(--text-secondary);
+}
+
+.pill-completed {
+  background: color-mix(in oklch, var(--color-success) 18%, transparent);
+  color: var(--color-success);
+}
+
+.pill-blocked {
+  background: color-mix(in oklch, var(--color-danger) 18%, transparent);
+  color: var(--color-danger);
+}
+
+.spinner {
+  color: var(--text-muted);
+  animation: goal-spin 1s linear infinite;
+}
+
+@keyframes goal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.actions {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.action-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  color: var(--text-primary);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.action-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+  border-color: color-mix(in oklch, var(--color-danger) 40%, var(--calculated-border-color));
+}
+
+.confirm-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.confirm-text {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-inline-end: 2px;
+}
+
+.objective {
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.criteria {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--calculated-border-color);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent-primary);
+  transition: width 0.4s ease;
+}
+
+.progress-indeterminate .progress-fill {
+  opacity: 0.35;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--accent-primary) 0 8px,
+    transparent 8px 16px
+  );
+}
+
+.status-completed .progress-fill {
+  background: var(--color-success);
+}
+
+.status-blocked .progress-fill {
+  background: var(--color-danger);
+}
+
+.progress-percent {
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  min-width: 3ch;
+  text-align: end;
+}
+
+.progress-summary {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.blocked {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: var(--border-radius-sm);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
+.blocked svg {
+  flex-shrink: 0;
+  margin-block-start: 1px;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-over {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+}

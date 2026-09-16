@@ -338,6 +338,45 @@
   font-weight: 500;
 }
 
+/* ── Send-mode toggle (only while a turn is running) ─────────── */
+/* Update current task = POST /agent/input, applied at the agent's  */
+/* next step; Queue for next turn = held until the turn ends.       */
+.send-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-block-end: 6px;
+  padding: 2px;
+  width: fit-content;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: 999px;
+  background: var(--background-surface);
+}
+
+.send-mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.send-mode-option:hover {
+  color: var(--text-primary);
+}
+
+.send-mode-option-active {
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+}
+
 /* Visual shell (border, focus ring, prism generating border) lives in
    InputBoxComponent.module.css — this class only positions it in the chat. */
 .input-box-layout {

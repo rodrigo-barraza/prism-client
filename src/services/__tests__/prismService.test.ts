@@ -172,6 +172,89 @@ describe("PrismService", () => {
     });
   });
 
+  describe("Conversation Goal Operations", () => {
+    it("getConversationGoal, setConversationGoal, patchConversationGoal, clearConversationGoal", async () => {
+      const goal = {
+        objective: "Ship it",
+        progress: { summary: "", percent: null, updatedAt: "t" },
+        status: "active",
+        spentDollars: 0,
+        turnsUsed: 0,
+        createdAt: "t",
+        updatedAt: "t",
+      };
+      fetchResult = { ok: true, json: async () => ({ goal }) };
+      expect(await PrismService.getConversationGoal("conv 1")).toEqual(goal);
+      expect(lastUrl).toContain("/conversations/conv%201/goal");
+      expect(lastOptions?.method).toBe("GET");
+
+      fetchResult = { ok: true, json: async () => ({ goal: null }) };
+      expect(await PrismService.getConversationGoal("conv-1")).toBeNull();
+
+      fetchResult = { ok: true, json: async () => ({ goal }) };
+      await PrismService.setConversationGoal("conv-1", {
+        objective: "Ship it",
+        completionCriteria: "green",
+        budget: { maxCostDollars: 5, maxTurns: 10 },
+      });
+      expect(lastUrl).toContain("/conversations/conv-1/goal");
+      expect(lastOptions?.method).toBe("PUT");
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({
+        objective: "Ship it",
+        completionCriteria: "green",
+        budget: { maxCostDollars: 5, maxTurns: 10 },
+      });
+
+      fetchResult = { ok: true, json: async () => ({ goal: { ...goal, status: "paused" } }) };
+      const paused = await PrismService.patchConversationGoal("conv-1", { status: "paused" });
+      expect(lastOptions?.method).toBe("PATCH");
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({ status: "paused" });
+      expect(paused?.status).toBe("paused");
+
+      fetchResult = { ok: true, json: async () => ({ ok: true }) };
+      await PrismService.clearConversationGoal("conv-1");
+      expect(lastUrl).toContain("/conversations/conv-1/goal");
+      expect(lastOptions?.method).toBe("DELETE");
+      expect(lastOptions?.body).toBeUndefined();
+    });
+  });
+
+  describe("Harness-next SSE dispatch", () => {
+    it("routes turn_input and goal_update, and passes questionId/blocking through user_question", () => {
+      const onTurnInput = vi.fn();
+      const onGoalUpdate = vi.fn();
+      const onUserQuestion = vi.fn();
+      const callbacks = { onTurnInput, onGoalUpdate, onUserQuestion };
+
+      const turnInput: SSEData = {
+        type: "turn_input",
+        id: "in-1",
+        kind: "user_update",
+        content: "use pnpm",
+        boundary: "after_tools",
+        iteration: 3,
+        seq: 1760000000005,
+      };
+      PrismService._dispatchSSE(turnInput, callbacks);
+      expect(onTurnInput).toHaveBeenCalledWith(turnInput);
+
+      const goalUpdate: SSEData = { type: "goal_update", goal: null, change: "cleared" };
+      PrismService._dispatchSSE(goalUpdate, callbacks);
+      expect(onGoalUpdate).toHaveBeenCalledWith(goalUpdate);
+
+      const question: SSEData = {
+        type: "user_question",
+        questionId: "q-1",
+        blocking: false,
+        questions: [{ question: "Which?", header: null, options: [{ label: "A", preview: null }], multiSelect: false }],
+        context: null,
+      };
+      PrismService._dispatchSSE(question, callbacks);
+      expect(onUserQuestion).toHaveBeenCalledWith(question);
+      expect(onUserQuestion.mock.calls[0][0]).toMatchObject({ questionId: "q-1", blocking: false });
+    });
+  });
+
   describe("Favorites Operations", () => {
     it("getFavorites, addFavorite, removeFavorite", async () => {
       await PrismService.getFavorites("type-a");
@@ -494,6 +577,51 @@ describe("PrismService", () => {
       expect(JSON.parse(lastOptions?.body as string)).toEqual({
         conversationId: "conv-123",
         answers: [{ answer: "ans-1" }],
+      });
+    });
+
+    it("sendTurnInput: 200 → inputId, 409/400 resolve as contract rejections, others throw", async () => {
+      fetchResult = { ok: true, status: 200, json: async () => ({ ok: true, inputId: "in-1", position: 2 }) };
+      const accepted = await PrismService.sendTurnInput("conv-123", "focus on tests", ["data:image/png;base64,AA"]);
+      expect(lastUrl).toContain("/agent/input");
+      expect(lastOptions?.method).toBe("POST");
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({
+        conversationId: "conv-123",
+        text: "focus on tests",
+        images: ["data:image/png;base64,AA"],
+      });
+      expect(accepted).toEqual({ ok: true, inputId: "in-1", position: 2 });
+
+      fetchResult = { ok: true, status: 200, json: async () => ({ ok: true, inputId: "in-2" }) };
+      await PrismService.sendTurnInput("conv-123", "no images", []);
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({ conversationId: "conv-123", text: "no images" });
+
+      fetchResult = { ok: false, status: 409, json: async () => ({ reason: "no_active_turn" }) };
+      expect(await PrismService.sendTurnInput("conv-123", "late")).toEqual({
+        ok: false,
+        status: 409,
+        reason: "no_active_turn",
+      });
+
+      fetchResult = { ok: false, status: 400, json: async () => ({ reason: "mailbox_full" }) };
+      expect(await PrismService.sendTurnInput("conv-123", "full")).toEqual({
+        ok: false,
+        status: 400,
+        reason: "mailbox_full",
+      });
+
+      fetchResult = { ok: false, status: 500, json: async () => ({ message: "boom" }) };
+      await expect(PrismService.sendTurnInput("conv-123", "x")).rejects.toMatchObject({
+        message: "boom",
+        status: 500,
+      });
+    });
+
+    it("_request errors carry the HTTP status (404 → answer falls back to a message)", async () => {
+      fetchResult = { ok: false, status: 404, json: async () => ({ error: "no pending question" }) };
+      await expect(PrismService.sendUserQuestionAnswer("conv-123", "late")).rejects.toMatchObject({
+        message: "no pending question",
+        status: 404,
       });
     });
 
