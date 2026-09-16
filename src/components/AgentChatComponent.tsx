@@ -55,6 +55,9 @@ import {
   LlamaCppServerProps,
   ContextBudget,
   LiveConversationStatus,
+  UserQuestionItem,
+  TurnInputKind,
+  TurnInputBoundary,
 } from "../types/types";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -92,6 +95,25 @@ import ImagePreviewComponent from "./ImagePreviewComponent";
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ApprovalCardComponent from "./ApprovalCardComponent";
 import UserQuestionCardComponent from "./UserQuestionCardComponent";
+import NonBlockingQuestionsComponent from "./NonBlockingQuestionsComponent";
+import GoalPanelComponent from "./GoalPanelComponent";
+import useNonBlockingQuestions, {
+  type QuestionAnswerData,
+} from "../hooks/useNonBlockingQuestions";
+import useConversationGoal from "../hooks/useConversationGoal";
+import useComposerSendMode from "../hooks/useComposerSendMode";
+import {
+  decideComposerAction,
+  resolveTurnInputOutcome,
+  buildOptimisticTurnInputMessage,
+  insertTurnInputMessage,
+  attachTurnInputServerId,
+  removeTurnInputMessage,
+  markTurnInputApplied,
+  applyTurnInputEvent,
+  answersToMessageText,
+  type TurnInputOutcome,
+} from "../utils/turnInputRouting";
 
 import StatusBarComponent, { type StatusBarPhase } from "./StatusBarComponent";
 import { PHASE_TOKENS } from "../utils/statusBarPhaseTokens";
@@ -481,7 +503,8 @@ interface ConversationSnapshot {
   streamingOutputs: Map<string, string>;
   pendingApprovals: PendingApproval[];
   pendingUserQuestion: {
-    questions?: unknown[];
+    questionId?: string;
+    questions?: UserQuestionItem[];
     context?: string;
   } | null;
   planProposal: { plan: string; steps?: string[]; status?: "pending" | "approved" | "rejected" | "executing" } | null;
@@ -1082,10 +1105,21 @@ export default function AgentChatComponent({
   const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>(
     [],
   );
+  // BLOCKING agent question — gates the turn until answered.
   const [pendingUserQuestion, setPendingUserQuestion] = useState<{
-    questions?: unknown[];
+    questionId?: string;
+    questions?: UserQuestionItem[];
     context?: string;
   } | null>(null);
+  // NON-blocking questions (agent keeps working), the conversation goal and
+  // the composer's while-running send mode live in their own hooks.
+  const nonBlockingQuestions = useNonBlockingQuestions(conversationId);
+  const conversationGoal = useConversationGoal(conversationId);
+  const [composerSendMode, setComposerSendMode] = useComposerSendMode();
+  // Stable actions off the hooks — the hook objects change identity each
+  // render, the functions do not, so callbacks depend on these.
+  const { hydrate: hydrateConversationGoal, applyEvent: applyGoalEvent } = conversationGoal;
+  const { open: openNonBlockingQuestion, clear: clearNonBlockingQuestions } = nonBlockingQuestions;
   const [planProposal, setPlanProposal] = useState<{
     plan: string;
     steps?: string[];
@@ -2102,6 +2136,7 @@ export default function AgentChatComponent({
 
         // Hydrate persisted context budget from the conversation document
         setContextBudget(extractPersistedContextBudget(full));
+        hydrateConversationGoal(full.goal ?? null);
       } catch (error: unknown) {
         console.error("Failed to preload conversation from URL:", error);
       }
@@ -4646,9 +4681,44 @@ export default function AgentChatComponent({
               return updated;
             });
           },
+          // Harness mailbox: our own `/agent/input` bubble (or another
+          // tab's) was applied. The driver keeps its in-flight assistant
+          // bubble LAST — every chunk handler above patches messages[-1]
+          // when it is an assistant — so a bubble that has to be created
+          // here goes just above it; the finalize refresh restores order.
+          onTurnInput: (data: SSEData) => {
+            if (isStale()) return;
+            const inputId = typeof data.id === "string" ? data.id : "";
+            if (!inputId) return;
+            setMessages((previousMessages) =>
+              applyTurnInputEvent(
+                previousMessages,
+                {
+                  id: inputId,
+                  kind: (data.kind as TurnInputKind | undefined) ?? "user_update",
+                  content: (data.content as string) || "",
+                  images: Array.isArray(data.images) ? (data.images as string[]) : undefined,
+                  boundary: data.boundary as TurnInputBoundary | undefined,
+                  iteration: typeof data.iteration === "number" ? data.iteration : undefined,
+                },
+                "before-trailing-assistant",
+              ),
+            );
+          },
+          onGoalUpdate: (data: SSEData) => {
+            if (isStale()) return;
+            applyGoalEvent(data);
+          },
           onUserQuestion: (data: SSEData) => {
             if (isStale()) return;
+            if (data.blocking === false) {
+              // The agent keeps working — pin the card, leave the composer
+              // and the TTFT badge alone.
+              openNonBlockingQuestion(data);
+              return;
+            }
             setPendingUserQuestion({
+              questionId: typeof data.questionId === "string" ? data.questionId : undefined,
               questions: data.questions || [],
               context: data.context || undefined,
             });
@@ -4711,6 +4781,18 @@ export default function AgentChatComponent({
           },
           onStatus: (statusData: SSEData) => {
             if (isStale()) return;
+            // Mailbox entry applied — the `turn_input` event carries the
+            // content; this twin only settles a bubble's badge if that
+            // event was missed.
+            if (statusData?.message === "turn_input_applied" && typeof statusData.inputId === "string") {
+              const appliedInputId = statusData.inputId;
+              setMessages((previousMessages) =>
+                markTurnInputApplied(previousMessages, appliedInputId, {
+                  boundary: statusData.boundary as TurnInputBoundary | undefined,
+                  iteration: typeof statusData.iteration === "number" ? statusData.iteration : undefined,
+                }),
+              );
+            }
             // statusData is now the full SSE data object { type, message, iteration?, maxIterations? }
             if (statusData?.message === STATUS_MESSAGES.ITERATION_PROGRESS) {
               setAgenticProgress({
@@ -5640,11 +5722,69 @@ export default function AgentChatComponent({
   // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
   titleRef.current = title;
 
+  /**
+   * "Update current task": steer the RUNNING turn through `/agent/input`.
+   * Optimistic user bubble (Sending…) → server `inputId` (Pending) → the
+   * `turn_input` event marks it Applied at step N. A 409 (no running turn)
+   * turns it into the queued-next-turn bubble; a 400 puts the text back.
+   */
+  const sendTurnInputUpdate = useCallback(
+    async (text: string, images: string[]) => {
+      const targetConversationId = conversationIdRef.current;
+      const tempId = `turn-input-${generateUUID()}`;
+      setTextareaValue("");
+      setPendingImages([]);
+      isUserNearBottomRef.current = true;
+      setMessages((previousMessages) =>
+        insertTurnInputMessage(
+          previousMessages,
+          buildOptimisticTurnInputMessage({ tempId, text, images }) as ClientMessage,
+          "before-trailing-assistant",
+        ),
+      );
+
+      let outcome: TurnInputOutcome;
+      try {
+        outcome = resolveTurnInputOutcome(
+          await PrismService.sendTurnInput(targetConversationId, text, images),
+        );
+      } catch (sendError: unknown) {
+        outcome = {
+          action: "reject",
+          toast: `Could not send the update — ${getErrorMessage(sendError)}`,
+        };
+      }
+      // Switched conversations while the request was in flight — the
+      // bubble is gone with the old messages; nothing to settle.
+      if (conversationIdRef.current !== targetConversationId) return;
+
+      if (outcome.action === "pending") {
+        const serverInputId = outcome.inputId;
+        setMessages((previousMessages) =>
+          attachTurnInputServerId(previousMessages, tempId, serverInputId),
+        );
+        return;
+      }
+      setMessages((previousMessages) => removeTurnInputMessage(previousMessages, tempId));
+      if (outcome.action === "queue") {
+        setQueuedNextTurn({ text, images, files: [] });
+        addToast(outcome.toast, "info");
+        return;
+      }
+      setTextareaValue(text);
+      setPendingImages(images);
+      addToast(outcome.toast, "warning");
+    },
+    [addToast, setTextareaValue],
+  );
+
   const handleSend = useCallback(
     async (
       e?: React.FormEvent<HTMLFormElement> | null,
       fetchOptions: {
         isQueueing?: boolean;
+        /** Steer the running turn (`/agent/input`) instead of queueing. */
+        isTurnInput?: boolean;
         overridePayload?: {
           text: string;
           images: string[];
@@ -5654,9 +5794,9 @@ export default function AgentChatComponent({
     ) => {
       if (e && typeof e.preventDefault === "function") e.preventDefault();
 
-      const { isQueueing = false, overridePayload = null } = fetchOptions;
+      const { isQueueing = false, isTurnInput = false, overridePayload = null } = fetchOptions;
 
-      if (isConversationRunning && !isQueueing && !overridePayload) {
+      if (isConversationRunning && !isQueueing && !isTurnInput && !overridePayload) {
         handleStop();
         return;
       }
@@ -5693,6 +5833,25 @@ export default function AgentChatComponent({
           `Message is too large to send (${formatByteLimit(inlineBytes)} inline) — the limit is ${formatByteLimit(MAX_INLINE_PAYLOAD_BYTES)}. Remove or shrink some images.`,
           "warning",
         );
+        return;
+      }
+
+      if (isTurnInput) {
+        // Files ride MinIO + the next /agent body, never the mailbox.
+        const turnInputAction = decideComposerAction({
+          isConversationRunning: true,
+          mode: "update",
+          hasFiles: currentFiles.length > 0,
+        });
+        if (turnInputAction === "update") {
+          await sendTurnInputUpdate(text, currentImages);
+          return;
+        }
+        addToast("Files can't be sent mid-turn — queued for next turn", "info");
+        setQueuedNextTurn({ text, images: currentImages, files: currentFiles });
+        setTextareaValue("");
+        setPendingImages([]);
+        setPendingFiles([]);
         return;
       }
 
@@ -6159,6 +6318,7 @@ export default function AgentChatComponent({
       runOrchestrationLoop,
       loadConversations,
       addToast,
+      sendTurnInputUpdate,
     ],
   );
 
@@ -6207,7 +6367,12 @@ export default function AgentChatComponent({
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         if (isConversationRunning) {
-          handleSend(null, { isQueueing: true });
+          const runningAction = decideComposerAction({
+            isConversationRunning: true,
+            mode: composerSendMode,
+            hasFiles: pendingFilesRef.current.length > 0,
+          });
+          handleSend(null, runningAction === "update" ? { isTurnInput: true } : { isQueueing: true });
         } else {
           handleSend();
         }
@@ -6237,6 +6402,7 @@ export default function AgentChatComponent({
       mentionResults,
       mentionIndex,
       applyMention,
+      composerSendMode,
     ],
   );
 
@@ -6251,6 +6417,33 @@ export default function AgentChatComponent({
       }, 50);
     }
   }, [isGenerating, queuedNextTurn, handleSend]);
+
+  /**
+   * Answer an agent question through `/agent/answer`. A 404 means the turn
+   * already ended (non-blocking cards can outlive it) — the answer then
+   * goes out as a normal new message so nothing the user typed is lost.
+   */
+  const sendQuestionAnswerOrMessage = useCallback(
+    async (answers: QuestionAnswerData[]): Promise<"answer" | "message" | "failed"> => {
+      try {
+        await PrismService.sendUserQuestionAnswer(conversationIdRef.current, answers);
+        return "answer";
+      } catch (answerError: unknown) {
+        if ((answerError as { status?: number })?.status === 404) {
+          const text = answersToMessageText(answers);
+          if (text) {
+            handleSend(null, { overridePayload: { text, images: [] } });
+            addToast("The turn had already ended — sent your answer as a message", "info");
+            return "message";
+          }
+        }
+        console.error("[sendQuestionAnswerOrMessage] failed:", answerError);
+        addToast(`Could not send the answer — ${getErrorMessage(answerError)}`, "error");
+        return "failed";
+      }
+    },
+    [handleSend, addToast],
+  );
 
   // -- Conversation management ----------------------------------
   const resetConversationState = useCallback(() => {
@@ -6268,6 +6461,8 @@ export default function AgentChatComponent({
     setContextTruncated(null);
     setIsGenerating(false);
     setContextBudget(null);
+    hydrateConversationGoal(null);
+    clearNonBlockingQuestions();
     setConversationId(generateUUID());
     // Mint a trace for the new conversation exactly as the initial mount
     // does — a null traceId here left every "New Conversation" turn
@@ -6297,7 +6492,7 @@ export default function AgentChatComponent({
         detail: { conversationId: null },
       }),
     );
-  }, [isNoAgent, config, resetToAllDisabled]);
+  }, [isNoAgent, config, resetToAllDisabled, hydrateConversationGoal, clearNonBlockingQuestions]);
 
   const handleNewChat = useCallback(() => {
     // If generating, snapshot the current conversation so user can switch back to it
@@ -6400,8 +6595,9 @@ export default function AgentChatComponent({
         };
         pendingQuestion?: {
           isPending?: boolean;
+          questionId?: string;
           question?: string;
-          questions?: unknown[];
+          questions?: UserQuestionItem[];
           choices?: string[];
         };
       },
@@ -6411,6 +6607,9 @@ export default function AgentChatComponent({
       // Hydrate persisted context budget from the conversation document,
       // or clear if the conversation has no budget data.
       setContextBudget(extractPersistedContextBudget(full));
+      // Same for the goal — the document carries it; `goal_update` events
+      // keep it current between refreshes.
+      hydrateConversationGoal(full.goal ?? null);
 
       // -- Restore workspace selection from the conversation document --
       // Agent conversations record which workspace they were started with;
@@ -6653,6 +6852,7 @@ export default function AgentChatComponent({
         const pendingQuestionData = full.pendingQuestion;
         if (pendingQuestionData && pendingQuestionData.isPending) {
           setPendingUserQuestion({
+            questionId: pendingQuestionData.questionId,
             questions: pendingQuestionData.questions || [],
           });
         } else {
@@ -6800,7 +7000,7 @@ export default function AgentChatComponent({
         }
       }
     },
-    [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools, resetToAllDisabled, enableSpecificTools],
+    [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools, resetToAllDisabled, enableSpecificTools, hydrateConversationGoal],
   );
 
   const handleSelectConversation = useCallback(
@@ -7184,6 +7384,11 @@ export default function AgentChatComponent({
   const applyConversationDataRef = useRef(applyConversationData);
   // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
   applyConversationDataRef.current = applyConversationData;
+  // Goal / non-blocking-question / toast helpers for the viewer stream,
+  // mirrored for the same reason as applyConversationData above.
+  const liveTurnHelpersRef = useRef({ addToast, applyGoalEvent, openNonBlockingQuestion });
+  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
+  liveTurnHelpersRef.current = { addToast, applyGoalEvent, openNonBlockingQuestion };
   const adminRefreshSelectedEntryRef = useRef(adminRefreshSelectedEntry);
   // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
   adminRefreshSelectedEntryRef.current = adminRefreshSelectedEntry;
@@ -7292,6 +7497,46 @@ export default function AgentChatComponent({
             } as ClientMessage,
           ];
         });
+      },
+
+      // A mid-turn input landed (ours from another tab, an answer, a task
+      // completion). It becomes a user bubble and whatever streams next
+      // opens a fresh assistant bubble under it.
+      onTurnInput: (data: SSEData) => {
+        if (!isSubscriptionActive) return;
+        const inputId = typeof data.id === "string" ? data.id : "";
+        if (!inputId) return;
+        markStreamDelivering();
+        streamedText = "";
+        streamedThinking = "";
+        ownsTrailingAssistantBubble = false;
+        setMessages((previousMessages) =>
+          applyTurnInputEvent(previousMessages, {
+            id: inputId,
+            kind: (data.kind as TurnInputKind | undefined) ?? "user_update",
+            content: (data.content as string) || "",
+            images: Array.isArray(data.images) ? (data.images as string[]) : undefined,
+            boundary: data.boundary as TurnInputBoundary | undefined,
+            iteration: typeof data.iteration === "number" ? data.iteration : undefined,
+          }) as ClientMessage[],
+        );
+      },
+      onGoalUpdate: (data: SSEData) => {
+        if (!isSubscriptionActive) return;
+        liveTurnHelpersRef.current.applyGoalEvent(data);
+      },
+      // Non-blocking questions can be answered from a viewing tab too;
+      // blocking ones stay with the driving client (and the snapshot).
+      onUserQuestion: (data: SSEData) => {
+        if (!isSubscriptionActive || isAdmin) return;
+        if (data.blocking === false) liveTurnHelpersRef.current.openNonBlockingQuestion(data);
+      },
+      onReplayTruncated: ({ droppedCount }) => {
+        if (!isSubscriptionActive) return;
+        liveTurnHelpersRef.current.addToast(
+          `Earlier output truncated — ${droppedCount} event${droppedCount === 1 ? "" : "s"} could not be replayed`,
+          "info",
+        );
       },
 
       onChunk: (content: string) => {
@@ -7438,6 +7683,16 @@ export default function AgentChatComponent({
       onStatus: (data: SSEData) => {
         if (!isSubscriptionActive) return;
         const statusMessage = data.message as string | undefined;
+
+        if (statusMessage === "turn_input_applied" && typeof data.inputId === "string") {
+          const appliedInputId = data.inputId;
+          setMessages((previousMessages) =>
+            markTurnInputApplied(previousMessages, appliedInputId, {
+              boundary: data.boundary as TurnInputBoundary | undefined,
+              iteration: typeof data.iteration === "number" ? data.iteration : undefined,
+            }),
+          );
+        }
 
         // Update iteration progress
         if (statusMessage === "iteration_progress") {
@@ -8880,19 +9135,11 @@ export default function AgentChatComponent({
         {/* Pending user question card */}
         {!isAdmin && pendingUserQuestion && (
           <UserQuestionCardComponent
-            questions={pendingUserQuestion.questions as Array<{ question: string; header?: string | null; options: Array<{ label: string; preview?: string | null }>; multiSelect?: boolean }>}
+            questions={pendingUserQuestion.questions}
             context={pendingUserQuestion.context}
-            onAnswer={(
-              answers: Array<{
-                answer: string | string[];
-                annotations?: string;
-              }>,
-            ) => {
+            onAnswer={(answers: QuestionAnswerData[]) => {
               setPendingUserQuestion(null);
-              PrismService.sendUserQuestionAnswer(
-                conversationId,
-                answers,
-              ).catch(console.error);
+              void sendQuestionAnswerOrMessage(answers);
             }}
           />
         )}
@@ -9203,9 +9450,12 @@ export default function AgentChatComponent({
 
       {/* Admin viewer: read-only context budget in the input-wrapper slot,
           without the input form itself */}
-      {isAdmin && contextBudget && (
+      {isAdmin && (contextBudget || conversationGoal.goal) && (
         <div className={chatStyles['input-wrapper']}>
-          <ContextBudgetIndicatorComponent contextBudget={contextBudget} />
+          <GoalPanelComponent goal={conversationGoal.goal} readOnly />
+          {contextBudget && (
+            <ContextBudgetIndicatorComponent contextBudget={contextBudget} />
+          )}
         </div>
       )}
 
@@ -9213,6 +9463,25 @@ export default function AgentChatComponent({
       <div
         className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model || isActiveConversationSubAgent ? chatStyles['input-wrapper-disabled'] : ""}`}
       >
+        {/* Non-blocking agent questions — pinned, the composer stays usable */}
+        <NonBlockingQuestionsComponent
+          cards={nonBlockingQuestions.cards}
+          onAnswer={(questionId, answers) => {
+            void sendQuestionAnswerOrMessage(answers).then((via) => {
+              if (via === "failed") return;
+              nonBlockingQuestions.markAnswered(questionId, answers, via);
+            });
+          }}
+          onDismiss={nonBlockingQuestions.dismiss}
+        />
+        <GoalPanelComponent
+          goal={conversationGoal.goal}
+          onPause={() => void conversationGoal.pause()}
+          onResume={() => void conversationGoal.resume()}
+          onClear={() => void conversationGoal.clear()}
+          isBusy={conversationGoal.isBusy}
+          error={conversationGoal.error}
+        />
         {contextBudget && (
           <ContextBudgetIndicatorComponent
             contextBudget={contextBudget}
@@ -9303,6 +9572,36 @@ export default function AgentChatComponent({
             </div>
           )}
           {/* Active rule badges are now inline in the contentEditable */}
+          {isConversationRunning && (
+            <div
+              className={chatStyles['send-mode-toggle']}
+              role="radiogroup"
+              aria-label="While the agent is working, Enter will"
+            >
+              <button
+                type="button"
+                role="radio"
+                aria-checked={composerSendMode === "update"}
+                className={`${chatStyles['send-mode-option']} ${composerSendMode === "update" ? chatStyles['send-mode-option-active'] : ""}`}
+                onClick={() => setComposerSendMode("update")}
+                title="Send now — the agent reads it at its next step"
+              >
+                <Zap size={12} />
+                Update current task
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={composerSendMode === "queue"}
+                className={`${chatStyles['send-mode-option']} ${composerSendMode === "queue" ? chatStyles['send-mode-option-active'] : ""}`}
+                onClick={() => setComposerSendMode("queue")}
+                title="Hold it and send when this turn ends"
+              >
+                <CornerDownLeft size={12} />
+                Queue for next turn
+              </button>
+            </div>
+          )}
           <div className={chatStyles['input-layout-row']}>
             {supportsAnyFileInput && (
               <>
@@ -9450,15 +9749,31 @@ export default function AgentChatComponent({
                 </div>
               </div>
             )}
-            {isConversationRunning && (
-              <ChatInputButton
-                variant="button"
-                onClick={() => handleSend(null, { isQueueing: true })}
-                disabled={!hasInput && pendingImages.length === 0 && pendingFiles.length === 0}
-                label="Queue message for next turn"
-                icon={<CornerDownLeft size={18} />}
-              />
-            )}
+            {isConversationRunning && (() => {
+              const runningAction = decideComposerAction({
+                isConversationRunning: true,
+                mode: composerSendMode,
+                hasFiles: pendingFiles.length > 0,
+              });
+              return (
+                <ChatInputButton
+                  variant="button"
+                  onClick={() =>
+                    handleSend(
+                      null,
+                      runningAction === "update" ? { isTurnInput: true } : { isQueueing: true },
+                    )
+                  }
+                  disabled={!hasInput && pendingImages.length === 0 && pendingFiles.length === 0}
+                  label={
+                    runningAction === "update"
+                      ? "Update the current task"
+                      : "Queue message for next turn"
+                  }
+                  icon={runningAction === "update" ? <Zap size={18} /> : <CornerDownLeft size={18} />}
+                />
+              );
+            })()}
             <ButtonComponent
               variant="submit"
               icon={isConversationRunning ? Square : Send}

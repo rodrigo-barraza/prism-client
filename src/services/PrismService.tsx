@@ -4,12 +4,16 @@ import { PRISM_SERVICE_URL, PRISM_WEBSOCKET_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { getErrorMessage } from "../utils/errorMessage";
+import { cursorFor } from "../utils/liveTurnCursor";
+import type { TurnInputResponse } from "../utils/turnInputRouting";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
 import { hydrateToolEmojiCache } from "../components/WorkflowNodeConstantsComponent";
 import type {
   PrismConfig,
   ModelOption,
   Conversation,
+  ConversationGoal,
+  ConversationGoalBudget,
   ConversationListResponse,
   ConversationMeta,
   Message,
@@ -115,7 +119,12 @@ export default class PrismService {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.error || error.message || `Prism API error: ${response.status}`);
+      // `status` rides on the Error so callers can branch on 404 / 409
+      // without parsing the message (see PrismRequestError).
+      throw Object.assign(
+        new Error(error.error || error.message || `Prism API error: ${response.status}`),
+        { status: response.status, reason: error.reason as string | undefined },
+      );
     }
 
     return response.json();
@@ -1419,6 +1428,102 @@ export default class PrismService {
   }
 
   /**
+   * Steer the RUNNING turn — `POST /agent/input` drops the text into the
+   * harness mailbox, which applies it at the next iteration boundary and
+   * echoes a `turn_input` event. Resolves (never throws) for the two
+   * contract rejections so the composer can fall back:
+   *  - 409 `no_active_turn` → queue it for the next turn instead,
+   *  - 400 `mailbox_full` | `empty_input` → tell the user.
+   * Any other failure throws like every other request.
+   */
+  static async sendTurnInput(
+    conversationId: string,
+    text: string,
+    images?: string[],
+  ): Promise<TurnInputResponse> {
+    const response = await fetch(`${API_BASE}/agent/input`, {
+      method: HTTP_METHODS.POST,
+      headers: getHeaders(),
+      cache: "no-store",
+      body: JSON.stringify({
+        conversationId,
+        text,
+        ...(images && images.length > 0 ? { images } : {}),
+      }),
+    });
+    if (response.ok) {
+      const result = (await response.json()) as { inputId: string; position?: number };
+      return { ok: true, inputId: result.inputId, position: result.position };
+    }
+    const error = (await response.json().catch(() => ({}))) as {
+      reason?: string;
+      error?: string;
+      message?: string;
+    };
+    if (response.status === 409 || response.status === 400) {
+      return { ok: false, status: response.status, reason: error.reason };
+    }
+    throw Object.assign(
+      new Error(error.error || error.message || `Prism API error: ${response.status}`),
+      { status: response.status, reason: error.reason },
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Conversation goals — a long-running objective the harness reports
+  // progress against (`goal_update` events)
+  // ---------------------------------------------------------------------------
+
+  static async getConversationGoal(
+    conversationId: string,
+  ): Promise<ConversationGoal | null> {
+    const result = await PrismService._request<{ goal: ConversationGoal | null }>(
+      `/conversations/${encodeURIComponent(conversationId)}/goal`,
+      { method: HTTP_METHODS.GET },
+    );
+    return result?.goal ?? null;
+  }
+
+  static async setConversationGoal(
+    conversationId: string,
+    goal: {
+      objective: string;
+      completionCriteria?: string;
+      budget?: ConversationGoalBudget;
+    },
+  ): Promise<ConversationGoal | null> {
+    const result = await PrismService._request<{ goal: ConversationGoal | null }>(
+      `/conversations/${encodeURIComponent(conversationId)}/goal`,
+      { method: HTTP_METHODS.PUT, body: goal },
+    );
+    return result?.goal ?? null;
+  }
+
+  /** Pause / resume, or nudge progress / blockedOn / budget. */
+  static async patchConversationGoal(
+    conversationId: string,
+    patch: {
+      status?: "active" | "paused";
+      progress?: { summary: string; percent?: number | null };
+      blockedOn?: string | null;
+      budget?: ConversationGoalBudget;
+    },
+  ): Promise<ConversationGoal | null> {
+    const result = await PrismService._request<{ goal: ConversationGoal | null }>(
+      `/conversations/${encodeURIComponent(conversationId)}/goal`,
+      { method: HTTP_METHODS.PATCH, body: patch },
+    );
+    return result?.goal ?? null;
+  }
+
+  static async clearConversationGoal(conversationId: string): Promise<void> {
+    await PrismService._request<unknown>(
+      `/conversations/${encodeURIComponent(conversationId)}/goal`,
+      { method: HTTP_METHODS.DELETE },
+    );
+  }
+
+  /**
    * Stream text generation via SSE (Server-Sent Events).
 
 
@@ -1430,10 +1535,24 @@ export default class PrismService {
    */
   static _streamSSE(
     endpoint: string,
-    { method = HTTP_METHODS.POST, body }: { method?: string; body?: unknown } = {},
+    {
+      method = HTTP_METHODS.POST,
+      body,
+      cursorConversationId,
+    }: {
+      method?: string;
+      body?: unknown;
+      /**
+       * Advance this conversation's event cursor as events arrive, so a
+       * later viewer WebSocket for the same conversation resubscribes with
+       * `afterSeq` and drops anything this stream already delivered.
+       */
+      cursorConversationId?: string;
+    } = {},
     callbacks: SSECallbacks = {},
   ): () => void {
     const { onError } = callbacks;
+    const cursor = cursorConversationId ? cursorFor(cursorConversationId) : null;
     const controller = new AbortController();
     // Terminal-state guarantee: consumers must never hang waiting for onDone.
     // Track whether the server delivered a logical terminal event (done/error);
@@ -1477,6 +1596,7 @@ export default class PrismService {
         ) {
           sawTerminalEvent = true;
         }
+        if (cursor && !cursor.accept(data)) return; // already delivered
         PrismService._dispatchSSE(data, callbacks);
       } catch (parseError: unknown) {
         if (json.length > 0) {
@@ -1619,6 +1739,8 @@ export default class PrismService {
       onConversationStateUpdate,
       onTodoUpdate,
       onBriefUpdate,
+      onTurnInput,
+      onGoalUpdate,
       onRunInfo,
       onModelStart,
       onModelComplete,
@@ -1716,6 +1838,14 @@ export default class PrismService {
         break;
       case SERVER_SENT_EVENT_TYPES.BRIEF_UPDATE:
         onBriefUpdate?.(data);
+        break;
+      // Harness mailbox: a mid-turn input was applied (POST /agent/input)
+      case "turn_input":
+        onTurnInput?.(data);
+        break;
+      // Conversation goal set / progressed / paused / cleared
+      case "goal_update":
+        onGoalUpdate?.(data);
         break;
       // Benchmark-specific events
       case SERVER_SENT_EVENT_TYPES.RUN_INFO:
@@ -1828,7 +1958,11 @@ export default class PrismService {
     callbacks: SSECallbacks,
   ): () => void {
     // Default agent selection is server policy (AgentRoutes).
-    return PrismService._streamSSE("/agent", { body: payload }, callbacks);
+    return PrismService._streamSSE(
+      "/agent",
+      { body: payload, cursorConversationId: payload.conversationId },
+      callbacks,
+    );
   }
 
   /**
@@ -1853,6 +1987,7 @@ export default class PrismService {
       return () => {};
     }
 
+    const cursor = cursorFor(conversationId);
     const headers = getHeaders();
     const websocketUrlParameters = new URLSearchParams({
       project: headers[IDENTITY_HEADERS.project] || "any",
@@ -1886,8 +2021,18 @@ export default class PrismService {
       console.debug(
         `[PrismService] WebSocket auto-response subscription opened for conversation ${conversationId}`,
       );
+      // Resume from the last accepted event: the server replays what was
+      // missed (after the `subscribed` ack) and this client drops any
+      // `seq <= afterSeq` duplicate. The ack's own `lastSeq` is the
+      // conversation's NEWEST seq — informational only, never adopted as
+      // the cursor, or the replay it announces would be dropped unread.
+      const afterSeq = cursor.afterSeq();
       websocket?.send(
-        JSON.stringify({ type: "subscribe", conversationId }),
+        JSON.stringify({
+          type: "subscribe",
+          conversationId,
+          ...(afterSeq !== undefined ? { afterSeq } : {}),
+        }),
       );
     };
 
@@ -1895,11 +2040,16 @@ export default class PrismService {
       try {
         const data = JSON.parse(messageEvent.data as string) as SSEData;
         if (data.type === "subscribed") {
+          const ack = cursor.noteSubscribed(data);
           console.debug(
-            `[PrismService] Auto-response subscription confirmed for conversation ${conversationId}`,
+            `[PrismService] Auto-response subscription confirmed for conversation ${conversationId} (lastSeq=${ack.lastSeq}, replayed=${ack.replayedCount}, dropped=${ack.droppedCount})`,
           );
+          if (ack.truncated) {
+            callbacks.onReplayTruncated?.({ droppedCount: ack.droppedCount });
+          }
           return;
         }
+        if (!cursor.accept(data)) return; // replayed duplicate
         PrismService._dispatchSSE(data, callbacks);
       } catch (parseError: unknown) {
         console.warn(
