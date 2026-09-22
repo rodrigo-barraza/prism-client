@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 
 import { AGENT_IDS, DEFAULT_USERNAME } from "@/constants";
 
-import { Download, Copy, Star, Trash2, ExternalLink } from "lucide-react";
+import { Download, Copy, Star, Trash2, ExternalLink, GitBranch } from "lucide-react";
 
 import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
@@ -51,6 +51,8 @@ interface HistoryItem {
   parentConversationId?: string | null;
   hasSubAgents?: boolean;
   requestErrorCount?: number;
+  /** Set on a conversation forked from another (POST /conversations/:id/fork). */
+  forkedFrom?: { conversationId: string; title?: string; position?: "at" | "before" } | null;
 }
 
 interface HistoryItemProps {
@@ -355,6 +357,16 @@ export default function HistoryItemComponent({
                 className={`${styles['generating-dot']} ${isGenerating ? styles['generating-dot-is-animating'] : styles['generating-dot-is-idle']}`}
                 style={{ "--generating-dot-phase-color": resolvedDotColor } as React.CSSProperties}
               />
+            )}
+            {item.forkedFrom && (
+              <GitBranch
+                size={12}
+                className={styles['fork-icon']}
+                role="img"
+                aria-label={`Forked from ${item.forkedFrom.title || "another conversation"}`}
+              >
+                <title>{`Forked from ${item.forkedFrom.title || "another conversation"}`}</title>
+              </GitBranch>
             )}
             <span className={styles['title-text']}>{item.title || "Untitled"}</span>
             {isNew && <span className={styles['new-badge']}>NEW</span>}

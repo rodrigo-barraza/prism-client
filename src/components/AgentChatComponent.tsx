@@ -36,6 +36,7 @@ import {
   Message,
   PrismConfig,
   AgentConversation,
+  ForkLineage,
   Skill,
   Rule,
   Hook,
@@ -94,6 +95,8 @@ import {
   type QueuedTurn,
 } from "../hooks/useNextTurnQueue";
 import useMessageActions from "../hooks/useMessageActions";
+import useConversationBranching from "../hooks/useConversationBranching";
+import ForkLineageComponent from "./ForkLineageComponent";
 import QueuedTurnChipsComponent from "./QueuedTurnChipsComponent";
 import LiveConnectionIndicatorComponent from "./LiveConnectionIndicatorComponent";
 import type { LiveSocketState } from "../services/liveViewerSocket";
@@ -742,6 +745,8 @@ export default function AgentChatComponent({
 
   const [config, setConfig] = useState<PrismConfig | null>(null);
   const [title, setTitle] = useState(isNoAgent ? "Agentless Chat" : "Agent");
+  /** Where this conversation was forked from — shown in the header. */
+  const [forkedFrom, setForkedFrom] = useState<ForkLineage | null>(null);
   const [leftTab, setLeftTab] = useState(() => {
     if (initialTabKey && !BOTTOM_PANEL_TABS.has(initialTabKey)) {
       return initialTabKey;
@@ -6461,6 +6466,25 @@ export default function AgentChatComponent({
   );
   useNextTurnQueueDrain(nextTurnQueue, { isGenerating, send: sendQueuedTurn });
 
+  // Rewind to here / Fork from here / Edit as a branch. Its callbacks run
+  // after render, so the handlers declared further down are in scope.
+  const conversationBranching = useConversationBranching({
+    listMessages: filteredMessages,
+    conversationId: activeId,
+    project: agentProject || undefined,
+    isGenerating,
+    onRewound: () => refreshActiveConversation(conversationIdRef.current),
+    openConversation: async (fork) => {
+      await loadConversationsRef.current?.();
+      await handleSelectConversation({ id: fork.id, title: fork.title } as AgentConversation);
+    },
+    send: ({ text, images, uploadedFiles }) => {
+      void handleSend(null, { overridePayload: { text, images, uploadedFiles } });
+    },
+    onNotice: (message) => addToast(message, "success"),
+    onError: (message) => addToast(message, "error"),
+  });
+
   const messageActions = useMessageActions({
     messages,
     listMessages: filteredMessages,
@@ -6474,6 +6498,7 @@ export default function AgentChatComponent({
     resend: ({ text, images, uploadedFiles }) => {
       void handleSend(null, { overridePayload: { text, images, uploadedFiles } });
     },
+    forkEdit: conversationBranching.forkForEdit,
     onError: (message) => addToast(message, "error"),
   });
 
@@ -6521,6 +6546,7 @@ export default function AgentChatComponent({
     setIsGenerating(false);
     setContextBudget(null);
     hydrateConversationGoal(null);
+    setForkedFrom(null);
     clearNonBlockingQuestions();
     setConversationId(generateUUID());
     // Mint a trace for the new conversation exactly as the initial mount
@@ -6669,6 +6695,7 @@ export default function AgentChatComponent({
       // Same for the goal — the document carries it; `goal_update` events
       // keep it current between refreshes.
       hydrateConversationGoal(full.goal ?? null);
+      if (!full._fromSnapshot) setForkedFrom(full.forkedFrom ?? null);
 
       // -- Restore workspace selection from the conversation document --
       // Agent conversations record which workspace they were started with;
@@ -8936,6 +8963,12 @@ export default function AgentChatComponent({
       <div className={chatStyles['chat-header']}>
         <div className={chatStyles['chat-header-title']}>
           <span className={chatStyles['chat-header-title-text']}>{title || ""}</span>
+          <ForkLineageComponent
+            lineage={forkedFrom}
+            onOpenSource={(sourceId) =>
+              void handleSelectConversation({ id: sourceId } as AgentConversation)
+            }
+          />
         </div>
         <div className={chatStyles['chat-header-actions']}>
           <ChatViewModeControlComponent
@@ -9140,8 +9173,10 @@ export default function AgentChatComponent({
           }}
           toolDisplayMetadataMap={toolDisplayMetadataMap}
           {...messageActions.listProps}
+          {...conversationBranching.listProps}
         />
         {messageActions.confirmDialog}
+        {conversationBranching.dialog}
 
         {/* Pending approval cards */}
         {!isAdmin && pendingApprovals

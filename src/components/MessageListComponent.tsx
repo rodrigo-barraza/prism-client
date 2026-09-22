@@ -30,6 +30,8 @@ import {
   Bot,
   Terminal,
   Zap,
+  History,
+  GitBranch,
 } from "lucide-react";
 import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
 import { ToolResultView } from "./ToolResultRenderers";
@@ -890,6 +892,8 @@ interface ReadOnlyMessageListProps {
   onRerun?: never;
   onDelete?: never;
   onRestore?: never;
+  onRewind?: never;
+  onFork?: never;
 }
 
 /**
@@ -903,6 +907,10 @@ interface EditableMessageListProps {
   onRerun: ((_index: number) => void) | null;
   onDelete: (_index: number) => void;
   onRestore?: (_index: number) => void;
+  /** "Rewind to here…" — conversation and/or code (optional; hidden when absent). */
+  onRewind?: (_index: number) => void;
+  /** "Fork from here" — a new conversation through this message (optional). */
+  onFork?: (_index: number) => void;
 }
 
 export type MessageListProps = MessageListBaseProps &
@@ -932,6 +940,8 @@ export default function MessageList({
   onRestore,
   onEdit,
   onRerun,
+  onRewind,
+  onFork,
   onImageClick,
   onDocClick,
   onMentionFileOpen,
@@ -1108,6 +1118,8 @@ export default function MessageList({
   const handleDelete = onDelete && ((displayIndex: number) => onDelete(toSourceIndex(displayIndex)));
   const handleRestore =
     onRestore && ((displayIndex: number) => onRestore(toSourceIndex(displayIndex)));
+  const handleRewind = onRewind && ((displayIndex: number) => onRewind(toSourceIndex(displayIndex)));
+  const handleFork = onFork && ((displayIndex: number) => onFork(toSourceIndex(displayIndex)));
 
   // -- Sticky user message (pinned section header) -----------
   // Tracks ALL user messages: the pinned candidate is whichever
@@ -1932,6 +1944,24 @@ export default function MessageList({
                                 <CopyButtonComponent
                                   text={message.content}
                                   tooltip="Copy raw text"
+                                  className={styles['action-button']}
+                                />
+                              )}
+                              {handleRewind && (
+                                <IconButtonComponent
+                                  icon={<History size={14} />}
+                                  onClick={() => handleRewind(i)}
+                                  disabled={isGenerating || !message.id}
+                                  tooltip={message.id ? "Rewind to here…" : "Rewind — available once saved"}
+                                  className={styles['action-button']}
+                                />
+                              )}
+                              {handleFork && (
+                                <IconButtonComponent
+                                  icon={<GitBranch size={14} />}
+                                  onClick={() => handleFork(i)}
+                                  disabled={isGenerating || !message.id}
+                                  tooltip={message.id ? "Fork from here" : "Fork — available once saved"}
                                   className={styles['action-button']}
                                 />
                               )}

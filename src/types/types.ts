@@ -319,6 +319,16 @@ export interface TokenUsage {
 
 // --- Conversations ------------------------------------------
 
+/** Where a forked conversation came from (POST /conversations/:id/fork). */
+export interface ForkLineage {
+  conversationId: string;
+  messageId: string;
+  /** "at": copied through that message; "before": an edit-as-branch fork stopping just before it. */
+  position?: "at" | "before";
+  title?: string;
+  forkedAt?: string;
+}
+
 export interface ConversationMeta {
   title?: string;
   project?: string;
@@ -331,6 +341,8 @@ export interface ConversationMeta {
 }
 
 export interface Message {
+  /** Server-assigned id — the anchor for rewind and fork. Absent until persisted. */
+  id?: string;
   role: (typeof MESSAGE_ROLES)[keyof typeof MESSAGE_ROLES];
   content: string;
   rawContent?: string;
@@ -440,6 +452,7 @@ export interface Conversation {
   _id: ObjectId;
   id?: string;
   title?: string;
+  forkedFrom?: ForkLineage | null;
   messages: Message[];
   project?: string;
   agent?: string;
@@ -504,6 +517,7 @@ export interface ConversationListResponse {
 export interface AgentConversation {
   _id: ObjectId;
   id?: string;
+  forkedFrom?: ForkLineage | null;
   /** Long-running objective, if one was set (`PUT /conversations/:id/goal`). */
   goal?: ConversationGoal | null;
   project: string;
