@@ -85,9 +85,14 @@ import WorkspaceSwitcherButtonComponent from "./WorkspaceSwitcherButtonComponent
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
 import MessageList, {
-  type QueuedNextTurn,
   type PendingFileAttachment,
 } from "./MessageListComponent";
+import {
+  useNextTurnQueue,
+  useNextTurnQueueDrain,
+  type QueuedTurn,
+} from "../hooks/useNextTurnQueue";
+import useMessageActions from "../hooks/useMessageActions";
 import { resolveDisplayMessages } from "../utils/messageHelpers";
 import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
@@ -689,9 +694,6 @@ export default function AgentChatComponent({
 
   // -- State ----------------------------------------------------
   const [messages, setMessages] = useState<ClientMessage[]>([]);
-  const [queuedNextTurn, setQueuedNextTurn] = useState<QueuedNextTurn | null>(
-    null,
-  );
 
   const inputValueRef = useRef<string>("");
   const [hasInput, setHasInput] = useState(false);
@@ -704,6 +706,8 @@ export default function AgentChatComponent({
     new Map(),
   );
   const [conversationId, setConversationId] = useState(() => generateUUID());
+  const nextTurnQueue = useNextTurnQueue(conversationId);
+  const enqueueNextTurn = nextTurnQueue.enqueue;
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
   const [conversations, setConversations] = useState<Array<AgentConversation | Conversation>>(
     [],
@@ -5767,7 +5771,7 @@ export default function AgentChatComponent({
       }
       setMessages((previousMessages) => removeTurnInputMessage(previousMessages, tempId));
       if (outcome.action === "queue") {
-        setQueuedNextTurn({ text, images, files: [] });
+        enqueueNextTurn({ text, images, files: [] });
         addToast(outcome.toast, "info");
         return;
       }
@@ -5775,7 +5779,7 @@ export default function AgentChatComponent({
       setPendingImages(images);
       addToast(outcome.toast, "warning");
     },
-    [addToast, setTextareaValue],
+    [addToast, setTextareaValue, enqueueNextTurn],
   );
 
   const handleSend = useCallback(
@@ -5848,7 +5852,7 @@ export default function AgentChatComponent({
           return;
         }
         addToast("Files can't be sent mid-turn — queued for next turn", "info");
-        setQueuedNextTurn({ text, images: currentImages, files: currentFiles });
+        enqueueNextTurn({ text, images: currentImages, files: currentFiles });
         setTextareaValue("");
         setPendingImages([]);
         setPendingFiles([]);
@@ -5856,7 +5860,7 @@ export default function AgentChatComponent({
       }
 
       if (isQueueing) {
-        setQueuedNextTurn({ text, images: currentImages, files: currentFiles });
+        enqueueNextTurn({ text, images: currentImages, files: currentFiles });
         setTextareaValue("");
         setPendingImages([]);
         setPendingFiles([]);
@@ -6319,6 +6323,7 @@ export default function AgentChatComponent({
       loadConversations,
       addToast,
       sendTurnInputUpdate,
+      enqueueNextTurn,
     ],
   );
 
@@ -6407,16 +6412,27 @@ export default function AgentChatComponent({
   );
 
   // Auto-send queued message when generation completes
-  useEffect(() => {
-    if (!isGenerating && queuedNextTurn) {
-      const payload = queuedNextTurn;
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
-      setQueuedNextTurn(null);
-      setTimeout(() => {
-        handleSend(null, { overridePayload: payload });
-      }, 50);
-    }
-  }, [isGenerating, queuedNextTurn, handleSend]);
+  const sendQueuedTurn = useCallback(
+    (turn: QueuedTurn) => handleSend(null, { overridePayload: turn }),
+    [handleSend],
+  );
+  useNextTurnQueueDrain(nextTurnQueue, { isGenerating, send: sendQueuedTurn });
+
+  const messageActions = useMessageActions({
+    messages,
+    listMessages: filteredMessages,
+    commitMessages: (nextMessages) => {
+      messagesRef.current = nextMessages;
+      setMessages(nextMessages);
+    },
+    isGenerating,
+    conversationId: activeId,
+    project: agentProject || undefined,
+    resend: ({ text, images }) => {
+      void handleSend(null, { overridePayload: { text, images } });
+    },
+    onError: (message) => addToast(message, "error"),
+  });
 
   /**
    * Answer an agent question through `/agent/answer`. A 404 means the turn
@@ -9059,12 +9075,13 @@ export default function AgentChatComponent({
           subAgentToolActivity={subAgentToolActivity}
           activeAgent={resolvedConversationAgent}
           knownPaths={knownPaths}
-          queuedNextTurn={queuedNextTurn}
+          queuedNextTurn={nextTurnQueue.items[0] ?? null}
           onCancelQueuedTurn={() => {
-            setTextareaValue(queuedNextTurn?.text || "");
-            setPendingImages(queuedNextTurn?.images || []);
-            setPendingFiles(queuedNextTurn?.files || []);
-            setQueuedNextTurn(null);
+            const queuedTurn = nextTurnQueue.items[0];
+            setTextareaValue(queuedTurn?.text || "");
+            setPendingImages(queuedTurn?.images || []);
+            setPendingFiles(queuedTurn?.files || []);
+            if (queuedTurn) nextTurnQueue.remove(queuedTurn.id);
           }}
           onMentionFileOpen={(relativePath: string) => {
             const absPath = currentWorkspace?.path
@@ -9087,7 +9104,9 @@ export default function AgentChatComponent({
             );
           }}
           toolDisplayMetadataMap={toolDisplayMetadataMap}
+          {...messageActions.listProps}
         />
+        {messageActions.confirmDialog}
 
         {/* Pending approval cards */}
         {!isAdmin && pendingApprovals
