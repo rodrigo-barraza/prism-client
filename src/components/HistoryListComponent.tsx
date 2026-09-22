@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Star, DollarSign, Bot, AlertTriangle } from "lucide-react";
+import { Star, DollarSign, Bot, AlertTriangle, BellRing } from "lucide-react";
 import ProviderLogo, {
   resolveProviderLabel,
 } from "./ProviderLogosComponent";
@@ -19,6 +19,7 @@ import styles from "./HistoryListComponent.module.css";
 import { LOCAL_STORAGE_KEY_DATE_RANGE } from "../constants";
 import type { LucideIcon } from "lucide-react";
 import type { StatusBarPhase } from "../utils/statusBarPhaseTokens";
+import { needsYou } from "../utils/conversationAttention";
 
 interface HistoryListItem {
   id: string;
@@ -43,6 +44,10 @@ interface HistoryListItem {
   isActive?: boolean;
   /** Backend-authoritative zero-based spawn index within a team of sub-agents */
   agentIndex?: number | null;
+  /** Tool calls / questions waiting on the user ("Needs you") */
+  pendingApprovalCount?: number;
+  pendingQuestionCount?: number;
+  awaitingSince?: string | null;
 }
 
 interface FilterItem {
@@ -61,6 +66,7 @@ const COST_TIERS = [
 ];
 
 const COST_FILTER_COLOR = "oklch(0.7 0.17 145)";
+const NEEDS_YOU_FILTER_COLOR = "oklch(0.82 0.165 75)";
 
 
 interface HistoryListProps {
@@ -193,6 +199,9 @@ export default function HistoryList({
   const [showErrorsOnly, setShowErrorsOnly] = useState(
     () => restoredFilters?.showErrorsOnly ?? false,
   );
+  const [showNeedsYouOnly, setShowNeedsYouOnly] = useState(
+    () => restoredFilters?.showNeedsYouOnly ?? false,
+  );
   const [collapsedClusterIds, setCollapsedClusterIds] = useState<Set<string>>(
     () => new Set(restoredFilters?.collapsedClusterIds || []),
   );
@@ -214,6 +223,7 @@ export default function HistoryList({
       showFavoritesOnly,
       shouldHideSubAgents,
       showErrorsOnly,
+      showNeedsYouOnly,
       collapsedClusterIds: [...collapsedClusterIds],
     };
     const hasActiveFilters =
@@ -224,6 +234,7 @@ export default function HistoryList({
       showFavoritesOnly ||
       shouldHideSubAgents ||
       showErrorsOnly ||
+      showNeedsYouOnly ||
       collapsedClusterIds.size > 0;
     try {
       if (hasActiveFilters) {
@@ -241,6 +252,7 @@ export default function HistoryList({
     showFavoritesOnly,
     shouldHideSubAgents,
     showErrorsOnly,
+    showNeedsYouOnly,
     collapsedClusterIds,
   ]);
 
@@ -315,6 +327,10 @@ export default function HistoryList({
     return (items || []).some((item) => (item.requestErrorCount || 0) > 0);
   }, [items]);
 
+  const hasItemsNeedingYou = useMemo(() => {
+    return (items || []).some((item) => needsYou(item));
+  }, [items]);
+
   const subAgentNumberMap = useMemo(() => {
     const numberMap = new Map<string, number>();
     /* Build a stable ordering index from the items array so that when
@@ -376,6 +392,9 @@ export default function HistoryList({
         return false;
       }
       if (showErrorsOnly && (item.requestErrorCount || 0) === 0) {
+        return false;
+      }
+      if (showNeedsYouOnly && !needsYou(item)) {
         return false;
       }
       if (showFavoritesOnly && onToggleFavorite) {
@@ -440,6 +459,7 @@ export default function HistoryList({
     dateRange,
     shouldHideSubAgents,
     showErrorsOnly,
+    showNeedsYouOnly,
   ]);
 
   interface SubAgentTreeNode {
@@ -594,6 +614,26 @@ export default function HistoryList({
                     activeKeys: shouldHideSubAgents ? "hide-subagents" : null,
                     isSingleSelect: true,
                     onToggle: () => setShouldHideSubAgents(!shouldHideSubAgents),
+                  },
+                ]
+              : []),
+            // Kept while active so a filter whose last wait just cleared
+            // can still be switched off.
+            ...(hasItemsNeedingYou || showNeedsYouOnly
+              ? [
+                  {
+                    label: "Needs You",
+                    items: [
+                      {
+                        key: "needs-you",
+                        icon: BellRing,
+                        title: "Waiting for Me",
+                        color: NEEDS_YOU_FILTER_COLOR,
+                      },
+                    ],
+                    activeKeys: showNeedsYouOnly ? "needs-you" : null,
+                    isSingleSelect: true,
+                    onToggle: () => setShowNeedsYouOnly(!showNeedsYouOnly),
                   },
                 ]
               : []),

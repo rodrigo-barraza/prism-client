@@ -13,6 +13,7 @@ import {
   Workflow,
   FileText,
   Webhook,
+  BellRing,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import { useWorkspace } from "./WorkspaceContextComponent";
@@ -39,6 +40,7 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: "mcp-servers", label: "MCP Servers", icon: Plug },
   { id: "project-instructions", label: "Project Instructions", icon: FileText },
   { id: "hooks", label: "Hooks", icon: Webhook },
+  { id: "notifications", label: "Notifications", icon: BellRing },
   { id: "custom-themes", label: "Custom Themes", icon: Palette },
 ];
 

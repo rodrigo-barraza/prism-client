@@ -122,6 +122,42 @@
   color: var(--background-base);
 }
 
+/* "Needs you": what the conversation waits on (approvals amber, questions violet) */
+.needs-you-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.needs-you-approvals,
+.needs-you-questions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.needs-you-approvals {
+  color: oklch(0.82 0.165 75);
+  background: oklch(0.82 0.165 75 / 0.16);
+}
+
+.needs-you-questions {
+  color: oklch(0.74 0.16 300);
+  background: oklch(0.74 0.16 300 / 0.16);
+}
+
+.needs-you-age {
+  color: var(--text-tertiary, var(--text-secondary));
+  font-weight: 500;
+}
+
 .generating-dot {
   width: 7px;
   height: 7px;

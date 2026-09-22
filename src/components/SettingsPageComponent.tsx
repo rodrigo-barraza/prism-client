@@ -37,6 +37,7 @@ import {
   Workflow,
   FileText,
   Webhook,
+  BellRing,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MILLISECONDS } from "@rodrigo-barraza/utilities-library";
 import { SERVICE_PORTS } from "@rodrigo-barraza/utilities-library/taxonomy";
@@ -52,6 +53,7 @@ import AvatarSelectorComponent from "./AvatarSelectorComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
 import HooksPanel from "./HooksPanelComponent";
 import ProjectInstructionsPanel from "./ProjectInstructionsPanelComponent";
+import PushNotificationsPanel from "./PushNotificationsPanelComponent";
 import {
   ButtonComponent,
   CardComponent,
@@ -2977,6 +2979,20 @@ export default function SettingsPageComponent() {
         />
 
         <HooksPanel hooks={hooks} onHooksChange={loadHooks} />
+      </CardComponent>
+
+      {/* -- Notifications Section ------------------------------------ */}
+      <CardComponent
+        className={styles["section"]}
+        data-settings-section="notifications"
+      >
+        <CardComponent.Header
+          icon={BellRing}
+          title="Notifications"
+          subtitle="Browser notifications when a conversation needs you"
+        />
+
+        <PushNotificationsPanel />
       </CardComponent>
 
       {/* -- Custom Themes Section ------------------------------------ */}

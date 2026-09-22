@@ -183,6 +183,12 @@ import adminPageStyles from "../app/admin/chat/page.module.css";
 import requestsTableStyles from "./RequestsTableComponent.module.css";
 import { useAdminHeader } from "./AdminHeaderContextComponent";
 import useProjectFilter from "../hooks/useProjectFilter";
+import { useNeedsYouTabTitle } from "../hooks/useNeedsYouTabTitle";
+import {
+  ATTENTION_CHANGE_COLLECTION,
+  applyAttentionChange,
+  countNeedsYou,
+} from "../utils/conversationAttention";
 import { getErrorMessage } from "../utils/errorMessage";
 import {
   buildAcceptFilter,
@@ -7135,6 +7141,9 @@ export default function AgentChatComponent({
     [isNoAgent, agentProject, applyConversationData],
   );
 
+  // "(N) Prism" while N of the user's conversations wait on them.
+  useNeedsYouTabTitle(countNeedsYou(conversations), !isAdmin);
+
   useEffect(() => {
     if (isAdmin) return;
     let listRefreshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -7147,6 +7156,15 @@ export default function AgentChatComponent({
     };
 
     const onCollectionChange = (event: IrisCollectionChangeEvent) => {
+      // "Needs you" counts changed (in-memory on the server, so no
+      // document changed): patch the listed conversation in place.
+      if (event.collection === ATTENTION_CHANGE_COLLECTION) {
+        setConversations((previousConversations) =>
+          applyAttentionChange(previousConversations, event),
+        );
+        return;
+      }
+
       // Handle requests collection events — when a request is
       // inserted/updated for the currently viewed conversation, trigger
       // a full refresh to pick up new messages. This provides immediate
