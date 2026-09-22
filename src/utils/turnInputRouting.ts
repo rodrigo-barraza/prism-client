@@ -112,6 +112,15 @@ export function turnInputDisplayText(
   return match ? match[2] : content;
 }
 
+/**
+ * Who a mid-turn bubble is from. An `agent_message` is never the user's: a
+ * sub-agent's progress in its parent's conversation, or the parent's
+ * follow-up in a sub-agent's.
+ */
+export function turnInputAuthorLabel(turnInput: MessageTurnInput | null): "Agent" | "User" {
+  return turnInput?.kind === "agent_message" ? "Agent" : "User";
+}
+
 export function turnInputBadgeLabel(turnInput: MessageTurnInput): string {
   if (turnInput.kind === "question_answer") return "Answer";
   if (turnInput.kind === "task_completion") return "Task result";

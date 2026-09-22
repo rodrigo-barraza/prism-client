@@ -1260,6 +1260,19 @@ export default class PrismService {
   }
 
   /**
+   * Stop ONE running sub-agent; its teammates keep running. Throws with
+   * `status` 404 (unknown, or not this user's) or 409 (no longer running).
+   */
+  static async stopCoordinatorSubAgent(
+    agentId: string,
+  ): Promise<{ agent_id: string; status: string }> {
+    return PrismService._request<{ agent_id: string; status: string }>(
+      `/orchestrator/sub-agents/${encodeURIComponent(agentId)}/stop`,
+      { method: HTTP_METHODS.POST },
+    );
+  }
+
+  /**
    * Explicitly stop a running agentic session on the backend.
    * Decoupled from SSE connection lifecycle so mobile browser disconnections
    * don't abort background processing — only this explicit call does.

@@ -17,25 +17,7 @@
  * mapped "running" → "generating" and rendered infinite progress bars.
  */
 import { describe, it, expect } from "vitest";
-
-// ── Inline the normalisation function (it's module-private in the component) ──
-// We replicate the exact logic from ChatConversationComponent.tsx L380-L393
-// to verify its mapping contract without needing to mount a React component.
-
-function normalizeSubAgentStatusToPhase(backendStatus: string): string {
-  switch (backendStatus) {
-    case "completed":
-    case "complete":
-    case "stopped":
-      return "complete";
-    case "running":
-      return "generating";
-    case "failed":
-      return "failed";
-    default:
-      return backendStatus;
-  }
-}
+import { normalizeSubAgentStatusToPhase } from "../subAgentActivity";
 
 // ── Inline the handleStop cleanup logic (extracted from ChatConversationComponent.tsx L1216-L1231) ──
 // Simulates the exact reducer that forces sub-agents to terminal phases on stop.

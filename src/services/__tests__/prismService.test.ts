@@ -524,6 +524,14 @@ describe("PrismService", () => {
       expect(lastUrl).toContain("/orchestrator/sub-agents/stop");
     });
 
+    it("stopCoordinatorSubAgent stops one agent by id", async () => {
+      fetchResult = { ok: true, json: async () => ({ agent_id: "agent-1-ab/c", status: "stopped" }) };
+      const result = await PrismService.stopCoordinatorSubAgent("agent-1-ab/c");
+      expect(lastUrl).toContain("/orchestrator/sub-agents/agent-1-ab%2Fc/stop");
+      expect(lastOptions?.method).toBe("POST");
+      expect(result).toEqual({ agent_id: "agent-1-ab/c", status: "stopped" });
+    });
+
     it("cron operations", async () => {
       await PrismService.getCronJobs();
       expect(lastUrl).toContain("/scheduled-tasks");
