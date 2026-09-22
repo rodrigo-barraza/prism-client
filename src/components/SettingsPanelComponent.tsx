@@ -34,6 +34,7 @@ import ModalityIconComponent from "./ModalityIconComponent";
 import SystemPromptModal from "./SystemPromptModalComponent";
 import styles from "./SettingsPanelComponent.module.css";
 import BadgeComponent from "./BadgeComponent";
+import { cacheReadShare } from "../utils/cacheShare";
 import { canDisableThinking, resolveThinkingLevel } from "@/utils/modelCapabilities";
 import StatsTabBarComponent from "./StatsTabBarComponent";
 import { formatCost } from "@rodrigo-barraza/utilities-library";
@@ -509,6 +510,7 @@ export default function SettingsPanel({
           const hasCachedTokens = cacheRead + cacheWrite > 0;
           const uncachedInputTokens = Math.max(0, stats.totalTokens.input - cacheRead - cacheWrite);
           const reasoning = stats.totalTokens.reasoning || 0;
+          const cachedShare = cacheReadShare(stats.totalTokens);
 
           // Each token category gets its own compact badge instead of one
           // wide parenthetical label. Breakdown badges (new / cache read /
@@ -529,6 +531,14 @@ export default function SettingsPanel({
               )}
               {cacheRead > 0 && (
                 <BadgeComponent type="tokens" value={cacheRead} label="cache read" />
+              )}
+              {cachedShare !== null && (
+                <BadgeComponent
+                  type="cacheShare"
+                  share={cachedShare}
+                  cacheRead={cacheRead}
+                  input={stats.totalTokens.input}
+                />
               )}
               {cacheWrite > 0 && (
                 <BadgeComponent type="tokens" value={cacheWrite} label="cache write" />

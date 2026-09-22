@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import {
   Coins,
+  Database,
   Hash,
   Zap,
   Timer,
@@ -107,6 +108,15 @@ export type BadgeProps =
       value: number;
       label?: string;
       showIcon?: boolean;
+      className?: string;
+      mini?: boolean;
+    }
+  | {
+      type: "cacheShare";
+      /** 0–1: cache read ÷ cache-inclusive input tokens. */
+      share: number;
+      cacheRead: number;
+      input: number;
       className?: string;
       mini?: boolean;
     }
@@ -586,6 +596,25 @@ export default function BadgeComponent(props: BadgeProps) {
           mini={mini}
           className={className}
           tooltip={`${value.toLocaleString()} tokens ${label}`}
+        />
+      );
+    }
+
+    // --- 2b. Prompt-cache read share ---
+    case "cacheShare": {
+      const { share, cacheRead, input, className = "", mini = false } = props;
+      const percent = Math.round(share * 100);
+      return (
+        <SharedBadgeComponent
+          type="metric"
+          value={percent}
+          label="% cached"
+          icon={<Database size={mini ? 8 : 10} />}
+          color="green"
+          tween
+          mini={mini}
+          className={className}
+          tooltip={`${percent}% of input tokens were read from the prompt cache (${cacheRead.toLocaleString()} of ${input.toLocaleString()})`}
         />
       );
     }
