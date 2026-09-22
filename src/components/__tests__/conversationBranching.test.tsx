@@ -46,7 +46,7 @@ function dryRunReport(overrides: Partial<RewindReport> = {}): RewindReport {
   };
 }
 
-type Route = (body: Record<string, unknown>) => { status: number; body: unknown };
+type Route = (_body: Record<string, unknown>) => { status: number; body: unknown };
 let routes: Record<string, Route>;
 let requests: Array<{ path: string; body: Record<string, unknown> }>;
 

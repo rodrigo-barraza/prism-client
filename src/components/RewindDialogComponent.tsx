@@ -66,6 +66,8 @@ function codeSummary(report: RewindReport | null) {
  * "Rewind to here…": choose conversation, code or both, see the files a
  * dry run says would change, then confirm. Files the user edited after the
  * agent's last write block the code restore until "overwrite" is ticked.
+ *
+ * Mount it per opening (keyed on the target): the dry run runs on mount.
  */
 export default function RewindDialogComponent({
   open,
@@ -78,17 +80,12 @@ export default function RewindDialogComponent({
   const [force, setForce] = useState(false);
   const [plan, setPlan] = useState<RewindReport | null>(null);
   const [planError, setPlanError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(open);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    setRestore("both");
-    setForce(false);
-    setPlan(null);
-    setPlanError(null);
-    setIsLoading(true);
     preview()
       .then((outcome) => {
         if (cancelled) return;

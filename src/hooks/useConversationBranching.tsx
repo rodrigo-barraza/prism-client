@@ -18,7 +18,7 @@
  * (still streaming) cannot be rewound to or forked from yet.
  */
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import RewindDialogComponent from "../components/RewindDialogComponent";
 import {
   forkConversation,
@@ -93,18 +93,20 @@ export default function useConversationBranching({
   forkForEdit: (_target: Message, _payload: MessageActionResend) => Promise<boolean>;
 } {
   const [rewindTarget, setRewindTarget] = useState<RewindTarget | null>(null);
-  const [pendingForkSend, setPendingForkSend] = useState<{
+  const [rewindOpening, setRewindOpening] = useState(0);
+  const pendingForkSendRef = useRef<{
     conversationId: string;
     payload: MessageActionResend;
   } | null>(null);
 
-  // Send the edited prompt once the fork is the conversation on screen.
+  // Send the edited prompt once the fork is the conversation on screen
+  // (openConversation switches it; the send must use that render's state).
   useEffect(() => {
-    if (!pendingForkSend || isGenerating) return;
-    if (conversationId !== pendingForkSend.conversationId) return;
-    setPendingForkSend(null);
-    send(pendingForkSend.payload);
-  }, [pendingForkSend, conversationId, isGenerating, send]);
+    const pending = pendingForkSendRef.current;
+    if (!pending || isGenerating || conversationId !== pending.conversationId) return;
+    pendingForkSendRef.current = null;
+    send(pending.payload);
+  }, [conversationId, isGenerating, send]);
 
   const messageIdAt = (index: number): string | null => {
     const id = listMessages[index]?.id;
@@ -119,6 +121,7 @@ export default function useConversationBranching({
     if (isGenerating || !conversationId) return;
     const messageId = messageIdAt(index);
     if (!messageId) return;
+    setRewindOpening((opening) => opening + 1);
     setRewindTarget({ messageId, preview: listMessages[index]?.content || "" });
   };
 
@@ -144,7 +147,7 @@ export default function useConversationBranching({
     }
     try {
       const fork = await forkConversation(conversationId, target.id, { position: "before", project });
-      setPendingForkSend({ conversationId: fork.id, payload });
+      pendingForkSendRef.current = { conversationId: fork.id, payload };
       await openConversation(fork);
       return true;
     } catch (error: unknown) {
@@ -162,9 +165,10 @@ export default function useConversationBranching({
     );
   };
 
-  const dialog = (
+  const dialog = rewindTarget && (
     <RewindDialogComponent
-      open={rewindTarget !== null}
+      key={rewindOpening}
+      open
       messagePreview={rewindTarget?.preview ?? ""}
       onClose={() => setRewindTarget(null)}
       preview={() => runRewind("both", false, true)}
