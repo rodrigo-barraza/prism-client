@@ -167,6 +167,7 @@ describe("sw.js — notificationclick", () => {
     expect(worker.showNotification).toHaveBeenCalledTimes(1);
     const [title, options] = worker.showNotification.mock.calls[0];
     expect(title).toBe("Approved");
+    expect(options.body).toBe("The agent carries on with the call.");
     expect(options.tag).toBe("prism:c-1");
     expect(options.data.toolCallId).toBeUndefined();
     expect(worker.openWindow).not.toHaveBeenCalled();

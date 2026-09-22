@@ -120,7 +120,9 @@ async function decide(payload, action) {
   await self.registration.showNotification(
     failure ? "Approval not sent" : isAllow ? "Approved" : "Denied",
     {
-      body: failure || payload.body || "",
+      body:
+        failure ||
+        (isAllow ? "The agent carries on with the call." : "The agent was told you declined the call."),
       tag: payload.tag || `prism:${payload.conversationId}`,
       renotify: Boolean(failure),
       icon: "/icon-192x192.png",
