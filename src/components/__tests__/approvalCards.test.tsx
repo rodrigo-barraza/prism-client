@@ -102,6 +102,28 @@ describe("ApprovalCardsComponent — one card per tool call", () => {
     }
   });
 
+  it("a sub-agent's card is labelled and decided on the sub-agent's own conversation", async () => {
+    sendApprovalDecision.mockResolvedValue({ ok: true, decidedToolCallIds: ["sub-call"], remaining: 0 });
+    const forwarded: SSEData = {
+      ...approvalRequired("sub-call", "sub-batch"),
+      subAgentId: "worker-1",
+      subAgentDescription: "Refactor the parser",
+      approvalConversationId: "sub-agent-conversation",
+    };
+    render(<Harness conversationId="conversation-a" initial={cardsFrom([forwarded])} onNotify={vi.fn()} />);
+
+    const subAgentCard = card("write_file", 0);
+    expect(within(subAgentCard).getByText("sub-agent: Refactor the parser")).toBeInTheDocument();
+    fireEvent.click(within(subAgentCard).getByRole("button", { name: "Allow" }));
+
+    await waitFor(() => expect(screen.queryAllByRole("group")).toHaveLength(0));
+    expect(sendApprovalDecision).toHaveBeenCalledWith("sub-agent-conversation", {
+      toolCallId: "sub-call",
+      batchId: "sub-batch",
+      decision: "allow",
+    });
+  });
+
   it("a failed POST puts the card back and raises a toast", async () => {
     let rejectRequest: (_error: Error) => void = () => {};
     sendApprovalDecision.mockImplementation(

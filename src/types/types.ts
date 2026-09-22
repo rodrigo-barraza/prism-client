@@ -880,6 +880,13 @@ export interface TransformedSSEData {
   tierLabel?: string;
   /** approval_required: what a file-writing call would change */
   preview?: ApprovalPreview;
+  /**
+   * approval_required / approval_decided forwarded from a sub-agent: the
+   * conversation whose loop waits on the call — its decision is sent there.
+   */
+  approvalConversationId?: string;
+  /** A forwarded sub-agent event: the sub-agent's task description. */
+  subAgentDescription?: string;
   /** approval_decided: how the call was decided, by whom, and why */
   decision?: ApprovalDecision;
   scope?: ApprovalScope;

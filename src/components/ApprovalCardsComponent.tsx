@@ -42,7 +42,8 @@ export default function ApprovalCardsComponent({
       setSubmitting((current) => new Set(current).add(approval.id));
       const settledStatus = decision.decision === "allow" ? "approved" : "rejected";
       try {
-        const response = await PrismService.sendApprovalDecision(conversationId, {
+        // A sub-agent's card is decided on the sub-agent's own loop.
+        const response = await PrismService.sendApprovalDecision(approval.conversationId || conversationId, {
           toolCallId: approval.id,
           ...(approval.batchId ? { batchId: approval.batchId } : {}),
           ...decision,
@@ -92,6 +93,7 @@ export default function ApprovalCardsComponent({
               : 0
           }
           isSubmitting={submitting.has(approval.id)}
+          subAgentDescription={approval.subAgentDescription}
           onDecide={(decision) => decide(approval, decision)}
           alwaysAllow={alwaysAllow}
         />

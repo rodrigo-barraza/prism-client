@@ -66,6 +66,16 @@
   font-family: var(--font-mono, "JetBrains Mono", monospace);
 }
 
+/* Which sub-agent asked, when one did */
+.sub-agent {
+  max-width: 24ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
 .tier-badge {
   font-size: 0.625rem;
   font-weight: 600;

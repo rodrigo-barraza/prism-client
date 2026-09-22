@@ -45,6 +45,8 @@ interface ApprovalCardProps {
   onDecide: (_decision: ApprovalCardDecision) => Promise<string | null>;
   /** Offers "Always allow…": saves a permission rule, then allows this call. */
   alwaysAllow?: { conversationId?: string | null; workspaceRoot?: string | null };
+  /** Set when a sub-agent asked — named on the card. */
+  subAgentDescription?: string;
 }
 
 type Mode = "idle" | "deny" | "edit";
@@ -73,6 +75,7 @@ export default function ApprovalCardComponent({
   isSubmitting = false,
   onDecide,
   alwaysAllow,
+  subAgentDescription,
 }: ApprovalCardProps) {
   const tierInfo = TIER_CONFIG[tier] || TIER_CONFIG[2];
   const TierIcon = tierInfo.icon;
@@ -117,6 +120,11 @@ export default function ApprovalCardComponent({
         <div className={styles["header-left"]}>
           <TierIcon size={16} className={styles["tier-icon"]} style={{ color: tierInfo.color }} />
           <span className={styles["tool-name"]}>{toolName}</span>
+          {subAgentDescription && (
+            <span className={styles["sub-agent"]} title={subAgentDescription}>
+              sub-agent: {subAgentDescription}
+            </span>
+          )}
           <span
             className={styles["tier-badge"]}
             style={{
