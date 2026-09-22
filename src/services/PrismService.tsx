@@ -66,6 +66,8 @@ import type {
   SSEData,
   WebSearchResult,
   ApprovalResponse,
+  ApprovalDecisionRequest,
+  ApprovalDecisionResponse,
   AgenticHarness,
   Prompt,
   ScheduledTask,
@@ -1389,6 +1391,22 @@ export default class PrismService {
   }
 
   /**
+   * Decide ONE pending tool call: allow (optionally with edited arguments,
+   * or for the rest of its batch / the whole conversation) or deny (with an
+   * optional reason the model will see). Rejects on 400 (invalid edit),
+   * 404 (unknown call) and 409 (already decided) — the card must not pretend
+   * it went through.
+   */
+  static async sendApprovalDecision(
+    conversationId: string,
+    request: ApprovalDecisionRequest,
+  ): Promise<ApprovalDecisionResponse> {
+    return PrismService._request<ApprovalDecisionResponse>("/agent/approve", {
+      body: { conversationId, ...request },
+    });
+  }
+
+  /**
    * Send an approval/rejection response for a pending agentic tool or plan.
 
 
@@ -1733,6 +1751,7 @@ export default class PrismService {
       onSubAgentToolOutput,
       onSubAgentStatus,
       onApprovalRequired,
+      onApprovalDecided,
       onPlanProposal,
       onUserQuestion,
       onTaskNotification,
@@ -1846,6 +1865,10 @@ export default class PrismService {
       // Conversation goal set / progressed / paused / cleared
       case "goal_update":
         onGoalUpdate?.(data);
+        break;
+      // A pending tool/plan call was decided (any tab, a scope, a timeout)
+      case "approval_decided":
+        onApprovalDecided?.(data);
         break;
       // Benchmark-specific events
       case SERVER_SENT_EVENT_TYPES.RUN_INFO:

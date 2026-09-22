@@ -847,6 +847,19 @@ export interface TransformedSSEData {
     args?: Record<string, unknown>;
   };
   tier?: 1 | 2 | 3 | undefined;
+  /** approval_required / approval_decided: the batch the call belongs to */
+  batchId?: string;
+  /** approval_required: how many calls of the batch wait for a decision */
+  batchSize?: number;
+  tierLabel?: string;
+  /** approval_required: what a file-writing call would change */
+  preview?: ApprovalPreview;
+  /** approval_decided: how the call was decided, by whom, and why */
+  decision?: ApprovalDecision;
+  scope?: ApprovalScope;
+  source?: "user" | "timeout" | "superseded" | "turn_ended";
+  reason?: string;
+  editedByUser?: boolean;
   question?: string;
   choices?: string[];
   context?: string | null;
@@ -952,6 +965,8 @@ export interface SSECallbacks {
   onSubAgentToolOutput?: (_event: SSEData) => void;
   onSubAgentStatus?: (_event: SSEData) => void;
   onApprovalRequired?: (_event: SSEData) => void;
+  /** One pending call was decided — here, in another tab, by a batch scope or a timeout (`approval_decided`) */
+  onApprovalDecided?: (_event: SSEData) => void;
   onPlanProposal?: (_event: SSEData) => void;
   onUserQuestion?: (_event: SSEData) => void;
   /** Turn-start mirror of the user's prompt (`user_message` event) */
@@ -2271,6 +2286,41 @@ export interface ThoughtStructureDefinition {
 export interface ApprovalResponse {
   ok: boolean;
   approved: boolean;
+}
+
+export type ApprovalDecision = "allow" | "deny";
+
+/** How far one decision reaches: this call, the rest of its batch, or the whole conversation. */
+export type ApprovalScope = "call" | "batch" | "conversation";
+
+/** A unified diff of what a file-writing call would change (`approval_required.preview`). */
+export interface ApprovalPreview {
+  kind: "diff";
+  path: string;
+  diff: string;
+  isNewFile?: boolean;
+  isTruncated?: boolean;
+}
+
+/** Body of POST /agent/approve — one decision for one pending call. */
+export interface ApprovalDecisionRequest {
+  toolCallId: string;
+  batchId?: string;
+  decision: ApprovalDecision;
+  reason?: string;
+  editedArgs?: Record<string, unknown>;
+  scope?: ApprovalScope;
+}
+
+export interface ApprovalDecisionResponse extends ApprovalResponse {
+  decision: ApprovalDecision;
+  scope: ApprovalScope;
+  batchId: string;
+  /** Every call this decision settled — more than one for a batch/conversation scope. */
+  decidedToolCallIds: string[];
+  remaining: number;
+  /** scope "conversation": whether the flag reached the conversation document. */
+  persisted?: boolean;
 }
 
 export interface UserQuestionAnswer {

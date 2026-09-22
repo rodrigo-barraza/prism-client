@@ -1,0 +1,21 @@
+{
+  "type": "approval_required",
+  "toolCallId": "call_edit_readme",
+  "batchId": "5f0c2a8e-2d3b-4c1e-9a57-0b6d1f3e7a42",
+  "batchSize": 1,
+  "toolCall": {
+    "name": "write_file",
+    "args": {
+      "path": "README.md",
+      "content": "# Scratch\n\nPer-call approvals.\nOne card per tool call.\n"
+    },
+    "id": "call_edit_readme"
+  },
+  "tier": 2,
+  "tierLabel": "write",
+  "preview": {
+    "kind": "diff",
+    "path": "README.md",
+    "diff": "--- a/README.md\n+++ b/README.md\n@@ -1,3 +1,4 @@\n # Scratch\n \n-Approve all.\n+Per-call approvals.\n+One card per tool call."
+  }
+}
