@@ -64,6 +64,7 @@ const LAYER_LABELS: Record<string, string> = {
   self_protection: "self-protection",
   rules: "permission rule",
   agent_policy: "agent policy",
+  hook: "configured hook",
   tier: "default tier",
   full_auto: "auto-approve",
 };

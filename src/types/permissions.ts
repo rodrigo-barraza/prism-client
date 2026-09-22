@@ -60,7 +60,7 @@ export interface PermissionTestRequest {
 /** "Would this call be allowed?" — the server's explanation. */
 export interface PermissionTestResult {
   decision: PermissionDecision;
-  /** Which layer decided: self_protection · rules · agent_policy · tier · full_auto. */
+  /** Which layer decided: self_protection · rules · agent_policy · hook · tier · full_auto. */
   layer: string;
   rule?: string;
   ruleScope?: PermissionScope;
