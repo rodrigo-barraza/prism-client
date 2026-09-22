@@ -95,7 +95,11 @@ import {
 } from "../hooks/useNextTurnQueue";
 import useMessageActions from "../hooks/useMessageActions";
 import QueuedTurnChipsComponent from "./QueuedTurnChipsComponent";
+import LiveConnectionIndicatorComponent from "./LiveConnectionIndicatorComponent";
+import type { LiveSocketState } from "../services/liveViewerSocket";
+import { PRISM_WEBSOCKET_URL } from "@/config";
 import { resolveDisplayMessages } from "../utils/messageHelpers";
+import { appendRecoveredText } from "../utils/liveTurnRecovery";
 import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 
@@ -710,6 +714,11 @@ export default function AgentChatComponent({
   const [conversationId, setConversationId] = useState(() => generateUUID());
   const nextTurnQueue = useNextTurnQueue(conversationId);
   const enqueueNextTurn = nextTurnQueue.enqueue;
+  // The live event socket (viewer stream or the sender's recovery) — badge
+  // and missing-URL banner.
+  const [liveConnectionState, setLiveConnectionState] = useState<LiveSocketState>(
+    PRISM_WEBSOCKET_URL ? "closed" : "unconfigured",
+  );
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
   const [conversations, setConversations] = useState<Array<AgentConversation | Conversation>>(
     [],
@@ -6160,8 +6169,8 @@ export default function AgentChatComponent({
         // Detect network/fetch errors caused by mobile screen lock, tab
         // suspension, or TCP connection drops. These are NOT real failures —
         // the backend agentic loop continues processing in the background.
-        // Instead of showing "⚠️ Error", enter recovery polling mode to
-        // re-fetch the conversation when the backend finishes.
+        // Instead of showing "⚠️ Error", follow the rest of the turn over
+        // the live socket (polling when none is configured).
         const errorMessage = getErrorMessage(error);
         const isNetworkDisconnection =
           error instanceof TypeError ||
@@ -6174,7 +6183,7 @@ export default function AgentChatComponent({
 
         if (isNetworkDisconnection && !isNoAgent && genId) {
           console.info(
-            `[handleSend] Network disconnection detected — entering recovery polling for ${genId}`,
+            `[handleSend] Network disconnection detected — entering recovery for ${genId}`,
           );
 
           // Remove the in-flight error-like assistant message if present
@@ -6186,59 +6195,85 @@ export default function AgentChatComponent({
             return previousMessages;
           });
 
-          // Poll the backend for conversation state until the agent finishes
           const RECOVERY_POLL_INTERVAL_MILLISECONDS = 3_000;
-          const RECOVERY_POLL_MAX_DURATION_MILLISECONDS = 5 * 60 * 1_000;
+          const RECOVERY_MAX_DURATION_MILLISECONDS = 5 * 60 * 1_000;
           const recoveryStartTimestamp = Date.now();
 
+          /** Show the persisted conversation; true once the turn has landed. */
+          const refreshRecoveredConversation = async (): Promise<boolean> => {
+            const recoveredConversation = await PrismService.getAgentConversation(
+              genId,
+              agentProject!,
+            );
+            if (!recoveredConversation?.displayMessages || conversationIdRef.current !== genId) {
+              return false;
+            }
+            const displayMessages = resolveDisplayMessages(recoveredConversation);
+            setMessages(displayMessages);
+            // displayMessages pre-filters tool-role messages and empty stubs,
+            // so the final assistant message is the last entry once the turn
+            // has landed.
+            const lastRecoveredMessage = displayMessages[displayMessages.length - 1];
+            return lastRecoveredMessage?.role === "assistant" && !!lastRecoveredMessage.content;
+          };
+
+          // Without a WebSocket URL: poll the document until the agent finishes.
           const recoveryPoll = async () => {
             while (
-              Date.now() - recoveryStartTimestamp < RECOVERY_POLL_MAX_DURATION_MILLISECONDS &&
+              Date.now() - recoveryStartTimestamp < RECOVERY_MAX_DURATION_MILLISECONDS &&
               conversationIdRef.current === genId
             ) {
               try {
-                const recoveredConversation = await PrismService.getAgentConversation(
-                  genId,
-                  agentProject!,
-                );
-
-                if (
-                  recoveredConversation &&
-                  recoveredConversation.displayMessages &&
-                  conversationIdRef.current === genId
-                ) {
-                  const displayMessages = resolveDisplayMessages(recoveredConversation);
-                  setMessages(displayMessages);
-
-                  // Check if generation completed (last message is assistant
-                  // with content). displayMessages pre-filters tool-role
-                  // messages and empty stubs, so the final assistant message
-                  // is the last entry once the turn has landed.
-                  const lastRecoveredMessage =
-                    displayMessages[displayMessages.length - 1];
-                  const isGenerationComplete =
-                    lastRecoveredMessage?.role === "assistant" &&
-                    lastRecoveredMessage.content;
-
-                  if (isGenerationComplete) {
-                    console.info(
-                      `[handleSend] Recovery polling: generation completed for ${genId}`,
-                    );
-                    return;
-                  }
+                if (await refreshRecoveredConversation()) {
+                  console.info(
+                    `[handleSend] Recovery polling: generation completed for ${genId}`,
+                  );
+                  return;
                 }
               } catch {
                 // Non-critical — keep polling
               }
-
               await new Promise((resolve) =>
                 setTimeout(resolve, RECOVERY_POLL_INTERVAL_MILLISECONDS),
               );
             }
           };
 
-          // Fire-and-forget — the finally block handles UI cleanup
-          await recoveryPoll();
+          // Follow the rest of the turn over the live socket. It resubscribes
+          // from this conversation's event cursor — the SSE's own mark — so
+          // the text the SSE missed continues the bubble with nothing
+          // repeated; the document refresh then lands the canonical messages.
+          const liveRecoveryOutcome = await PrismService.followLiveTurn(
+            genId,
+            {
+              onChunk: (content: string) => {
+                if (conversationIdRef.current !== genId) return;
+                setMessages((previousMessages) =>
+                  appendRecoveredText(previousMessages, content),
+                );
+              },
+            },
+            {
+              isTurnRunning: async () =>
+                Boolean(
+                  (await PrismService.getAgentConversation(genId, agentProject!))?.isActive,
+                ),
+              timeoutMilliseconds: RECOVERY_MAX_DURATION_MILLISECONDS,
+              onStateChange: setLiveConnectionState,
+            },
+          );
+          console.info(
+            `[handleSend] Live recovery for ${genId} finished: ${liveRecoveryOutcome}`,
+          );
+          if (liveRecoveryOutcome === "unconfigured") {
+            await recoveryPoll();
+          } else {
+            try {
+              await refreshRecoveredConversation();
+            } catch {
+              // Non-critical — the change stream catches up
+            }
+          }
         } else {
           setMessages((previousMessages) => [
             ...previousMessages,
@@ -7796,7 +7831,7 @@ export default function AgentChatComponent({
         setIsGenerating(false);
         isWebSocketStreamingRef.current = false;
       },
-    });
+    }, { onStateChange: setLiveConnectionState });
 
     return () => {
       isSubscriptionActive = false;
@@ -9166,6 +9201,8 @@ export default function AgentChatComponent({
         <div ref={endRef} style={{ minHeight: 1 }} />
       </div>
       )}
+
+      <LiveConnectionIndicatorComponent state={liveConnectionState} />
 
       {/* -- Status indicator bar (rainbow canvas above input) -- */}
       {!isAdmin && (() => {

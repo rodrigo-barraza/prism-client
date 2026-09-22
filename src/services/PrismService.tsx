@@ -5,6 +5,7 @@ import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { getErrorMessage } from "../utils/errorMessage";
 import { cursorFor } from "../utils/liveTurnCursor";
+import { openLiveViewerSocket, type LiveSocketState } from "./liveViewerSocket";
 import type { TurnInputResponse } from "../utils/turnInputRouting";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
 import { hydrateToolEmojiCache } from "../components/WorkflowNodeConstantsComponent";
@@ -1968,122 +1969,140 @@ export default class PrismService {
   }
 
   /**
-   * Subscribe to auto-response streaming via WebSocket.
+   * The `/ws/chat` URL with this client's identity, or null when no
+   * WebSocket URL is configured. Browsers cannot set custom headers on
+   * WebSocket upgrades, so identity and profile travel as query params
+   * (mirrored server-side).
+   */
+  static liveSocketUrl(): string | null {
+    if (!PRISM_WEBSOCKET_URL) return null;
+    const headers = getHeaders();
+    const websocketUrlParameters = new URLSearchParams({
+      project: headers[IDENTITY_HEADERS.project] || "any",
+      username: headers[IDENTITY_HEADERS.username] || "anonymous",
+    });
+    if (headers[HEADER_PROFILE_ID]) {
+      websocketUrlParameters.set("profileId", headers[HEADER_PROFILE_ID]);
+    }
+    return `${PRISM_WEBSOCKET_URL}/ws/chat?${websocketUrlParameters.toString()}`;
+  }
+
+  /**
+   * Subscribe to a conversation's live events via WebSocket.
    *
-   * After the SSE stream closes (non-blocking subagent dispatch), the
-   * client has no channel to receive the server's auto-response chunks.
-   * This method opens a WebSocket to `/ws/chat`, sends a `subscribe`
-   * message with the conversation ID, and dispatches incoming events
-   * through the same SSE callback system used for the primary stream.
+   * Used by viewers of a turn driven elsewhere (another tab or device,
+   * /admin/chat, a sub-agent) and after the SSE stream closes on a
+   * non-blocking sub-agent dispatch. Events are dispatched through the same
+   * SSE callback system as the primary stream. The socket reconnects with
+   * backoff and resubscribes from the conversation's event cursor
+   * (liveViewerSocket), so a drop replays only what was missed.
    *
    * Returns a cleanup function that closes the WebSocket.
    */
   static subscribeToAutoResponse(
     conversationId: string,
     callbacks: SSECallbacks,
+    { onStateChange }: { onStateChange?: (_state: LiveSocketState) => void } = {},
   ): () => void {
-    if (!PRISM_WEBSOCKET_URL) {
+    const url = PrismService.liveSocketUrl();
+    if (!url) {
       console.warn(
         "[PrismService] No WebSocket URL configured — auto-response streaming unavailable",
       );
-      return () => {};
     }
-
-    const cursor = cursorFor(conversationId);
-    const headers = getHeaders();
-    const websocketUrlParameters = new URLSearchParams({
-      project: headers[IDENTITY_HEADERS.project] || "any",
-      username: headers[IDENTITY_HEADERS.username] || "anonymous",
+    const socket = openLiveViewerSocket({
+      url,
+      conversationId,
+      cursor: cursorFor(conversationId),
+      onStateChange,
+      onEvent: (data) => PrismService._dispatchSSE(data, callbacks),
+      onSubscribed: (ack) => {
+        console.debug(
+          `[PrismService] Live subscription ${ack.isReconnect ? "resumed" : "confirmed"} for conversation ${conversationId} (lastSeq=${ack.lastSeq}, replayed=${ack.replayedCount}, dropped=${ack.droppedCount})`,
+        );
+        if (ack.truncated) {
+          callbacks.onReplayTruncated?.({ droppedCount: ack.droppedCount });
+        }
+        // A resubscribe that finds the server holding no events at all for
+        // this conversation (it restarted while the socket was down) has no
+        // turn left to follow — end it here; onDone refreshes from the
+        // database.
+        if (ack.isReconnect && !ack.lastSeq && ack.replayedCount === 0) {
+          callbacks.onDone?.({ type: SERVER_SENT_EVENT_TYPES.DONE, reason: "no-live-turn" });
+        }
+      },
     });
-    // Browsers cannot set custom headers on WebSocket upgrades, so the
-    // active profile travels as a query param (mirrored server-side).
-    if (headers[HEADER_PROFILE_ID]) {
-      websocketUrlParameters.set("profileId", headers[HEADER_PROFILE_ID]);
-    }
-    const websocketUrl = `${PRISM_WEBSOCKET_URL}/ws/chat?${websocketUrlParameters.toString()}`;
+    return () => socket.close();
+  }
 
-    let websocket: WebSocket | null = null;
-    let isClosed = false;
+  /**
+   * Follow a turn THIS client was driving after its SSE stream dropped:
+   * resubscribe from the event cursor over the reconnecting live socket and
+   * dispatch what arrives until the turn ends.
+   *
+   * Resolves `"done"` / `"error"` on the turn's terminal event; `"ended"`
+   * when a subscribe finds the server no longer running it; `"unconfigured"`
+   * right away without a WebSocket URL (the caller falls back to polling);
+   * `"timeout"` after `timeoutMilliseconds`.
+   */
+  static followLiveTurn(
+    conversationId: string,
+    callbacks: SSECallbacks,
+    {
+      isTurnRunning,
+      timeoutMilliseconds,
+      onStateChange,
+    }: {
+      isTurnRunning: () => Promise<boolean>;
+      timeoutMilliseconds: number;
+      onStateChange?: (_state: LiveSocketState) => void;
+    },
+  ): Promise<"done" | "error" | "ended" | "unconfigured" | "timeout"> {
+    return new Promise((resolve) => {
+      let isSettled = false;
+      let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
+      const socketRef: { current: { close(): void } | null } = { current: null };
+      const finish = (outcome: "done" | "error" | "ended" | "unconfigured" | "timeout") => {
+        if (isSettled) return;
+        isSettled = true;
+        if (timeoutTimer) clearTimeout(timeoutTimer);
+        socketRef.current?.close();
+        resolve(outcome);
+      };
 
-    try {
-      websocket = new WebSocket(websocketUrl);
-    } catch (connectionError: unknown) {
-      console.error(
-        "[PrismService] Failed to create WebSocket for auto-response:",
-        connectionError,
-      );
-      return () => {};
-    }
-
-    websocket.onopen = () => {
-      if (isClosed) {
-        websocket?.close();
+      const socket = openLiveViewerSocket({
+        url: PrismService.liveSocketUrl(),
+        conversationId,
+        cursor: cursorFor(conversationId),
+        onStateChange,
+        onEvent: (data) => {
+          PrismService._dispatchSSE(data, callbacks);
+          if (data.type === SERVER_SENT_EVENT_TYPES.DONE) finish("done");
+          else if (data.type === SERVER_SENT_EVENT_TYPES.ERROR) finish("error");
+        },
+        onSubscribed: (ack) => {
+          if (!ack.lastSeq && ack.replayedCount === 0) {
+            finish("ended"); // the server has no events for it: it restarted
+            return;
+          }
+          if (ack.replayedCount === 0) {
+            // Nothing missed — still running, or finished with its buffer
+            // already retired. The document says which.
+            isTurnRunning()
+              .then((isRunning) => {
+                if (!isRunning) finish("ended");
+              })
+              .catch(() => {});
+          }
+        },
+      });
+      socketRef.current = socket;
+      if (socket.state() === "unconfigured") {
+        finish("unconfigured");
         return;
       }
-      console.debug(
-        `[PrismService] WebSocket auto-response subscription opened for conversation ${conversationId}`,
-      );
-      // Resume from the last accepted event: the server replays what was
-      // missed (after the `subscribed` ack) and this client drops any
-      // `seq <= afterSeq` duplicate. The ack's own `lastSeq` is the
-      // conversation's NEWEST seq — informational only, never adopted as
-      // the cursor, or the replay it announces would be dropped unread.
-      const afterSeq = cursor.afterSeq();
-      websocket?.send(
-        JSON.stringify({
-          type: "subscribe",
-          conversationId,
-          ...(afterSeq !== undefined ? { afterSeq } : {}),
-        }),
-      );
-    };
-
-    websocket.onmessage = (messageEvent: MessageEvent) => {
-      try {
-        const data = JSON.parse(messageEvent.data as string) as SSEData;
-        if (data.type === "subscribed") {
-          const ack = cursor.noteSubscribed(data);
-          console.debug(
-            `[PrismService] Auto-response subscription confirmed for conversation ${conversationId} (lastSeq=${ack.lastSeq}, replayed=${ack.replayedCount}, dropped=${ack.droppedCount})`,
-          );
-          if (ack.truncated) {
-            callbacks.onReplayTruncated?.({ droppedCount: ack.droppedCount });
-          }
-          return;
-        }
-        if (!cursor.accept(data)) return; // replayed duplicate
-        PrismService._dispatchSSE(data, callbacks);
-      } catch (parseError: unknown) {
-        console.warn(
-          "[PrismService] Failed to parse WebSocket auto-response event:",
-          parseError,
-        );
-      }
-    };
-
-    websocket.onerror = (errorEvent: Event) => {
-      console.error(
-        "[PrismService] WebSocket auto-response error:",
-        errorEvent,
-      );
-    };
-
-    websocket.onclose = () => {
-      console.debug(
-        `[PrismService] WebSocket auto-response subscription closed for conversation ${conversationId}`,
-      );
-    };
-
-    return () => {
-      isClosed = true;
-      if (
-        websocket &&
-        websocket.readyState !== WebSocket.CLOSED &&
-        websocket.readyState !== WebSocket.CLOSING
-      ) {
-        websocket.close();
-      }
-    };
+      timeoutTimer = setTimeout(() => finish("timeout"), timeoutMilliseconds);
+    });
   }
 
   /**
