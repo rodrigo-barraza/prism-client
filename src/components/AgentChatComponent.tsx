@@ -98,6 +98,7 @@ import QueuedTurnChipsComponent from "./QueuedTurnChipsComponent";
 import LiveConnectionIndicatorComponent from "./LiveConnectionIndicatorComponent";
 import TurnActivityPanelComponent from "./TurnActivityPanelComponent";
 import useTurnActivity from "../hooks/useTurnActivity";
+import useFavoriteKeys from "../hooks/useFavoriteKeys";
 import type { LiveSocketState } from "../services/liveViewerSocket";
 import { PRISM_WEBSOCKET_URL } from "@/config";
 import { resolveDisplayMessages } from "../utils/messageHelpers";
@@ -727,6 +728,7 @@ export default function AgentChatComponent({
     callbacksFor: turnActivityCallbacks,
     startTurn: startTurnActivity,
   } = useTurnActivity(conversationId);
+  const conversationFavorites = useFavoriteKeys("conversation");
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
   const [conversations, setConversations] = useState<Array<AgentConversation | Conversation>>(
     [],
@@ -10000,6 +10002,8 @@ export default function AgentChatComponent({
               filterStorageKey={LOCAL_STORAGE_KEY_CHAT_FILTERS}
               dateStorageKey={LOCAL_STORAGE_KEY_DATE_RANGE}
               subAgentLivePhases={subAgentLivePhases}
+              favorites={conversationFavorites.keys}
+              onToggleFavorite={conversationFavorites.toggle}
             />
           )
         }

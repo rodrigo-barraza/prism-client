@@ -40,13 +40,10 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: PRISM_CLIENT_DOMAIN ? [PRISM_CLIENT_DOMAIN] : undefined,
   turbopack: {},
 
-  // ── Temporary: ignore TS errors during build ──────────────
-  // 141 files have pre-existing `unknown` type debt from the
-  // ongoing strict-mode TS migration. Turbopack compiles fine;
-  // only the type-check phase fails. Remove this once the
-  // TS cleanup is complete.
+  // Type errors fail the build (`tsc` is clean since the strict-mode
+  // migration finished).
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   transpilePackages: [
