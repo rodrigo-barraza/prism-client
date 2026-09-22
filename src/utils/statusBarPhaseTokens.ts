@@ -198,7 +198,7 @@ export const PHASE_TOKENS: Readonly<Record<StatusBarPhase, PhaseTokens>> = {
   },
 
   awaiting: {
-    label: "Awaiting For User Input...",
+    label: "Waiting for you",
     icon: "⏸️",
     gradientStops: [
       "oklch(0.546 0.198 275)",

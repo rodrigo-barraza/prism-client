@@ -103,6 +103,23 @@ describe("useQuestionAnswerSender", () => {
     expect(toPath("/agent/input")).toHaveLength(1);
   });
 
+  it("on a 409 (already answered — another tab, a retry) sends nothing more: never a second message", async () => {
+    answerStatus = 409;
+    const { send, sendAsMessage, notify } = renderSender("conv-root-3");
+    await act(async () => {
+      expect(await send([{ answer: "teal" }], "q-teal-1")).toBe("duplicate");
+    });
+    expect(toPath("/agent/answer")).toHaveLength(1);
+    expect(sendAsMessage).not.toHaveBeenCalled();
+    expect(toPath("/agent/input")).toHaveLength(0);
+    expect(notify).toHaveBeenCalledWith("This question was already answered", "info");
+    // The card stays claimed: a later click sends nothing either.
+    await act(async () => {
+      expect(await send([{ answer: "teal" }], "q-teal-1")).toBe("duplicate");
+    });
+    expect(toPath("/agent/answer")).toHaveLength(1);
+  });
+
   it("a failed send can be retried (the card is not burned by a network error)", async () => {
     answerStatus = 500;
     const { send, notify } = renderSender();

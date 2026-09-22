@@ -224,9 +224,12 @@ export default function StatusBarComponent({
             )}
             <span className={styles['status-bar-message']}>
               {resolvedLabel}
-              <span className={styles['status-bar-progress']}>
-                {displayPercentage}%
-              </span>
+              {/* A turn waiting on its user is not progressing: no percentage. */}
+              {!isAwaitingPhase && (
+                <span className={styles['status-bar-progress']}>
+                  {displayPercentage}%
+                </span>
+              )}
               {tokensPerSecond != null && tokensPerSecond > 0 && (
                 <span className={styles['status-bar-speed']}>
                   ⚡ {tokensPerSecond.toFixed(1)} tok/s
