@@ -11,7 +11,7 @@
  * Dates are local calendar days, as the calendar grid builds them.
  */
 import { describe, expect, it } from "vitest";
-import { doesCronMatchDate } from "../cronMatcher";
+import { doesCronMatchDate, parseCronExpression } from "../cronMatcher";
 
 /** Local midnight of a `YYYY-MM-DD` day. */
 function localDay(isoDate: string): Date {
@@ -212,4 +212,37 @@ describe("doesCronMatchDate — crontab(5) day matching", () => {
       expect(doesCronMatchDate(expression, monday)).toBe(false);
     });
   });
+});
+
+// The calendar's time label and hour grid read the minute and hour fields
+// through the same parser.
+describe("parseCronExpression", () => {
+  it("lists each field's values ascending, Sunday folded to 0", () => {
+    expect(parseCronExpression("30,0 18,6 1-10/3 */3 5-7")).toEqual({
+      minutes: [0, 30],
+      hours: [6, 18],
+      daysOfMonth: [1, 4, 7, 10],
+      months: [1, 4, 7, 10],
+      daysOfWeek: [0, 5, 6],
+      isEitherDayEnough: true,
+    });
+  });
+
+  it("runs a bare start with a step to the field's end", () => {
+    expect(parseCronExpression("0 5/6 * * *")?.hours).toEqual([5, 11, 17, 23]);
+  });
+
+  it("marks a star-prefixed day field as unrestricted", () => {
+    expect(parseCronExpression("0 9 */2 * 1")?.isEitherDayEnough).toBe(false);
+  });
+
+  // A zero step looped forever in the calendar's old field parser, freezing
+  // the page on any task whose expression carried one.
+  it.each(["*/0 * * * *", "* */0 * * *", "* * */0 * *"])(
+    "%s is rejected, not looped on",
+    (expression) => {
+      expect(parseCronExpression(expression)).toBeNull();
+      expect(doesCronMatchDate(expression, localDay("2026-06-01"))).toBe(false);
+    },
+  );
 });

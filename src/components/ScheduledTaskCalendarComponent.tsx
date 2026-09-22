@@ -19,7 +19,7 @@ import {
   MILLISECONDS_PER_DAY,
   MILLISECONDS_PER_WEEK,
 } from "@rodrigo-barraza/utilities-library";
-import { doesCronMatchDate, parseCronField } from "@/utils/cronMatcher";
+import { doesCronMatchDate, parseCronExpression } from "@/utils/cronMatcher";
 import styles from "./ScheduledTaskCalendarComponent.module.css";
 
 
@@ -133,19 +133,15 @@ function formatTimeFromSchedule(scheduleTime?: string): string {
 }
 
 function getCronTimeLabel(cronExpression: string): string {
-  const fields = cronExpression.trim().split(/\s+/);
-  if (fields.length < 5) return "Cron";
+  const schedule = parseCronExpression(cronExpression);
+  if (!schedule) return "Cron";
 
-  const [minuteField, hourField] = fields;
-
-  const matchingMinutes = parseCronField(minuteField, 0, 59);
-  const matchingHours = parseCronField(hourField, 0, 23);
+  const { minutes: matchingMinutes, hours: matchingHours } = schedule;
 
   if (matchingHours.length === 24) return "All day";
-  if (matchingHours.length === 0) return "Cron";
 
   const firstHour = matchingHours[0];
-  const firstMinute = matchingMinutes.length > 0 ? matchingMinutes[0] : 0;
+  const firstMinute = matchingMinutes[0];
   const meridiem = firstHour >= 12 ? "PM" : "AM";
   const displayHour = firstHour % 12 || 12;
   return `${displayHour}:${String(firstMinute).padStart(2, "0")} ${meridiem}`;
@@ -395,13 +391,11 @@ function formatPopoverDateLabel(date: Date): string {
 }
 
 function getCronHours(cronExpression: string): number[] {
-  const fields = cronExpression.trim().split(/\s+/);
-  if (fields.length < 2) return [];
-  const [, hourField] = fields;
+  const [, hourField] = cronExpression.trim().split(/\s+/);
   if (hourField === "*") {
     return [];
   }
-  return parseCronField(hourField, 0, 23);
+  return parseCronExpression(cronExpression)?.hours ?? [];
 }
 
 function buildWeekGrid(
