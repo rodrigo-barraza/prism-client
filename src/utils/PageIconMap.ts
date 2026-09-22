@@ -30,6 +30,7 @@ import {
   Layers,
   GitBranch,
   Package,
+  SquareTerminal,
 } from "lucide-react";
 
 export interface PageIconEntry {
@@ -44,6 +45,7 @@ export interface PageIconEntry {
  */
 const PAGE_ICON_ENTRIES: PageIconEntry[] = [
   { icon: MessageSquare, aliases: ["chat", "conversations", "conversation"] },
+  { icon: SquareTerminal, aliases: ["coding agent"] },
   { icon: Clock, aliases: ["scheduled tasks", "cron jobs"] },
   { icon: Settings, aliases: ["settings"] },
   { icon: Bot, aliases: ["agents"] },
@@ -116,8 +118,8 @@ export const USER_NAV_SECTIONS: NavigationSection[] = [
         href: "/chat",
         label: "Chat",
         icon: MessageSquare,
-        alsoMatches: ["/coding-agent"],
       },
+      { href: "/coding-agent", label: "Coding Agent", icon: SquareTerminal },
       {
         href: "/scheduled-tasks",
         label: "Scheduled Tasks",
@@ -206,7 +208,6 @@ export const ADMIN_NAV_SECTIONS: NavigationSection[] = [
   {
     label: "Experiments",
     items: [
-      { href: "/admin/synthesis", label: "Synthesis", icon: FlaskConical },
       { href: "/admin/workflows", label: "Workflows", icon: GitBranch },
     ],
   },
