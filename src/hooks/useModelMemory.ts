@@ -1,6 +1,6 @@
 import { useCallback, useRef, type Dispatch, type SetStateAction } from "react";
 import StorageService from "../services/StorageService";
-import { LOCAL_PROVIDERS, type ProviderType } from "../constants";
+import { isLocalProvider, resolveProviderBaseType } from "../constants";
 import { profileScopedKey } from "../utils/profileScopedKey";
 import type { PrismConfig } from "../types/types";
 
@@ -31,7 +31,7 @@ export default function useModelMemory(storageKey: string) {
       StorageService.set(profileScopedKey(storageKey), {
         provider,
         model,
-        isLocal: LOCAL_PROVIDERS.has(provider as ProviderType),
+        isLocal: isLocalProvider(resolveProviderBaseType(provider)),
       });
     },
     [storageKey],

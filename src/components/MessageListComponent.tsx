@@ -66,7 +66,11 @@ import {
 } from "../utils/turnInputRouting";
 import PrismService from "../services/PrismService";
 import SoundService from "@/services/SoundService";
-import { APPROVAL_STATUS } from "../constants";
+import {
+  APPROVAL_STATUS,
+  isLocalProvider,
+  resolveProviderBaseType,
+} from "../constants";
 import { getTotalInputTokens } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
 import { getTextualFileKind, formatFileSize } from "../utils/fileIntake";
@@ -2846,8 +2850,9 @@ export default function MessageList({
                                 {message.tokensPerSec} tok/s
                               </BadgeComponent>
                             )}
-                            {message.provider === "lm-studio" ||
-                            message.provider === "vllm" ? (
+                            {isLocalProvider(
+                              resolveProviderBaseType(message.provider ?? ""),
+                            ) ? (
                               <BadgeComponent
                                 variant="success"
                                 tooltip="Free (local model)"
