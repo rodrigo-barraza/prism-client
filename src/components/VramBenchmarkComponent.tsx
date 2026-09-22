@@ -1847,12 +1847,7 @@ export default function VramBenchmarkComponent() {
             ),
             hoverBorderWidth: 2.5,
             hoverBorderColor: "oklch(0.97 0 0)",
-          } as import("chart.js").ChartDataset<
-            "scatter",
-            (import("chart.js").BubbleDataPoint & {
-              model: VramBenchmarkEntry;
-            })[]
-          >;
+          };
         }
 
         return {
@@ -1863,10 +1858,7 @@ export default function VramBenchmarkComponent() {
           borderWidth: 1.5,
           hoverBorderWidth: 2.5,
           hoverBorderColor: "oklch(0.97 0 0)",
-        } as import("chart.js").ChartDataset<
-          "scatter",
-          (import("chart.js").BubbleDataPoint & { model: VramBenchmarkEntry })[]
-        >;
+        };
       });
     }
 
