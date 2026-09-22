@@ -158,8 +158,9 @@ describe("HooksPanelComponent — list", () => {
     render(<HooksPanel hooks={[]} onHooksChange={vi.fn()} />);
 
     expect(screen.getByText("No hooks yet")).toBeTruthy();
-    expect(screen.getByText("PreToolUse")).toBeTruthy();
-    expect(screen.getByText("UserPromptSubmit")).toBeTruthy();
+    expect(
+      screen.getByText("PreToolUse, UserPromptSubmit, PermissionRequest, PreModelSwitch, Stop"),
+    ).toBeTruthy();
   });
 
   it("filters the list by the search query", () => {
@@ -186,18 +187,38 @@ describe("HooksPanelComponent — matcher gating", () => {
     expect(inputForLabel("Matcher").disabled).toBe(false);
   });
 
-  it("disables the matcher input with a hint on a non-tool event", () => {
+  it("disables the matcher input with a hint on an event with nothing to narrow", () => {
     render(<HooksPanel hooks={mockHooks} onHooksChange={vi.fn()} />);
     openEditorForFirstHook();
 
     fireEvent.change(screen.getByTestId("mock-select"), {
-      target: { value: "SessionStart" },
+      target: { value: "TurnStart" },
     });
 
     expect(inputForLabel("Matcher").disabled).toBe(true);
     expect(
-      screen.getByText(/The server rejects one on SessionStart/),
+      screen.getByText(/TurnStart has nothing to narrow — the server rejects a matcher on it/),
     ).toBeTruthy();
+  });
+
+  it("offers a field matcher on the events that have one, and says what it matches", () => {
+    render(<HooksPanel hooks={mockHooks} onHooksChange={vi.fn()} />);
+    openEditorForFirstHook();
+
+    fireEvent.change(screen.getByTestId("mock-select"), {
+      target: { value: "StopFailure" },
+    });
+
+    expect(inputForLabel("Matcher").disabled).toBe(false);
+    expect(inputForLabel("Matcher").value).toBe("");
+    expect(screen.getByText(/Matches error_type/)).toBeTruthy();
+  });
+
+  it("explains the Tool(argPattern) form on tool events", () => {
+    render(<HooksPanel hooks={mockHooks} onHooksChange={vi.fn()} />);
+    openEditorForFirstHook();
+    expect(inputForLabel("Matcher").placeholder).toBe("execute_shell(git *)");
+    expect(screen.getByText("Tool(argPattern)")).toBeTruthy();
   });
 
   it("re-enables the matcher when switching back to a tool event", () => {
@@ -272,7 +293,11 @@ describe("HooksPanelComponent — test run", () => {
     render(<HooksPanel hooks={mockHooks} onHooksChange={vi.fn()} />);
     fireEvent.click(screen.getAllByText("Test")[0]);
 
-    expect(PrismService.testHook).toHaveBeenCalledWith("hook-1");
+    // With a sample payload shaped like the hook's event.
+    expect(PrismService.testHook).toHaveBeenCalledWith(
+      "hook-1",
+      expect.objectContaining({ tool_name: "execute_shell" }),
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Test decision")).toBeTruthy();
@@ -336,3 +361,126 @@ describe("HooksPanelComponent — persistence", () => {
     });
   });
 });
+
+describe("HooksPanelComponent — new events, handlers and fields", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("lists every new event in the picker", () => {
+    render(<HooksPanel hooks={mockHooks} onHooksChange={vi.fn()} />);
+    openEditorForFirstHook();
+    const options = Array.from(
+      (screen.getByTestId("mock-select") as HTMLSelectElement).options,
+    ).map((option) => option.value);
+    for (const event of [
+      "TurnStart",
+      "TurnEnd",
+      "PermissionRequest",
+      "PermissionDenied",
+      "PostToolBatch",
+      "StopFailure",
+      "PreModelSwitch",
+      "PostModelSwitch",
+      "Interrupt",
+      "InstructionsLoaded",
+    ]) {
+      expect(options).toContain(event);
+    }
+  });
+
+  it("marks Stop as blocking and says a block keeps the agent going", () => {
+    render(<HooksPanel hooks={mockHooks} onHooksChange={vi.fn()} />);
+    openEditorForFirstHook();
+    fireEvent.change(screen.getByTestId("mock-select"), { target: { value: "Stop" } });
+    expect(screen.getByText(/Block keeps it going/)).toBeTruthy();
+  });
+
+  it("builds and saves a command hook", async () => {
+    vi.mocked(PrismService.createHook).mockResolvedValue(mockHooks[0]);
+    render(<HooksPanel hooks={[]} onHooksChange={vi.fn()} />);
+    fireEvent.click(screen.getByText("Create your first hook"));
+
+    fireEvent.change(inputForLabel("Hook Name"), { target: { value: "no-force-push" } });
+    fireEvent.click(screen.getByTestId("segment-command"));
+    expect(screen.getByText(/PRISM_HOOK_COMMAND_OWNERS/)).toBeTruthy();
+
+    fireEvent.change(inputForLabel("Shell command"), { target: { value: "./block-force-push.sh" } });
+    const [, timeoutSelect] = screen.getAllByTestId("mock-select");
+    fireEvent.change(timeoutSelect, { target: { value: "fail_closed" } });
+    fireEvent.click(screen.getByText("Create Hook"));
+
+    await waitFor(() => expect(PrismService.createHook).toHaveBeenCalled());
+    const [payload] = vi.mocked(PrismService.createHook).mock.calls[0];
+    expect(payload.handler).toEqual({
+      type: "command",
+      command: "./block-force-push.sh",
+      timeoutBehavior: "fail_closed",
+    });
+  });
+
+  it("shows the agent handler as experimental and saves its prompt", async () => {
+    vi.mocked(PrismService.createHook).mockResolvedValue(mockHooks[0]);
+    render(<HooksPanel hooks={[]} onHooksChange={vi.fn()} />);
+    fireEvent.click(screen.getByText("Create your first hook"));
+    fireEvent.change(inputForLabel("Hook Name"), { target: { value: "verify-done" } });
+
+    fireEvent.click(screen.getByTestId("segment-agent"));
+    expect(screen.getByText("Experimental.")).toBeTruthy();
+    fireEvent.change(screen.getByTestId("mock-textarea"), {
+      target: { value: "Did the agent run the tests? $ARGUMENTS" },
+    });
+    fireEvent.click(screen.getByText("Create Hook"));
+
+    await waitFor(() => expect(PrismService.createHook).toHaveBeenCalled());
+    const [payload] = vi.mocked(PrismService.createHook).mock.calls[0];
+    expect(payload.handler).toEqual({ type: "agent", prompt: "Did the agent run the tests? $ARGUMENTS" });
+  });
+
+  it("saves the async flag", async () => {
+    vi.mocked(PrismService.updateHook).mockResolvedValue(mockHooks[0]);
+    render(<HooksPanel hooks={mockHooks} onHooksChange={vi.fn()} />);
+    openEditorForFirstHook();
+
+    const [asyncToggle] = screen.getAllByTestId("mock-toggle");
+    fireEvent.click(asyncToggle);
+    expect(screen.getByText(/cannot block or rewrite/)).toBeTruthy();
+    fireEvent.click(screen.getByText("Save Changes"));
+
+    await waitFor(() => expect(PrismService.updateHook).toHaveBeenCalled());
+    const [, payload] = vi.mocked(PrismService.updateHook).mock.calls[0];
+    expect(payload.async).toBe(true);
+  });
+
+  it("shows why the server refused a save instead of failing silently", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(PrismService.createHook).mockRejectedValue(
+      new Error("command hooks are owner-only: they run shell commands with tools-service's privileges"),
+    );
+    render(<HooksPanel hooks={[]} onHooksChange={vi.fn()} />);
+    fireEvent.click(screen.getByText("Create your first hook"));
+    fireEvent.change(inputForLabel("Hook Name"), { target: { value: "gate" } });
+    fireEvent.click(screen.getByTestId("segment-command"));
+    fireEvent.change(inputForLabel("Shell command"), { target: { value: "./gate.sh" } });
+    fireEvent.click(screen.getByText("Create Hook"));
+
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("owner-only"));
+  });
+
+  it("tests a Stop hook with a Stop-shaped sample payload", async () => {
+    vi.mocked(PrismService.testHook).mockResolvedValue({ decision: {}, durationMilliseconds: 3 });
+    const stopHook: Hook = { ...mockHooks[1], id: "hook-stop", event: "Stop", enabled: true };
+    render(<HooksPanel hooks={[stopHook]} onHooksChange={vi.fn()} />);
+    fireEvent.click(screen.getByText("Test"));
+    expect(PrismService.testHook).toHaveBeenCalledWith(
+      "hook-stop",
+      expect.objectContaining({ last_assistant_message: expect.any(String), stop_hook_active: false }),
+    );
+  });
+
+  it("marks an async hook in the list", () => {
+    render(<HooksPanel hooks={[{ ...mockHooks[0], async: true }]} onHooksChange={vi.fn()} />);
+    expect(screen.getByText("async")).toBeTruthy();
+  });
+});
+
