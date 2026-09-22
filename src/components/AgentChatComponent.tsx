@@ -167,7 +167,6 @@ import { buildDirectChatConversationMeta } from "../utils/directChatMeta";
 import {
   MESSAGE_ROLES,
   EXECUTION_STATUS,
-  APPROVAL_STATUS,
   PROJECT_AGENT,
   STORAGE_KEY_MODEL_MEMORY_AGENT,
   STORAGE_KEY_MODEL_MEMORY_AGENT_PREFIX,
@@ -218,6 +217,8 @@ import {
   shouldDownscaleImage,
 } from "../utils/fileIntake";
 import { shouldOpenViewerLiveStream } from "../utils/viewerLiveStreamGate";
+import { awaitingUserStatus } from "../utils/awaitingUserStatus";
+import { pendingDecisionCards, type ServedPendingDecisions } from "../utils/pendingDecisionCards";
 import {
   shouldApplySnapshotRefresh,
   refreshUnlessStreamOwned,
@@ -2088,6 +2089,12 @@ export default function AgentChatComponent({
         setTitle(full.title || (isNoAgent ? "Agentless Chat" : "Agent"));
         setToolActivity([]);
         setSubAgentToolActivity({});
+        // A link (a reload, a push notification) opens a turn parked on its
+        // user with its cards — the same hydration as a sidebar switch.
+        const pendingCards = pendingDecisionCards(full as ServedPendingDecisions, displayMessages);
+        setPendingApprovals(pendingCards.approvals);
+        setPlanProposal(pendingCards.planProposal);
+        setPendingUserQuestion(pendingCards.question);
 
         // displayMessages is the response's only message form (raw `messages`
         // are no longer shipped); assistant entries keep model/provider/
@@ -6891,50 +6898,12 @@ export default function AgentChatComponent({
           setSubAgentToolActivity({});
         }
 
-        // Load pending approvals from the enriched conversation response
-        const pendingApprovalData = full.pendingApproval;
-        if (pendingApprovalData && pendingApprovalData.isPending) {
-          if (pendingApprovalData.type === "plan") {
-            const lastAssistantMessage = [...displayMessages]
-              .reverse()
-              .find((message) => message.role === "assistant");
-            if (lastAssistantMessage && lastAssistantMessage.content) {
-              const planText = lastAssistantMessage.content;
-              const planSteps = planText
-                .split("\n")
-                .filter(
-                  (line) =>
-                    line.trim().startsWith("-") || /^\d+\./.test(line.trim()),
-                );
-              setPlanProposal({
-                plan: planText,
-                steps: planSteps,
-                status: EXECUTION_STATUS.PENDING,
-              });
-            }
-          } else if (pendingApprovalData.toolCalls) {
-            setPendingApprovals(
-              approvalsFromPendingSnapshot(
-                pendingApprovalData.toolCalls,
-                pendingApprovalData.batchId,
-              ),
-            );
-          }
-        } else {
-          setPendingApprovals([]);
-          setPlanProposal(null);
-        }
-
-        // Load pending questions from the enriched conversation response
-        const pendingQuestionData = full.pendingQuestion;
-        if (pendingQuestionData && pendingQuestionData.isPending) {
-          setPendingUserQuestion({
-            questionId: pendingQuestionData.questionId,
-            questions: pendingQuestionData.questions || [],
-          });
-        } else {
-          setPendingUserQuestion(null);
-        }
+        // The cards the turn is still waiting on (durable — they survive a
+        // server restart), as every load path hydrates them.
+        const pendingCards = pendingDecisionCards(full, displayMessages);
+        setPendingApprovals(pendingCards.approvals);
+        setPlanProposal(pendingCards.planProposal);
+        setPendingUserQuestion(pendingCards.question);
 
         window.dispatchEvent(
           new CustomEvent(EVENT_NAME_CONVERSATION_CHANGE, {
@@ -9299,11 +9268,14 @@ export default function AgentChatComponent({
           : undefined;
 
         const hasActiveTools = toolActivity.some((tool) => tool.status === EXECUTION_STATUS.CALLING || tool.status === EXECUTION_STATUS.STREAMING);
-        // Detect awaiting-approval state (plan proposal or tool approval pending)
-        const isAwaitingApproval =
-          planProposal?.status === APPROVAL_STATUS.PENDING ||
-          pendingApprovals.some((approvalItem) => approvalItem.status === APPROVAL_STATUS.PENDING) ||
-          pendingUserQuestion !== null;
+        // A turn parked on its user (a card or a question pending) shows
+        // "Waiting for you" — streaming to this tab or not (awaitingUserStatus).
+        const awaitingStatus = awaitingUserStatus({
+          isUserExplicitlyStopped,
+          planProposal,
+          pendingApprovals,
+          pendingUserQuestion,
+        });
 
         // -- Derive phase from live sub-agent activity --------------
         // When sub-agents are active (whether via an in-flight tool call
@@ -9419,10 +9391,10 @@ export default function AgentChatComponent({
 
         const phase = isUserExplicitlyStopped
           ? null
+          : awaitingStatus
+          ? awaitingStatus.phase
           : isGenerating
-          ? isAwaitingApproval
-            ? "awaiting"
-            : subAgentDerivedPhase ||
+          ? subAgentDerivedPhase ||
               (isToolGenerating ? "generating" : hasActiveTools ? "executing" : rawPhase)
           : subAgentDerivedPhase
             ? "delegating"
@@ -9452,10 +9424,10 @@ export default function AgentChatComponent({
             document.documentElement.style.removeProperty(`--live-phase-gradient-stop-${stopIndex + 1}`);
           }
         }
-        const label = isGenerating
-          ? isAwaitingApproval
-            ? "Awaiting For User Input..."
-            : subAgentDerivedPhase
+        const label = awaitingStatus
+          ? awaitingStatus.label
+          : isGenerating
+          ? subAgentDerivedPhase
               ? subAgentDerivedLabel
               : hasActiveTools
                 ? activeToolLabel
@@ -9510,7 +9482,8 @@ export default function AgentChatComponent({
         // the prior completed generation that hasn't been refreshed yet.
         const isStatusBarActive =
           !isUserExplicitlyStopped &&
-          (isGenerating ||
+          (!!awaitingStatus ||
+          isGenerating ||
           (!conversationIsExplicitlyInactive &&
            (!!subAgentDerivedPhase || hasNonTerminalSubAgents || hasPendingBackgroundTasks || conversationIsExplicitlyActive)));
 

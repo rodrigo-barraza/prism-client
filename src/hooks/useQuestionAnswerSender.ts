@@ -6,10 +6,13 @@
  *  - `POST /agent/answer` carries the conversation id AND the card's
  *    `questionId`, so the server resolves that card — not whichever question
  *    happens to be oldest.
- *  - A 404 means no open question took it (the turn ended, or the card was
- *    already answered elsewhere): the answer then goes out as a normal
- *    message through `sendAsMessage` — the composer's own routing, i.e.
- *    `/agent/input` while the turn runs, the next turn otherwise — once.
+ *  - A 404 means no open question took it (the turn ended): the answer then
+ *    goes out as a normal message through `sendAsMessage` — the composer's
+ *    own routing, i.e. `/agent/input` while the turn runs, the next turn
+ *    otherwise — once.
+ *  - A 409 means the card was already answered (another tab, a retry): the
+ *    server took exactly one answer, so this one is dropped — never re-sent
+ *    as a message.
  *  - A card whose answer is in flight or delivered is claimed: a second
  *    click sends nothing (`"duplicate"`). A failed send releases the claim
  *    so the user can retry.
@@ -52,6 +55,10 @@ export default function useQuestionAnswerSender(
       await PrismService.sendUserQuestionAnswer(getConversationId(), answers, { questionId });
       return "answer";
     } catch (answerError: unknown) {
+      if ((answerError as { status?: number })?.status === 409) {
+        notify("This question was already answered", "info");
+        return "duplicate";
+      }
       if ((answerError as { status?: number })?.status === 404) {
         const text = answersToMessageText(answers);
         if (text) {
