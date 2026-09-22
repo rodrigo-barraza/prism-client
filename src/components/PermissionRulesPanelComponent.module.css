@@ -1,0 +1,463 @@
+/* ============================================================
+   Permission Rules Panel — the user's allow / ask / deny rules
+   Same design language as HooksPanelComponent
+   ============================================================ */
+
+.container {
+  composes: container from "./PanelShared.module.css";
+  --panel-accent: var(--color-violet);
+  gap: 10px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  > :first-child {
+    flex: 1;
+  }
+}
+
+/* ── Decision colours — deny > ask > allow, loudest first ──── */
+
+.decision-allow {
+  --decision-color: var(--color-success);
+}
+
+.decision-ask {
+  --decision-color: var(--color-warning);
+}
+
+.decision-deny {
+  --decision-color: var(--color-danger);
+}
+
+.decision-badge {
+  composes: chip from "./PanelShared.module.css";
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--decision-color, var(--text-secondary));
+  background: color-mix(in oklch, var(--decision-color, var(--text-muted)) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--decision-color, var(--text-muted)) 30%, transparent);
+}
+
+/* ── Empty State ────────────────────────────────────────────── */
+
+.empty-state {
+  composes: empty-state from "./PanelShared.module.css";
+}
+
+.empty-icon {
+  composes: empty-icon from "./PanelShared.module.css";
+}
+
+.empty-title {
+  composes: empty-title from "./PanelShared.module.css";
+}
+
+.empty-subtitle {
+  composes: empty-subtitle from "./PanelShared.module.css";
+  max-width: 360px;
+}
+
+/* ── Rule Row ───────────────────────────────────────────────── */
+
+.list {
+  composes: list from "./PanelShared.module.css";
+}
+
+.rule-row {
+  composes: row from "./PanelShared.module.css";
+
+  &:hover {
+    background: var(--sidebar-row-hover-bg);
+  }
+}
+
+.rule-row-disabled {
+  composes: row-disabled from "./PanelShared.module.css";
+}
+
+.rule-leading-icon {
+  composes: row-leading-icon from "./PanelShared.module.css";
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  color: var(--decision-color);
+  background: color-mix(in oklch, var(--decision-color) 12%, transparent);
+}
+
+.rule-body {
+  composes: row-content from "./PanelShared.module.css";
+}
+
+.rule-title-line {
+  composes: row-title-line from "./PanelShared.module.css";
+}
+
+.rule-text {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.rule-description {
+  composes: row-subtitle from "./PanelShared.module.css";
+}
+
+.rule-meta {
+  composes: row-meta from "./PanelShared.module.css";
+}
+
+.chip {
+  composes: chip from "./PanelShared.module.css";
+}
+
+.origin-chip {
+  composes: chip from "./PanelShared.module.css";
+  color: var(--text-muted);
+}
+
+.invalid-chip {
+  composes: chip from "./PanelShared.module.css";
+  gap: 4px;
+  color: var(--color-rose);
+  background: color-mix(in oklch, var(--color-rose) 12%, transparent);
+}
+
+.rule-actions {
+  composes: row-actions from "./PanelShared.module.css";
+}
+
+.rule-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--text-primary);
+    background: color-mix(in oklch, var(--text-muted) 12%, transparent);
+  }
+}
+
+.rule-delete-button:hover {
+  color: var(--color-rose) !important;
+  background: color-mix(in oklch, var(--color-rose) 12%, transparent) !important;
+}
+
+/* ── Confirm Delete ─────────────────────────────────────────── */
+
+.confirm-layout-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.confirm-label {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  color: var(--color-rose);
+  font-weight: 500;
+}
+
+.confirm-button {
+  composes: confirm-button from "./PanelShared.module.css";
+}
+
+.confirm-button-yes {
+  background: color-mix(in oklch, var(--color-rose) 15%, transparent);
+  color: var(--color-rose);
+  border-color: color-mix(in oklch, var(--color-rose) 30%, transparent);
+}
+
+.confirm-button-no {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+/* ── Suggestions ────────────────────────────────────────────── */
+
+.suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in oklch, var(--color-violet) 5%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-violet) 18%, transparent);
+}
+
+.suggestion-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.suggestion-button {
+  padding: 2px 9px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  border-radius: var(--sidebar-row-chip-radius);
+  color: var(--color-success);
+  background: color-mix(in oklch, var(--color-success) 10%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-success) 28%, transparent);
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in oklch, var(--color-success) 20%, transparent);
+  }
+}
+
+/* ── Test Box ───────────────────────────────────────────────── */
+
+.test-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-color);
+}
+
+.test-box-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.test-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.test-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border-radius: var(--sidebar-row-chip-radius);
+  color: var(--color-violet);
+  background: color-mix(in oklch, var(--color-violet) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-violet) 30%, transparent);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.test-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--background-base);
+  border-left: 2px solid var(--decision-color, var(--text-muted));
+}
+
+.test-result-allow {
+  --decision-color: var(--color-success);
+}
+
+.test-result-ask {
+  --decision-color: var(--color-warning);
+}
+
+.test-result-deny {
+  --decision-color: var(--color-danger);
+}
+
+.test-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.test-result-layer {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+
+  code {
+    font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  }
+}
+
+.test-result-reason {
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.test-result-meta {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+}
+
+.test-result-matches {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+
+  code {
+    font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  }
+}
+
+/* ── Form ───────────────────────────────────────────────────── */
+
+.form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--calculated-border-color);
+
+  h3 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+.cancel-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.rule-input input,
+.rule-input {
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+}
+
+.code-textarea {
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.toggle-field {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.hint {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+
+  code {
+    font-family: var(--font-mono, "JetBrains Mono", "Fira Code", monospace);
+  }
+}
+
+.field-error {
+  font-size: 0.6875rem;
+  color: var(--color-rose);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--calculated-border-color);
+}
+
+.save-button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--background-base, oklch(14.7% 0.0107 285));
+  background: var(--color-violet);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.cancel-form-button {
+  padding: 8px 14px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+}

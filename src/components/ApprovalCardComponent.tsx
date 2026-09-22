@@ -1,6 +1,7 @@
 "use client";
 
 import { Shield, ShieldAlert, ShieldCheck, Check, X, Zap } from "lucide-react";
+import AlwaysAllowControlComponent from "./AlwaysAllowControlComponent";
 import styles from "./ApprovalCardComponent.module.css";
 
 const TIER_CONFIG = {
@@ -19,6 +20,8 @@ interface ApprovalCardProps {
   onReject?: () => void;
   onApproveAll?: () => void;
   isPending?: boolean;
+  /** Offers "Always allow…": saves a permission rule, then approves via `onApprove`. */
+  alwaysAllow?: { conversationId?: string | null; workspaceRoot?: string | null };
 }
 
 /**
@@ -32,6 +35,7 @@ export default function ApprovalCardComponent({
   onReject,
   onApproveAll,
   isPending = true,
+  alwaysAllow,
 }: ApprovalCardProps) {
   const tierInfo = TIER_CONFIG[tier] || TIER_CONFIG[2];
   const TierIcon = tierInfo.icon;
@@ -99,6 +103,16 @@ export default function ApprovalCardComponent({
             Reject
           </button>
         </div>
+      )}
+
+      {isPending && alwaysAllow && onApprove && (
+        <AlwaysAllowControlComponent
+          toolName={toolName}
+          toolArgs={toolArgs}
+          conversationId={alwaysAllow.conversationId}
+          workspaceRoot={alwaysAllow.workspaceRoot}
+          onAllowed={onApprove}
+        />
       )}
     </div>
   );

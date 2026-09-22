@@ -9098,6 +9098,7 @@ export default function AgentChatComponent({
               toolName={approval.toolName}
               toolArgs={approval.toolArgs}
               tier={approval.tier}
+              alwaysAllow={{ conversationId, workspaceRoot: currentWorkspace?.path ?? null }}
               onApprove={() => {
                 setPendingApprovals((previousPendingApprovals) =>
                   previousPendingApprovals.map((approvalItem) =>
