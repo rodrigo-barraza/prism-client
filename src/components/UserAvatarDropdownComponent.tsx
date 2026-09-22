@@ -152,7 +152,6 @@ export default function UserAvatarDropdownComponent() {
               value={newProfileName}
               onChange={(event) => setNewProfileName(event.target.value)}
               placeholder="Profile name"
-              // eslint-disable-next-line jsx-a11y/no-autofocus -- form appears on explicit user action
               autoFocus
               maxLength={64}
             />
