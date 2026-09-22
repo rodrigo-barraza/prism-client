@@ -82,6 +82,11 @@
   min-width: 0;
 }
 
+.fork-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
 .cost-badge {
   flex-shrink: 0;
 }

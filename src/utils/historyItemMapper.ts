@@ -1,4 +1,4 @@
-import type { Conversation } from "../types/types";
+import type { Conversation, ForkLineage } from "../types/types";
 
 interface HistoryItemTag {
   label: string;
@@ -35,6 +35,8 @@ export interface MappedHistoryItem {
   pendingApprovalCount?: number;
   pendingQuestionCount?: number;
   awaitingSince?: string | null;
+  /** Set on a conversation forked from another. */
+  forkedFrom?: ForkLineage | null;
 }
 
 interface MapConversationOptions {
@@ -110,6 +112,7 @@ export function mapConversationToHistoryItem(
     modelName: conversation.model || conversation.settings?.model || null,
     agent: conversation.agent,
     parentConversationId: conversation.parentConversationId || null,
+    forkedFrom: conversation.forkedFrom ?? null,
     hasSubAgents: conversation.hasSubAgents || false,
     searchText: searchTextParts.join(" "),
     requestErrorCount: conversation.requestErrorCount || 0,

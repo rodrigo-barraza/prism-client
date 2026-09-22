@@ -10,6 +10,7 @@ import {
   Star,
   Trash2,
   ExternalLink,
+  GitBranch,
   ShieldAlert,
   MessageCircleQuestion,
 } from "lucide-react";
@@ -67,6 +68,8 @@ interface HistoryItem {
   pendingApprovalCount?: number;
   pendingQuestionCount?: number;
   awaitingSince?: string | null;
+  /** Set on a conversation forked from another (POST /conversations/:id/fork). */
+  forkedFrom?: { conversationId: string; title?: string; position?: "at" | "before" } | null;
 }
 
 interface HistoryItemProps {
@@ -412,6 +415,16 @@ export default function HistoryItemComponent({
                 className={`${styles['generating-dot']} ${isGenerating ? styles['generating-dot-is-animating'] : styles['generating-dot-is-idle']}`}
                 style={{ "--generating-dot-phase-color": resolvedDotColor } as React.CSSProperties}
               />
+            )}
+            {item.forkedFrom && (
+              <GitBranch
+                size={12}
+                className={styles['fork-icon']}
+                role="img"
+                aria-label={`Forked from ${item.forkedFrom.title || "another conversation"}`}
+              >
+                <title>{`Forked from ${item.forkedFrom.title || "another conversation"}`}</title>
+              </GitBranch>
             )}
             <span className={styles['title-text']}>{item.title || "Untitled"}</span>
             {isNew && <span className={styles['new-badge']}>NEW</span>}

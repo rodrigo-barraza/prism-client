@@ -8,17 +8,20 @@
  * to the conversation array by identity and persists the result through
  * `PATCH /conversations/:id`.
  *
- * - Edit of a user message, and Rerun: the message's turn (with the
+ * - Edit of a user message, by default (`forkEdit`): the conversation forks
+ *   just before the message and the edited text is sent in the fork, so the
+ *   original keeps everything after it (edit-as-branch). "Replace in place"
+ *   — and Rerun — instead drop the message's turn (with the
  *   `<system-context>` note the server persisted before it) and everything
- *   after it leave the conversation, then its text goes out again as a new
- *   turn. The server appends that turn to the truncated document.
+ *   after it, then send its text again as a new turn; the server appends
+ *   that turn to the truncated document.
  * - Edit of an assistant reply: its text is replaced in place.
  * - Delete / Restore: the soft `deleted` flag, which the server already
  *   strips from the model's context and the list renders collapsed.
  */
 
 import { useState, type ReactNode } from "react";
-import { DialogComponent } from "@rodrigo-barraza/components-library";
+import { DialogComponent, RadioComponent } from "@rodrigo-barraza/components-library";
 import PrismService from "../services/PrismService";
 import { getErrorMessage } from "../utils/errorMessage";
 import { userMessageResendText } from "../utils/messageHelpers";
@@ -52,6 +55,12 @@ export interface UseMessageActionsOptions {
   conversationId: string | null;
   project?: string;
   resend: (_payload: MessageActionResend) => void;
+  /**
+   * Edit-as-branch: fork before `target` and send `payload` in the fork.
+   * Resolves false when it could not (the edit is then left undone).
+   * Without it an edit always replaces in place.
+   */
+  forkEdit?: (_target: Message, _payload: MessageActionResend) => Promise<boolean>;
   onError: (_message: string) => void;
 }
 
@@ -68,6 +77,8 @@ interface PendingResend {
   target: Message;
   text: string;
   discardCount: number;
+  /** An edit: branch into a fork (default) or replace in place. */
+  mode: "fork" | "replace";
 }
 
 export default function useMessageActions({
@@ -78,6 +89,7 @@ export default function useMessageActions({
   conversationId,
   project,
   resend,
+  forkEdit,
   onError,
 }: UseMessageActionsOptions): { listProps: MessageActionProps; confirmDialog: ReactNode } {
   const [pendingResend, setPendingResend] = useState<PendingResend | null>(null);
@@ -112,8 +124,6 @@ export default function useMessageActions({
       onError("The conversation changed before the message was resent — try again.");
       return;
     }
-    // TODO(prompt 15, rewind-and-fork): an edit forks the conversation
-    // instead of discarding what came after it.
     if (!(await persist(messages.slice(0, turnStartIndex(messages, index))))) return;
     resend({
       text,
@@ -132,7 +142,9 @@ export default function useMessageActions({
         ? discardCount > 0
         : messages.slice(index + 1).some((message) => message.role === "user");
     if (needsConfirmation) {
-      setPendingResend({ kind, target, text, discardCount });
+      // Nothing after the message → nothing to keep, so an edit only branches when there is.
+      const mode = kind === "edit" && forkEdit ? "fork" : "replace";
+      setPendingResend({ kind, target, text, discardCount, mode });
     } else {
       void resendFrom(target, text);
     }
@@ -177,22 +189,53 @@ export default function useMessageActions({
   };
 
   const discardCount = pendingResend?.discardCount ?? 0;
+  const laterMessages = `${discardCount} later message${discardCount === 1 ? "" : "s"}`;
+  const isBranchableEdit = pendingResend?.kind === "edit" && !!forkEdit;
+  const isFork = isBranchableEdit && pendingResend?.mode === "fork";
   const confirmDialog = (
     <DialogComponent
       open={pendingResend !== null}
       onClose={() => setPendingResend(null)}
       headline={pendingResend?.kind === "rerun" ? "Rerun from here?" : "Resend the edited message?"}
-      confirmLabel="Discard and resend"
-      confirmVariant="destructive"
+      confirmLabel={isFork ? "Edit in a new branch" : "Discard and resend"}
+      confirmVariant={isFork ? "default" : "destructive"}
       onConfirm={() => {
         const confirmed = pendingResend;
         setPendingResend(null);
-        if (confirmed) void resendFrom(confirmed.target, confirmed.text);
+        if (!confirmed) return;
+        if (confirmed.kind === "edit" && confirmed.mode === "fork" && forkEdit) {
+          void forkEdit(confirmed.target, {
+            text: confirmed.text,
+            images: confirmed.target.images ?? [],
+            uploadedFiles: confirmed.target.files ?? [],
+          });
+        } else {
+          void resendFrom(confirmed.target, confirmed.text);
+        }
       }}
     >
-      {`This discards the ${discardCount} later message${discardCount === 1 ? "" : "s"} in this conversation and sends the ${
-        pendingResend?.kind === "rerun" ? "" : "edited "
-      }message again.`}
+      {isBranchableEdit ? (
+        <RadioComponent.Group legend="How to edit">
+          <RadioComponent<PendingResend["mode"]>
+            name="edit-mode"
+            value="fork"
+            selectedValue={pendingResend?.mode ?? "fork"}
+            onChange={(mode) => setPendingResend((pending) => (pending ? { ...pending, mode } : pending))}
+            label={`New branch — a fork continues from the edited message; this conversation keeps its ${laterMessages}`}
+          />
+          <RadioComponent<PendingResend["mode"]>
+            name="edit-mode"
+            value="replace"
+            selectedValue={pendingResend?.mode ?? "fork"}
+            onChange={(mode) => setPendingResend((pending) => (pending ? { ...pending, mode } : pending))}
+            label={`Replace in place — discard the ${laterMessages} here and resend`}
+          />
+        </RadioComponent.Group>
+      ) : (
+        `This discards the ${laterMessages} in this conversation and sends the ${
+          pendingResend?.kind === "rerun" ? "" : "edited "
+        }message again.`
+      )}
     </DialogComponent>
   );
 
