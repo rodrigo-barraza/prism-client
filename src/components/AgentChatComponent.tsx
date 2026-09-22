@@ -116,6 +116,7 @@ import useNonBlockingQuestions, {
 } from "../hooks/useNonBlockingQuestions";
 import useConversationGoal from "../hooks/useConversationGoal";
 import useComposerSendMode from "../hooks/useComposerSendMode";
+import useQuestionAnswerSender from "../hooks/useQuestionAnswerSender";
 import {
   decideComposerAction,
   resolveTurnInputOutcome,
@@ -125,7 +126,6 @@ import {
   removeTurnInputMessage,
   markTurnInputApplied,
   applyTurnInputEvent,
-  answersToMessageText,
   type TurnInputOutcome,
 } from "../utils/turnInputRouting";
 
@@ -6495,27 +6495,11 @@ export default function AgentChatComponent({
    * already ended (non-blocking cards can outlive it) — the answer then
    * goes out as a normal new message so nothing the user typed is lost.
    */
-  const sendQuestionAnswerOrMessage = useCallback(
-    async (answers: QuestionAnswerData[]): Promise<"answer" | "message" | "failed"> => {
-      try {
-        await PrismService.sendUserQuestionAnswer(conversationIdRef.current, answers);
-        return "answer";
-      } catch (answerError: unknown) {
-        if ((answerError as { status?: number })?.status === 404) {
-          const text = answersToMessageText(answers);
-          if (text) {
-            handleSend(null, { overridePayload: { text, images: [] } });
-            addToast("The turn had already ended — sent your answer as a message", "info");
-            return "message";
-          }
-        }
-        console.error("[sendQuestionAnswerOrMessage] failed:", answerError);
-        addToast(`Could not send the answer — ${getErrorMessage(answerError)}`, "error");
-        return "failed";
-      }
-    },
-    [handleSend, addToast],
-  );
+  const sendQuestionAnswerOrMessage = useQuestionAnswerSender({
+    getConversationId: () => conversationIdRef.current,
+    sendAsMessage: (text) => handleSend(null, { overridePayload: { text, images: [] } }),
+    notify: addToast,
+  });
 
   // -- Conversation management ----------------------------------
   const resetConversationState = useCallback(() => {
@@ -9225,8 +9209,9 @@ export default function AgentChatComponent({
             questions={pendingUserQuestion.questions}
             context={pendingUserQuestion.context}
             onAnswer={(answers: QuestionAnswerData[]) => {
+              const { questionId } = pendingUserQuestion;
               setPendingUserQuestion(null);
-              void sendQuestionAnswerOrMessage(answers);
+              void sendQuestionAnswerOrMessage(answers, questionId);
             }}
           />
         )}
@@ -9556,8 +9541,8 @@ export default function AgentChatComponent({
         <NonBlockingQuestionsComponent
           cards={nonBlockingQuestions.cards}
           onAnswer={(questionId, answers) => {
-            void sendQuestionAnswerOrMessage(answers).then((via) => {
-              if (via === "failed") return;
+            void sendQuestionAnswerOrMessage(answers, questionId).then((via) => {
+              if (via === "failed" || via === "duplicate") return;
               nonBlockingQuestions.markAnswered(questionId, answers, via);
             });
           }}

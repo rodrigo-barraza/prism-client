@@ -578,6 +578,14 @@ describe("PrismService", () => {
         conversationId: "conv-123",
         answers: [{ answer: "ans-1" }],
       });
+
+      // The card's questionId rides along so the server resolves THAT card.
+      await PrismService.sendUserQuestionAnswer("conv-123", [{ answer: "ans-2" }], { questionId: "q-abc-2" });
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({
+        conversationId: "conv-123",
+        questionId: "q-abc-2",
+        answers: [{ answer: "ans-2" }],
+      });
     });
 
     it("sendTurnInput: 200 → inputId, 409/400 resolve as contract rejections, others throw", async () => {
