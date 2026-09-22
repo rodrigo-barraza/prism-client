@@ -58,6 +58,7 @@ import {
   UserQuestionItem,
   TurnInputKind,
   TurnInputBoundary,
+  FileAttachment,
 } from "../types/types";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -85,10 +86,23 @@ import WorkspaceSwitcherButtonComponent from "./WorkspaceSwitcherButtonComponent
 import SidebarTabHeaderComponent from "./SidebarTabHeaderComponent";
 import FileViewerPanelComponent from "./FileViewerPanelComponent";
 import MessageList, {
-  type QueuedNextTurn,
   type PendingFileAttachment,
 } from "./MessageListComponent";
+import {
+  useNextTurnQueue,
+  useNextTurnQueueDrain,
+  type QueuedTurn,
+} from "../hooks/useNextTurnQueue";
+import useMessageActions from "../hooks/useMessageActions";
+import QueuedTurnChipsComponent from "./QueuedTurnChipsComponent";
+import LiveConnectionIndicatorComponent from "./LiveConnectionIndicatorComponent";
+import TurnActivityPanelComponent from "./TurnActivityPanelComponent";
+import useTurnActivity from "../hooks/useTurnActivity";
+import useFavoriteKeys from "../hooks/useFavoriteKeys";
+import type { LiveSocketState } from "../services/liveViewerSocket";
+import { PRISM_WEBSOCKET_URL } from "@/config";
 import { resolveDisplayMessages } from "../utils/messageHelpers";
+import { appendRecoveredText } from "../utils/liveTurnRecovery";
 import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 
@@ -203,6 +217,7 @@ import {
 import { shouldOpenViewerLiveStream } from "../utils/viewerLiveStreamGate";
 import {
   shouldApplySnapshotRefresh,
+  refreshUnlessStreamOwned,
   seedStreamAccumulators,
   extractPersistedContextBudget,
 } from "../utils/liveConversationView";
@@ -694,9 +709,6 @@ export default function AgentChatComponent({
 
   // -- State ----------------------------------------------------
   const [messages, setMessages] = useState<ClientMessage[]>([]);
-  const [queuedNextTurn, setQueuedNextTurn] = useState<QueuedNextTurn | null>(
-    null,
-  );
 
   const inputValueRef = useRef<string>("");
   const [hasInput, setHasInput] = useState(false);
@@ -709,6 +721,20 @@ export default function AgentChatComponent({
     new Map(),
   );
   const [conversationId, setConversationId] = useState(() => generateUUID());
+  const nextTurnQueue = useNextTurnQueue(conversationId);
+  const enqueueNextTurn = nextTurnQueue.enqueue;
+  // The live event socket (viewer stream or the sender's recovery) — badge
+  // and missing-URL banner.
+  const [liveConnectionState, setLiveConnectionState] = useState<LiveSocketState>(
+    PRISM_WEBSOCKET_URL ? "closed" : "unconfigured",
+  );
+  // Checklist, brief, sources and code runs a turn streams outside its messages.
+  const {
+    activity: turnActivity,
+    callbacksFor: turnActivityCallbacks,
+    startTurn: startTurnActivity,
+  } = useTurnActivity(conversationId);
+  const conversationFavorites = useFavoriteKeys("conversation");
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
   const [conversations, setConversations] = useState<Array<AgentConversation | Conversation>>(
     [],
@@ -4714,6 +4740,7 @@ export default function AgentChatComponent({
             if (isStale()) return;
             applyGoalEvent(data);
           },
+          ...turnActivityCallbacks(generationConversationId),
           onUserQuestion: (data: SSEData) => {
             if (isStale()) return;
             if (data.blocking === false) {
@@ -5777,7 +5804,7 @@ export default function AgentChatComponent({
       }
       setMessages((previousMessages) => removeTurnInputMessage(previousMessages, tempId));
       if (outcome.action === "queue") {
-        setQueuedNextTurn({ text, images, files: [] });
+        enqueueNextTurn({ text, images, files: [] });
         addToast(outcome.toast, "info");
         return;
       }
@@ -5785,7 +5812,7 @@ export default function AgentChatComponent({
       setPendingImages(images);
       addToast(outcome.toast, "warning");
     },
-    [addToast, setTextareaValue],
+    [addToast, setTextareaValue, enqueueNextTurn],
   );
 
   const handleSend = useCallback(
@@ -5799,6 +5826,8 @@ export default function AgentChatComponent({
           text: string;
           images: string[];
           files?: PendingFileAttachment[];
+          /** Already in MinIO — an edited or rerun message's own attachments. */
+          uploadedFiles?: FileAttachment[];
         } | null;
       } = {},
     ) => {
@@ -5821,7 +5850,15 @@ export default function AgentChatComponent({
         ? [...(overridePayload.files ?? [])]
         : [...pendingFilesRef.current];
 
-      if (!text && currentImages.length === 0 && currentFiles.length === 0) return;
+      const alreadyUploadedFiles = overridePayload?.uploadedFiles ?? [];
+      if (
+        !text &&
+        currentImages.length === 0 &&
+        currentFiles.length === 0 &&
+        alreadyUploadedFiles.length === 0
+      ) {
+        return;
+      }
 
       // Aggregate inline-payload guard: images ride the /agent body as
       // base64 data URLs, so several borderline-sized images can jointly
@@ -5858,7 +5895,7 @@ export default function AgentChatComponent({
           return;
         }
         addToast("Files can't be sent mid-turn — queued for next turn", "info");
-        setQueuedNextTurn({ text, images: currentImages, files: currentFiles });
+        enqueueNextTurn({ text, images: currentImages, files: currentFiles });
         setTextareaValue("");
         setPendingImages([]);
         setPendingFiles([]);
@@ -5866,7 +5903,7 @@ export default function AgentChatComponent({
       }
 
       if (isQueueing) {
-        setQueuedNextTurn({ text, images: currentImages, files: currentFiles });
+        enqueueNextTurn({ text, images: currentImages, files: currentFiles });
         setTextareaValue("");
         setPendingImages([]);
         setPendingFiles([]);
@@ -5877,16 +5914,10 @@ export default function AgentChatComponent({
       // changes (clearing the input, optimistic conversation entries) so
       // a failed upload aborts the send with everything still intact —
       // the user keeps their text + attachments and can simply retry.
-      let uploadedFileUrls: {
-        url: string;
-        name: string;
-        mimeType: string;
-        modality: string;
-        sizeBytes?: number;
-      }[] = [];
+      let uploadedFileUrls: FileAttachment[] = [...alreadyUploadedFiles];
       if (currentFiles.length > 0) {
         try {
-          uploadedFileUrls = await Promise.all(
+          uploadedFileUrls = [...alreadyUploadedFiles, ...await Promise.all(
             currentFiles.map(async (pendingFile) => {
               const result = await PrismService.uploadFile(pendingFile.dataUrl);
               return {
@@ -5899,7 +5930,7 @@ export default function AgentChatComponent({
                   : {}),
               };
             }),
-          );
+          )];
         } catch (uploadError) {
           console.error("[handleSend] File upload to MinIO failed:", uploadError);
           if (overridePayload) {
@@ -5959,6 +5990,7 @@ export default function AgentChatComponent({
       setStatusBarInitialElapsedMilliseconds(null);
       setInjectedSkills([]);
       setContextTruncated(null);
+      startTurnActivity(genId);
 
       const currentMessages = messagesRef.current;
       // Optimistic display title only — the persisted title is derived
@@ -5978,6 +6010,8 @@ export default function AgentChatComponent({
             detail: { conversationId: conversationId },
           }),
         );
+        // An edit of the first message empties an already-listed
+        // conversation — replace its entry rather than adding a second.
         setConversations((previousConversations) => [
           {
             id: conversationId,
@@ -5985,7 +6019,7 @@ export default function AgentChatComponent({
             updatedAt: now,
             createdAt: now,
           } as AgentConversation,
-          ...previousConversations,
+          ...previousConversations.filter((entry) => entry.id !== conversationId),
         ]);
       }
 
@@ -6158,8 +6192,8 @@ export default function AgentChatComponent({
         // Detect network/fetch errors caused by mobile screen lock, tab
         // suspension, or TCP connection drops. These are NOT real failures —
         // the backend agentic loop continues processing in the background.
-        // Instead of showing "⚠️ Error", enter recovery polling mode to
-        // re-fetch the conversation when the backend finishes.
+        // Instead of showing "⚠️ Error", follow the rest of the turn over
+        // the live socket (polling when none is configured).
         const errorMessage = getErrorMessage(error);
         const isNetworkDisconnection =
           error instanceof TypeError ||
@@ -6172,7 +6206,7 @@ export default function AgentChatComponent({
 
         if (isNetworkDisconnection && !isNoAgent && genId) {
           console.info(
-            `[handleSend] Network disconnection detected — entering recovery polling for ${genId}`,
+            `[handleSend] Network disconnection detected — entering recovery for ${genId}`,
           );
 
           // Remove the in-flight error-like assistant message if present
@@ -6184,59 +6218,85 @@ export default function AgentChatComponent({
             return previousMessages;
           });
 
-          // Poll the backend for conversation state until the agent finishes
           const RECOVERY_POLL_INTERVAL_MILLISECONDS = 3_000;
-          const RECOVERY_POLL_MAX_DURATION_MILLISECONDS = 5 * 60 * 1_000;
+          const RECOVERY_MAX_DURATION_MILLISECONDS = 5 * 60 * 1_000;
           const recoveryStartTimestamp = Date.now();
 
+          /** Show the persisted conversation; true once the turn has landed. */
+          const refreshRecoveredConversation = async (): Promise<boolean> => {
+            const recoveredConversation = await PrismService.getAgentConversation(
+              genId,
+              agentProject!,
+            );
+            if (!recoveredConversation?.displayMessages || conversationIdRef.current !== genId) {
+              return false;
+            }
+            const displayMessages = resolveDisplayMessages(recoveredConversation);
+            setMessages(displayMessages);
+            // displayMessages pre-filters tool-role messages and empty stubs,
+            // so the final assistant message is the last entry once the turn
+            // has landed.
+            const lastRecoveredMessage = displayMessages[displayMessages.length - 1];
+            return lastRecoveredMessage?.role === "assistant" && !!lastRecoveredMessage.content;
+          };
+
+          // Without a WebSocket URL: poll the document until the agent finishes.
           const recoveryPoll = async () => {
             while (
-              Date.now() - recoveryStartTimestamp < RECOVERY_POLL_MAX_DURATION_MILLISECONDS &&
+              Date.now() - recoveryStartTimestamp < RECOVERY_MAX_DURATION_MILLISECONDS &&
               conversationIdRef.current === genId
             ) {
               try {
-                const recoveredConversation = await PrismService.getAgentConversation(
-                  genId,
-                  agentProject!,
-                );
-
-                if (
-                  recoveredConversation &&
-                  recoveredConversation.displayMessages &&
-                  conversationIdRef.current === genId
-                ) {
-                  const displayMessages = resolveDisplayMessages(recoveredConversation);
-                  setMessages(displayMessages);
-
-                  // Check if generation completed (last message is assistant
-                  // with content). displayMessages pre-filters tool-role
-                  // messages and empty stubs, so the final assistant message
-                  // is the last entry once the turn has landed.
-                  const lastRecoveredMessage =
-                    displayMessages[displayMessages.length - 1];
-                  const isGenerationComplete =
-                    lastRecoveredMessage?.role === "assistant" &&
-                    lastRecoveredMessage.content;
-
-                  if (isGenerationComplete) {
-                    console.info(
-                      `[handleSend] Recovery polling: generation completed for ${genId}`,
-                    );
-                    return;
-                  }
+                if (await refreshRecoveredConversation()) {
+                  console.info(
+                    `[handleSend] Recovery polling: generation completed for ${genId}`,
+                  );
+                  return;
                 }
               } catch {
                 // Non-critical — keep polling
               }
-
               await new Promise((resolve) =>
                 setTimeout(resolve, RECOVERY_POLL_INTERVAL_MILLISECONDS),
               );
             }
           };
 
-          // Fire-and-forget — the finally block handles UI cleanup
-          await recoveryPoll();
+          // Follow the rest of the turn over the live socket. It resubscribes
+          // from this conversation's event cursor — the SSE's own mark — so
+          // the text the SSE missed continues the bubble with nothing
+          // repeated; the document refresh then lands the canonical messages.
+          const liveRecoveryOutcome = await PrismService.followLiveTurn(
+            genId,
+            {
+              onChunk: (content: string) => {
+                if (conversationIdRef.current !== genId) return;
+                setMessages((previousMessages) =>
+                  appendRecoveredText(previousMessages, content),
+                );
+              },
+            },
+            {
+              isTurnRunning: async () =>
+                Boolean(
+                  (await PrismService.getAgentConversation(genId, agentProject!))?.isActive,
+                ),
+              timeoutMilliseconds: RECOVERY_MAX_DURATION_MILLISECONDS,
+              onStateChange: setLiveConnectionState,
+            },
+          );
+          console.info(
+            `[handleSend] Live recovery for ${genId} finished: ${liveRecoveryOutcome}`,
+          );
+          if (liveRecoveryOutcome === "unconfigured") {
+            await recoveryPoll();
+          } else {
+            try {
+              await refreshRecoveredConversation();
+            } catch {
+              // Non-critical — the change stream catches up
+            }
+          }
         } else {
           setMessages((previousMessages) => [
             ...previousMessages,
@@ -6329,6 +6389,7 @@ export default function AgentChatComponent({
       loadConversations,
       addToast,
       sendTurnInputUpdate,
+      enqueueNextTurn,
     ],
   );
 
@@ -6417,16 +6478,27 @@ export default function AgentChatComponent({
   );
 
   // Auto-send queued message when generation completes
-  useEffect(() => {
-    if (!isGenerating && queuedNextTurn) {
-      const payload = queuedNextTurn;
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
-      setQueuedNextTurn(null);
-      setTimeout(() => {
-        handleSend(null, { overridePayload: payload });
-      }, 50);
-    }
-  }, [isGenerating, queuedNextTurn, handleSend]);
+  const sendQueuedTurn = useCallback(
+    (turn: QueuedTurn) => handleSend(null, { overridePayload: turn }),
+    [handleSend],
+  );
+  useNextTurnQueueDrain(nextTurnQueue, { isGenerating, send: sendQueuedTurn });
+
+  const messageActions = useMessageActions({
+    messages,
+    listMessages: filteredMessages,
+    commitMessages: (nextMessages) => {
+      messagesRef.current = nextMessages;
+      setMessages(nextMessages);
+    },
+    isGenerating,
+    conversationId: activeId,
+    project: agentProject || undefined,
+    resend: ({ text, images, uploadedFiles }) => {
+      void handleSend(null, { overridePayload: { text, images, uploadedFiles } });
+    },
+    onError: (message) => addToast(message, "error"),
+  });
 
   /**
    * Answer an agent question through `/agent/answer`. A 404 means the turn
@@ -7125,11 +7197,27 @@ export default function AgentChatComponent({
         return;
       }
       try {
-        const full = isNoAgent
-          ? await PrismService.getConversation(targetConversationId)
-          : await PrismService.getAgentConversation(targetConversationId, agentProject!);
-        if (full && full.id === conversationIdRef.current) {
-          applyConversationData(full);
+        const outcome = await refreshUnlessStreamOwned<AgentConversation | Conversation>({
+          isStreamOwned: () =>
+            clientDrivenConversationIdRef.current === targetConversationId ||
+            !shouldApplySnapshotRefresh({
+              isStreamOpen: isWebSocketStreamingRef.current,
+              hasStreamedContent: webSocketHasStreamedContentRef.current,
+            }),
+          fetchSnapshot: () =>
+            isNoAgent
+              ? PrismService.getConversation(targetConversationId)
+              : PrismService.getAgentConversation(targetConversationId, agentProject!),
+          applySnapshot: (full) => {
+            if (full && full.id === conversationIdRef.current) {
+              applyConversationData(full);
+            }
+          },
+        });
+        if (outcome === "superseded") {
+          console.debug(
+            `[refreshActiveConversation] dropped a snapshot that arrived after the live stream took over ${targetConversationId}`,
+          );
         }
       } catch (error) {
         console.error(
@@ -7466,6 +7554,7 @@ export default function AgentChatComponent({
         // The next assistant content belongs to a NEW bubble after this
         // user message — never to a previous turn's trailing bubble.
         ownsTrailingAssistantBubble = false;
+        startTurnActivity(activeId);
         const userMessageContent = (data.content as string) || "";
         if (!userMessageContent) return;
         setMessages((previousMessages) => {
@@ -7515,6 +7604,7 @@ export default function AgentChatComponent({
         if (!isSubscriptionActive) return;
         liveTurnHelpersRef.current.applyGoalEvent(data);
       },
+      ...turnActivityCallbacks(activeId),
       // Non-blocking questions can be answered from a viewing tab too;
       // blocking ones stay with the driving client (and the snapshot).
       onUserQuestion: (data: SSEData) => {
@@ -7762,7 +7852,7 @@ export default function AgentChatComponent({
         setIsGenerating(false);
         isWebSocketStreamingRef.current = false;
       },
-    });
+    }, { onStateChange: setLiveConnectionState });
 
     return () => {
       isSubscriptionActive = false;
@@ -7793,6 +7883,8 @@ export default function AgentChatComponent({
     liveStreamConversationRunning,
     isNoAgent,
     isAdmin,
+    turnActivityCallbacks,
+    startTurnActivity,
   ]);
 
   // -- Visibility Recovery (Mobile Screen Lock) -------------------
@@ -9049,13 +9141,6 @@ export default function AgentChatComponent({
           subAgentToolActivity={subAgentToolActivity}
           activeAgent={resolvedConversationAgent}
           knownPaths={knownPaths}
-          queuedNextTurn={queuedNextTurn}
-          onCancelQueuedTurn={() => {
-            setTextareaValue(queuedNextTurn?.text || "");
-            setPendingImages(queuedNextTurn?.images || []);
-            setPendingFiles(queuedNextTurn?.files || []);
-            setQueuedNextTurn(null);
-          }}
           onMentionFileOpen={(relativePath: string) => {
             const absPath = currentWorkspace?.path
               ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
@@ -9077,7 +9162,9 @@ export default function AgentChatComponent({
             );
           }}
           toolDisplayMetadataMap={toolDisplayMetadataMap}
+          {...messageActions.listProps}
         />
+        {messageActions.confirmDialog}
 
         {/* Pending approval cards — one per tool call */}
         {!isAdmin && (
@@ -9106,6 +9193,8 @@ export default function AgentChatComponent({
         <div ref={endRef} style={{ minHeight: 1 }} />
       </div>
       )}
+
+      <LiveConnectionIndicatorComponent state={liveConnectionState} />
 
       {/* -- Status indicator bar (rainbow canvas above input) -- */}
       {!isAdmin && (() => {
@@ -9441,12 +9530,17 @@ export default function AgentChatComponent({
           isBusy={conversationGoal.isBusy}
           error={conversationGoal.error}
         />
+        <TurnActivityPanelComponent activity={turnActivity} />
         {contextBudget && (
           <ContextBudgetIndicatorComponent
             contextBudget={contextBudget}
             estimatedDraftTokens={Math.ceil(draftInputLength / 4)}
           />
         )}
+        <QueuedTurnChipsComponent
+          items={nextTurnQueue.items}
+          onRemove={nextTurnQueue.remove}
+        />
         <InputBoxComponent
           as="form"
           onSubmit={handleSend}
@@ -9884,6 +9978,8 @@ export default function AgentChatComponent({
               filterStorageKey={LOCAL_STORAGE_KEY_CHAT_FILTERS}
               dateStorageKey={LOCAL_STORAGE_KEY_DATE_RANGE}
               subAgentLivePhases={subAgentLivePhases}
+              favorites={conversationFavorites.keys}
+              onToggleFavorite={conversationFavorites.toggle}
             />
           )
         }

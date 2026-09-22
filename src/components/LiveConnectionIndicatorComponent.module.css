@@ -1,0 +1,52 @@
+.row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 12px 4px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.tone-live {
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+.tone-pending {
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+}
+
+.tone-warning {
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+}
+
+.spin {
+  animation: live-connection-spin 1.2s linear infinite;
+}
+
+.banner {
+  margin: 0 12px 8px;
+}
+
+@keyframes live-connection-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}

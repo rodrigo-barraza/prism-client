@@ -10,7 +10,7 @@ import styles from "./ChatPreviewComponent.module.css";
  * previews (with MessageList) or static prompt blocks (system + user).
  *
  * Usage A: Chat message preview (wraps MessageList)
- *   <ChatPreviewComponent messages={displayMessages} readOnly />
+ *   <ChatPreviewComponent messages={displayMessages} />
  *
  * Usage B: Prompt blocks (system prompt + user prompt)
  *   <ChatPreviewComponent systemPrompt="..." userPrompt="..." />
@@ -20,7 +20,6 @@ import { Message } from "../types/types";
 export interface ChatPreviewProps {
   // MessageList mode
   messages?: Message[];
-  readOnly?: boolean;
   // Prompt block mode (when no messages array)
   systemPrompt?: string;
   userPrompt?: string;
@@ -34,7 +33,6 @@ export interface ChatPreviewProps {
 
 export default function ChatPreviewComponent({
   messages,
-  readOnly = true,
   systemPrompt,
   userPrompt,
   mini = false,
@@ -88,7 +86,7 @@ export default function ChatPreviewComponent({
         >
           <MessageList
             messages={messages}
-            readOnly={readOnly}
+            readOnly
             systemPrompt={systemPrompt}
             showRaw={showRaw}
           />

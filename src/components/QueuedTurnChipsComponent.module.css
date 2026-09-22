@@ -1,0 +1,30 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  padding: 0 4px 6px;
+}
+
+.heading {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+
+  & > li {
+    min-width: 0;
+    max-width: 100%;
+  }
+}

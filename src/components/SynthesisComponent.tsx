@@ -1040,7 +1040,7 @@ export default function SynthesisComponent() {
                   if (index >= offset)
                     updateGeneratedMessage(index - offset, content);
                 }}
-                readOnly={false}
+                onRerun={null}
               />
 
               <div ref={messagesEndRef} />
