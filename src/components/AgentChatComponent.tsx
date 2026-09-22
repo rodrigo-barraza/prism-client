@@ -4781,6 +4781,11 @@ export default function AgentChatComponent({
           },
           onStatus: (statusData: SSEData) => {
             if (isStale()) return;
+            // A configured hook's `systemMessage` — addressed to the user,
+            // never shown to the model.
+            if (statusData?.message === "hook_system_message" && typeof statusData.text === "string") {
+              addToast(statusData.text, "info");
+            }
             // Mailbox entry applied — the `turn_input` event carries the
             // content; this twin only settles a bubble's badge if that
             // event was missed.

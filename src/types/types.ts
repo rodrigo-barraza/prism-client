@@ -1143,38 +1143,58 @@ export interface Rule {
 
 // --- Hooks (Configurable Lifecycle Handlers) ----------------
 
-/** Lifecycle point a hook fires on. */
+/** Lifecycle point a hook fires on. Mirrors prism-service's HOOK_EVENTS. */
 export type HookEventName =
   | "SessionStart"
+  | "TurnStart"
   | "UserPromptSubmit"
+  | "InstructionsLoaded"
+  | "PreModelSwitch"
+  | "PostModelSwitch"
   | "PreToolUse"
+  | "PermissionRequest"
+  | "PermissionDenied"
   | "PostToolUse"
   | "PostToolUseFailure"
+  | "PostToolBatch"
   | "Stop"
+  | "StopFailure"
+  | "Interrupt"
   | "SubagentStart"
   | "SubagentStop"
   | "PreCompact"
   | "PostCompact"
   | "Notification"
+  | "TurnEnd"
   | "SessionEnd"
   | "Error";
 
 /**
- * Every hook event, in canonical order — the single source the UI picker
- * reads so the list is never duplicated per-component.
+ * Every hook event, in the order they happen in a turn — the single source
+ * the UI picker reads so the list is never duplicated per-component.
  */
 export const HOOK_EVENT_NAMES: HookEventName[] = [
   "SessionStart",
+  "TurnStart",
   "UserPromptSubmit",
+  "InstructionsLoaded",
+  "PreModelSwitch",
+  "PostModelSwitch",
   "PreToolUse",
+  "PermissionRequest",
+  "PermissionDenied",
   "PostToolUse",
   "PostToolUseFailure",
+  "PostToolBatch",
   "Stop",
+  "StopFailure",
+  "Interrupt",
   "SubagentStart",
   "SubagentStop",
   "PreCompact",
   "PostCompact",
   "Notification",
+  "TurnEnd",
   "SessionEnd",
   "Error",
 ];
@@ -1202,10 +1222,32 @@ export interface HookMcpToolHandler {
   input?: Record<string, unknown>;
 }
 
+/**
+ * Run a shell command with the event JSON on stdin (exit 2 blocks). Executed
+ * by tools-service in the owner's hooks directory, with its privileges — so
+ * only owner-listed usernames may create one.
+ */
+export interface HookCommandHandler {
+  type: "command";
+  command: string;
+  /** What a timeout means on a blocking event. Default `fail_open`. */
+  timeoutBehavior?: "fail_open" | "fail_closed";
+}
+
+/** Experimental: a no-tools verifier that sees the payload and the transcript. */
+export interface HookAgentHandler {
+  type: "agent";
+  prompt: string;
+  provider?: string;
+  model?: string;
+}
+
 export type HookHandlerConfig =
   | HookPromptHandler
   | HookHttpHandler
-  | HookMcpToolHandler;
+  | HookMcpToolHandler
+  | HookCommandHandler
+  | HookAgentHandler;
 
 export interface Hook {
   _id?: ObjectId;
@@ -1214,14 +1256,17 @@ export interface Hook {
   description?: string;
   event: HookEventName;
   /**
-   * Tool-name matcher — only meaningful on PreToolUse / PostToolUse /
-   * PostToolUseFailure, where it filters which tool triggers the hook.
+   * Narrows which occurrences fire the hook. On tool events: a tool name,
+   * `A|B`, a regex, or `Tool(argPattern)` (e.g. `execute_shell(git *)`). On a
+   * few others (SessionStart, StopFailure, …) it matches one payload field.
    */
   matcher?: string;
   handler: HookHandlerConfig;
   /** null = every agent. */
   agent?: string | null;
   enabled?: boolean;
+  /** Runs in the background: never blocks; its context arrives at the next boundary. */
+  async?: boolean;
   timeoutMilliseconds?: number;
   project?: string;
   username?: string;
@@ -1231,9 +1276,11 @@ export interface Hook {
 
 /** Result of a one-off hook dry run. */
 export interface HookTestResult {
-  decision: Record<string, unknown>;
+  decision: Record<string, unknown> | null;
   durationMilliseconds: number;
   error?: string;
+  /** The payload the handler actually received. */
+  payload?: Record<string, unknown>;
 }
 
 // --- Project Instructions (PRISM.md) ------------------------
