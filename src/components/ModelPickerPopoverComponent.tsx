@@ -797,6 +797,7 @@ const PROVIDER_ORG_MAP = {
   "lm-studio": null,
   ollama: null,
   "llama-cpp": null,
+  sglang: null,
 };
 
 function inferOrganization(modelName: string, provider: string): string | null {
