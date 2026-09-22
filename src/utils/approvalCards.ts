@@ -18,6 +18,13 @@ export interface PendingApproval {
   tier?: 1 | 2 | 3;
   /** What a file write would change, when the server could compute it. */
   preview?: ApprovalPreview;
+  /**
+   * Set when a sub-agent asked: the conversation its loop is keyed by, where
+   * the decision must be sent. Absent: the conversation on screen.
+   */
+  conversationId?: string;
+  /** Which sub-agent asked, for the card's label. */
+  subAgentDescription?: string;
   status: ApprovalCardStatus;
 }
 
@@ -38,6 +45,12 @@ export function approvalFromEvent(data: SSEData): PendingApproval | null {
     toolArgs: data.toolCall?.args || {},
     tier: normalizeTier(data.tier),
     ...(data.preview ? { preview: data.preview } : {}),
+    ...(typeof data.approvalConversationId === "string" && data.approvalConversationId
+      ? { conversationId: data.approvalConversationId }
+      : {}),
+    ...(typeof data.subAgentDescription === "string" && data.approvalConversationId
+      ? { subAgentDescription: data.subAgentDescription }
+      : {}),
     status: "pending",
   };
 }
