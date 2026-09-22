@@ -104,6 +104,8 @@ export interface IrisCollectionChangeEvent {
   changeStreams?: boolean;
   conversationId?: string | null;
   parentAgentConversationId?: string | null;
+  /** `conversation_attention` changes: the conversation's new "needs you" counts */
+  attention?: import("../utils/conversationAttention").ConversationAttention;
 }
 
 export interface IrisHealthResponse {

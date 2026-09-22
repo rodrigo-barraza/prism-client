@@ -491,6 +491,12 @@ export interface Conversation {
   state?: import("../utils/agentConversationStates").AgentConversationState;
   /** Long-running objective, if one was set (`PUT /conversations/:id/goal`). */
   goal?: ConversationGoal | null;
+  /** Tool calls waiting for the user's approval (live: patched by `conversation_attention` changes) */
+  pendingApprovalCount?: number;
+  /** Questions waiting for the user's answer */
+  pendingQuestionCount?: number;
+  /** ISO time the oldest pending approval/question started waiting */
+  awaitingSince?: string | null;
 }
 
 export interface ConversationListResponse {
@@ -530,6 +536,12 @@ export interface AgentConversation {
   agentIndex?: number | null;
   /** Backend-serialized display-ready messages (tool results merged, empty stubs filtered) */
   displayMessages?: Message[];
+  /** Tool calls waiting for the user's approval (live: patched by `conversation_attention` changes) */
+  pendingApprovalCount?: number;
+  /** Questions waiting for the user's answer */
+  pendingQuestionCount?: number;
+  /** ISO time the oldest pending approval/question started waiting */
+  awaitingSince?: string | null;
 }
 
 export interface AgentConversationListResponse {

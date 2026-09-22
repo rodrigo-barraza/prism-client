@@ -7,5 +7,7 @@ export const middleware = createAuthMiddleware({
 });
 
 export const config = {
-  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
+  // sw.js is public: a browser's service-worker update check must never be
+  // redirected to the login page.
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico|sw\\.js).*)"],
 };

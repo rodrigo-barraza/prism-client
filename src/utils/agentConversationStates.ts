@@ -8,6 +8,8 @@
  * gradientStops which only serve the animated bar fill.
  *
  * State → nearest StatusBar phase mapping:
+ *   awaiting-approval → PHASE_TOKENS.awaiting     (dot: amber,  h≈75)
+ *   awaiting-answer   → PHASE_TOKENS.awaiting     (dot: violet, h≈300)
  *   generating        → PHASE_TOKENS.generating   (green,  h≈150)
  *   orchestrating     → PHASE_TOKENS.delegating   (cyan,   h≈216)
  *   sub-agents-running→ PHASE_TOKENS.delegating   (cyan,   h≈221, dimmed)
@@ -16,8 +18,10 @@
  *   completed-with-errors → PHASE_TOKENS.executing (orange, h≈41)
  *   completed         → (no phase — achromatic)
  *
- * States are derived from PERSISTED MongoDB fields only (isActive, isGenerating,
- * pendingBackgroundTasks, hasSubAgents, requestErrorCount).
+ * States are derived from PERSISTED MongoDB fields (isActive, isGenerating,
+ * pendingBackgroundTasks, hasSubAgents, requestErrorCount) plus the server's
+ * in-memory attention counts (pendingApprovalCount, pendingQuestionCount),
+ * which the list endpoint serves and the change stream patches live.
  * Fine-grained live phases (thinking, executing, prefilling…) require a live
  * SSE connection and cannot appear here.
  */
@@ -25,6 +29,8 @@
 import { PHASE_TOKENS } from "./statusBarPhaseTokens";
 
 export type AgentConversationState =
+  | "awaiting-approval"
+  | "awaiting-answer"
   | "completed"
   | "completed-with-errors"
   | "generating"
@@ -46,8 +52,10 @@ export interface ConversationStateColors {
 
 /**
  * Derive the persisted conversation state from document fields.
- * Evaluates in priority order: generating → orchestrating →
- * done → error → sub-agents → background-tasks → active.
+ * Evaluates in priority order: awaiting-approval → awaiting-answer →
+ * generating → orchestrating → done → error → sub-agents →
+ * background-tasks → active. A turn waiting on its user is still
+ * generating, so the waits outrank it.
  *
  * When the server already computed `state` (mirrored ladder in
  * prism-service/src/services/conversation/utils.ts — keep the two in sync),
@@ -67,6 +75,8 @@ export function deriveAgentConversationState({
   pendingBackgroundTasks,
   hasSubAgents,
   requestErrorCount,
+  pendingApprovalCount,
+  pendingQuestionCount,
 }: {
   /** Server-computed state — returned as-is when present */
   state?: AgentConversationState;
@@ -75,10 +85,16 @@ export function deriveAgentConversationState({
   pendingBackgroundTasks?: number;
   hasSubAgents?: boolean;
   requestErrorCount?: number;
+  /** Tool calls waiting for the user's approval */
+  pendingApprovalCount?: number;
+  /** Questions waiting for the user's answer */
+  pendingQuestionCount?: number;
 }): AgentConversationState {
   if (state) {
     return state;
   }
+  if ((pendingApprovalCount ?? 0) > 0) return "awaiting-approval";
+  if ((pendingQuestionCount ?? 0) > 0) return "awaiting-answer";
   if (isGenerating) {
     return hasSubAgents ? "orchestrating" : "generating";
   }
@@ -97,6 +113,18 @@ export function deriveAgentConversationState({
  * Each primary color is `PHASE_TOKENS[nearestPhase].overlay.pulse`.
  */
 export const AGENT_CONVERSATION_STATE_COLORS: Record<AgentConversationState, ConversationStateColors> = {
+  "awaiting-approval": {
+    primary: "oklch(0.82 0.165 75)",
+    glow:    "oklch(0.82 0.165 75 / 0.55)",
+    label:   "Waiting for your approval",
+    pulse:   true,
+  },
+  "awaiting-answer": {
+    primary: "oklch(0.74 0.16 300)",
+    glow:    "oklch(0.74 0.16 300 / 0.5)",
+    label:   "Waiting for your answer",
+    pulse:   true,
+  },
   "completed": {
     primary: "oklch(0.42 0 0)",
     glow:    "oklch(0.42 0 0 / 0)",

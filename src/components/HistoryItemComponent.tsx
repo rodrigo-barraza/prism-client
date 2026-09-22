@@ -4,7 +4,15 @@ import { useState, useEffect, useRef } from "react";
 
 import { AGENT_IDS, DEFAULT_USERNAME } from "@/constants";
 
-import { Download, Copy, Star, Trash2, ExternalLink } from "lucide-react";
+import {
+  Download,
+  Copy,
+  Star,
+  Trash2,
+  ExternalLink,
+  ShieldAlert,
+  MessageCircleQuestion,
+} from "lucide-react";
 
 import ModalityIconComponent from "./ModalityIconComponent";
 import { ModelToolsRow } from "./ToolBadgeComponent";
@@ -23,6 +31,11 @@ import type { AgentConversationState } from "../utils/agentConversationStates";
 import { PHASE_TOKENS } from "../utils/statusBarPhaseTokens";
 import type { StatusBarPhase } from "../utils/statusBarPhaseTokens";
 import { subAgentProgressRegistry } from "./StatusBarComponent";
+import {
+  describeAttention,
+  formatAwaitingAge,
+  needsYou,
+} from "../utils/conversationAttention";
 
 interface HistoryItemTag {
   label: string;
@@ -51,6 +64,9 @@ interface HistoryItem {
   parentConversationId?: string | null;
   hasSubAgents?: boolean;
   requestErrorCount?: number;
+  pendingApprovalCount?: number;
+  pendingQuestionCount?: number;
+  awaitingSince?: string | null;
 }
 
 interface HistoryItemProps {
@@ -120,6 +136,8 @@ const ACTIVE_CONVERSATION_STATES = new Set<AgentConversationState>([
  * so non-active items (sub-agents) derive the correct gradient palette.
  */
 const CONVERSATION_STATE_TO_PHASE: Record<AgentConversationState, StatusBarPhase | null> = {
+  "awaiting-approval":     "awaiting",
+  "awaiting-answer":       "awaiting",
   generating:              "generating",
   orchestrating:           "delegating",
   "sub-agents-running":    "delegating",
@@ -128,6 +146,42 @@ const CONVERSATION_STATE_TO_PHASE: Record<AgentConversationState, StatusBarPhase
   "completed-with-errors": null,
   completed:               null,
 };
+
+/** Re-render cadence of the "waiting for 4m" age. */
+const AWAITING_AGE_TICK_MS = 30_000;
+
+/**
+ * "Needs you" badge — approvals (amber) and questions (violet) the
+ * conversation is waiting on, with how long the oldest has waited.
+ */
+function NeedsYouBadge({ item }: { item: HistoryItem }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const intervalId = setInterval(() => setNow(Date.now()), AWAITING_AGE_TICK_MS);
+    return () => clearInterval(intervalId);
+  }, []);
+  const approvals = item.pendingApprovalCount ?? 0;
+  const questions = item.pendingQuestionCount ?? 0;
+  const age = formatAwaitingAge(item.awaitingSince, now);
+  const label = `Waiting for you: ${describeAttention(item)}${age && age !== "now" ? ` (${age})` : ""}`;
+  return (
+    <span className={styles['needs-you-badge']} title={label} aria-label={label} data-testid="needs-you-badge">
+      {approvals > 0 && (
+        <span className={styles['needs-you-approvals']}>
+          <ShieldAlert size={10} aria-hidden />
+          {approvals}
+        </span>
+      )}
+      {questions > 0 && (
+        <span className={styles['needs-you-questions']}>
+          <MessageCircleQuestion size={10} aria-hidden />
+          {questions}
+        </span>
+      )}
+      {age && <span className={styles['needs-you-age']}>{age}</span>}
+    </span>
+  );
+}
 
 const FALLBACK_PROGRESS_ASYMPTOTIC_TIME_CONSTANT_MS = 15_000;
 const FALLBACK_PROGRESS_TICK_MS = 150;
@@ -167,7 +221,10 @@ export default function HistoryItemComponent({
     pendingBackgroundTasks,
     hasSubAgents: item.hasSubAgents,
     requestErrorCount: item.requestErrorCount,
+    pendingApprovalCount: item.pendingApprovalCount,
+    pendingQuestionCount: item.pendingQuestionCount,
   });
+  const isWaitingOnUser = needsYou(item);
   const dotColors = AGENT_CONVERSATION_STATE_COLORS[conversationState];
 
   /* When a livePhase is provided, override the generating-dot color with the
@@ -358,6 +415,7 @@ export default function HistoryItemComponent({
             )}
             <span className={styles['title-text']}>{item.title || "Untitled"}</span>
             {isNew && <span className={styles['new-badge']}>NEW</span>}
+            {isWaitingOnUser && <NeedsYouBadge item={item} />}
           </div>
           {item.totalCost !== undefined && item.totalCost > 0 && (
             <BadgeComponent

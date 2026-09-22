@@ -211,3 +211,66 @@ describe("HistoryListComponent - Sub-Agent Grouping", () => {
     expect(renderedIds).not.toContain("orphan-sub");
   });
 });
+
+describe("HistoryListComponent - Needs You filter", () => {
+  const waitingItems = [
+    {
+      id: "waiting-approval",
+      title: "Waits for an approval",
+      updatedAt: "2026-09-22T10:05:00Z",
+      pendingApprovalCount: 1,
+      pendingQuestionCount: 0,
+    },
+    {
+      id: "waiting-answer",
+      title: "Waits for an answer",
+      updatedAt: "2026-09-22T10:04:00Z",
+      pendingApprovalCount: 0,
+      pendingQuestionCount: 2,
+    },
+    {
+      id: "idle",
+      title: "Nothing pending",
+      updatedAt: "2026-09-22T10:03:00Z",
+      pendingApprovalCount: 0,
+      pendingQuestionCount: 0,
+    },
+  ];
+
+  const shownIds = () =>
+    screen.getAllByTestId("history-item").map((element) => element.getAttribute("data-id"));
+
+  it("offers the filter only when something waits", () => {
+    const { rerender } = render(<HistoryListComponent items={mockItems} />);
+    expect(screen.queryByTestId("filter-button-needs-you")).toBeNull();
+    rerender(<HistoryListComponent items={waitingItems} />);
+    expect(screen.getByTestId("filter-button-needs-you")).toHaveTextContent("Waiting for Me");
+  });
+
+  it("shows only the conversations waiting on the user while active", () => {
+    render(<HistoryListComponent items={waitingItems} />);
+    expect(shownIds()).toEqual(["waiting-approval", "waiting-answer", "idle"]);
+
+    fireEvent.click(screen.getByTestId("filter-button-needs-you"));
+    expect(shownIds()).toEqual(["waiting-approval", "waiting-answer"]);
+
+    fireEvent.click(screen.getByTestId("filter-button-needs-you"));
+    expect(shownIds()).toEqual(["waiting-approval", "waiting-answer", "idle"]);
+  });
+
+  it("keeps the filter switchable after the last wait clears", () => {
+    const { rerender } = render(<HistoryListComponent items={waitingItems} />);
+    fireEvent.click(screen.getByTestId("filter-button-needs-you"));
+
+    const cleared = waitingItems.map((item) => ({
+      ...item,
+      pendingApprovalCount: 0,
+      pendingQuestionCount: 0,
+    }));
+    rerender(<HistoryListComponent items={cleared} />);
+    expect(screen.queryAllByTestId("history-item")).toHaveLength(0);
+
+    fireEvent.click(screen.getByTestId("filter-button-needs-you"));
+    expect(shownIds()).toEqual(["waiting-approval", "waiting-answer", "idle"]);
+  });
+});

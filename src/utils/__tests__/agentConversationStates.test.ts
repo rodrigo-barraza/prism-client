@@ -98,3 +98,31 @@ describe("deriveAgentConversationState — sub-agent document lifecycle contract
     ).toBe("completed");
   });
 });
+
+describe("deriveAgentConversationState — needs-you states", () => {
+  it("an approval wait outranks generating and a question", () => {
+    expect(
+      deriveAgentConversationState({
+        isGenerating: true,
+        pendingApprovalCount: 1,
+        pendingQuestionCount: 1,
+      }),
+    ).toBe("awaiting-approval");
+  });
+
+  it("a question wait outranks generating", () => {
+    expect(
+      deriveAgentConversationState({ isGenerating: true, pendingQuestionCount: 1 }),
+    ).toBe("awaiting-answer");
+  });
+
+  it("zero counts fall through to the persisted ladder", () => {
+    expect(
+      deriveAgentConversationState({
+        isActive: false,
+        pendingApprovalCount: 0,
+        pendingQuestionCount: 0,
+      }),
+    ).toBe("completed");
+  });
+});

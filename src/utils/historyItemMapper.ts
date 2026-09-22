@@ -32,6 +32,9 @@ export interface MappedHistoryItem {
   isActive?: boolean;
   /** Backend-authoritative zero-based spawn index within a team of sub-agents */
   agentIndex?: number | null;
+  pendingApprovalCount?: number;
+  pendingQuestionCount?: number;
+  awaitingSince?: string | null;
 }
 
 interface MapConversationOptions {
@@ -113,6 +116,9 @@ export function mapConversationToHistoryItem(
     pendingBackgroundTasks: conversation.pendingBackgroundTasks,
     isActive: conversation.isActive,
     agentIndex: conversation.agentIndex ?? null,
+    pendingApprovalCount: conversation.pendingApprovalCount ?? 0,
+    pendingQuestionCount: conversation.pendingQuestionCount ?? 0,
+    awaitingSince: conversation.awaitingSince ?? null,
   };
 }
 

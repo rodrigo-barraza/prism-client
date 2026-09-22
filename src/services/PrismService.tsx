@@ -1,4 +1,5 @@
 import { EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS, HEADER_PROFILE_ID } from "@/constants";
+import { reportViewerVisibility } from "./viewerVisibility";
 import { SERVER_SENT_EVENT_TYPES, IDENTITY_HEADERS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { PRISM_SERVICE_URL, PRISM_WEBSOCKET_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
@@ -2012,6 +2013,7 @@ export default class PrismService {
       );
       return () => {};
     }
+    const stopReportingVisibility = reportViewerVisibility(websocket);
 
     websocket.onopen = () => {
       if (isClosed) {
@@ -2074,6 +2076,7 @@ export default class PrismService {
 
     return () => {
       isClosed = true;
+      stopReportingVisibility();
       if (
         websocket &&
         websocket.readyState !== WebSocket.CLOSED &&
@@ -2929,6 +2932,31 @@ export default class PrismService {
   static async deletePrompt(id: string): Promise<{ success: boolean }> {
     return PrismService._request<{ success: boolean }>(`/prompts/${id}`, {
       method: HTTP_METHODS.DELETE,
+    });
+  }
+
+  // -- Browser push ("needs you" notifications) -----------------
+
+  /** The VAPID key a browser subscribes with; `enabled: false` when the service has none. */
+  static async getPushPublicKey(): Promise<{ enabled: boolean; publicKey: string | null }> {
+    return PrismService._request("/push/vapid-public-key", { method: HTTP_METHODS.GET });
+  }
+
+  /** Store this browser's push subscription under the current user and profile. */
+  static async savePushSubscription(
+    subscription: PushSubscriptionJSON,
+  ): Promise<{ ok: boolean; endpoint: string }> {
+    return PrismService._request("/push/subscriptions", {
+      method: HTTP_METHODS.POST,
+      body: subscription,
+    });
+  }
+
+  /** Forget one of the current user's push subscriptions. */
+  static async deletePushSubscription(endpoint: string): Promise<{ ok: boolean }> {
+    return PrismService._request("/push/subscriptions", {
+      method: HTTP_METHODS.DELETE,
+      body: { endpoint },
     });
   }
 }
