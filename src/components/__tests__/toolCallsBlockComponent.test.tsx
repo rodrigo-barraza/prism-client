@@ -64,7 +64,7 @@ vi.mock("../ToolBadgeComponent", () => ({
 // Mock utilities-library
 vi.mock("@rodrigo-barraza/utilities-library", () => ({
   renderToolName: (name: string) => name.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase()),
-  resolveToolDisplaySummary: () => null,
+  resolveToolDisplaySummary: vi.fn(() => null),
   formatLatencyMilliseconds: (milliseconds: number) => `${milliseconds}ms`,
   clamp: (value: number, min: number, max: number) => Math.min(Math.max(value, min), max),
 }));
@@ -77,6 +77,7 @@ vi.mock("@rodrigo-barraza/utilities-library/taxonomy", () => ({
 }));
 
 import ToolCallsBlockComponent from "../ToolCallsBlockComponent";
+import { resolveToolDisplaySummary } from "@rodrigo-barraza/utilities-library";
 import type { ToolCallEvent } from "../../types/types";
 import type { SubAgentToolActivityItem } from "../MessageListComponent";
 
@@ -136,6 +137,45 @@ function getHeaderText(): string {
 // ─── Test Suite ────────────────────────────────────────────────────────────────
 
 describe("ToolCallsBlockComponent", () => {
+
+  describe("a finished call's chip says how it went", () => {
+    const wroteNotes = () =>
+      vi.mocked(resolveToolDisplaySummary).mockImplementation(((_name: string, _args: unknown, options?: { isActive?: boolean }) =>
+        options?.isActive ? { verb: "Writing", subject: "notes.txt" } : { verb: "Wrote", subject: "notes.txt" }) as never);
+    afterEach(() => vi.mocked(resolveToolDisplaySummary).mockReset().mockReturnValue(null));
+
+    it("a call that ran reads in the past tense", () => {
+      wroteNotes();
+      render(<ToolCallsBlockComponent toolCall={makeToolCall({ name: "write_file", result: { success: true } })} />);
+      expect(getHeaderText().endsWith("Wrote notes.txt")).toBe(true);
+    });
+
+    it.each([
+      ["USER_REJECTED", "Denied"],
+      ["APPROVAL_TIMED_OUT", "Not approved in time"],
+      ["POLICY_DENIED", "Blocked by policy"],
+      ["BLOCKED_BY_SAFETY_HOOK", "Blocked by a hook"],
+    ])("a call refused at the gate (%s) never reads as done", (error, label) => {
+      wroteNotes();
+      render(
+        <ToolCallsBlockComponent
+          toolCall={makeToolCall({ name: "write_file", result: JSON.stringify({ success: false, error, message: "no" }) })}
+        />,
+      );
+      expect(getHeaderText().endsWith(`${label}: Write File notes.txt`)).toBe(true);
+      expect(getHeaderText()).not.toContain("Wrote");
+    });
+
+    it("a call that ran and failed says so", () => {
+      wroteNotes();
+      render(
+        <ToolCallsBlockComponent
+          toolCall={makeToolCall({ name: "write_file", result: { success: false, error: "EACCES" } })}
+        />,
+      );
+      expect(getHeaderText().endsWith("Failed: Write File notes.txt")).toBe(true);
+    });
+  });
 
   describe("baseline collapse/expand behavior", () => {
     it("renders collapsed when tool call is done", () => {

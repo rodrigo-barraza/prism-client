@@ -9,6 +9,7 @@ import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import type { ToolCallEvent } from "../types/types";
 import type { SubAgentToolActivityItem } from "./MessageListComponent";
 import { detectActiveSubAgents, parseTeamToolResult, aggregateTeamToolUsage } from "./ToolCallsBlock/SubAgentParsingUtils";
+import { toolCallOutcome } from "../utils/toolCallOutcome";
 import styles from "./ToolCallsBlockComponent.module.css";
 
 interface ToolCallsBlockProps {
@@ -156,11 +157,20 @@ export default function ToolCallsBlockComponent({
         })()
       : "";
 
+    // The summary's past tense ("Wrote notes.txt") says the call happened;
+    // a denied or failed call says what did.
+    const outcome = toolCallOutcome(toolCall.result);
+    if (outcome.kind === "not_run") {
+      return <>{outcome.label}: {toolDisplayName}{completedSummary ? <> {subjectElement(completedSummary)}</> : null}</>;
+    }
+    if (outcome.kind === "failed") {
+      return <>Failed: {toolDisplayName}{completedSummary ? <> {subjectElement(completedSummary)}</> : null}{durationLabel}</>;
+    }
     if (completedSummary) {
       return <>{completedSummary.verb} {subjectElement(completedSummary)}{durationLabel}</>;
     }
     return <>{toolDisplayName}{durationLabel}</>;
-  }, [toolCall.name, toolCall.args, displayMetadata, isBlockActive, effectiveDurationMs, toolDisplayName, handleSubjectClick, liveToolElapsedSeconds]);
+  }, [toolCall.name, toolCall.args, toolCall.result, displayMetadata, isBlockActive, effectiveDurationMs, toolDisplayName, handleSubjectClick, liveToolElapsedSeconds]);
 
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(!isBlockActive);
   const wasHeaderManuallyExpanded = useRef(false);
