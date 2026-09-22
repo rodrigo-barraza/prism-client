@@ -96,6 +96,8 @@ import {
 import useMessageActions from "../hooks/useMessageActions";
 import QueuedTurnChipsComponent from "./QueuedTurnChipsComponent";
 import LiveConnectionIndicatorComponent from "./LiveConnectionIndicatorComponent";
+import TurnActivityPanelComponent from "./TurnActivityPanelComponent";
+import useTurnActivity from "../hooks/useTurnActivity";
 import type { LiveSocketState } from "../services/liveViewerSocket";
 import { PRISM_WEBSOCKET_URL } from "@/config";
 import { resolveDisplayMessages } from "../utils/messageHelpers";
@@ -719,6 +721,12 @@ export default function AgentChatComponent({
   const [liveConnectionState, setLiveConnectionState] = useState<LiveSocketState>(
     PRISM_WEBSOCKET_URL ? "closed" : "unconfigured",
   );
+  // Checklist, brief, sources and code runs a turn streams outside its messages.
+  const {
+    activity: turnActivity,
+    callbacksFor: turnActivityCallbacks,
+    startTurn: startTurnActivity,
+  } = useTurnActivity(conversationId);
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
   const [conversations, setConversations] = useState<Array<AgentConversation | Conversation>>(
     [],
@@ -4724,6 +4732,7 @@ export default function AgentChatComponent({
             if (isStale()) return;
             applyGoalEvent(data);
           },
+          ...turnActivityCallbacks(generationConversationId),
           onUserQuestion: (data: SSEData) => {
             if (isStale()) return;
             if (data.blocking === false) {
@@ -5968,6 +5977,7 @@ export default function AgentChatComponent({
       setStatusBarInitialElapsedMilliseconds(null);
       setInjectedSkills([]);
       setContextTruncated(null);
+      startTurnActivity(genId);
 
       const currentMessages = messagesRef.current;
       // Optimistic display title only — the persisted title is derived
@@ -7535,6 +7545,7 @@ export default function AgentChatComponent({
         // The next assistant content belongs to a NEW bubble after this
         // user message — never to a previous turn's trailing bubble.
         ownsTrailingAssistantBubble = false;
+        startTurnActivity(activeId);
         const userMessageContent = (data.content as string) || "";
         if (!userMessageContent) return;
         setMessages((previousMessages) => {
@@ -7584,6 +7595,7 @@ export default function AgentChatComponent({
         if (!isSubscriptionActive) return;
         liveTurnHelpersRef.current.applyGoalEvent(data);
       },
+      ...turnActivityCallbacks(activeId),
       // Non-blocking questions can be answered from a viewing tab too;
       // blocking ones stay with the driving client (and the snapshot).
       onUserQuestion: (data: SSEData) => {
@@ -7862,6 +7874,8 @@ export default function AgentChatComponent({
     liveStreamConversationRunning,
     isNoAgent,
     isAdmin,
+    turnActivityCallbacks,
+    startTurnActivity,
   ]);
 
   // -- Visibility Recovery (Mobile Screen Lock) -------------------
@@ -9538,6 +9552,7 @@ export default function AgentChatComponent({
           isBusy={conversationGoal.isBusy}
           error={conversationGoal.error}
         />
+        <TurnActivityPanelComponent activity={turnActivity} />
         {contextBudget && (
           <ContextBudgetIndicatorComponent
             contextBudget={contextBudget}
