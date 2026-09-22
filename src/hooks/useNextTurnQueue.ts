@@ -4,13 +4,14 @@
  * Next-turn queue for the chat composer.
  *
  * Input that cannot steer the running turn — attachments, or the composer's
- * "queue" send mode — waits here and goes out after the generation ends.
- * `useNextTurnQueue` owns the state (declared early, so the send paths can
- * enqueue); `useNextTurnQueueDrain` sends from it (declared after the send
- * function exists).
+ * "queue" send mode — waits here and goes out after the generation ends,
+ * oldest first, one turn at a time. Each turn remembers the conversation it
+ * was queued in and only drains there. `useNextTurnQueue` owns the state
+ * (declared early, so the send paths can enqueue); `useNextTurnQueueDrain`
+ * sends from it (declared after the send function exists).
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { generateUUID } from "@rodrigo-barraza/utilities-library";
 import type { PendingFileAttachment } from "../components/MessageListComponent";
 
@@ -34,22 +35,35 @@ export interface NextTurnQueue {
 }
 
 export function useNextTurnQueue(conversationId: string): NextTurnQueue {
-  const [slot, setSlot] = useState<QueuedTurn | null>(null);
+  const [queued, setQueued] = useState<QueuedTurn[]>([]);
 
   const enqueue = useCallback(
     (payload: QueuedTurnPayload) => {
-      setSlot({ ...payload, id: generateUUID(), conversationId });
+      setQueued((previous) => [
+        ...previous,
+        { ...payload, id: generateUUID(), conversationId },
+      ]);
     },
     [conversationId],
   );
 
   const remove = useCallback((id: string) => {
-    setSlot((current) => (current?.id === id ? null : current));
+    setQueued((previous) => previous.filter((turn) => turn.id !== id));
   }, []);
 
-  return { items: slot ? [slot] : [], enqueue, remove };
+  const items = useMemo(
+    () => queued.filter((turn) => turn.conversationId === conversationId),
+    [queued, conversationId],
+  );
+
+  return { items, enqueue, remove };
 }
 
+/**
+ * Send the oldest queued turn whenever nothing is generating. `send` should
+ * settle when the turn it started has ended — the next turn waits for it,
+ * so a burst of queued turns never overlaps.
+ */
 export function useNextTurnQueueDrain(
   queue: NextTurnQueue,
   {
@@ -62,13 +76,23 @@ export function useNextTurnQueueDrain(
 ): void {
   const head = queue.items[0];
   const { remove } = queue;
+  const isSendingRef = useRef(false);
+  // Bumped when a send settles, to look at the queue again even if nothing
+  // else about it changed.
+  const [settledSends, setSettledSends] = useState(0);
 
   useEffect(() => {
-    if (!isGenerating && head) {
-      remove(head.id);
-      setTimeout(() => {
-        send(head);
-      }, 50);
-    }
-  }, [isGenerating, head, remove, send]);
+    if (isGenerating || isSendingRef.current || !head) return;
+    isSendingRef.current = true;
+    remove(head.id);
+    void Promise.resolve()
+      .then(() => send(head))
+      .catch(() => {
+        // handleSend reports its own failures; the queue just moves on.
+      })
+      .finally(() => {
+        isSendingRef.current = false;
+        setSettledSends((count) => count + 1);
+      });
+  }, [isGenerating, head, remove, send, settledSends]);
 }

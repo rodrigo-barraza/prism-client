@@ -490,7 +490,6 @@ export default function RequestsTableComponent({
                   <ChatPreviewComponent
                     messages={chat.messages}
                     systemPrompt={chat.systemPrompt}
-                    readOnly
                   />
                 </div>
               );

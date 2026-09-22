@@ -325,7 +325,6 @@ export default function TextPageComponent({
                             estimatedCost: textItem.estimatedCost,
                           },
                         ]}
-                        readOnly
                         maxHeight="400px"
                         className={styles['card-preview']}
                       />
@@ -503,7 +502,6 @@ export default function TextPageComponent({
                           estimatedCost: textItem.estimatedCost,
                         },
                       ]}
-                      readOnly
                       maxHeight="400px"
                       className={styles['card-preview']}
                     />

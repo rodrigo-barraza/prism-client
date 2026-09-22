@@ -58,6 +58,7 @@ import {
   UserQuestionItem,
   TurnInputKind,
   TurnInputBoundary,
+  FileAttachment,
 } from "../types/types";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
@@ -93,6 +94,7 @@ import {
   type QueuedTurn,
 } from "../hooks/useNextTurnQueue";
 import useMessageActions from "../hooks/useMessageActions";
+import QueuedTurnChipsComponent from "./QueuedTurnChipsComponent";
 import { resolveDisplayMessages } from "../utils/messageHelpers";
 import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
@@ -5793,6 +5795,8 @@ export default function AgentChatComponent({
           text: string;
           images: string[];
           files?: PendingFileAttachment[];
+          /** Already in MinIO — an edited or rerun message's own attachments. */
+          uploadedFiles?: FileAttachment[];
         } | null;
       } = {},
     ) => {
@@ -5815,7 +5819,15 @@ export default function AgentChatComponent({
         ? [...(overridePayload.files ?? [])]
         : [...pendingFilesRef.current];
 
-      if (!text && currentImages.length === 0 && currentFiles.length === 0) return;
+      const alreadyUploadedFiles = overridePayload?.uploadedFiles ?? [];
+      if (
+        !text &&
+        currentImages.length === 0 &&
+        currentFiles.length === 0 &&
+        alreadyUploadedFiles.length === 0
+      ) {
+        return;
+      }
 
       // Aggregate inline-payload guard: images ride the /agent body as
       // base64 data URLs, so several borderline-sized images can jointly
@@ -5871,16 +5883,10 @@ export default function AgentChatComponent({
       // changes (clearing the input, optimistic conversation entries) so
       // a failed upload aborts the send with everything still intact —
       // the user keeps their text + attachments and can simply retry.
-      let uploadedFileUrls: {
-        url: string;
-        name: string;
-        mimeType: string;
-        modality: string;
-        sizeBytes?: number;
-      }[] = [];
+      let uploadedFileUrls: FileAttachment[] = [...alreadyUploadedFiles];
       if (currentFiles.length > 0) {
         try {
-          uploadedFileUrls = await Promise.all(
+          uploadedFileUrls = [...alreadyUploadedFiles, ...await Promise.all(
             currentFiles.map(async (pendingFile) => {
               const result = await PrismService.uploadFile(pendingFile.dataUrl);
               return {
@@ -5893,7 +5899,7 @@ export default function AgentChatComponent({
                   : {}),
               };
             }),
-          );
+          )];
         } catch (uploadError) {
           console.error("[handleSend] File upload to MinIO failed:", uploadError);
           if (overridePayload) {
@@ -5972,6 +5978,8 @@ export default function AgentChatComponent({
             detail: { conversationId: conversationId },
           }),
         );
+        // An edit of the first message empties an already-listed
+        // conversation — replace its entry rather than adding a second.
         setConversations((previousConversations) => [
           {
             id: conversationId,
@@ -5979,7 +5987,7 @@ export default function AgentChatComponent({
             updatedAt: now,
             createdAt: now,
           } as AgentConversation,
-          ...previousConversations,
+          ...previousConversations.filter((entry) => entry.id !== conversationId),
         ]);
       }
 
@@ -6428,8 +6436,8 @@ export default function AgentChatComponent({
     isGenerating,
     conversationId: activeId,
     project: agentProject || undefined,
-    resend: ({ text, images }) => {
-      void handleSend(null, { overridePayload: { text, images } });
+    resend: ({ text, images, uploadedFiles }) => {
+      void handleSend(null, { overridePayload: { text, images, uploadedFiles } });
     },
     onError: (message) => addToast(message, "error"),
   });
@@ -9075,14 +9083,6 @@ export default function AgentChatComponent({
           subAgentToolActivity={subAgentToolActivity}
           activeAgent={resolvedConversationAgent}
           knownPaths={knownPaths}
-          queuedNextTurn={nextTurnQueue.items[0] ?? null}
-          onCancelQueuedTurn={() => {
-            const queuedTurn = nextTurnQueue.items[0];
-            setTextareaValue(queuedTurn?.text || "");
-            setPendingImages(queuedTurn?.images || []);
-            setPendingFiles(queuedTurn?.files || []);
-            if (queuedTurn) nextTurnQueue.remove(queuedTurn.id);
-          }}
           onMentionFileOpen={(relativePath: string) => {
             const absPath = currentWorkspace?.path
               ? `${currentWorkspace.path.replace(/\/$/, "")}/${relativePath}`
@@ -9507,6 +9507,10 @@ export default function AgentChatComponent({
             estimatedDraftTokens={Math.ceil(draftInputLength / 4)}
           />
         )}
+        <QueuedTurnChipsComponent
+          items={nextTurnQueue.items}
+          onRemove={nextTurnQueue.remove}
+        />
         <InputBoxComponent
           as="form"
           onSubmit={handleSend}

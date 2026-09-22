@@ -496,6 +496,8 @@ export default class PrismService {
       title?: string;
       systemPrompt?: string;
       settings?: Record<string, unknown>;
+      /** Replaces the stored message array. */
+      messages?: Message[];
     },
     project?: string,
   ): Promise<Conversation> {

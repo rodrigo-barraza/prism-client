@@ -17,7 +17,6 @@ import {
   FileCode,
   FileSpreadsheet,
   FileText,
-  Paperclip,
   Trash2,
   Pencil,
   RotateCcw,
@@ -65,6 +64,7 @@ import {
   turnInputDisplayText,
 } from "../utils/turnInputRouting";
 import PrismService from "../services/PrismService";
+import { getCleanAndRaw } from "../utils/messageHelpers";
 import SoundService from "@/services/SoundService";
 import { APPROVAL_STATUS } from "../constants";
 import { getTotalInputTokens } from "../utils/utilities";
@@ -860,15 +860,8 @@ export interface PendingFileAttachment {
   sizeBytes?: number;
 }
 
-export interface QueuedNextTurn {
-  text: string;
-  images: string[];
-  files?: PendingFileAttachment[];
-}
-
-export interface MessageListProps {
+interface MessageListBaseProps {
   messages?: Message[];
-  readOnly?: boolean;
   isGenerating?: boolean;
   streamingOutputs?: Map<string, string> | null;
   subAgentToolActivity?: Record<string, SubAgentToolActivityItem> | null;
@@ -882,13 +875,6 @@ export interface MessageListProps {
   showRaw?: boolean;
   // Minimal "Chat" view: render tool calls as non-expandable summary pills.
   minimal?: boolean;
-  queuedNextTurn?: QueuedNextTurn | null;
-  onCancelQueuedTurn?: () => void;
-
-  onDelete?: (_index: number) => void;
-  onRestore?: (_index: number) => void;
-  onEdit?: (_index: number, _content: string) => void;
-  onRerun?: (_index: number) => void;
   activeAgent?: ClientAgent | null;
   onImageClick?: (_url: string) => void;
   onDocClick?: (_url: string) => void;
@@ -896,6 +882,31 @@ export interface MessageListProps {
   onOpenFileInViewer?: (_absolutePath: string) => void;
   toolDisplayMetadataMap?: Record<string, any> | null;
 }
+
+/** A read-only list shows no message actions. */
+interface ReadOnlyMessageListProps {
+  readOnly: true;
+  onEdit?: never;
+  onRerun?: never;
+  onDelete?: never;
+  onRestore?: never;
+}
+
+/**
+ * An editable list wires every action it shows. Handler indices are
+ * indices into `messages`. `onRerun: null` hides Rerun for a caller with no
+ * turn to rerun; `onRestore` is optional (deleted messages stay collapsed).
+ */
+interface EditableMessageListProps {
+  readOnly?: false;
+  onEdit: (_index: number, _content: string) => void;
+  onRerun: ((_index: number) => void) | null;
+  onDelete: (_index: number) => void;
+  onRestore?: (_index: number) => void;
+}
+
+export type MessageListProps = MessageListBaseProps &
+  (ReadOnlyMessageListProps | EditableMessageListProps);
 
 /**
  * Shared message list component.
@@ -915,8 +926,6 @@ export default function MessageList({
   knownPaths,
   showRaw = false,
   minimal = false,
-  queuedNextTurn,
-  onCancelQueuedTurn,
 
   activeAgent,
   onDelete,
@@ -1067,80 +1076,38 @@ export default function MessageList({
     }
   };
 
-  const cleanMessageContent = (content: string | undefined | null): string => {
-    if (!content) return "";
-    if (content.startsWith("[System Context]")) {
-      const splitIndex = content.indexOf("\n\n[User Message]\n");
-      if (splitIndex !== -1) {
-        return content.substring(splitIndex + "\n\n[User Message]\n".length);
+  // `displaySourceIndices[i]` is displayMessages[i]'s index in `messages` —
+  // the index every message action reports to its caller.
+  const { displayMessages, displaySourceIndices } = useMemo(() => {
+    const visibleMessages: Message[] = [];
+    const sourceIndices: number[] = [];
+    messages.forEach((message, sourceIndex) => {
+      if (!showRaw && message.role === "system") return;
+      if (!showRaw && message.role === "user" && isNotificationMessage(message)) return;
+      sourceIndices.push(sourceIndex);
+      if (message.role !== "user") {
+        visibleMessages.push(message);
+      } else if (isTurnInputMessage(message)) {
+        visibleMessages.push({
+          ...message,
+          content: showRaw ? message.content || "" : turnInputDisplayText(message),
+        });
+      } else {
+        const { clean, raw } = getCleanAndRaw(message.content || "", message.rawContent);
+        visibleMessages.push({ ...message, content: showRaw ? raw : clean });
       }
-      const altSplit = content.indexOf("[User Message]\n");
-      if (altSplit !== -1) {
-        return content.substring(altSplit + "[User Message]\n".length);
-      }
-    } else if (content.startsWith("[System Context - Local Time:")) {
-      const index = content.indexOf("]\n\n");
-      if (index !== -1) {
-        return content.slice(index + 3);
-      }
-    }
-    return content;
-  };
-
-  const getCleanAndRaw = (content: string, rawContent?: string) => {
-    let cleanedContentValue = content || "";
-    let rawContentValue = rawContent || content || "";
-
-    const contentIsDirty =
-      cleanedContentValue.startsWith("[System Context]") ||
-      cleanedContentValue.startsWith("[System Context - Local Time:");
-    const rawIsDirty =
-      rawContentValue.startsWith("[System Context]") ||
-      rawContentValue.startsWith("[System Context - Local Time:");
-
-    if (contentIsDirty && !rawIsDirty) {
-      cleanedContentValue = rawContentValue;
-      rawContentValue = content;
-    } else if (!contentIsDirty && rawIsDirty) {
-      cleanedContentValue = content;
-      rawContentValue = rawContentValue;
-    } else if (contentIsDirty && rawIsDirty) {
-      // Both are dirty, clean one for cleanedContentValue
-      cleanedContentValue = cleanMessageContent(content);
-    } else {
-      // Neither is dirty
-      cleanedContentValue = content;
-      rawContentValue = rawContent || content;
-    }
-
-    return { clean: cleanedContentValue, raw: rawContentValue };
-  };
-
-  const displayMessages = useMemo(() => {
-    return messages
-      .filter((message) => {
-        if (!showRaw && message.role === "system") return false;
-        if (!showRaw && message.role === "user" && isNotificationMessage(message)) return false;
-        return true;
-      })
-      .map((message) => {
-        if (message.role === "user") {
-          if (isTurnInputMessage(message)) {
-            return {
-              ...message,
-              content: showRaw ? message.content || "" : turnInputDisplayText(message),
-            };
-          }
-          const { clean, raw } = getCleanAndRaw(message.content || "", message.rawContent);
-          return {
-            ...message,
-            content: showRaw ? raw : clean,
-          };
-        }
-        return message;
-      });
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- pure render-scoped helper; listing it would recompute the memo every render
+    });
+    return { displayMessages: visibleMessages, displaySourceIndices: sourceIndices };
   }, [messages, showRaw]);
+
+  const toSourceIndex = (displayIndex: number) =>
+    displaySourceIndices[displayIndex] ?? displayIndex;
+  const handleEdit =
+    onEdit && ((displayIndex: number, content: string) => onEdit(toSourceIndex(displayIndex), content));
+  const handleRerun = onRerun && ((displayIndex: number) => onRerun(toSourceIndex(displayIndex)));
+  const handleDelete = onDelete && ((displayIndex: number) => onDelete(toSourceIndex(displayIndex)));
+  const handleRestore =
+    onRestore && ((displayIndex: number) => onRestore(toSourceIndex(displayIndex)));
 
   // -- Sticky user message (pinned section header) -----------
   // Tracks ALL user messages: the pinned candidate is whichever
@@ -1590,11 +1557,11 @@ export default function MessageList({
                           </>
                         )}
                       </button>
-                      {groupCount === 1 && !readOnly && onRestore && (
+                      {groupCount === 1 && handleRestore && (
                         <div className={styles['deleted-actions']}>
                           <IconButtonComponent
                             icon={<Undo2 size={14} />}
-                            onClick={() => onRestore?.(i)}
+                            onClick={() => handleRestore?.(i)}
                             tooltip="Restore message"
                             className={styles['action-button']}
                           />
@@ -1676,10 +1643,10 @@ export default function MessageList({
                                 className={styles['deleted-actions']}
                                 style={{ opacity: 1 }}
                               >
-                                {!readOnly && onRestore && (
+                                {handleRestore && (
                                   <IconButtonComponent
                                     icon={<Undo2 size={14} />}
-                                    onClick={() => onRestore?.(gi)}
+                                    onClick={() => handleRestore?.(gi)}
                                     tooltip="Restore message"
                                     className={styles['action-button']}
                                   />
@@ -1804,7 +1771,7 @@ export default function MessageList({
                       taskNotif={taskNotif}
                       timestamp={message.timestamp}
                       readOnly={readOnly}
-                      onDelete={() => onDelete?.(i)}
+                      onDelete={() => handleDelete?.(i)}
                     />
                   );
                 }
@@ -1936,13 +1903,15 @@ export default function MessageList({
                                     tooltip="Edit message"
                                     className={styles['action-button']}
                                   />
-                                  <IconButtonComponent
-                                    icon={<RotateCcw size={14} />}
-                                    onClick={() => onRerun?.(i)}
-                                    disabled={isGenerating}
-                                    tooltip="Rerun this turn"
-                                    className={styles['action-button']}
-                                  />
+                                  {handleRerun && (
+                                    <IconButtonComponent
+                                      icon={<RotateCcw size={14} />}
+                                      onClick={() => handleRerun(i)}
+                                      disabled={isGenerating}
+                                      tooltip="Rerun this turn"
+                                      className={styles['action-button']}
+                                    />
+                                  )}
                                 </>
                               )}
                               {message.role === "assistant" &&
@@ -1968,7 +1937,8 @@ export default function MessageList({
                               )}
                               <IconButtonComponent
                                 icon={<Trash2 size={14} />}
-                                onClick={() => onDelete?.(i)}
+                                onClick={() => handleDelete?.(i)}
+                                disabled={isGenerating}
                                 tooltip="Delete message"
                                 variant="destructive"
                                 className={styles['action-button']}
@@ -2175,7 +2145,7 @@ export default function MessageList({
                           // Edit mode: show reasoning then editable text
                           if (
                             message.role === "assistant" &&
-                            !readOnly &&
+                            handleEdit &&
                             editingIndex === i
                           ) {
                             const nonThinking = segs.filter(
@@ -2209,7 +2179,7 @@ export default function MessageList({
                                   content={message.content}
                                   index={i}
                                   role="assistant"
-                                  onEdit={onEdit!}
+                                  onEdit={handleEdit}
                                   editing={true}
                                   onCancelEdit={() => setEditingIndex(null)}
                                   knownPaths={knownPathsSet}
@@ -2386,12 +2356,12 @@ export default function MessageList({
                             ))}
 
                           {/* Text content */}
-                          {message.role === "user" && !readOnly ? (
+                          {message.role === "user" && handleEdit ? (
                             <EditableMessage
                               content={message.content}
                               index={i}
                               role="user"
-                              onEdit={onEdit!}
+                              onEdit={handleEdit}
                               editing={editingIndex === i}
                               onCancelEdit={() => setEditingIndex(null)}
                               knownPaths={knownPathsSet}
@@ -2399,13 +2369,13 @@ export default function MessageList({
                               showRaw={showRaw}
                             />
                           ) : message.role === "assistant" &&
-                            !readOnly &&
+                            handleEdit &&
                             editingIndex === i ? (
                             <EditableMessage
                               content={message.content}
                               index={i}
                               role="assistant"
-                              onEdit={onEdit!}
+                              onEdit={handleEdit}
                               editing={true}
                               onCancelEdit={() => setEditingIndex(null)}
                               knownPaths={knownPathsSet}
@@ -2897,54 +2867,6 @@ export default function MessageList({
           </React.Fragment>
         );
       })}
-      {/* ── Queued next-turn message (rendered as a user-node in the list) ── */}
-      {queuedNextTurn && (
-        <div
-          className={`${styles['message']} ${styles['user-node']} ${styles['queued-message-node']}`}
-        >
-          <div className={styles['avatar']}>
-            <User size={16} />
-          </div>
-          <div className={styles['content']}>
-            <div className={styles['message-header']}>
-              <div className={styles['role-label']}>
-                User
-                <span className={styles['queued-badge']}>
-                  <Clock size={11} />
-                  Queued
-                </span>
-              </div>
-              {onCancelQueuedTurn && (
-                <div className={styles['message-actions']}>
-                  <IconButtonComponent
-                    icon={<XIcon size={14} />}
-                    onClick={onCancelQueuedTurn}
-                    tooltip="Cancel queued message"
-                    className={styles['action-button']}
-                  />
-                </div>
-              )}
-            </div>
-            {(() => {
-              const queuedAttachmentCount =
-                (queuedNextTurn.images?.length || 0) +
-                (queuedNextTurn.files?.length || 0);
-              if (queuedAttachmentCount === 0) return null;
-              return (
-                <div className={styles['queued-attachments-indicator']}>
-                  <Paperclip size={12} />
-                  {queuedAttachmentCount} attachment{queuedAttachmentCount > 1 ? "s" : ""} attached
-                </div>
-              );
-            })()}
-            {queuedNextTurn.text && (
-              <div className={styles['queued-message-text']}>
-                {queuedNextTurn.text}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
       {localLightboxSourceUrl && (
         <ImagePreviewComponent
           src={localLightboxSourceUrl}
