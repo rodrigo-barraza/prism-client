@@ -93,7 +93,14 @@ import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
-import ApprovalCardComponent from "./ApprovalCardComponent";
+import ApprovalCardsComponent from "./ApprovalCardsComponent";
+import {
+  addApproval,
+  applyApprovalDecided,
+  approvalFromEvent,
+  approvalsFromPendingSnapshot,
+  type PendingApproval,
+} from "../utils/approvalCards";
 import UserQuestionCardComponent from "./UserQuestionCardComponent";
 import NonBlockingQuestionsComponent from "./NonBlockingQuestionsComponent";
 import GoalPanelComponent from "./GoalPanelComponent";
@@ -486,14 +493,6 @@ function normalizeSubAgentStatusToPhase(backendStatus: string): string {
 }
 
 /** Approval request from an agentic tool call. */
-interface PendingApproval {
-  id: string;
-  toolName: string;
-  toolArgs?: Record<string, unknown>;
-  tier?: 1 | 2 | 3;
-  status: (typeof APPROVAL_STATUS)[keyof typeof APPROVAL_STATUS];
-}
-
 /** Snapshot of UI state stored when a background-generating conversation is paused. */
 interface ConversationSnapshot {
   messages: ClientMessage[];
@@ -4650,18 +4649,11 @@ export default function AgentChatComponent({
           },
           onApprovalRequired: (data: SSEData) => {
             if (isStale()) return;
-            const toolCall = data.toolCall;
-            if (!toolCall) return;
-            setPendingApprovals((previousPendingApprovals) => [
-              ...previousPendingApprovals,
-              {
-                id: toolCall.id || `ap-${Date.now()}`,
-                toolName: toolCall.name || "",
-                toolArgs: toolCall.args || {},
-                tier: data.tier,
-                status: EXECUTION_STATUS.PENDING,
-              },
-            ]);
+            const approval = approvalFromEvent(data);
+            if (!approval) return;
+            setPendingApprovals((previousPendingApprovals) =>
+              addApproval(previousPendingApprovals, approval),
+            );
             // Clear processing metadata so the live TTFT badge stops
             // counting — user deliberation time on approval gates
             // should not inflate time-to-first-token.
@@ -4680,6 +4672,13 @@ export default function AgentChatComponent({
               }
               return updated;
             });
+          },
+          // One card decided — here, in another tab, by a batch scope or a timeout.
+          onApprovalDecided: (data: SSEData) => {
+            if (isStale()) return;
+            setPendingApprovals((previousPendingApprovals) =>
+              applyApprovalDecided(previousPendingApprovals, data),
+            );
           },
           // Harness mailbox: our own `/agent/input` bubble (or another
           // tab's) was applied. The driver keeps its in-flight assistant
@@ -6574,12 +6573,8 @@ export default function AgentChatComponent({
         pendingApproval?: {
           isPending?: boolean;
           type?: string;
-          toolCalls?: Array<{
-            id?: string;
-            name?: string;
-            args?: Record<string, unknown>;
-            _approval?: { tier?: 1 | 2 | 3 };
-          }>;
+          batchId?: string;
+          toolCalls?: Parameters<typeof approvalsFromPendingSnapshot>[0];
           tools?: string[];
         };
         pendingQuestion?: {
@@ -6814,22 +6809,10 @@ export default function AgentChatComponent({
             }
           } else if (pendingApprovalData.toolCalls) {
             setPendingApprovals(
-              pendingApprovalData.toolCalls.map((toolCall) => ({
-                id: toolCall.id || `ap-${Date.now()}`,
-                toolName: toolCall.name || "",
-                toolArgs: toolCall.args || {},
-                tier: toolCall._approval?.tier,
-                status: EXECUTION_STATUS.PENDING,
-              })),
-            );
-          } else if (pendingApprovalData.tools) {
-            setPendingApprovals(
-              pendingApprovalData.tools.map((toolName: string) => ({
-                id: `ap-${Date.now()}`,
-                toolName: toolName,
-                toolArgs: {},
-                status: EXECUTION_STATUS.PENDING,
-              })),
+              approvalsFromPendingSnapshot(
+                pendingApprovalData.toolCalls,
+                pendingApprovalData.batchId,
+              ),
             );
           }
         } else {
@@ -9078,48 +9061,15 @@ export default function AgentChatComponent({
           toolDisplayMetadataMap={toolDisplayMetadataMap}
         />
 
-        {/* Pending approval cards */}
-        {!isAdmin && pendingApprovals
-          .filter((approvalItem) => approvalItem.status === APPROVAL_STATUS.PENDING)
-          .map((approval) => (
-            <ApprovalCardComponent
-              key={approval.id}
-              toolName={approval.toolName}
-              toolArgs={approval.toolArgs}
-              tier={approval.tier}
-              onApprove={() => {
-                setPendingApprovals((previousPendingApprovals) =>
-                  previousPendingApprovals.map((approvalItem) =>
-                    approvalItem.id === approval.id ? { ...approvalItem, status: "approved" } : approvalItem,
-                  ),
-                );
-                PrismService.sendApprovalResponse(conversationId, true).catch(
-                  console.error,
-                );
-              }}
-              onReject={() => {
-                setPendingApprovals((previousPendingApprovals) =>
-                  previousPendingApprovals.map((approvalItem) =>
-                    approvalItem.id === approval.id ? { ...approvalItem, status: "rejected" } : approvalItem,
-                  ),
-                );
-                PrismService.sendApprovalResponse(conversationId, false).catch(
-                  console.error,
-                );
-              }}
-              onApproveAll={() => {
-                setPendingApprovals((previousPendingApprovals) =>
-                  previousPendingApprovals.map((approvalItem) =>
-                    approvalItem.status === APPROVAL_STATUS.PENDING ? { ...approvalItem, status: APPROVAL_STATUS.APPROVED } : approvalItem,
-                  ),
-                );
-                setAutoApprove(true);
-                PrismService.sendApprovalResponse(conversationId, true, {
-                  approveAll: true,
-                }).catch(console.error);
-              }}
-            />
-          ))}
+        {/* Pending approval cards — one per tool call */}
+        {!isAdmin && (
+          <ApprovalCardsComponent
+            conversationId={conversationId}
+            approvals={pendingApprovals}
+            setApprovals={setPendingApprovals}
+            onNotify={addToast}
+          />
+        )}
 
         {/* Pending user question card */}
         {!isAdmin && pendingUserQuestion && (
