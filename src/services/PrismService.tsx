@@ -1422,27 +1422,34 @@ export default class PrismService {
   }
 
   /**
-   * Submit answer(s) to a pending ask_user tool call.
-
+   * Submit answer(s) to a pending ask_user tool call. `questionId` (from the
+   * `user_question` event) resolves exactly that card; without it the server
+   * answers the oldest blocking question. Throws with `status: 404` when no
+   * open question took the answer.
    */
   static async sendUserQuestionAnswer(
     conversationId: string,
     answerOrAnswers:
       | string
       | Array<{ answer: string | string[]; annotations?: string }>,
-  ): Promise<{ ok: boolean }> {
+    { questionId }: { questionId?: string } = {},
+  ): Promise<{ ok: boolean; questionId?: string; blocking?: boolean }> {
     // Normalize: structured array vs simple string
     const body: {
       conversationId: string;
+      questionId?: string;
       answer?: string;
       answers?: Array<{ answer: string | string[]; annotations?: string }>;
-    } = { conversationId };
+    } = { conversationId, ...(questionId ? { questionId } : {}) };
     if (Array.isArray(answerOrAnswers)) {
       body.answers = answerOrAnswers;
     } else {
       body.answer = String(answerOrAnswers);
     }
-    return PrismService._request<{ ok: boolean }>("/agent/answer", { body });
+    return PrismService._request<{ ok: boolean; questionId?: string; blocking?: boolean }>(
+      "/agent/answer",
+      { body },
+    );
   }
 
   /**
