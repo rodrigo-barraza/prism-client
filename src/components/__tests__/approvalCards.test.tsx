@@ -214,6 +214,7 @@ describe("ApprovalCardsComponent — one card per tool call", () => {
   });
 
   it("renders the diff preview of a recorded approval_required event", () => {
+    // Recorded from the live UI check (scratch path normalized).
     render(
       <Harness
         conversationId="conversation-a"
@@ -221,16 +222,17 @@ describe("ApprovalCardsComponent — one card per tool call", () => {
         onNotify={vi.fn()}
       />,
     );
-    const diff = screen.getByLabelText("Changes to README.md");
-    expect(diff).toHaveTextContent("--- a/README.md");
-    expect(within(diff).getByText("-Approve all.")).toHaveClass("diff-removed");
-    expect(within(diff).getByText("+Per-call approvals.")).toHaveClass("diff-added");
+    const diff = screen.getByLabelText("Changes to /workspace/scratch-repo/README.md");
+    expect(within(diff).getByText("--- a/workspace/scratch-repo/README.md")).toHaveClass("diff-header");
     expect(within(diff).getByText("@@ -1,3 +1,4 @@")).toHaveClass("diff-hunk");
+    expect(within(diff).getByText("# Scratch", { exact: false })).toHaveClass("diff-context");
+    expect(within(diff).getByText("+One approval card per tool call.")).toHaveClass("diff-added");
     // With a diff to read, the raw arguments start folded; they unfold in full.
     const toggle = screen.getByRole("button", { name: "Arguments" });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(toggle);
-    expect(screen.getByText(/One card per tool call\.\\n/)).toBeInTheDocument();
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText(/"path": "\/workspace\/scratch-repo\/README\.md"/)).toBeInTheDocument();
   });
 
   it("offers 'Allow the rest of this batch' only when other calls of the batch wait", async () => {

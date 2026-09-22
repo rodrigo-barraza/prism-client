@@ -1,21 +1,22 @@
 {
   "type": "approval_required",
-  "toolCallId": "call_edit_readme",
-  "batchId": "5f0c2a8e-2d3b-4c1e-9a57-0b6d1f3e7a42",
-  "batchSize": 1,
+  "toolCallId": "google-toolCall-1c9f4ecc-b789-4e38-b4a5-4505d9d8d8fc",
+  "batchId": "6b1e9e9e-5765-473f-abf6-d5be435f4ae4",
+  "batchSize": 3,
   "toolCall": {
     "name": "write_file",
     "args": {
-      "path": "README.md",
-      "content": "# Scratch\n\nPer-call approvals.\nOne card per tool call.\n"
+      "content": "# Scratch\n\nA scratch repo for the per-call approvals live check.\nOne approval card per tool call.",
+      "path": "/workspace/scratch-repo/README.md"
     },
-    "id": "call_edit_readme"
+    "id": "google-toolCall-1c9f4ecc-b789-4e38-b4a5-4505d9d8d8fc"
   },
   "tier": 2,
   "tierLabel": "write",
   "preview": {
     "kind": "diff",
-    "path": "README.md",
-    "diff": "--- a/README.md\n+++ b/README.md\n@@ -1,3 +1,4 @@\n # Scratch\n \n-Approve all.\n+Per-call approvals.\n+One card per tool call."
-  }
+    "path": "/workspace/scratch-repo/README.md",
+    "diff": "--- a/workspace/scratch-repo/README.md\n+++ b/workspace/scratch-repo/README.md\n@@ -1,3 +1,4 @@\n # Scratch\n \n A scratch repo for the per-call approvals live check.\n+One approval card per tool call."
+  },
+  "seq": 1790112029687
 }
