@@ -19,6 +19,7 @@ import {
   MILLISECONDS_PER_DAY,
   MILLISECONDS_PER_WEEK,
 } from "@rodrigo-barraza/utilities-library";
+import { doesCronMatchDate, parseCronExpression } from "@/utils/cronMatcher";
 import styles from "./ScheduledTaskCalendarComponent.module.css";
 
 
@@ -131,96 +132,16 @@ function formatTimeFromSchedule(scheduleTime?: string): string {
   return `${displayHour}:${String(minutes).padStart(2, "0")} ${meridiem}`;
 }
 
-function parseCronField(
-  field: string,
-  minimum: number,
-  maximum: number,
-): number[] {
-  const results: number[] = [];
-
-  for (const part of field.split(",")) {
-    const stepMatch = part.match(/^(.+)\/(\d+)$/);
-    const rangePart = stepMatch ? stepMatch[1] : part;
-    const stepValue = stepMatch ? parseInt(stepMatch[2], 10) : 1;
-
-    let rangeStart: number;
-    let rangeEnd: number;
-
-    if (rangePart === "*") {
-      rangeStart = minimum;
-      rangeEnd = maximum;
-    } else if (rangePart.includes("-")) {
-      const [startString, endString] = rangePart.split("-");
-      rangeStart = parseInt(startString, 10);
-      rangeEnd = parseInt(endString, 10);
-    } else {
-      rangeStart = parseInt(rangePart, 10);
-      rangeEnd = rangeStart;
-    }
-
-    if (isNaN(rangeStart) || isNaN(rangeEnd)) continue;
-
-    for (let value = rangeStart; value <= rangeEnd; value += stepValue) {
-      if (value >= minimum && value <= maximum && !results.includes(value)) {
-        results.push(value);
-      }
-    }
-  }
-
-  return results.sort((agent, current) => agent - current);
-}
-
-function doesCronMatchDate(cronExpression: string, targetDate: Date): boolean {
-  const fields = cronExpression.trim().split(/\s+/);
-  if (fields.length < 5) return false;
-
-  const [, , dayOfMonthField, monthField, dayOfWeekField] = fields;
-
-  const targetMonth = targetDate.getMonth() + 1;
-  const targetDayOfMonth = targetDate.getDate();
-  const targetDayOfWeek = targetDate.getDay();
-
-  const matchingMonths = parseCronField(monthField, 1, 12);
-  if (!matchingMonths.includes(targetMonth)) return false;
-
-  const isDayOfMonthWildcard = dayOfMonthField === "*";
-  const isDayOfWeekWildcard = dayOfWeekField === "*";
-
-  if (isDayOfMonthWildcard && isDayOfWeekWildcard) return true;
-
-  const matchingDaysOfMonth = parseCronField(dayOfMonthField, 1, 31);
-  const matchingDaysOfWeek = parseCronField(dayOfWeekField, 0, 7).map((day) =>
-    day === 7 ? 0 : day,
-  );
-
-  if (!isDayOfMonthWildcard && !isDayOfWeekWildcard) {
-    return (
-      matchingDaysOfMonth.includes(targetDayOfMonth) ||
-      matchingDaysOfWeek.includes(targetDayOfWeek)
-    );
-  }
-
-  if (!isDayOfMonthWildcard) {
-    return matchingDaysOfMonth.includes(targetDayOfMonth);
-  }
-
-  return matchingDaysOfWeek.includes(targetDayOfWeek);
-}
-
 function getCronTimeLabel(cronExpression: string): string {
-  const fields = cronExpression.trim().split(/\s+/);
-  if (fields.length < 5) return "Cron";
+  const schedule = parseCronExpression(cronExpression);
+  if (!schedule) return "Cron";
 
-  const [minuteField, hourField] = fields;
-
-  const matchingMinutes = parseCronField(minuteField, 0, 59);
-  const matchingHours = parseCronField(hourField, 0, 23);
+  const { minutes: matchingMinutes, hours: matchingHours } = schedule;
 
   if (matchingHours.length === 24) return "All day";
-  if (matchingHours.length === 0) return "Cron";
 
   const firstHour = matchingHours[0];
-  const firstMinute = matchingMinutes.length > 0 ? matchingMinutes[0] : 0;
+  const firstMinute = matchingMinutes[0];
   const meridiem = firstHour >= 12 ? "PM" : "AM";
   const displayHour = firstHour % 12 || 12;
   return `${displayHour}:${String(firstMinute).padStart(2, "0")} ${meridiem}`;
@@ -470,13 +391,11 @@ function formatPopoverDateLabel(date: Date): string {
 }
 
 function getCronHours(cronExpression: string): number[] {
-  const fields = cronExpression.trim().split(/\s+/);
-  if (fields.length < 2) return [];
-  const [, hourField] = fields;
+  const [, hourField] = cronExpression.trim().split(/\s+/);
   if (hourField === "*") {
     return [];
   }
-  return parseCronField(hourField, 0, 23);
+  return parseCronExpression(cronExpression)?.hours ?? [];
 }
 
 function buildWeekGrid(
