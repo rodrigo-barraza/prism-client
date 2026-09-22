@@ -5,9 +5,28 @@
  */
 import type { ContentSegment, Message } from "../types/types";
 
-/** Messages after `index` — what an edit or rerun of it discards. */
+/** Visible messages after `index` — what an edit or rerun of it discards. */
 export function countLaterMessages(messages: Message[], index: number): number {
-  return Math.max(0, messages.length - index - 1);
+  return messages.slice(index + 1).filter((message) => message.role !== "system").length;
+}
+
+/** The per-turn context note the server persists just before a turn's user message. */
+const TURN_CONTEXT_TAG = "<system-context>";
+
+/**
+ * Where the turn a user message opens begins: its `<system-context>` note,
+ * persisted right before it, goes with it when the turn is discarded.
+ */
+export function turnStartIndex(messages: Message[], userIndex: number): number {
+  let start = userIndex;
+  while (
+    start > 0 &&
+    messages[start - 1].role === "system" &&
+    String(messages[start - 1].content ?? "").trimStart().startsWith(TURN_CONTEXT_TAG)
+  ) {
+    start -= 1;
+  }
+  return start;
 }
 
 /** Soft delete: the server keeps the message but leaves it out of the model's context. */

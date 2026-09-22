@@ -171,6 +171,43 @@ describe("main chat message actions", () => {
     });
   });
 
+  it("an edit discards the turn's persisted context note with it", async () => {
+    const resend = vi.fn();
+    const contextNote = (time: string): Message => ({
+      role: "system",
+      content: `<system-context>\n- Local Time: ${time}\n</system-context>`,
+    });
+    render(
+      <MainChat
+        initialMessages={[
+          contextNote("2:12 PM"),
+          CONVERSATION[0],
+          CONVERSATION[1],
+          contextNote("2:13 PM"),
+          CONVERSATION[2],
+          CONVERSATION[3],
+        ]}
+        resend={resend}
+      />,
+    );
+
+    fireEvent.click(messageBubble("second question").getByTitle("Edit message"));
+    fireEvent.change(screen.getByDisplayValue("second question"), {
+      target: { value: "second question, again" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Save/ }));
+    const dialog = await screen.findByRole("alertdialog");
+    expect(dialog).toHaveTextContent("1 later message");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Discard and resend" }));
+
+    await waitFor(() => expect(resend).toHaveBeenCalledTimes(1));
+    expect(patchSpy).toHaveBeenCalledWith(
+      "conv-1",
+      { messages: [contextNote("2:12 PM"), CONVERSATION[0], CONVERSATION[1]] },
+      "prism-test",
+    );
+  });
+
   it("Rerun of an earlier turn confirms the later turns it discards", async () => {
     const resend = vi.fn();
     render(<MainChat initialMessages={CONVERSATION} resend={resend} />);

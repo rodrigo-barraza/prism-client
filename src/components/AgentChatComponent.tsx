@@ -204,6 +204,7 @@ import {
 import { shouldOpenViewerLiveStream } from "../utils/viewerLiveStreamGate";
 import {
   shouldApplySnapshotRefresh,
+  refreshUnlessStreamOwned,
   seedStreamAccumulators,
   extractPersistedContextBudget,
 } from "../utils/liveConversationView";
@@ -7218,11 +7219,27 @@ export default function AgentChatComponent({
         return;
       }
       try {
-        const full = isNoAgent
-          ? await PrismService.getConversation(targetConversationId)
-          : await PrismService.getAgentConversation(targetConversationId, agentProject!);
-        if (full && full.id === conversationIdRef.current) {
-          applyConversationData(full);
+        const outcome = await refreshUnlessStreamOwned<AgentConversation | Conversation>({
+          isStreamOwned: () =>
+            clientDrivenConversationIdRef.current === targetConversationId ||
+            !shouldApplySnapshotRefresh({
+              isStreamOpen: isWebSocketStreamingRef.current,
+              hasStreamedContent: webSocketHasStreamedContentRef.current,
+            }),
+          fetchSnapshot: () =>
+            isNoAgent
+              ? PrismService.getConversation(targetConversationId)
+              : PrismService.getAgentConversation(targetConversationId, agentProject!),
+          applySnapshot: (full) => {
+            if (full && full.id === conversationIdRef.current) {
+              applyConversationData(full);
+            }
+          },
+        });
+        if (outcome === "superseded") {
+          console.debug(
+            `[refreshActiveConversation] dropped a snapshot that arrived after the live stream took over ${targetConversationId}`,
+          );
         }
       } catch (error) {
         console.error(

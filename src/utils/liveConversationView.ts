@@ -34,6 +34,30 @@ export function shouldApplySnapshotRefresh({
 }
 
 /**
+ * Refresh the viewed conversation from its stored snapshot unless a live
+ * stream owns the messages — asked before the fetch AND again when it
+ * resolves. The change event that triggers a refresh is often the turn
+ * starting, so a stream can take over while the fetch is in flight; the
+ * older snapshot would then overwrite what the stream already rendered and
+ * leave its chunks patching the wrong bubble.
+ */
+export async function refreshUnlessStreamOwned<T>({
+  isStreamOwned,
+  fetchSnapshot,
+  applySnapshot,
+}: {
+  isStreamOwned: () => boolean;
+  fetchSnapshot: () => Promise<T>;
+  applySnapshot: (_snapshot: T) => void;
+}): Promise<"applied" | "skipped" | "superseded"> {
+  if (isStreamOwned()) return "skipped";
+  const snapshot = await fetchSnapshot();
+  if (isStreamOwned()) return "superseded";
+  applySnapshot(snapshot);
+  return "applied";
+}
+
+/**
  * Seed the stream's text/thinking accumulators when the subscription opens.
  *
  * Seed ONLY from a TRAILING assistant message (joining a generation already

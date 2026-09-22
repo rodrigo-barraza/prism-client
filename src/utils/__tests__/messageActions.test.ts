@@ -5,6 +5,7 @@ import {
   restoreMessage,
   softDeleteMessage,
   toPersistableMessages,
+  turnStartIndex,
 } from "../messageActions";
 import { getCleanAndRaw, userMessageResendText } from "../messageHelpers";
 import type { Message } from "../../types/types";
@@ -19,6 +20,22 @@ describe("message action edits", () => {
   it("counts what an edit or rerun discards", () => {
     expect(countLaterMessages(messages, 0)).toBe(2);
     expect(countLaterMessages(messages, 2)).toBe(0);
+  });
+
+  it("a turn starts at the context note persisted before its user message", () => {
+    const stored: Message[] = [
+      { role: "system", content: "You are a pirate." },
+      { role: "user", content: "q1" },
+      { role: "assistant", content: "a1" },
+      { role: "system", content: "<system-context>\n- Local Time: 2:12 PM\n</system-context>" },
+      { role: "user", content: "q2" },
+      { role: "assistant", content: "a2" },
+    ];
+    expect(turnStartIndex(stored, 4)).toBe(3);
+    // A system message that is not a turn's context note stays.
+    expect(turnStartIndex(stored, 1)).toBe(1);
+    // Hidden context notes are not counted as discarded messages.
+    expect(countLaterMessages(stored, 1)).toBe(3);
   });
 
   it("soft-deletes and restores one message without touching the others", () => {

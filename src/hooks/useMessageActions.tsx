@@ -8,9 +8,10 @@
  * to the conversation array by identity and persists the result through
  * `PATCH /conversations/:id`.
  *
- * - Edit of a user message, and Rerun: the message and everything after it
- *   leave the conversation, then its text goes out again as a new turn. The
- *   server appends that turn to the truncated document.
+ * - Edit of a user message, and Rerun: the message's turn (with the
+ *   `<system-context>` note the server persisted before it) and everything
+ *   after it leave the conversation, then its text goes out again as a new
+ *   turn. The server appends that turn to the truncated document.
  * - Edit of an assistant reply: its text is replaced in place.
  * - Delete / Restore: the soft `deleted` flag, which the server already
  *   strips from the model's context and the list renders collapsed.
@@ -27,6 +28,7 @@ import {
   restoreMessage,
   softDeleteMessage,
   toPersistableMessages,
+  turnStartIndex,
 } from "../utils/messageActions";
 import type { FileAttachment, Message } from "../types/types";
 
@@ -112,7 +114,7 @@ export default function useMessageActions({
     }
     // TODO(prompt 15, rewind-and-fork): an edit forks the conversation
     // instead of discarding what came after it.
-    if (!(await persist(messages.slice(0, index)))) return;
+    if (!(await persist(messages.slice(0, turnStartIndex(messages, index))))) return;
     resend({
       text,
       images: target.images ?? [],

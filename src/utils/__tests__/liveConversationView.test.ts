@@ -3,9 +3,10 @@
  * tests for the arbitration between the live WebSocket stream and
  * whole-document snapshot refreshes.
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   shouldApplySnapshotRefresh,
+  refreshUnlessStreamOwned,
   seedStreamAccumulators,
   extractPersistedContextBudget,
 } from "../liveConversationView";
@@ -125,5 +126,45 @@ describe("extractPersistedContextBudget", () => {
     expect(extractPersistedContextBudget({ id: "conv-1", contextBudget: null })).toBeNull();
     expect(extractPersistedContextBudget(null)).toBeNull();
     expect(extractPersistedContextBudget(undefined)).toBeNull();
+  });
+});
+
+describe("refreshUnlessStreamOwned", () => {
+  it("applies the snapshot when no stream owns the messages", async () => {
+    const applySnapshot = vi.fn();
+    await expect(
+      refreshUnlessStreamOwned({
+        isStreamOwned: () => false,
+        fetchSnapshot: async () => "snapshot",
+        applySnapshot,
+      }),
+    ).resolves.toBe("applied");
+    expect(applySnapshot).toHaveBeenCalledWith("snapshot");
+  });
+
+  it("does not fetch while a stream owns the messages", async () => {
+    const fetchSnapshot = vi.fn(async () => "snapshot");
+    await expect(
+      refreshUnlessStreamOwned({ isStreamOwned: () => true, fetchSnapshot, applySnapshot: vi.fn() }),
+    ).resolves.toBe("skipped");
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("drops a snapshot that resolves after the stream took over", async () => {
+    // The change event that triggered the refresh was the turn starting:
+    // the viewer's stream delivers its first events while the fetch is out.
+    let streamDelivering = false;
+    const applySnapshot = vi.fn();
+    await expect(
+      refreshUnlessStreamOwned({
+        isStreamOwned: () => streamDelivering,
+        fetchSnapshot: async () => {
+          streamDelivering = true;
+          return "stale snapshot";
+        },
+        applySnapshot,
+      }),
+    ).resolves.toBe("superseded");
+    expect(applySnapshot).not.toHaveBeenCalled();
   });
 });
