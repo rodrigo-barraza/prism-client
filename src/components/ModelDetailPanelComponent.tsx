@@ -33,7 +33,11 @@ import {
 } from "lucide-react";
 import ProviderLogo, { resolveProviderLabel } from "./ProviderLogosComponent";
 import StorageService from "../services/StorageService";
-import { STORAGE_KEY_MODEL_MEMORY_AGENT, LOCAL_PROVIDERS, type ProviderType } from "../constants";
+import {
+  STORAGE_KEY_MODEL_MEMORY_AGENT,
+  isLocalProvider,
+  resolveProviderBaseType,
+} from "../constants";
 import BadgeComponent from "./BadgeComponent";
 import {
   MODALITY_ICONS,
@@ -290,7 +294,9 @@ export default function ModelDetailPanelComponent({ model, onClose }: ModelDetai
                 StorageService.set(STORAGE_KEY_MODEL_MEMORY_AGENT, {
                   provider: modelDetail.provider,
                   model: modelDetail.key,
-                  isLocal: LOCAL_PROVIDERS.has(modelDetail.provider as ProviderType),
+                  isLocal: isLocalProvider(
+                    resolveProviderBaseType(modelDetail.provider),
+                  ),
                 });
                 router.push("/chat");
               }}
