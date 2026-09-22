@@ -21,6 +21,13 @@ function createMinimalConversation(
 // ═══════════════════════════════════════════════════════════════
 
 describe("mapConversationToHistoryItem", () => {
+  it("carries a fork's lineage through to the list item", () => {
+    const forkedFrom = { conversationId: "source-1", messageId: "m3", position: "at" as const, title: "Source" };
+
+    expect(mapConversationToHistoryItem(createMinimalConversation({ id: "fork-1", forkedFrom })).forkedFrom).toEqual(forkedFrom);
+    expect(mapConversationToHistoryItem(createMinimalConversation({ id: "plain" })).forkedFrom).toBeNull();
+  });
+
   it("should use conversation.id when present, falling back to _id", () => {
     const withExplicitId = createMinimalConversation({ id: "explicit-id" });
     const withoutExplicitId = createMinimalConversation({ _id: "fallback-id" });

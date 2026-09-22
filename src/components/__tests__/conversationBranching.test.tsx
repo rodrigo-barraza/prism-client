@@ -260,6 +260,23 @@ describe("conversation branching — rewind, fork, edit as a branch", () => {
     expect(requests).toEqual([]);
   });
 
+  it("an action on a reply covers the whole reply — through its last message before the next prompt", async () => {
+    const withSteps: Message[] = [
+      CONVERSATION[0],
+      { id: "m1a", role: "assistant", content: "working on it", timestamp: "2026-09-22T10:00:03Z" },
+      CONVERSATION[1],
+      ...CONVERSATION.slice(2),
+    ];
+    const onOpen = vi.fn();
+    render(<BranchingChat initialMessages={withSteps} onOpen={onOpen} />);
+
+    // The reply's actions sit on its first bubble.
+    fireEvent.click(messageBubble("working on it").getByTitle("Fork from here"));
+
+    await waitFor(() => expect(onOpen).toHaveBeenCalled());
+    expect(requests).toEqual([{ path: "/conversations/conv-1/fork", body: { atMessageId: "m1" } }]);
+  });
+
   it("a message without a server id (not saved yet) cannot be rewound to or forked from", () => {
     const unsaved = CONVERSATION.map(({ id: _id, ...message }) => message as Message);
     render(<BranchingChat initialMessages={unsaved} />);

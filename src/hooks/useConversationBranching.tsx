@@ -14,8 +14,11 @@
  *   everything that came after it.
  *
  * Handler indices are indices into `listMessages`, like useMessageActions.
- * Messages carry the server-assigned `id` once persisted; one without an id
- * (still streaming) cannot be rewound to or forked from yet.
+ * MessageList shows actions only on the first bubble of a run of assistant
+ * messages (one reply: tool steps, then the answer), so an action on a
+ * reply covers the whole run — through the last message before the next
+ * prompt. Messages carry the server-assigned `id` once persisted; one
+ * without an id (still streaming) cannot be rewound to or forked from yet.
  */
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -108,8 +111,16 @@ export default function useConversationBranching({
     send(pending.payload);
   }, [conversationId, isGenerating, send]);
 
+  /** The message an action on `index` stands for: a reply's last message. */
+  const anchorIndex = (index: number): number => {
+    let anchor = index;
+    if (listMessages[index]?.role === "user") return anchor;
+    while (anchor + 1 < listMessages.length && listMessages[anchor + 1].role !== "user") anchor += 1;
+    return anchor;
+  };
+
   const messageIdAt = (index: number): string | null => {
-    const id = listMessages[index]?.id;
+    const id = listMessages[anchorIndex(index)]?.id;
     if (!id) {
       onError("That message is not saved yet — try again once the reply has finished.");
       return null;
@@ -122,7 +133,10 @@ export default function useConversationBranching({
     const messageId = messageIdAt(index);
     if (!messageId) return;
     setRewindOpening((opening) => opening + 1);
-    setRewindTarget({ messageId, preview: listMessages[index]?.content || "" });
+    setRewindTarget({
+      messageId,
+      preview: listMessages[anchorIndex(index)]?.content || listMessages[index]?.content || "",
+    });
   };
 
   const onFork = (index: number) => {

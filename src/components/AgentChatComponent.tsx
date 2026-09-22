@@ -8963,12 +8963,6 @@ export default function AgentChatComponent({
       <div className={chatStyles['chat-header']}>
         <div className={chatStyles['chat-header-title']}>
           <span className={chatStyles['chat-header-title-text']}>{title || ""}</span>
-          <ForkLineageComponent
-            lineage={forkedFrom}
-            onOpenSource={(sourceId) =>
-              void handleSelectConversation({ id: sourceId } as AgentConversation)
-            }
-          />
         </div>
         <div className={chatStyles['chat-header-actions']}>
           <ChatViewModeControlComponent
@@ -9025,6 +9019,13 @@ export default function AgentChatComponent({
           )}
         </div>
       </div>
+      {/* Fork lineage — a bar under the header; the header row has no room */}
+      <ForkLineageComponent
+        lineage={forkedFrom}
+        onOpenSource={(sourceId) =>
+          void handleSelectConversation({ id: sourceId } as AgentConversation)
+        }
+      />
       {/* Nodes tab — inline conversation graph */}
       {viewMode === "nodes" && (
         <ChatConversationGraphComponent
