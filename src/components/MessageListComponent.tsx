@@ -62,6 +62,7 @@ import {
   isUserAuthoredNotificationSource,
   isTurnInputMessage,
   resolveTurnInput,
+  turnInputAuthorLabel,
   turnInputBadgeLabel,
   turnInputDisplayText,
 } from "../utils/turnInputRouting";
@@ -1868,7 +1869,7 @@ export default function MessageList({
                         <div className={styles['message-header']}>
                           <div className={styles['role-label']}>
                             {message.role === "user"
-                              ? "User"
+                              ? turnInputAuthorLabel(resolveTurnInput(message))
                               : message.role === "system"
                                 ? "System"
                                 : activeAgent?.name || "Model"}

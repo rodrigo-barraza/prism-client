@@ -8,6 +8,7 @@ import {
   isTurnInputMessage,
   turnInputDisplayText,
   turnInputBadgeLabel,
+  turnInputAuthorLabel,
   buildOptimisticTurnInputMessage,
   attachTurnInputServerId,
   removeTurnInputMessage,
@@ -220,5 +221,17 @@ describe("answersToMessageText", () => {
         { answer: "   " },
       ]),
     ).toBe("yes (but carefully)\na, b");
+  });
+});
+
+describe("turnInputAuthorLabel", () => {
+  it("labels an agent_message as the agent's, never the user's", () => {
+    expect(turnInputAuthorLabel({ id: "input-1", kind: "agent_message", status: "applied" })).toBe("Agent");
+  });
+
+  it("labels the user's own mid-turn input, and plain user messages, as the user's", () => {
+    expect(turnInputAuthorLabel({ id: "input-2", kind: "user_update", status: "applied" })).toBe("User");
+    expect(turnInputAuthorLabel({ id: "input-3", kind: "question_answer", status: "applied" })).toBe("User");
+    expect(turnInputAuthorLabel(null)).toBe("User");
   });
 });

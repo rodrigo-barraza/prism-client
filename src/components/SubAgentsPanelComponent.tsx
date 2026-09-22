@@ -10,6 +10,7 @@ import {
   GitBranch,
   FileCode,
   Layers,
+  Square,
 } from "lucide-react";
 import { POLL_FAST } from "@rodrigo-barraza/utilities-library";
 import { EXECUTION_STATUS } from "../constants.ts";
@@ -69,6 +70,7 @@ export default function SubAgentsPanelComponent({
   const [subAgentList, setSubAgentList] = useState<CoordinatorSubAgent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [stoppingAgentIds, setStoppingAgentIds] = useState<Set<string>>(() => new Set());
   const hasInitialDataBeenLoaded = useRef<boolean>(false);
   const pollingIntervalReference = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -97,6 +99,29 @@ export default function SubAgentsPanelComponent({
       setIsLoading(false);
     }
   }, [conversationId, onCountChange, onMaxDepthChange]);
+
+  // -- Stop one ---------------------------------------------
+  // Only this agent stops; its teammates keep running, and the team's
+  // completion reports it as stopped. A 409 means it finished on its own
+  // meanwhile — the refresh shows how.
+  const stopSubAgent = useCallback(
+    async (agentId: string) => {
+      setStoppingAgentIds((currentIds) => new Set(currentIds).add(agentId));
+      try {
+        await PrismService.stopCoordinatorSubAgent(agentId);
+      } catch (error: unknown) {
+        console.error(`Failed to stop sub-agent ${agentId}:`, error);
+      } finally {
+        setStoppingAgentIds((currentIds) => {
+          const nextIds = new Set(currentIds);
+          nextIds.delete(agentId);
+          return nextIds;
+        });
+        fetchCoordinatorSubAgents();
+      }
+    },
+    [fetchCoordinatorSubAgents],
+  );
 
   // Reset on conversation change
   useEffect(() => {
@@ -232,6 +257,17 @@ export default function SubAgentsPanelComponent({
                 <span className={`${styles['sub-agent-status']} ${styles[executionStatusClass]}`}>
                   {executionStatusLabel}
                 </span>
+                {isSubAgentRunning && (
+                  <ButtonComponent
+                    variant="text"
+                    size="small"
+                    icon={Square}
+                    iconSize={10}
+                    onClick={() => stopSubAgent(subAgentItem.agentId ?? subAgentItem.id)}
+                    disabled={stoppingAgentIds.has(subAgentItem.agentId ?? subAgentItem.id)}
+                    title="Stop this sub-agent"
+                  />
+                )}
               </div>
 
               {/* Line 2: meta — duration · cost · tools · depth · branch */}

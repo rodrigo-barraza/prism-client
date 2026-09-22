@@ -208,6 +208,10 @@ import {
 } from "../utils/conversationAttention";
 import { getErrorMessage } from "../utils/errorMessage";
 import {
+  applyServerSubAgentStatuses,
+  normalizeSubAgentStatusToPhase,
+} from "../utils/subAgentActivity";
+import {
   buildAcceptFilter,
   classifyIntakeFile,
   downscaleImageForAttachment,
@@ -485,35 +489,6 @@ interface SubAgentActivityEntry {
     | undefined
     | Record<string, number>
     | ToolCallEvent[];
-}
-
-/**
- * Normalize a backend sub-agent status to the frontend phase vocabulary.
- *
- * The backend persists sub-agent status as "running" | "complete" | "failed" | "stopped",
- * and SubAgentResultBuilder transforms "complete" → "completed" for tool results.
- * The frontend terminal-phase checks use "complete" | "failed".
- *
- * "running" maps to "generating" so the StatusBarComponent shows active state.
- * Non-blocking dispatch closes the parent SSE stream while sub-agents continue
- * running — without this, the StatusBar would always show idle because no live
- * SSE events reach the client to override the hydrated phase.
- * If the sub-agent already completed before the hydration call, the next poll
- * will return "complete" and resolve the StatusBar to idle.
- */
-function normalizeSubAgentStatusToPhase(backendStatus: string): string {
-  switch (backendStatus) {
-    case "completed":
-    case "complete":
-    case "stopped":
-      return "complete";
-    case "running":
-      return "generating";
-    case "failed":
-      return "failed";
-    default:
-      return backendStatus;
-  }
 }
 
 /** Approval request from an agentic tool call. */
@@ -1354,8 +1329,12 @@ export default function AgentChatComponent({
   // stream is the primary delivery channel for live sub-agent events, but it
   // closes when the parent generation ends. Without this poll, the StatusBar
   // inside the tool call block would remain stuck on the hydrated state.
+  // Keyed on THIS client's stream, not isGenerating: the viewer WebSocket
+  // that opens for the still-active conversation raises isGenerating too,
+  // and does not carry sub-agent events.
+  const isDrivingActiveStream = !!activeId && generatingConversationIds.has(activeId);
   useEffect(() => {
-    if (!activeId || isGenerating || pendingBackgroundTaskCountForPolling <= 0) return;
+    if (!activeId || isDrivingActiveStream || pendingBackgroundTaskCountForPolling <= 0) return;
 
     const subAgentStatusPollInterval = setInterval(async () => {
       try {
@@ -1368,34 +1347,18 @@ export default function AgentChatComponent({
             0,
           ),
         );
-        setSubAgentToolActivity((previousSubAgentToolActivity) => {
-          const nextSubAgentToolActivity = { ...previousSubAgentToolActivity };
-          for (const subAgent of subAgentsList) {
-            const subAgentAgentId = subAgent.agentId || subAgent.id;
-            if (!subAgentAgentId) continue;
-            const normalizedPhase = normalizeSubAgentStatusToPhase(subAgent.status);
-            const existingEntry = nextSubAgentToolActivity[subAgentAgentId];
-            // Always update from the backend during background polling —
-            // the SSE stream is closed so no live data is arriving to conflict.
-            nextSubAgentToolActivity[subAgentAgentId] = {
-              toolCount: subAgent.toolCallCount || existingEntry?.toolCount || 0,
-              currentTool: existingEntry?.currentTool ?? null,
-              iteration: existingEntry?.iteration ?? 0,
-              toolNames: subAgent.toolNames || existingEntry?.toolNames || {},
-              description: subAgent.description,
-              phase: normalizedPhase,
-              conversationId: subAgent.id || existingEntry?.conversationId || undefined,
-            };
-          }
-          return nextSubAgentToolActivity;
-        });
+        // Always update from the backend during background polling —
+        // this client's SSE stream is closed, so no live data conflicts.
+        setSubAgentToolActivity((previousSubAgentToolActivity) =>
+          applyServerSubAgentStatuses(previousSubAgentToolActivity, subAgentsList),
+        );
       } catch {
         // Non-critical polling — silently ignore network failures
       }
     }, 3000);
 
     return () => clearInterval(subAgentStatusPollInterval);
-  }, [activeId, isGenerating, pendingBackgroundTaskCountForPolling]);
+  }, [activeId, isDrivingActiveStream, pendingBackgroundTaskCountForPolling]);
 
 
   // Snapshot cache: stores UI state for conversations that are generating in the background
@@ -6337,26 +6300,29 @@ export default function AgentChatComponent({
           abortRef.current = null;
           setCurrentTurnStart(null);
 
-          // Force all active sub-agents to terminal state. The SSE stream
-          // may close before all "complete" events arrive (e.g. non-blocking
-          // dispatch), leaving stale non-terminal entries that keep
-          // hasNonTerminalSubAgents true and the status bar stuck.
-          setSubAgentToolActivity((previousSubAgentToolActivity) => {
-            const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
-            const hasActiveSubAgent = Object.values(previousSubAgentToolActivity).some(
-              (subAgent: SubAgentActivityEntry) =>
-                !subAgent.phase || !terminalPhases.has(subAgent.phase),
-            );
-            if (!hasActiveSubAgent) return previousSubAgentToolActivity;
-            const nextSubAgentToolActivity: Record<string, SubAgentActivityEntry> = {};
-            for (const [id, subAgent] of Object.entries(previousSubAgentToolActivity)) {
-              nextSubAgentToolActivity[id] =
-                !subAgent.phase || !terminalPhases.has(subAgent.phase)
-                  ? { ...subAgent, phase: "complete", currentTool: null }
-                  : subAgent;
-            }
-            return nextSubAgentToolActivity;
-          });
+          // The stream is over, but sub-agents it dispatched may still be
+          // running — dispatch does not end the parent's turn. Settle every
+          // entry from the server: running ones stay running (the
+          // background poll keeps them current), finished ones resolve, and
+          // an entry the server no longer lists is completed — its terminal
+          // event was missed and would keep the status bar stuck.
+          PrismService.getCoordinatorSubAgents(genId)
+            .then((result) => {
+              if (conversationIdRef.current !== genId) return;
+              setSubAgentToolActivity((previousSubAgentToolActivity) =>
+                applyServerSubAgentStatuses(previousSubAgentToolActivity, result.subAgents || [], {
+                  completeUnlisted: true,
+                }),
+              );
+            })
+            .catch(() => {
+              if (conversationIdRef.current !== genId) return;
+              setSubAgentToolActivity((previousSubAgentToolActivity) =>
+                applyServerSubAgentStatuses(previousSubAgentToolActivity, [], {
+                  completeUnlisted: true,
+                }),
+              );
+            });
 
           setMessages((previousMessages) => {
             const last = previousMessages[previousMessages.length - 1];
