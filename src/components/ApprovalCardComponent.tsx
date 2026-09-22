@@ -14,6 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { ApprovalPreview, ApprovalDecision, ApprovalScope } from "../types/types";
+import AlwaysAllowControlComponent from "./AlwaysAllowControlComponent";
 import styles from "./ApprovalCardComponent.module.css";
 
 const TIER_CONFIG = {
@@ -42,6 +43,8 @@ interface ApprovalCardProps {
   isSubmitting?: boolean;
   /** Resolves to an error to show on the card, or null once the decision went through. */
   onDecide: (_decision: ApprovalCardDecision) => Promise<string | null>;
+  /** Offers "Always allow…": saves a permission rule, then allows this call. */
+  alwaysAllow?: { conversationId?: string | null; workspaceRoot?: string | null };
 }
 
 type Mode = "idle" | "deny" | "edit";
@@ -69,6 +72,7 @@ export default function ApprovalCardComponent({
   otherPendingInBatch = 0,
   isSubmitting = false,
   onDecide,
+  alwaysAllow,
 }: ApprovalCardProps) {
   const tierInfo = TIER_CONFIG[tier] || TIER_CONFIG[2];
   const TierIcon = tierInfo.icon;
@@ -290,6 +294,16 @@ export default function ApprovalCardComponent({
             Auto-approve this conversation
           </button>
         </div>
+      )}
+
+      {mode === "idle" && alwaysAllow && (
+        <AlwaysAllowControlComponent
+          toolName={toolName}
+          toolArgs={toolArgs}
+          conversationId={alwaysAllow.conversationId}
+          workspaceRoot={alwaysAllow.workspaceRoot}
+          onAllowed={() => void submit({ decision: "allow" })}
+        />
       )}
     </div>
   );

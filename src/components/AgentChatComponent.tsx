@@ -9086,6 +9086,7 @@ export default function AgentChatComponent({
             approvals={pendingApprovals}
             setApprovals={setPendingApprovals}
             onNotify={addToast}
+            alwaysAllow={{ conversationId, workspaceRoot: currentWorkspace?.path ?? null }}
           />
         )}
 

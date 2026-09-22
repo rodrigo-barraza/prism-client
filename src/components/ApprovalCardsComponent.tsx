@@ -13,6 +13,8 @@ interface ApprovalCardsProps {
   setApprovals: Dispatch<SetStateAction<PendingApproval[]>>;
   /** Toast for outcomes a card cannot show itself. */
   onNotify: (_message: string, _type: "error" | "warning" | "info") => void;
+  /** Where "Always allow…" rules apply; omitted, the cards don't offer it. */
+  alwaysAllow?: { conversationId?: string | null; workspaceRoot?: string | null };
 }
 
 /**
@@ -30,6 +32,7 @@ export default function ApprovalCardsComponent({
   approvals,
   setApprovals,
   onNotify,
+  alwaysAllow,
 }: ApprovalCardsProps) {
   const [submitting, setSubmitting] = useState<ReadonlySet<string>>(() => new Set());
   const pending = approvals.filter((approval) => approval.status === "pending");
@@ -90,6 +93,7 @@ export default function ApprovalCardsComponent({
           }
           isSubmitting={submitting.has(approval.id)}
           onDecide={(decision) => decide(approval, decision)}
+          alwaysAllow={alwaysAllow}
         />
       ))}
     </>

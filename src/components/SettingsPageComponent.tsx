@@ -9,6 +9,7 @@ import {
   Check,
   FolderOpen,
   Lock,
+  ShieldCheck,
   X,
   Plus,
   Plug,
@@ -51,6 +52,7 @@ import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
 import AvatarSelectorComponent from "./AvatarSelectorComponent";
 import MCPServersPanel from "./MCPServersPanelComponent";
+import PermissionRulesPanel from "./PermissionRulesPanelComponent";
 import HooksPanel from "./HooksPanelComponent";
 import ProjectInstructionsPanel from "./ProjectInstructionsPanelComponent";
 import PushNotificationsPanel from "./PushNotificationsPanelComponent";
@@ -2934,6 +2936,17 @@ export default function SettingsPageComponent() {
             Reset to Defaults
           </ButtonComponent>
         </CardComponent.Footer>
+      </CardComponent>
+
+      {/* -- Permissions Section ---------------------------------------- */}
+      <CardComponent className={styles["section"]} data-settings-section="permissions">
+        <CardComponent.Header
+          icon={ShieldCheck}
+          title="Permissions"
+          subtitle="Rules that allow, ask for, or deny tool calls — for one conversation, a project, or everywhere. Deny beats ask beats allow, and an agent can never change these itself."
+        />
+
+        <PermissionRulesPanel />
       </CardComponent>
 
       {/* -- MCP Servers Section ---------------------------------------- */}
