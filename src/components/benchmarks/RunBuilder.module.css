@@ -1,0 +1,91 @@
+/* ════════════════════════════════════════════════════════════
+   RunBuilder — the form beside its sticky estimate
+   ════════════════════════════════════════════════════════════ */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1020px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-inline-size: 0;
+}
+
+.aside {
+  position: sticky;
+  inset-block-start: 16px;
+  min-inline-size: 0;
+}
+
+.estimate {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.estimate-total {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.suite-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 8px;
+}
+
+.suite-option {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+  background: var(--background-surface);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.suite-option:hover {
+  border-color: var(--accent-primary);
+}
+
+.suite-option-selected {
+  border-color: var(--accent-primary);
+  background: var(--calculated-accent-primary-subtle);
+}
+
+.suite-name {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.entry-title {
+  all: unset;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 45%;
+}
+
+.entry-title:hover,
+.entry-title:focus-visible {
+  text-decoration: underline;
+}

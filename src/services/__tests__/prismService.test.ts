@@ -782,55 +782,7 @@ describe("PrismService", () => {
     });
   });
 
-  describe("Benchmarks & Synthesis & VRAM", () => {
-    it("getBenchmarkPresets, getBenchmarks, getBenchmarkStats, getBenchmarkModels", async () => {
-      fetchResult = {
-        ok: true,
-        json: async () => ({ presets: [] }),
-      };
-      await PrismService.getBenchmarkPresets();
-      expect(lastUrl).toContain("/benchmark/presets");
-
-      fetchResult = { ok: true, json: async () => ({}) };
-      await PrismService.getBenchmarks();
-      expect(lastUrl).toContain("/benchmark");
-
-      await PrismService.getBenchmarkStats();
-      expect(lastUrl).toContain("/benchmark/stats");
-
-      await PrismService.getBenchmarkModels();
-      expect(lastUrl).toContain("/benchmark/models");
-    });
-
-    it("createBenchmark, getBenchmark, deleteBenchmark, runBenchmark, getBenchmarkRuns, rerunBenchmark, abortBenchmarkRun, getActiveBenchmarks, getBenchmarkActive", async () => {
-      await PrismService.createBenchmark({} as any);
-      expect(lastUrl).toContain("/benchmark");
-
-      await PrismService.getBenchmark("bm-123");
-      expect(lastUrl).toContain("/benchmark/bm-123");
-
-      await PrismService.deleteBenchmark("bm-123");
-      expect(lastUrl).toContain("/benchmark/bm-123");
-
-      await PrismService.runBenchmark("bm-123", ["model-a"]);
-      expect(lastUrl).toContain("/benchmark/bm-123/run");
-
-      await PrismService.getBenchmarkRuns("bm-123");
-      expect(lastUrl).toContain("/benchmark/bm-123/runs");
-
-      await PrismService.rerunBenchmark("bm-123", "run-456");
-      expect(lastUrl).toContain("/benchmark/bm-123/runs/run-456/rerun");
-
-      await PrismService.abortBenchmarkRun("bm-123");
-      expect(lastUrl).toContain("/benchmark/bm-123/abort");
-
-      await PrismService.getActiveBenchmarks();
-      expect(lastUrl).toContain("/benchmark/active-list");
-
-      await PrismService.getBenchmarkActive("bm-123");
-      expect(lastUrl).toContain("/benchmark/bm-123/active");
-    });
-
+  describe("Synthesis & VRAM", () => {
     it("getSynthesisRuns, getSynthesisRun, createSynthesisRun, deleteSynthesisRun", async () => {
       await PrismService.getSynthesisRuns();
       expect(lastUrl).toContain("/synthesis");
@@ -880,32 +832,6 @@ describe("PrismService", () => {
   });
 
   describe("SSE Streaming Helper Functions", () => {
-    it("streamBenchmarkRun & followBenchmarkRun", () => {
-      const callbacks = {
-        onError: vi.fn(),
-      };
-
-      const mockReader = {
-        read: vi.fn()
-          .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode("data: {\"type\":\"chunk\",\"content\":\"hi\"}\n\n") })
-          .mockResolvedValue({ done: true }),
-      };
-      fetchResult = {
-        ok: true,
-        body: {
-          getReader: () => mockReader,
-        },
-      };
-
-      const stop3 = PrismService.streamBenchmarkRun("bm-123", [] as any, callbacks);
-      expect(lastUrl).toContain("/benchmark/bm-123/run");
-      stop3();
-
-      const stop4 = PrismService.followBenchmarkRun("bm-123", callbacks);
-      expect(lastUrl).toContain("/benchmark/bm-123/follow");
-      stop4();
-    });
-
     it("should process and dispatch server-sent event types correctly", () => {
       const callbacks = {
         onChunk: vi.fn(),
@@ -926,10 +852,6 @@ describe("PrismService", () => {
         onUserQuestion: vi.fn(),
         onTodoUpdate: vi.fn(),
         onBriefUpdate: vi.fn(),
-        onRunInfo: vi.fn(),
-        onModelStart: vi.fn(),
-        onModelComplete: vi.fn(),
-        onRunComplete: vi.fn(),
         onUsageUpdate: vi.fn(),
         onStatus: vi.fn(),
         onDone: vi.fn(),
@@ -956,10 +878,6 @@ describe("PrismService", () => {
         { type: "user_question" },
         { type: "todo_update" },
         { type: "brief_update" },
-        { type: "run_info" },
-        { type: "model_start" },
-        { type: "model_complete" },
-        { type: "run_complete" },
         { type: "usage_update" },
         { type: "status" },
         { type: "done" },
@@ -996,10 +914,6 @@ describe("PrismService", () => {
       expect(callbacks.onUserQuestion).toHaveBeenCalled();
       expect(callbacks.onTodoUpdate).toHaveBeenCalled();
       expect(callbacks.onBriefUpdate).toHaveBeenCalled();
-      expect(callbacks.onRunInfo).toHaveBeenCalled();
-      expect(callbacks.onModelStart).toHaveBeenCalled();
-      expect(callbacks.onModelComplete).toHaveBeenCalled();
-      expect(callbacks.onRunComplete).toHaveBeenCalled();
       expect(callbacks.onUsageUpdate).toHaveBeenCalled();
       expect(callbacks.onStatus).toHaveBeenCalled();
       expect(callbacks.onDone).toHaveBeenCalled();

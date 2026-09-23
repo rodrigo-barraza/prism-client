@@ -113,8 +113,7 @@ describe("protocolEvents.parseStreamEvent", () => {
     expect(parseStreamEvent({ type: "turn_start", role: "user", index: 0 }, "synthesis")).not.toBeNull();
     expect(parseStreamEvent({ type: "turn_start", role: "user", index: 0 }, "turn")).toBeNull();
     expect(parseStreamEvent({ type: "tool_execution" }, "synthesis")).toBeNull();
-    expect(parseStreamEvent({ type: "run_info", totalModels: 3 }, "benchmark")).not.toBeNull();
-    expect(parseStreamEvent({ type: "chunk", content: "x", _sourceModel: "m" }, "benchmark")).not.toBeNull();
+    expect(parseStreamEvent({ type: "run_info", totalModels: 3 }, "turn")).toBeNull();
   });
 });
 

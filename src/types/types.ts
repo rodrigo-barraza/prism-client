@@ -6,7 +6,7 @@
 // PrismService → hooks → components → utils — eliminating `as any`.
 // ============================================================
 
-import { MESSAGE_ROLES, EXECUTION_STATUS } from "../constants";
+import { MESSAGE_ROLES } from "../constants";
 import type { ToolDisplayMetadata } from "@rodrigo-barraza/utilities-library";
 import type {
   ApprovalDecidedEvent,
@@ -660,28 +660,11 @@ export type {
   DoneEvent,
 } from "./protocol/events";
 
-/**
- * The benchmark run stream (POST /benchmark/:id/run, GET /:id/follow) is
- * endpoint-specific, not part of the event protocol: these four framing
- * events, plus each model's turn events forwarded with `_sourceModel`.
- */
-export type BenchmarkStreamEvent =
-  | { type: "run_info"; totalModels: number }
-  | { type: "model_start"; provider: string; model: string; label?: string; isLocal?: boolean }
-  | ({ type: "model_complete" } & BenchmarkRunResult)
-  | ({ type: "run_complete" } & BenchmarkRun);
-
 /** Everything `PrismService._streamSSE` hands the dispatcher. */
-export type StreamEvent = TurnEvent | SynthesisEvent | BenchmarkStreamEvent;
+export type StreamEvent = TurnEvent | SynthesisEvent;
 
 /** The synthesis stream's `done`. */
 export type SynthesisDoneEvent = Extract<SynthesisEvent, { type: "done" }>;
-
-/** A benchmark framing event by `type`. */
-export type BenchmarkStreamEventOf<Type extends BenchmarkStreamEvent["type"]> = Extract<
-  BenchmarkStreamEvent,
-  { type: Type }
->;
 
 /** An `error` event, as the Error handed to `onError`. */
 export class StreamError extends Error {
@@ -958,10 +941,6 @@ export interface SSECallbacks {
   onGoalUpdate?: (_event: GoalUpdateEvent) => void;
   /** `permission_mode` — the conversation's permission mode is now `mode`. */
   onPermissionMode?: (_event: PermissionModeEvent) => void;
-  onRunInfo?: (_event: BenchmarkStreamEventOf<"run_info">) => void;
-  onModelStart?: (_event: BenchmarkStreamEventOf<"model_start">) => void;
-  onModelComplete?: (_event: BenchmarkStreamEventOf<"model_complete">) => void;
-  onRunComplete?: (_event: BenchmarkStreamEventOf<"run_complete">) => void;
   onUsageUpdate?: (_event: UsageUpdateEvent) => void;
   onContextBudget?: (_event: ContextBudgetEvent) => void;
   onStatus?: (_event: StatusEvent) => void;
@@ -1693,209 +1672,6 @@ export interface ToolSchema {
     parameters?: JsonSchemaObject;
   };
   display?: ToolDisplayMetadata;
-}
-
-// --- Benchmark Presets --------------------------------------
-
-export interface BenchmarkPreset {
-  name: string;
-  category: string;
-  description?: string;
-  systemPrompt: string;
-  prompt: string;
-  assertions?: Array<{ expectedValue: string; matchMode: string }>;
-  assertionOperator?: string;
-  agentAssertions?: AgentBenchmarkAssertion[];
-  agentAssertionOperator?: string;
-  enabledTools?: string[];
-}
-
-// --- Benchmarks ---------------------------------------------
-
-export interface BenchmarkPrompt {
-  role: string;
-  content: string;
-}
-
-export interface BenchmarkAssertion {
-  expectedValue: string;
-  matchMode: string;
-}
-
-export interface AgentBenchmarkAssertion {
-  type?: string;
-  operator?: string;
-  operand?: string | number;
-  /** Tool-scoped assertions (comma-separated list for tool_sequence) */
-  toolName?: string;
-  /** tool_sequence: require the exact full order */
-  exactOrder?: boolean;
-  expectedValue?: string;
-  matchMode?: string;
-  /** llm_judge: grading rubric */
-  rubric?: string;
-  /** llm_judge: optional "provider:model" judge override */
-  judgeModel?: string;
-}
-
-export interface BenchmarkJudgeVerdict {
-  passed: boolean;
-  score?: number;
-  reasoning?: string;
-  model?: string;
-  provider?: string;
-  cost?: number;
-  error?: string;
-}
-
-export interface BenchmarkAssertionResult {
-  kind: "text" | "behavior";
-  label: string;
-  passed: boolean;
-  actual?: string;
-  error?: string;
-  judge?: BenchmarkJudgeVerdict;
-}
-
-export interface Benchmark {
-  _id: ObjectId;
-  id?: string;
-  name: string;
-  description?: string;
-  prompts?: BenchmarkPrompt[];
-  models?: string[];
-  latestRun?: BenchmarkRun;
-  createdAt: string;
-  updatedAt?: string;
-  /** Single-prompt shorthand (server normalizes to `prompts[]`) */
-  prompt?: string;
-  systemPrompt?: string;
-  benchmarkMode?: string;
-  expectedValue?: string;
-  matchMode?: string;
-  assertions?: BenchmarkAssertion[];
-  assertionOperator?: string;
-  agentAssertions?: AgentBenchmarkAssertion[];
-  agentAssertionOperator?: string;
-  /** Tools exposed to tool-enabled targets during runs */
-  enabledTools?: string[];
-  /** Default repeated executions per target */
-  trials?: number;
-  tags?: string[];
-  /** Aggregated cost across all runs (enriched at list time) */
-  cumulativeCost?: number;
-  /** Number of persisted runs (enriched at list time) */
-  runCount?: number;
-}
-
-export interface BenchmarkRunResult {
-  model: string;
-  provider: string;
-  response: string;
-  inputTokens?: number;
-  outputTokens?: number;
-  estimatedCost?: number;
-  /** LLM-judge spend for this result */
-  judgeCost?: number;
-  /** Wall-clock seconds (server-persisted) */
-  latency?: number;
-  latencyMs?: number;
-  ttftMs?: number;
-  tokensPerSecond?: number;
-  error?: string;
-  label?: string;
-  display_name?: string;
-  passed?: boolean;
-  /** Per-assertion pass/fail breakdown */
-  assertionResults?: BenchmarkAssertionResult[];
-  turnCount?: number;
-  /** Trial index (1-based) when a target ran multiple times */
-  trial?: number;
-  trialCount?: number;
-  thinking?: string;
-  toolCalls?: Array<{
-    id?: string;
-    name?: string;
-    args?: unknown;
-    result?: unknown;
-    status?: string;
-  }>;
-  toolNames?: string[];
-  thinkingEnabled?: boolean;
-  toolsEnabled?: boolean;
-  agent?: string;
-}
-
-export interface BenchmarkRunSummary {
-  total: number;
-  passed: number;
-  failed: number;
-  errored: number;
-  totalCost?: number;
-}
-
-export interface BenchmarkRun {
-  _id: ObjectId;
-  id?: string;
-  benchmarkId: ObjectId;
-  results?: BenchmarkRunResult[];
-  models?: BenchmarkRunResult[];
-  status?:
-    | typeof EXECUTION_STATUS.PENDING
-    | typeof EXECUTION_STATUS.RUNNING
-    | typeof EXECUTION_STATUS.COMPLETED
-    | typeof EXECUTION_STATUS.FAILED
-    | "aborted";
-  startedAt?: string;
-  completedAt?: string;
-  aborted?: boolean;
-  /** Trials per target used for this run */
-  trials?: number;
-  summary?: BenchmarkRunSummary;
-}
-
-export interface BenchmarkListResponse {
-  benchmarks: Benchmark[];
-  count: number;
-}
-
-export interface BenchmarkBreakdown {
-  name: string;
-  total: number;
-  passed: number;
-  failed: number;
-  errored: number;
-  latestPassed?: boolean;
-  latestErrored?: boolean;
-}
-
-export interface BenchmarkModelStat {
-  model: string;
-  provider: string;
-  label?: string;
-  total: number;
-  passed: number;
-  failed: number;
-  errored: number;
-  passRate: number;
-  avgLatency: number;
-  avgTtftMs?: number;
-  totalCost: number;
-  runCount?: number;
-  runs?: number;
-  avgLatencyMs?: number;
-  avgTokensPerSecond?: number;
-  avgCost?: number;
-  thinkingEnabled?: boolean;
-  toolsEnabled?: boolean;
-  agent?: string | null;
-  benchmarks?: BenchmarkBreakdown[];
-}
-
-export interface BenchmarkModelStats {
-  models: BenchmarkModelStat[];
-  totalModels: number;
-  totalBenchmarks: number;
 }
 
 // --- VRAM Benchmarks ----------------------------------------

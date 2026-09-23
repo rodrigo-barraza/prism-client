@@ -25,9 +25,8 @@ import type { StreamEvent } from "../types/types";
  */
 
 /** Which stream a frame came from — each has its own event types. */
-export type StreamProtocol = "turn" | "synthesis" | "benchmark";
+export type StreamProtocol = "turn" | "synthesis";
 
-const BENCHMARK_FRAMING_TYPES = new Set(["run_info", "model_start", "model_complete", "run_complete"]);
 const SYNTHESIS_TYPES = new Set<string>(SYNTHESIS_EVENT_TYPES);
 const reportedUnknownTypes = new Set<string>();
 const reportedViolations = new Set<string>();
@@ -39,9 +38,6 @@ function isKnownType(protocol: StreamProtocol, type: string): boolean {
       return isTurnEventType(type);
     case "synthesis":
       return SYNTHESIS_TYPES.has(type);
-    case "benchmark":
-      // Its framing events, plus each model's turn events forwarded as-is.
-      return BENCHMARK_FRAMING_TYPES.has(type) || isTurnEventType(type);
   }
 }
 
@@ -92,7 +88,7 @@ export function parseStreamEvent(raw: unknown, protocol: StreamProtocol): Stream
   return raw as StreamEvent;
 }
 
-/** The benchmark stream tags each model's forwarded turn events with the model that produced them. */
+/** A stream that multiplexes several models tags each forwarded event with the model that produced it. */
 export function sourceModelOf(event: StreamEvent): string | undefined {
   const sourceModel = (event as { _sourceModel?: unknown })._sourceModel;
   return typeof sourceModel === "string" ? sourceModel : undefined;

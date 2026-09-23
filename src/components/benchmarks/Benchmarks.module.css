@@ -1,0 +1,535 @@
+/* ════════════════════════════════════════════════════════════
+   Benchmarks — shared layout, tables, chips and the chart palette
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Chart palette ────────────────────────────────────────────
+   The dataviz reference palette, validated on Prism's surfaces
+   (#13141c dark, #ffffff light): categorical slots in fixed order
+   (color follows the contestant's position in its run), a one-hue
+   sequential ramp for scores, and a blue↔red diverging pair with a
+   gray midpoint for differences. Dark is the default theme; the light
+   themes step the same hues for a light surface. */
+.theme {
+  --bench-series-1: #3987e5;
+  --bench-series-2: #d95926;
+  --bench-series-3: #199e70;
+  --bench-series-4: #c98500;
+  --bench-series-5: #d55181;
+  --bench-series-6: #008300;
+  --bench-series-7: #9085e9;
+  --bench-series-8: #e66767;
+  --bench-series-other: #6b6a66;
+  --bench-sequential: #3987e5;
+  --bench-diverge-positive: #3987e5;
+  --bench-diverge-negative: #e66767;
+  --bench-diverge-neutral: #383835;
+  --bench-grid: #2c2c2a;
+  --bench-axis: #383835;
+  --bench-good: #0ca30c;
+  --bench-bad: #d03b3b;
+  --bench-warn: #fab219;
+}
+
+:global([data-theme="light"]) .theme,
+:global([data-theme="muted"]) .theme {
+  --bench-series-1: #2a78d6;
+  --bench-series-2: #eb6834;
+  --bench-series-3: #1baf7a;
+  --bench-series-4: #eda100;
+  --bench-series-5: #e87ba4;
+  --bench-series-6: #008300;
+  --bench-series-7: #4a3aa7;
+  --bench-series-8: #e34948;
+  --bench-series-other: #898781;
+  --bench-sequential: #2a78d6;
+  --bench-diverge-positive: #2a78d6;
+  --bench-diverge-negative: #e34948;
+  --bench-diverge-neutral: #f0efec;
+  --bench-grid: #e1e0d9;
+  --bench-axis: #c3c2b7;
+  --bench-good: #006300;
+  --bench-bad: #d03b3b;
+  --bench-warn: #b36b00;
+}
+
+/* ── Page ─────────────────────────────────────────────────── */
+
+.page {
+  padding-block: 32px 80px;
+  padding-inline: 32px;
+  max-inline-size: 1320px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-inline-size: 0;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding-inline: 16px;
+    padding-block: 20px 64px;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-inline-size: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.section-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.section-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.card {
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+  background: var(--background-surface);
+  padding: 16px;
+  min-inline-size: 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-inline-size: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.small {
+  font-size: var(--font-size-xs);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* A run's actions: one line that scrolls sideways on a phone, rather than five rows above the results. */
+@media (max-width: 720px) {
+  .run-actions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: -16px;
+    padding-inline: 16px;
+  }
+
+  .run-actions > * {
+    flex: none;
+  }
+}
+
+/* ── Tables ───────────────────────────────────────────────── */
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+  background: var(--background-surface);
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  text-align: start;
+  font-weight: 500;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  background: var(--background-elevated);
+  padding: 8px 10px;
+  white-space: nowrap;
+  border-block-end: 1px solid var(--calculated-border-color);
+}
+
+.table td {
+  padding: 8px 10px;
+  border-block-end: 1px solid var(--calculated-border-subtle);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-block-end: none;
+}
+
+.table .numeric {
+  text-align: end;
+  white-space: nowrap;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.clickable-row:hover,
+.clickable-row:focus-visible {
+  background: var(--calculated-accent-primary-subtle);
+  outline: none;
+}
+
+.sort-button {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sort-button:hover,
+.sort-button:focus-visible {
+  color: var(--text-primary);
+}
+
+/* ── Contestant identity ──────────────────────────────────── */
+
+.contestant {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-inline-size: 0;
+}
+
+.swatch {
+  flex: none;
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 50%;
+}
+
+.contestant-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-inline-size: 320px;
+}
+
+.contestant-sub {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+/* ── Chips & badges ───────────────────────────────────────── */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  background: var(--background-elevated);
+  border: 1px solid var(--calculated-border-subtle);
+  white-space: nowrap;
+}
+
+.chip-good {
+  color: var(--bench-good);
+}
+
+.chip-bad {
+  color: var(--bench-bad);
+}
+
+/* ── Stat tiles ───────────────────────────────────────────── */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+  background: var(--background-surface);
+}
+
+.tile-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.tile-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tile-detail {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* ── Verdict ──────────────────────────────────────────────── */
+
+.verdict {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--calculated-border-color);
+  background: var(--background-surface);
+  color: var(--text-primary);
+  line-height: 1.55;
+}
+
+.verdict strong {
+  font-weight: 600;
+}
+
+.verdict-icon {
+  flex: none;
+  margin-block-start: 2px;
+  color: var(--accent-primary);
+}
+
+/* ── Interval bar (score with its 95 % interval) ──────────── */
+
+.interval {
+  position: relative;
+  inline-size: 96px;
+  block-size: 14px;
+  flex: none;
+}
+
+.interval-track {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 6px;
+  block-size: 2px;
+  background: var(--bench-grid);
+  border-radius: 1px;
+}
+
+.interval-range {
+  position: absolute;
+  inset-block-start: 5px;
+  block-size: 4px;
+  border-radius: 2px;
+  opacity: 0.45;
+}
+
+.interval-point {
+  position: absolute;
+  inset-block-start: 2px;
+  inline-size: 10px;
+  block-size: 10px;
+  margin-inline-start: -5px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--background-surface);
+}
+
+/* ── Empty & errors ───────────────────────────────────────── */
+
+.empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+}
+
+.error-text {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+.warning-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.warning-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.warning-icon {
+  flex: none;
+  margin-block-start: 1px;
+  color: var(--bench-warn);
+}
+
+/* ── Forms ────────────────────────────────────────────────── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-inline-size: 0;
+}
+
+.field-label {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.field-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* The names behind a chart's numbered points. */
+.chart-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.chart-key li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-inline-size: 0;
+}
+
+.chart-key-dot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.chart-key-rank {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 16px;
+}
+
+.native-input,
+.native-select,
+.native-textarea {
+  inline-size: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--calculated-border-color);
+  background: var(--background-base);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+}
+
+.native-textarea {
+  resize: vertical;
+  min-block-size: 72px;
+  line-height: 1.5;
+}
+
+.native-input:focus-visible,
+.native-select:focus-visible,
+.native-textarea:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
+}
+
+.code-block {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--border-radius-sm);
+  background: var(--background-base);
+  border: 1px solid var(--calculated-border-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-block-size: 420px;
+  overflow: auto;
+  color: var(--text-primary);
+}
+
+.link-button {
+  all: unset;
+  cursor: pointer;
+  color: var(--accent-primary);
+  font-size: var(--font-size-xs);
+}
+
+.link-button:hover,
+.link-button:focus-visible {
+  text-decoration: underline;
+}

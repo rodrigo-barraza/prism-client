@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Benchmarks",
   description:
-    "Create custom LLM accuracy tests and benchmark models with pass/fail evaluation.",
+    "Compare models and agents on suites of test cases, with confidence intervals, paired significance tests, reliability, cost and latency — and a blind arena.",
 };
 
 export default function BenchmarksLayout({
