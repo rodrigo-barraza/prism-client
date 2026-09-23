@@ -30,7 +30,7 @@ describe("GoalPanelComponent", () => {
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "42");
     expect(screen.getByText("42%")).toBeInTheDocument();
     expect(screen.getByText("Types and service wired")).toBeInTheDocument();
-    expect(screen.getByTitle("Spent / budget")).toHaveTextContent("$3.50 / $20.00");
+    expect(screen.getByTitle("Spent / budget (main loop, sub-agents and verifier)")).toHaveTextContent("$3.50 / $20.00");
     expect(screen.getByTitle("Turns used / max")).toHaveTextContent("7 / 40 turns");
     expect(screen.getByText(/^Due /)).toBeInTheDocument();
     expect(screen.queryByRole("alert")).toBeNull();
@@ -80,7 +80,7 @@ describe("GoalPanelComponent", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Waiting on API credentials");
     expect(screen.getByText("Blocked")).toBeInTheDocument();
     expect(screen.getByRole("progressbar")).not.toHaveAttribute("aria-valuenow");
-    expect(screen.getByTitle("Spent / budget").className).toContain("meta-over");
+    expect(screen.getByTitle("Spent / budget (main loop, sub-agents and verifier)").className).toContain("meta-over");
     // A blocked / completed goal has no pause toggle
     expect(screen.queryByRole("button", { name: /Pause goal|Resume goal/ })).toBeNull();
   });

@@ -766,12 +766,51 @@ export interface ConversationGoalBudget {
   deadline?: string;
 }
 
-export type ConversationGoalStatus = "active" | "paused" | "completed" | "blocked";
+/** `proposed` only on a goal the model proposed, waiting for approval. */
+export type ConversationGoalStatus = "active" | "paused" | "completed" | "blocked" | "proposed";
+
+/** One criterion of a goal's rubric — what the verifier checks. */
+export interface GoalCriterion {
+  id: string;
+  criterion: string;
+}
+
+export interface GoalVerifierModel {
+  provider: string;
+  model: string;
+}
+
+/** Why a goal is paused — every pause records one. */
+export type GoalPauseReason =
+  | "budget"
+  | "max_iterations"
+  | "empty_continuations"
+  | "user_message"
+  | "restart"
+  | "failed"
+  | "user";
+
+/** The goal verifier's last verdict, per criterion. */
+export interface GoalVerification {
+  verdict: "satisfied" | "needs_revision" | "failed";
+  criteria: Array<{ id: string; pass: boolean; evidence: string }>;
+  reason?: string;
+  /** 1-based round since the goal was last (re)activated. */
+  iteration: number;
+  verifier: GoalVerifierModel;
+  costDollars: number;
+  at: string;
+}
 
 /** Persisted long-running objective for a conversation (`/conversations/:id/goal`). */
 export interface ConversationGoal {
   objective: string;
   completionCriteria?: string;
+  rubric?: GoalCriterion[];
+  stepRubric?: GoalCriterion[];
+  /** Absent = the default verifier (a model on another provider). */
+  verifier?: GoalVerifierModel;
+  maxIterations?: number;
   budget?: ConversationGoalBudget;
   progress: {
     summary: string;
@@ -780,10 +819,26 @@ export interface ConversationGoal {
   };
   blockedOn?: string | null;
   status: ConversationGoalStatus;
+  pause?: { reason: GoalPauseReason; detail?: string; at: string } | null;
+  verification?: GoalVerification | null;
+  verificationRounds?: number;
+  continuingSince?: string | null;
   spentDollars: number;
   turnsUsed: number;
   createdAt: string;
   updatedAt: string;
+}
+
+/** What the goal form sends: PUT creates, PATCH edits in place. */
+export interface ConversationGoalInput {
+  objective: string;
+  /** Existing criteria keep their ids; new ones get theirs from the service. */
+  rubric: Array<{ id?: string; criterion: string }>;
+  /** null = back to the default verifier (PATCH). */
+  verifier?: GoalVerifierModel | null;
+  maxIterations?: number;
+  /** null = no budget (PATCH). */
+  budget?: ConversationGoalBudget | null;
 }
 
 export interface ContextBudget {

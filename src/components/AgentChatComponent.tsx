@@ -1133,7 +1133,7 @@ export default function AgentChatComponent({
   // NON-blocking questions (agent keeps working), the conversation goal and
   // the composer's while-running send mode live in their own hooks.
   const nonBlockingQuestions = useNonBlockingQuestions(conversationId);
-  const conversationGoal = useConversationGoal(conversationId);
+  const conversationGoal = useConversationGoal(conversationId, agentProject);
   const permissionMode = usePermissionMode(conversationId);
   const [composerSendMode, setComposerSendMode] = useComposerSendMode();
   // Stable actions off the hooks — the hook objects change identity each
@@ -9554,6 +9554,12 @@ export default function AgentChatComponent({
           onClear={() => void conversationGoal.clear()}
           isBusy={conversationGoal.isBusy}
           error={conversationGoal.error}
+          proposal={conversationGoal.proposal}
+          onSave={conversationGoal.save}
+          onApproveProposal={() => void conversationGoal.approveProposal()}
+          onDeclineProposal={() => void conversationGoal.declineProposal()}
+          models={config?.textToText?.models}
+          canCreate={!!conversationId && !isNoAgent}
         />
         <TurnActivityPanelComponent activity={turnActivity} />
         {!isNoAgent && (

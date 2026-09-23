@@ -103,6 +103,15 @@ describe("persisted mid-turn messages", () => {
     expect(turnInputBadgeLabel({ id: "a", kind: "user_update", status: "applied" })).toBe("Applied mid-turn");
     expect(turnInputBadgeLabel({ id: "a", kind: "question_answer", status: "applied" })).toBe("Answer");
   });
+
+  it("the goal verifier's gaps come from the Verifier, never the user", () => {
+    const revision = { id: "g", kind: "goal_revision" as const, status: "applied" as const };
+    expect(turnInputAuthorLabel(revision)).toBe("Verifier");
+    expect(turnInputBadgeLabel(revision)).toBe("Goal check");
+    expect(
+      turnInputDisplayText({ content: "<goal-verification>\n\nNot met: [c2]\n\n</goal-verification>" }),
+    ).toBe("Not met: [c2]");
+  });
 });
 
 describe("messages[] bookkeeping", () => {

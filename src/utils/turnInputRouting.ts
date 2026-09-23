@@ -100,7 +100,7 @@ export function isTurnInputMessage(
   return resolveTurnInput(message) !== null;
 }
 
-const WRAPPER_TAG = /^\s*<(user-update|user-answer)>\s*([\s\S]*?)\s*<\/\1>\s*$/;
+const WRAPPER_TAG = /^\s*<(user-update|user-answer|goal-verification)>\s*([\s\S]*?)\s*<\/\1>\s*$/;
 
 /** What a mid-turn bubble shows: the typed text, never the tag wrapper. */
 export function turnInputDisplayText(
@@ -115,13 +115,18 @@ export function turnInputDisplayText(
 /**
  * Who a mid-turn bubble is from. An `agent_message` is never the user's: a
  * sub-agent's progress in its parent's conversation, or the parent's
- * follow-up in a sub-agent's.
+ * follow-up in a sub-agent's. A `goal_revision` is the goal verifier
+ * sending the work back.
  */
-export function turnInputAuthorLabel(turnInput: MessageTurnInput | null): "Agent" | "User" {
+export function turnInputAuthorLabel(
+  turnInput: MessageTurnInput | null,
+): "Agent" | "User" | "Verifier" {
+  if (turnInput?.kind === "goal_revision") return "Verifier";
   return turnInput?.kind === "agent_message" ? "Agent" : "User";
 }
 
 export function turnInputBadgeLabel(turnInput: MessageTurnInput): string {
+  if (turnInput.kind === "goal_revision") return "Goal check";
   if (turnInput.kind === "question_answer") return "Answer";
   if (turnInput.kind === "task_completion") return "Task result";
   if (turnInput.kind === "agent_message") return "Agent message";
