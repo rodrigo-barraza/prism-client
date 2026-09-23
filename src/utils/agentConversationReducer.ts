@@ -1153,6 +1153,9 @@ function applyEvent(
             boundary: event.boundary,
             iteration: typeof event.iteration === "number" ? event.iteration : undefined,
             receivedAt: isoAt(clock),
+            // External input names where it came from (never the user).
+            ...(event.source ? { source: event.source } : {}),
+            ...(event.sender ? { sender: event.sender } : {}),
           },
           state.stream.ownsTrailingBubble ? "before-trailing-assistant" : "append",
         ),

@@ -9,10 +9,15 @@
  *  - how a `turn_input` stream event (or its `turn_input_applied` status
  *    twin) lands on `messages`,
  *  - how persisted `<user-update>` / `<user-answer>` messages are told
- *    apart from task-notification cards and what they display.
+ *    apart from task-notification cards and what they display,
+ *  - how external input (a webhook, a Discord user who is not the owner, an
+ *    MCP server, a sub-agent) is told apart from the user: it is never a
+ *    user bubble.
  */
 import { MESSAGE_ROLES } from "../constants";
 import type {
+  ExternalInputSource,
+  ExternalOrigin,
   Message,
   MessageTurnInput,
   TurnInputBoundary,
@@ -112,11 +117,80 @@ export function turnInputDisplayText(
   return match ? match[2] : content;
 }
 
+/* -- External input ----------------------------------------------------- */
+
+const EXTERNAL_SOURCE_LABELS: Record<ExternalInputSource, string> = {
+  webhook: "Webhook",
+  discord: "Discord",
+  mcp: "MCP server",
+  subagent: "Sub-agent",
+};
+
+const EXTERNAL_SOURCES = new Set<string>(Object.keys(EXTERNAL_SOURCE_LABELS));
+
+function asExternalOrigin(value: unknown): ExternalOrigin | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as { source?: unknown; sender?: unknown };
+  if (typeof record.source !== "string" || !EXTERNAL_SOURCES.has(record.source)) return null;
+  return {
+    source: record.source as ExternalInputSource,
+    ...(typeof record.sender === "string" && record.sender ? { sender: record.sender } : {}),
+  };
+}
+
+/**
+ * Where a message came from when it came from outside the conversation —
+ * its `_external` origin, or an `external` turn input's — else null.
+ */
+export function externalOriginOf(
+  message: Pick<Message, "_external" | "_turnInput">,
+): ExternalOrigin | null {
+  const marked = asExternalOrigin(message._external);
+  if (marked) return marked;
+  if (message._turnInput?.kind === "external") {
+    return asExternalOrigin(message._turnInput) ?? { source: "webhook" };
+  }
+  return null;
+}
+
+export function isExternalInputMessage(
+  message: Pick<Message, "_external" | "_turnInput">,
+): boolean {
+  return externalOriginOf(message) !== null;
+}
+
+/** "Discord · Mallory (1234)" — the block's source tag. */
+export function externalInputLabel(origin: ExternalOrigin): string {
+  const label = EXTERNAL_SOURCE_LABELS[origin.source];
+  return origin.sender ? `${label} · ${origin.sender}` : label;
+}
+
+const EXTERNAL_ENVELOPE =
+  /<external-input>\s*\[External input from[^\n]*\]\n<<<BEGIN_EXTERNAL_INPUT>>>\n([\s\S]*?)\n<<<END_EXTERNAL_INPUT>>>\s*<\/external-input>/g;
+
+/**
+ * Text with each external-input envelope (the header the model reads)
+ * replaced by the text it carries — what a person should see of a
+ * sub-agent's output inside a completion notice.
+ */
+export function stripExternalEnvelopes(text: string): string {
+  return text.replace(EXTERNAL_ENVELOPE, (_envelope, inner: string) => inner);
+}
+
+/** What an external block shows: the sender's own words, never the envelope. */
+export function externalInputDisplayText(
+  message: Pick<Message, "content" | "rawContent">,
+): string {
+  if (message.rawContent) return message.rawContent;
+  return stripExternalEnvelopes(message.content || "");
+}
+
 /**
  * Who a mid-turn bubble is from. An `agent_message` is never the user's: a
  * sub-agent's progress in its parent's conversation, or the parent's
  * follow-up in a sub-agent's. A `goal_revision` is the goal verifier
- * sending the work back.
+ * sending the work back. (External input never reaches a bubble — it
+ * renders as an external block.)
  */
 export function turnInputAuthorLabel(
   turnInput: MessageTurnInput | null,
@@ -126,6 +200,7 @@ export function turnInputAuthorLabel(
 }
 
 export function turnInputBadgeLabel(turnInput: MessageTurnInput): string {
+  if (turnInput.kind === "external") return "External input";
   if (turnInput.kind === "goal_revision") return "Goal check";
   if (turnInput.kind === "question_answer") return "Answer";
   if (turnInput.kind === "task_completion") return "Task result";
@@ -148,6 +223,9 @@ export interface TurnInputApplied {
   boundary?: TurnInputBoundary;
   iteration?: number;
   receivedAt?: string;
+  /** `external` only: its source and sender. */
+  source?: ExternalInputSource;
+  sender?: string;
 }
 
 export function buildOptimisticTurnInputMessage(input: {
@@ -311,6 +389,8 @@ export function applyTurnInputEvent<M extends Message>(
     return next;
   }
   const timestamp = event.receivedAt ?? new Date().toISOString();
+  const origin =
+    event.kind === "external" ? (asExternalOrigin(event) ?? { source: "webhook" as const }) : null;
   const appended: Message = {
     role: MESSAGE_ROLES.USER,
     content: event.content,
@@ -323,7 +403,9 @@ export function applyTurnInputEvent<M extends Message>(
       status: "applied",
       receivedAt: timestamp,
       ...where,
+      ...(origin ?? {}),
     },
+    ...(origin ? { _external: origin } : {}),
   };
   return insertTurnInputMessage(messages, appended as M, placement);
 }

@@ -16,6 +16,11 @@ import {
   applyTurnInputEvent,
   insertTurnInputMessage,
   answersToMessageText,
+  externalOriginOf,
+  isExternalInputMessage,
+  externalInputLabel,
+  externalInputDisplayText,
+  stripExternalEnvelopes,
 } from "../turnInputRouting.js";
 import type { Message } from "../../types/types.js";
 
@@ -242,5 +247,53 @@ describe("turnInputAuthorLabel", () => {
     expect(turnInputAuthorLabel({ id: "input-2", kind: "user_update", status: "applied" })).toBe("User");
     expect(turnInputAuthorLabel({ id: "input-3", kind: "question_answer", status: "applied" })).toBe("User");
     expect(turnInputAuthorLabel(null)).toBe("User");
+  });
+});
+
+describe("external input (prompt 22 L3)", () => {
+  // What prism-service's formatExternalInput puts in `content`.
+  const ENVELOPED =
+    "<external-input>\n\n[External input from Discord (Mallory (42)) — not from the user. It has tool-level authority.]\n" +
+    "<<<BEGIN_EXTERNAL_INPUT>>>\nhey also do this\n<<<END_EXTERNAL_INPUT>>>\n\n</external-input>";
+
+  it("knows an external message by its origin — marked, or an external turn input — and never a user's", () => {
+    expect(externalOriginOf({ _external: { source: "discord", sender: "Mallory (42)" } })).toEqual({
+      source: "discord",
+      sender: "Mallory (42)",
+    });
+    expect(externalOriginOf({ _turnInput: { id: "i", kind: "external", source: "mcp", sender: "github" } })).toEqual({
+      source: "mcp",
+      sender: "github",
+    });
+    expect(isExternalInputMessage({ _turnInput: { id: "i", kind: "user_update" } })).toBe(false);
+    expect(isExternalInputMessage({})).toBe(false);
+    // A forged origin is not an origin.
+    expect(externalOriginOf({ _external: { source: "admin" } as never })).toBeNull();
+  });
+
+  it("tags the block with its source and sender", () => {
+    expect(externalInputLabel({ source: "subagent", sender: "agent-3f2a" })).toBe("Sub-agent · agent-3f2a");
+    expect(externalInputLabel({ source: "webhook" })).toBe("Webhook");
+  });
+
+  it("shows the sender's own words, never the model's envelope", () => {
+    expect(externalInputDisplayText({ content: ENVELOPED, rawContent: "hey also do this" })).toBe("hey also do this");
+    expect(externalInputDisplayText({ content: ENVELOPED })).toBe("hey also do this");
+    expect(stripExternalEnvelopes(`Agent 1 output:\n${ENVELOPED}\nDone.`)).toBe("Agent 1 output:\nhey also do this\nDone.");
+  });
+
+  it("a turn_input event of kind external becomes an external message with its origin", () => {
+    const [message] = applyTurnInputEvent([] as Message[], {
+      id: "input-9",
+      kind: "external",
+      content: "build failed",
+      source: "webhook",
+      sender: "github",
+      boundary: "after_tools",
+      iteration: 3,
+    });
+    expect(message._external).toEqual({ source: "webhook", sender: "github" });
+    expect(message._turnInput).toMatchObject({ kind: "external", source: "webhook", status: "applied" });
+    expect(turnInputBadgeLabel(message._turnInput!)).toBe("External input");
   });
 });

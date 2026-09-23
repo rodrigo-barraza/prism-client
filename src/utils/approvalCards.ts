@@ -43,6 +43,11 @@ export interface PendingApproval {
    * in every mode, and no "Always allow" rule can stop it asking.
    */
   protectedPath?: string;
+  /**
+   * The taint check: the arguments carry text the conversation read from
+   * untrusted content — asks in every mode, no "Always allow".
+   */
+  untrustedText?: { excerpt: string; source: string };
   status: ApprovalCardStatus;
 }
 
@@ -74,8 +79,16 @@ export function approvalFromEvent(data: ApprovalRequiredEvent): PendingApproval 
     ...(typeof data.protectedPath === "string" && data.protectedPath
       ? { protectedPath: data.protectedPath }
       : {}),
+    ...untrustedTextFields(data.untrustedText),
     status: "pending",
   };
+}
+
+function untrustedTextFields(value: unknown): Pick<PendingApproval, "untrustedText"> {
+  const text = value as { excerpt?: unknown; source?: unknown } | null | undefined;
+  return typeof text?.excerpt === "string" && typeof text.source === "string"
+    ? { untrustedText: { excerpt: text.excerpt, source: text.source } }
+    : {};
 }
 
 /** Add a card, replacing one with the same id (a replayed event). */
@@ -95,6 +108,7 @@ interface PendingApprovalSnapshotCall {
   _approval?: { tier?: string | number };
   requestedBy?: string;
   reason?: string | null;
+  untrustedText?: { excerpt: string; source: string };
 }
 
 /** Cards for the calls a conversation's running turn is still waiting on (GET /conversations/:id). */
@@ -112,6 +126,7 @@ export function approvalsFromPendingSnapshot(
             toolArgs: toolCall.args || {},
             tier: normalizeTier(toolCall._approval?.tier),
             ...(toolCall.preview ? { preview: toolCall.preview } : {}),
+            ...untrustedTextFields(toolCall.untrustedText),
             ...retryFields(toolCall.requestedBy, toolCall.reason),
             ...autoModeFields(toolCall.requestedBy, toolCall.reason),
             status: "pending" as const,

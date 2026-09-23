@@ -55,11 +55,16 @@ import {
   IconButtonComponent,
 } from "@rodrigo-barraza/components-library";
 import SubAgentNotificationComponent from "./SubAgentNotificationComponent";
+import ExternalInputBlockComponent from "./ExternalInputBlockComponent";
 
 import PlanCardComponent from "./PlanCardComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 import styles from "./MessageListComponent.module.css";
 import {
+  externalInputDisplayText,
+  externalOriginOf,
+  isExternalInputMessage,
+  stripExternalEnvelopes,
   isUserAuthoredNotificationSource,
   isTurnInputMessage,
   resolveTurnInput,
@@ -110,6 +115,9 @@ export interface SubAgentToolActivityItem {
  * fall back to content-based <task-notification> XML detection.  */
 
 function isNotificationMessage(message: Message): boolean {
+  // External input (a webhook, a Discord user, an MCP server, a sub-agent)
+  // is shown — as an external block, never a user bubble.
+  if (isExternalInputMessage(message)) return false;
   // Mid-turn steering updates / question answers are persisted with a
   // `_notificationSource` too ("user-update" | "user-answer"), but they
   // are the USER's own words — rendered as a user bubble, never a card.
@@ -130,11 +138,14 @@ function parseTaskNotification(content: string | undefined | null) {
       const regexMatch = content.match(regex);
       return regexMatch ? regexMatch[1].trim() : null;
     };
+    // A sub-agent's output arrives inside the model's external-input
+    // envelope; a person reads the output itself.
+    const result = tag("result");
     return {
       taskId: tag("task-id"),
       status: tag("status"),
       summary: tag("summary"),
-      result: tag("result"),
+      result: result === null ? null : stripExternalEnvelopes(result),
       toolUses: tag("tool_uses") ? parseInt(tag("tool_uses") || "0", 10) : 0,
       durationMs: tag("duration_ms"),
     };
@@ -1104,6 +1115,11 @@ export default function MessageList({
       sourceIndices.push(sourceIndex);
       if (message.role !== "user") {
         visibleMessages.push(message);
+      } else if (isExternalInputMessage(message)) {
+        visibleMessages.push({
+          ...message,
+          content: showRaw ? message.content || "" : externalInputDisplayText(message),
+        });
       } else if (isTurnInputMessage(message)) {
         visibleMessages.push({
           ...message,
@@ -1779,6 +1795,21 @@ export default function MessageList({
             {/* -- Normal (non-deleted) message -- */}
             {!message.deleted &&
               (() => {
+                // -- External input: a tool-output-like block, never a user bubble --
+                const externalOrigin =
+                  message.role === "user" ? externalOriginOf(message) : null;
+                if (externalOrigin) {
+                  return (
+                    <ExternalInputBlockComponent
+                      origin={externalOrigin}
+                      text={message.content || ""}
+                      timestamp={message.timestamp}
+                      readOnly={readOnly}
+                      onDelete={handleDelete ? () => handleDelete(i) : undefined}
+                    />
+                  );
+                }
+
                 // -- Task notification card (replaces user bubble for sub-agent results) --
                 // Only renders for non-absorbed notifications (i.e. edge cases where
                 // the matching team_create tool call isn't in the visible window).

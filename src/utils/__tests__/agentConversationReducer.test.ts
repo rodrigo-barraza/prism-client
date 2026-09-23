@@ -419,6 +419,27 @@ describe("cards", () => {
     expect(last(continued).content).toBe("Reading. And the tests.");
   });
 
+  it("an external input lands as external — its source tagged — never as the user's bubble (prompt 22 L3)", () => {
+    const state = play(joinedTurn(), [
+      event({
+        type: "turn_input",
+        id: "input-x",
+        kind: "external",
+        content: "Found 3 of 5 sources.",
+        source: "subagent",
+        sender: "agent-3f2a",
+        boundary: "after_tools",
+        iteration: 2,
+      }),
+    ]);
+    expect(last(state)).toMatchObject({
+      role: "user",
+      content: "Found 3 of 5 sources.",
+      _external: { source: "subagent", sender: "agent-3f2a" },
+      _turnInput: { id: "input-x", kind: "external", source: "subagent", sender: "agent-3f2a" },
+    });
+  });
+
   it("appends a mid-turn input when the turn owns no bubble, and what follows opens one", () => {
     let state = play(joinedTurn(), [SAMPLES.turn_input]);
     expect(last(state)).toMatchObject({ role: "user", content: "Also the tests." });

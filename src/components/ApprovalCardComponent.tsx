@@ -69,6 +69,12 @@ interface ApprovalCardProps {
    * card says why and offers no "Always allow" — a rule would not stop it.
    */
   protectedPath?: string;
+  /**
+   * The taint check asked: the arguments carry text the conversation read
+   * from untrusted content (`excerpt`, read in `source`). Like a protected
+   * path it asks in every mode, and no "Always allow" stops it.
+   */
+  untrustedText?: { excerpt: string; source: string };
 }
 
 type Mode = "idle" | "deny" | "edit";
@@ -103,6 +109,7 @@ export default function ApprovalCardComponent({
   alwaysAllow,
   subAgentDescription,
   protectedPath,
+  untrustedText,
 }: ApprovalCardProps) {
   const tierInfo = TIER_CONFIG[tier] || TIER_CONFIG[2];
   const TierIcon = tierInfo.icon;
@@ -182,6 +189,17 @@ export default function ApprovalCardComponent({
           <ShieldAlert size={13} />
           <span>
             Protected path <code>{protectedPath}</code> — writes here always ask, in every mode.
+          </span>
+        </div>
+      )}
+
+      {untrustedText && (
+        <div className={styles["protected-note"]} role="note">
+          <ShieldAlert size={13} />
+          <span>
+            Untrusted text: these arguments contain <code>{untrustedText.excerpt}</code>, which the
+            conversation read in <code>{untrustedText.source}</code>. Allow it only if you meant this
+            — a call that carries words from untrusted content asks in every mode.
           </span>
         </div>
       )}
@@ -356,7 +374,7 @@ export default function ApprovalCardComponent({
         </div>
       )}
 
-      {mode === "idle" && alwaysAllow && !protectedPath && (
+      {mode === "idle" && alwaysAllow && !protectedPath && !untrustedText && (
         <AlwaysAllowControlComponent
           toolName={toolName}
           toolArgs={toolArgs}

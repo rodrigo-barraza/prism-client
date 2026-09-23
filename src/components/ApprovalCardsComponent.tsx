@@ -87,6 +87,7 @@ export default function ApprovalCardsComponent({
           toolArgs={approval.toolArgs}
           tier={approval.tier}
           preview={approval.preview}
+          untrustedText={approval.untrustedText}
           retryAfterRestart={approval.retryAfterRestart}
           retryReason={approval.reason}
           autoModeReason={approval.autoModeReason}
