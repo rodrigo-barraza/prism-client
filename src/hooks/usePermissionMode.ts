@@ -22,7 +22,7 @@ import {
   type PermissionMode,
   type PermissionModeInfo,
 } from "../types/permissions";
-import type { SSEData } from "../types/types";
+import type { PermissionModeEvent } from "../types/types";
 
 export interface PermissionModeApi {
   mode: PermissionMode;
@@ -36,7 +36,7 @@ export interface PermissionModeApi {
   /** The user picked a mode on the selector. */
   change: (_mode: PermissionMode) => Promise<void>;
   /** Apply a `permission_mode` stream event. */
-  applyEvent: (_event: SSEData) => void;
+  applyEvent: (_event: PermissionModeEvent) => void;
 }
 
 export default function usePermissionMode(
@@ -101,8 +101,8 @@ export default function usePermissionMode(
     }
   }, []);
 
-  const applyEvent = useCallback((event: SSEData) => {
-    const eventConversation = event.conversationId as string | undefined;
+  const applyEvent = useCallback((event: PermissionModeEvent) => {
+    const eventConversation = event.conversationId;
     if (eventConversation && eventConversation !== conversationIdRef.current) return;
     if (isPermissionMode(event.mode)) setMode(event.mode);
     if (event.refused === "bypass") {

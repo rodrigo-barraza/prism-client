@@ -1066,7 +1066,7 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
       "🧬Synthesizing…",
     ],
     "turnActivity": [
-      "Checklist1/3 doneRead the configCheck the portWrite the summaryBriefConfirmed the dev server listens on 3000.app/config.jsonShould production use 443?Sources2Configuring the dev server portdocs.example.devSet PORT or pass -p.Environment variablesdocs.example.devCode executionokpythonCopyprint(sum(range(10)))Output45",
+      "Checklist1/3 doneRead the configCheck the portWrite the summaryBriefConfirmed the dev server listens on 3000.app/config.jsonShould production use 443?Sources2Configuring the dev server portdocs.example.devEnvironment variablesdocs.example.devCode executionokpythonCopyprint(sum(range(10)))Output45",
     ],
   },
   "state": {
@@ -1149,7 +1149,7 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
       ],
       "sources": [
         {
-          "snippet": "Set PORT or pass -p.",
+          "pageAge": "3 days ago",
           "title": "Configuring the dev server port",
           "url": "https://docs.example.dev/config/port",
         },
@@ -1192,7 +1192,7 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMWhat port does the dev server use?",
-        "Model🛠️Write Todo for 0.05 seconds",
+        "Model🛠️Write Todo for 0.004 seconds",
         "The port is 3000.▎",
       ],
       "sendButton": "Stop",
@@ -1200,7 +1200,7 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
         "✨Generating...Iteration 1/25",
       ],
       "turnActivity": [
-        "Checklist1/3 doneRead the configCheck the portWrite the summaryBriefConfirmed the dev server listens on 3000.app/config.jsonShould production use 443?Sources2Configuring the dev server portdocs.example.devSet PORT or pass -p.Environment variablesdocs.example.devCode executionokpythonCopyprint(sum(range(10)))Output45",
+        "Checklist1/3 doneRead the configCheck the portWrite the summaryBriefConfirmed the dev server listens on 3000.app/config.jsonShould production use 443?Sources2Configuring the dev server portdocs.example.devEnvironment variablesdocs.example.devCode executionokpythonCopyprint(sum(range(10)))Output45",
       ],
     },
     "state": {
@@ -1271,7 +1271,7 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
                   },
                 ],
               },
-              "durationMs": 50,
+              "durationMs": 4,
               "id": "tc-101",
               "name": "write_todo",
               "result": {
@@ -1313,7 +1313,7 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
               },
             ],
           },
-          "durationMs": 50,
+          "durationMs": 4,
           "id": "tc-101",
           "name": "write_todo",
           "result": {
@@ -1345,7 +1345,7 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
         ],
         "sources": [
           {
-            "snippet": "Set PORT or pass -p.",
+            "pageAge": "3 days ago",
             "title": "Configuring the dev server port",
             "url": "https://docs.example.dev/config/port",
           },

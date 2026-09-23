@@ -2028,11 +2028,14 @@ export default class PrismService {
         callbacks.onError?.(new StreamError(event));
         break;
       // Connection framing (the live viewer socket handles `subscribed`), and
-      // protocol events this client does not render yet.
+      // protocol events this client does not render yet. `citations` shows
+      // live through the `webSearchResult` that follows it, and afterwards
+      // from the stored message.
       case "hello":
       case "subscribed":
       case "refusal":
       case "memory_consolidation_complete":
+      case "citations":
         break;
       default:
         event satisfies never;

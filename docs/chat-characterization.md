@@ -7,6 +7,18 @@ reducer and one transport) and Landing 3 (the component split and
 virtualization) must keep it green. Where a snapshot has to change, the
 landing states why in its report.
 
+**Re-cut 2026-09-22** when it landed with `event-protocol-v1` and
+`permission-modes`. Nothing a person sees in the chat changed by accident:
+
+- The fixtures follow the real wire now. `tool_execution` durations sit inside
+  `tool`, so a row shows the server's 4 ms instead of the harness clock's
+  50 ms. `webSearchResult` items carry `pageAge`, not a `snippet`. The context
+  budget and usage events carry their real fields, so the budget shows numbers
+  instead of `NaN`.
+- The two error fixtures are v1 `error` events with `code` and `retryable`.
+- The `/agent` body sends `permissionMode` in place of `autoApprove`
+  (`permission-modes`).
+
 ```bash
 WT=<your worktree>
 "$WT"/node_modules/.bin/vitest run --root "$WT" src/components/__tests__/chat-characterization/

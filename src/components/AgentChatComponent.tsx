@@ -4800,7 +4800,7 @@ export default function AgentChatComponent({
             if (isStale()) return;
             applyGoalEvent(data);
           },
-          onPermissionMode: (data: SSEData) => {
+          onPermissionMode: (data) => {
             if (isStale()) return;
             applyPermissionModeEvent(data);
           },
@@ -7626,7 +7626,7 @@ export default function AgentChatComponent({
         if (!isSubscriptionActive) return;
         liveTurnHelpersRef.current.applyGoalEvent(data);
       },
-      onPermissionMode: (data: SSEData) => {
+      onPermissionMode: (data) => {
         if (!isSubscriptionActive) return;
         liveTurnHelpersRef.current.applyPermissionModeEvent(data);
       },

@@ -2,4 +2,4 @@
 {"type":"status","message":"iteration_progress","iteration":1,"maxIterations":25,"seq":1790078400002}
 {"type":"chunk","content":"Reading the logs","outputCharacters":16,"seq":1790078400003}
 {"type":"done","provider":"anthropic","model":"claude-test","usage":{"inputTokens":900,"outputTokens":40,"cacheReadInputTokens":0,"cacheCreationInputTokens":0,"reasoningOutputTokens":0,"tokensPerSec":0,"requests":1,"totalInputTokens":900},"estimatedCost":0.0012,"tokensPerSec":41.2,"timeToGeneration":0.842,"generationTime":4.1,"totalTime":6.3,"conversationId":"conv-fixture","seq":1790078400004}
-{"type":"error","message":"Provider stream ended unexpectedly","seq":1790078400005}
+{"type":"error","code":"internal","message":"Provider stream ended unexpectedly","retryable":false,"seq":1790078400005}

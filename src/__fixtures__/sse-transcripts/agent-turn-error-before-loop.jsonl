@@ -1,1 +1,1 @@
-{"type":"error","message":"Context preparation failed: model claude-test is not available","seq":1790078400001}
+{"type":"error","code":"internal","message":"Context preparation failed: model claude-test is not available","retryable":false,"seq":1790078400001}

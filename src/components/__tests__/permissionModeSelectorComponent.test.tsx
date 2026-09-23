@@ -20,7 +20,7 @@ import PermissionRulesService from "../../services/PermissionRulesService";
 import PrismService from "../../services/PrismService";
 import { approvalFromEvent } from "../../utils/approvalCards";
 import type { PermissionModeInfo, PermissionModeState } from "../../types/permissions";
-import type { SSEData } from "../../types/types";
+import type { ApprovalRequiredEvent, PermissionModeEvent } from "../../types/types";
 
 const { cssProxy } = vi.hoisted(() => ({
   cssProxy: () => ({ default: new Proxy({}, { get: (_target, property: string) => property }) }),
@@ -140,11 +140,11 @@ describe("usePermissionMode", () => {
     const { result } = renderHook(() => usePermissionMode("conv-1"));
     await waitFor(() => expect(result.current.modes).toHaveLength(6));
 
-    act(() => result.current.applyEvent({ type: "permission_mode", conversationId: "other", mode: "plan" } as SSEData));
+    act(() => result.current.applyEvent({ type: "permission_mode", conversationId: "other", mode: "plan" } as PermissionModeEvent));
     expect(result.current.mode).toBe("default");
 
     act(() =>
-      result.current.applyEvent({ type: "permission_mode", conversationId: "conv-1", mode: "plan", source: "user" } as SSEData),
+      result.current.applyEvent({ type: "permission_mode", conversationId: "conv-1", mode: "plan", source: "user" }),
     );
     expect(result.current.mode).toBe("plan");
 
@@ -155,7 +155,7 @@ describe("usePermissionMode", () => {
         mode: "default",
         refused: "bypass",
         reason: "bypass is owner-only",
-      } as SSEData),
+      } as PermissionModeEvent),
     );
     expect(result.current.mode).toBe("default");
     expect(result.current.notice).toContain("Bypass refused");
@@ -165,7 +165,13 @@ describe("usePermissionMode", () => {
 describe("the stream", () => {
   it("routes permission_mode to onPermissionMode", () => {
     const onPermissionMode = vi.fn();
-    const event: SSEData = { type: "permission_mode", conversationId: "conv-1", mode: "plan", previousMode: "default" };
+    const event: PermissionModeEvent = {
+      type: "permission_mode",
+      conversationId: "conv-1",
+      mode: "plan",
+      previousMode: "default",
+      source: "user",
+    };
     PrismService._dispatchSSE(event, { onPermissionMode });
     expect(onPermissionMode).toHaveBeenCalledWith(event);
   });
@@ -177,11 +183,12 @@ describe("a protected-path card", () => {
       type: "approval_required",
       toolCallId: "call-env",
       batchId: "b",
+      batchSize: 1,
       toolCall: { id: "call-env", name: "write_file", args: { path: ".env", content: "KEY=1" } },
       tier: 2,
       protectedPath: ".env",
       alwaysAsks: true,
-    } as SSEData)!;
+    } as ApprovalRequiredEvent)!;
     expect(approval.protectedPath).toBe(".env");
 
     render(

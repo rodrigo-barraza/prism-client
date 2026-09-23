@@ -30,6 +30,7 @@ const PROTOCOL_EVENTS_NOT_ROUTED: Record<string, string> = {
   subscribed: "the live viewer socket handles the ack itself",
   refusal: "not rendered yet; the done event carries the refusal too",
   memory_consolidation_complete: "background upkeep, not rendered",
+  citations: "shown live through the webSearchResult that follows it; the stored message renders it afterwards",
 };
 
 /** Minimal payload per event so the dispatch cast paths don't throw. */
