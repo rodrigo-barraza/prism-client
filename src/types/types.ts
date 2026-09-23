@@ -1379,7 +1379,16 @@ export interface AgentMemory {
   content: string;
   project?: string;
   agent?: string;
+  /**
+   * Where the memory came from (prism-service memory/MemoryProvenance):
+   * user | assistant | web | subagent | tool:<name> | mcp:<server>.
+   * Missing on memories written before provenance — read as "assistant".
+   */
   source?: string;
+  trust?: MemoryTrust;
+  /** Learned from untrusted content: never recalled until the user accepts it. */
+  quarantined?: boolean;
+  reviewDecision?: MemoryReviewDecision | null;
   createdAt: string;
   updatedAt?: string;
   // Discord (LUPOS) memories: who the fact is about and who revealed it
@@ -1398,6 +1407,11 @@ export interface AgentMemory {
   supersededBy?: string | null;
   closedReason?: string | null;
 }
+
+export type MemoryTrust = "user" | "derived" | "untrusted";
+
+/** "corroborated": the user later said the same thing in their own words. */
+export type MemoryReviewDecision = "accepted" | "rejected" | "corroborated";
 
 export interface AgentMemoryListResponse {
   memories: AgentMemory[];
@@ -1419,6 +1433,8 @@ export interface AgentMemoryFacets {
   types: MemoryTypeFacet[];
   aboutUsers: MemoryUserFacet[];
   sourceUsers: MemoryUserFacet[];
+  /** Quarantined memories waiting for Accept / Reject. */
+  pendingReview?: number;
 }
 
 export interface ConsolidationHistoryEntry {

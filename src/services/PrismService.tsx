@@ -840,6 +840,7 @@ export default class PrismService {
     aboutUserId?: string,
     sourceUserId?: string,
     includeSuperseded = false,
+    quarantined = false,
   ): Promise<AgentMemoryListResponse> {
     const queryString = new URLSearchParams();
     if (project) queryString.set("project", project);
@@ -850,6 +851,7 @@ export default class PrismService {
     if (aboutUserId) queryString.set("aboutUserId", aboutUserId);
     if (sourceUserId) queryString.set("sourceUserId", sourceUserId);
     if (includeSuperseded) queryString.set("includeSuperseded", "true");
+    if (quarantined) queryString.set("quarantined", "true");
     return PrismService._request<AgentMemoryListResponse>(
       `/agent-memories?${queryString}`,
       { method: HTTP_METHODS.GET },
@@ -888,6 +890,38 @@ export default class PrismService {
       `/agent-memories/facets?${queryString}`,
       { method: HTTP_METHODS.GET },
     );
+  }
+
+  /**
+   * Decide on a quarantined memory: accept makes it live (it keeps its
+   * provenance), reject closes it for good.
+   */
+  static async reviewAgentMemory(
+    id: string,
+    decision: "accept" | "reject",
+  ): Promise<{ success: boolean; decision: "accept" | "reject" }> {
+    return PrismService._request<{ success: boolean; decision: "accept" | "reject" }>(
+      `/agent-memories/${id}/review`,
+      { method: HTTP_METHODS.POST, body: { decision } },
+    );
+  }
+
+  /** Decide every memory awaiting review in a project (optionally one agent's). */
+  static async reviewAllAgentMemories(
+    project: string,
+    agent: string | undefined,
+    decision: "accept" | "reject",
+  ): Promise<{ success: boolean; decision: "accept" | "reject"; reviewed: number }> {
+    const queryString = new URLSearchParams({ project });
+    if (agent) queryString.set("agent", agent);
+    return PrismService._request<{
+      success: boolean;
+      decision: "accept" | "reject";
+      reviewed: number;
+    }>(`/agent-memories/review-all?${queryString}`, {
+      method: HTTP_METHODS.POST,
+      body: { decision },
+    });
   }
 
   /**

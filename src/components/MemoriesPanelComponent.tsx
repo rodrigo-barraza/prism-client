@@ -27,6 +27,7 @@ import {
   HeartHandshake,
   Trophy,
   Tag,
+  ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -179,6 +180,9 @@ export default function MemoriesPanel({
   >(null);
   // History view: include soft-closed (superseded/invalidated) memories
   const [showSuperseded, setShowSuperseded] = useState(false);
+  // Review view: only quarantined memories (learned from untrusted content)
+  const [showPendingReview, setShowPendingReview] = useState(false);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
 
   // Distinct types + Discord users (about/source) for the filter dropdown
   const [facets, setFacets] = useState<AgentMemoryFacets | null>(null);
@@ -215,6 +219,7 @@ export default function MemoriesPanel({
           selectedAboutUserId || undefined,
           selectedSourceUserId || undefined,
           showSuperseded,
+          showPendingReview,
         );
         const fetched = result.memories || [];
 
@@ -257,7 +262,15 @@ export default function MemoriesPanel({
         setLoadingMore(false);
       }
     },
-    [project, agent, selectedType, selectedAboutUserId, selectedSourceUserId, showSuperseded],
+    [
+      project,
+      agent,
+      selectedType,
+      selectedAboutUserId,
+      selectedSourceUserId,
+      showSuperseded,
+      showPendingReview,
+    ],
   );
 
   const loadFacets = useCallback(async () => {
@@ -296,7 +309,7 @@ export default function MemoriesPanel({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadMemories(false);
-  }, [loadMemories, refreshKey, selectedType, showSuperseded]);
+  }, [loadMemories, refreshKey, selectedType, showSuperseded, showPendingReview]);
 
   const handleRollback = useCallback(
     async (run: ConsolidationHistoryEntry) => {
@@ -394,6 +407,50 @@ export default function MemoriesPanel({
       console.error("Failed to delete memory:", error);
     }
   }, []);
+
+  const handleReview = useCallback(
+    async (memoryId: string, decision: "accept" | "reject") => {
+      setReviewingId(memoryId);
+      try {
+        await PrismService.reviewAgentMemory(memoryId, decision);
+        setToast({
+          type: "success",
+          text: decision === "accept" ? "Memory accepted" : "Memory rejected",
+        });
+        loadMemories(false);
+        loadFacets();
+      } catch (error: unknown) {
+        setToast({ type: "error", text: getErrorMessage(error) });
+      } finally {
+        setReviewingId(null);
+        setTimeout(() => setToast(null), TOAST_DURATION_MILLISECONDS);
+      }
+    },
+    [loadMemories, loadFacets],
+  );
+
+  const handleReviewAll = useCallback(
+    async (decision: "accept" | "reject") => {
+      if (!project) return;
+      setReviewingId("all");
+      try {
+        const result = await PrismService.reviewAllAgentMemories(project, agent, decision);
+        setToast({
+          type: "success",
+          text: `${decision === "accept" ? "Accepted" : "Rejected"} ${result.reviewed} memor${result.reviewed === 1 ? "y" : "ies"}`,
+        });
+        setShowPendingReview(false);
+        loadMemories(false);
+        loadFacets();
+      } catch (error: unknown) {
+        setToast({ type: "error", text: getErrorMessage(error) });
+      } finally {
+        setReviewingId(null);
+        setTimeout(() => setToast(null), TOAST_DURATION_MILLISECONDS);
+      }
+    },
+    [project, agent, loadMemories, loadFacets],
+  );
 
   const handleConsolidate = useCallback(async () => {
     setConsolidating(true);
@@ -515,7 +572,11 @@ export default function MemoriesPanel({
 
   const isFiltered = searchQuery.trim() || dateFrom || dateTo;
   const hasServerFilters =
-    selectedType !== "all" || !!selectedAboutUserId || !!selectedSourceUserId;
+    selectedType !== "all" ||
+    !!selectedAboutUserId ||
+    !!selectedSourceUserId ||
+    showPendingReview;
+  const pendingReviewCount = facets?.pendingReview ?? 0;
 
   // -- Filter dropdown items (from server facets when available) ------
   const typeFilterItems = useMemo(() => {
@@ -575,6 +636,22 @@ export default function MemoriesPanel({
           disabled={consolidating || total < 2}
           title="Consolidate memories — merge duplicates and clean stale entries"
         />
+        {(pendingReviewCount > 0 || showPendingReview) && (
+          <ButtonComponent
+            variant={showPendingReview ? "tonal" : "text"}
+            size="small"
+            icon={ShieldAlert}
+            iconSize={11}
+            onClick={() => setShowPendingReview((previous) => !previous)}
+            title={
+              showPendingReview
+                ? "Show all memories"
+                : `${pendingReviewCount} memor${pendingReviewCount === 1 ? "y" : "ies"} learned from untrusted content — review`
+            }
+          >
+            {pendingReviewCount > 0 ? String(pendingReviewCount) : undefined}
+          </ButtonComponent>
+        )}
         <ButtonComponent
           variant={showSuperseded ? "tonal" : "text"}
           size="small"
@@ -644,6 +721,8 @@ export default function MemoriesPanel({
     total,
     historyOpen,
     showSuperseded,
+    showPendingReview,
+    pendingReviewCount,
     loading,
     loadMemories,
     error,
@@ -862,6 +941,30 @@ export default function MemoriesPanel({
           </div>
         )}
 
+        {showPendingReview && pendingReviewCount > 1 && (
+          <div className={styles["review-all-row"]}>
+            <span className={styles["review-all-label"]}>
+              {pendingReviewCount} memories learned from untrusted content
+            </span>
+            <button
+              type="button"
+              className={styles["review-all-accept"]}
+              onClick={() => handleReviewAll("accept")}
+              disabled={reviewingId !== null}
+            >
+              Accept all
+            </button>
+            <button
+              type="button"
+              className={styles["review-all-reject"]}
+              onClick={() => handleReviewAll("reject")}
+              disabled={reviewingId !== null}
+            >
+              Reject all
+            </button>
+          </div>
+        )}
+
         {filteredMemories.map((memory) => {
           const memoryId = memory.id || memory._id;
           return (
@@ -875,6 +978,8 @@ export default function MemoriesPanel({
               onDeleteCancel={() => setConfirmingDeleteId(null)}
               onFilterAboutUser={setSelectedAboutUserId}
               onFilterSourceUser={setSelectedSourceUserId}
+              onReview={handleReview}
+              isReviewing={reviewingId === memoryId}
             />
           );
         })}

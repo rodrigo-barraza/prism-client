@@ -8,6 +8,8 @@ import {
   ExternalLink,
   AtSign,
   MessageCircle,
+  ShieldAlert,
+  ShieldCheck,
 } from "lucide-react";
 import type { MemoryType, AgentMemory } from "../types/types";
 import BadgeComponent from "./BadgeComponent";
@@ -45,6 +47,10 @@ interface MemoryCardComponentProps {
   onFilterAboutUser?: (_userId: string) => void;
   /** Filter the list to memories revealed by this Discord user. */
   onFilterSourceUser?: (_userId: string) => void;
+  /** Accept or reject a quarantined memory. */
+  onReview?: (_memoryId: string, _decision: "accept" | "reject") => void;
+  /** A review of this memory is in flight. */
+  isReviewing?: boolean;
 }
 
 export default function MemoryCardComponent({
@@ -56,6 +62,8 @@ export default function MemoryCardComponent({
   onDeleteCancel,
   onFilterAboutUser,
   onFilterSourceUser,
+  onReview,
+  isReviewing = false,
 }: MemoryCardComponentProps) {
   const memoryId = memory.id || memory._id;
   const type = (memory.type || "project") as MemoryType;
@@ -70,9 +78,17 @@ export default function MemoryCardComponent({
     memory.aboutUserId && memory.aboutUserId === memory.sourceUserId;
   const isSuperseded = Boolean(memory.validTo);
 
+  // Provenance — only an untrusted source is worth a badge; that is what
+  // quarantine is about. Once accepted it stays marked, as confirmed.
+  const isQuarantined = memory.quarantined === true && !isSuperseded;
+  const isUntrusted = memory.trust === "untrusted";
+  const isConfirmed =
+    memory.reviewDecision === "accepted" || memory.reviewDecision === "corroborated";
+  const sourceLabel = memory.source || "assistant";
+
   return (
     <div
-      className={`memory-card-component ${styles["memory-card"]} ${isNew ? styles["is-new-memory"] : ""} ${isSuperseded ? styles["is-superseded"] : ""}`}
+      className={`memory-card-component ${styles["memory-card"]} ${isNew ? styles["is-new-memory"] : ""} ${isSuperseded ? styles["is-superseded"] : ""} ${isQuarantined ? styles["is-quarantined"] : ""}`}
     >
       <div className={`${styles["memory-icon"]} ${styles[iconClass]}`}>
         <IconComponent size={13} />
@@ -131,6 +147,19 @@ export default function MemoryCardComponent({
               by {sourceName}
             </button>
           )}
+          {isUntrusted && (
+            <span
+              className={`${styles["memory-source-badge"]} ${isConfirmed ? styles["memory-source-badge-confirmed"] : ""}`}
+              title={
+                isConfirmed
+                  ? `Learned from untrusted content (${sourceLabel}); ${memory.reviewDecision === "corroborated" ? "you later said the same thing" : "you accepted it"}.`
+                  : `Learned from untrusted content (${sourceLabel}). Never recalled until you accept it.`
+              }
+            >
+              {isConfirmed ? <ShieldCheck size={9} /> : <ShieldAlert size={9} />}
+              {sourceLabel}
+            </span>
+          )}
           {memory.createdAt && (
             <BadgeComponent type="dateTime" date={memory.createdAt} />
           )}
@@ -146,6 +175,30 @@ export default function MemoryCardComponent({
 
         {memory.content && (
           <div className={styles["memory-content"]}>{memory.content}</div>
+        )}
+
+        {isQuarantined && onReview && (
+          <div className={styles["review-row"]}>
+            <span className={styles["review-label"]}>
+              Held for review — learned from {sourceLabel}
+            </span>
+            <button
+              className={`${styles["confirm-button"]} ${styles["review-button-accept"]}`}
+              onClick={() => onReview(memoryId, "accept")}
+              disabled={isReviewing}
+              title="Accept — the agent may recall this memory"
+            >
+              Accept
+            </button>
+            <button
+              className={`${styles["confirm-button"]} ${styles["confirm-button-yes"]}`}
+              onClick={() => onReview(memoryId, "reject")}
+              disabled={isReviewing}
+              title="Reject — never recall it, and ignore it if it is learned again"
+            >
+              Reject
+            </button>
+          </div>
         )}
 
         {isConfirmingDelete && (
