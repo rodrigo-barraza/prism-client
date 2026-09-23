@@ -3,16 +3,16 @@
 {"type":"chunk","content":"Let me check the config.","outputCharacters":24}
 {"type":"tool_execution","status":"streaming","tool":{"id":"tc-001","name":"read_file","args":{}},"toolEmoji":"📄"}
 {"type":"tool_execution","status":"calling","tool":{"id":"tc-001","name":"read_file","args":{"path":"/app/config.json"}}}
-{"type":"tool_output","tool":{"id":"tc-001","name":"read_file"},"output":"{\"port\":3000}"}
+{"type":"tool_output","toolCallId":"tc-001","name":"read_file","event":"stdout","data":"{\"port\":3000}"}
 {"type":"tool_execution","status":"done","tool":{"id":"tc-001","name":"read_file","args":{"path":"/app/config.json"},"result":{"content":"{\"port\":3000}"},"durationMilliseconds":312}}
 {"type":"chunk","content":" The port is 3000. Spawning a checker.","outputCharacters":62}
 {"type":"tool_execution","status":"calling","tool":{"id":"tc-002","name":"create_subagents","args":{"members":[{"agent_id":"sa-1","description":"Verify port 3000 is documented"}]}}}
 {"type":"sub_agent_status","subAgentId":"sa-1","message":"spawned","description":"Verify port 3000 is documented"}
-{"type":"sub_agent_tool_execution","subAgentId":"sa-1","status":"calling","tool":{"id":"tc-sa-1","name":"grep_files","args":{"pattern":"3000"}}}
-{"type":"sub_agent_tool_execution","subAgentId":"sa-1","status":"done","tool":{"id":"tc-sa-1","name":"grep_files","args":{"pattern":"3000"},"result":{"matches":2},"durationMs":150}}
-{"type":"sub_agent_status","subAgentId":"sa-1","message":"complete","outputTokens":210}
-{"type":"tool_execution","status":"done","tool":{"id":"tc-002","name":"create_subagents","args":{"members":[{"agent_id":"sa-1","description":"Verify port 3000 is documented"}]},"result":{"members":[{"agent_id":"sa-1","status":"complete"}]},"durationMs":4200}}
-{"type":"usage_update","inputTokens":1200,"outputTokens":350,"estimatedCost":0.0042}
-{"type":"context_budget","used":14200,"total":120000}
+{"type":"sub_agent_tool_execution","subAgentId":"sa-1","status":"calling","tool":{"id":"tc-sa-1","name":"grep_files","args":{"pattern":"3000"}},"subAgentDescription":"Verify port 3000 is documented"}
+{"type":"sub_agent_tool_execution","subAgentId":"sa-1","status":"done","tool":{"id":"tc-sa-1","name":"grep_files","args":{"pattern":"3000"},"result":{"matches":2},"durationMilliseconds":150},"subAgentDescription":"Verify port 3000 is documented"}
+{"type":"sub_agent_status","subAgentId":"sa-1","message":"complete","conversationId":"conv-sa-1","durationMilliseconds":4100,"toolCount":1,"usage":{"inputTokens":900,"outputTokens":210},"estimatedCost":0.0011}
+{"type":"tool_execution","status":"done","tool":{"id":"tc-002","name":"create_subagents","args":{"members":[{"agent_id":"sa-1","description":"Verify port 3000 is documented"}]},"result":{"members":[{"agent_id":"sa-1","status":"complete"}]},"durationMilliseconds":4200}}
+{"type":"usage_update","usage":{"inputTokens":1200,"outputTokens":350,"requests":1,"totalInputTokens":1200},"estimatedCost":0.0042}
+{"type":"context_budget","contextWindow":120000,"messageTokens":9000,"systemPromptTokens":3000,"toolSchemaTokens":2000,"skillTokens":0,"safetyMarginTokens":200,"totalInputTokens":14200,"availableOutputTokens":105800,"isClamped":false,"toolCount":12,"source":"estimated"}
 {"type":"chunk","content":" Documented in two places. All good.","outputCharacters":98}
-{"type":"done","usage":{"inputTokens":1200,"outputTokens":350},"estimatedCost":0.0042}
+{"type":"done","provider":"anthropic","model":"claude-sonnet-5","usage":{"inputTokens":1200,"outputTokens":350,"requests":1,"totalInputTokens":1200},"estimatedCost":0.0042,"totalTime":6.2}

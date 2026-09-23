@@ -10,7 +10,7 @@ import { render, screen, fireEvent, within, waitFor, act } from "@testing-librar
 import React, { useState } from "react";
 import ApprovalCardsComponent from "../ApprovalCardsComponent";
 import { approvalFromEvent, type PendingApproval } from "../../utils/approvalCards";
-import type { SSEData } from "../../types/types";
+import type { ApprovalRequiredEvent } from "../../types/types";
 import { LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED } from "../../constants";
 import writeFileEvent from "../../__fixtures__/approvals/approval-required-write-file.json";
 
@@ -19,17 +19,18 @@ vi.mock("../../services/PrismService", () => ({
   default: { sendApprovalDecision: (...args: unknown[]) => sendApprovalDecision(...args) },
 }));
 
-function approvalRequired(toolCallId: string, batchId = "batch-1"): SSEData {
+function approvalRequired(toolCallId: string, batchId = "batch-1"): ApprovalRequiredEvent {
   return {
     type: "approval_required",
     toolCallId,
     batchId,
+    batchSize: 1,
     toolCall: { id: toolCallId, name: "write_file", args: { path: `${toolCallId}.txt`, content: toolCallId } },
     tier: 2,
   };
 }
 
-function cardsFrom(events: SSEData[]): PendingApproval[] {
+function cardsFrom(events: ApprovalRequiredEvent[]): PendingApproval[] {
   return events.map((event) => approvalFromEvent(event)!).filter(Boolean);
 }
 
@@ -104,7 +105,7 @@ describe("ApprovalCardsComponent — one card per tool call", () => {
 
   it("a sub-agent's card is labelled and decided on the sub-agent's own conversation", async () => {
     sendApprovalDecision.mockResolvedValue({ ok: true, decidedToolCallIds: ["sub-call"], remaining: 0 });
-    const forwarded: SSEData = {
+    const forwarded: ApprovalRequiredEvent = {
       ...approvalRequired("sub-call", "sub-batch"),
       subAgentId: "worker-1",
       subAgentDescription: "Refactor the parser",
@@ -240,7 +241,7 @@ describe("ApprovalCardsComponent — one card per tool call", () => {
     render(
       <Harness
         conversationId="conversation-a"
-        initial={cardsFrom([writeFileEvent as unknown as SSEData])}
+        initial={cardsFrom([writeFileEvent as ApprovalRequiredEvent])}
         onNotify={vi.fn()}
       />,
     );

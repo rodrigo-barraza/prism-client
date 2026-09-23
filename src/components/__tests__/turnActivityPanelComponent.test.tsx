@@ -13,16 +13,16 @@ import PrismService from "../../services/PrismService";
 import useTurnActivity from "../../hooks/useTurnActivity";
 import TurnActivityPanelComponent from "../TurnActivityPanelComponent";
 import { EMPTY_TURN_ACTIVITY } from "../../utils/turnActivity";
-import type { SSEData } from "../../types/types";
+import type { TurnEvent } from "../../types/types";
 
-function loadTranscript(name: string): SSEData[] {
+function loadTranscript(name: string): TurnEvent[] {
   return readFileSync(resolve(__dirname, "../../__fixtures__/sse-transcripts", name), "utf-8")
     .split("\n")
     .filter((line) => line.trim().length > 0)
-    .map((line) => JSON.parse(line) as SSEData);
+    .map((line) => JSON.parse(line) as TurnEvent);
 }
 
-function replayIntoActivity(conversationId: string, events: SSEData[]) {
+function replayIntoActivity(conversationId: string, events: TurnEvent[]) {
   const { result } = renderHook(() => useTurnActivity(conversationId));
   act(() => {
     const callbacks = result.current.callbacksFor(conversationId);
@@ -86,7 +86,8 @@ describe("turn activity from a recorded transcript", () => {
       ]);
       result.current.callbacksFor("conv-1").onTodoUpdate?.({
         type: "todo_update",
-        items: [{ content: "step", status: "pending" }],
+        items: [{ id: 1, content: "step", status: "pending", priority: "medium" }],
+        stats: { total: 1, pending: 1, in_progress: 0, completed: 0 },
       });
     });
     rerender({ id: "conv-2" });
@@ -96,7 +97,7 @@ describe("turn activity from a recorded transcript", () => {
 
     act(() => result.current.startTurn("conv-1"));
     expect(result.current.activity.sources).toEqual([]);
-    expect(result.current.activity.todos).toEqual([{ content: "step", status: "pending" }]);
+    expect(result.current.activity.todos).toEqual([{ content: "step", status: "pending", priority: "medium" }]);
   });
 
   it("shows a code run as running until its output arrives", () => {

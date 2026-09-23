@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import PrismService from "../PrismService";
-import type { SSEData } from "../../types/types";
+import type { StreamEvent, TurnEventOf } from "../../types/types";
 import { MESSAGE_ROLES } from "../../constants";
 
 describe("PrismService", () => {
@@ -226,7 +226,7 @@ describe("PrismService", () => {
       const onUserQuestion = vi.fn();
       const callbacks = { onTurnInput, onGoalUpdate, onUserQuestion };
 
-      const turnInput: SSEData = {
+      const turnInput: TurnEventOf<"turn_input"> = {
         type: "turn_input",
         id: "in-1",
         kind: "user_update",
@@ -238,11 +238,24 @@ describe("PrismService", () => {
       PrismService._dispatchSSE(turnInput, callbacks);
       expect(onTurnInput).toHaveBeenCalledWith(turnInput);
 
-      const goalUpdate: SSEData = { type: "goal_update", goal: null, change: "cleared" };
+      // On `cleared`, the event carries the goal that was removed.
+      const goalUpdate: TurnEventOf<"goal_update"> = {
+        type: "goal_update",
+        change: "cleared",
+        goal: {
+          objective: "Ship the release",
+          progress: { summary: "Stopped", updatedAt: "2026-09-22T10:00:00.000Z" },
+          status: "paused",
+          spentDollars: 0.2,
+          turnsUsed: 3,
+          createdAt: "2026-09-22T09:00:00.000Z",
+          updatedAt: "2026-09-22T10:00:00.000Z",
+        },
+      };
       PrismService._dispatchSSE(goalUpdate, callbacks);
       expect(onGoalUpdate).toHaveBeenCalledWith(goalUpdate);
 
-      const question: SSEData = {
+      const question: TurnEventOf<"user_question"> = {
         type: "user_question",
         questionId: "q-1",
         blocking: false,
@@ -918,7 +931,8 @@ describe("PrismService", () => {
         onError: vi.fn(),
       };
 
-      const testEvents: SSEData[] = [
+      // Routing only: each type needs to reach its callback, not a full payload.
+      const testEvents = [
         { type: "chunk", content: "chunk-content", _sourceModel: "model-a", outputCharacters: 13 },
         { type: "thinking", content: "thinking-content", _sourceModel: "model-a", outputCharacters: 16 },
         { type: "image", data: "base64data", mimeType: "image/png", minioRef: "minio://img" },
@@ -945,7 +959,7 @@ describe("PrismService", () => {
         { type: "status" },
         { type: "done" },
         { type: "error", message: "fail" },
-      ];
+      ] as unknown as StreamEvent[];
 
       for (const event of testEvents) {
         PrismService._dispatchSSE(event, callbacks);
@@ -1038,19 +1052,19 @@ describe("PrismService", () => {
       };
 
       PrismService._dispatchSSE(
-        { type: "synthesis_start", conversationId: "conv-9" } as SSEData,
+        { type: "synthesis_start", conversationId: "conv-9" } as StreamEvent,
         callbacks,
       );
       expect(onSynthesisStart).toHaveBeenCalledWith("conv-9");
 
       PrismService._dispatchSSE(
-        { type: "turn_start", role: MESSAGE_ROLES.USER, index: 0 } as SSEData,
+        { type: "turn_start", role: MESSAGE_ROLES.USER, index: 0 } as StreamEvent,
         callbacks,
       );
       expect(onTurnStart).toHaveBeenCalledWith(MESSAGE_ROLES.USER, 0);
 
       PrismService._dispatchSSE(
-        { type: "chunk", content: "hi" } as SSEData,
+        { type: "chunk", content: "hi" } as StreamEvent,
         callbacks,
       );
       expect(onChunk).toHaveBeenCalledWith("hi", undefined, undefined);
@@ -1060,7 +1074,7 @@ describe("PrismService", () => {
           type: "turn_complete",
           role: MESSAGE_ROLES.USER,
           message: { role: MESSAGE_ROLES.USER, content: "hi" },
-        } as unknown as SSEData,
+        } as StreamEvent,
         callbacks,
       );
       expect(onTurnComplete).toHaveBeenCalledWith(
@@ -1073,7 +1087,7 @@ describe("PrismService", () => {
           type: "done",
           conversationId: "conv-9",
           synthesisRunId: "run-1",
-        } as SSEData,
+        } as StreamEvent,
         callbacks,
       );
       expect(onDone).toHaveBeenCalledWith(

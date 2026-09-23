@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PrismService from "../services/PrismService";
 import { getErrorMessage } from "../utils/errorMessage";
-import type { ConversationGoal, SSEData } from "../types/types";
+import type { ConversationGoal, GoalUpdateEvent } from "../types/types";
 
 export interface ConversationGoalApi {
   goal: ConversationGoal | null;
@@ -21,7 +21,7 @@ export interface ConversationGoalApi {
   /** Replace from a conversation document (`conversation.goal`). */
   hydrate: (_goal: ConversationGoal | null | undefined) => void;
   /** Apply a `goal_update` event. */
-  applyEvent: (_event: SSEData) => void;
+  applyEvent: (_event: GoalUpdateEvent) => void;
   pause: () => Promise<void>;
   resume: () => Promise<void>;
   clear: () => Promise<void>;
@@ -45,7 +45,7 @@ export default function useConversationGoal(
     setError(null);
   }, []);
 
-  const applyEvent = useCallback((event: SSEData) => {
+  const applyEvent = useCallback((event: GoalUpdateEvent) => {
     if (event.change === "cleared") {
       setGoal(null);
       return;

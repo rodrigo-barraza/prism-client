@@ -97,8 +97,7 @@ export default function TurnActivityPanelComponent({ activity }: { activity: Tur
                 <a href={source.url} target="_blank" rel="noopener noreferrer">
                   {source.title || hostOf(source.url)}
                 </a>
-                <span className={styles['source-host']}>{source.displayUrl || hostOf(source.url)}</span>
-                {source.snippet && <p className={styles['source-snippet']}>{source.snippet}</p>}
+                <span className={styles['source-host']}>{hostOf(source.url)}</span>
               </li>
             ))}
           </ol>

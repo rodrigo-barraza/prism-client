@@ -8,6 +8,33 @@
 
 import { MESSAGE_ROLES, EXECUTION_STATUS } from "../constants";
 import type { ToolDisplayMetadata } from "@rodrigo-barraza/utilities-library";
+import type {
+  ApprovalDecidedEvent,
+  ApprovalRequiredEvent,
+  BriefUpdateEvent,
+  ContextBudgetEvent,
+  ConversationStateUpdateEvent,
+  DoneEvent,
+  ErrorEvent,
+  GoalUpdateEvent,
+  PermissionModeEvent,
+  PlanProposalEvent,
+  StatusEvent,
+  SubAgentStatusEvent,
+  SubAgentToolExecutionEvent,
+  SubAgentToolOutputEvent,
+  SynthesisEvent,
+  TaskNotificationEvent,
+  TodoUpdateEvent,
+  ToolExecutionEvent,
+  ToolOutputEvent,
+  TurnEvent,
+  TurnEventOf,
+  TurnInputEvent,
+  UsageUpdateEvent,
+  UserMessageEvent,
+  UserQuestionEvent,
+} from "./protocol/events";
 
 // --- Identifiers --------------------------------------------
 
@@ -564,69 +591,96 @@ export interface AgentConversationListResponse {
   hasMore: boolean;
 }
 
-// --- SSE Stream Events --------------------------------------
+// --- Stream events (the event protocol) -----------------------
 
-export interface SSEChunkEvent {
-  type: "chunk";
-  content: string;
-  _sourceModel?: string;
-  outputCharacters?: number;
+/**
+ * Every event of a conversation turn stream (SSE /agent, /chat; the
+ * /ws/chat WebSocket) is a `TurnEvent`; the synthesis stream's are
+ * `SynthesisEvent`s. Both come from `./protocol/events`, a byte-identical
+ * copy of prism-service's `src/protocol/events.ts` (see its header).
+ */
+export type {
+  TurnEvent,
+  TurnEventType,
+  TurnEventOf,
+  SynthesisEvent,
+  HelloEvent,
+  ErrorEvent,
+  ChunkEvent,
+  ThinkingEvent,
+  ImageEvent,
+  AudioEvent,
+  UserMessageEvent,
+  SubscribedEvent,
+  RefusalEvent,
+  ToolExecutionEvent,
+  ToolOutputEvent,
+  ApprovalRequiredEvent,
+  ApprovalDecidedEvent,
+  PlanProposalEvent,
+  UserQuestionEvent,
+  TurnInputEvent,
+  GoalUpdateEvent,
+  TodoUpdateEvent,
+  BriefUpdateEvent,
+  UsageUpdateEvent,
+  ContextBudgetEvent,
+  TaskNotificationEvent,
+  ConversationStateUpdateEvent,
+  PermissionModeEvent,
+  SubAgentStatusEvent,
+  SubAgentToolExecutionEvent,
+  SubAgentToolOutputEvent,
+  StatusEvent,
+  KnownStatusEvent,
+  NoticeStatusEvent,
+  DoneEvent,
+} from "./protocol/events";
+
+/**
+ * The benchmark run stream (POST /benchmark/:id/run, GET /:id/follow) is
+ * endpoint-specific, not part of the event protocol: these four framing
+ * events, plus each model's turn events forwarded with `_sourceModel`.
+ */
+export type BenchmarkStreamEvent =
+  | { type: "run_info"; totalModels: number }
+  | { type: "model_start"; provider: string; model: string; label?: string; isLocal?: boolean }
+  | ({ type: "model_complete" } & BenchmarkRunResult)
+  | ({ type: "run_complete" } & BenchmarkRun);
+
+/** Everything `PrismService._streamSSE` hands the dispatcher. */
+export type StreamEvent = TurnEvent | SynthesisEvent | BenchmarkStreamEvent;
+
+/** Synthesized by the live viewer when a subscribe finds no running turn. */
+export interface NoLiveTurnDone {
+  type: "done";
+  reason: "no-live-turn";
 }
 
-export interface SSEThinkingEvent {
-  type: "thinking";
-  content: string;
-  _sourceModel?: string;
-  outputCharacters?: number;
-}
+/** The synthesis stream's `done`. */
+export type SynthesisDoneEvent = Extract<SynthesisEvent, { type: "done" }>;
 
-export interface SSEImageEvent {
-  type: "image";
-  data: string;
-  mimeType: string;
-  minioRef?: string;
-}
+/** A benchmark framing event by `type`. */
+export type BenchmarkStreamEventOf<Type extends BenchmarkStreamEvent["type"]> = Extract<
+  BenchmarkStreamEvent,
+  { type: Type }
+>;
 
-export interface SSEAudioEvent {
-  type: "audio";
-  data: string;
-  mimeType: string;
-}
+/** An `error` event, as the Error handed to `onError`. */
+export class StreamError extends Error {
+  readonly code: ErrorEvent["code"];
+  readonly retryable: boolean;
+  readonly provider?: string;
+  readonly status?: number;
 
-export interface SSEToolCallEvent {
-  type: "toolCall";
-  id: string;
-  name: string;
-  args: Record<string, unknown>;
-  result?: unknown;
-  status?: string;
-  thoughtSignature?: string;
-  _sourceModel?: string;
-}
-
-export interface SSEToolExecutionEvent {
-  type: "tool_execution";
-  toolCallId: string;
-  name: string;
-  args: Record<string, unknown>;
-  iteration?: number;
-}
-
-export interface SSEToolOutputEvent {
-  type: "tool_output";
-  toolCallId: string;
-  name: string;
-  result: unknown;
-}
-
-export interface SSEApprovalRequiredEvent {
-  type: "approval_required";
-  toolCalls: Array<{ id: string; name: string; args: Record<string, unknown> }>;
-}
-
-export interface SSEPlanProposalEvent {
-  type: "plan_proposal";
-  plan: string;
+  constructor(event: ErrorEvent) {
+    super(event.message);
+    this.name = "StreamError";
+    this.code = event.code;
+    this.retryable = event.retryable;
+    this.provider = event.provider;
+    this.status = event.status;
+  }
 }
 
 /** One option of an agent question (`ask_user`); `preview` is optional detail shown on hover. */
@@ -643,45 +697,11 @@ export interface UserQuestionItem {
   multiSelect?: boolean;
 }
 
-/**
- * Agent-initiated question. `blocking: false` means the agent keeps working
- * while the card is open — the composer stays usable and several such cards
- * (keyed by `questionId`) can be open at once. Answers go through
- * `POST /agent/answer`; a 404 means the turn already ended.
- */
-export interface SSEUserQuestionEvent {
-  type: "user_question";
-  questionId: string;
-  blocking: boolean;
-  questions: UserQuestionItem[];
-  context: string | null;
-  seq?: number;
-}
-
 /** Where in the agentic loop a mid-turn input was applied. */
-export type TurnInputBoundary = "iteration_start" | "after_tools" | "before_end";
+export type TurnInputBoundary = TurnInputEvent["boundary"];
 
 /** What a mid-turn input was. */
-export type TurnInputKind =
-  | "user_update"
-  | "question_answer"
-  | "task_completion"
-  | "agent_message";
-
-/**
- * The harness applied a mailbox entry (`POST /agent/input`) to the running
- * turn. Arrives on the driving SSE and on the viewer WebSocket.
- */
-export interface SSETurnInputEvent {
-  type: "turn_input";
-  id: string;
-  kind: TurnInputKind;
-  content: string;
-  images?: string[];
-  boundary: TurnInputBoundary;
-  iteration: number;
-  seq?: number;
-}
+export type TurnInputKind = TurnInputEvent["kind"];
 
 /** Client-side tracking of a mid-turn input on its user bubble. */
 export interface MessageTurnInput {
@@ -722,44 +742,6 @@ export interface ConversationGoal {
   updatedAt: string;
 }
 
-export interface SSEGoalUpdateEvent {
-  type: "goal_update";
-  goal: ConversationGoal | null;
-  change: "set" | "progress" | "status" | "cleared";
-  seq?: number;
-}
-
-export interface SSESubAgentStatusEvent {
-  type: "sub_agent_status";
-  subAgentId: string;
-  status: string;
-}
-
-export interface SSEUsageUpdateEvent {
-  type: "usage_update";
-  inputTokens?: number;
-  outputTokens?: number;
-  estimatedCost?: number;
-}
-
-export interface SSEContextBudgetEvent {
-  type: "context_budget";
-  contextWindow: number;
-  messageTokens: number;
-  systemPromptTokens: number;
-  toolSchemaTokens: number;
-  skillTokens?: number;
-  safetyMarginTokens: number;
-  totalInputTokens: number;
-  availableOutputTokens: number;
-  requestedOutputTokens?: number;
-  isClamped: boolean;
-  toolCount: number;
-  source: "estimated" | "reported";
-  lastReportedInputTokens?: number;
-  calibrationRatio?: number;
-}
-
 export interface ContextBudget {
   contextWindow: number;
   messageTokens: number;
@@ -776,156 +758,6 @@ export interface ContextBudget {
   lastReportedInputTokens?: number;
   calibrationRatio?: number;
 }
-
-export interface SSEDoneEvent {
-  type: "done";
-  conversationId?: string;
-}
-
-export interface SSEErrorEvent {
-  type: "error";
-  message: string;
-}
-
-export type SSEEvent =
-  | SSEChunkEvent
-  | SSEThinkingEvent
-  | SSEImageEvent
-  | SSEAudioEvent
-  | SSEToolCallEvent
-  | SSEToolExecutionEvent
-  | SSEToolOutputEvent
-  | SSEApprovalRequiredEvent
-  | SSEPlanProposalEvent
-  | SSEUserQuestionEvent
-  | SSETurnInputEvent
-  | SSEGoalUpdateEvent
-  | SSESubAgentStatusEvent
-  | SSEUsageUpdateEvent
-  | SSEDoneEvent
-  | SSEErrorEvent;
-
-// --- SSE Callback Interfaces --------------------------------
-
-export interface TransformedSSEData {
-  type: string;
-  id?: string;
-  name?: string;
-  args?: Record<string, unknown>;
-  content?: string;
-  data?: string;
-  mimeType?: string;
-  minioRef?: string;
-  result?: unknown;
-  status?: string;
-  toolCallId?: string;
-  iteration?: number;
-  maxIterations?: number;
-  agentConversationId?: string;
-  toolCalls?: Array<{
-    id: string;
-    name: string;
-    args: Record<string, unknown>;
-  }>;
-  plan?: string;
-  steps?: string[];
-  autoApproved?: boolean;
-  questions?: UserQuestionItem[];
-  /** user_question: identifies the card; answers and `question_pending` status refer to it */
-  questionId?: string;
-  /** user_question: false → the agent keeps working while the card is open */
-  blocking?: boolean;
-  /** Monotonic per-conversation event cursor (see utils/liveTurnCursor) */
-  seq?: number;
-  /** turn_input: what the applied mailbox entry was */
-  kind?: TurnInputKind;
-  /** turn_input / status:turn_input_applied: where in the loop it was applied */
-  boundary?: TurnInputBoundary;
-  /** status:turn_input_applied: the mailbox entry id */
-  inputId?: string;
-  images?: string[];
-  /** goal_update */
-  goal?: ConversationGoal | null;
-  change?: "set" | "progress" | "status" | "cleared";
-  subAgentId?: string;
-  inputTokens?: number;
-  outputTokens?: number;
-  estimatedCost?: number;
-  message?: string;
-  /** Synthesis stream: role owning the current turn (turn_start/turn_complete) */
-  role?: string;
-  /** Synthesis stream: message index of the turn being generated */
-  index?: number;
-  /** Synthesis stream: id of the persisted run document (done event) */
-  synthesisRunId?: string;
-  conversationId?: string;
-  event?: string;
-  tool?: {
-    id?: string;
-    name?: string;
-    args?: Record<string, unknown>;
-    result?: unknown;
-    durationMs?: number;
-  };
-  toolCall?: {
-    id?: string;
-    name?: string;
-    args?: Record<string, unknown>;
-  };
-  tier?: 1 | 2 | 3 | undefined;
-  /** approval_required / approval_decided: the batch the call belongs to */
-  batchId?: string;
-  /** approval_required: how many calls of the batch wait for a decision */
-  batchSize?: number;
-  tierLabel?: string;
-  /** approval_required: what a file-writing call would change */
-  preview?: ApprovalPreview;
-  /**
-   * approval_required / approval_decided forwarded from a sub-agent: the
-   * conversation whose loop waits on the call — its decision is sent there.
-   */
-  approvalConversationId?: string;
-  /** A forwarded sub-agent event: the sub-agent's task description. */
-  subAgentDescription?: string;
-  /** approval_decided: how the call was decided, by whom, and why */
-  decision?: ApprovalDecision;
-  scope?: ApprovalScope;
-  source?: "user" | "timeout" | "superseded" | "turn_ended";
-  reason?: string;
-  editedByUser?: boolean;
-  question?: string;
-  choices?: string[];
-  context?: string | null;
-  skills?: Skill[];
-  strategy?: string;
-  timeToFirstToken?: number;
-  tokPerSec?: number;
-  activeRequests?: number;
-  totalTokens?: number;
-  avgTtft?: number;
-  progress?: number;
-  label?: string;
-  description?: string;
-  firstChunkTime?: number;
-  lastChunkTime?: number;
-  totalOutputTokens?: number;
-  phase?: string;
-  estimatedTokens?: number;
-  toolCount?: number;
-  toolName?: string;
-  error?: string;
-  phaseProgress?: number;
-  toolNames?: Record<string, number>;
-  durationMs?: number;
-  usage?: TokenUsage;
-  totalTime?: number;
-  tokensPerSec?: number;
-  timeToGeneration?: number;
-  [key: string]: unknown;
-}
-
-/** Wire-format SSE event — parsed JSON with a discriminant `type` field. */
-export type SSEData = TransformedSSEData;
 
 export interface TransformedRequestItem {
   _id: string;
@@ -990,42 +822,45 @@ export interface SSECallbacks {
   onAudio?: (_data: string, _mimeType: string) => void;
   onExecutableCode?: (_code: string, _language: string) => void;
   onCodeExecutionResult?: (_output: string, _outcome: string) => void;
-  onWebSearchResult?: (_results: WebSearchResult[]) => void;
+  onWebSearchResult?: (_results: WebSearchResultItem[]) => void;
   onToolCall?: (_event: ToolCallEvent) => void;
-  onToolExecution?: (_event: SSEData) => void;
-  onToolOutput?: (_event: SSEData) => void;
-  onSubAgentToolExecution?: (_event: SSEData) => void;
-  onSubAgentToolOutput?: (_event: SSEData) => void;
-  onSubAgentStatus?: (_event: SSEData) => void;
-  onApprovalRequired?: (_event: SSEData) => void;
+  onToolExecution?: (_event: ToolExecutionEvent) => void;
+  onToolOutput?: (_event: ToolOutputEvent) => void;
+  onSubAgentToolExecution?: (_event: SubAgentToolExecutionEvent) => void;
+  onSubAgentToolOutput?: (_event: SubAgentToolOutputEvent) => void;
+  onSubAgentStatus?: (_event: SubAgentStatusEvent) => void;
+  onApprovalRequired?: (_event: ApprovalRequiredEvent) => void;
   /** One pending call was decided — here, in another tab, by a batch scope or a timeout (`approval_decided`) */
-  onApprovalDecided?: (_event: SSEData) => void;
-  onPlanProposal?: (_event: SSEData) => void;
-  onUserQuestion?: (_event: SSEData) => void;
+  onApprovalDecided?: (_event: ApprovalDecidedEvent) => void;
+  onPlanProposal?: (_event: PlanProposalEvent) => void;
+  onUserQuestion?: (_event: UserQuestionEvent) => void;
   /** Turn-start mirror of the user's prompt (`user_message` event) */
-  onUserMessage?: (_event: SSEData) => void;
-  onTaskNotification?: (_event: SSEData) => void;
-  onConversationStateUpdate?: (_event: SSEData) => void;
-  onTodoUpdate?: (_event: SSEData) => void;
-  onBriefUpdate?: (_event: SSEData) => void;
+  onUserMessage?: (_event: UserMessageEvent) => void;
+  onTaskNotification?: (_event: TaskNotificationEvent) => void;
+  onConversationStateUpdate?: (_event: ConversationStateUpdateEvent) => void;
+  onTodoUpdate?: (_event: TodoUpdateEvent) => void;
+  onBriefUpdate?: (_event: BriefUpdateEvent) => void;
   /** A mid-turn input was applied by the harness (`turn_input` event) */
-  onTurnInput?: (_event: SSEData) => void;
+  onTurnInput?: (_event: TurnInputEvent) => void;
   /** The conversation goal was set / progressed / paused / cleared (`goal_update`) */
-  onGoalUpdate?: (_event: SSEData) => void;
-  onRunInfo?: (_event: SSEData) => void;
-  onModelStart?: (_event: SSEData) => void;
-  onModelComplete?: (_event: SSEData) => void;
-  onRunComplete?: (_event: SSEData) => void;
-  onUsageUpdate?: (_event: SSEData) => void;
-  onContextBudget?: (_event: SSEData) => void;
-  onStatus?: (_event: SSEData) => void;
+  onGoalUpdate?: (_event: GoalUpdateEvent) => void;
+  /** `permission_mode` — the conversation's permission mode is now `mode`. */
+  onPermissionMode?: (_event: PermissionModeEvent) => void;
+  onRunInfo?: (_event: BenchmarkStreamEventOf<"run_info">) => void;
+  onModelStart?: (_event: BenchmarkStreamEventOf<"model_start">) => void;
+  onModelComplete?: (_event: BenchmarkStreamEventOf<"model_complete">) => void;
+  onRunComplete?: (_event: BenchmarkStreamEventOf<"run_complete">) => void;
+  onUsageUpdate?: (_event: UsageUpdateEvent) => void;
+  onContextBudget?: (_event: ContextBudgetEvent) => void;
+  onStatus?: (_event: StatusEvent) => void;
   /** Synthesis stream (/synthesis/generate): run started, conversation allocated */
   onSynthesisStart?: (_conversationId: string) => void;
   /** Synthesis stream: a user/assistant turn begins — subsequent chunk/thinking events belong to it */
   onTurnStart?: (_role: string, _index: number) => void;
   /** Synthesis stream: turn finished with its canonical message */
   onTurnComplete?: (_message: Message, _role: string) => void;
-  onDone?: (_event: SSEData) => void;
+  onDone?: (_event: DoneEvent | SynthesisDoneEvent | NoLiveTurnDone) => void;
+  /** A stream failure. An `error` event arrives as a `StreamError` carrying its code and retryability. */
   onError?: (_error: Error) => void;
   /**
    * The transport closed without the server sending a terminal done/error
@@ -1068,11 +903,14 @@ export interface ToolCallEvent {
 
 // --- Web Search ---------------------------------------------
 
+/** One `webSearchResult` item as the wire sends it (Anthropic server-side web search). */
+export type WebSearchResultItem = TurnEventOf<"webSearchResult">["results"][number];
+
+/** A search result kept as a turn's source: an item that has a URL. */
 export interface WebSearchResult {
-  title: string;
   url: string;
-  snippet?: string;
-  displayUrl?: string;
+  title?: string;
+  pageAge?: string;
 }
 
 // --- Files / Attachments ------------------------------------

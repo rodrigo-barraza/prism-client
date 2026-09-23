@@ -5,7 +5,7 @@ import {
   type LiveSocketState,
 } from "../liveViewerSocket";
 import { createCursor } from "../../utils/liveTurnCursor";
-import type { SSEData } from "../../types/types";
+import type { TurnEvent } from "../../types/types";
 
 class FakeSocket {
   static instances: FakeSocket[] = [];
@@ -45,7 +45,7 @@ const BASE = 1_760_000_000_000;
 const BACKOFF = { initialMilliseconds: 1_000, maxMilliseconds: 8_000, factor: 2 };
 
 function openSocket(url: string | null = "ws://prism.test/ws/chat") {
-  const events: SSEData[] = [];
+  const events: TurnEvent[] = [];
   const states: LiveSocketState[] = [];
   const subscribed = vi.fn();
   const cursor = createCursor();
@@ -61,7 +61,7 @@ function openSocket(url: string | null = "ws://prism.test/ws/chat") {
     createSocket: (socketUrl) => new FakeSocket(socketUrl) as unknown as WebSocket,
   });
   const latest = () => FakeSocket.instances[FakeSocket.instances.length - 1];
-  const texts = () => events.map((event) => event.content);
+  const texts = () => events.map((event) => ("content" in event ? event.content : undefined));
   return { socket, events, texts, states, subscribed, cursor, latest };
 }
 

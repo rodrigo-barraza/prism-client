@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import PrismService from "../PrismService";
-import type { SSEData } from "../../types/types";
+import type { ApprovalDecidedEvent } from "../../types/types";
 
 describe("PrismService — per-call approvals", () => {
   let fetchSpy: ReturnType<typeof vi.spyOn>;
@@ -50,13 +50,13 @@ describe("PrismService — per-call approvals", () => {
 
   it("routes approval_decided to onApprovalDecided", () => {
     const onApprovalDecided = vi.fn();
-    const event: SSEData = {
+    const event: ApprovalDecidedEvent = {
       type: "approval_decided",
       toolCallId: "call-1",
       batchId: "batch-1",
       decision: "deny",
       scope: "call",
-      source: "timeout",
+      source: "turn_ended",
     };
     PrismService._dispatchSSE(event, { onApprovalDecided });
     expect(onApprovalDecided).toHaveBeenCalledWith(event);
