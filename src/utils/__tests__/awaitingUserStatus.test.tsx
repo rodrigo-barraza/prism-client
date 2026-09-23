@@ -33,6 +33,13 @@ describe("awaitingUserStatus", () => {
     expect(isAwaitingUser({ ...NOTHING_PENDING, pendingUserQuestion: { questionId: "q-1" } })).toBe(true);
   });
 
+  it("covers a turn paused at its cost cap (prompt 13 Landing 3)", () => {
+    expect(
+      awaitingUserStatus({ ...NOTHING_PENDING, budgetPause: { pauseId: "pause-1", spentDollars: 2, maxCostDollars: 1.5 } }),
+    ).toEqual({ phase: "awaiting", label: AWAITING_USER_LABEL });
+    expect(isAwaitingUser({ ...NOTHING_PENDING, budgetPause: null })).toBe(false);
+  });
+
   it("is null when every card is decided, and once the user pressed Stop", () => {
     expect(
       awaitingUserStatus({ ...NOTHING_PENDING, pendingApprovals: [{ status: APPROVAL_STATUS.APPROVED }] }),
