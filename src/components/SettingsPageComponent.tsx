@@ -71,6 +71,7 @@ import { BYTES_IN_MIB, BYTES_IN_GIB } from "../constants";
 
 import type {
   PrismSettings,
+  AgentDefaultsConfig,
   AgenticHarness,
   MCPServer,
   PrismConfig,
@@ -129,6 +130,20 @@ interface PlatformDefinition {
   label: string;
   methods: SetupGuideMethodKey[];
 }
+
+// Role routing (prism-service routing/RoleModelResolver, RoutingPresets).
+const SUB_AGENT_EFFORT_OPTIONS = [
+  { value: "", label: "Automatic (one step below the parent)" },
+  { value: "inherit", label: "Same as the parent" },
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+];
+
+const ROUTING_PRESET_OPTIONS = [
+  { value: "", label: "None" },
+  { value: "lead_sidekick", label: "Lead + sidekick" },
+];
 
 // Example WORKSPACE_BACKEND for the setup guide — prism-client is served
 // from the same host as tools-service, so the visitor's hostname is the
@@ -436,6 +451,16 @@ export default function SettingsPageComponent() {
           subAgentModel: model || "",
         },
       };
+      setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
+      persistSettings(updated);
+    },
+    [settings, persistSettings],
+  );
+
+  // Role routing: one updater for the agents-section model roles.
+  const handleAgentSettingsPatch = useCallback(
+    (patch: Partial<AgentDefaultsConfig>) => {
+      const updated = { agents: { ...settings?.agents, ...patch } };
       setSettings((state: PrismSettings | null) => ({ ...state, ...updated }));
       persistSettings(updated);
     },
@@ -2646,7 +2671,7 @@ export default function SettingsPageComponent() {
         <CardComponent.Header
           icon={Workflow}
           title="Harness Models"
-          subtitle="Models used by the agentic harness for sub-agents and critic safety gates"
+          subtitle="The model each role runs on. An agent definition that pins a role outranks these; a conversation keeps the model it started with"
         />
 
         <CardComponent.Body>
@@ -2655,8 +2680,9 @@ export default function SettingsPageComponent() {
             <div className={styles["layout-row-label"]}>
               <span className={styles["layout-row-title"]}>Sub-Agent Model</span>
               <span className={styles["layout-row-description"]}>
-                Pick a default sub-agent model for Prism to use when it spawns
-                sub-agents. If not set, it will use the current active model.
+                The model every sub-agent runs on, on any provider, unless its
+                agent definition pins one. If not set, sub-agents run on their
+                parent&apos;s model at the effort below.
               </span>
             </div>
             <div className={styles["layout-row-control"]}>
@@ -2670,6 +2696,152 @@ export default function SettingsPageComponent() {
                 modelTypeFilter="conversation"
                 allowDeselect
                 placeholderLabel="Uses agent model"
+              />
+            </div>
+          </div>
+
+          {/* Sub-Agent Effort */}
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Sub-Agent Effort</span>
+              <span className={styles["layout-row-description"]}>
+                Effort first: before moving a sub-agent to a cheaper model,
+                Prism keeps the parent&apos;s model and lowers its effort.
+                Automatic runs a sub-agent that inherits its parent&apos;s model
+                one effort step lower.
+              </span>
+            </div>
+            <div className={styles["layout-row-control"]}>
+              <SelectComponent
+                value={agentDefaults.subAgentEffort || ""}
+                options={SUB_AGENT_EFFORT_OPTIONS}
+                onChange={(value: string) => handleAgentSettingsPatch({ subAgentEffort: value })}
+              />
+            </div>
+          </div>
+
+          {/* Routing Preset */}
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Routing Preset</span>
+              <span className={styles["layout-row-description"]}>
+                Lead + sidekick: the conversation&apos;s model leads — it plans and
+                reviews — and delegates execution to one sidekick on the
+                Sub-Agent Model, which keeps its own context across the
+                conversation. The lead reads the sidekick&apos;s briefs, never its
+                raw tool output. Applies to conversations started after the change.
+              </span>
+            </div>
+            <div className={styles["layout-row-control"]}>
+              <SelectComponent
+                value={agentDefaults.routingPreset || ""}
+                options={ROUTING_PRESET_OPTIONS}
+                onChange={(value: string) => handleAgentSettingsPatch({ routingPreset: value })}
+              />
+            </div>
+          </div>
+
+          {/* Main Model (callers that name none) */}
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Default Main Model</span>
+              <span className={styles["layout-row-description"]}>
+                The model a new conversation runs on when its caller names
+                none (API callers, bots). The model you pick in a chat always
+                wins over this.
+              </span>
+            </div>
+            <div className={styles["layout-row-control"]}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.mainProvider || "",
+                  model: agentDefaults.mainModel || "",
+                }}
+                onSelectModel={(provider: string, model: string) =>
+                  handleAgentSettingsPatch({ mainProvider: provider || "", mainModel: model || "" })
+                }
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="Provider default"
+              />
+            </div>
+          </div>
+
+          {/* Oracle Model */}
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Oracle Model</span>
+              <span className={styles["layout-row-description"]}>
+                A stronger model for a tool-less second opinion. If not set, a
+                frontier model from another provider than the conversation&apos;s.
+              </span>
+            </div>
+            <div className={styles["layout-row-control"]}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.oracleProvider || "",
+                  model: agentDefaults.oracleModel || "",
+                }}
+                onSelectModel={(provider: string, model: string) =>
+                  handleAgentSettingsPatch({ oracleProvider: provider || "", oracleModel: model || "" })
+                }
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="Frontier, other provider"
+              />
+            </div>
+          </div>
+
+          {/* Compaction Model */}
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Compaction Model</span>
+              <span className={styles["layout-row-description"]}>
+                Summarizes a long conversation when its context fills. If not
+                set, the memory extraction model, then the conversation&apos;s own.
+              </span>
+            </div>
+            <div className={styles["layout-row-control"]}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.compactionProvider || "",
+                  model: agentDefaults.compactionModel || "",
+                }}
+                onSelectModel={(provider: string, model: string) =>
+                  handleAgentSettingsPatch({ compactionProvider: provider || "", compactionModel: model || "" })
+                }
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="Utility model"
+              />
+            </div>
+          </div>
+
+          {/* Classifier Model */}
+          <div className={styles["settings-layout-row"]}>
+            <div className={styles["layout-row-label"]}>
+              <span className={styles["layout-row-title"]}>Classifier Model</span>
+              <span className={styles["layout-row-description"]}>
+                Short labelling calls, such as deciding whether a tool call
+                needs your approval. If not set, the utility model.
+              </span>
+            </div>
+            <div className={styles["layout-row-control"]}>
+              <ModelPickerPopoverComponent
+                config={config}
+                settings={{
+                  provider: agentDefaults.classifierProvider || "",
+                  model: agentDefaults.classifierModel || "",
+                }}
+                onSelectModel={(provider: string, model: string) =>
+                  handleAgentSettingsPatch({ classifierProvider: provider || "", classifierModel: model || "" })
+                }
+                modelTypeFilter="conversation"
+                allowDeselect
+                placeholderLabel="Utility model"
               />
             </div>
           </div>
