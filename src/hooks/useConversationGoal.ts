@@ -5,7 +5,9 @@
  * goal its model proposed (waiting for the user's approval).
  *
  * The goal is hydrated from the conversation document on load; the
- * proposal is fetched when the conversation changes. Both are kept current
+ * proposal is fetched when the conversation changes. Every request names
+ * the conversation's `project` — an agent conversation lives under its
+ * agent's project, not the client's default one. Both are kept current
  * by `goal_update` stream events and driven by the panel: create / edit
  * (the goal form), Pause / Resume / Clear, Approve / Decline. The server is
  * the source of truth: an action's response (or the `goal_update` it emits)
@@ -41,6 +43,7 @@ export interface ConversationGoalApi {
 
 export default function useConversationGoal(
   conversationId: string | null | undefined,
+  project?: string | null,
 ): ConversationGoalApi {
   const [goal, setGoal] = useState<ConversationGoal | null>(null);
   // The proposal is kept with the conversation it belongs to, so a switch
@@ -56,10 +59,12 @@ export default function useConversationGoal(
   // Actions read the CURRENT conversation at call time, not the one they
   // closed over — kept in a ref, synced outside render.
   const conversationIdRef = useRef(conversationId);
+  const projectRef = useRef(project);
   const goalRef = useRef(goal);
   useEffect(() => {
     conversationIdRef.current = conversationId;
-  }, [conversationId]);
+    projectRef.current = project;
+  }, [conversationId, project]);
   useEffect(() => {
     goalRef.current = goal;
   }, [goal]);
@@ -70,7 +75,7 @@ export default function useConversationGoal(
   useEffect(() => {
     if (!conversationId) return;
     let cancelled = false;
-    PrismService.getConversationGoalState(conversationId)
+    PrismService.getConversationGoalState(conversationId, project)
       .then((state) => {
         if (!cancelled) setProposalState({ conversationId, proposal: state.proposal });
       })
@@ -80,7 +85,7 @@ export default function useConversationGoal(
     return () => {
       cancelled = true;
     };
-  }, [conversationId]);
+  }, [conversationId, project]);
 
   /** Set (or drop) the proposal of the conversation on screen. */
   const setProposal = useCallback((next: ConversationGoal | null) => {
@@ -147,25 +152,33 @@ export default function useConversationGoal(
         if (goalRef.current) {
           landGoal(
             id,
-            await PrismService.patchConversationGoal(id, {
-              objective: input.objective,
-              rubric: input.rubric,
-              verifier: input.verifier ?? null,
-              ...(input.maxIterations !== undefined && { maxIterations: input.maxIterations }),
-              budget: input.budget ?? null,
-            }),
+            await PrismService.patchConversationGoal(
+              id,
+              {
+                objective: input.objective,
+                rubric: input.rubric,
+                verifier: input.verifier ?? null,
+                ...(input.maxIterations !== undefined && { maxIterations: input.maxIterations }),
+                budget: input.budget ?? null,
+              },
+              projectRef.current,
+            ),
           );
           return;
         }
         landGoal(
           id,
-          await PrismService.setConversationGoal(id, {
-            objective: input.objective,
-            rubric: input.rubric,
-            ...(input.verifier && { verifier: input.verifier }),
-            ...(input.maxIterations !== undefined && { maxIterations: input.maxIterations }),
-            ...(input.budget && { budget: input.budget }),
-          }),
+          await PrismService.setConversationGoal(
+            id,
+            {
+              objective: input.objective,
+              rubric: input.rubric,
+              ...(input.verifier && { verifier: input.verifier }),
+              ...(input.maxIterations !== undefined && { maxIterations: input.maxIterations }),
+              ...(input.budget && { budget: input.budget }),
+            },
+            projectRef.current,
+          ),
         );
         if (conversationIdRef.current === id) setProposal(null);
       }),
@@ -173,28 +186,28 @@ export default function useConversationGoal(
   );
 
   const pause = useCallback(async () => {
-    await run(async (id) => landGoal(id, await PrismService.patchConversationGoal(id, { status: "paused" })));
+    await run(async (id) => landGoal(id, await PrismService.patchConversationGoal(id, { status: "paused" }, projectRef.current)));
   }, [run, landGoal]);
   const resume = useCallback(async () => {
-    await run(async (id) => landGoal(id, await PrismService.patchConversationGoal(id, { status: "active" })));
+    await run(async (id) => landGoal(id, await PrismService.patchConversationGoal(id, { status: "active" }, projectRef.current)));
   }, [run, landGoal]);
   const clear = useCallback(async () => {
     await run(async (id) => {
-      await PrismService.clearConversationGoal(id);
+      await PrismService.clearConversationGoal(id, projectRef.current);
       landGoal(id, null);
     });
   }, [run, landGoal]);
 
   const approveProposal = useCallback(async () => {
     await run(async (id) => {
-      const approved = await PrismService.approveGoalProposal(id);
+      const approved = await PrismService.approveGoalProposal(id, projectRef.current);
       landGoal(id, approved);
       if (conversationIdRef.current === id) setProposal(null);
     });
   }, [run, landGoal, setProposal]);
   const declineProposal = useCallback(async () => {
     await run(async (id) => {
-      await PrismService.declineGoalProposal(id);
+      await PrismService.declineGoalProposal(id, projectRef.current);
       if (conversationIdRef.current === id) setProposal(null);
     });
   }, [run, setProposal]);

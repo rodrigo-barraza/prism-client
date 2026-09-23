@@ -1648,11 +1648,22 @@ export default class PrismService {
   // progress against (`goal_update` events)
   // ---------------------------------------------------------------------------
 
+  /**
+   * A goal route of one conversation. `project` scopes it like the
+   * conversation loader (`?project=`): an agent conversation lives under its
+   * agent's project, not the client's default one.
+   */
+  static _goalPath(conversationId: string, suffix = "", project?: string | null): string {
+    const query = project ? `?project=${encodeURIComponent(project)}` : "";
+    return `/conversations/${encodeURIComponent(conversationId)}/goal${suffix}${query}`;
+  }
+
   static async getConversationGoal(
     conversationId: string,
+    project?: string | null,
   ): Promise<ConversationGoal | null> {
     const result = await PrismService._request<{ goal: ConversationGoal | null }>(
-      `/conversations/${encodeURIComponent(conversationId)}/goal`,
+      PrismService._goalPath(conversationId, "", project),
       { method: HTTP_METHODS.GET },
     );
     return result?.goal ?? null;
@@ -1661,11 +1672,12 @@ export default class PrismService {
   /** The goal and the goal the model proposed (waiting for approval). */
   static async getConversationGoalState(
     conversationId: string,
+    project?: string | null,
   ): Promise<{ goal: ConversationGoal | null; proposal: ConversationGoal | null }> {
     const result = await PrismService._request<{
       goal?: ConversationGoal | null;
       proposal?: ConversationGoal | null;
-    }>(`/conversations/${encodeURIComponent(conversationId)}/goal`, { method: HTTP_METHODS.GET });
+    }>(PrismService._goalPath(conversationId, "", project), { method: HTTP_METHODS.GET });
     return { goal: result?.goal ?? null, proposal: result?.proposal ?? null };
   }
 
@@ -1680,9 +1692,10 @@ export default class PrismService {
       maxIterations?: number;
       budget?: ConversationGoalBudget;
     },
+    project?: string | null,
   ): Promise<ConversationGoal | null> {
     const result = await PrismService._request<{ goal: ConversationGoal | null }>(
-      `/conversations/${encodeURIComponent(conversationId)}/goal`,
+      PrismService._goalPath(conversationId, "", project),
       { method: HTTP_METHODS.PUT, body: goal },
     );
     return result?.goal ?? null;
@@ -1701,33 +1714,36 @@ export default class PrismService {
       verifier?: { provider: string; model: string } | null;
       maxIterations?: number;
     },
+    project?: string | null,
   ): Promise<ConversationGoal | null> {
     const result = await PrismService._request<{ goal: ConversationGoal | null }>(
-      `/conversations/${encodeURIComponent(conversationId)}/goal`,
+      PrismService._goalPath(conversationId, "", project),
       { method: HTTP_METHODS.PATCH, body: patch },
     );
     return result?.goal ?? null;
   }
 
-  static async clearConversationGoal(conversationId: string): Promise<void> {
-    await PrismService._request<unknown>(
-      `/conversations/${encodeURIComponent(conversationId)}/goal`,
-      { method: HTTP_METHODS.DELETE },
-    );
+  static async clearConversationGoal(conversationId: string, project?: string | null): Promise<void> {
+    await PrismService._request<unknown>(PrismService._goalPath(conversationId, "", project), {
+      method: HTTP_METHODS.DELETE,
+    });
   }
 
   /** The model's proposed goal becomes the goal. */
-  static async approveGoalProposal(conversationId: string): Promise<ConversationGoal | null> {
+  static async approveGoalProposal(
+    conversationId: string,
+    project?: string | null,
+  ): Promise<ConversationGoal | null> {
     const result = await PrismService._request<{ goal: ConversationGoal | null }>(
-      `/conversations/${encodeURIComponent(conversationId)}/goal/proposal/approve`,
+      PrismService._goalPath(conversationId, "/proposal/approve", project),
       { method: HTTP_METHODS.POST },
     );
     return result?.goal ?? null;
   }
 
-  static async declineGoalProposal(conversationId: string): Promise<boolean> {
+  static async declineGoalProposal(conversationId: string, project?: string | null): Promise<boolean> {
     const result = await PrismService._request<{ success: boolean }>(
-      `/conversations/${encodeURIComponent(conversationId)}/goal/proposal/decline`,
+      PrismService._goalPath(conversationId, "/proposal/decline", project),
       { method: HTTP_METHODS.POST },
     );
     return result?.success === true;
