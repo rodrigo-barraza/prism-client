@@ -10,9 +10,9 @@
  *    twin) lands on `messages`,
  *  - how persisted `<user-update>` / `<user-answer>` messages are told
  *    apart from task-notification cards and what they display,
- *  - how external input (a webhook, a Discord user who is not the owner, an
- *    MCP server, a sub-agent) is told apart from the user: it is never a
- *    user bubble.
+ *  - how external input (a webhook, a Discord message relayed into someone
+ *    else's turn, an MCP server, a sub-agent) is told apart from the user:
+ *    it is never a user bubble.
  */
 import { MESSAGE_ROLES } from "../constants";
 import type {

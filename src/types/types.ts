@@ -483,9 +483,9 @@ export interface Message {
    */
   _turnInput?: MessageTurnInput;
   /**
-   * Input from outside the conversation — a webhook, a Discord user who is
-   * not the owner, an MCP server, a sub-agent (prism-service
-   * external/ExternalInput). Never the user's words: rendered as an external
+   * Input from outside the conversation — a webhook, a Discord message
+   * relayed into someone else's turn, an MCP server, a sub-agent
+   * (prism-service external/ExternalInput). Never the user's words: rendered as an external
    * block, `rawContent` its text, `content` the model's envelope.
    */
   _external?: ExternalOrigin;

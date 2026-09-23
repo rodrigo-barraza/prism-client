@@ -9,8 +9,8 @@ import { externalInputLabel } from "../utils/turnInputRouting";
 
 /**
  * ExternalInputBlockComponent — input that reached the conversation from
- * outside it: a webhook, a Discord user who is not the owner, an MCP server,
- * a sub-agent. It carries tool-level authority, never the user's, so it is
+ * outside it: a webhook, a Discord message relayed into someone else's
+ * turn, an MCP server, a sub-agent. It carries tool-level authority, never the user's, so it is
  * drawn like a tool's output — a bordered block tagged with its source —
  * and never as a user bubble. The text is shown as plain text: it is
  * someone else's, and rendering it as markdown would load its links and
