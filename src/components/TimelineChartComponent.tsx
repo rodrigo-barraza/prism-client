@@ -15,7 +15,7 @@ import { SelectComponent } from "@rodrigo-barraza/components-library";
 import { Clock } from "lucide-react";
 import styles from "./TimelineChartComponent.module.css";
 import ChartTabsComponent from "./ChartTabsComponent";
-import { formatNumber } from "@rodrigo-barraza/utilities-library";
+import { formatNumber, formatLatency } from "@rodrigo-barraza/utilities-library";
 import { GRANULARITY_TIERS } from "../utils/timelineGranularity";
 
 interface RechartsChartOffset {
@@ -76,7 +76,8 @@ const TABS = [
   { key: "requests", label: "Requests", color: "oklch(0.585 0.233 277.117)", unit: "" },
   { key: "tokens", label: "Tokens", color: "oklch(0.6 0.23 290)", unit: "" },
   { key: "cost", label: "Cost", color: "oklch(0.769 0.188 70.08)", unit: "$" },
-  { key: "avgLatency", label: "Latency", color: "oklch(0.627 0.231 348.347)", unit: "ms" },
+  // Seconds, as `requests.totalTime` is stored.
+  { key: "avgLatency", label: "Latency", color: "oklch(0.627 0.231 348.347)", unit: "s" },
   { key: "successRate", label: "Success", color: "oklch(0.705 0.191 165.574)", unit: "%" },
 ];
 
@@ -119,11 +120,7 @@ function formatValue(value: RechartsValueType | null | undefined, tab: TimelineT
   if (tab.key === "cost") {
     return value >= 0.01 ? `$${value.toFixed(4)}` : `$${value.toFixed(6)}`;
   }
-  if (tab.key === "avgLatency") {
-    return value >= 1000
-      ? `${(value / 1000).toFixed(1)}s`
-      : `${Math.round(value)}ms`;
-  }
+  if (tab.key === "avgLatency") return formatLatency(value);
   if (tab.key === "successRate") {
     return `${value}%`;
   }
@@ -132,8 +129,7 @@ function formatValue(value: RechartsValueType | null | undefined, tab: TimelineT
 
 function yTickFormatter(value: number, tabKey: string): string {
   if (tabKey === "cost") return `$${value.toFixed(2)}`;
-  if (tabKey === "avgLatency")
-    return value >= 1000 ? `${(value / 1000).toFixed(1)}s` : `${value}ms`;
+  if (tabKey === "avgLatency") return formatLatency(value);
   if (tabKey === "successRate") return `${value}%`;
   return formatNumber(value);
 }

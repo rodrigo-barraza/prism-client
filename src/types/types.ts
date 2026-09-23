@@ -2428,7 +2428,8 @@ export interface IrisDashboardStats {
   successCount: number;
   errorCount: number;
   conversationCount: number;
-  agentConversationCount: number;
+  /** Distinct traces (agent runs) among the matched requests. */
+  traceCount: number;
   agentCount: number;
   workspaceCount: number;
 }
@@ -2437,6 +2438,9 @@ export interface IrisProjectStat {
   project: string;
   totalRequests: number;
   totalCost?: number;
+  traceCount?: number;
+  conversationCount?: number;
+  workflowCount?: number;
 }
 
 export interface IrisModelStat {
@@ -2450,13 +2454,24 @@ export interface IrisModelStat {
   avgTokensPerSec?: number;
   conversationCount?: number;
   workflowCount?: number;
-  agentConversationCount?: number;
+  traceCount?: number;
+  toolsUsed?: boolean;
 }
 
+/** One `/admin/stats/timeline` bucket. */
 export interface IrisTimelineEntry {
-  hour?: string;
-  totalRequests: number;
-  totalCost?: number;
+  /**
+   * Bucket key: a UTC instant for sub-day buckets ("2026-04-02T22:05:30",
+   * "2026-04-02T22:05", "2026-04-02T14"), a calendar date in the requested
+   * timezone for day and week buckets ("2026-04-02"; weeks start Monday).
+   */
+  hour: string;
+  requests: number;
+  tokens: number;
+  cost: number;
+  /** Mean request time in SECONDS. */
+  avgLatency: number;
+  successRate: number;
 }
 
 export interface IrisProviderStat {
@@ -2471,7 +2486,7 @@ export interface IrisProviderStat {
   modelCount?: number;
   conversationCount?: number;
   workflowCount?: number;
-  agentConversationCount?: number;
+  traceCount?: number;
 }
 
 export interface IrisAgentStat {
@@ -2490,7 +2505,7 @@ export interface IrisAgentStat {
   providers?: string[];
   providerCount?: number;
   conversationCount?: number;
-  agentConversationCount?: number;
+  traceCount?: number;
   lastRequest?: string;
   successCount?: number;
   errorCount?: number;

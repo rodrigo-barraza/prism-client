@@ -170,13 +170,35 @@ describe("IrisService", () => {
       12,
       { project: "prism" },
       "hourly",
+      undefined,
+      "America/Vancouver",
     );
 
     expect(mockFetch).toHaveBeenCalledWith(
-      `${PRISM_SERVICE_URL}/admin/stats/timeline?hours=12&project=prism&granularity=hourly`,
+      `${PRISM_SERVICE_URL}/admin/stats/timeline?hours=12&tz=America%2FVancouver&project=prism&granularity=hourly`,
       expect.any(Object),
     );
     expect(result).toEqual(mockTimeline);
+  });
+
+  it("asks for an all-time timeline in the viewer's timezone by default", async () => {
+    mockFetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ data: [] }) });
+    await IrisService.getTimeline("all");
+    const url = new URL(mockFetch.mock.calls[0][0] as string, "http://localhost");
+    expect(url.searchParams.get("hours")).toBe("all");
+    expect(url.searchParams.get("tz")).toBe(
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+    );
+  });
+
+  it("fetches the whole dashboard from one endpoint, abortably", async () => {
+    mockFetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ stats: {} }) });
+    const controller = new AbortController();
+    await IrisService.getDashboardStats({ project: "prism" }, controller.signal);
+    expect(mockFetch).toHaveBeenCalledWith(
+      `${PRISM_SERVICE_URL}/admin/stats/dashboard?project=prism`,
+      expect.objectContaining({ signal: controller.signal }),
+    );
   });
 
   it("should query cost stats summary", async () => {

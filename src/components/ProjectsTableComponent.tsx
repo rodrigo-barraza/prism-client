@@ -59,7 +59,7 @@ export default function ProjectsTableComponent({
     "totalRequests",
     "totalCost",
     "avgLatency",
-    "agentConversationCount",
+    "traceCount",
     "conversationCount",
   ];
   const columns = compact

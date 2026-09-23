@@ -9,6 +9,11 @@
  * This manager maintains ONE shared EventSource per unique URL and fans out
  * messages to all registered listeners. When the last listener unsubscribes,
  * the underlying connection is closed.
+ *
+ * A stream's `{ type: "status" }` message (e.g. /admin/changes/stream saying
+ * whether change streams exist) is sent once per connection, so it is kept
+ * and replayed to a listener that joins an open connection — otherwise that
+ * listener never learns it must fall back to polling.
  */
 
 type SSEListener = (_data: unknown) => void;
@@ -16,6 +21,15 @@ type SSEListener = (_data: unknown) => void;
 interface PoolEntry {
   eventSource: EventSource;
   listeners: Set<SSEListener>;
+  lastStatus?: unknown;
+}
+
+function isStatusMessage(data: unknown): boolean {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    (data as { type?: unknown }).type === "status"
+  );
 }
 
 const pools = new Map<string, PoolEntry>();
@@ -42,6 +56,7 @@ export function subscribe(
       } catch {
         return; // ignore parse errors
       }
+      if (isStatusMessage(data)) entry!.lastStatus = data;
       // Fan out to all listeners (copy the set to avoid mutation during iteration)
       for (const listener of entry!.listeners) {
         try {
@@ -58,6 +73,18 @@ export function subscribe(
   }
 
   entry.listeners.add(onMessage);
+  const { lastStatus } = entry;
+  if (lastStatus !== undefined) {
+    const joined = entry;
+    queueMicrotask(() => {
+      if (!joined.listeners.has(onMessage)) return;
+      try {
+        onMessage(lastStatus);
+      } catch {
+        /* listener errors shouldn't break the pool */
+      }
+    });
+  }
 
   return {
     unsubscribe() {

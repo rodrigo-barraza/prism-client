@@ -41,7 +41,8 @@ import {
 import {
   getTotalInputTokens,
 } from "./utilities";
-import { PROVIDER_COLORS, BYTES_IN_KIB, KIB_IN_MIB, MIB_IN_GIB, CATEGORIES, EXECUTION_STATUS } from "../constants";
+import { PROVIDER_COLORS, KIB_IN_MIB, MIB_IN_GIB, CATEGORIES, EXECUTION_STATUS } from "../constants";
+import { MILLISECONDS_PER_SECOND } from "@rodrigo-barraza/utilities-library";
 import {
   deriveAgentConversationState,
   AGENT_CONVERSATION_STATE_COLORS,
@@ -605,7 +606,7 @@ export const durationColumn = ({
         })();
     const duration = formatDuration(durationMilliseconds);
     if (!duration) return emptyDash();
-    return <BadgeComponent type="stopwatch" seconds={durationMilliseconds / BYTES_IN_KIB} />;
+    return <BadgeComponent type="stopwatch" seconds={durationMilliseconds / MILLISECONDS_PER_SECOND} />;
   },
 });
 
