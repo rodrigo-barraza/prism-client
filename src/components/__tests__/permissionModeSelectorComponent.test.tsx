@@ -165,7 +165,7 @@ describe("usePermissionMode", () => {
 describe("the stream", () => {
   it("routes permission_mode to onPermissionMode", () => {
     const onPermissionMode = vi.fn();
-    const event: SSEData = { type: "permission_mode", conversationId: "conv-1", mode: "plan", source: "plan_approved" };
+    const event: SSEData = { type: "permission_mode", conversationId: "conv-1", mode: "plan", previousMode: "default" };
     PrismService._dispatchSSE(event, { onPermissionMode });
     expect(onPermissionMode).toHaveBeenCalledWith(event);
   });
