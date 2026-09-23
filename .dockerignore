@@ -14,7 +14,9 @@ Dockerfile
 .oxlintrc.json
 next-env.d.ts
 tsconfig.tsbuildinfo
-tests
+# tests/ stays IN the context: next build typechecks src/**/__tests__, whose
+# jest-dom matcher types come from tests/setup.ts. The runner stage copies
+# only .next/standalone, .next/static, public and boot.js — tests never ship.
 *.md
 dist/
 *.tsbuildinfo
