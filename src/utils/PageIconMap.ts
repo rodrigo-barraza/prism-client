@@ -31,6 +31,7 @@ import {
   GitBranch,
   Package,
   SquareTerminal,
+  Sparkles,
 } from "lucide-react";
 
 export interface PageIconEntry {
@@ -64,6 +65,7 @@ const PAGE_ICON_ENTRIES: PageIconEntry[] = [
   { icon: ScrollText, aliases: ["requests"] },
   { icon: FolderOpen, aliases: ["traces"] },
   { icon: Users, aliases: ["users"] },
+  { icon: Sparkles, aliases: ["skills", "skill usage"] },
   { icon: Layers, aliases: ["providers"] },
   { icon: BookOpen, aliases: ["about", "research"] },
   { icon: GitBranch, aliases: ["topologies"] },
@@ -180,6 +182,7 @@ export const ADMIN_NAV_SECTIONS: NavigationSection[] = [
         showBadge: "traces",
       },
       { href: "/admin/users", label: "Users", icon: Users },
+      { href: "/admin/skills", label: "Skills", icon: Sparkles },
     ],
   },
   {
