@@ -22,6 +22,14 @@ const INTENTIONALLY_UNHANDLED: Record<string, string> = {
     "never emitted as an SSE envelope type — 'text' exists in the taxonomy for content blocks / live-voice WS frames",
   [SERVER_SENT_EVENT_TYPES.TOKEN]:
     "legacy alias, no emit sites in prism-service",
+  [SERVER_SENT_EVENT_TYPES.RUN_INFO]:
+    "the retired single-prompt benchmark stream; benchmark runs stream their own progress (BenchmarkApi.followRun)",
+  [SERVER_SENT_EVENT_TYPES.MODEL_START]:
+    "the retired single-prompt benchmark stream; benchmark runs stream their own progress (BenchmarkApi.followRun)",
+  [SERVER_SENT_EVENT_TYPES.MODEL_COMPLETE]:
+    "the retired single-prompt benchmark stream; benchmark runs stream their own progress (BenchmarkApi.followRun)",
+  [SERVER_SENT_EVENT_TYPES.RUN_COMPLETE]:
+    "the retired single-prompt benchmark stream (workflows read their own run_complete in WorkflowExecutor)",
 };
 
 /** Protocol events (types/protocol/events.ts) the dispatcher routes nowhere, and why. */
@@ -88,10 +96,6 @@ function buildSpyCallbacks(): { callbacks: SSECallbacks; spies: Array<ReturnType
     onTurnInput: spy(),
     onGoalUpdate: spy(),
     onPermissionMode: spy(),
-    onRunInfo: spy(),
-    onModelStart: spy(),
-    onModelComplete: spy(),
-    onRunComplete: spy(),
     onUsageUpdate: spy(),
     onContextBudget: spy(),
     onStatus: spy(),

@@ -3,15 +3,15 @@
 import { Suspense } from "react";
 import NavigationSidebarComponent from "../../../components/NavigationSidebarComponent";
 import ThreePanelLayout from "../../../components/ThreePanelLayoutComponent";
-import RunBuilderComponent from "../../../components/benchmarks/RunBuilderComponent";
+import CompareRunsComponent from "../../../components/benchmarks/CompareRunsComponent";
 import styles from "../page.module.css";
 
-export default function NewBenchmarkRunPage() {
+export default function CompareBenchmarkRunsPage() {
   return (
     <ThreePanelLayout navSidebar={<NavigationSidebarComponent mode="user" />} leftPanel={null} title="Benchmarks">
       <main className={styles["page-content-area"]}>
         <Suspense>
-          <RunBuilderComponent />
+          <CompareRunsComponent />
         </Suspense>
       </main>
     </ThreePanelLayout>

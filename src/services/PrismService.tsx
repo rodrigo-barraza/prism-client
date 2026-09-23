@@ -11,7 +11,6 @@ import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
 import { hydrateToolEmojiCache } from "../components/WorkflowNodeConstantsComponent";
 import type {
   PrismConfig,
-  ModelOption,
   Conversation,
   ConversationGoal,
   ConversationGoalBudget,
@@ -39,11 +38,6 @@ import type {
   CoordinatorSubAgent,
   Favorite,
   ToolSchema,
-  Benchmark,
-  BenchmarkPreset,
-  BenchmarkListResponse,
-  BenchmarkModelStats,
-  BenchmarkRun,
   VramBenchmarkEntry,
   VramBenchmarkMachine,
   Workflow,
@@ -1776,8 +1770,8 @@ export default class PrismService {
   }
 
   /**
-   * Generic SSE stream helper for the callback-driven streams (synthesis,
-   * benchmarks): reads the response through agentStream's
+   * Generic SSE stream helper for the callback-driven streams (synthesis):
+   * reads the response through agentStream's
    * `serverSentEvents` and dispatches each event to its callback. The agent
    * chat iterates agentStream directly.
    */
@@ -1830,7 +1824,7 @@ export default class PrismService {
 
   /**
    * Dispatch one parsed stream event to its callback. Shared by the chat,
-   * agent, viewer, synthesis and benchmark streams; the switch is exhaustive
+   * agent, viewer and synthesis streams; the switch is exhaustive
    * over every event type, so a new protocol event does not compile until
    * it is routed (or deliberately ignored) here.
    */
@@ -1935,19 +1929,6 @@ export default class PrismService {
       // before it is persisted at finalize.
       case "user_message":
         callbacks.onUserMessage?.(event);
-        break;
-      // Benchmark-specific events
-      case "run_info":
-        callbacks.onRunInfo?.(event);
-        break;
-      case "model_start":
-        callbacks.onModelStart?.(event);
-        break;
-      case "model_complete":
-        callbacks.onModelComplete?.(event);
-        break;
-      case "run_complete":
-        callbacks.onRunComplete?.(event);
         break;
       // Synthesis-stream framing events (/synthesis/generate — see
       // SynthesisOrchestrationService in prism-service for the protocol)
@@ -2486,240 +2467,6 @@ export default class PrismService {
     })();
 
     return () => controller.abort();
-  }
-
-  // ---------------------------------------------------------------------------
-  // Benchmarks
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Fetch industry-standard benchmark presets from the server.
-   */
-  static async getBenchmarkPresets(): Promise<BenchmarkPreset[]> {
-    const response = await PrismService._request<{ presets: BenchmarkPreset[]; count: number }>("/benchmark/presets", {
-      method: HTTP_METHODS.GET,
-    });
-    return response.presets;
-  }
-
-  /**
-   * List all benchmark tests.
-   */
-  static async getBenchmarks(): Promise<BenchmarkListResponse> {
-    return PrismService._request<BenchmarkListResponse>("/benchmark", {
-      method: HTTP_METHODS.GET,
-    });
-  }
-
-  /**
-   * Get aggregated model performance stats across all benchmark runs.
-   */
-  static async getBenchmarkStats(): Promise<BenchmarkModelStats> {
-    return PrismService._request<BenchmarkModelStats>("/benchmark/stats", {
-      method: HTTP_METHODS.GET,
-    });
-  }
-
-  /**
-   * Get available conversation models for benchmarking.
-   */
-  static async getBenchmarkModels(): Promise<{
-    models: ModelOption[];
-    count: number;
-  }> {
-    return PrismService._request<{ models: ModelOption[]; count: number }>(
-      "/benchmark/models",
-      { method: HTTP_METHODS.GET },
-    );
-  }
-
-  /**
-   * Create a new benchmark test.
-
-
-   */
-  static async createBenchmark(
-    data: Omit<Benchmark, "_id" | "createdAt">,
-  ): Promise<Benchmark> {
-    return PrismService._request<Benchmark>("/benchmark", { body: data });
-  }
-
-  /**
-   * Get a single benchmark test with its latest run.
-
-
-   */
-  static async getBenchmark(id: string): Promise<Benchmark> {
-    return PrismService._request<Benchmark>(`/benchmark/${id}`, {
-      method: HTTP_METHODS.GET,
-    });
-  }
-
-  /**
-   * Delete a benchmark test and all its runs.
-
-
-   */
-  static async deleteBenchmark(id: string): Promise<{ success: boolean }> {
-    return PrismService._request<{ success: boolean }>(`/benchmark/${id}`, {
-      method: HTTP_METHODS.DELETE,
-    });
-  }
-
-  /**
-   * Run a benchmark against selected models (or all).
-
-
-   */
-  static async runBenchmark(
-    id: string,
-    models?: string[],
-  ): Promise<BenchmarkRun> {
-    return PrismService._request<BenchmarkRun>(`/benchmark/${id}/run`, {
-      body: models ? { models } : {},
-    });
-  }
-
-  /**
-   * Stream a benchmark run via SSE, receiving per-model progress events.
-   * `trials` repeats every target N times within the run.
-   */
-  static streamBenchmarkRun(
-    id: string,
-    models?: Array<{
-      provider: string;
-      model: string;
-      display_name?: string;
-      thinkingEnabled?: boolean;
-      toolsEnabled?: boolean;
-      agent?: string;
-      enabledTools?: string[];
-    }>,
-    callbacks: SSECallbacks = {},
-    options: { trials?: number } = {},
-  ): () => void {
-    return PrismService._streamSSE(
-      `/benchmark/${id}/run`,
-      {
-        body: {
-          ...(models ? { models } : {}),
-          ...(options.trials && options.trials > 1
-            ? { trials: options.trials }
-            : {}),
-        },
-        protocol: "benchmark",
-      },
-      callbacks,
-    );
-  }
-
-  /**
-   * Update an existing benchmark test.
-   */
-  static async updateBenchmark(
-    id: string,
-    data: Partial<Omit<Benchmark, "_id" | "createdAt">>,
-  ): Promise<Benchmark> {
-    return PrismService._request<Benchmark>(`/benchmark/${id}`, {
-      method: HTTP_METHODS.PUT,
-      body: data,
-    });
-  }
-
-  /**
-   * Delete a single benchmark run.
-   */
-  static async deleteBenchmarkRun(
-    benchmarkId: string,
-    runId: string,
-  ): Promise<{ deleted: boolean; id: string }> {
-    return PrismService._request<{ deleted: boolean; id: string }>(
-      `/benchmark/${benchmarkId}/runs/${runId}`,
-      { method: HTTP_METHODS.DELETE },
-    );
-  }
-
-  /**
-   * Get all past runs for a benchmark.
-
-   */
-  static async getBenchmarkRuns(
-    id: string,
-  ): Promise<{ runs: BenchmarkRun[]; count: number }> {
-    return PrismService._request<{ runs: BenchmarkRun[]; count: number }>(
-      `/benchmark/${id}/runs`,
-      { method: HTTP_METHODS.GET },
-    );
-  }
-
-  /**
-   * Re-run a specific past run with the same model set.
-
-
-   */
-  static async rerunBenchmark(
-    benchmarkId: string,
-    runId: string,
-  ): Promise<BenchmarkRun> {
-    return PrismService._request<BenchmarkRun>(
-      `/benchmark/${benchmarkId}/runs/${runId}/rerun`,
-      { body: {} },
-    );
-  }
-
-  /**
-   * Explicitly abort a running benchmark.
-
-   */
-  static async abortBenchmarkRun(
-    benchmarkId: string,
-  ): Promise<{ aborted: boolean }> {
-    return PrismService._request<{ aborted: boolean }>(
-      `/benchmark/${benchmarkId}/abort`,
-      {
-        body: {},
-      },
-    );
-  }
-
-  /**
-   * Fetch all benchmark IDs that currently have active (in-progress) runs.
-   */
-  static async getActiveBenchmarks(): Promise<{ activeIds: string[] }> {
-    return PrismService._request<{ activeIds: string[] }>(
-      "/benchmark/active-list",
-      { method: HTTP_METHODS.GET },
-    );
-  }
-
-  /**
-   * Check if a benchmark has an active (in-progress) run.
-
-   */
-  static async getBenchmarkActive(
-    id: string,
-  ): Promise<{ active: boolean; runId?: string }> {
-    return PrismService._request<{ active: boolean; runId?: string }>(
-      `/benchmark/${id}/active`,
-      { method: HTTP_METHODS.GET },
-    );
-  }
-
-  /**
-   * Follow an in-progress benchmark run via SSE.
-   * Replays completed results first, then streams live events.
-
-
-   */
-  static followBenchmarkRun(
-    id: string,
-    callbacks: SSECallbacks = {},
-  ): () => void {
-    return PrismService._streamSSE(
-      `/benchmark/${id}/follow`,
-      { method: HTTP_METHODS.GET, protocol: "benchmark" },
-      callbacks,
-    );
   }
 
   // ---------------------------------------------------------------------------
