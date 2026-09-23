@@ -154,6 +154,18 @@
   overflow-wrap: anywhere;
 }
 
+/* An external ACP agent (a sub-agent on the acp runtime) asks for its own call. */
+.external-agent-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: var(--font-size-xs);
+  color: var(--color-info);
+  background: color-mix(in srgb, var(--color-info) 8%, transparent);
+  overflow-wrap: anywhere;
+}
+
 /* "Run it again?" — the server restarted while this call was running. */
 .retry-notice {
   display: flex;

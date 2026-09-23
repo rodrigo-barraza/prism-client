@@ -419,3 +419,70 @@ describe("a card auto mode put out", () => {
     expect(approvalFromEvent(approvalRequired("call-1"))).not.toHaveProperty("autoModeReason");
   });
 });
+
+// prompt 24, Landing 3: an external ACP agent (a sub-agent on the acp runtime)
+// asks for its own call.
+describe("a card an external ACP agent asked for", () => {
+  beforeEach(() => {
+    sendApprovalDecision.mockReset();
+  });
+
+  const externalEvent: ApprovalRequiredEvent = {
+    type: "approval_required",
+    toolCallId: "edit-1",
+    batchId: "batch-x",
+    batchSize: 1,
+    toolCall: { id: "edit-1", name: "Edit notes.md", args: { title: "Edit notes.md", kind: "edit", input: { path: "notes.md" } } },
+    tier: 2,
+    requestedBy: "external_agent",
+    reason: "Claude Code (an external ACP agent) asks permission: Edit notes.md",
+    subAgentId: "agent-1",
+    subAgentDescription: "Delegate to Claude Code",
+    approvalConversationId: "sub-conversation-1",
+  };
+
+  it("says which agent asks, offers Allow and Deny — no edit, no permission rule", async () => {
+    sendApprovalDecision.mockResolvedValue({
+      ok: true,
+      approved: true,
+      decision: "allow",
+      scope: "call",
+      batchId: "batch-x",
+      decidedToolCallIds: ["edit-1"],
+      remaining: 0,
+    });
+    render(
+      <ApprovalCardsComponent
+        conversationId="parent-conversation"
+        approvals={cardsFrom([externalEvent])}
+        setApprovals={vi.fn()}
+        onNotify={vi.fn()}
+        alwaysAllow={{ conversationId: "parent-conversation", workspaceRoot: "/tmp/w" }}
+      />,
+    );
+    const externalCard = card("Edit notes.md", 0);
+    expect(within(externalCard).getByRole("note").textContent).toContain(
+      "Claude Code (an external ACP agent) asks permission: Edit notes.md",
+    );
+    expect(within(externalCard).queryByRole("button", { name: /Edit arguments/ })).toBeNull();
+    expect(within(externalCard).queryByText(/Always allow/i)).toBeNull();
+    expect(within(externalCard).getByRole("button", { name: /^Deny/ })).toBeTruthy();
+    fireEvent.click(within(externalCard).getByRole("button", { name: /^Allow$/ }));
+    await waitFor(() => expect(sendApprovalDecision).toHaveBeenCalledTimes(1));
+    // Decided on the sub-agent's own loop.
+    expect(sendApprovalDecision.mock.calls[0]).toEqual([
+      "sub-conversation-1",
+      expect.objectContaining({ toolCallId: "edit-1", decision: "allow" }),
+    ]);
+  });
+
+  it("maps the event, and a reloading client rebuilds it from the pending snapshot", () => {
+    expect(approvalFromEvent(externalEvent)).toMatchObject({ externalAgentReason: externalEvent.reason });
+    const [restored] = approvalsFromPendingSnapshot(
+      [{ id: "edit-1", name: "Edit notes.md", args: {}, requestedBy: "external_agent", reason: "Codex asks" }],
+      "batch-x",
+    );
+    expect(restored).toMatchObject({ externalAgentReason: "Codex asks" });
+    expect(approvalFromEvent(approvalRequired("call-1"))).not.toHaveProperty("externalAgentReason");
+  });
+});

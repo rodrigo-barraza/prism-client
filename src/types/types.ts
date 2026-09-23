@@ -1610,6 +1610,10 @@ export interface CoordinatorSubAgent {
   currentTool?: string | null;
   durationMs?: number;
   totalCost?: number;
+  /** An external ACP agent that reported no cost: its cost is unknown, not zero. */
+  costUnknown?: boolean;
+  /** Set when an external runtime runs it (`acp`: an external ACP agent process). */
+  runtime?: string;
   toolCallCount?: number;
   branchName?: string;
   files?: string[];

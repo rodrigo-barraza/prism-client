@@ -280,12 +280,21 @@ export default function SubAgentsPanelComponent({
                     {formatDuration(subAgentItem.durationMs ?? 0)}
                   </span>
                 )}
-                <BadgeComponent
-                  type="cost"
-                  cost={subAgentItem.totalCost}
-                  mini
-                  showIcon={false}
-                />
+                {subAgentItem.costUnknown ? (
+                  <span
+                    className={styles['meta-item']}
+                    title="An external agent that did not report what it spent"
+                  >
+                    cost unknown
+                  </span>
+                ) : (
+                  <BadgeComponent
+                    type="cost"
+                    cost={subAgentItem.totalCost}
+                    mini
+                    showIcon={false}
+                  />
+                )}
                 {totalToolCallCount > 0 && (
                   <span className={styles['meta-item']}>
                     <Wrench size={10} />
