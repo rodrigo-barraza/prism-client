@@ -41,6 +41,8 @@ interface Request {
   method: string;
   path: string;
   body: unknown;
+  /** The `project` query parameter — the scope the goal routes resolve the conversation in. */
+  project?: string | null;
 }
 
 let requests: Request[] = [];
@@ -57,7 +59,7 @@ beforeEach(() => {
       path: new URL(String(url), "http://prism.test").pathname.replace(/^.*?(?=\/conversations\/)/, ""),
       body: init?.body ? JSON.parse(String(init.body)) : undefined,
     };
-    requests.push(request);
+    requests.push({ ...request, project: new URL(String(url), "http://prism.test").searchParams.get("project") });
     const payload = responder(request);
     return { ok: true, status: 200, json: async () => payload } as Response;
   }) as typeof fetch);
@@ -94,7 +96,9 @@ function Harness({ initialGoal = null }: { initialGoal?: ConversationGoal | null
 }
 
 function writes() {
-  return requests.filter((request) => request.method !== "GET");
+  return requests
+    .filter((request) => request.method !== "GET")
+    .map(({ project: _project, ...request }) => request);
 }
 
 describe("the goal form", () => {
@@ -350,5 +354,37 @@ describe("a goal the agent proposed", () => {
     );
     expect(screen.queryByRole("region", { name: "Proposed goal" })).toBeNull();
     expect(screen.getByRole("region", { name: "Conversation goal" })).toBeInTheDocument();
+  });
+});
+
+describe("the goal's conversation scope", () => {
+  it("every goal request names the conversation's project, as the conversation loader does", async () => {
+    // An agent conversation lives under its agent's project ("coding"); the
+    // client's own default project is another one — without the scope the
+    // routes answer "no goal" / "not found".
+    function ScopedHarness() {
+      const goal = useConversationGoal("conv-1", "coding");
+      React.useEffect(() => {
+        goal.hydrate(GOAL);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
+      return (
+        <GoalPanelComponent
+          goal={goal.goal}
+          proposal={goal.proposal}
+          onPause={() => void goal.pause()}
+          onSave={goal.save}
+        />
+      );
+    }
+    responder = (request) =>
+      request.method === "GET" ? { goal: null, proposal: null } : { goal: { ...GOAL, status: "paused" } };
+    render(<ScopedHarness />);
+    fireEvent.click(await screen.findByRole("button", { name: "Pause goal" }));
+    await waitFor(() => expect(requests.filter((request) => request.method === "PATCH")).toHaveLength(1));
+    expect(requests.map((request) => [request.method, request.project])).toEqual([
+      ["GET", "coding"],
+      ["PATCH", "coding"],
+    ]);
   });
 });
