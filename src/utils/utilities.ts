@@ -111,7 +111,7 @@ export function buildDateRangeParams(
   if (dateRange?.to) {
     params.to = dateRange.to.includes("T")
       ? dateRange.to
-      : new Date(dateRange.to + "T23:59:59").toISOString();
+      : new Date(dateRange.to + "T23:59:59.999").toISOString();
   }
   return params;
 }

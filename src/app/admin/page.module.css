@@ -19,6 +19,13 @@
   gap: 16px;
 }
 
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .section-action {
   font-size: 0.8125rem;
   color: var(--accent-primary);
@@ -66,12 +73,6 @@
 @media (max-width: 767px) {
   .resource-navigation-bar {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .time-toolbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
   }
 
   .stats-grid {

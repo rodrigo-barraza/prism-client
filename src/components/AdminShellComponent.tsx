@@ -18,6 +18,7 @@ import {
   useAdminHeader,
 } from "./AdminHeaderContextComponent";
 import styles from "./AdminShellComponent.module.css";
+import type { AdminDateRange } from "../utils/adminDateRange";
 
 function AdminShellInner({ children }: { children: React.ReactNode }) {
   const [newCount, setNewCount] = useState(0);
@@ -185,7 +186,7 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
       try {
         const data = await IrisService.getRequests({
           limit: 50,
-          sort: "timestamp",
+          sort: "createdAt",
           order: "desc",
         }, requestsAbortController.signal);
         const list = data.data || [];
@@ -263,6 +264,38 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
     // Health check on a long interval (doesn't need real-time)
     const healthInterval = setInterval(fetchHealth, POLL_SLOW);
 
+    // A running agent writes a request every few seconds: refresh the badges
+    // at most every POLL_FAST, with the last change always picked up.
+    const throttled = (run: () => void) => {
+      let lastRunAt = 0;
+      let timer: ReturnType<typeof setTimeout> | null = null;
+      const fire = () => {
+        timer = null;
+        lastRunAt = Date.now();
+        run();
+      };
+      return {
+        call() {
+          if (timer) return;
+          const wait = lastRunAt + POLL_FAST - Date.now();
+          if (wait <= 0) fire();
+          else timer = setTimeout(fire, wait);
+        },
+        cancel() {
+          if (timer) clearTimeout(timer);
+        },
+      };
+    };
+    const refreshConversations = throttled(() => {
+      fetchConversations();
+      fetchMedia();
+      fetchText();
+    });
+    const refreshRequests = throttled(() => {
+      fetchRequests();
+      fetchSessions(); // traces are derived from requests
+    });
+
     // Subscribe to change stream SSE
     let pollInterval: ReturnType<typeof setInterval> | null = null;
     const es = IrisService.subscribeCollectionChanges({
@@ -275,20 +308,15 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
         }
       },
       onChange: (event) => {
-        if (event.collection === "conversations") {
-          fetchConversations();
-          fetchMedia();
-          fetchText();
-        }
-        if (event.collection === "requests") {
-          fetchRequests();
-          fetchSessions(); // traces are derived from requests
-        }
+        if (event.collection === "model_conversations") refreshConversations.call();
+        if (event.collection === "requests") refreshRequests.call();
       },
     });
 
     return () => {
       es.close();
+      refreshConversations.cancel();
+      refreshRequests.cancel();
       clearInterval(healthInterval);
       if (pollInterval) clearInterval(pollInterval);
       if (tracesAbortController) tracesAbortController.abort();
@@ -384,11 +412,13 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
 
 export default function AdminShell({
   children,
+  initialDateRange = null,
 }: {
   children: React.ReactNode;
+  initialDateRange?: AdminDateRange | null;
 }) {
   return (
-    <AdminHeaderProvider>
+    <AdminHeaderProvider initialDateRange={initialDateRange}>
       <AdminShellInner>{children}</AdminShellInner>
     </AdminHeaderProvider>
   );

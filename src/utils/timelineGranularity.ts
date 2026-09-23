@@ -1,9 +1,7 @@
 // ============================================================
-// Timeline Granularity Configuration
-// ============================================================
-// Single source of truth for adaptive timeline resolution.
-// Defines all granularity tiers, span-based rules (default,
-// min, max), and helper functions for the resolution picker.
+// Timeline granularity — labels for the resolution picker and
+// the chart's axis. Which granularities a span allows is the
+// server's call (`validGranularities` on /admin/stats/timeline).
 // ============================================================
 
 export interface GranularityTier {
@@ -11,13 +9,6 @@ export interface GranularityTier {
   label: string;
   shortLabel: string;
   seconds: number;
-}
-
-export interface SpanRule {
-  maxSpanMs: number;
-  defaultGranularity: string;
-  minGranularity: string;
-  maxGranularity: string;
 }
 
 export const GRANULARITY_TIERS: GranularityTier[] = [
@@ -34,57 +25,52 @@ export const GRANULARITY_TIERS: GranularityTier[] = [
   { key: "1week", label: "1 week", shortLabel: "1w", seconds: 604800 },
 ];
 
-const TIER_INDEX_BY_KEY = new Map(
-  GRANULARITY_TIERS.map((tier, index) => [tier.key, index]),
-);
-
-const MINUTES = 60 * 1000;
-const HOURS = 60 * MINUTES;
-const DAYS = 24 * HOURS;
-
-export const SPAN_RULES: SpanRule[] = [
-  { maxSpanMs: 2 * MINUTES, defaultGranularity: "1s", minGranularity: "1s", maxGranularity: "15s" },
-  { maxSpanMs: 10 * MINUTES, defaultGranularity: "5s", minGranularity: "1s", maxGranularity: "1min" },
-  { maxSpanMs: 30 * MINUTES, defaultGranularity: "15s", minGranularity: "5s", maxGranularity: "5min" },
-  { maxSpanMs: 1 * HOURS, defaultGranularity: "30s", minGranularity: "15s", maxGranularity: "5min" },
-  { maxSpanMs: 6 * HOURS, defaultGranularity: "1min", minGranularity: "15s", maxGranularity: "15min" },
-  { maxSpanMs: 1 * DAYS, defaultGranularity: "5min", minGranularity: "1min", maxGranularity: "1hr" },
-  { maxSpanMs: 3 * DAYS, defaultGranularity: "15min", minGranularity: "5min", maxGranularity: "1day" },
-  { maxSpanMs: 7 * DAYS, defaultGranularity: "1day", minGranularity: "1hr", maxGranularity: "1day" },
-  { maxSpanMs: 14 * DAYS, defaultGranularity: "1day", minGranularity: "4hr", maxGranularity: "1day" },
-  { maxSpanMs: 30 * DAYS, defaultGranularity: "1day", minGranularity: "4hr", maxGranularity: "1week" },
-  { maxSpanMs: 90 * DAYS, defaultGranularity: "1day", minGranularity: "1day", maxGranularity: "1week" },
-  { maxSpanMs: Infinity, defaultGranularity: "1week", minGranularity: "1day", maxGranularity: "1week" },
-];
-
-export function getSpanRule(spanMs: number): SpanRule {
-  for (const rule of SPAN_RULES) {
-    if (spanMs <= rule.maxSpanMs) return rule;
+/**
+ * Tooltip and axis labels for a timeline bucket key.
+ *
+ * Sub-day keys are UTC instants ("2026-04-02T22:05:31", "2026-04-02T22:05",
+ * "2026-04-02T14") and read in the viewer's local time. Day and week keys
+ * ("2026-04-02") are calendar dates the server already cut in the viewer's
+ * timezone, so they are formatted as dates, never shifted: read as a UTC
+ * midnight in local time, "Mar 21" showed as "Mar 20" west of Greenwich.
+ */
+export function timelineBucketLabels(bucket: string): { label: string; tickLabel: string } {
+  if (bucket.length <= 10) {
+    const label = new Date(`${bucket}T00:00:00Z`).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+    return { label, tickLabel: label };
   }
-  return SPAN_RULES[SPAN_RULES.length - 1];
-}
-
-export function getDefaultGranularity(spanMs: number): string {
-  return getSpanRule(spanMs).defaultGranularity;
-}
-
-export function getValidGranularities(spanMs: number): GranularityTier[] {
-  const rule = getSpanRule(spanMs);
-  const minimumIndex = TIER_INDEX_BY_KEY.get(rule.minGranularity) ?? 0;
-  const maximumIndex = TIER_INDEX_BY_KEY.get(rule.maxGranularity) ?? GRANULARITY_TIERS.length - 1;
-  return GRANULARITY_TIERS.slice(minimumIndex, maximumIndex + 1);
-}
-
-export function isValidGranularity(spanMs: number, granularity: string): boolean {
-  const validTiers = getValidGranularities(spanMs);
-  return validTiers.some((tier) => tier.key === granularity);
-}
-
-export function resolveGranularity(
-  spanMs: number,
-  requestedGranularity?: string | null,
-): string {
-  if (!requestedGranularity) return getDefaultGranularity(spanMs);
-  if (isValidGranularity(spanMs, requestedGranularity)) return requestedGranularity;
-  return getDefaultGranularity(spanMs);
+  const time = bucket.slice(11);
+  const colonCount = (time.match(/:/g) || []).length;
+  if (colonCount >= 2) {
+    const date = new Date(`${bucket}Z`);
+    const label = date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
+    // Dense second bins: an axis label every 30 seconds.
+    return { label, tickLabel: date.getSeconds() % 30 === 0 ? label : "" };
+  }
+  if (colonCount === 1) {
+    const date = new Date(`${bucket}:00Z`);
+    const label = date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    return { label, tickLabel: date.getMinutes() % 15 === 0 ? label : "" };
+  }
+  const date = new Date(`${bucket}:00:00Z`);
+  const label = date.toLocaleTimeString("en-US", { hour: "numeric", hour12: true });
+  // Hourly bins across days: the day's name at local midnight.
+  const tickLabel =
+    date.getHours() === 0
+      ? date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      : label;
+  return { label, tickLabel };
 }

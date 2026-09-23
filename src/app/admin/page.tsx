@@ -3,12 +3,6 @@
 import type {
   PrismConfig,
   ModelOption,
-  IrisDashboardStats,
-  IrisProjectStat,
-  IrisModelStat,
-  IrisAgentStat,
-  IrisProviderStat,
-  IrisTimelineEntry,
   Conversation,
 } from "@/types/types";
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -34,16 +28,19 @@ import {
 } from "lucide-react";
 import {
   POLL_LAZY,
-  FEEDBACK_STANDARD_MILLISECONDS,
+  POLL_STANDARD,
 } from "@rodrigo-barraza/utilities-library";
 import IrisService, {
   type IrisRequestEntry,
-  type IrisCostBreakdownResponse,
+  type IrisDashboardResponse,
+  type IrisTimelineResponse,
 } from "../../services/IrisService";
 import PrismService from "../../services/PrismService";
 import { formatNumber, formatCost, formatLatency, formatTokensPerSec, formatElapsedTime } from "@rodrigo-barraza/utilities-library";
 import { buildDateRangeParams } from "../../utils/utilities";
 import { getErrorMessage } from "../../utils/errorMessage";
+import { timelineBucketLabels } from "../../utils/timelineGranularity";
+import { useCoalescedLoader } from "../../hooks/useCoalescedLoader";
 import {
   StatsCardComponent as StatsCard,
 } from "@rodrigo-barraza/components-library";
@@ -64,438 +61,321 @@ import AdminFiltersCardComponent from "../../components/AdminFiltersCardComponen
 import ResourceCardComponent from "../../components/ResourceCardComponent";
 import styles from "./page.module.css";
 
+/** Change events that move a dashboard number; attention pings do not. */
+const STATS_COLLECTIONS = new Set([
+  "requests",
+  "model_conversations",
+  "agent_conversations",
+]);
+
+interface SummaryState {
+  /** The filters this was loaded for — a different key means "loading". */
+  key: string;
+  dashboard: IrisDashboardResponse | null;
+  recentRequests: IrisRequestEntry[];
+  recentTraces: IrisRequestEntry[];
+  recentConversations: Conversation[];
+  error: string | null;
+}
+
+interface TimelineState {
+  key: string;
+  response: IrisTimelineResponse;
+}
+
+function isAbort(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+/** Sum of a field over rows, never 0 (a proportion bar's denominator). */
+function totalOf<T>(rows: T[], field: (row: T) => number | undefined): number {
+  return rows.reduce((sum, row) => sum + (field(row) || 0), 0) || 1;
+}
+
+/** "model:provider" → the tools that model supports, from the Prism config. */
+function toolsByModel(config: PrismConfig): Record<string, string[]> {
+  const lookup: Record<string, string[]> = {};
+  for (const [provider, models] of Object.entries(
+    config.textToText?.models || {},
+  ) as [string, ModelOption[]][]) {
+    for (const modelOption of models) {
+      if (modelOption.tools?.length) {
+        lookup[`${provider}:${modelOption.name}`] = modelOption.tools;
+      }
+    }
+  }
+  return lookup;
+}
+
+function scrollToSection(sectionId: string) {
+  return (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    document
+      .getElementById(sectionId)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+}
+
+function SectionTitle({ title, href }: { title: string; href: string }) {
+  return (
+    <span className={styles["section-title"]}>
+      {title}
+      <Link href={href} className={styles["section-action"]}>
+        View all →
+      </Link>
+    </span>
+  );
+}
+
 export default function DashboardPage() {
   const searchParams = useSearchParams();
-  const projectFilter = searchParams.get("project") || null;
-  const providerFilter = searchParams.get("provider") || null;
-  const modelFilter = searchParams.get("model") || null;
-  const workspaceFilter = searchParams.get("workspace") || null;
-  const { dateRange, agentFilter } = useAdminHeader();
-  const [stats, setStats] = useState<IrisDashboardStats | null>(null);
-  const [projectStats, setProjectStats] = useState<IrisProjectStat[]>([]);
-  const [modelStats, setModelStats] = useState<IrisModelStat[]>([]);
-  const [agentStats, setAgentStats] = useState<IrisAgentStat[]>([]);
-  // Provider rollups come pre-aggregated from the server's /stats/costs
-  // `providers` facet (true weighted averages) — the client no longer
-  // re-groups per-model stats, which produced averages-of-averages drift.
-  const [costProviders, setCostProviders] = useState<IrisProviderStat[]>([]);
-  const [configModels, setConfigModels] = useState<Record<string, string[]>>(
-    {},
+  const projectFilter = searchParams.get("project");
+  const providerFilter = searchParams.get("provider");
+  const modelFilter = searchParams.get("model");
+  const workspaceFilter = searchParams.get("workspace");
+  const { dateRange, dateRangeReady, agentFilter } = useAdminHeader();
+
+  const filterParams = useMemo(() => {
+    const params: Record<string, string> = buildDateRangeParams({
+      from: dateRange.from,
+      to: dateRange.to,
+    });
+    if (projectFilter) params.project = projectFilter;
+    if (agentFilter) params.agent = agentFilter;
+    if (providerFilter) params.provider = providerFilter;
+    if (modelFilter) params.model = modelFilter;
+    if (workspaceFilter) params.workspace = workspaceFilter;
+    return params;
+  }, [dateRange.from, dateRange.to, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter]);
+  const filterKey = useMemo(() => JSON.stringify(filterParams), [filterParams]);
+
+  // A picked granularity belongs to the date range it was picked for: a new
+  // range falls back to that range's default resolution.
+  const rangeKey = `${dateRange.from}|${dateRange.to}`;
+  const [granularityChoice, setGranularityChoice] = useState<{
+    rangeKey: string;
+    value: string;
+  } | null>(null);
+  const timelineGranularity =
+    granularityChoice?.rangeKey === rangeKey ? granularityChoice.value : null;
+  const handleGranularityChange = useCallback(
+    (value: string | null) =>
+      setGranularityChoice(value ? { rangeKey, value } : null),
+    [rangeKey],
   );
 
-  const [timeline, setTimeline] = useState<IrisTimelineEntry[]>([]);
-  const [timelineGranularity, setTimelineGranularity] = useState<string | null>(null);
-  const [_activeGranularity, setActiveGranularity] = useState<string | undefined>(undefined);
-  const [defaultGranularity, setDefaultGranularity] = useState<string | undefined>(undefined);
-  const [validGranularities, setValidGranularities] = useState<string[]>([]);
-  const [recentRequests, setRecentRequests] = useState<IrisRequestEntry[]>([]);
-  const [recentTraces, setRecentTraces] = useState<IrisRequestEntry[]>([]);
-  const [recentConversations, setRecentConversations] = useState<
-    Conversation[]
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [summaryState, setSummaryState] = useState<SummaryState | null>(null);
+  const [timelineState, setTimelineState] = useState<TimelineState | null>(null);
+  const [configModels, setConfigModels] = useState<Record<string, string[]>>({});
 
-  const dateParams = useMemo(
-    () => buildDateRangeParams(dateRange),
-    [dateRange],
-  );
-
-  const timelineHours = useMemo(() => {
-    if (dateRange.from || dateRange.to) return 720;
-    return 8760; // 1 year default for "All Time"
-  }, [dateRange]);
-
-  const loadDashboard = useCallback(async () => {
-    try {
-      const filterParams: Record<string, string> = { ...dateParams };
-      if (projectFilter) filterParams.project = projectFilter;
-      if (agentFilter) filterParams.agent = agentFilter;
-      if (providerFilter) filterParams.provider = providerFilter;
-      if (modelFilter) filterParams.model = modelFilter;
-      if (workspaceFilter) filterParams.workspace = workspaceFilter;
-
-      const results = await Promise.allSettled([
-        IrisService.getStats(filterParams),
-        IrisService.getProjectStats(filterParams),
-        IrisService.getModelStats(filterParams),
-        IrisService.getAgentStats(filterParams),
-        IrisService.getTimeline(timelineHours, filterParams, timelineGranularity || undefined),
-        IrisService.getRequests({
-          limit: 10,
-          sort: "createdAt",
-          order: "desc",
-          ...filterParams,
-        }),
-        IrisService.getTraces({
-          page: 1,
-          limit: 5,
-          sort: "createdAt",
-          order: "desc",
-          ...filterParams,
-        }),
-        IrisService.getConversations({
-          page: 1,
-          limit: 10,
-          sort: "updatedAt",
-          order: "desc",
-          ...filterParams,
-        }),
-        IrisService.getCostStats(filterParams),
-        PrismService.getConfig().catch(() => null),
-      ]);
-
-      const [
-        statsResult,
-        projectsResult,
-        modelsResult,
-        agentsResult,
-        timelineResult,
-        requestsResult,
-        tracesResult,
-        conversationsResult,
-        costsResult,
-        prismConfigResult,
-      ] = results;
-
-      const fulfilledCount = results.filter(
-        (settledResult) => settledResult.status === "fulfilled",
-      ).length;
-      const rejectedResults = results.filter(
-        (settledResult) => settledResult.status === "rejected",
-      ) as PromiseRejectedResult[];
-
-      // Only show error if ALL fetches failed (total outage)
-      if (fulfilledCount === 0 && rejectedResults.length > 0) {
-        setError(getErrorMessage(rejectedResults[0].reason));
-      } else {
-        setError(null);
-      }
-
-      // Apply fulfilled results with safe fallbacks for rejected ones
-      setStats(
-        statsResult.status === "fulfilled" ? statsResult.value : null,
-      );
-      setProjectStats(
-        projectsResult.status === "fulfilled" ? projectsResult.value : [],
-      );
-      setModelStats(
-        modelsResult.status === "fulfilled" ? modelsResult.value : [],
-      );
-      setAgentStats(
-        agentsResult.status === "fulfilled" ? agentsResult.value : [],
-      );
-      setCostProviders(
-        costsResult.status === "fulfilled"
-          ? ((costsResult.value as IrisCostBreakdownResponse).providers ?? [])
-          : [],
-      );
-
-      if (timelineResult.status === "fulfilled") {
-        const timelineData = timelineResult.value;
-        setTimeline(timelineData.data || timelineData);
-        setActiveGranularity(timelineData.granularity || undefined);
-        setDefaultGranularity(timelineData.defaultGranularity || undefined);
-        setValidGranularities(timelineData.validGranularities || []);
-      }
-
-      setRecentRequests(
-        requestsResult.status === "fulfilled"
-          ? requestsResult.value.data || []
-          : [],
-      );
-      setRecentTraces(
-        tracesResult.status === "fulfilled"
-          ? tracesResult.value.data || []
-          : [],
-      );
-      setRecentConversations(
-        conversationsResult.status === "fulfilled"
-          ? ((conversationsResult.value.data || []) as Conversation[])
-          : [],
-      );
-
-      // Build model→tools lookup from Prism config
-      const prismConfig =
-        prismConfigResult.status === "fulfilled"
-          ? prismConfigResult.value
-          : null;
-      if (prismConfig?.textToText?.models) {
-        const buildLookup = (config: PrismConfig) => {
-          const lookup: Record<string, string[]> = {};
-          for (const [provider, models] of Object.entries(
-            config.textToText?.models || {},
-          ) as [string, ModelOption[]][]) {
-            for (const modelOption of models) {
-              const key = `${provider}:${modelOption.name}`;
-              if (modelOption.tools?.length) lookup[key] = modelOption.tools;
-            }
-          }
-          return lookup;
+  const loadSummary = useCallback(
+    async (signal: AbortSignal) => {
+      const [dashboardResult, requestsResult, tracesResult, conversationsResult] =
+        await Promise.allSettled([
+          IrisService.getDashboardStats(filterParams, signal),
+          IrisService.getRequests(
+            { limit: 10, sort: "createdAt", order: "desc", ...filterParams },
+            signal,
+          ),
+          IrisService.getTraces(
+            { page: 1, limit: 5, sort: "createdAt", order: "desc", ...filterParams },
+            signal,
+          ),
+          IrisService.getConversations(
+            { page: 1, limit: 10, sort: "updatedAt", order: "desc", ...filterParams },
+            signal,
+          ),
+        ]);
+      if (signal.aborted) return;
+      setSummaryState((previous) => {
+        // A failed refresh keeps what the same filters showed before.
+        const kept = previous?.key === filterKey ? previous : null;
+        const valueOr = <T,>(result: PromiseSettledResult<T>, fallback: T): T =>
+          result.status === "fulfilled" ? result.value : fallback;
+        return {
+          key: filterKey,
+          dashboard: valueOr(dashboardResult, kept?.dashboard ?? null),
+          recentRequests:
+            valueOr(requestsResult, null)?.data ?? kept?.recentRequests ?? [],
+          recentTraces: valueOr(tracesResult, null)?.data ?? kept?.recentTraces ?? [],
+          recentConversations:
+            (valueOr(conversationsResult, null)?.data as Conversation[] | undefined) ??
+            kept?.recentConversations ??
+            [],
+          error:
+            dashboardResult.status === "rejected" && !isAbort(dashboardResult.reason)
+              ? getErrorMessage(dashboardResult.reason)
+              : null,
         };
-        setConfigModels(buildLookup(prismConfig));
+      });
+    },
+    [filterParams, filterKey],
+  );
+
+  const loadTimeline = useCallback(
+    async (signal: AbortSignal) => {
+      try {
+        // Without a date range the chart spans from the first request.
+        const hours = filterParams.from || filterParams.to ? 720 : "all";
+        const response = await IrisService.getTimeline(
+          hours,
+          filterParams,
+          timelineGranularity || undefined,
+          signal,
+        );
+        if (!signal.aborted) setTimelineState({ key: filterKey, response });
+      } catch (error: unknown) {
+        if (!isAbort(error) && !signal.aborted) {
+          setTimelineState((previous) => (previous?.key === filterKey ? previous : null));
+        }
       }
-    } catch (error: unknown) {
-      setError(getErrorMessage(error));
-    } finally {
-      setLoading(false);
-    }
-  }, [dateParams, timelineHours, projectFilter, agentFilter, providerFilter, modelFilter, workspaceFilter, timelineGranularity]);
+    },
+    [filterParams, filterKey, timelineGranularity],
+  );
 
-  // Live dashboard updates via Change Streams (debounced to 2s).
-  // Falls back to 60s polling if Change Streams aren't available.
+  const reloadSummary = useCoalescedLoader(loadSummary, {
+    enabled: dateRangeReady,
+    minIntervalMs: POLL_STANDARD,
+  });
+  const reloadTimeline = useCoalescedLoader(loadTimeline, {
+    enabled: dateRangeReady,
+    minIntervalMs: POLL_STANDARD,
+  });
+
+  // Live updates: one subscription for the page's life, whatever the
+  // filters. Without change streams, poll instead.
   useEffect(() => {
-    // Immediately enter loading state and clear stale data when filters change
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
-    setLoading(true);
-    setError(null);
-    setStats(null);
-    setProjectStats([]);
-    setModelStats([]);
-    setAgentStats([]);
-    setCostProviders([]);
-    setTimeline([]);
-    setRecentRequests([]);
-    setRecentTraces([]);
-    setRecentConversations([]);
-
-    loadDashboard();
-
     let pollInterval: ReturnType<typeof setInterval> | null = null;
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const debouncedReload = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        loadDashboard();
-      }, FEEDBACK_STANDARD_MILLISECONDS);
+    const reloadAll = () => {
+      reloadSummary();
+      reloadTimeline();
     };
-
-    const eventSource = IrisService.subscribeCollectionChanges({
+    const subscription = IrisService.subscribeCollectionChanges({
       onStatus: (data) => {
-        if (!data.changeStreams) {
-          // No Change Streams — fall back to 60s polling
-          if (!pollInterval) {
-            pollInterval = setInterval(loadDashboard, POLL_LAZY);
-          }
+        if (!data.changeStreams && !pollInterval) {
+          pollInterval = setInterval(reloadAll, POLL_LAZY);
         }
       },
-      onChange: debouncedReload,
+      onChange: (event) => {
+        if (event.collection && STATS_COLLECTIONS.has(event.collection)) reloadAll();
+      },
     });
-
     return () => {
-      eventSource.close();
+      subscription.close();
       if (pollInterval) clearInterval(pollInterval);
-      if (debounceTimer) clearTimeout(debounceTimer);
     };
-  }, [loadDashboard]);
+  }, [reloadSummary, reloadTimeline]);
 
-  // Reset granularity override when date range changes so the new span
-  // gets its appropriate default resolution instead of a stale override.
+  // The model → tools lookup comes from the Prism config, which does not
+  // change with the dashboard's data.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
-    setTimelineGranularity(null);
-  }, [dateRange]);
-
-  const handleGranularityChange = useCallback((value: string | null) => {
-    setTimelineGranularity(value);
+    let cancelled = false;
+    PrismService.getConfig()
+      .then((config) => {
+        if (!cancelled && config?.textToText?.models) setConfigModels(toolsByModel(config));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Provider rollups: consumed directly from the server's /stats/costs
-  // `providers` facet (true weighted avgLatency / avgTokensPerSec over raw
-  // request docs). Previously these were re-derived here by request-weighting
-  // per-model averages, which is not arithmetically equal to a true aggregate.
-  const { providerData, totalProviderRequests, totalProviderCost } = useMemo(() => {
-    const providerDataList = costProviders;
-    let providerRequestsSum = 0;
-    let providerCostSum = 0;
-    for (const provider of providerDataList) {
-      providerRequestsSum += provider.totalRequests || 0;
-      providerCostSum += provider.totalCost || 0;
-    }
-    return {
-      providerData: providerDataList,
-      totalProviderRequests: providerRequestsSum || 1,
-      totalProviderCost: providerCostSum || 1,
-    };
-  }, [costProviders]);
+  const summary = summaryState?.key === filterKey ? summaryState : null;
+  const loading = !summary;
+  const dashboard = summary?.dashboard ?? null;
+  const stats = dashboard?.stats ?? null;
+  const projectStats = useMemo(() => dashboard?.projects ?? [], [dashboard]);
+  const providerStats = useMemo(() => dashboard?.providers ?? [], [dashboard]);
+  const modelStats = useMemo(() => dashboard?.models ?? [], [dashboard]);
+  const agentStats = useMemo(() => dashboard?.agents ?? [], [dashboard]);
 
-  // Model totals + top-models list (still sourced from the per-model facet).
-  const { topModels, totalModelRequests, totalModelCost } = useMemo(() => {
-    let modelRequestsSum = 0;
-    let modelCostSum = 0;
-    for (const modelStat of modelStats) {
-      modelRequestsSum += modelStat.totalRequests;
-      modelCostSum += modelStat.totalCost || 0;
-    }
-    const topModelsList = [...modelStats].sort(
-      (modelA, modelB) => modelB.totalRequests - modelA.totalRequests,
-    );
-    return {
-      topModels: topModelsList,
-      totalModelRequests: modelRequestsSum || 1,
-      totalModelCost: modelCostSum || 1,
-    };
-  }, [modelStats]);
+  const timeline = timelineState?.key === filterKey ? timelineState.response : null;
+  const chartData = useMemo(
+    () =>
+      (timeline?.data ?? []).map((entry) => ({
+        ...entry,
+        ...timelineBucketLabels(entry.hour),
+      })),
+    [timeline],
+  );
 
-  // Project totals for proportion bars (Memoized & Single-pass)
-  const { totalProjectRequests, totalProjectCost } = useMemo(() => {
-    let requestsSum = 0;
-    let costSum = 0;
-    for (const project of projectStats) {
-      requestsSum += project.totalRequests;
-      costSum += project.totalCost || 0;
-    }
-    return {
-      totalProjectRequests: requestsSum || 1,
-      totalProjectCost: costSum || 1,
-    };
-  }, [projectStats]);
+  const totals = useMemo(
+    () => ({
+      projectRequests: totalOf(projectStats, (row) => row.totalRequests),
+      projectCost: totalOf(projectStats, (row) => row.totalCost),
+      providerRequests: totalOf(providerStats, (row) => row.totalRequests),
+      providerCost: totalOf(providerStats, (row) => row.totalCost),
+      modelRequests: totalOf(modelStats, (row) => row.totalRequests),
+      modelCost: totalOf(modelStats, (row) => row.totalCost),
+    }),
+    [projectStats, providerStats, modelStats],
+  );
 
-  // Recharts-friendly timeline data — convert UTC keys to local timezone labels
-  const chartData = useMemo(() => {
-    return timeline.map((timelineEntry) => {
-      let label = "";
-      let tickLabel = "";
-      if (timelineEntry.hour) {
-        const key = timelineEntry.hour;
-        if (key.length <= 10) {
-          // Daily bin: "2026-03-21"
-          const date = new Date(key + "T00:00:00Z");
-          label = date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
-          tickLabel = label;
-        } else {
-          // All sub-day bins: parse as UTC
-          // Key formats: "2026-04-02T22:05:31" (1s/5s/15s/30s), "2026-04-02T22:05" (1min/5min/15min), "2026-04-02T14" (1hr/4hr)
-          const timePart = key.slice(11); // "22:05:31", "22:05", "14"
-          const colonCount = (timePart.match(/:/g) || []).length;
-
-          if (colonCount >= 2) {
-            // Has seconds: 1s, 5s, 15s, or 30s bins — "22:05:31", "22:05:05"
-            const [hoursString, minutesString, secondsString] = timePart
-              .split(":")
-              .map((part) => part.padStart(2, "0"));
-            const date = new Date(`${key.slice(0, 10)}T${hoursString}:${minutesString}:${secondsString}Z`);
-            label = date.toLocaleTimeString("en-US", {
-              hour: "numeric",
-              minute: "2-digit",
-              second: "2-digit",
-              hour12: true,
-            });
-            // Tick label every 30 seconds for readability at high density
-            const secondsNumber = date.getSeconds();
-            tickLabel = secondsNumber % 30 === 0 ? label : "";
-          } else if (colonCount === 1) {
-            // Has minutes: 1min, 5min, or 15min bins — "22:05"
-            const [_hoursString, minutesString] = timePart.split(":");
-            const paddedKey = key.slice(0, 14) + (minutesString || "0").padStart(2, "0");
-            const date = new Date(paddedKey + ":00Z");
-            label = date.toLocaleTimeString("en-US", {
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            });
-            // Tick on hour marks or every 15 minutes
-            const minutesNumber = date.getMinutes();
-            tickLabel =
-              minutesNumber === 0 || minutesNumber % 15 === 0 ? label : "";
-          } else {
-            // Hourly or 4-hour bin: "14", "06"
-            const hourString = timePart.padStart(2, "0");
-            const date = new Date(`${key.slice(0, 10)}T${hourString}:00:00Z`);
-            const dayLabel = date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            });
-            label = date.toLocaleTimeString("en-US", {
-              hour: "numeric",
-              hour12: true,
-            });
-            const localHours = date.getHours();
-            // For 6h bins across multi-day spans, show day at midnight
-            tickLabel = localHours === 0 ? dayLabel : label;
-          }
-        }
-      }
-      return { ...timelineEntry, label, tickLabel };
-    });
-  }, [timeline]);
-
-  // Derived stats for extra cards
+  const count = (value: number | undefined) => (loading ? "—" : formatNumber(value || 0));
   const avgCostPerRequest =
-    stats && stats.totalRequests > 0
-      ? stats.totalCost / stats.totalRequests
-      : 0;
+    stats && stats.totalRequests > 0 ? stats.totalCost / stats.totalRequests : 0;
+  const hasErrors = !!stats && stats.errorCount > 0;
+  const emptyText = (text: string) => (loading ? "Loading..." : text);
 
   return (
     <main className={styles['page']}>
-      <AdminFiltersCardComponent />
-      <ErrorMessage message={error} />
+      <section id="dashboard-filters">
+        <AdminFiltersCardComponent />
+      </section>
+      <ErrorMessage message={summary?.error ?? null} />
       {/* -- Resource Navigation -- */}
       <div className={styles['resource-navigation-bar']}>
         <ResourceCardComponent
-          href="#"
+          href="#projects-table"
           icon={Box}
-          count={loading ? "—" : formatNumber(projectStats.length)}
+          count={count(projectStats.length)}
           label="Projects"
-          onClick={(e: React.SyntheticEvent) => {
-            e.preventDefault();
-            document
-              .getElementById("projects-table")
-              ?.scrollIntoView({ behavior: "smooth", block: "start" });
-          }}
+          onClick={scrollToSection("projects-table")}
         />
         <ResourceCardComponent
           href="/admin/providers"
           icon={Layers}
-          count={loading ? "—" : formatNumber(providerData.length)}
+          count={count(providerStats.length)}
           label="Providers"
         />
         <ResourceCardComponent
           href="/admin/models"
           icon={Server}
-          count={loading ? "—" : formatNumber(modelStats.length)}
+          count={count(modelStats.length)}
           label="Models"
         />
         <ResourceCardComponent
-          href="#"
+          href="#agents-table"
           icon={Bot}
-          count={loading ? "—" : formatNumber(agentStats.length)}
+          count={count(agentStats.length)}
           label="Agents"
-          onClick={(e: React.SyntheticEvent) => {
-            e.preventDefault();
-            document
-              .getElementById("agents-table")
-              ?.scrollIntoView({ behavior: "smooth", block: "start" });
-          }}
+          onClick={scrollToSection("agents-table")}
         />
         <ResourceCardComponent
           href="/admin/traces"
           icon={FolderOpen}
-          count={loading ? "—" : formatNumber(stats?.agentConversationCount || 0)}
+          count={count(stats?.traceCount)}
           label="Traces"
         />
         <ResourceCardComponent
           href="/admin/chat"
           icon={MessageSquare}
-          count={loading ? "—" : formatNumber(stats?.conversationCount || 0)}
+          count={count(stats?.conversationCount)}
           label="Chat"
         />
-
         <ResourceCardComponent
           href="/admin/requests"
           icon={ScrollText}
-          count={loading ? "—" : formatNumber(stats?.totalRequests || 0)}
+          count={count(stats?.totalRequests)}
           label="Requests"
         />
+        {/* No workspaces page: workspaces are picked in the filters card. */}
         <ResourceCardComponent
-          href="#"
+          href="#dashboard-filters"
           icon={FolderKanban}
-          count={loading ? "—" : formatNumber(stats?.workspaceCount || 0)}
+          count={count(stats?.workspaceCount)}
           label="Workspaces"
+          onClick={scrollToSection("dashboard-filters")}
         />
       </div>
 
@@ -564,8 +444,8 @@ export default function DashboardPage() {
               : `${stats?.totalRequests ? ((stats.successCount / stats.totalRequests) * 100).toFixed(1) : 0}%`
           }
           subtitle={loading ? "" : `${stats?.errorCount || 0} errors`}
-          icon={stats && stats.errorCount > 0 ? AlertCircle : CheckCircle}
-          variant={stats && stats.errorCount > 0 ? "danger" : "success"}
+          icon={hasErrors ? AlertCircle : CheckCircle}
+          variant={hasErrors ? "danger" : "success"}
           loading={loading}
         />
         <StatsCard
@@ -580,24 +460,22 @@ export default function DashboardPage() {
 
       {/* -- Charts Row -- */}
       <div className={styles['charts-layout-row']}>
-        {/* Requests Timeline — Tabbed Chart */}
         <div className={styles['chart-card']}>
           <TimelineChartComponent
             data={chartData}
-            loading={loading}
+            loading={!timeline}
             height={220}
             granularity={timelineGranularity}
-            defaultGranularity={defaultGranularity}
-            validGranularities={validGranularities}
+            defaultGranularity={timeline?.defaultGranularity}
+            validGranularities={timeline?.validGranularities ?? []}
             onGranularityChange={handleGranularityChange}
           />
         </div>
 
-        {/* Distribution — Tabbed Pie Chart */}
         <div className={styles['chart-card']}>
           <DistributionChartComponent
             projectStats={projectStats}
-            providerStats={providerData}
+            providerStats={providerStats}
             modelStats={modelStats}
             stats={stats}
             loading={loading}
@@ -605,106 +483,57 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* -- Projects -- */}
       <section id="projects-table">
         <ProjectsTableComponent
           projects={projectStats}
-          totalRequests={totalProjectRequests}
-          totalCost={totalProjectCost}
-          emptyText={loading ? "Loading..." : "No projects yet"}
+          totalRequests={totals.projectRequests}
+          totalCost={totals.projectCost}
+          emptyText={emptyText("No projects yet")}
         />
       </section>
 
-      {/* -- Providers -- */}
       <ProvidersTableComponent
-        providers={providerData}
-        totalRequests={totalProviderRequests}
-        totalCost={totalProviderCost}
-        emptyText={loading ? "Loading..." : "No data yet"}
+        providers={providerStats}
+        totalRequests={totals.providerRequests}
+        totalCost={totals.providerCost}
+        emptyText={emptyText("No data yet")}
       />
 
-      {/* -- Models -- */}
       <ModelsTableComponent
         mode="stats"
-        models={topModels}
+        models={modelStats}
         configModels={configModels}
-        totalRequests={totalModelRequests}
-        totalCost={totalModelCost}
-        emptyText={loading ? "Loading..." : "No data yet"}
+        totalRequests={totals.modelRequests}
+        totalCost={totals.modelCost}
+        emptyText={emptyText("No data yet")}
       />
 
-      {/* -- Agents -- */}
       <section id="agents-table">
         <AgentsTableComponent
           agents={agentStats}
-          emptyText={loading ? "Loading..." : "No agent data yet"}
+          emptyText={emptyText("No agent data yet")}
         />
       </section>
 
-      {/* -- Recent Traces -- */}
       <TracesTableComponent
-        traces={recentTraces}
+        traces={summary?.recentTraces ?? []}
         compact
         maxHeight={420}
-        title={
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
-          >
-            Recent Traces
-            <Link href="/admin/traces" className={styles['section-action']}>
-              View all →
-            </Link>
-          </span>
-        }
-        emptyText={loading ? "Loading..." : "No traces yet"}
+        title={<SectionTitle title="Recent Traces" href="/admin/traces" />}
+        emptyText={emptyText("No traces yet")}
       />
 
-      {/* -- Recent Conversations -- */}
       <ConversationsTableComponent
-        conversations={recentConversations}
-        title={
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
-          >
-            Conversations
-            <Link href="/admin/chat" className={styles['section-action']}>
-              View all →
-            </Link>
-          </span>
-        }
-        emptyText={loading ? "Loading..." : "No conversations yet"}
+        conversations={summary?.recentConversations ?? []}
+        title={<SectionTitle title="Conversations" href="/admin/chat" />}
+        emptyText={emptyText("No conversations yet")}
         compact
       />
 
-      {/* -- Recent Requests -- */}
       <RequestsTableComponent
-        requests={recentRequests}
-        title={
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
-          >
-            Recent Requests
-            <Link href="/admin/requests" className={styles['section-action']}>
-              View all →
-            </Link>
-          </span>
-        }
-        emptyText={loading ? "Loading..." : "No requests yet"}
+        requests={summary?.recentRequests ?? []}
+        title={<SectionTitle title="Recent Requests" href="/admin/requests" />}
+        emptyText={emptyText("No requests yet")}
       />
     </main>
   );

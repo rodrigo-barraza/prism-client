@@ -214,4 +214,35 @@ describe("SSEManager", () => {
     firstSubscription.unsubscribe();
     secondSubscription.unsubscribe();
   });
+  it("replays the connection's status message to a subscriber that joins later", async () => {
+    const url = "https://api.prism.rod.dev/admin/changes/stream";
+    const shellCallback = vi.fn();
+    const shell = SSEManager.subscribe(url, shellCallback);
+    MockEventSource.instancesList[0].simulateIncomingMessage({ type: "status", changeStreams: false });
+    MockEventSource.instancesList[0].simulateIncomingMessage({ type: "change", collection: "requests" });
+
+    // The dashboard re-subscribes after a filter change; the shell keeps the
+    // connection open, so the server never sends status again.
+    const pageCallback = vi.fn();
+    const page = SSEManager.subscribe(url, pageCallback);
+    await Promise.resolve();
+
+    expect(pageCallback).toHaveBeenCalledTimes(1);
+    expect(pageCallback).toHaveBeenCalledWith({ type: "status", changeStreams: false });
+    expect(shellCallback).toHaveBeenCalledTimes(2);
+
+    page.unsubscribe();
+    shell.unsubscribe();
+  });
+
+  it("does not replay to a subscriber that left before the replay ran", async () => {
+    const url = "https://api.prism.rod.dev/admin/changes/stream";
+    const shell = SSEManager.subscribe(url, vi.fn());
+    MockEventSource.instancesList[0].simulateIncomingMessage({ type: "status", changeStreams: true });
+    const pageCallback = vi.fn();
+    SSEManager.subscribe(url, pageCallback).unsubscribe();
+    await Promise.resolve();
+    expect(pageCallback).not.toHaveBeenCalled();
+    shell.unsubscribe();
+  });
 });

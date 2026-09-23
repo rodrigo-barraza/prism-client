@@ -80,6 +80,17 @@ export interface IrisTimelineResponse {
   granularity?: string;
   defaultGranularity?: string;
   validGranularities?: string[];
+  /** The IANA zone day and week buckets were cut in. */
+  timezone?: string;
+}
+
+/** GET /stats/dashboard — every rollup the admin dashboard shows, from one scan. */
+export interface IrisDashboardResponse {
+  stats: IrisDashboardStats;
+  projects: IrisProjectStat[];
+  providers: IrisProviderStat[];
+  models: IrisModelStat[];
+  agents: IrisAgentStat[];
 }
 
 /**
@@ -241,6 +252,17 @@ export default class IrisService {
   }
 
   // -- Stats -------------------------------------------------
+  static async getDashboardStats(
+    queryParameters: QueryParams = {},
+    signal?: AbortSignal,
+  ): Promise<IrisDashboardResponse> {
+    const query = toSearchParams(queryParameters);
+    return fetchJSON<IrisDashboardResponse>(
+      `/stats/dashboard${query ? `?${query}` : ""}`,
+      signal ? { signal } : {},
+    );
+  }
+
   static async getStats(queryParameters: QueryParams = {}): Promise<IrisDashboardStats> {
     const query = toSearchParams(queryParameters);
     return fetchJSON<IrisDashboardStats>(`/stats${query ? `?${query}` : ""}`);
@@ -304,15 +326,24 @@ export default class IrisService {
     >(`/stats/endpoints${query ? `?${query}` : ""}`);
   }
 
+  /**
+   * `hours: "all"` spans from the first matching request. Day and week
+   * buckets follow `timeZone` (the viewer's, by default).
+   */
   static async getTimeline(
-    hours = 24,
+    hours: number | "all" = 24,
     queryParameters: QueryParams = {},
     granularity?: string,
+    signal?: AbortSignal,
+    timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone,
   ): Promise<IrisTimelineResponse> {
-    const allQueryParameters: QueryParams = { hours, ...queryParameters };
+    const allQueryParameters: QueryParams = { hours, tz: timeZone, ...queryParameters };
     if (granularity) allQueryParameters.granularity = granularity;
     const query = toSearchParams(allQueryParameters);
-    return fetchJSON<IrisTimelineResponse>(`/stats/timeline?${query}`);
+    return fetchJSON<IrisTimelineResponse>(
+      `/stats/timeline?${query}`,
+      signal ? { signal } : {},
+    );
   }
 
   static async getCostStats(
@@ -327,10 +358,12 @@ export default class IrisService {
   // -- Conversations -----------------------------------------
   static async getConversations(
     queryParameters: QueryParams = {},
+    signal?: AbortSignal,
   ): Promise<IrisConversationListResponse> {
     const query = toSearchParams(queryParameters);
     return fetchJSON<IrisConversationListResponse>(
       `/conversations${query ? `?${query}` : ""}`,
+      signal ? { signal } : {},
     );
   }
 

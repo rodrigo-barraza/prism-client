@@ -10,11 +10,15 @@ import {
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE } from "../constants";
+import {
+  adminDateRangeCookie,
+  parseAdminDateRange,
+  type AdminDateRange,
+} from "../utils/adminDateRange";
 
-export interface DateRange {
-  from: string;
-  to: string;
-}
+export type DateRange = AdminDateRange;
+
+const ALL_TIME: DateRange = { from: "", to: "" };
 
 export interface AdminHeaderContextType {
   controls: React.ReactNode;
@@ -23,6 +27,14 @@ export interface AdminHeaderContextType {
   setTitleBadge: (_value: string | number | null) => void;
   dateRange: DateRange;
   setDateRange: (_value: DateRange) => void;
+  /**
+   * False until the saved range is known. It is at once when the server read
+   * it from the cookie; otherwise (a first visit since the cookie existed) it
+   * is restored from localStorage after mount. A page that fetches by range
+   * waits for it, so its first load is not an all-time query thrown away a
+   * moment later.
+   */
+  dateRangeReady: boolean;
   traceFilter: string | null;
   setTraceFilter: (_value: string | null) => void;
   agentFilter: string | null;
@@ -35,6 +47,7 @@ const AdminHeaderContext = createContext<AdminHeaderContextType>({
   setTitleBadge: () => {},
   dateRange: { from: "", to: "" },
   setDateRange: () => {},
+  dateRangeReady: true,
   traceFilter: null,
   setTraceFilter: () => {},
   agentFilter: null,
@@ -42,8 +55,11 @@ const AdminHeaderContext = createContext<AdminHeaderContextType>({
 
 export function AdminHeaderProvider({
   children,
+  initialDateRange = null,
 }: {
   children: React.ReactNode;
+  /** The range the server read from the cookie; null when there was none. */
+  initialDateRange?: DateRange | null;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -57,30 +73,30 @@ export function AdminHeaderProvider({
   const [titleBadge, setTitleBadgeState] = useState<string | number | null>(
     null,
   );
-  const [dateRange, setDateRangeState] = useState<DateRange>({
-    from: "",
-    to: "",
-  });
+  const [dateRange, setDateRangeState] = useState<DateRange>(
+    initialDateRange ?? ALL_TIME,
+  );
   const [traceFilter, setTraceFilterState] = useState<string | null>(null);
+  const [dateRangeReady, setDateRangeReady] = useState(initialDateRange !== null);
 
   useEffect(() => {
+    if (dateRangeReady) return;
+    let stored: DateRange | null = null;
     try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE);
-      if (stored !== null) {
-        const parsed = JSON.parse(stored);
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
-        setDateRangeState(parsed);
-        return;
-      }
+      stored = parseAdminDateRange(localStorage.getItem(LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE));
     } catch {
       // ignore
     }
-
-    setDateRangeState({
-      from: "",
-      to: "",
-    });
-  }, []);
+    if (stored) {
+      const { from, to } = stored;
+      // Same range → same object, so nothing keyed on it refetches.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
+      setDateRangeState((previous) =>
+        previous.from === from && previous.to === to ? previous : { from, to },
+      );
+    }
+    setDateRangeReady(true);
+  }, [dateRangeReady]);
   const [previousPathname, setPreviousPathname] = useState(pathname);
 
   const routeSegment =
@@ -97,12 +113,17 @@ export function AdminHeaderProvider({
   }
 
   useEffect(() => {
+    // Before the restore, `dateRange` is the empty initial range: writing it
+    // would overwrite the saved one (a remount — Strict Mode's included —
+    // then restores "All time").
+    if (!dateRangeReady) return;
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY_ADMIN_DATE_RANGE, JSON.stringify(dateRange));
     } catch {
       // ignore
     }
-  }, [dateRange]);
+    document.cookie = adminDateRangeCookie(dateRange);
+  }, [dateRange, dateRangeReady]);
 
   const setControls = useCallback((node: React.ReactNode) => {
     setControlsState(node);
@@ -120,20 +141,35 @@ export function AdminHeaderProvider({
     setTraceFilterState(value);
   }, []);
 
+  const contextValue = useMemo(
+    () => ({
+      controls,
+      setControls,
+      titleBadge,
+      setTitleBadge,
+      dateRange,
+      setDateRange,
+      dateRangeReady,
+      traceFilter,
+      setTraceFilter,
+      agentFilter,
+    }),
+    [
+      controls,
+      setControls,
+      titleBadge,
+      setTitleBadge,
+      dateRange,
+      setDateRange,
+      dateRangeReady,
+      traceFilter,
+      setTraceFilter,
+      agentFilter,
+    ],
+  );
+
   return (
-    <AdminHeaderContext.Provider
-      value={{
-        controls,
-        setControls,
-        titleBadge,
-        setTitleBadge,
-        dateRange,
-        setDateRange,
-        traceFilter,
-        setTraceFilter,
-        agentFilter,
-      }}
-    >
+    <AdminHeaderContext.Provider value={contextValue}>
       {children}
     </AdminHeaderContext.Provider>
   );
