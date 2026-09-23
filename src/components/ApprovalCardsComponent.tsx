@@ -97,7 +97,7 @@ export default function ApprovalCardsComponent({
           isSubmitting={submitting.has(approval.id)}
           subAgentDescription={approval.subAgentDescription}
           onDecide={(decision) => decide(approval, decision)}
-          alwaysAllow={alwaysAllow}
+          alwaysAllow={approval.retryAfterRestart ? undefined : alwaysAllow}
         />
       ))}
     </>

@@ -154,13 +154,6 @@ export default function ApprovalCardComponent({
         </span>
       </div>
 
-      {retryAfterRestart && (
-        <div className={styles["retry-notice"]} role="note">
-          <RotateCcw size={14} aria-hidden="true" />
-          <span>{retryReason || RETRY_AFTER_RESTART_TEXT}</span>
-        </div>
-      )}
-
       {preview && (
         <div className={styles["preview"]}>
           <div className={styles["preview-header"]}>
@@ -178,6 +171,13 @@ export default function ApprovalCardComponent({
           {preview.isTruncated && (
             <div className={styles["preview-note"]}>Diff truncated — the full change is in the arguments.</div>
           )}
+        </div>
+      )}
+
+      {retryAfterRestart && (
+        <div className={styles["retry-notice"]} role="note">
+          <RotateCcw size={14} aria-hidden="true" />
+          <span>{retryReason || RETRY_AFTER_RESTART_TEXT}</span>
         </div>
       )}
 
@@ -324,7 +324,7 @@ export default function ApprovalCardComponent({
         </div>
       )}
 
-      {mode === "idle" && alwaysAllow && !retryAfterRestart && (
+      {mode === "idle" && alwaysAllow && (
         <AlwaysAllowControlComponent
           toolName={toolName}
           toolArgs={toolArgs}
