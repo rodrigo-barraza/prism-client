@@ -1,0 +1,20 @@
+{"type": "user_message", "role": "user", "content": "Read a and b.", "conversationId": "conv-fixture", "timestamp": 1790078400000, "seq": 1790078400001}
+{"type": "status", "message": "iteration_progress", "iteration": 1, "maxIterations": 25, "seq": 1790078400002}
+{"type": "status", "message": "generation_started", "timeToFirstToken": 0.61, "seq": 1790078400003}
+{"type": "chunk", "content": "Reading a.", "outputCharacters": 10, "seq": 1790078400004}
+{"type": "tool_execution", "tool": {"name": "read_file", "args": {}, "id": "call-1"}, "toolLabel": "Reading", "status": "streaming", "timestamp": 1790078400100, "seq": 1790078400005}
+{"type": "tool_execution", "tool": {"name": "read_file", "args": {"path": "a.txt"}, "id": "call-1"}, "toolEmoji": "📖", "toolLabel": "Reading a.txt", "status": "calling", "timestamp": 1790078400150, "seq": 1790078400006}
+{"type": "usage_update", "usage": {"inputTokens": 100000, "outputTokens": 20, "cacheReadInputTokens": 0, "cacheCreationInputTokens": 0, "reasoningOutputTokens": 0, "tokensPerSec": 0, "requests": 1, "totalInputTokens": 100000}, "estimatedCost": 1.0, "seq": 1790078400007}
+{"type": "tool_execution", "tool": {"name": "read_file", "args": {"path": "a.txt"}, "id": "call-1", "result": {"success": true, "content": "alpha"}, "durationMilliseconds": 4, "durationMs": 4}, "toolEmoji": "📖", "toolLabel": "Read a.txt", "status": "done", "seq": 1790078400008}
+{"type": "status", "message": "iteration_progress", "iteration": 2, "maxIterations": 25, "seq": 1790078400009}
+{"type": "chunk", "content": " Reading b.", "outputCharacters": 21, "seq": 1790078400010}
+{"type": "tool_execution", "tool": {"name": "read_file", "args": {}, "id": "call-2"}, "toolLabel": "Reading", "status": "streaming", "timestamp": 1790078400300, "seq": 1790078400011}
+{"type": "tool_execution", "tool": {"name": "read_file", "args": {"path": "b.txt"}, "id": "call-2"}, "toolEmoji": "📖", "toolLabel": "Reading b.txt", "status": "calling", "timestamp": 1790078400350, "seq": 1790078400012}
+{"type": "usage_update", "usage": {"inputTokens": 200000, "outputTokens": 20, "cacheReadInputTokens": 0, "cacheCreationInputTokens": 0, "reasoningOutputTokens": 0, "tokensPerSec": 0, "requests": 2, "totalInputTokens": 200000}, "estimatedCost": 2.0, "seq": 1790078400013}
+{"type": "status", "message": "budget_reached", "pauseId": "pause-fixture", "spentDollars": 2, "maxCostDollars": 1.5, "limitedBy": "turn", "iteration": 2, "turnCapDollars": 1.5, "seq": 1790078400014}
+{"type": "status", "message": "budget_resolved", "pauseId": "pause-fixture", "action": "raise", "source": "user", "maxCostDollars": 5, "seq": 1790078400015}
+{"type": "tool_execution", "tool": {"name": "read_file", "args": {"path": "b.txt"}, "id": "call-2", "result": {"success": true, "content": "bravo"}, "durationMilliseconds": 3, "durationMs": 3}, "toolEmoji": "📖", "toolLabel": "Read b.txt", "status": "done", "seq": 1790078400016}
+{"type": "status", "message": "iteration_progress", "iteration": 3, "maxIterations": 25, "seq": 1790078400017}
+{"type": "chunk", "content": " Done.", "outputCharacters": 27, "seq": 1790078400018}
+{"type": "usage_update", "usage": {"inputTokens": 300000, "outputTokens": 20, "cacheReadInputTokens": 0, "cacheCreationInputTokens": 0, "reasoningOutputTokens": 0, "tokensPerSec": 0, "requests": 3, "totalInputTokens": 300000}, "estimatedCost": 3.0, "seq": 1790078400019}
+{"type": "done", "provider": "anthropic", "model": "claude-test", "usage": {"inputTokens": 300000, "outputTokens": 20, "cacheReadInputTokens": 0, "cacheCreationInputTokens": 0, "reasoningOutputTokens": 0, "tokensPerSec": 0, "requests": 3, "totalInputTokens": 300000}, "estimatedCost": 3.0, "tokensPerSec": 38.5, "timeToGeneration": 0.61, "generationTime": 3.2, "totalTime": 41.7, "conversationId": "conv-fixture", "seq": 1790078400020}
