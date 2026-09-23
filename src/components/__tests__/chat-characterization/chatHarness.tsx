@@ -10,10 +10,9 @@
  *   - the live-viewer WebSocket it opens for a turn driven elsewhere: a
  *     fake `WebSocket` the test opens, acks and writes frames into.
  *
- * Everything below the component is the real code: PrismService, the SSE
- * framing, liveViewerSocket and its cursor. Only the network is fake, so a
- * refactor of the transport (docs/prompts/26 Landing 2) runs through the
- * same harness unchanged.
+ * Everything below the component is the real code: the transport
+ * (services/agentStream.ts — the SSE reader, liveViewerSocket and its
+ * cursor) and the conversation reducer. Only the network is fake.
  *
  * What the suite reads:
  *   - state — `utils/chatDebugProbe` publishes the chat's state after every

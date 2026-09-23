@@ -104,11 +104,11 @@ exports[`live-viewer turn (characterization) > a blocking question (the driving 
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMSet up the database layer.",
-        "Model❓Ask User for 5 secondsOne thing first. Postgres it is — adding the driver.▎",
+        "ModelOne thing first.❓Ask User for 5 secondsPostgres it is — adding the driver.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "📥Prefilling...Iteration 2/25",
+        "✨Generating...⚡ 16.0 tok/sIteration 2/25",
       ],
       "turnActivity": [],
     },
@@ -157,10 +157,33 @@ exports[`live-viewer turn (characterization) > a blocking question (the driving 
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
+          "_streamingBurstElapsed": 125,
+          "_streamingBurstTokens": 2,
+          "_streamingLastChunkTime": 1200,
+          "_streamingOutputCharacters": 52,
+          "_streamingStartTime": 1075,
           "content": "One thing first. Postgres it is — adding the driver.",
-          "contentSegments": [],
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "toolu_05Ask",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 1,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
-          "textFragments": [],
+          "textFragments": [
+            "One thing first.",
+            " Postgres it is — adding the driver.",
+          ],
           "thinkingFragments": [],
           "toolCalls": [
             {
@@ -403,14 +426,12 @@ exports[`live-viewer turn (characterization) > a non-blocking question, answered
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMSet up the database layer.",
-        "Model❓Ask User for 0.01 seconds",
-        "📖Analyzed config.json for 0.02 secondsWhile you decide, I'll read the config.",
         "UserAnswer12:00 PMPostgres",
-        "ModelPostgres noted — adding the driver.▎",
+        "Model❓Ask User for 0.01 secondsWhile you decide, I'll read the config.📖Analyzed config.json for 0.02 secondsPostgres noted — adding the driver.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "✨Generating...Iteration 2/25",
+        "✨Generating...⚡ 13.3 tok/sIteration 2/25",
       ],
       "turnActivity": [],
     },
@@ -459,10 +480,53 @@ exports[`live-viewer turn (characterization) > a non-blocking question, answered
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
-          "content": "",
-          "contentSegments": [],
+          "_turnInput": {
+            "boundary": "after_tools",
+            "id": "input-a1b2c3d4",
+            "iteration": 1,
+            "kind": "question_answer",
+            "receivedAt": "2026-09-22T12:00:00.250Z",
+            "status": "applied",
+          },
+          "content": "Postgres",
+          "rawContent": "Postgres",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.250Z",
+        },
+        {
+          "_streamingBurstElapsed": 150,
+          "_streamingBurstTokens": 2,
+          "_streamingLastChunkTime": 1325,
+          "_streamingOutputCharacters": 75,
+          "_streamingStartTime": 1175,
+          "content": "While you decide, I'll read the config. Postgres noted — adding the driver.",
+          "contentSegments": [
+            {
+              "toolIds": [
+                "toolu_06Ask",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "toolu_07Read",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 1,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
-          "textFragments": [],
+          "textFragments": [
+            "While you decide, I'll read the config.",
+            " Postgres noted — adding the driver.",
+          ],
           "thinkingFragments": [],
           "toolCalls": [
             {
@@ -496,15 +560,6 @@ exports[`live-viewer turn (characterization) > a non-blocking question, answered
               "status": "done",
               "timestamp": 1790078400100,
             },
-          ],
-        },
-        {
-          "content": "While you decide, I'll read the config.",
-          "contentSegments": [],
-          "role": "assistant",
-          "textFragments": [],
-          "thinkingFragments": [],
-          "toolCalls": [
             {
               "args": {
                 "path": "/app/config.json",
@@ -519,24 +574,6 @@ exports[`live-viewer turn (characterization) > a non-blocking question, answered
               "timestamp": 1790078400100,
             },
           ],
-        },
-        {
-          "_turnInput": {
-            "boundary": "after_tools",
-            "id": "input-a1b2c3d4",
-            "iteration": 1,
-            "kind": "question_answer",
-            "receivedAt": "2026-09-22T12:00:00.250Z",
-            "status": "applied",
-          },
-          "content": "Postgres",
-          "rawContent": "Postgres",
-          "role": "user",
-          "timestamp": "2026-09-22T12:00:00.250Z",
-        },
-        {
-          "content": "Postgres noted — adding the driver.",
-          "role": "assistant",
         },
       ],
       "nonBlockingQuestions": [
@@ -633,13 +670,13 @@ exports[`live-viewer turn (characterization) > a non-blocking question, answered
     "user_question: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[ask_user:calling] nbq=1",
     "status(question_pending): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[ask_user:calling] nbq=1",
     "tool_execution(done): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[ask_user:done] nbq=1",
-    "chunk: msgs=5 last=assistant(39ch) gen=1 tools=[ask_user:done] nbq=1",
-    "tool_execution(calling): msgs=5 last=assistant(39ch tools:1) gen=1 tools=[ask_user:done,read_file:calling] nbq=1",
-    "tool_execution(done): msgs=5 last=assistant(39ch tools:1) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
-    "turn_input: msgs=6 last=user(8ch) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
-    "status(turn_input_applied): msgs=6 last=user(8ch) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
-    "status(iteration_progress): msgs=6 last=user(8ch) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
-    "chunk: msgs=7 last=assistant(35ch) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "chunk: msgs=4 last=assistant(39ch tools:1) gen=1 tools=[ask_user:done] nbq=1",
+    "tool_execution(calling): msgs=4 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:calling] nbq=1",
+    "tool_execution(done): msgs=4 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "turn_input: msgs=5 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "status(turn_input_applied): msgs=5 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "status(iteration_progress): msgs=5 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "chunk: msgs=5 last=assistant(75ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
     "done: msgs=4 last=assistant(75ch) gen=0 nbq=1",
   ],
 }
@@ -838,7 +875,9 @@ exports[`live-viewer turn (characterization) > a turn with tools and a sub-agent
     "pendingUserQuestion": null,
     "planProposal": null,
     "queuedTurns": [],
-    "streamingOutputs": {},
+    "streamingOutputs": {
+      "tc-001": "{"port":3000}",
+    },
     "subAgentToolActivity": {},
     "title": "Live turn",
     "toolActivity": [],
@@ -852,7 +891,9 @@ exports[`live-viewer turn (characterization) > a turn with tools and a sub-agent
   "streamed": {
     "dom": {
       "approvalCards": [],
-      "contextBudget": [],
+      "contextBudget": [
+        "14.2k / 120.0k tokens (12%)105.8k free~ estSystem prompt3.0kSystem tools (12)2.0kMessages9.0kFree space105.8k",
+      ],
       "goal": [],
       "liveConnection": [
         "Live stream: Live",
@@ -864,11 +905,11 @@ exports[`live-viewer turn (characterization) > a turn with tools and a sub-agent
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMWhat port does the dev server use?",
-        "Model🧠Thoughts📄Analyzed config.json for 0.3 seconds🛠️Create Subagents for 0.1 secondsLet me check the config. The port is 3000. Spawning a checker. Documented in two places. All good.▎",
+        "Model🧠ThoughtsLet me check the config.📄Analyzed config.json for 0.3 secondsThe port is 3000. Spawning a checker.🛠️Create Subagents for 0.1 secondsDocumented in two places. All good.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "🧠Starting...Iteration 1/25",
+        "✨Generating...⚡ 10.7 tok/sIteration 1/25",
       ],
       "turnActivity": [],
     },
@@ -878,7 +919,19 @@ exports[`live-viewer turn (characterization) > a turn with tools and a sub-agent
         "iteration": 1,
         "maxIterations": 25,
       },
-      "contextBudget": null,
+      "contextBudget": {
+        "availableOutputTokens": 105800,
+        "contextWindow": 120000,
+        "isClamped": false,
+        "messageTokens": 9000,
+        "safetyMarginTokens": 200,
+        "skillTokens": 0,
+        "source": "estimated",
+        "systemPromptTokens": 3000,
+        "toolCount": 12,
+        "toolSchemaTokens": 2000,
+        "totalInputTokens": 14200,
+      },
       "conversationId": "conv-live",
       "conversations": [
         {
@@ -917,13 +970,64 @@ exports[`live-viewer turn (characterization) > a turn with tools and a sub-agent
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
+          "_intermediateEstimatedCost": 0.0042,
+          "_intermediateUsage": {
+            "inputTokens": 1200,
+            "outputTokens": 350,
+            "requests": 1,
+            "totalInputTokens": 1200,
+          },
+          "_streamingBurstElapsed": 375,
+          "_streamingBurstTokens": 4,
+          "_streamingLastChunkTime": 1450,
+          "_streamingOutputCharacters": 98,
+          "_streamingStartTime": 1075,
+          "_subAgentTokens": {
+            "input": 900,
+            "output": 210,
+            "requests": 1,
+          },
           "content": "Let me check the config. The port is 3000. Spawning a checker. Documented in two places. All good.",
-          "contentSegments": [],
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "thinking",
+            },
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "tc-001",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 1,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "tc-002",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 2,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
-          "statusPhase": "thinking",
-          "textFragments": [],
+          "textFragments": [
+            "Let me check the config.",
+            " The port is 3000. Spawning a checker.",
+            " Documented in two places. All good.",
+          ],
           "thinking": "The user wants the config file. I should read it first.",
-          "thinkingFragments": [],
+          "thinkingFragments": [
+            "The user wants the config file. I should read it first.",
+          ],
           "toolCalls": [
             {
               "args": {
@@ -969,8 +1073,36 @@ exports[`live-viewer turn (characterization) > a turn with tools and a sub-agent
       "pendingUserQuestion": null,
       "planProposal": null,
       "queuedTurns": [],
-      "streamingOutputs": {},
-      "subAgentToolActivity": {},
+      "streamingOutputs": {
+        "tc-001": "{"port":3000}",
+      },
+      "subAgentToolActivity": {
+        "sa-1": {
+          "currentTool": null,
+          "description": "Verify port 3000 is documented",
+          "durationMs": 4100,
+          "iteration": 0,
+          "phase": "complete",
+          "toolCalls": [
+            {
+              "args": {
+                "pattern": "3000",
+              },
+              "durationMs": 150,
+              "id": "tc-sa-1",
+              "name": "grep_files",
+              "result": {
+                "matches": 2,
+              },
+              "status": "done",
+            },
+          ],
+          "toolCount": 1,
+          "toolNames": {
+            "grep_files": 1,
+          },
+        },
+      },
       "title": "Live turn",
       "toolActivity": [
         {
@@ -1022,22 +1154,22 @@ exports[`live-viewer turn (characterization) > a turn with tools and a sub-agent
   "trace": [
     "user_message: msgs=3 last=user(34ch) gen=1",
     "status(iteration_progress): msgs=3 last=user(34ch) gen=1",
-    "thinking: msgs=4 last=assistant(0ch thinking) gen=1",
-    "chunk: msgs=4 last=assistant(24ch thinking) gen=1",
-    "tool_execution(streaming): msgs=4 last=assistant(24ch thinking tools:1) gen=1 tools=[read_file:streaming]",
-    "tool_execution(calling): msgs=4 last=assistant(24ch thinking tools:1) gen=1 tools=[read_file:calling]",
-    "tool_output: msgs=4 last=assistant(24ch thinking tools:1) gen=1 tools=[read_file:calling]",
-    "tool_execution(done): msgs=4 last=assistant(24ch thinking tools:1) gen=1 tools=[read_file:done]",
-    "chunk: msgs=4 last=assistant(62ch thinking tools:1) gen=1 tools=[read_file:done]",
-    "tool_execution(calling): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
-    "sub_agent_status(spawned): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
-    "sub_agent_tool_execution(calling): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
-    "sub_agent_tool_execution(done): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
-    "sub_agent_status(complete): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
-    "tool_execution(done): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:done]",
-    "usage_update: msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:done]",
-    "context_budget: msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:done]",
-    "chunk: msgs=4 last=assistant(98ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:done]",
+    "thinking: msgs=4 last=assistant(0ch) gen=1",
+    "chunk: msgs=4 last=assistant(24ch) gen=1",
+    "tool_execution(streaming): msgs=4 last=assistant(24ch tools:1) gen=1 tools=[read_file:streaming]",
+    "tool_execution(calling): msgs=4 last=assistant(24ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_output: msgs=4 last=assistant(24ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(done): msgs=4 last=assistant(24ch tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=4 last=assistant(62ch tools:1) gen=1 tools=[read_file:done]",
+    "tool_execution(calling): msgs=4 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
+    "sub_agent_status(spawned): msgs=4 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling] subs=[sa-1:spawned]",
+    "sub_agent_tool_execution(calling): msgs=4 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling] subs=[sa-1:-]",
+    "sub_agent_tool_execution(done): msgs=4 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling] subs=[sa-1:-]",
+    "sub_agent_status(complete): msgs=4 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling] subs=[sa-1:complete]",
+    "tool_execution(done): msgs=4 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:done] subs=[sa-1:complete]",
+    "usage_update: msgs=4 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:done] subs=[sa-1:complete]",
+    "context_budget: msgs=4 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:done] subs=[sa-1:complete]",
+    "chunk: msgs=4 last=assistant(98ch tools:2) gen=1 tools=[read_file:done,create_subagents:done] subs=[sa-1:complete]",
     "done: msgs=4 last=assistant(98ch) gen=0",
   ],
 }
@@ -1192,8 +1324,7 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMWhat port does the dev server use?",
-        "Model🛠️Write Todo for 0.004 seconds",
-        "The port is 3000.▎",
+        "Model🛠️Write Todo for 0.004 secondsThe port is 3000.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
@@ -1248,10 +1379,28 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
-          "content": "",
-          "contentSegments": [],
+          "_streamingBurstElapsed": 0,
+          "_streamingBurstTokens": 1,
+          "_streamingLastChunkTime": 1250,
+          "_streamingOutputCharacters": 17,
+          "_streamingStartTime": 1250,
+          "content": "The port is 3000.",
+          "contentSegments": [
+            {
+              "toolIds": [
+                "tc-101",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
-          "textFragments": [],
+          "textFragments": [
+            "The port is 3000.",
+          ],
           "thinkingFragments": [],
           "toolCalls": [
             {
@@ -1281,10 +1430,6 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
               "timestamp": 1790078400075,
             },
           ],
-        },
-        {
-          "content": "The port is 3000.",
-          "role": "assistant",
         },
       ],
       "nonBlockingQuestions": [],
@@ -1385,8 +1530,8 @@ exports[`live-viewer turn (characterization) > a turn's side channels: checklist
     "webSearchResult: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
     "executableCode: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
     "codeExecutionResult: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
-    "chunk: msgs=5 last=assistant(17ch) gen=1 tools=[write_todo:done]",
-    "brief_update: msgs=5 last=assistant(17ch) gen=1 tools=[write_todo:done]",
+    "chunk: msgs=4 last=assistant(17ch tools:1) gen=1 tools=[write_todo:done]",
+    "brief_update: msgs=4 last=assistant(17ch tools:1) gen=1 tools=[write_todo:done]",
     "done: msgs=4 last=assistant(17ch) gen=0",
   ],
 }
@@ -1408,6 +1553,7 @@ exports[`live-viewer turn (characterization) > an error before the loop 1`] = `
       "User11:58 AMEarlier question",
       "Model11:58 AMEarlier answer.",
       "User12:00 PMWhat port does the dev server use?",
+      "Model⚠️ Error: Context preparation failed: model claude-test is not available",
     ],
     "sendButton": "Stop",
     "statusBar": [
@@ -1456,6 +1602,11 @@ exports[`live-viewer turn (characterization) > an error before the loop 1`] = `
         "role": "user",
         "timestamp": "2026-09-22T12:00:00.000Z",
       },
+      {
+        "content": "⚠️ Error: Context preparation failed: model claude-test is not available",
+        "isError": true,
+        "role": "assistant",
+      },
     ],
     "nonBlockingQuestions": [],
     "pendingApprovals": [],
@@ -1488,6 +1639,7 @@ exports[`live-viewer turn (characterization) > an error before the loop 1`] = `
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMWhat port does the dev server use?",
+        "Model⚠️ Error: Context preparation failed: model claude-test is not available",
       ],
       "sendButton": "Stop",
       "statusBar": [
@@ -1536,6 +1688,11 @@ exports[`live-viewer turn (characterization) > an error before the loop 1`] = `
           "role": "user",
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
+        {
+          "content": "⚠️ Error: Context preparation failed: model claude-test is not available",
+          "isError": true,
+          "role": "assistant",
+        },
       ],
       "nonBlockingQuestions": [],
       "pendingApprovals": [],
@@ -1557,7 +1714,7 @@ exports[`live-viewer turn (characterization) > an error before the loop 1`] = `
   "toasts": [],
   "trace": [
     "user_message: msgs=3 last=user(34ch) gen=1",
-    "error(Context preparation failed: model claude-test is not available): msgs=3 last=user(34ch) gen=0",
+    "error(Context preparation failed: model claude-test is not available): msgs=4 last=assistant(72ch) gen=0",
   ],
 }
 `;
@@ -1719,8 +1876,23 @@ exports[`live-viewer turn (characterization) > an error in the loop: done, then 
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
+          "_streamingBurstElapsed": 0,
+          "_streamingBurstTokens": 1,
+          "_streamingLastChunkTime": 1075,
+          "_streamingOutputCharacters": 16,
+          "_streamingStartTime": 1075,
           "content": "Reading the logs",
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
+          "textFragments": [
+            "Reading the logs",
+          ],
+          "thinkingFragments": [],
         },
       ],
       "nonBlockingQuestions": [],
@@ -1855,11 +2027,11 @@ exports[`live-viewer turn (characterization) > approvals: two cards in one batch
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMAdd a README and a LICENSE.",
-        "Model📝Wrote README.md for 0.04 seconds📝Denied: Write File LICENSEI'll write both files. Wrote the README; skipped the LICENSE as asked.▎",
+        "ModelI'll write both files.📝Wrote README.md for 0.04 seconds📝Denied: Write File LICENSEWrote the README; skipped the LICENSE as asked.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "📥Prefilling...Iteration 2/25",
+        "✨Generating...⚡ 6.7 tok/sIteration 2/25",
       ],
       "turnActivity": [],
     },
@@ -1908,10 +2080,45 @@ exports[`live-viewer turn (characterization) > approvals: two cards in one batch
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
+          "_intermediateEstimatedCost": 0.0061,
+          "_intermediateUsage": {
+            "cacheCreationInputTokens": 0,
+            "cacheReadInputTokens": 0,
+            "inputTokens": 2400,
+            "outputTokens": 180,
+            "reasoningOutputTokens": 0,
+            "requests": 2,
+            "tokensPerSec": 0,
+            "totalInputTokens": 2400,
+          },
+          "_streamingBurstElapsed": 300,
+          "_streamingBurstTokens": 2,
+          "_streamingLastChunkTime": 1400,
+          "_streamingOutputCharacters": 71,
+          "_streamingStartTime": 1100,
           "content": "I'll write both files. Wrote the README; skipped the LICENSE as asked.",
-          "contentSegments": [],
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "toolu_01Readme",
+                "toolu_02License",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 1,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
-          "textFragments": [],
+          "textFragments": [
+            "I'll write both files.",
+            " Wrote the README; skipped the LICENSE as asked.",
+          ],
           "thinkingFragments": [],
           "toolCalls": [
             {
@@ -1953,7 +2160,50 @@ exports[`live-viewer turn (characterization) > approvals: two cards in one batch
         },
       ],
       "nonBlockingQuestions": [],
-      "pendingApprovals": [],
+      "pendingApprovals": [
+        {
+          "batchId": "batch-approval-1",
+          "id": "toolu_01Readme",
+          "preview": {
+            "diff": "--- /dev/null
++++ b/workspace/scratch-repo/README.md
+@@ -0,0 +1 @@
++# Scratch",
+            "isNewFile": true,
+            "kind": "diff",
+            "path": "/workspace/scratch-repo/README.md",
+          },
+          "status": "approved",
+          "tier": 2,
+          "toolArgs": {
+            "content": "# Scratch
+",
+            "path": "/workspace/scratch-repo/README.md",
+          },
+          "toolName": "write_file",
+        },
+        {
+          "batchId": "batch-approval-1",
+          "id": "toolu_02License",
+          "preview": {
+            "diff": "--- /dev/null
++++ b/workspace/scratch-repo/LICENSE
+@@ -0,0 +1 @@
++MIT",
+            "isNewFile": true,
+            "kind": "diff",
+            "path": "/workspace/scratch-repo/LICENSE",
+          },
+          "status": "rejected",
+          "tier": 2,
+          "toolArgs": {
+            "content": "MIT
+",
+            "path": "/workspace/scratch-repo/LICENSE",
+          },
+          "toolName": "write_file",
+        },
+      ],
       "pendingUserQuestion": null,
       "planProposal": null,
       "queuedTurns": [],
@@ -2014,16 +2264,16 @@ exports[`live-viewer turn (characterization) > approvals: two cards in one batch
     "tool_execution(streaming): msgs=4 last=assistant(22ch tools:1) gen=1 tools=[write_file:streaming]",
     "tool_execution(calling): msgs=4 last=assistant(22ch tools:1) gen=1 tools=[write_file:calling]",
     "tool_execution(calling): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
-    "approval_required: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
-    "approval_required: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
-    "approval_decided: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
-    "approval_decided: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
-    "status(Tool execution rejected: write_file): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
-    "tool_execution(done): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:calling]",
-    "tool_execution(error): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:error]",
-    "status(iteration_progress): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:error]",
-    "chunk: msgs=4 last=assistant(70ch tools:2) gen=1 tools=[write_file:done,write_file:error]",
-    "usage_update: msgs=4 last=assistant(70ch tools:2) gen=1 tools=[write_file:done,write_file:error]",
+    "approval_required: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=1",
+    "approval_required: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=2",
+    "approval_decided: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=2",
+    "approval_decided: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=2",
+    "status(Tool execution rejected: write_file): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=2",
+    "tool_execution(done): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:calling] approvals=2",
+    "tool_execution(error): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:error] approvals=2",
+    "status(iteration_progress): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:error] approvals=2",
+    "chunk: msgs=4 last=assistant(70ch tools:2) gen=1 tools=[write_file:done,write_file:error] approvals=2",
+    "usage_update: msgs=4 last=assistant(70ch tools:2) gen=1 tools=[write_file:done,write_file:error] approvals=2",
     "done: msgs=4 last=assistant(70ch) gen=0",
   ],
 }
@@ -2121,7 +2371,9 @@ exports[`live-viewer turn (characterization) > compaction, then the turn 1`] = `
   "streamed": {
     "dom": {
       "approvalCards": [],
-      "contextBudget": [],
+      "contextBudget": [
+        "21.0k / 200.0k tokens (11%)173.6k free✓ realSystem prompt3.0kSystem tools (42)9.0kMessages12.0kFree space179.0k",
+      ],
       "goal": [],
       "liveConnection": [
         "Live stream: Live",
@@ -2137,7 +2389,7 @@ exports[`live-viewer turn (characterization) > compaction, then the turn 1`] = `
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "✨Generating...Iteration 1/25",
+        "✨Generating...⚡ 20.0 tok/sIteration 1/25",
       ],
       "turnActivity": [],
     },
@@ -2147,7 +2399,22 @@ exports[`live-viewer turn (characterization) > compaction, then the turn 1`] = `
         "iteration": 1,
         "maxIterations": 25,
       },
-      "contextBudget": null,
+      "contextBudget": {
+        "availableOutputTokens": 173600,
+        "calibrationRatio": 0.795,
+        "contextWindow": 200000,
+        "isClamped": false,
+        "lastReportedInputTokens": 21000,
+        "messageTokens": 12000,
+        "requestedOutputTokens": 16000,
+        "safetyMarginTokens": 2400,
+        "skillTokens": 0,
+        "source": "reported",
+        "systemPromptTokens": 3000,
+        "toolCount": 42,
+        "toolSchemaTokens": 9000,
+        "totalInputTokens": 21000,
+      },
       "conversationId": "conv-live",
       "conversations": [
         {
@@ -2186,8 +2453,53 @@ exports[`live-viewer turn (characterization) > compaction, then the turn 1`] = `
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
+          "_backgroundUsage": {
+            "cost": 0,
+            "inputTokens": 9000,
+            "outputTokens": 700,
+            "requests": 1,
+          },
+          "_intermediateEstimatedCost": 0.0123,
+          "_intermediateUsage": {
+            "cacheCreationInputTokens": 0,
+            "cacheReadInputTokens": 0,
+            "inputTokens": 21000,
+            "outputTokens": 310,
+            "reasoningOutputTokens": 0,
+            "requests": 1,
+            "tokensPerSec": 0,
+            "totalInputTokens": 21000,
+          },
+          "_liveGenProgress": {
+            "activeRequests": 1,
+            "avgTtft": 0.911,
+            "estimatedCost": 0.0123,
+            "inputTokens": 21000,
+            "outputTokens": 310,
+            "timestamp": 1225,
+            "tokensPerSecond": 48.2,
+            "totalTokens": 21310,
+          },
+          "_streamingBurstElapsed": 100,
+          "_streamingBurstTokens": 2,
+          "_streamingLastChunkTime": 1300,
+          "_streamingOutputCharacters": 69,
+          "_streamingStartTime": 1200,
+          "_ttftSamples": [
+            0.911,
+          ],
           "content": "Picking up from the summary. The loaders are done; next is the cache.",
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
+          "textFragments": [
+            "Picking up from the summary. The loaders are done; next is the cache.",
+          ],
+          "thinkingFragments": [],
         },
       ],
       "nonBlockingQuestions": [],
@@ -2210,12 +2522,12 @@ exports[`live-viewer turn (characterization) > compaction, then the turn 1`] = `
   "toasts": [],
   "trace": [
     "user_message: msgs=3 last=user(29ch) gen=1",
-    "status(compaction_started): msgs=3 last=user(29ch) gen=1",
-    "usage_update: msgs=3 last=user(29ch) gen=1",
-    "status(compaction_complete): msgs=3 last=user(29ch) gen=1",
-    "context_budget: msgs=3 last=user(29ch) gen=1",
-    "status(iteration_progress): msgs=3 last=user(29ch) gen=1",
-    "status(generation_started): msgs=3 last=user(29ch) gen=1",
+    "status(compaction_started): msgs=4 last=assistant(0ch prefilling) gen=1",
+    "usage_update: msgs=4 last=assistant(0ch prefilling) gen=1",
+    "status(compaction_complete): msgs=4 last=assistant(0ch) gen=1",
+    "context_budget: msgs=4 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=4 last=assistant(0ch) gen=1",
+    "status(generation_started): msgs=4 last=assistant(0ch) gen=1",
     "chunk: msgs=4 last=assistant(28ch) gen=1",
     "status(generation_progress): msgs=4 last=assistant(28ch) gen=1",
     "context_budget: msgs=4 last=assistant(28ch) gen=1",
@@ -2352,12 +2664,11 @@ exports[`live-viewer turn (characterization) > goals: set, progress, then comple
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMShip the port change end to end.",
-        "Model🎯Set Goal for 0.009 seconds",
-        "Goal set. Changing the config. Config and docs now say 4000.▎",
+        "Model🎯Set Goal for 0.009 secondsGoal set. Changing the config. Config and docs now say 4000.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "✨Generating...Iteration 1/25",
+        "✨Generating...⚡ 40.0 tok/sIteration 1/25",
       ],
       "turnActivity": [],
     },
@@ -2424,10 +2735,28 @@ exports[`live-viewer turn (characterization) > goals: set, progress, then comple
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
-          "content": "",
-          "contentSegments": [],
+          "_streamingBurstElapsed": 50,
+          "_streamingBurstTokens": 2,
+          "_streamingLastChunkTime": 1200,
+          "_streamingOutputCharacters": 60,
+          "_streamingStartTime": 1150,
+          "content": "Goal set. Changing the config. Config and docs now say 4000.",
+          "contentSegments": [
+            {
+              "toolIds": [
+                "toolu_11Goal",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
-          "textFragments": [],
+          "textFragments": [
+            "Goal set. Changing the config. Config and docs now say 4000.",
+          ],
           "thinkingFragments": [],
           "toolCalls": [
             {
@@ -2444,10 +2773,6 @@ exports[`live-viewer turn (characterization) > goals: set, progress, then comple
               "timestamp": 1790078400100,
             },
           ],
-        },
-        {
-          "content": "Goal set. Changing the config. Config and docs now say 4000.",
-          "role": "assistant",
         },
       ],
       "nonBlockingQuestions": [],
@@ -2481,16 +2806,21 @@ exports[`live-viewer turn (characterization) > goals: set, progress, then comple
       },
     },
   },
-  "toasts": [],
+  "toasts": [
+    {
+      "message": "Goal completed",
+      "type": "info",
+    },
+  ],
   "trace": [
     "user_message: msgs=3 last=user(32ch) gen=1",
     "status(iteration_progress): msgs=3 last=user(32ch) gen=1",
     "tool_execution(calling): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[set_goal:calling]",
     "goal_update: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[set_goal:calling] goal=active",
     "tool_execution(done): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[set_goal:done] goal=active",
-    "chunk: msgs=5 last=assistant(30ch) gen=1 tools=[set_goal:done] goal=active",
-    "goal_update: msgs=5 last=assistant(30ch) gen=1 tools=[set_goal:done] goal=active",
-    "chunk: msgs=5 last=assistant(60ch) gen=1 tools=[set_goal:done] goal=active",
+    "chunk: msgs=4 last=assistant(30ch tools:1) gen=1 tools=[set_goal:done] goal=active",
+    "goal_update: msgs=4 last=assistant(30ch tools:1) gen=1 tools=[set_goal:done] goal=active",
+    "chunk: msgs=4 last=assistant(60ch tools:1) gen=1 tools=[set_goal:done] goal=active",
     "done: msgs=4 last=assistant(60ch) gen=0",
     "goal_update: msgs=4 last=assistant(60ch) gen=0 goal=completed",
     "status(hook_system_message): msgs=4 last=assistant(60ch) gen=0 goal=completed",
@@ -2602,11 +2932,11 @@ exports[`live-viewer turn (characterization) > plan mode: a plan decided elsewhe
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMChange the dev port to 4000.",
-        "Model📖Analyzed config.json for 0.02 secondsHere is the plan. Read the config; the port is 3000 today.▎",
+        "ModelHere is the plan.Implementation PlanApproved Read the config Change the port to 4000 Update the docs 📖Analyzed config.json for 0.02 secondsRead the config; the port is 3000 today.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "📥Prefilling...Iteration 2/25",
+        "✨Generating...⚡ 11.4 tok/sIteration 2/25",
       ],
       "turnActivity": [],
     },
@@ -2655,10 +2985,36 @@ exports[`live-viewer turn (characterization) > plan mode: a plan decided elsewhe
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
+          "_streamingBurstElapsed": 175,
+          "_streamingBurstTokens": 2,
+          "_streamingLastChunkTime": 1250,
+          "_streamingOutputCharacters": 58,
+          "_streamingStartTime": 1075,
           "content": "Here is the plan. Read the config; the port is 3000 today.",
-          "contentSegments": [],
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "type": "plan",
+            },
+            {
+              "toolIds": [
+                "toolu_04Read",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 1,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
-          "textFragments": [],
+          "textFragments": [
+            "Here is the plan.",
+            " Read the config; the port is 3000 today.",
+          ],
           "thinkingFragments": [],
           "toolCalls": [
             {
@@ -2680,7 +3036,17 @@ exports[`live-viewer turn (characterization) > plan mode: a plan decided elsewhe
       "nonBlockingQuestions": [],
       "pendingApprovals": [],
       "pendingUserQuestion": null,
-      "planProposal": null,
+      "planProposal": {
+        "plan": "1. Read the config
+2. Change the port to 4000
+3. Update the docs",
+        "status": "approved",
+        "steps": [
+          "Read the config",
+          "Change the port to 4000",
+          "Update the docs",
+        ],
+      },
       "queuedTurns": [],
       "streamingOutputs": {},
       "subAgentToolActivity": {},
@@ -2713,13 +3079,13 @@ exports[`live-viewer turn (characterization) > plan mode: a plan decided elsewhe
     "user_message: msgs=3 last=user(28ch) gen=1",
     "status(iteration_progress): msgs=3 last=user(28ch) gen=1",
     "chunk: msgs=4 last=assistant(17ch) gen=1",
-    "plan_proposal: msgs=4 last=assistant(17ch) gen=1",
-    "approval_decided: msgs=4 last=assistant(17ch) gen=1",
-    "status(plan_mode_exited): msgs=4 last=assistant(17ch) gen=1",
-    "status(iteration_progress): msgs=4 last=assistant(17ch) gen=1",
-    "tool_execution(calling): msgs=4 last=assistant(17ch tools:1) gen=1 tools=[read_file:calling]",
-    "tool_execution(done): msgs=4 last=assistant(17ch tools:1) gen=1 tools=[read_file:done]",
-    "chunk: msgs=4 last=assistant(58ch tools:1) gen=1 tools=[read_file:done]",
+    "plan_proposal: msgs=4 last=assistant(17ch) gen=1 plan",
+    "approval_decided: msgs=4 last=assistant(17ch) gen=1 plan",
+    "status(plan_mode_exited): msgs=4 last=assistant(17ch) gen=1 plan",
+    "status(iteration_progress): msgs=4 last=assistant(17ch) gen=1 plan",
+    "tool_execution(calling): msgs=4 last=assistant(17ch tools:1) gen=1 tools=[read_file:calling] plan",
+    "tool_execution(done): msgs=4 last=assistant(17ch tools:1) gen=1 tools=[read_file:done] plan",
+    "chunk: msgs=4 last=assistant(58ch tools:1) gen=1 tools=[read_file:done] plan",
     "done: msgs=4 last=assistant(58ch) gen=0",
   ],
 }
@@ -2951,13 +3317,12 @@ exports[`live-viewer turn (characterization) > steering: an update from another 
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMCheck the config.",
-        "Model📖Analyzed config.json for 0.02 secondsReading the config first.",
         "UserApplied at step 112:00 PMAlso check the tests.",
-        "ModelChecking the tests too — both agree on 3000.▎",
+        "ModelReading the config first.📖Analyzed config.json for 0.02 secondsChecking the tests too — both agree on 3000.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "✨Generating...Iteration 2/25",
+        "✨Generating...⚡ 13.3 tok/sIteration 2/25",
       ],
       "turnActivity": [],
     },
@@ -3006,10 +3371,47 @@ exports[`live-viewer turn (characterization) > steering: an update from another 
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
-          "content": "Reading the config first.",
-          "contentSegments": [],
+          "_turnInput": {
+            "boundary": "after_tools",
+            "id": "input-5e6f7a8b",
+            "iteration": 1,
+            "kind": "user_update",
+            "receivedAt": "2026-09-22T12:00:00.150Z",
+            "status": "applied",
+          },
+          "content": "Also check the tests.",
+          "rawContent": "Also check the tests.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.150Z",
+        },
+        {
+          "_streamingBurstElapsed": 150,
+          "_streamingBurstTokens": 2,
+          "_streamingLastChunkTime": 1225,
+          "_streamingOutputCharacters": 71,
+          "_streamingStartTime": 1075,
+          "content": "Reading the config first. Checking the tests too — both agree on 3000.",
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "toolu_10Read",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 1,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
-          "textFragments": [],
+          "textFragments": [
+            "Reading the config first.",
+            " Checking the tests too — both agree on 3000.",
+          ],
           "thinkingFragments": [],
           "toolCalls": [
             {
@@ -3026,24 +3428,6 @@ exports[`live-viewer turn (characterization) > steering: an update from another 
               "timestamp": 1790078400100,
             },
           ],
-        },
-        {
-          "_turnInput": {
-            "boundary": "after_tools",
-            "id": "input-5e6f7a8b",
-            "iteration": 1,
-            "kind": "user_update",
-            "receivedAt": "2026-09-22T12:00:00.150Z",
-            "status": "applied",
-          },
-          "content": "Also check the tests.",
-          "rawContent": "Also check the tests.",
-          "role": "user",
-          "timestamp": "2026-09-22T12:00:00.150Z",
-        },
-        {
-          "content": "Checking the tests too — both agree on 3000.",
-          "role": "assistant",
         },
       ],
       "nonBlockingQuestions": [],
@@ -3084,10 +3468,10 @@ exports[`live-viewer turn (characterization) > steering: an update from another 
     "chunk: msgs=4 last=assistant(25ch) gen=1",
     "tool_execution(calling): msgs=4 last=assistant(25ch tools:1) gen=1 tools=[read_file:calling]",
     "tool_execution(done): msgs=4 last=assistant(25ch tools:1) gen=1 tools=[read_file:done]",
-    "turn_input: msgs=5 last=user(21ch) gen=1 tools=[read_file:done]",
-    "status(turn_input_applied): msgs=5 last=user(21ch) gen=1 tools=[read_file:done]",
-    "status(iteration_progress): msgs=5 last=user(21ch) gen=1 tools=[read_file:done]",
-    "chunk: msgs=6 last=assistant(44ch) gen=1 tools=[read_file:done]",
+    "turn_input: msgs=5 last=assistant(25ch tools:1) gen=1 tools=[read_file:done]",
+    "status(turn_input_applied): msgs=5 last=assistant(25ch tools:1) gen=1 tools=[read_file:done]",
+    "status(iteration_progress): msgs=5 last=assistant(25ch tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=5 last=assistant(70ch tools:1) gen=1 tools=[read_file:done]",
     "done: msgs=4 last=assistant(70ch) gen=0",
   ],
 }
@@ -3123,6 +3507,46 @@ exports[`live-viewer turn (characterization) > sub-agents: two spawned, one comp
     "contextBudget": null,
     "conversationId": "conv-live",
     "conversations": [
+      {
+        "_id": "conv-sub-2",
+        "agentIndex": 1,
+        "createdAt": "2026-09-22T12:00:00.150Z",
+        "id": "conv-sub-2",
+        "isActive": false,
+        "isGenerating": false,
+        "messages": [],
+        "modelNames": [
+          "claude-test",
+        ],
+        "parentConversationId": "conv-fixture",
+        "pendingBackgroundTasks": 0,
+        "project": "coding",
+        "providers": [
+          "anthropic",
+        ],
+        "title": "Audit the billing module",
+        "updatedAt": "2026-09-22T12:00:00.150Z",
+      },
+      {
+        "_id": "conv-sub-1",
+        "agentIndex": 0,
+        "createdAt": "2026-09-22T12:00:00.125Z",
+        "id": "conv-sub-1",
+        "isActive": false,
+        "isGenerating": false,
+        "messages": [],
+        "modelNames": [
+          "claude-test",
+        ],
+        "parentConversationId": "conv-fixture",
+        "pendingBackgroundTasks": 0,
+        "project": "coding",
+        "providers": [
+          "anthropic",
+        ],
+        "title": "Audit the auth module",
+        "updatedAt": "2026-09-22T12:00:00.125Z",
+      },
       {
         "_liveModalities": {},
         "id": "conv-live",
@@ -3171,7 +3595,10 @@ exports[`live-viewer turn (characterization) > sub-agents: two spawned, one comp
     "pendingUserQuestion": null,
     "planProposal": null,
     "queuedTurns": [],
-    "streamingOutputs": {},
+    "streamingOutputs": {
+      "toolu_s1Cmd": "12 passing
+",
+    },
     "subAgentToolActivity": {},
     "title": "Live turn",
     "toolActivity": [],
@@ -3197,11 +3624,11 @@ exports[`live-viewer turn (characterization) > sub-agents: two spawned, one comp
         "User11:58 AMEarlier question",
         "Model11:58 AMEarlier answer.",
         "User12:00 PMAudit auth and billing in parallel.",
-        "Model🤖Create Subagents for 0.3 secondsSplitting the audit in two. Auth is clean; the billing audit failed — the provider was overloaded.▎",
+        "ModelSplitting the audit in two.🤖Create Subagents for 0.3 secondsAuth is clean; the billing audit failed — the provider was overloaded.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "📥Prefilling...Iteration 2/25",
+        "✨Generating...⚡ 4.7 tok/sIteration 2/25",
       ],
       "turnActivity": [],
     },
@@ -3214,6 +3641,46 @@ exports[`live-viewer turn (characterization) > sub-agents: two spawned, one comp
       "contextBudget": null,
       "conversationId": "conv-live",
       "conversations": [
+        {
+          "_id": "conv-sub-2",
+          "agentIndex": 1,
+          "createdAt": "2026-09-22T12:00:00.150Z",
+          "id": "conv-sub-2",
+          "isActive": false,
+          "isGenerating": false,
+          "messages": [],
+          "modelNames": [
+            "claude-test",
+          ],
+          "parentConversationId": "conv-fixture",
+          "pendingBackgroundTasks": 0,
+          "project": "coding",
+          "providers": [
+            "anthropic",
+          ],
+          "title": "Audit the billing module",
+          "updatedAt": "2026-09-22T12:00:00.150Z",
+        },
+        {
+          "_id": "conv-sub-1",
+          "agentIndex": 0,
+          "createdAt": "2026-09-22T12:00:00.125Z",
+          "id": "conv-sub-1",
+          "isActive": false,
+          "isGenerating": false,
+          "messages": [],
+          "modelNames": [
+            "claude-test",
+          ],
+          "parentConversationId": "conv-fixture",
+          "pendingBackgroundTasks": 0,
+          "project": "coding",
+          "providers": [
+            "anthropic",
+          ],
+          "title": "Audit the auth module",
+          "updatedAt": "2026-09-22T12:00:00.125Z",
+        },
         {
           "_liveModalities": {},
           "id": "conv-live",
@@ -3250,10 +3717,51 @@ exports[`live-viewer turn (characterization) > sub-agents: two spawned, one comp
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
+          "_liveGenProgress": {
+            "activeRequests": 2,
+            "avgTtft": 1.063,
+            "estimatedCost": 0.0031,
+            "inputTokens": 8200,
+            "outputTokens": 162,
+            "timestamp": 1275,
+            "tokensPerSecond": 21,
+            "totalTokens": 8362,
+          },
+          "_streamingBurstElapsed": 425,
+          "_streamingBurstTokens": 2,
+          "_streamingLastChunkTime": 1500,
+          "_streamingOutputCharacters": 96,
+          "_streamingStartTime": 1075,
+          "_subAgentTokens": {
+            "input": 5100,
+            "output": 420,
+            "requests": 3,
+          },
+          "_ttftSamples": [
+            1.284,
+          ],
           "content": "Splitting the audit in two. Auth is clean; the billing audit failed — the provider was overloaded.",
-          "contentSegments": [],
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "toolu_08Spawn",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 1,
+              "type": "text",
+            },
+          ],
           "role": "assistant",
-          "textFragments": [],
+          "textFragments": [
+            "Splitting the audit in two.",
+            " Auth is clean; the billing audit failed — the provider was overloaded.",
+          ],
           "thinkingFragments": [],
           "toolCalls": [
             {
@@ -3294,8 +3802,55 @@ exports[`live-viewer turn (characterization) > sub-agents: two spawned, one comp
       "pendingUserQuestion": null,
       "planProposal": null,
       "queuedTurns": [],
-      "streamingOutputs": {},
-      "subAgentToolActivity": {},
+      "streamingOutputs": {
+        "toolu_s1Cmd": "12 passing
+",
+      },
+      "subAgentToolActivity": {
+        "agent-1-3f9a": {
+          "conversationId": "conv-sub-1",
+          "currentTool": null,
+          "description": "Audit the auth module",
+          "durationMs": 48213,
+          "firstChunkTime": 1790078401000,
+          "iteration": 1,
+          "lastChunkTime": 1790078403000,
+          "maxIterations": 25,
+          "outputTokens": 42,
+          "phase": "complete",
+          "toolCalls": [
+            {
+              "args": {
+                "command": "npm test -- auth",
+              },
+              "durationMs": 2300,
+              "id": "toolu_s1Cmd",
+              "name": "execute_command",
+              "result": {
+                "exitCode": 0,
+                "stdout": "12 passing
+",
+              },
+              "status": "done",
+            },
+          ],
+          "toolCount": 1,
+          "toolNames": {
+            "execute_command": 1,
+          },
+          "totalOutputTokens": 120,
+        },
+        "agent-2-7c1d": {
+          "conversationId": "conv-sub-2",
+          "currentTool": null,
+          "description": "Audit the billing module",
+          "error": "Provider overloaded",
+          "iteration": 0,
+          "phase": "failed",
+          "toolCount": 0,
+          "toolNames": {},
+        },
+      },
       "title": "Live turn",
       "toolActivity": [
         {
@@ -3343,22 +3898,22 @@ exports[`live-viewer turn (characterization) > sub-agents: two spawned, one comp
     "status(iteration_progress): msgs=3 last=user(35ch) gen=1",
     "chunk: msgs=4 last=assistant(27ch) gen=1",
     "tool_execution(calling): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_status(spawned): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_status(spawned): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_status(iteration_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_status(phase): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_status(generation_started): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_status(generation_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "status(generation_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_tool_execution(calling): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_tool_output: msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_tool_execution(done): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_status(phase): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_status(complete): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "sub_agent_status(failed): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
-    "tool_execution(done): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:done]",
-    "status(iteration_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:done]",
-    "chunk: msgs=4 last=assistant(98ch tools:1) gen=1 tools=[create_subagents:done]",
+    "sub_agent_status(spawned): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:spawned]",
+    "sub_agent_status(spawned): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:spawned,agent-2-7c1d:spawned]",
+    "sub_agent_status(iteration_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:spawned,agent-2-7c1d:spawned]",
+    "sub_agent_status(phase): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:generating,agent-2-7c1d:spawned]",
+    "sub_agent_status(generation_started): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:generating,agent-2-7c1d:spawned]",
+    "sub_agent_status(generation_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:generating,agent-2-7c1d:spawned]",
+    "status(generation_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:generating,agent-2-7c1d:spawned]",
+    "sub_agent_tool_execution(calling): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:-,agent-2-7c1d:spawned]",
+    "sub_agent_tool_output: msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:-,agent-2-7c1d:spawned]",
+    "sub_agent_tool_execution(done): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:-,agent-2-7c1d:spawned]",
+    "sub_agent_status(phase): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:-,agent-2-7c1d:thinking]",
+    "sub_agent_status(complete): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:complete,agent-2-7c1d:thinking]",
+    "sub_agent_status(failed): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:complete,agent-2-7c1d:failed]",
+    "tool_execution(done): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:done] subs=[agent-1-3f9a:complete,agent-2-7c1d:failed]",
+    "status(iteration_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:done] subs=[agent-1-3f9a:complete,agent-2-7c1d:failed]",
+    "chunk: msgs=4 last=assistant(98ch tools:1) gen=1 tools=[create_subagents:done] subs=[agent-1-3f9a:complete,agent-2-7c1d:failed]",
     "done: msgs=4 last=assistant(98ch) gen=0",
   ],
 }
@@ -3531,7 +4086,11 @@ exports[`live-viewer turn (characterization) > the loop gives up: iteration limi
     "pendingUserQuestion": null,
     "planProposal": null,
     "queuedTurns": [],
-    "streamingOutputs": {},
+    "streamingOutputs": {
+      "toolu_09Lint": "src/a.ts: 3 warnings
+exit 1
+",
+    },
     "subAgentToolActivity": {},
     "title": "Live turn",
     "toolActivity": [],
@@ -3610,8 +4169,16 @@ exports[`live-viewer turn (characterization) > the loop gives up: iteration limi
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
+          "_terminationReason": "The agent reached its maximum iteration limit before producing a final response.",
           "content": "",
-          "contentSegments": [],
+          "contentSegments": [
+            {
+              "toolIds": [
+                "toolu_09Lint",
+              ],
+              "type": "tools",
+            },
+          ],
           "role": "assistant",
           "textFragments": [],
           "thinkingFragments": [],
@@ -3641,7 +4208,11 @@ exports[`live-viewer turn (characterization) > the loop gives up: iteration limi
       "pendingUserQuestion": null,
       "planProposal": null,
       "queuedTurns": [],
-      "streamingOutputs": {},
+      "streamingOutputs": {
+        "toolu_09Lint": "src/a.ts: 3 warnings
+exit 1
+",
+      },
       "subAgentToolActivity": {},
       "title": "Live turn",
       "toolActivity": [

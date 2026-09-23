@@ -393,6 +393,63 @@ describe("SSE-driven turn (characterization)", { timeout: 60_000 }, () => {
     expect(outcome(harness, trace)).toMatchSnapshot();
   });
 
+  it("a server error that mentions the network is shown, not taken for a dropped connection", async () => {
+    const chat = (harness = await mountChat());
+    await sendAndReplay(chat, "Summarize the logs.", [
+      { type: "user_message", content: "Summarize the logs." },
+      {
+        type: "error",
+        code: "provider_unavailable",
+        message: "Provider network error: upstream fetch failed",
+        retryable: true,
+      },
+    ]);
+    // No recovery: no socket opened to follow the turn.
+    expect(chat.sockets()).toHaveLength(0);
+    expect(domDigest(chat.view.container).rows.at(-1)).toContain(
+      "⚠️ Error: Provider network error: upstream fetch failed",
+    );
+    expect(chat.state().isGenerating).toBe(false);
+  });
+
+  it("Stop ends the turn here: the conversation stops generating, and the next send streams", async () => {
+    const chat = (harness = await mountChat());
+    const nextStream = chat.network.nextStream();
+    await chat.typeAndSend("Summarize the logs.");
+    const stream = await nextStream;
+    await chat.replay(stream, [
+      { type: "user_message", content: "Summarize the logs." },
+      { type: "chunk", content: "Reading the logs", outputCharacters: 16 },
+    ]);
+    const conversationId = chat.state().conversationId;
+    expect(chat.state().generatingConversationIds).toEqual(new Set([conversationId]));
+
+    const stop = onlyOne(chat.view.container, "button[aria-label='Stop']");
+    await chat.settle(() => fireEvent.click(stop));
+    // The aborted stream ends the send: nothing keeps the conversation marked
+    // as generating (the sidebar dot) or as driven by this client.
+    expect(chat.state().isGenerating).toBe(false);
+    expect(chat.state().generatingConversationIds).toEqual(new Set());
+    expect(chat.network.requestsMatching("POST", /^\/agent\/stop$/)).toHaveLength(1);
+
+    const followUp = chat.network.nextStream();
+    await chat.typeAndSend("Try again.");
+    const secondStream = await followUp;
+    await chat.replay(secondStream, [
+      { type: "user_message", content: "Try again." },
+      { type: "chunk", content: "Retrying.", outputCharacters: 9 },
+      { type: "done" },
+    ]);
+    await chat.settle(() => secondStream.close());
+    expect(chat.state().generatingConversationIds).toEqual(new Set());
+    expect(domDigest(chat.view.container).rows).toEqual([
+      "User12:00 PMSummarize the logs.",
+      expect.stringContaining("Reading the logs"),
+      "User12:00 PMTry again.",
+      expect.stringContaining("Retrying."),
+    ]);
+  });
+
   it("reconnect: the SSE ends mid-turn; the live socket resumes after the SSE's last seq", async () => {
     const chat = (harness = await mountChat());
     const prompt = "What port does the dev server use?";

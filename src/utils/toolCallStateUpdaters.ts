@@ -65,6 +65,7 @@ function mergeToolEvent(
   currentToolCalls: ToolCallEvent[],
   resolvedId: string,
   toolInput: ToolExecutionInput,
+  now: number,
 ): ToolCallEvent[] {
   if (IN_FLIGHT_STATUSES.has(toolInput.status)) {
     const existingTool = currentToolCalls.find((toolCall) => toolCall.id === resolvedId);
@@ -90,7 +91,7 @@ function mergeToolEvent(
         name: toolInput.name || "unknown",
         args: toolInput.args || {},
         status: toolInput.status,
-        timestamp: toolInput.timestamp || Date.now(),
+        timestamp: toolInput.timestamp || now,
       },
     ];
   }
@@ -115,7 +116,7 @@ function mergeToolEvent(
       ...(hasArgs(toolInput.args) ? { args: toolInput.args } : { args: toolCall.args || {} }),
       durationMs:
         toolInput.durationMs ||
-        (toolCall.timestamp ? Date.now() - toolCall.timestamp : undefined),
+        (toolCall.timestamp ? now - toolCall.timestamp : undefined),
     };
   });
 }
@@ -159,20 +160,21 @@ function attachToolCallsToMessages(
 /**
  * Compute the next messages array after a tool execution event.
  *
- * This is a **pure function**: it does not mutate inputs and returns
- * a new array.  It mirrors the inline logic that was previously nested
- * inside `setToolActivity → setMessages` in ChatConversationComponent.
+ * This is a **pure function**: it does not mutate inputs and returns a new
+ * array. `now` stamps a call that arrives without a timestamp, and times a
+ * result that arrives without a duration.
  */
 export function applyToolExecutionToMessages(
   messages: ToolMessageSlice[],
   resolvedId: string,
   toolInput: ToolExecutionInput,
   snapshot: SegmentSnapshot,
+  now: number = Date.now(),
 ): ToolMessageSlice[] {
   const last = messages[messages.length - 1];
   const currentToolCalls: ToolCallEvent[] =
     last?.role === "assistant" ? last.toolCalls || [] : [];
-  const updatedToolCalls = mergeToolEvent(currentToolCalls, resolvedId, toolInput);
+  const updatedToolCalls = mergeToolEvent(currentToolCalls, resolvedId, toolInput, now);
   return attachToolCallsToMessages(messages, updatedToolCalls, snapshot);
 }
 
@@ -186,8 +188,9 @@ export function applyToolExecutionToActivity(
   previousToolActivity: ToolCallEvent[],
   resolvedId: string,
   toolInput: ToolExecutionInput,
+  now: number = Date.now(),
 ): ToolCallEvent[] | null {
-  const updated = mergeToolEvent(previousToolActivity, resolvedId, toolInput);
+  const updated = mergeToolEvent(previousToolActivity, resolvedId, toolInput, now);
   return updated === previousToolActivity ? null : updated;
 }
 
@@ -202,6 +205,7 @@ export function applyToolCallToMessages(
   resolvedId: string,
   toolData: ToolCallEvent,
   snapshot: SegmentSnapshot,
+  now: number = Date.now(),
 ): ToolMessageSlice[] {
   return applyToolExecutionToMessages(
     messages,
@@ -215,5 +219,6 @@ export function applyToolCallToMessages(
       durationMs: toolData.durationMs,
     },
     snapshot,
+    now,
   );
 }

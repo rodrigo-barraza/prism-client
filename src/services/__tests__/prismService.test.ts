@@ -880,7 +880,7 @@ describe("PrismService", () => {
   });
 
   describe("SSE Streaming Helper Functions", () => {
-    it("streamText & streamAgentText & streamBenchmarkRun & followBenchmarkRun", () => {
+    it("streamBenchmarkRun & followBenchmarkRun", () => {
       const callbacks = {
         onError: vi.fn(),
       };
@@ -896,14 +896,6 @@ describe("PrismService", () => {
           getReader: () => mockReader,
         },
       };
-
-      const stop1 = PrismService.streamText({} as any, callbacks);
-      expect(lastUrl).toContain("/chat");
-      stop1();
-
-      const stop2 = PrismService.streamAgentText({} as any, callbacks);
-      expect(lastUrl).toContain("/agent");
-      stop2();
 
       const stop3 = PrismService.streamBenchmarkRun("bm-123", [] as any, callbacks);
       expect(lastUrl).toContain("/benchmark/bm-123/run");

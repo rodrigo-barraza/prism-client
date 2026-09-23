@@ -2268,9 +2268,13 @@ exports[`SSE-driven turn (characterization) > reconnect: the SSE ends mid-turn; 
         "args": {
           "path": "/app/config.json",
         },
+        "durationMs": 22,
         "id": "toolu_12Read",
         "name": "read_file",
-        "status": "calling",
+        "result": {
+          "content": "{"port":3000}",
+        },
+        "status": "done",
         "timestamp": 1790078400100,
       },
     ],
@@ -2294,11 +2298,11 @@ exports[`SSE-driven turn (characterization) > reconnect: the SSE ends mid-turn; 
       "queuedTurns": [],
       "rows": [
         "User12:00 PMWhat port does the dev server use?",
-        "Model12:00 PMChecking the config📖Analyzing config.json…— port 3000, documented.▎",
+        "Model12:00 PMChecking the config📖Analyzed config.json for 0.02 seconds— port 3000, documented.▎",
       ],
       "sendButton": "Stop",
       "statusBar": [
-        "🔧Running tool Read File...⚡ 80.0 tok/sIteration 1/25",
+        "✨Generating...⚡ 80.0 tok/sIteration 1/25",
       ],
       "turnActivity": [],
     },
@@ -2312,10 +2316,10 @@ exports[`SSE-driven turn (characterization) > reconnect: the SSE ends mid-turn; 
           "timestamp": "2026-09-22T12:00:00.000Z",
         },
         {
-          "_streamingBurstElapsed": 25,
-          "_streamingBurstTokens": 2,
-          "_streamingLastChunkTime": 1100,
-          "_streamingOutputCharacters": 19,
+          "_streamingBurstElapsed": 50,
+          "_streamingBurstTokens": 4,
+          "_streamingLastChunkTime": 1125,
+          "_streamingOutputCharacters": 44,
           "_streamingStartTime": 1075,
           "content": "Checking the config — port 3000, documented.",
           "contentSegments": [
@@ -2348,9 +2352,13 @@ exports[`SSE-driven turn (characterization) > reconnect: the SSE ends mid-turn; 
               "args": {
                 "path": "/app/config.json",
               },
+              "durationMs": 22,
               "id": "toolu_12Read",
               "name": "read_file",
-              "status": "calling",
+              "result": {
+                "content": "{"port":3000}",
+              },
+              "status": "done",
               "timestamp": 1790078400100,
             },
           ],

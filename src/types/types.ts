@@ -660,12 +660,6 @@ export type BenchmarkStreamEvent =
 /** Everything `PrismService._streamSSE` hands the dispatcher. */
 export type StreamEvent = TurnEvent | SynthesisEvent | BenchmarkStreamEvent;
 
-/** Synthesized by the live viewer when a subscribe finds no running turn. */
-export interface NoLiveTurnDone {
-  type: "done";
-  reason: "no-live-turn";
-}
-
 /** The synthesis stream's `done`. */
 export type SynthesisDoneEvent = Extract<SynthesisEvent, { type: "done" }>;
 
@@ -903,7 +897,7 @@ export interface SSECallbacks {
   onTurnStart?: (_role: string, _index: number) => void;
   /** Synthesis stream: turn finished with its canonical message */
   onTurnComplete?: (_message: Message, _role: string) => void;
-  onDone?: (_event: DoneEvent | SynthesisDoneEvent | NoLiveTurnDone) => void;
+  onDone?: (_event: DoneEvent | SynthesisDoneEvent) => void;
   /** A stream failure. An `error` event arrives as a `StreamError` carrying its code and retryability. */
   onError?: (_error: Error) => void;
   /**
@@ -915,12 +909,6 @@ export interface SSECallbacks {
   onStreamClosed?: (_info: { reason: "eof-without-done" | "stalled" }) => void;
   /** The stream was torn down by the caller's abort handle (user stop). */
   onAborted?: () => void;
-  /**
-   * WebSocket resubscribe: the server could not replay everything since
-   * the cursor this client sent (`droppedCount > 0` on the `subscribed`
-   * ack) — earlier output is missing from the live view.
-   */
-  onReplayTruncated?: (_info: { droppedCount: number }) => void;
 }
 
 export interface ContentSegment {

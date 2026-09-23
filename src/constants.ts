@@ -108,13 +108,7 @@ export const LOCAL_STORAGE_KEY_LM_STUDIO_LOAD_CONFIG_PREFIX = "lm-studio-load-co
 export const EVENT_NAME_CRON_JOB_SCHEDULED = "cron-job-scheduled";
 export const EVENT_NAME_PRISM_SETTINGS_UPDATED = "prism-settings-updated";
 export const EVENT_NAME_PANEL_DISMISS_SIDEBARS = "panel:dismiss-sidebars";
-export const EVENT_NAME_SIDEBAR_TAB_CHANGE = "sidebarTab:change";
-export const EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE = "sidebarTabBottom:change";
-export const EVENT_NAME_VIEW_MODE_CHANGE = "viewMode:change";
 export const EVENT_NAME_USER_TYPING = "user:typing";
-export const EVENT_NAME_CONVERSATION_CHANGE = "conversation:change";
-export const EVENT_NAME_AGENT_SWITCH = "agent:switch";
-export const EVENT_NAME_MODEL_CHANGE = "model:change";
 export const EVENT_NAME_PROFILE_SWITCH = "profile:switch";
 
 // -- Profiles ------------------------------------------------------
