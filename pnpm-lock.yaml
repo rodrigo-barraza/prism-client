@@ -10,10 +10,10 @@ importers:
     dependencies:
       '@rodrigo-barraza/components-library':
         specifier: github:rodrigo-barraza/components-library
-        version: https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/77cc8894ece262bcfbd8ab710d32068fedc82057(@types/react@19.2.17)(lucide-react@1.24.0(react@19.2.7))(luxon@3.7.2)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/a5c6a58ca9e727c7722e7cbd531a7a0daffffe00(@types/react@19.2.17)(lucide-react@1.24.0(react@19.2.7))(luxon@3.7.2)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@rodrigo-barraza/utilities-library':
         specifier: github:rodrigo-barraza/utilities-library
-        version: https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/eb72517ec56b4c2735bf0f5605bacbae99fa62e3
+        version: https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/a4bd47ac364876139339378da12df286826be93f
       chart.js:
         specifier: ^4.5.1
         version: 4.5.1
@@ -614,8 +614,8 @@ packages:
       react-redux:
         optional: true
 
-  '@rodrigo-barraza/components-library@https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/77cc8894ece262bcfbd8ab710d32068fedc82057':
-    resolution: {gitHosted: true, integrity: sha512-gJuXG32yq+HkYeqVGT9ch5ftLgy/VQmpYPRtKEumbX+oxzLqv1KgT2ec9WLziPwDVpaqDJbDfu9B2fNwmzzKFQ==, tarball: https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/77cc8894ece262bcfbd8ab710d32068fedc82057}
+  '@rodrigo-barraza/components-library@https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/a5c6a58ca9e727c7722e7cbd531a7a0daffffe00':
+    resolution: {gitHosted: true, integrity: sha512-CNpOxLFgvG7H/7uye2ROBILWyeI18iZ5se9utW+gLreAzr6s6DV6p5PHID+zsOh1yj1+MqplpjSYbXJrFMNE4g==, tarball: https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/a5c6a58ca9e727c7722e7cbd531a7a0daffffe00}
     version: 0.2.0
     peerDependencies:
       lucide-react: '>=0.300.0'
@@ -623,8 +623,8 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@rodrigo-barraza/utilities-library@https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/eb72517ec56b4c2735bf0f5605bacbae99fa62e3':
-    resolution: {gitHosted: true, integrity: sha512-hjEvkA1PNM54Se3tU+QtCgjFzQKz7Hzg92Mhdf3oqzm1U1vCPdWYmaJcxqAlz/NWgol/LJyFr4U73opJc09pEQ==, tarball: https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/eb72517ec56b4c2735bf0f5605bacbae99fa62e3}
+  '@rodrigo-barraza/utilities-library@https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/a4bd47ac364876139339378da12df286826be93f':
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/a4bd47ac364876139339378da12df286826be93f}
     version: 0.7.0
     peerDependencies:
       express: '>=5.0.0'
@@ -2480,9 +2480,9 @@ snapshots:
       react: 19.2.7
       react-redux: 9.3.0(@types/react@19.2.17)(react@19.2.7)(redux@5.0.1)
 
-  '@rodrigo-barraza/components-library@https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/77cc8894ece262bcfbd8ab710d32068fedc82057(@types/react@19.2.17)(lucide-react@1.24.0(react@19.2.7))(luxon@3.7.2)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@rodrigo-barraza/components-library@https://codeload.github.com/rodrigo-barraza/components-library/tar.gz/a5c6a58ca9e727c7722e7cbd531a7a0daffffe00(@types/react@19.2.17)(lucide-react@1.24.0(react@19.2.7))(luxon@3.7.2)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
-      '@rodrigo-barraza/utilities-library': https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/eb72517ec56b4c2735bf0f5605bacbae99fa62e3
+      '@rodrigo-barraza/utilities-library': https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/a4bd47ac364876139339378da12df286826be93f
       '@rrweb/record': 2.1.0
       katex: 0.17.0
       lucide-react: 1.24.0(react@19.2.7)
@@ -2506,7 +2506,7 @@ snapshots:
       - socks
       - supports-color
 
-  '@rodrigo-barraza/utilities-library@https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/eb72517ec56b4c2735bf0f5605bacbae99fa62e3':
+  '@rodrigo-barraza/utilities-library@https://codeload.github.com/rodrigo-barraza/utilities-library/tar.gz/a4bd47ac364876139339378da12df286826be93f':
     dependencies:
       mongodb: 7.5.0
       nanoid: 5.1.16
