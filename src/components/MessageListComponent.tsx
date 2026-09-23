@@ -41,6 +41,7 @@ import {
   substituteToolOutputTokens,
 } from "./ToolResultRenderers/utils";
 import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
+import CitationsComponent from "./CitationsComponent";
 import { StreamingCursorComponent } from "@rodrigo-barraza/components-library";
 import { splitStreamingTail } from "@rodrigo-barraza/components-library";
 
@@ -2586,6 +2587,11 @@ export default function MessageList({
                             </div>
                           );
                         })()}
+
+                      {/* Sources a grounded answer cited */}
+                      {message.role === "assistant" && message.citations && (
+                        <CitationsComponent citations={message.citations} />
+                      )}
 
                       {/* Non-image file attachments (uploaded refs) */}
                       {message.files && message.files.length > 0 && (

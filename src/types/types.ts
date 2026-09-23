@@ -340,6 +340,13 @@ export interface ConversationMeta {
   settings?: PrismSettings;
 }
 
+/** Sources a grounded answer cited (Gemini Google Search grounding). */
+export interface MessageCitations {
+  sources: Array<{ url: string; title: string }>;
+  queries?: string[];
+  supports?: Array<{ text: string; sources: number[] }>;
+}
+
 export interface Message {
   /** Server-assigned id — the anchor for rewind and fork. Absent until persisted. */
   id?: string;
@@ -353,6 +360,8 @@ export interface Message {
   thinking?: string;
   toolCalls?: ToolCallEvent[];
   webSearchResults?: WebSearchResult[];
+  /** Sources a grounded answer cited — rendered small under the answer. */
+  citations?: MessageCitations;
   timestamp?: string;
   _id?: ObjectId;
 
