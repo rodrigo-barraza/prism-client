@@ -13,7 +13,6 @@
  */
 
 import {
-  useEffect,
   useImperativeHandle,
   useRef,
   type CSSProperties,
@@ -27,7 +26,7 @@ import MessageList, {
   type MessageListProps,
 } from "./MessageListComponent";
 import chatStyles from "./ChatAreaComponent.module.css";
-import { PINNED_TO_BOTTOM_PIXELS } from "../hooks/useVirtualRows";
+import useFollowBottom from "../hooks/useFollowBottom";
 
 export interface ChatTranscriptHandle {
   /**
@@ -76,45 +75,18 @@ export default function ChatTranscriptComponent({
 }: ChatTranscriptComponentProps) {
   const endRef = useRef<HTMLDivElement>(null);
   const navigationRef = useRef<MessageListNavigation>(null);
-  // Sticky auto-scroll: only when the user is near the bottom. Re-engaged on
-  // send, conversation load and new chat.
-  const isUserNearBottomRef = useRef<boolean>(true);
-  // "smooth" while streaming, "instant" for a conversation that just loaded.
-  const scrollBehaviorRef = useRef<ScrollBehavior>("smooth");
+  const { stickToBottom } = useFollowBottom(scrollElementRef, endRef, followTriggers);
 
   useImperativeHandle(
     handleRef,
     () => ({
-      stickToBottom: (behavior) => {
-        isUserNearBottomRef.current = true;
-        if (behavior) scrollBehaviorRef.current = behavior;
-      },
+      stickToBottom,
       scrollToBottom: (behavior) => endRef.current?.scrollIntoView({ behavior }),
       previousMessage: () => navigationRef.current?.previous(),
       nextMessage: () => navigationRef.current?.next(),
     }),
-    [],
+    [stickToBottom],
   );
-
-  // Whether the user is near the bottom: a passive scroll listener.
-  useEffect(() => {
-    const element = scrollElementRef.current;
-    if (!element) return;
-    const onScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = element;
-      isUserNearBottomRef.current = scrollHeight - scrollTop - clientHeight <= PINNED_TO_BOTTOM_PIXELS;
-    };
-    element.addEventListener("scroll", onScroll, { passive: true });
-    return () => element.removeEventListener("scroll", onScroll);
-  }, [scrollElementRef]);
-
-  useEffect(() => {
-    if (!isUserNearBottomRef.current) return;
-    endRef.current?.scrollIntoView({ behavior: scrollBehaviorRef.current });
-    // Reset to smooth after each scroll so streaming remains animated
-    scrollBehaviorRef.current = "smooth";
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- the triggers are the list the chat passes
-  }, followTriggers);
 
   const hasScene = !!scene;
   const style: CSSProperties = {
