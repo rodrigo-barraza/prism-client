@@ -1,11 +1,12 @@
 # Chat characterization suite
 
-This suite is the safety net under the agent chat refactor
-(`prism-service/docs/prompts/26-client-chat-architecture.md`). Landing 1 wrote
+This suite is the safety net under the agent chat refactor (prism-service
+prompt 26, `docs/prompts/26-client-chat-architecture.md`, retired with
+Landing 3 on 2026-09-23; git history keeps its text). Landing 1 wrote
 it against master `1cbdff4c`, with no behaviour change. Landing 2 (one event
-reducer and one transport) keeps it green, and Landing 3 (the component split
-and virtualization) must too. Where a snapshot has to change, the landing
-states why in its report.
+reducer and one transport) kept it green, and so did Landing 3 (the component
+split and virtualization) without changing a snapshot. Where a snapshot has to
+change, the landing states why in its report.
 
 **Re-cut 2026-09-22** when it landed with `event-protocol-v1` and
 `permission-modes`. Nothing a person sees in the chat changed by accident:
@@ -24,12 +25,17 @@ snapshot is unchanged except one, which records a fixed bug. The live-viewer
 snapshots changed on purpose: the viewer now goes through the same reducer as
 the SSE. [What Landing 2 unified](#what-landing-2-unified) lists each change.
 
+**Landing 3 (`chat-component-split`, 2026-09-23)** changed no snapshot. It
+added two SSE scenarios, "done, then no poll" and "a /rule picked from the
+composer's slash menu", both red on master, and made the row-render test
+assert 0 old rows per token.
+
 ```bash
 WT=<your worktree>
 "$WT"/node_modules/.bin/vitest run --root "$WT" src/components/__tests__/chat-characterization/
 ```
 
-It has 39 tests and takes about 15 s.
+It has 41 tests and takes about 30 s.
 
 ## What it does
 
@@ -73,6 +79,10 @@ or the toasts that were shown.
 - **Time** is a manual clock. `Date` and `performance.now()` advance 25 ms per
   replayed event. `TZ=UTC` is pinned in `vi.hoisted`, because the formatters
   are built at import time. Timers are real.
+  - `performance.now` is replaced with a plain property, not `vi.spyOn`: a spy
+    records every call, and the status bar calls it on every render. On the
+    2,000-message row-render run that was about 60 MB per token, and the run
+    ran out of heap.
 - **Minted ids** are normalized: generated UUIDs become `<uuid:N>`, and
   `tc-<Date.now()>-<random>` becomes `tc-<minted>`. Sets are sorted after that
   replacement.
@@ -86,7 +96,7 @@ or the toasts that were shown.
 - **Requests after `done`** are listed as a set, because the memory poll
   repeats on a real 2 s timer. Document fetches are counted exactly.
 
-## Where the chat's turn state lives (Landing 2)
+## Where the chat's turn state lives (Landings 2 and 3)
 
 - **`services/agentStream.ts`** is the transport. It has three sources, one
   iterator each. `openTurnStream` is the SSE the chat sends on.
@@ -111,14 +121,18 @@ or the toasts that were shown.
     effects.
   - `getState()` is always current, even ahead of a render.
   - The setters change one field, for code that edits outside a stream.
-- **In the component:**
-  - `driveTurnStream` follows the SSE. It resolves at `done` and keeps
-    delivering what follows `done`.
-  - The viewer effect follows the socket.
-  - `routeTurnEvent` sends an event to the chat, or into the background
+- **In hooks the shell wires together (Landing 3):**
+  - `hooks/useChatTurns.ts` sends. `driveTurnStream` follows the SSE; it
+    resolves at `done` and keeps delivering what follows `done`.
+    `routeTurnEvent` sends an event to the chat, or into the background
     snapshot of a conversation the user switched away from mid-turn.
+  - `hooks/useLiveConversationSync.ts` follows the viewer socket.
+  - `hooks/useConversationSwitching.ts` loads and switches conversations.
   - Only each turn's lifecycle (refreshes, `isGenerating`) is
     transport-specific.
+- **`AgentChatComponent`** is the shell: it calls the hooks and lays out
+  `ChatTranscript`, `Composer`, `ApprovalsAndQuestions`, `ChatStatusBar`,
+  `GoalAndPlanPanels` and, for admins, `AdminConversationView`.
 
 **Adding an event type:**
 
@@ -131,16 +145,16 @@ or the toasts that were shown.
 
 1. **`utils/chatDebugProbe.ts`.**
    - The chat publishes a `ChatDebugState` after every commit, through the
-     effect just above `// -- Layout` in `AgentChatComponent`.
+     effect just above `// -- Layout` in `AgentChatComponent` (the shell).
    - The fields come from the reducer's state, the component's own state and
      the hooks. They are typed `unknown` on purpose: the suite does not care
      how the chat stores them.
    - A field that disappears breaks every snapshot. Rename one only together
      with its snapshots.
 2. **`noteMessageRowRender(message, index)`.**
-   - It is called once for each message row that renders. Today that is the
-     top of `MessageList`'s `displayMessages.map`.
-   - A row component memoized by message id calls it at the top of its render.
+   - It is called once for each message row that renders: the first line of
+     `MessageRow` (`components/MessageList/MessageRowComponent.tsx`), which is
+     memoized by message, so an old row that does not render is not counted.
 3. **`REGION_SELECTORS` in `chatHarness.tsx`.**
    - These are where the digests look. A split that moves a region updates the
      selector, not the snapshots.
@@ -181,16 +195,49 @@ conversation, then stream chunks one SSE frame at a time.
 | 2,000 messages | master `1cbdff4c` | 2,002 | 2,000 | 3.5 | 2,315 |
 | 2,000 messages | master `f3bbfa29` | 2,002 | 2,000 | 3.3 | 2,008 |
 | 2,000 messages | Landing 2 | 2,002 | 2,000 | 3.0–3.7 | 1,369–2,118 |
+| 2,000 × 1,000 tokens | master's chat, Landing 3's harness clock (`7fce3a44`) | 2,002 | 2,000 | 3.0 | 975 (median 912, 806–2,148) |
+| 200 messages (the default run) | Landing 3 | 1 | 0 | 2–3 | 52–57 |
+| 2,000 × 1,000 tokens | Landing 3 (`d50ca83a`) | 1 | 0 | 2.1 | 279 (median 267, 220–738) |
 
 The milliseconds were measured on the 32-core WSL box at a load of about 20.
+The rows above Landing 3's harness clock were slower for the harness's own
+sake (the recording spy, see [Determinism](#determinism)).
 
-Every token re-renders every row once. Rows are inline JSX in
-`MessageList`'s map, and the list re-renders whenever `messages` changes.
-Landing 2 changed who produces `messages` (one reducer action per event, as
-one `setMessages` was before), not how the list renders it. The test asserts
-ceilings at that baseline: at most one render of each old row per token, and
-at most the rows on screen in total. Landing 3 aims for 0 old rows per token.
-When it gets there, it lowers the ceilings to match.
+Up to Landing 2 every token re-rendered every row once: rows were inline JSX
+in `MessageList`'s map, and the list re-rendered whenever `messages` changed.
+Since Landing 3 each row is a `MessageRow` memoized by message, with stable
+props (display messages and deleted groups cached per source message, one
+shared object for the list-wide flags and actions), so a token re-renders the
+streaming row alone. The test asserts it: 0 old rows per token, and the only
+row rendered is the tail.
+
+jsdom lays nothing out, so the transcript's windowing is off there and every
+row stays mounted: the jsdom milliseconds still include reconciling 2,000
+memoized frames per token. In a browser only the rows in and near the
+viewport are mounted.
+
+**In a browser** (Landing 3's live check, 2026-09-23: Chromium via
+Playwright against the isolated stack, a stored conversation of 2,000 short
+messages, the same box at a load of about 20):
+
+| 2,000 messages | master | Landing 3 |
+|---|---|---|
+| Open the conversation, desktop / phone (420×900) | 21.6 s / 19.9 s | 2.8 s / 4.1 s |
+| Rows mounted | 2,000 | 20 / 16 |
+| Scroll bottom to top in 80 steps: frame median, p95 (desktop) | 2,816 ms, 5,138 ms | 43 ms, 79 ms |
+| Long tasks during that scroll (desktop) | 158, 170 s | 11, 0.7 s |
+| A 300-word reply streamed at the end: until it finished | 282 s | 11 s |
+| Frame median, p95 while it streamed | 367 ms, 3,233 ms | 16.7 ms, 33 ms |
+
+Each scroll step jumps about 2,400 px, so every frame mounts a new window of
+rows: a harder case than a person scrolling.
+
+Test the windowing with the scroll container in a PARENT component, as the
+chat has it (`useVirtualRows.test.tsx`, "windows the rows when the scroll
+container belongs to a parent"). A hook that reads an ancestor's ref in a
+layout effect sees `null` (React attaches an ancestor's ref after its
+children's layout effects): Landing 3's first cut did, and mounted every row
+in the browser while jsdom and a test that owned its scroller looked right.
 
 ```bash
 PRISM_ROW_RENDER_REPORT=1 PRISM_ROW_RENDER_MESSAGES=2000 PRISM_ROW_RENDER_TOKENS=10 \
@@ -299,8 +346,28 @@ These are pinned, not fixed, unless marked fixed.
   - The load now tries again when the project resolves. The scenario "opens a
     ?conversation= link once the agent's project is known" was red on master
     `80adb7a5`.
+- **A viewer whose socket dropped while the turn ended kept generating (fixed
+  by Landing 3).**
+  - The service retires a turn's replay buffer at `done`. A viewer that
+    reconnected after that was acknowledged with nothing replayed and a
+    `lastSeq` past its mark, and waited for a `done` that never came: the
+    streaming cursor and the Stop button stayed.
+  - `watchConversation` reported the turn lost only after a service restart
+    (no `lastSeq` at all). A resubscribe that missed events it cannot replay
+    now reports it too, and the viewer lands on the stored document.
+  - Found by Landing 3's live UI check (a phone watching a turn through an
+    8 s outage). The transport test "reports the turn lost when it ended while
+    the socket was down" was red on master.
+- **After a dropped connection the view stopped following the reply (fixed
+  by Landing 3).**
+  - The missed output arrives in a burst. The smooth scroll towards the new
+    bottom passed through positions more than 150 px from it, which the
+    scroll listener took for the user scrolling away. On master the view fell
+    about 8,000 px behind a 1,000-line reply until the stored document landed.
+  - `hooks/useFollowBottom.ts` now jumps when the view is more than 150 px
+    behind, and glides when it is a line or two behind. Its tests pin both.
 
-## For Landing 3: the post-stream poller
+## The refresh after `done` (resolved by Landing 3)
 
 The service persists the turn **before** it emits `done`.
 `finalizeTextGeneration` awaits `appendAndFinalize` (prism-service
@@ -313,18 +380,20 @@ The service persists the turn **before** it emits `done`.
   `hook_system_message` can arrive after it; `agent-turn-goal.jsonl` models
   that.
 
-The scenario "the request a send makes, and the refresh from the persisted
-turn after done" pins two document fetches after `done` today: conversation
-stats, and `attemptPostStreamRefresh` (still in `handleSend`, after
-`runOrchestrationLoop` resolves). Deleting the poller changes
-`documentFetchesAfterDone`, and that scenario is where the "done arrives, then
-no poll" test belongs.
+Landing 3 deleted the poller (`attemptPostStreamRefresh` retried until the
+stored document caught up). One fetch of the document is left after `done`:
+it brings the server's message ids that Rewind and Fork need, the raw prompt
+and the system prompt. `useChatTurns` applies it only when the stored
+document holds the turn just sent (`documentHasSentTurn`); otherwise it keeps
+the streamed transcript and logs a warning. The scenario "done, then no poll"
+makes the stored document lag and checks that exactly one document fetch
+follows `done` (plus the stats fetch at 2 s) and that the streamed turn stays
+on screen.
 
 Virtualizing in jsdom: jsdom lays nothing out, so every element measures 0 px.
-A windowing library that sizes from `getBoundingClientRect` renders no rows at
-all, and every `rows` digest goes empty. Either render a fallback window when
-nothing is measured, or stub the measurement in the harness. Do not drop rows
-from the snapshots.
+`hooks/useVirtualRows.ts` mounts every row when its scroll container has no
+height, so the snapshots keep every row. Its own tests
+(`hooks/__tests__/useVirtualRows.test.tsx`) stub the layout.
 
 ## Wire facts for the typed event union
 
