@@ -1,0 +1,36 @@
+.citations {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: 4px 0 8px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.label {
+  color: var(--text-tertiary);
+}
+
+.source {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  max-width: 240px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.source:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.index {
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
