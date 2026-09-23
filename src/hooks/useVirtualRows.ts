@@ -108,25 +108,25 @@ function buildLayout(
   return { count, keys, indexByKey, tops, heights, total: cursor };
 }
 
-/** First row whose bottom reaches `top`; `count` when none does. */
+/** First row that ends below `top`; `count` when none does. */
 function firstRowEndingAfter(layout: RowsLayout, top: number): number {
   let low = 0;
   let high = layout.count;
   while (low < high) {
     const middle = (low + high) >>> 1;
-    if (layout.tops[middle] + layout.heights[middle] >= top) high = middle;
+    if (layout.tops[middle] + layout.heights[middle] > top) high = middle;
     else low = middle + 1;
   }
   return low;
 }
 
-/** First row that starts below `bottom`; `count` when none does. */
+/** First row that starts at or below `bottom`; `count` when none does. */
 function firstRowStartingAfter(layout: RowsLayout, bottom: number): number {
   let low = 0;
   let high = layout.count;
   while (low < high) {
     const middle = (low + high) >>> 1;
-    if (layout.tops[middle] > bottom) high = middle;
+    if (layout.tops[middle] >= bottom) high = middle;
     else low = middle + 1;
   }
   return low;

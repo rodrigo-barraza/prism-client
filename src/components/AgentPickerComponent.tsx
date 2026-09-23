@@ -18,7 +18,7 @@ import {
   Palette,
 } from "lucide-react";
 import { SelectComponent, SearchInputComponent } from "@rodrigo-barraza/components-library";
-import { resolveIconComponent } from "./CustomAgentsPanelComponent";
+import { resolveIconComponent } from "../utils/agentIcons";
 import BadgeComponent, { type ClientAgent } from "./BadgeComponent";
 import ToolBadgeComponent from "./ToolBadgeComponent";
 import SoundService from "@/services/SoundService";

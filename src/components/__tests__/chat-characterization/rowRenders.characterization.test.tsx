@@ -6,13 +6,13 @@
  * `noteMessageRowRender`, called once per row the list renders) and, for
  * information, React commits of the chat tree per token.
  *
- * Today every row renders inline in MessageList's map, and the list
- * re-renders on every `messages` change, so each token re-renders EVERY
- * row once. The assertions are ceilings at that baseline: a refactor may
- * lower them (docs/prompts/26 Landing 3 aims at 0 old rows per token) but
- * not raise them. Commits are not asserted — a real timer (the status
- * bar's ticker) lands an extra one now and then. Baseline numbers:
- * docs/chat-characterization.md.
+ * Rows are memoized by message (MessageList/MessageRowComponent), and a
+ * token replaces the last message only: a token renders the streaming
+ * row and no other. (Before prompt 26 Landing 3 every token re-rendered
+ * every row.) jsdom has no layout, so the transcript renders every row
+ * here — the window the browser mounts does not change the count.
+ * Commits are not asserted — a real timer (the status bar's ticker) lands
+ * an extra one now and then. Numbers: docs/chat-characterization.md.
  *
  * PRISM_ROW_RENDER_MESSAGES / PRISM_ROW_RENDER_TOKENS size the run (defaults
  * 200 / 10 keep it fast); PRISM_ROW_RENDER_REPORT=1 prints the numbers.
@@ -90,12 +90,15 @@ describe("row renders per streamed token (characterization)", { timeout: TIMEOUT
     await harness.replay(stream, [{ type: "chunk", content: "Streaming", outputCharacters: 9 }]);
 
     const perToken: Array<{ rows: number; oldRows: number; commits: number; milliseconds: number }> = [];
+    // Which rows rendered for any token: the streaming reply's only.
+    const renderedRowIndices = new Set<number>();
     for (let token = 0; token < TOKEN_COUNT; token += 1) {
       harness.rowRenders.reset();
       const commitsBefore = harness.commits.total;
       const started = process.hrtime.bigint();
       await harness.replay(stream, [{ type: "chunk", content: ` t${token}`, outputCharacters: 12 + token * 3 }]);
       const milliseconds = Number(process.hrtime.bigint() - started) / 1e6;
+      for (const index of harness.rowRenders.byIndex.keys()) renderedRowIndices.add(index);
       const oldRows = [...harness.rowRenders.byIndex.entries()]
         .filter(([index]) => index < MESSAGE_COUNT)
         .reduce((sum, [, count]) => sum + count, 0);
@@ -122,13 +125,12 @@ describe("row renders per streamed token (characterization)", { timeout: TIMEOUT
       process.stdout.write(`\n[row renders] ${JSON.stringify(summary)}\n${JSON.stringify(perToken)}\n`);
     }
 
-    // Ceilings at today's baseline (docs/chat-characterization.md): one
-    // list render per token, which renders every row on screen — the old
-    // ones, the sent prompt and the streaming reply. A refactor may only
-    // lower these.
-    const rowsOnScreen = MESSAGE_COUNT + 2;
+    // A token renders the streaming reply's row: never an old row, nor the
+    // prompt just sent.
+    expect(summary.oldRowRendersPerToken).toBe(0);
     expect(summary.rowRendersPerToken).toBeGreaterThan(0);
-    expect(summary.oldRowRendersPerToken).toBeLessThanOrEqual(MESSAGE_COUNT);
-    expect(summary.rowRendersPerToken).toBeLessThanOrEqual(rowsOnScreen);
+    expect(summary.rowRendersPerToken).toBeLessThanOrEqual(1);
+    // The conversation's rows, the sent prompt (MESSAGE_COUNT), the reply.
+    expect([...renderedRowIndices]).toEqual([MESSAGE_COUNT + 1]);
   });
 });
