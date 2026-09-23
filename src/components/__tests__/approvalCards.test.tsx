@@ -371,3 +371,51 @@ describe("a 'run it again?' card", () => {
     expect(within(card("write_file", 0)).getByRole("button", { name: /^Allow$/ })).toBeTruthy();
   });
 });
+
+// prompt 12, Landing 3: auto mode puts a call to the user instead of deciding.
+describe("a card auto mode put out", () => {
+  const autoModeEvent: ApprovalRequiredEvent = {
+    type: "approval_required",
+    toolCallId: "call-migrate",
+    batchId: "batch-1",
+    batchSize: 1,
+    toolCall: { id: "call-migrate", name: "execute_shell", args: { command: "npm run migrate" } },
+    tier: 3,
+    mode: "auto",
+    requestedBy: "classifier",
+    category: "Production Change",
+    reason: "auto mode asks [Production Change]: this migrates the shared database",
+  };
+
+  it("says auto mode asked, in which category, and why — and still offers a rule", () => {
+    render(
+      <ApprovalCardsComponent
+        conversationId="conversation-a"
+        approvals={cardsFrom([autoModeEvent])}
+        setApprovals={vi.fn()}
+        onNotify={vi.fn()}
+        alwaysAllow={{ conversationId: "conversation-a", workspaceRoot: "/tmp/w" }}
+      />,
+    );
+    const autoCard = card("execute_shell", 0);
+    const note = within(autoCard).getByRole("note").textContent ?? "";
+    expect(note).toContain("Auto mode · Production Change:");
+    expect(note).toContain("this migrates the shared database");
+    expect(within(autoCard).getByRole("button", { name: /^Allow$/ })).toBeTruthy();
+    expect(within(autoCard).queryByText(/Always allow/i)).not.toBeNull();
+  });
+
+  it("maps the event, and a reloading client rebuilds it from the pending snapshot", () => {
+    expect(approvalFromEvent(autoModeEvent)).toMatchObject({
+      autoModeReason: autoModeEvent.reason,
+      autoModeCategory: "Production Change",
+    });
+    expect(approvalFromEvent(autoModeEvent)).not.toHaveProperty("retryAfterRestart");
+    const [restored] = approvalsFromPendingSnapshot(
+      [{ id: "call-migrate", name: "execute_shell", args: {}, requestedBy: "classifier", reason: "auto mode is paused" }],
+      "batch-1",
+    );
+    expect(restored).toMatchObject({ autoModeReason: "auto mode is paused" });
+    expect(approvalFromEvent(approvalRequired("call-1"))).not.toHaveProperty("autoModeReason");
+  });
+});

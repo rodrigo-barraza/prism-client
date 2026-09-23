@@ -406,7 +406,7 @@ describe("SSE-driven turn (characterization)", { timeout: 60_000 }, () => {
     ]);
     // No recovery: no socket opened to follow the turn.
     expect(chat.sockets()).toHaveLength(0);
-    expect(domDigest(chat.view.container).rows.at(-1)).toContain(
+    expect((domDigest(chat.view.container).rows as string[]).at(-1)).toContain(
       "⚠️ Error: Provider network error: upstream fetch failed",
     );
     expect(chat.state().isGenerating).toBe(false);
