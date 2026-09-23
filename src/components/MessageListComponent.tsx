@@ -577,6 +577,11 @@ export default function MessageList({
     }),
     [],
   );
+  const canEdit = !!onEdit;
+  const canRerun = !!onRerun;
+  const canRestore = !!onRestore;
+  const canRewind = !!onRewind;
+  const canFork = !!onFork;
   const hasMentionFileOpen = !!onMentionFileOpen;
   const hasOpenFileInViewer = !!onOpenFileInViewer;
   const hasPlanApprove = !!onPlanApprove;
@@ -590,18 +595,17 @@ export default function MessageList({
       knownPaths: knownPathsSet,
       activeAgent,
       toolDisplayMetadataMap,
-      canEdit: !!onEdit,
-      canRerun: !!onRerun,
-      canRestore: !!onRestore,
-      canRewind: !!onRewind,
-      canFork: !!onFork,
+      canEdit,
+      canRerun,
+      canRestore,
+      canRewind,
+      canFork,
       onMentionFileOpen: hasMentionFileOpen ? stableCallbacks.openMentionedFile : undefined,
       onOpenFileInViewer: hasOpenFileInViewer ? stableCallbacks.openFileInViewer : undefined,
       onPlanApprove: hasPlanApprove ? stableCallbacks.approvePlan : undefined,
       onPlanReject: hasPlanReject ? stableCallbacks.rejectPlan : undefined,
       actions,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- a handler's presence, not its identity, is what rows show
     [
       readOnly,
       minimal,
@@ -610,11 +614,11 @@ export default function MessageList({
       knownPathsSet,
       activeAgent,
       toolDisplayMetadataMap,
-      !!onEdit,
-      !!onRerun,
-      !!onRestore,
-      !!onRewind,
-      !!onFork,
+      canEdit,
+      canRerun,
+      canRestore,
+      canRewind,
+      canFork,
       hasMentionFileOpen,
       hasOpenFileInViewer,
       hasPlanApprove,
@@ -1005,6 +1009,7 @@ export default function MessageList({
             : undefined
         }
       >
+        {/* eslint-disable-next-line react-hooks/refs -- the last commit's row keys (the usePrevious pattern): a row mounting with one is not new */}
         {mountedRows.map((row, offset) => {
           const position = virtual.start + offset;
           const { index } = row;
@@ -1022,7 +1027,6 @@ export default function MessageList({
               key={`${listKey}:${index}`}
               rowKey={row.key}
               position={position}
-              // eslint-disable-next-line react-hooks/refs -- the previous commit's keys: a new row fades in
               isNew={!previousRowKeysRef.current.has(row.key)}
               measureRow={virtual.measureRow}
             >

@@ -4,7 +4,21 @@ import {
   extractLiveStreamingMetrics,
 } from "../utils/utilities";
 
-import type { Message, Conversation } from "../types/types";
+import type { Message } from "../types/types";
+import type { ClientConversationStats } from "../utils/displayConversationStats";
+
+/** The backend's aggregate for the conversation on screen, as the chat holds it. */
+export interface ConversationStatsSource {
+  modelNames?: string[];
+  providers?: string[];
+  totalCost?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  toolCounts?: Record<string, number>;
+  modalities?: Record<string, number>;
+  totalElapsedTime?: number;
+  requestCount?: number;
+}
 
 /**
  * useConversationStats — memoised session statistics from a messages array.
@@ -15,8 +29,8 @@ import type { Message, Conversation } from "../types/types";
  */
 export default function useConversationStats(
   messages: Message[],
-  conversation?: Conversation | null,
-) {
+  conversation?: ConversationStatsSource | null,
+): ClientConversationStats {
   const uniqueModels = useMemo(
     () => conversation?.modelNames || [],
     [conversation?.modelNames],
@@ -58,17 +72,14 @@ export default function useConversationStats(
     [conversation?.modalities],
   );
 
-  const elapsedTime = useMemo(
-    () => (conversation as any)?.totalElapsedTime ?? 0,
-    [conversation],
-  );
+  const elapsedTime = conversation?.totalElapsedTime ?? 0;
 
   return {
     uniqueModels,
     uniqueProviders,
     totalCost,
     totalTokens: authoritativeTotalTokens,
-    requestCount: (conversation as any)?.requestCount ?? 0,
+    requestCount: conversation?.requestCount ?? 0,
     usedTools,
     modalities,
     elapsedTime,
