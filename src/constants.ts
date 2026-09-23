@@ -94,7 +94,6 @@ export const LOCAL_STORAGE_KEY_LEFT_SIDEBAR_SPLIT_RATIO = "prism:leftSidebarSpli
 export const LOCAL_STORAGE_KEY_USERNAME = "prism:username";
 export const LOCAL_STORAGE_KEY_ACTIVE_PROFILE = "prism:profile";
 export const LOCAL_STORAGE_KEY_CHAT_BACKGROUND = "prism:chat-background";
-export const LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED = "agent:criticGateEnabled";
 export const LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS = "agent:maxIterations";
 export const LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS = "agent:maxSubAgentIterations";
 export const LOCAL_STORAGE_KEY_AGENT_MAX_RECURSION_DEPTH = "agent:maxRecursionDepth";

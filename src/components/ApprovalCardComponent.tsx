@@ -48,6 +48,12 @@ interface ApprovalCardProps {
   retryAfterRestart?: boolean;
   /** The server's words for why it asks. */
   retryReason?: string;
+  /**
+   * Auto mode asked instead of deciding (its classifier's ask, a failure, or
+   * its breaker): the server's words for why, and the category it named.
+   */
+  autoModeReason?: string;
+  autoModeCategory?: string;
   /** Other calls of the same batch still waiting — offers "Allow the rest of this batch". */
   otherPendingInBatch?: number;
   /** A decision for this card is in flight. */
@@ -89,6 +95,8 @@ export default function ApprovalCardComponent({
   preview,
   retryAfterRestart = false,
   retryReason,
+  autoModeReason,
+  autoModeCategory,
   otherPendingInBatch = 0,
   isSubmitting = false,
   onDecide,
@@ -159,6 +167,15 @@ export default function ApprovalCardComponent({
           {isSubmitting ? "Sending…" : "Waiting for your approval"}
         </span>
       </div>
+
+      {autoModeReason && (
+        <div className={styles["auto-mode-notice"]} role="note">
+          <ShieldAlert size={14} aria-hidden="true" />
+          <span>
+            <strong>Auto mode{autoModeCategory ? ` · ${autoModeCategory}` : ""}:</strong> {autoModeReason}
+          </span>
+        </div>
+      )}
 
       {protectedPath && (
         <div className={styles["protected-note"]} role="note">

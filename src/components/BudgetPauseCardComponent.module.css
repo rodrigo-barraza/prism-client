@@ -1,0 +1,180 @@
+/* A turn paused at its cost cap: the approval card's "this needs you"
+   warning glow, with a cap to raise it to. */
+.card {
+  width: 100%;
+  margin: 8px 0;
+  border-radius: var(--border-radius-md);
+  border: 1px solid
+    color-mix(in oklch, var(--color-warning) 35%, var(--calculated-border-color));
+  background: color-mix(
+    in srgb,
+    var(--color-warning) 4%,
+    var(--background-surface)
+  );
+  box-shadow:
+    0 0 0 2px color-mix(in oklch, var(--color-warning) 12%, transparent),
+    0 4px 20px oklch(0.0% 0.0 0.0 / 0.2);
+  padding: 14px 16px;
+  animation: slide-in 0.2s ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--color-warning);
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-warning);
+  white-space: nowrap;
+}
+
+.header-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  flex-shrink: 0;
+  animation: status-dot-pulse 1.4s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+.summary {
+  margin: 0 0 10px;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+
+  strong {
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.error {
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+  background: color-mix(in oklch, var(--color-danger) 10%, transparent);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.amount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.amount-label {
+  white-space: nowrap;
+}
+
+.amount-input {
+  width: 7em;
+  padding: 7px 10px;
+  border-radius: var(--button-border-radius);
+  border: 1px solid var(--calculated-border-color);
+  background: var(--background-surface);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+
+  &:focus-visible {
+    outline: 2px solid color-mix(in oklch, var(--color-warning) 50%, transparent);
+    outline-offset: 1px;
+  }
+}
+
+.raise-button,
+.stop-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--button-border-radius);
+  border: 1px solid transparent;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+    transform: none;
+  }
+}
+
+.raise-button {
+  background: var(--color-success);
+  color: oklch(1 0 0);
+  border-color: var(--color-success);
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+}
+
+.stop-button {
+  background: color-mix(in oklch, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+  border-color: color-mix(in oklch, var(--color-danger) 20%, transparent);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--color-danger) 22%, transparent);
+  }
+}
+
+@keyframes status-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

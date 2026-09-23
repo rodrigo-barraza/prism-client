@@ -15,6 +15,7 @@ import {
   FileText,
   Webhook,
   BellRing,
+  Download,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import { useWorkspace } from "./WorkspaceContextComponent";
@@ -41,6 +42,7 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: "permissions", label: "Permissions", icon: ShieldCheck },
   { id: "mcp-servers", label: "MCP Servers", icon: Plug },
   { id: "project-instructions", label: "Project Instructions", icon: FileText },
+  { id: "import", label: "Import", icon: Download },
   { id: "hooks", label: "Hooks", icon: Webhook },
   { id: "notifications", label: "Notifications", icon: BellRing },
   { id: "custom-themes", label: "Custom Themes", icon: Palette },

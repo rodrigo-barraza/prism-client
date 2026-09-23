@@ -25,6 +25,13 @@ export interface PendingApproval {
   retryAfterRestart?: boolean;
   reason?: string;
   /**
+   * Auto mode put this call to the user instead of deciding: its classifier
+   * asked, could not decide, or is paused after repeated denials. The
+   * server's words for which, and the classifier's category when it named one.
+   */
+  autoModeReason?: string;
+  autoModeCategory?: string;
+  /**
    * Set when a sub-agent asked: the conversation its loop is keyed by, where
    * the decision must be sent. Absent: the conversation on screen.
    */
@@ -57,6 +64,7 @@ export function approvalFromEvent(data: ApprovalRequiredEvent): PendingApproval 
     tier: normalizeTier(data.tier),
     ...(data.preview ? { preview: data.preview } : {}),
     ...retryFields(data.requestedBy, data.reason),
+    ...autoModeFields(data.requestedBy, data.reason, data.category),
     ...(typeof data.approvalConversationId === "string" && data.approvalConversationId
       ? { conversationId: data.approvalConversationId }
       : {}),
@@ -105,6 +113,7 @@ export function approvalsFromPendingSnapshot(
             tier: normalizeTier(toolCall._approval?.tier),
             ...(toolCall.preview ? { preview: toolCall.preview } : {}),
             ...retryFields(toolCall.requestedBy, toolCall.reason),
+            ...autoModeFields(toolCall.requestedBy, toolCall.reason),
             status: "pending" as const,
           },
         ]
@@ -138,6 +147,21 @@ export function applyApprovalDecided(
 
 /** `requestedBy` of a "run it again?" card (prism-service TURN_RESUME.RETRY_REQUESTED_BY). */
 const RETRY_AFTER_RESTART = "restart";
+
+/** `requestedBy` of a card auto mode put out (prism-service AutoModeGate). */
+const ASKED_BY_AUTO_MODE = "classifier";
+
+function autoModeFields(
+  requestedBy: unknown,
+  reason: unknown,
+  category?: unknown,
+): Pick<PendingApproval, "autoModeReason" | "autoModeCategory"> {
+  if (requestedBy !== ASKED_BY_AUTO_MODE) return {};
+  return {
+    autoModeReason: typeof reason === "string" && reason ? reason : "Auto mode asks you to decide this call.",
+    ...(typeof category === "string" && category ? { autoModeCategory: category } : {}),
+  };
+}
 
 function retryFields(
   requestedBy: unknown,
