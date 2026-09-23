@@ -1062,6 +1062,8 @@ export interface SSECallbacks {
   onTurnInput?: (_event: SSEData) => void;
   /** The conversation goal was set / progressed / paused / cleared (`goal_update`) */
   onGoalUpdate?: (_event: SSEData) => void;
+  /** `permission_mode` — the conversation's permission mode is now `mode`. */
+  onPermissionMode?: (_event: SSEData) => void;
   onRunInfo?: (_event: SSEData) => void;
   onModelStart?: (_event: SSEData) => void;
   onModelComplete?: (_event: SSEData) => void;

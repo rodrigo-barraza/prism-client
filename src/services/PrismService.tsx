@@ -1915,6 +1915,7 @@ export default class PrismService {
       onBriefUpdate,
       onTurnInput,
       onGoalUpdate,
+      onPermissionMode,
       onRunInfo,
       onModelStart,
       onModelComplete,
@@ -2020,6 +2021,11 @@ export default class PrismService {
       // Conversation goal set / progressed / paused / cleared
       case "goal_update":
         onGoalUpdate?.(data);
+        break;
+      // The conversation's permission mode: what the turn runs in, a switch
+      // (the selector, another tab), plan mode ending on an approved plan
+      case "permission_mode":
+        onPermissionMode?.(data);
         break;
       // A pending tool/plan call was decided (any tab, a scope, a timeout)
       case "approval_decided":

@@ -1,6 +1,8 @@
 import { HTTP_METHODS } from "@/constants";
 import PrismService from "./PrismService";
 import type {
+  PermissionMode,
+  PermissionModeState,
   PermissionRule,
   PermissionRuleInput,
   PermissionRuleProposal,
@@ -58,6 +60,33 @@ export default class PermissionRulesService {
     return PrismService._request<PermissionRuleProposal>("/permissions/rules/propose", {
       method: HTTP_METHODS.POST,
       body: call,
+    });
+  }
+
+  /** A conversation's mode (or, without one, the default a new conversation starts in) and the modes on offer. */
+  static getMode(conversationId?: string | null): Promise<PermissionModeState> {
+    const suffix = conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : "";
+    return PrismService._request<PermissionModeState>(`/permissions/mode${suffix}`, {
+      method: HTTP_METHODS.GET,
+    });
+  }
+
+  /** Switch a conversation's mode — its running turn too, at the next tool call. */
+  static setMode(
+    conversationId: string,
+    mode: PermissionMode,
+  ): Promise<{ conversationId: string; mode: PermissionMode; stored: boolean; live: boolean }> {
+    return PrismService._request("/permissions/mode", {
+      method: HTTP_METHODS.PUT,
+      body: { conversationId, mode },
+    });
+  }
+
+  /** The mode new conversations start in. Never `bypass`. */
+  static setDefaultMode(mode: PermissionMode): Promise<{ defaultMode: PermissionMode }> {
+    return PrismService._request("/permissions/mode/default", {
+      method: HTTP_METHODS.PUT,
+      body: { mode },
     });
   }
 

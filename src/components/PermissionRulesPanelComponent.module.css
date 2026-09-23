@@ -461,3 +461,28 @@
   border-radius: 6px;
   cursor: pointer;
 }
+
+/* ── Default mode (DefaultPermissionModeComponent) ───────────── */
+
+.default-mode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding-block-end: 10px;
+  margin-block-end: 10px;
+  border-bottom: 1px solid var(--calculated-border-color);
+}
+
+.default-mode-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 500;
+}
+
+.default-mode-description {
+  font-size: var(--font-size-xs, 11px);
+  color: var(--text-secondary);
+}

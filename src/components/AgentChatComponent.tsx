@@ -125,6 +125,8 @@ import useNonBlockingQuestions, {
   type QuestionAnswerData,
 } from "../hooks/useNonBlockingQuestions";
 import useConversationGoal from "../hooks/useConversationGoal";
+import usePermissionMode from "../hooks/usePermissionMode";
+import PermissionModeSelectorComponent from "./PermissionModeSelectorComponent";
 import useComposerSendMode from "../hooks/useComposerSendMode";
 import useQuestionAnswerSender from "../hooks/useQuestionAnswerSender";
 import {
@@ -180,7 +182,6 @@ import {
   AGENTLESS_AGENT,
   LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
   LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED,
-  LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED,
   LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS,
   LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS,
   LOCAL_STORAGE_KEY_AGENT_MAX_RECURSION_DEPTH,
@@ -1088,13 +1089,8 @@ export default function AgentChatComponent({
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef<number>(0);
 
-  // Phase 1: Agentic controls
-  const [autoApprove, setAutoApprove] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED) === "true";
-    }
-    return false;
-  });
+  // Phase 1: Agentic controls (what runs without asking is the conversation's
+  // permission mode — usePermissionMode, below)
   const [maxIterations, setMaxIterations] = useState(MAX_TOOL_ITERATIONS);
   const [maxSubAgentIterations, setMaxSubAgentIterations] =
     useState(MAX_TOOL_ITERATIONS);
@@ -1139,10 +1135,12 @@ export default function AgentChatComponent({
   // the composer's while-running send mode live in their own hooks.
   const nonBlockingQuestions = useNonBlockingQuestions(conversationId);
   const conversationGoal = useConversationGoal(conversationId);
+  const permissionMode = usePermissionMode(conversationId);
   const [composerSendMode, setComposerSendMode] = useComposerSendMode();
   // Stable actions off the hooks — the hook objects change identity each
   // render, the functions do not, so callbacks depend on these.
   const { hydrate: hydrateConversationGoal, applyEvent: applyGoalEvent } = conversationGoal;
+  const { mode: currentPermissionMode, applyEvent: applyPermissionModeEvent } = permissionMode;
   const { open: openNonBlockingQuestion, clear: clearNonBlockingQuestions } = nonBlockingQuestions;
   const [planProposal, setPlanProposal] = useState<{
     plan: string;
@@ -4201,7 +4199,7 @@ export default function AgentChatComponent({
               thoughtStructure:
                 (settings?.agents?.thoughtStructure as string) || undefined,
               // Phase 1: Agentic controls
-              autoApprove,
+              permissionMode: currentPermissionMode,
               planFirst,
               maxIterations: Number.isFinite(maxIterations) ? maxIterations : 0,
               maxSubAgentIterations: Number.isFinite(maxSubAgentIterations)
@@ -4749,6 +4747,10 @@ export default function AgentChatComponent({
           onGoalUpdate: (data: SSEData) => {
             if (isStale()) return;
             applyGoalEvent(data);
+          },
+          onPermissionMode: (data: SSEData) => {
+            if (isStale()) return;
+            applyPermissionModeEvent(data);
           },
           ...turnActivityCallbacks(generationConversationId),
           onUserQuestion: (data: SSEData) => {
@@ -5744,7 +5746,7 @@ export default function AgentChatComponent({
       conversationId,
       traceId,
       disabledTools,
-      autoApprove,
+      currentPermissionMode,
       planFirst,
       maxIterations,
       maxSubAgentIterations,
@@ -7471,9 +7473,9 @@ export default function AgentChatComponent({
   applyConversationDataRef.current = applyConversationData;
   // Goal / non-blocking-question / toast helpers for the viewer stream,
   // mirrored for the same reason as applyConversationData above.
-  const liveTurnHelpersRef = useRef({ addToast, applyGoalEvent, openNonBlockingQuestion });
+  const liveTurnHelpersRef = useRef({ addToast, applyGoalEvent, applyPermissionModeEvent, openNonBlockingQuestion });
   // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
-  liveTurnHelpersRef.current = { addToast, applyGoalEvent, openNonBlockingQuestion };
+  liveTurnHelpersRef.current = { addToast, applyGoalEvent, applyPermissionModeEvent, openNonBlockingQuestion };
   const adminRefreshSelectedEntryRef = useRef(adminRefreshSelectedEntry);
   // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
   adminRefreshSelectedEntryRef.current = adminRefreshSelectedEntry;
@@ -7610,6 +7612,10 @@ export default function AgentChatComponent({
       onGoalUpdate: (data: SSEData) => {
         if (!isSubscriptionActive) return;
         liveTurnHelpersRef.current.applyGoalEvent(data);
+      },
+      onPermissionMode: (data: SSEData) => {
+        if (!isSubscriptionActive) return;
+        liveTurnHelpersRef.current.applyPermissionModeEvent(data);
       },
       ...turnActivityCallbacks(activeId),
       // Non-blocking questions can be answered from a viewing tab too;
@@ -8200,22 +8206,6 @@ export default function AgentChatComponent({
                       label: "Plan Mode",
                       checked: planFirst,
                       onChange: () => setPlanFirst((value) => !value),
-                    },
-                    {
-                      key: "auto",
-                      icon: <Zap size={12} />,
-                      label: "Auto Approve Tool Use",
-                      checked: autoApprove,
-                      onChange: () => {
-                        setAutoApprove((previousAutoApprove) => {
-                          const nextAutoApprove = !previousAutoApprove;
-                          localStorage.setItem(
-                            LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED,
-                            String(nextAutoApprove),
-                          );
-                          return nextAutoApprove;
-                        });
-                      },
                     },
                     {
                       key: "criticGate",
@@ -9551,6 +9541,15 @@ export default function AgentChatComponent({
           error={conversationGoal.error}
         />
         <TurnActivityPanelComponent activity={turnActivity} />
+        {!isNoAgent && (
+          <PermissionModeSelectorComponent
+            mode={permissionMode.mode}
+            modes={permissionMode.modes}
+            onChange={(mode) => void permissionMode.change(mode)}
+            disabled={permissionMode.isBusy}
+            message={permissionMode.error ?? permissionMode.notice}
+          />
+        )}
         {contextBudget && (
           <ContextBudgetIndicatorComponent
             contextBudget={contextBudget}
