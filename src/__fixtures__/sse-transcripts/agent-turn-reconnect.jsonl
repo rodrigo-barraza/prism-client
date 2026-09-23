@@ -1,0 +1,9 @@
+{"type":"user_message","role":"user","content":"What port does the dev server use?","conversationId":"conv-fixture","timestamp":1790078400000,"seq":1790078400001}
+{"type":"status","message":"iteration_progress","iteration":1,"maxIterations":25,"seq":1790078400002}
+{"type":"chunk","content":"Checking","outputCharacters":8,"seq":1790078400003}
+{"type":"chunk","content":" the config","outputCharacters":19,"seq":1790078400004}
+{"type":"tool_execution","tool":{"name":"read_file","args":{"path":"/app/config.json"},"id":"toolu_12Read"},"toolEmoji":"📖","toolLabel":"Reading config.json","status":"calling","timestamp":1790078400100,"seq":1790078400005}
+{"type":"tool_execution","tool":{"name":"read_file","args":{"path":"/app/config.json"},"id":"toolu_12Read","result":{"content":"{\"port\":3000}"},"durationMilliseconds":22,"durationMs":22},"toolEmoji":"📖","toolLabel":"Read config.json","status":"done","seq":1790078400006}
+{"type":"chunk","content":" — port 3000","outputCharacters":31,"seq":1790078400007}
+{"type":"chunk","content":", documented.","outputCharacters":44,"seq":1790078400008}
+{"type":"done","provider":"anthropic","model":"claude-test","usage":{"inputTokens":1500,"outputTokens":60,"cacheReadInputTokens":0,"cacheCreationInputTokens":0,"reasoningOutputTokens":0,"tokensPerSec":0,"requests":1,"totalInputTokens":1500},"estimatedCost":0.0031,"tokensPerSec":41.2,"timeToGeneration":0.842,"generationTime":4.1,"totalTime":6.3,"conversationId":"conv-fixture","seq":1790078400009}

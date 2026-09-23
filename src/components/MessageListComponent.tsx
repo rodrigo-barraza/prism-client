@@ -78,6 +78,7 @@ import { getTotalInputTokens } from "../utils/utilities";
 import { parseMentionTokens } from "../utils/mentionUtils";
 import { getTextualFileKind, formatFileSize } from "../utils/fileIntake";
 import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { noteMessageRowRender } from "../utils/chatDebugProbe";
 
 import type {
   Message,
@@ -1463,6 +1464,8 @@ export default function MessageList({
       {headerContent}
       {/* eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change */}
       {displayMessages.map((message, i) => {
+        // Test-only row-render counter (utils/chatDebugProbe).
+        noteMessageRowRender(message, i);
         const roleClass =
           message.role === "user"
             ? styles['user-node']

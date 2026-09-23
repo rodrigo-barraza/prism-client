@@ -1,0 +1,11 @@
+{"type":"user_message","role":"user","content":"Change the dev port to 4000.","conversationId":"conv-fixture","timestamp":1790078400000,"seq":1790078400001}
+{"type":"status","message":"iteration_progress","iteration":1,"maxIterations":25,"seq":1790078400002}
+{"type":"chunk","content":"Here is the plan.","outputCharacters":17,"seq":1790078400003}
+{"type":"plan_proposal","plan":"1. Read the config\n2. Change the port to 4000\n3. Update the docs","steps":["Read the config","Change the port to 4000","Update the docs"],"autoApproved":false,"toolCallId":"toolu_03Plan","batchId":"batch-plan-1","seq":1790078400004}
+{"type":"approval_decided","toolCallId":"toolu_03Plan","batchId":"batch-plan-1","decision":"allow","scope":"call","source":"user","seq":1790078400005}
+{"type":"status","message":"plan_mode_exited","seq":1790078400006}
+{"type":"status","message":"iteration_progress","iteration":2,"maxIterations":25,"seq":1790078400007}
+{"type":"tool_execution","tool":{"name":"read_file","args":{"path":"/app/config.json"},"id":"toolu_04Read"},"toolEmoji":"📖","toolLabel":"Reading config.json","status":"calling","timestamp":1790078400100,"seq":1790078400008}
+{"type":"tool_execution","tool":{"name":"read_file","args":{"path":"/app/config.json"},"id":"toolu_04Read","result":{"content":"{\"port\":3000}"},"durationMilliseconds":21,"durationMs":21},"toolEmoji":"📖","toolLabel":"Read config.json","status":"done","seq":1790078400009}
+{"type":"chunk","content":" Read the config; the port is 3000 today.","outputCharacters":58,"seq":1790078400010}
+{"type":"done","provider":"anthropic","model":"claude-test","usage":{"inputTokens":1800,"outputTokens":120,"cacheReadInputTokens":0,"cacheCreationInputTokens":0,"reasoningOutputTokens":0,"tokensPerSec":0,"requests":2,"totalInputTokens":1800},"estimatedCost":0.0044,"tokensPerSec":41.2,"timeToGeneration":0.842,"generationTime":4.1,"totalTime":6.3,"conversationId":"conv-fixture","seq":1790078400011}
