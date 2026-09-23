@@ -482,6 +482,20 @@ export interface Message {
    * tags; render `rawContent` (the text the user typed), never the wrapper.
    */
   _turnInput?: MessageTurnInput;
+  /**
+   * Input from outside the conversation — a webhook, a Discord message
+   * relayed into someone else's turn, an MCP server, a sub-agent
+   * (prism-service external/ExternalInput). Never the user's words: rendered as an external
+   * block, `rawContent` its text, `content` the model's envelope.
+   */
+  _external?: ExternalOrigin;
+}
+
+/** Where an external input came from. `sender` is a label, not an identity. */
+export type ExternalInputSource = NonNullable<TurnInputEvent["source"]>;
+export interface ExternalOrigin {
+  source: ExternalInputSource;
+  sender?: string;
 }
 
 export interface Conversation {
@@ -751,6 +765,9 @@ export interface MessageTurnInput {
   status?: "sending" | "pending" | "applied";
   boundary?: TurnInputBoundary;
   iteration?: number;
+  /** `external` only: where it came from. */
+  source?: ExternalInputSource;
+  sender?: string;
 }
 
 export interface ConversationGoalBudget {
@@ -806,6 +823,8 @@ export interface ConversationGoal {
   verifier?: GoalVerifierModel;
   maxIterations?: number;
   budget?: ConversationGoalBudget;
+  /** What the agent goes without while it works on the goal on its own — `{ network: false }`. */
+  capabilities?: Record<string, boolean>;
   progress: {
     summary: string;
     percent?: number | null;
