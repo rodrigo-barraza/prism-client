@@ -87,6 +87,8 @@ export default function ApprovalCardsComponent({
           toolArgs={approval.toolArgs}
           tier={approval.tier}
           preview={approval.preview}
+          retryAfterRestart={approval.retryAfterRestart}
+          retryReason={approval.reason}
           otherPendingInBatch={
             approval.batchId
               ? pending.filter((other) => other.batchId === approval.batchId && other.id !== approval.id).length
@@ -95,7 +97,7 @@ export default function ApprovalCardsComponent({
           isSubmitting={submitting.has(approval.id)}
           subAgentDescription={approval.subAgentDescription}
           onDecide={(decision) => decide(approval, decision)}
-          alwaysAllow={alwaysAllow}
+          alwaysAllow={approval.retryAfterRestart ? undefined : alwaysAllow}
         />
       ))}
     </>

@@ -9,7 +9,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, within, waitFor, act } from "@testing-library/react";
 import React, { useState } from "react";
 import ApprovalCardsComponent from "../ApprovalCardsComponent";
-import { approvalFromEvent, type PendingApproval } from "../../utils/approvalCards";
+import {
+  approvalFromEvent,
+  approvalsFromPendingSnapshot,
+  type PendingApproval,
+} from "../../utils/approvalCards";
 import type { SSEData } from "../../types/types";
 import { LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED } from "../../constants";
 import writeFileEvent from "../../__fixtures__/approvals/approval-required-write-file.json";
@@ -285,5 +289,83 @@ describe("ApprovalCardsComponent — one card per tool call", () => {
       decision: "allow",
       scope: "batch",
     });
+  });
+});
+
+// prompt 13, Landing 2: the server restarted while a call was running.
+describe("a 'run it again?' card", () => {
+  beforeEach(() => {
+    sendApprovalDecision.mockReset();
+  });
+
+  const retryEvent: SSEData = {
+    type: "approval_required",
+    toolCallId: "call-w#retry",
+    batchId: "batch-1",
+    toolCall: { id: "call-w#retry", name: "write_file", args: { path: "w.txt" } },
+    tier: 2,
+    requestedBy: "restart",
+    reason: "The server restarted while this write_file call was running. It may have partly run. Run it again?",
+  };
+
+  it("says why it asks, offers to run the call again, and does not offer a permission rule", async () => {
+    sendApprovalDecision.mockResolvedValue({
+      ok: true,
+      approved: true,
+      decision: "allow",
+      scope: "call",
+      batchId: "batch-1",
+      decidedToolCallIds: ["call-w#retry"],
+      remaining: 0,
+    });
+    render(
+      <ApprovalCardsComponent
+        conversationId="conversation-r"
+        approvals={cardsFrom([retryEvent])}
+        setApprovals={vi.fn()}
+        onNotify={vi.fn()}
+        alwaysAllow={{ conversationId: "conversation-r", workspaceRoot: "/tmp/w" }}
+      />,
+    );
+    const retryCard = card("write_file", 0);
+    expect(within(retryCard).getByRole("note").textContent).toContain("The server restarted while this write_file call was running");
+    expect(within(retryCard).queryByText(/Always allow/i)).toBeNull();
+    fireEvent.click(within(retryCard).getByRole("button", { name: /Run it again/ }));
+    await waitFor(() => expect(sendApprovalDecision).toHaveBeenCalledTimes(1));
+    expect(sendApprovalDecision.mock.calls[0]).toEqual(
+      expect.arrayContaining([expect.objectContaining({ toolCallId: "call-w#retry", decision: "allow" })]),
+    );
+  });
+
+  it("a reloading client rebuilds it from the conversation's pending snapshot", () => {
+    const [restored] = approvalsFromPendingSnapshot(
+      [
+        {
+          id: "call-w#retry",
+          name: "write_file",
+          args: { path: "w.txt" },
+          _approval: { tier: "2" },
+          requestedBy: "restart",
+          reason: "Run it again?",
+        },
+      ],
+      "batch-1",
+    );
+    expect(restored).toMatchObject({ id: "call-w#retry", retryAfterRestart: true, reason: "Run it again?" });
+    const [ordinary] = approvalsFromPendingSnapshot([{ id: "call-1", name: "write_file", args: {} }], "batch-1");
+    expect(ordinary).not.toHaveProperty("retryAfterRestart");
+  });
+
+  it("an ordinary card says nothing about a restart", () => {
+    render(
+      <ApprovalCardsComponent
+        conversationId="conversation-o"
+        approvals={cardsFrom([approvalRequired("call-1")])}
+        setApprovals={vi.fn()}
+        onNotify={vi.fn()}
+      />,
+    );
+    expect(within(card("write_file", 0)).queryByRole("note")).toBeNull();
+    expect(within(card("write_file", 0)).getByRole("button", { name: /^Allow$/ })).toBeTruthy();
   });
 });

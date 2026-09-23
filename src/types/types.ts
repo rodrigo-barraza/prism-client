@@ -896,6 +896,12 @@ export interface TransformedSSEData {
   approvalConversationId?: string;
   /** A forwarded sub-agent event: the sub-agent's task description. */
   subAgentDescription?: string;
+  /**
+   * approval_required: who asked besides the tier — `hook` (a PreToolUse
+   * hook's `ask`), or `restart` (the server restarted while the call was
+   * running: run it again?). `reason` says why.
+   */
+  requestedBy?: string;
   /** approval_decided: how the call was decided, by whom, and why */
   decision?: ApprovalDecision;
   scope?: ApprovalScope;

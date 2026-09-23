@@ -128,6 +128,17 @@
   color: var(--text-muted);
 }
 
+/* "Run it again?" — the server restarted while this call was running. */
+.retry-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 8%, transparent);
+}
+
 .diff,
 .arguments {
   margin: 0;

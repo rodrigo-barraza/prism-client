@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ListChecks,
   Zap,
+  RotateCcw,
 } from "lucide-react";
 import type { ApprovalPreview, ApprovalDecision, ApprovalScope } from "../types/types";
 import AlwaysAllowControlComponent from "./AlwaysAllowControlComponent";
@@ -25,6 +26,9 @@ const TIER_CONFIG = {
 
 type TierLevel = keyof typeof TIER_CONFIG;
 
+const RETRY_AFTER_RESTART_TEXT =
+  "The server restarted while this call was running. It may have partly run, and its result was lost. Run it again?";
+
 export interface ApprovalCardDecision {
   decision: ApprovalDecision;
   reason?: string;
@@ -37,6 +41,13 @@ interface ApprovalCardProps {
   toolArgs?: Record<string, unknown>;
   tier?: TierLevel;
   preview?: ApprovalPreview;
+  /**
+   * The server restarted while this call was running: it may have partly
+   * run. The card asks whether to run it AGAIN — not for permission.
+   */
+  retryAfterRestart?: boolean;
+  /** The server's words for why it asks. */
+  retryReason?: string;
   /** Other calls of the same batch still waiting — offers "Allow the rest of this batch". */
   otherPendingInBatch?: number;
   /** A decision for this card is in flight. */
@@ -71,6 +82,8 @@ export default function ApprovalCardComponent({
   toolArgs = {},
   tier = 2,
   preview,
+  retryAfterRestart = false,
+  retryReason,
   otherPendingInBatch = 0,
   isSubmitting = false,
   onDecide,
@@ -158,6 +171,13 @@ export default function ApprovalCardComponent({
           {preview.isTruncated && (
             <div className={styles["preview-note"]}>Diff truncated — the full change is in the arguments.</div>
           )}
+        </div>
+      )}
+
+      {retryAfterRestart && (
+        <div className={styles["retry-notice"]} role="note">
+          <RotateCcw size={14} aria-hidden="true" />
+          <span>{retryReason || RETRY_AFTER_RESTART_TEXT}</span>
         </div>
       )}
 
@@ -252,8 +272,8 @@ export default function ApprovalCardComponent({
             disabled={isSubmitting}
             onClick={() => void submit({ decision: "allow" })}
           >
-            <Check size={14} />
-            Allow
+            {retryAfterRestart ? <RotateCcw size={14} /> : <Check size={14} />}
+            {retryAfterRestart ? "Run it again" : "Allow"}
           </button>
           <button
             type="button"
@@ -265,7 +285,7 @@ export default function ApprovalCardComponent({
             }}
           >
             <X size={14} />
-            Deny…
+            {retryAfterRestart ? "Don't run it again…" : "Deny…"}
           </button>
           <button
             type="button"
