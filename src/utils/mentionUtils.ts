@@ -6,6 +6,7 @@
  */
 
 import badgeStyles from "../components/MentionBadgeComponent.module.css";
+import { mcpResourceReference } from "./mcpComposer";
 
 // -- DOM Serialization ---------------------------------------------
 // Walks a contentEditable element's DOM and produces the text that
@@ -30,6 +31,9 @@ export function serializeEditable(element: Node) {
         reference += lineEnd && lineEnd !== lineStart ? `#L${lineStart}-${lineEnd}` : `#L${lineStart}`;
       }
       text += reference;
+    } else if (node instanceof HTMLElement && node.dataset?.mcpResourceServer) {
+      // An MCP resource: the send handler reads it and attaches the content.
+      text += mcpResourceReference(node.dataset.mcpResourceServer, node.dataset.mcpResourceUri ?? "");
     } else if (node instanceof HTMLElement && node.dataset?.slashCommand) {
       // Slash command badges are stripped from serialization — rule
       // content is injected separately by the send handler.
@@ -226,6 +230,21 @@ export function createMentionBadge(
   badge.title = titleText;
   const icon = type === "directory" ? "📁" : "📄";
   badge.textContent = `${icon} ${displayName}`;
+  return badge;
+}
+
+/**
+ * Create an MCP resource badge (an @-mention of a connected server's
+ * resource). It serializes to `@mcp:<server>:<uri>`.
+ */
+export function createMcpResourceBadge(server: string, uri: string, name: string) {
+  const badge = document.createElement("span");
+  badge.contentEditable = "false";
+  badge.className = badgeStyles['mention-badge'];
+  badge.dataset.mcpResourceServer = server;
+  badge.dataset.mcpResourceUri = uri;
+  badge.title = `${server}: ${uri}`;
+  badge.textContent = `🔌 ${name}`;
   return badge;
 }
 

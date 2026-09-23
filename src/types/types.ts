@@ -644,12 +644,47 @@ export interface UserQuestionOption {
   preview?: string | null;
 }
 
+/**
+ * An MCP server asking for input mid-call. A form is rendered from
+ * `requestedSchema` (flat: string / number / integer / boolean / enum /
+ * multi-select), a URL request shows the link. The answer is
+ * `{ answer: "accept" | "decline" | "cancel", content? }`.
+ */
+export interface McpElicitationRequest {
+  server: string;
+  mode: "form" | "url";
+  requestedSchema?: {
+    type?: string;
+    properties?: Record<string, McpElicitationField>;
+    required?: string[];
+  };
+  url?: string;
+}
+
+export interface McpElicitationField {
+  type?: "string" | "number" | "integer" | "boolean" | "array";
+  title?: string;
+  description?: string;
+  default?: unknown;
+  enum?: string[];
+  enumNames?: string[];
+  oneOf?: Array<{ const: string; title?: string }>;
+  items?: { type?: string; enum?: string[]; anyOf?: Array<{ const: string; title?: string }> };
+  minimum?: number;
+  maximum?: number;
+  minLength?: number;
+  maxLength?: number;
+  format?: string;
+}
+
 /** One question inside a `user_question` event. */
 export interface UserQuestionItem {
   question: string;
   header?: string | null;
   options: UserQuestionOption[];
   multiSelect?: boolean;
+  /** Present when the question is an MCP server's elicitation. */
+  elicitation?: McpElicitationRequest;
 }
 
 /**
@@ -1639,8 +1674,38 @@ export interface MCPServer {
   protocolEra?: string | null;
   /** Tools held back from the agent until the owner re-approves them. */
   quarantinedTools?: MCPQuarantinedTool[];
+  /** OAuth 2.1 instead of static headers (HTTP transports). */
+  auth?: { type: "oauth"; scope?: string | null } | null;
+  /** The server's authorization state — present for OAuth servers. */
+  oauth?: MCPOAuthStatus;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface MCPOAuthStatus {
+  status: "none" | "pending" | "authorized" | "failed";
+  authorized: boolean;
+  issuer?: string | null;
+  expiresAt?: string | null;
+  error?: string | null;
+}
+
+/** An MCP prompt, offered as a slash command in the composer. */
+export interface MCPPrompt {
+  server: string;
+  name: string;
+  title: string | null;
+  description: string | null;
+  arguments: Array<{ name: string; description: string | null; required: boolean }>;
+}
+
+/** An MCP resource, offered as an @-mention in the composer. */
+export interface MCPResource {
+  server: string;
+  uri: string;
+  name: string;
+  description: string | null;
+  mimeType: string | null;
 }
 
 export interface MCPQuarantinedTool {

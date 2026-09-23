@@ -11,7 +11,9 @@ import {
 import { TextAreaComponent } from "@rodrigo-barraza/components-library";
 import InputBoxComponent from "./InputBoxComponent";
 import ChatInputButton from "./ChatInputButtonComponent";
+import ElicitationFormComponent from "./ElicitationFormComponent";
 import styles from "./UserQuestionCardComponent.module.css";
+import type { McpElicitationRequest } from "@/types/types";
 
 interface QuestionOption {
   label: string;
@@ -21,6 +23,8 @@ interface QuestionOption {
 interface QuestionAnswerData {
   answer: string | string[];
   annotations?: string;
+  /** An MCP elicitation's submitted values (answer "accept"). */
+  content?: Record<string, string | number | boolean | string[]>;
 }
 
 interface NormalizedQuestion {
@@ -28,7 +32,14 @@ interface NormalizedQuestion {
   header?: string | null;
   options: QuestionOption[];
   multiSelect?: boolean;
+  elicitation?: McpElicitationRequest;
 }
+
+const ELICITATION_OUTCOMES: Record<string, string> = {
+  accept: "Submitted",
+  decline: "Declined",
+  cancel: "Cancelled",
+};
 
 interface QuestionBlockProps {
   questionNumber: number;
@@ -304,6 +315,39 @@ export default function UserQuestionCardComponent({
   }, [allAnswered, normalizedQuestions, collectedAnswers, onAnswer]);
 
   if (normalizedQuestions.length === 0) return null;
+
+  // An MCP server asking for input: a form (or a link) instead of options.
+  const elicitation = normalizedQuestions.length === 1 ? normalizedQuestions[0].elicitation : undefined;
+  if (elicitation) {
+    const answered = answeredWith?.[0];
+    const outcome =
+      typeof answered === "object" && answered !== null ? answered.answer : answered;
+    return (
+      <div className={`user-question-card-component ${styles['card']} ${!isPending ? styles['resolved'] : ""}`}>
+        <div className={styles['header']}>
+          <MessageCircleQuestion size={16} className={styles['icon']} />
+          <span className={styles['label']}>{elicitation.server} asks</span>
+          {isPending ? (
+            <span className={styles['header-status']}>
+              <span className={styles['header-status-dot']} />
+              Waiting for your answer
+            </span>
+          ) : (
+            <span className={styles['header-status-resolved']}>
+              <Check size={12} />
+              {ELICITATION_OUTCOMES[String(outcome)] ?? "Answered"}
+            </span>
+          )}
+        </div>
+        <ElicitationFormComponent
+          request={elicitation}
+          message={normalizedQuestions[0].question}
+          isPending={isPending}
+          onAnswer={(answer) => onAnswer?.([answer])}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`user-question-card-component ${styles['card']} ${!isPending ? styles['resolved'] : ""}`}>

@@ -11,6 +11,7 @@ import {
   Wrench,
   ShieldAlert,
   ShieldCheck,
+  KeyRound,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import {
@@ -24,6 +25,7 @@ import styles from "./MCPServersPanelComponent.module.css";
 import type { MCPServer, MCPQuarantinedTool } from "@/types/types";
 import type { ReactNode } from "react";
 import { getErrorMessage } from "../utils/errorMessage";
+import { useMcpOAuthConnect } from "../hooks/useMcpOAuthConnect";
 
 /**
  * MCPServersPanel — Manage MCP (Model Context Protocol) server connections.
@@ -70,6 +72,11 @@ export default function MCPServersPanel({
     null,
   );
   const [error, setError] = useState<string | null>(null);
+  const {
+    flows: oauthFlows,
+    start: startOAuth,
+    dismiss: dismissOAuth,
+  } = useMcpOAuthConnect(onServersChange);
 
   // -- CRUD -----------------------------------------------------
 
@@ -184,7 +191,14 @@ export default function MCPServersPanel({
       setConnecting(serverId);
       setError(null);
       try {
-        await PrismService.connectMCPServer(serverId);
+        const result = await PrismService.connectMCPServer(serverId);
+        // An OAuth server without tokens: sign in in a popup; the callback
+        // finishes the connect.
+        if (result.authorizationRequired && result.authorizationUrl) {
+          startOAuth(serverId, result.authorizationUrl);
+          return;
+        }
+        dismissOAuth(serverId);
         onServersChange();
       } catch (error: unknown) {
         setError(
@@ -194,7 +208,22 @@ export default function MCPServersPanel({
         setConnecting(null);
       }
     },
-    [onServersChange],
+    [onServersChange, startOAuth, dismissOAuth],
+  );
+
+  const handleSignOut = useCallback(
+    async (server: MCPServer) => {
+      const serverId = server.id || server._id?.toString() || "";
+      if (!serverId) return;
+      try {
+        await PrismService.signOutMCPServer(serverId);
+        dismissOAuth(serverId);
+        onServersChange();
+      } catch (error: unknown) {
+        setError(`Sign out failed: ${getErrorMessage(error) || "Unknown error"}`);
+      }
+    },
+    [onServersChange, dismissOAuth],
   );
 
   const handleDisconnect = useCallback(
@@ -401,6 +430,21 @@ export default function MCPServersPanel({
                 }
                 placeholder="https://mcp-server.example.com/mcp"
               />
+              <SwitchComponent
+                id="mcp-server-oauth"
+                label="Sign in with OAuth"
+                labelPlacement="start"
+                checked={editingServer.auth?.type === "oauth"}
+                onChange={(checked: boolean) =>
+                  setEditingServer((state: MCPServer | null) =>
+                    state ? { ...state, auth: checked ? { type: "oauth" } : null } : null,
+                  )
+                }
+              />
+              <span className={styles['hint']}>
+                For servers that sign you in (GitHub, Linear, Sentry…): Connect opens
+                their login page.
+              </span>
             </div>
           )}
 
@@ -504,6 +548,8 @@ export default function MCPServersPanel({
         // A shared (deployment-seeded) server can be reviewed, not edited.
         const canManage = !readOnly && !server.shared;
         const quarantined = server.quarantinedTools ?? [];
+        const oauthFlow = oauthFlows[serverId];
+        const usesOAuth = server.auth?.type === "oauth";
         const approvable = quarantined.filter(
           (tool: MCPQuarantinedTool) => tool.reason !== "duplicate",
         );
@@ -544,6 +590,12 @@ export default function MCPServersPanel({
                   )}
                   {server.shared && (
                     <span className={styles['transport-badge']}>shared</span>
+                  )}
+                  {usesOAuth && (
+                    <span className={styles['transport-badge']} title="Signs in with OAuth">
+                      <KeyRound size={9} />{" "}
+                      {server.oauth?.authorized ? "signed in" : "oauth"}
+                    </span>
                   )}
                   {quarantined.length > 0 && (
                     <span className={styles['quarantine-badge']}>
@@ -588,6 +640,22 @@ export default function MCPServersPanel({
                 </div>
               )}
             </div>
+
+            {oauthFlow?.status === "authorizing" && (
+              <div className={styles['oauth-status']} role="status">
+                Waiting for you to sign in in the other window…
+              </div>
+            )}
+            {oauthFlow?.status === "failed" && (
+              <div className={styles['error-message']} role="alert">
+                {oauthFlow.message}
+              </div>
+            )}
+            {canManage && usesOAuth && server.oauth?.authorized && (
+              <button className={styles['disconnect-button']} onClick={() => handleSignOut(server)}>
+                Sign out
+              </button>
+            )}
 
             {/* Show discovered tools when connected */}
             {server.connected && (server.tools?.length ?? 0) > 0 && (
