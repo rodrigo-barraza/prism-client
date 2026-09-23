@@ -128,12 +128,14 @@ import {
   approvalsFromPendingSnapshot,
 } from "../utils/approvalCards";
 import UserQuestionCardComponent from "./UserQuestionCardComponent";
+import BudgetPauseCardComponent from "./BudgetPauseCardComponent";
 import NonBlockingQuestionsComponent from "./NonBlockingQuestionsComponent";
 import GoalPanelComponent from "./GoalPanelComponent";
 import useNonBlockingQuestions, {
   type QuestionAnswerData,
 } from "../hooks/useNonBlockingQuestions";
 import useConversationGoal from "../hooks/useConversationGoal";
+import useBudgetPause from "../hooks/useBudgetPause";
 import usePermissionMode from "../hooks/usePermissionMode";
 import PermissionModeSelectorComponent from "./PermissionModeSelectorComponent";
 import useComposerSendMode from "../hooks/useComposerSendMode";
@@ -1122,6 +1124,9 @@ export default function AgentChatComponent({
   const { hydrate: hydrateConversationGoal, applyEvent: applyGoalEvent } = conversationGoal;
   const { mode: currentPermissionMode, applyEvent: applyPermissionModeEvent } = permissionMode;
   const { open: openNonBlockingQuestion, clear: clearNonBlockingQuestions } = nonBlockingQuestions;
+  // A turn paused at its cost cap (prompt 13 L3): its card, set by `budget_reached`.
+  const budgetPause = useBudgetPause(conversationId);
+  const { hydrate: hydrateBudgetPause, applyStatus: applyBudgetStatus, clear: clearBudgetPause } = budgetPause;
   const [currentTurnStart, setCurrentTurnStart] = useState<number | null>(null); // Date.now() when user sends
   const [backendConversationStats, setBackendConversationStats] =
     useState<ConversationStats | null>(null);
@@ -1345,6 +1350,7 @@ export default function AgentChatComponent({
     // bubble stops its live metrics (TTFT badge, tok/s), and every sub-agent
     // bar stops — their terminal events will not arrive on an aborted stream.
     dispatchConversation({ type: "turn/stopped", clock: eventClockNow() });
+    clearBudgetPause();
 
     // Explicitly stop the backend agentic session — decoupled from
     // SSE connection lifecycle so mobile browser disconnections don't
@@ -1374,7 +1380,7 @@ export default function AgentChatComponent({
     setTimeout(() => {
       loadConversationsRef.current?.();
     }, 500);
-  }, [isNoAgent, dispatchConversation]);
+  }, [isNoAgent, dispatchConversation, clearBudgetPause]);
 
   // -- Filtered config: only tool-calling models for agents; all text models for Direct Chat ------------
   const filteredConfig = useMemo(() => {
@@ -1996,6 +2002,7 @@ export default function AgentChatComponent({
         setPendingApprovals(pendingCards.approvals);
         setPlanProposal(pendingCards.planProposal);
         setPendingUserQuestion(pendingCards.question);
+        hydrateBudgetPause(pendingCards.budget);
 
         // displayMessages is the response's only message form (raw `messages`
         // are no longer shipped); assistant entries keep model/provider/
@@ -4192,6 +4199,9 @@ export default function AgentChatComponent({
             ),
           );
           break;
+        case "budget-status":
+          applyBudgetStatus(effect.event);
+          break;
         case "goal":
           applyGoalEvent(effect.event);
           break;
@@ -4216,6 +4226,7 @@ export default function AgentChatComponent({
       markTabNew,
       applyGoalEvent,
       applyPermissionModeEvent,
+      applyBudgetStatus,
       openNonBlockingQuestion,
       isAdmin,
     ],
@@ -4711,6 +4722,8 @@ export default function AgentChatComponent({
       setGeneratingConversationIds((previousGeneratingConversationIds) =>
         new Set(previousGeneratingConversationIds).add(genId),
       );
+      // The budget card is its hook's, not the conversation reducer's.
+      clearBudgetPause();
 
       const currentMessages = getConversationState().messages;
       // Optimistic display title only — the persisted title is derived
@@ -5262,6 +5275,7 @@ export default function AgentChatComponent({
     console.debug(`[resetConversationState] clearing all messages and state`);
     dispatchConversation({ type: "conversation/reset" });
     setPendingImages([]);
+    clearBudgetPause();
     hydrateConversationGoal(null);
     setForkedFrom(null);
     clearNonBlockingQuestions();
@@ -5290,7 +5304,7 @@ export default function AgentChatComponent({
 
     // Clear conversation from URL
     reportUrlChange({ kind: "conversation", conversationId: null });
-  }, [isNoAgent, config, resetToAllDisabled, hydrateConversationGoal, clearNonBlockingQuestions, dispatchConversation, reportUrlChange]);
+  }, [isNoAgent, config, resetToAllDisabled, hydrateConversationGoal, clearNonBlockingQuestions, dispatchConversation, reportUrlChange, clearBudgetPause]);
 
   const handleNewChat = useCallback(() => {
     // If generating, snapshot the current conversation so user can switch back to it
@@ -5584,6 +5598,7 @@ export default function AgentChatComponent({
         setPendingApprovals(pendingCards.approvals);
         setPlanProposal(pendingCards.planProposal);
         setPendingUserQuestion(pendingCards.question);
+        hydrateBudgetPause(pendingCards.budget);
 
         reportUrlChange({ kind: "conversation", conversationId: full.id ?? null });
         setTitle(full.title || "Agent");
@@ -5730,6 +5745,7 @@ export default function AgentChatComponent({
       resetToAllDisabled,
       enableSpecificTools,
       hydrateConversationGoal,
+      hydrateBudgetPause,
       dispatchConversation,
       reportUrlChange,
       setMessages,
@@ -7587,6 +7603,23 @@ export default function AgentChatComponent({
           />
         )}
 
+        {/* A turn paused at its cost cap: raise the cap, or stop */}
+        {!isAdmin && budgetPause.pause && (
+          <BudgetPauseCardComponent
+            key={budgetPause.pause.pauseId}
+            pause={budgetPause.pause}
+            isBusy={budgetPause.isBusy}
+            error={budgetPause.error}
+            onRaise={(maxCostDollars) =>
+              void budgetPause.raise(maxCostDollars, {
+                goalBudget: conversationGoal.goal?.budget,
+                onGoal: hydrateConversationGoal,
+              })
+            }
+            onStop={handleStop}
+          />
+        )}
+
         <div ref={endRef} style={{ minHeight: 1 }} />
       </div>
       )}
@@ -7667,6 +7700,7 @@ export default function AgentChatComponent({
           planProposal,
           pendingApprovals,
           pendingUserQuestion,
+          budgetPause: budgetPause.pause,
         });
 
         // -- Derive phase from live sub-agent activity --------------

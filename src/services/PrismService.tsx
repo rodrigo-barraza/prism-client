@@ -1695,6 +1695,35 @@ export default class PrismService {
   }
 
   /**
+   * Raise the cost cap of the turn paused at it (prompt 13 Landing 3) — the
+   * turn resumes. Throws with the server's reason (422: no higher than the
+   * spend, or the goal's budget is the lower cap; 404: nothing is paused).
+   */
+  static async raiseConversationBudget(
+    conversationId: string,
+    maxCostDollars: number,
+  ): Promise<{ status: string; maxCostDollars?: number | null; delivered?: boolean }> {
+    return PrismService._request(
+      `/conversations/${encodeURIComponent(conversationId)}/budget`,
+      { method: HTTP_METHODS.PATCH, body: { maxCostDollars } },
+    );
+  }
+
+  /**
+   * Set the goal's budget (the whole budget: the PATCH replaces it) and
+   * report what became of a turn the goal's budget paused (`budgetPause`).
+   */
+  static async raiseGoalBudget(
+    conversationId: string,
+    budget: ConversationGoalBudget,
+  ): Promise<{ goal: ConversationGoal | null; budgetPause?: { status: string; error?: string } }> {
+    return PrismService._request(
+      `/conversations/${encodeURIComponent(conversationId)}/goal`,
+      { method: HTTP_METHODS.PATCH, body: { budget } },
+    );
+  }
+
+  /**
    * Generic SSE stream helper for the callback-driven streams (synthesis,
    * benchmarks): reads the response through agentStream's
    * `serverSentEvents` and dispatches each event to its callback. The agent

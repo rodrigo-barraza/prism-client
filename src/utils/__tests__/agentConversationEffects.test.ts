@@ -63,6 +63,10 @@ describe("effectsOfEvent", () => {
     expect(effects({ type: "status", message: "tasks_updated" })).toEqual([{ kind: "tasks-updated" }]);
     expect(effects({ type: "status", message: "sub_agents_updated" })).toEqual([{ kind: "sub-agents-updated" }]);
     expect(effects({ type: "status", message: "memories_updated" })).toEqual([{ kind: "memories-updated" }]);
+    const reached = event({ type: "status", message: "budget_reached", pauseId: "p-1", spentDollars: 1.2, maxCostDollars: 1, limitedBy: "turn", iteration: 3 });
+    expect(effectsOfEvent(reached, EMPTY, "conv-1")).toEqual([{ kind: "budget-status", event: reached }]);
+    const resolved = event({ type: "status", message: "budget_resolved", pauseId: "p-1", action: "raise", source: "user" });
+    expect(effectsOfEvent(resolved, EMPTY, "conv-1")).toEqual([{ kind: "budget-status", event: resolved }]);
     expect(effects({ type: "status", message: "iteration_progress", iteration: 1, maxIterations: 5 })).toEqual([]);
     expect(effects({ type: "status", message: "Loading model…", phase: "loading" })).toEqual([]);
   });

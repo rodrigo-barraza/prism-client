@@ -1,7 +1,7 @@
 /**
  * What a turn event makes the chat DO beyond its conversation state: refresh
  * a panel, show a toast, add a sub-agent to the sidebar, hand an event to
- * the goal, permission-mode or question hooks. The reducer
+ * the goal, permission-mode, budget-pause or question hooks. The reducer
  * (agentConversationReducer.ts) stays pure; this maps an event to a list of
  * effect descriptions — also pure — and `useAgentConversation` hands each
  * one to the chat to run. Both transports produce the same effects.
@@ -14,8 +14,9 @@ import type {
   TurnEvent,
   UserQuestionEvent,
 } from "../types/types";
-import { isKnownStatusEvent } from "../types/protocol/events";
+import { isKnownStatusEvent, type KnownStatusEvent } from "../types/protocol/events";
 import type { AgentConversationState } from "./agentConversationReducer";
+import { BUDGET_STATUS_MESSAGES } from "./budgetPause";
 import type { ToolExecutionInput } from "./toolCallStateUpdaters";
 
 /** Filesystem-mutating tools: their results refresh the workspace tree and open file tabs. */
@@ -63,6 +64,8 @@ export type AgentConversationEffect =
       pendingBackgroundTasks: number;
       isActive?: boolean;
     }
+  /** The turn paused at its cost cap (`budget_reached`), or the pause ended: the budget card's. */
+  | { kind: "budget-status"; event: KnownStatusEvent }
   | { kind: "goal"; event: GoalUpdateEvent }
   | { kind: "permission-mode"; event: PermissionModeEvent }
   | { kind: "non-blocking-question"; event: UserQuestionEvent };
@@ -128,6 +131,9 @@ export function effectsOfEvent(
           return [{ kind: "sub-agents-updated" }];
         case STATUS_MESSAGES.MEMORIES_UPDATED:
           return [{ kind: "memories-updated" }];
+        case BUDGET_STATUS_MESSAGES.REACHED:
+        case BUDGET_STATUS_MESSAGES.RESOLVED:
+          return [{ kind: "budget-status", event }];
         default:
           return [];
       }

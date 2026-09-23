@@ -105,7 +105,7 @@ or the toasts that were shown.
     reply from the stored document.
 - **`utils/agentConversationEffects.ts`** maps an event to the side effects
   the chat runs, both of them pure: refreshing a panel, a toast, a sub-agent
-  in the sidebar, the goal / permission-mode / question hooks.
+  in the sidebar, the goal / permission-mode / budget-pause / question hooks.
 - **`hooks/useAgentConversation.ts`** holds the reducer in `useReducer`.
   - `ingest(event, conversationId)` dispatches an event and returns its
     effects.
