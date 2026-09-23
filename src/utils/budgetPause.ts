@@ -87,7 +87,16 @@ export function suggestedCapDollars(pause: BudgetPause): number {
   return Math.ceil(suggestion * 100) / 100;
 }
 
-/** Dollars as the card shows them: cents, or four places under a cent. */
-export function formatDollars(dollars: number): string {
-  return `$${dollars < 0.01 && dollars > 0 ? dollars.toFixed(4) : dollars.toFixed(2)}`;
+/** Dollars as the card shows them: cents, or four places under a cent (or as `places` says). */
+export function formatDollars(dollars: number, places?: number): string {
+  const resolvedPlaces = places ?? (dollars < 0.01 && dollars > 0 ? 4 : 2);
+  return `$${dollars.toFixed(resolvedPlaces)}`;
+}
+
+/**
+ * One precision for amounts shown side by side: four places when any of them
+ * is under ten cents ("$0.0206 of its $0.0020 cap", not "$0.02 of $0.0020").
+ */
+export function dollarPlaces(...amounts: Array<number | null | undefined>): number {
+  return amounts.some((amount) => typeof amount === "number" && amount > 0 && amount < 0.1) ? 4 : 2;
 }

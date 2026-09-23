@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Wallet } from "lucide-react";
 import styles from "./BudgetPauseCardComponent.module.css";
 import {
+  dollarPlaces,
   formatDollars,
   minimumCapDollars,
   suggestedCapDollars,
@@ -33,13 +34,15 @@ export default function BudgetPauseCardComponent({
 }: BudgetPauseCardProps) {
   const isGoalBudget = pause.limitedBy === "goal" && pause.goalMaxCostDollars !== null;
   const minimum = minimumCapDollars(pause);
+  const places = dollarPlaces(pause.spentDollars, pause.maxCostDollars, pause.goalMaxCostDollars, minimum);
+  const dollars = (amount: number) => formatDollars(amount, places);
   const [amount, setAmount] = useState(() => suggestedCapDollars(pause).toFixed(2));
   const [inputError, setInputError] = useState<string | null>(null);
 
   const submit = () => {
     const value = Number(amount);
     if (!Number.isFinite(value) || value <= minimum) {
-      setInputError(`Enter more than ${formatDollars(minimum)} — the turn would stop at the cap again.`);
+      setInputError(`Enter more than ${dollars(minimum)} — the turn would stop at the cap again.`);
       return;
     }
     setInputError(null);
@@ -66,14 +69,14 @@ export default function BudgetPauseCardComponent({
       <p className={styles["summary"]}>
         {isGoalBudget ? (
           <>
-            This turn spent <strong>{formatDollars(pause.spentDollars)}</strong> — all of the{" "}
-            <strong>{formatDollars(pause.maxCostDollars)}</strong> left in the goal&apos;s{" "}
-            {formatDollars(pause.goalMaxCostDollars!)} budget. Raise the goal&apos;s budget to let the agent continue.
+            This turn spent <strong>{dollars(pause.spentDollars)}</strong> — all of the{" "}
+            <strong>{dollars(pause.maxCostDollars)}</strong> left in the goal&apos;s{" "}
+            {dollars(pause.goalMaxCostDollars!)} budget. Raise the goal&apos;s budget to let the agent continue.
           </>
         ) : (
           <>
-            This turn spent <strong>{formatDollars(pause.spentDollars)}</strong> of its{" "}
-            <strong>{formatDollars(pause.maxCostDollars)}</strong> cap. Raise the cap to let the agent continue.
+            This turn spent <strong>{dollars(pause.spentDollars)}</strong> of its{" "}
+            <strong>{dollars(pause.maxCostDollars)}</strong> cap. Raise the cap to let the agent continue.
           </>
         )}
       </p>
