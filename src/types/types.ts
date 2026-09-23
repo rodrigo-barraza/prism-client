@@ -1479,8 +1479,21 @@ export interface MemoryConfig {
 }
 
 export interface AgentDefaultsConfig {
+  /** Role models (prism-service routing/RoleModelResolver). */
+  mainProvider?: string;
+  mainModel?: string;
   subAgentProvider?: string;
   subAgentModel?: string;
+  /** "" = one step below the parent (effort first), "inherit", or a level. */
+  subAgentEffort?: string;
+  oracleProvider?: string;
+  oracleModel?: string;
+  compactionProvider?: string;
+  compactionModel?: string;
+  classifierProvider?: string;
+  classifierModel?: string;
+  /** "" or "lead_sidekick". */
+  routingPreset?: string;
   criticProvider?: string;
   criticModel?: string;
   reminderProvider?: string;
