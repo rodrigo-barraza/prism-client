@@ -36,6 +36,11 @@ interface UseChatSidebarOptions {
   conversationId: string;
   isWorkspaceTabVisible: boolean;
   hasOrchestratorTools: boolean;
+  /**
+   * The tools and workspaces that decide the Workspace and Sub-Agents tabs
+   * have loaded. Before that a `?tab=` link must not fall back.
+   */
+  isToolsetKnown: boolean;
   /** Settings said whether memory models exist; without any, there is no Memories tab. */
   hasLoadedModelSettings: boolean;
   hasAnyMemoryModelSet: boolean;
@@ -52,6 +57,7 @@ export default function useChatSidebar({
   conversationId,
   isWorkspaceTabVisible,
   hasOrchestratorTools,
+  isToolsetKnown,
   hasLoadedModelSettings,
   hasAnyMemoryModelSet,
   setSubAgentToolActivity,
@@ -134,20 +140,22 @@ export default function useChatSidebar({
   // eslint-disable-next-line react-hooks/exhaustive-deps -- initial tab sync runs on trigger props only; adding tab state would clobber user navigation
   }, [initialTabBottomKey]);
 
-  // A tab that is not offered falls back to the default.
+  // A tab that is not offered falls back to the default, once the tools and
+  // workspaces that decide it have loaded: on the first render neither tab is
+  // offered yet, and a `?tab=subAgents` / `?tab=workspace` link was lost.
   useEffect(() => {
-    if (leftTab === "workspace" && !isWorkspaceTabVisible) {
+    if (isToolsetKnown && leftTab === "workspace" && !isWorkspaceTabVisible) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLeftTab("settings");
     }
-  }, [leftTab, isWorkspaceTabVisible]);
+  }, [leftTab, isWorkspaceTabVisible, isToolsetKnown]);
 
   useEffect(() => {
-    if (leftTab === "subAgents" && !hasOrchestratorTools) {
+    if (isToolsetKnown && leftTab === "subAgents" && !hasOrchestratorTools) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setLeftTab("settings");
     }
-  }, [leftTab, hasOrchestratorTools]);
+  }, [leftTab, hasOrchestratorTools, isToolsetKnown]);
 
   useEffect(() => {
     if (hasLoadedModelSettings && !hasAnyMemoryModelSet && leftTabBottomRef.current === "memories") {

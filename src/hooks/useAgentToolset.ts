@@ -62,6 +62,9 @@ export default function useAgentToolset({
   hasMessages,
 }: UseAgentToolsetOptions) {
   const [builtInTools, setBuiltInTools] = useState<ToolSchema[]>([]);
+  // Whether the tool list has settled (an admin's comes with the conversation):
+  // until then, which tools — and so which sidebar tabs — exist is unknown.
+  const [hasLoadedBuiltInTools, setHasLoadedBuiltInTools] = useState(isAdmin);
   const toolDisplayMetadataMap = useMemo(() => {
     const map: Record<string, ToolDisplayMetadata> = {};
     for (const tool of builtInTools || []) {
@@ -115,7 +118,9 @@ export default function useAgentToolset({
 
       setBuiltInTools(tools);
     }
-    loadAgenticTools().catch(console.error);
+    loadAgenticTools()
+      .catch(console.error)
+      .finally(() => setHasLoadedBuiltInTools(true));
   }, [agentId, isNoAgent, isAdmin]);
 
   // -- Fetch settings to determine which model-dependent tools are configured --
@@ -323,6 +328,7 @@ export default function useAgentToolset({
   return {
     builtInTools,
     setBuiltInTools,
+    hasLoadedBuiltInTools,
     toolDisplayMetadataMap,
     ...toolToggles,
     lockedOffTools,

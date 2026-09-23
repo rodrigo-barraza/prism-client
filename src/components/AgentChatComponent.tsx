@@ -286,6 +286,7 @@ export default function AgentChatComponent({
     conversationId,
     isWorkspaceTabVisible: toolset.isWorkspaceTabVisible,
     hasOrchestratorTools: toolset.hasOrchestratorTools,
+    isToolsetKnown: toolset.hasLoadedBuiltInTools && workspacesLoaded,
     hasLoadedModelSettings: toolset.hasLoadedModelSettings,
     hasAnyMemoryModelSet: toolset.hasAnyMemoryModelSet,
     setSubAgentToolActivity: agentConversation.setSubAgentToolActivity,
