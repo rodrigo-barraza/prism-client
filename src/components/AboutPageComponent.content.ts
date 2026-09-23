@@ -682,13 +682,13 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         badgeTone: "indigo",
       },
       {
-        title: "Critic Gate: Multi-Model Safety Review",
+        title: "Auto Mode: Two-Stage Action Classifier",
         authors: "Safety Pattern",
         year: null,
         arxivUrl: null,
         description:
-          "A lightweight second-opinion gate that uses a fast model to review high-risk (DANGER tier) tool calls before execution — catching catastrophic commands like rm -rf or DROP TABLE.",
-        implementationFile: "CriticGate.ts",
+          "In auto mode a cheap classifier rates each action the rules, workspace edits and read-only tools leave open; high-risk ones go to a stronger reviewer that allows, denies with a named category, or asks. It sees the user's messages and the tool calls, never tool results, so injected text cannot steer it; failures ask, and repeated denials stop and ask the user.",
+        implementationFile: "AutoModeClassifier.ts",
         categoryLabel: "Safety",
         badgeTone: "danger",
       },
@@ -715,7 +715,7 @@ export const PAPER_CATEGORIES: PaperCategory[] = [
         badgeTone: "danger",
         alignment: [
           { component: "MCP as untrusted code", status: "aligned", detail: "stdio children get the SDK's safe-inheritance env (PATH/HOME/...) plus only their own configured vars — secrets never cross the process boundary" },
-          { component: "Approval gating", status: "extended", detail: "mcp__ tools default to DANGER tier (human gate + CriticGate review) with per-tool overrides for trusted servers — beyond the paper's detection scope" },
+          { component: "Approval gating", status: "extended", detail: "mcp__ tools default to DANGER tier (a person's approval, or auto mode's classifier) with per-tool overrides for trusted servers — beyond the paper's detection scope" },
           { component: "Static taint scanning (paper)", status: "simplified", detail: "Not implemented — no pre-connect scan of MCP server code; the mitigation is containment rather than detection" },
         ],
       },
