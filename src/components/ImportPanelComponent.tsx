@@ -197,13 +197,15 @@ export function ImportPreview({ outcome }: { outcome: ImportOutcome }) {
       <div className={styles["preview-heading"]}>
         {dryRun ? <Eye size={14} /> : <CheckCircle2 size={14} />}
         {outcome.kind === "plugin" ? (
-          <span>
+          <span className={styles["preview-title"]}>
             <strong>{outcome.summary.plugin.name}</strong>
             {outcome.summary.plugin.version && ` ${outcome.summary.plugin.version}`}
             {outcome.summary.plugin.description && ` — ${outcome.summary.plugin.description}`}
           </span>
         ) : (
-          <span className={styles["mono"]}>{outcome.summary.workspaceRoot}</span>
+          <span className={`${styles["mono"]} ${styles["preview-title"]}`}>
+            {outcome.summary.workspaceRoot}
+          </span>
         )}
         <span className={styles["preview-mode"]}>{dryRun ? "Preview — nothing written yet" : "Imported"}</span>
       </div>
