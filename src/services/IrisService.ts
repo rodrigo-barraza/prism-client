@@ -108,6 +108,43 @@ export interface IrisCollectionChangeEvent {
   attention?: import("../utils/conversationAttention").ConversationAttention;
 }
 
+/** One skill of GET /admin/skills/usage (prism-service skills/SkillUsage.ts). */
+export interface IrisSkillUsageRow {
+  id: string;
+  name: string;
+  skillId: string;
+  source: string;
+  enabled: boolean;
+  project: string | null;
+  username: string | null;
+  agent: string | null;
+  /** Invocations in the report's window (30 days). */
+  invocations: number;
+  /** Every invocation since the skill was created. */
+  totalInvocations: number;
+  lastUsedAt: string | null;
+  /** What the skill's catalog line adds to every prompt that lists it. */
+  catalogTokens: number;
+  /** What load_skill returns. */
+  bodyTokens: number;
+  neverInvokedInWindow: boolean;
+  createdAt: string | null;
+}
+
+export interface IrisSkillUsageReport {
+  windowDays: number;
+  since: string;
+  generatedAt: string;
+  skills: IrisSkillUsageRow[];
+  totals: {
+    skills: number;
+    invocations: number;
+    /** Catalog tokens of the enabled skills: what every prompt pays. */
+    catalogTokens: number;
+    neverInvokedInWindow: number;
+  };
+}
+
 export interface IrisHealthResponse {
   status: string;
   mongo?: string;
@@ -233,6 +270,17 @@ export default class IrisService {
     const query = toSearchParams(queryParameters);
     return fetchJSON<IrisAgentStat[]>(
       `/stats/agents${query ? `?${query}` : ""}`,
+    );
+  }
+
+  // -- Skills ------------------------------------------------
+  /** Per-skill usage over the last 30 days, with catalog and body token costs. */
+  static async getSkillUsage(
+    queryParameters: QueryParams = {},
+  ): Promise<IrisSkillUsageReport> {
+    const query = toSearchParams(queryParameters);
+    return fetchJSON<IrisSkillUsageReport>(
+      `/skills/usage${query ? `?${query}` : ""}`,
     );
   }
 

@@ -220,7 +220,7 @@ describe("ProjectInstructionsPanelComponent — save", () => {
 
     render(
       <ProjectInstructionsPanel
-        instructions={mockInstructions}
+        instructions={{ ...mockInstructions, agent: "agent-7" }}
         onInstructionsChange={onInstructionsChange}
         agent="agent-7"
       />,
@@ -240,6 +240,86 @@ describe("ProjectInstructionsPanelComponent — save", () => {
     });
     await waitFor(() => {
       expect(onInstructionsChange).toHaveBeenCalled();
+    });
+  });
+
+  // The prompt carries the project document AND the agent's (prompt 19 L3):
+  // a save from a chat whose agent has no document of its own must edit the
+  // project document it shows, not fork a copy into the agent's scope.
+  it("edits the project document an agent is shown, not a copy in the agent's scope", async () => {
+    vi.mocked(PrismService.updateProjectInstructions).mockResolvedValue({
+      ...mockInstructions,
+      version: 4,
+    });
+    vi.mocked(PrismService.getProjectInstructionsVersions).mockResolvedValue([
+      { version: 2, content: "# Older", updatedBy: "user" },
+    ]);
+    vi.mocked(PrismService.rollbackProjectInstructions).mockResolvedValue({
+      ...mockInstructions,
+      version: 5,
+    });
+
+    render(
+      <ProjectInstructionsPanel
+        instructions={{ ...mockInstructions, agent: null }}
+        onInstructionsChange={vi.fn()}
+        agent="CODING"
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Edit"));
+    fireEvent.change(screen.getByTestId("mock-textarea"), {
+      target: { value: "# Project-wide" },
+    });
+    fireEvent.click(screen.getByText("Save"));
+    await waitFor(() => {
+      expect(PrismService.updateProjectInstructions).toHaveBeenCalledWith(
+        "# Project-wide",
+        undefined,
+      );
+    });
+
+    fireEvent.click(screen.getByText("Version history"));
+    await waitFor(() => {
+      expect(PrismService.getProjectInstructionsVersions).toHaveBeenCalledWith(
+        undefined,
+        25,
+      );
+    });
+    fireEvent.click(await screen.findByText("Restore"));
+    await waitFor(() => {
+      expect(PrismService.rollbackProjectInstructions).toHaveBeenCalledWith(
+        2,
+        undefined,
+      );
+    });
+  });
+
+  it("starts a first document in the panel's agent scope", async () => {
+    vi.mocked(PrismService.updateProjectInstructions).mockResolvedValue({
+      ...mockInstructions,
+      version: 1,
+      agent: "CODING",
+    });
+
+    render(
+      <ProjectInstructionsPanel
+        instructions={{ ...emptyInstructions, agent: "CODING" }}
+        onInstructionsChange={vi.fn()}
+        agent="CODING"
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Write instructions"));
+    fireEvent.change(screen.getByTestId("mock-textarea"), {
+      target: { value: "# Coding only" },
+    });
+    fireEvent.click(screen.getByText("Save"));
+    await waitFor(() => {
+      expect(PrismService.updateProjectInstructions).toHaveBeenCalledWith(
+        "# Coding only",
+        "CODING",
+      );
     });
   });
 
