@@ -429,6 +429,29 @@ export default function MemoriesPanel({
     [loadMemories, loadFacets],
   );
 
+  const handleReviewAll = useCallback(
+    async (decision: "accept" | "reject") => {
+      if (!project) return;
+      setReviewingId("all");
+      try {
+        const result = await PrismService.reviewAllAgentMemories(project, agent, decision);
+        setToast({
+          type: "success",
+          text: `${decision === "accept" ? "Accepted" : "Rejected"} ${result.reviewed} memor${result.reviewed === 1 ? "y" : "ies"}`,
+        });
+        setShowPendingReview(false);
+        loadMemories(false);
+        loadFacets();
+      } catch (error: unknown) {
+        setToast({ type: "error", text: getErrorMessage(error) });
+      } finally {
+        setReviewingId(null);
+        setTimeout(() => setToast(null), TOAST_DURATION_MILLISECONDS);
+      }
+    },
+    [project, agent, loadMemories, loadFacets],
+  );
+
   const handleConsolidate = useCallback(async () => {
     setConsolidating(true);
     setToast(null);
@@ -915,6 +938,30 @@ export default function MemoriesPanel({
             <div className={styles['empty-subtitle']}>
               Try adjusting your search query or filters.
             </div>
+          </div>
+        )}
+
+        {showPendingReview && pendingReviewCount > 1 && (
+          <div className={styles["review-all-row"]}>
+            <span className={styles["review-all-label"]}>
+              {pendingReviewCount} memories learned from untrusted content
+            </span>
+            <button
+              type="button"
+              className={styles["review-all-accept"]}
+              onClick={() => handleReviewAll("accept")}
+              disabled={reviewingId !== null}
+            >
+              Accept all
+            </button>
+            <button
+              type="button"
+              className={styles["review-all-reject"]}
+              onClick={() => handleReviewAll("reject")}
+              disabled={reviewingId !== null}
+            >
+              Reject all
+            </button>
           </div>
         )}
 

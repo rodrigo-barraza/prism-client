@@ -451,6 +451,9 @@ describe("PrismService", () => {
       expect(lastUrl).toContain("/agent-memories/memory-9/review");
       expect(lastOptions?.method).toBe("POST");
       expect(JSON.parse(lastOptions?.body as string)).toEqual({ decision: "reject" });
+      await PrismService.reviewAllAgentMemories("project-a", "coding", "accept");
+      expect(lastUrl).toContain("/agent-memories/review-all?project=project-a&agent=coding");
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({ decision: "accept" });
 
       await PrismService.deleteAgentMemory("memory-123");
       expect(lastUrl).toContain("/agent-memories/memory-123");

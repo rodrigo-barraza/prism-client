@@ -905,6 +905,24 @@ export default class PrismService {
     );
   }
 
+  /** Decide every memory awaiting review in a project (optionally one agent's). */
+  static async reviewAllAgentMemories(
+    project: string,
+    agent: string | undefined,
+    decision: "accept" | "reject",
+  ): Promise<{ success: boolean; decision: "accept" | "reject"; reviewed: number }> {
+    const queryString = new URLSearchParams({ project });
+    if (agent) queryString.set("agent", agent);
+    return PrismService._request<{
+      success: boolean;
+      decision: "accept" | "reject";
+      reviewed: number;
+    }>(`/agent-memories/review-all?${queryString}`, {
+      method: HTTP_METHODS.POST,
+      body: { decision },
+    });
+  }
+
   /**
    * Delete a specific agent memory.
 
