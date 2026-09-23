@@ -54,14 +54,18 @@ export interface PermissionTestRequest {
   conversationId?: string | null;
   agent?: string | null;
   workspaceRoot?: string | null;
+  /** Judge the call in this mode (default: `default`). */
+  permissionMode?: PermissionMode;
   draft?: { rule: string; decision: PermissionDecision };
 }
 
 /** "Would this call be allowed?" — the server's explanation. */
 export interface PermissionTestResult {
   decision: PermissionDecision;
-  /** Which layer decided: self_protection · rules · agent_policy · hook · tier · full_auto. */
+  /** Which layer decided: self_protection · rules · agent_policy · hook · mode · protected_path · tier · full_auto. */
   layer: string;
+  /** The permission mode the call was judged in. */
+  mode?: PermissionMode;
   rule?: string;
   ruleScope?: PermissionScope;
   reason: string;
@@ -83,4 +87,36 @@ export interface PermissionRuleSuggestion {
   toolName: string;
   count: number;
   lastApprovedAt: string;
+}
+
+// ── Permission modes ───────────────────────────────────────────────
+// Mirrors prism-service `src/services/permissions/PermissionModes.ts`.
+
+export const PERMISSION_MODES = ["default", "plan", "acceptEdits", "auto", "dontAsk", "bypass"] as const;
+export type PermissionMode = (typeof PERMISSION_MODES)[number];
+
+export function isPermissionMode(value: unknown): value is PermissionMode {
+  return typeof value === "string" && (PERMISSION_MODES as readonly string[]).includes(value);
+}
+
+/** One mode as `GET /permissions/mode` describes it, for this user. */
+export interface PermissionModeInfo {
+  id: PermissionMode;
+  label: string;
+  description: string;
+  /** False when this user cannot pick it (bypass without the owner flag). */
+  available: boolean;
+  unavailableReason?: string;
+  note?: string;
+}
+
+/** `GET /permissions/mode` */
+export interface PermissionModeState {
+  conversationId: string | null;
+  mode: PermissionMode;
+  /** running (a turn is in it) · conversation (stored) · default (settings). */
+  source: "running" | "conversation" | "default";
+  defaultMode: PermissionMode;
+  bypassAllowed: boolean;
+  modes: PermissionModeInfo[];
 }

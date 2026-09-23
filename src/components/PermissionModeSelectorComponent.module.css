@@ -1,0 +1,87 @@
+/* ── Permission mode selector ──────────────────────────────── */
+/* One row above the composer: the mode, and what it means.    */
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  margin-block-end: 6px;
+  padding-inline: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--text-secondary);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 2px 4px 2px 7px;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: 999px;
+}
+
+.label-text {
+  font-weight: 500;
+}
+
+.select {
+  appearance: auto;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.select:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* The modes that change what runs get a tint, so a glance tells them apart. */
+.is-mode-plan {
+  border-color: var(--color-info);
+}
+
+.is-mode-acceptEdits,
+.is-mode-auto {
+  border-color: var(--color-warning);
+}
+
+.is-mode-dontAsk {
+  border-color: var(--text-secondary);
+}
+
+.is-mode-bypass {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.bypass-banner {
+  margin: 0;
+}
+
+.message {
+  font-size: 11px;
+  color: var(--color-danger);
+}

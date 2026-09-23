@@ -47,6 +47,11 @@ interface ApprovalCardProps {
   alwaysAllow?: { conversationId?: string | null; workspaceRoot?: string | null };
   /** Set when a sub-agent asked — named on the card. */
   subAgentDescription?: string;
+  /**
+   * A write to a protected path. It asks in every permission mode, so the
+   * card says why and offers no "Always allow" — a rule would not stop it.
+   */
+  protectedPath?: string;
 }
 
 type Mode = "idle" | "deny" | "edit";
@@ -76,6 +81,7 @@ export default function ApprovalCardComponent({
   onDecide,
   alwaysAllow,
   subAgentDescription,
+  protectedPath,
 }: ApprovalCardProps) {
   const tierInfo = TIER_CONFIG[tier] || TIER_CONFIG[2];
   const TierIcon = tierInfo.icon;
@@ -140,6 +146,15 @@ export default function ApprovalCardComponent({
           {isSubmitting ? "Sending…" : "Waiting for your approval"}
         </span>
       </div>
+
+      {protectedPath && (
+        <div className={styles["protected-note"]} role="note">
+          <ShieldAlert size={13} />
+          <span>
+            Protected path <code>{protectedPath}</code> — writes here always ask, in every mode.
+          </span>
+        </div>
+      )}
 
       {preview && (
         <div className={styles["preview"]}>
@@ -304,7 +319,7 @@ export default function ApprovalCardComponent({
         </div>
       )}
 
-      {mode === "idle" && alwaysAllow && (
+      {mode === "idle" && alwaysAllow && !protectedPath && (
         <AlwaysAllowControlComponent
           toolName={toolName}
           toolArgs={toolArgs}

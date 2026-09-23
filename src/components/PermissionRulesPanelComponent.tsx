@@ -23,6 +23,7 @@ import {
   SegmentedControlComponent,
 } from "@rodrigo-barraza/components-library";
 import PermissionRulesService from "../services/PermissionRulesService";
+import DefaultPermissionModeComponent from "./DefaultPermissionModeComponent";
 import { getErrorMessage } from "../utils/errorMessage";
 import {
   PERMISSION_DECISIONS,
@@ -465,6 +466,7 @@ export default function PermissionRulesPanel() {
 
   return (
     <div className={`permission-rules-panel-component ${styles["container"]}`}>
+      <DefaultPermissionModeComponent />
       <div className={styles["toolbar"]}>
         {rules.length > 0 && (
           <SearchInputComponent value={searchQuery} onChange={setSearchQuery} placeholder="Search rules…" compact />

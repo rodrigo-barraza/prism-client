@@ -25,6 +25,11 @@ export interface PendingApproval {
   conversationId?: string;
   /** Which sub-agent asked, for the card's label. */
   subAgentDescription?: string;
+  /**
+   * A write to a protected path (.git, .env*, Prism configuration): it asks
+   * in every mode, and no "Always allow" rule can stop it asking.
+   */
+  protectedPath?: string;
   status: ApprovalCardStatus;
 }
 
@@ -50,6 +55,9 @@ export function approvalFromEvent(data: SSEData): PendingApproval | null {
       : {}),
     ...(typeof data.subAgentDescription === "string" && data.approvalConversationId
       ? { subAgentDescription: data.subAgentDescription }
+      : {}),
+    ...(typeof data.protectedPath === "string" && data.protectedPath
+      ? { protectedPath: data.protectedPath }
       : {}),
     status: "pending",
   };

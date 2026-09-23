@@ -45,6 +45,10 @@ vi.mock("../../services/PermissionRulesService", () => ({
     test: vi.fn(),
     propose: vi.fn(),
     suggestions: vi.fn(),
+    // The default-mode control at the top (its own tests:
+    // permissionModeSelectorComponent) — hidden when modes don't load.
+    getMode: vi.fn().mockRejectedValue(new Error("not under test")),
+    setDefaultMode: vi.fn(),
   },
 }));
 

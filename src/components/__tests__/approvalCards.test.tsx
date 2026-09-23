@@ -11,7 +11,6 @@ import React, { useState } from "react";
 import ApprovalCardsComponent from "../ApprovalCardsComponent";
 import { approvalFromEvent, type PendingApproval } from "../../utils/approvalCards";
 import type { SSEData } from "../../types/types";
-import { LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED } from "../../constants";
 import writeFileEvent from "../../__fixtures__/approvals/approval-required-write-file.json";
 
 const sendApprovalDecision = vi.fn();
@@ -231,8 +230,9 @@ describe("ApprovalCardsComponent — one card per tool call", () => {
     );
     expect(within(card("write_file", 0)).getByText("Waiting for your approval")).toBeInTheDocument();
     expect(sendApprovalDecision).toHaveBeenCalledTimes(1);
-    // The tab-wide toggle a new conversation would inherit was never touched.
-    expect(localStorage.getItem(LOCAL_STORAGE_KEY_AUTO_APPROVE_ENABLED)).toBeNull();
+    // Nothing tab-wide a new conversation would inherit was written (the
+    // old auto-approve toggle's key; the permission mode is per conversation).
+    expect(localStorage.getItem("agent:autoApproveEnabled")).toBeNull();
   });
 
   it("renders the diff preview of a recorded approval_required event", () => {
