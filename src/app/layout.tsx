@@ -56,9 +56,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <template
+        {/* A plain <script> runs before first paint; one inside a <template>
+            is inert and never runs, so non-default themes flashed. */}
+        <script
           dangerouslySetInnerHTML={{
-            __html: `<script>${generateThemeInitScript("prism:theme")}
+            __html: `${generateThemeInitScript("prism:theme")}
 (function(){
   try {
     var nav = localStorage.getItem('${LOCAL_STORAGE_KEY_PANEL_NAV}');
@@ -75,9 +77,8 @@ export default function RootLayout({
   }
   syncViewportHeight();
   window.visualViewport.addEventListener('resize', syncViewportHeight);
-})();</script>`,
+})();`,
           }}
-          suppressHydrationWarning
         />
       </head>
       <body
