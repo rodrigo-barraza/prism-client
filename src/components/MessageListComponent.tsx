@@ -3,90 +3,44 @@
 import React, {
   useState,
   useEffect,
+  useLayoutEffect,
   useRef,
   useMemo,
   useCallback,
+  useImperativeHandle,
+  type Ref,
+  type RefObject,
 } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  Check,
-  Clock,
-  Download,
-  File as FileIcon,
-  FileCode,
-  FileSpreadsheet,
-  FileText,
-  Trash2,
-  Pencil,
-  RotateCcw,
-  Video as VideoIcon,
-  Volume2,
-  X as XIcon,
-  RefreshCw,
-  Undo2,
-  AlertTriangle,
-  User,
-  Bot,
-  Terminal,
-  Zap,
-  History,
-  GitBranch,
-} from "lucide-react";
-import ToolCallsBlockComponent from "./ToolCallsBlockComponent";
-import { ToolResultView } from "./ToolResultRenderers";
-import {
-  collectPriorToolDisplayUrls,
-  getResultDisplay,
-  substituteToolOutputTokens,
-} from "./ToolResultRenderers/utils";
-import { MarkdownContentComponent as MarkdownContent } from "@rodrigo-barraza/components-library";
-import CitationsComponent from "./CitationsComponent";
-import { StreamingCursorComponent } from "@rodrigo-barraza/components-library";
-import { splitStreamingTail } from "@rodrigo-barraza/components-library";
-
-import AudioPlayerRecorderComponent from "./AudioPlayerRecorderComponent";
-
-import BadgeComponent, { type ClientAgent } from "./BadgeComponent";
-import { renderAgentIcon } from "./AgentPickerComponent";
-
+import { ChevronDown, Pencil, Terminal, User } from "lucide-react";
 import {
   CopyButtonComponent,
   IconButtonComponent,
+  MarkdownContentComponent as MarkdownContent,
 } from "@rodrigo-barraza/components-library";
-import SubAgentNotificationComponent from "./SubAgentNotificationComponent";
-
-import PlanCardComponent from "./PlanCardComponent";
+import type { ToolDisplayMetadata } from "@rodrigo-barraza/utilities-library";
+import BadgeComponent, { type ClientAgent } from "./BadgeComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
+import MessageRow, {
+  rowShowsPlan,
+  type MessageRowActions,
+  type MessageRowShared,
+  type PlanProposalView,
+} from "./MessageList/MessageRowComponent";
+import { parseTaskNotification, renderContentWithMentions } from "./MessageList/MessageRowParts";
+import {
+  buildDisplayList,
+  coalesceAssistantRuns,
+  deletedMessageGroups,
+  estimateRowHeight,
+  hasStreamingOutput,
+  modelSwapPositions,
+  priorToolMediaKey,
+  readsSubAgentActivity,
+} from "./MessageList/messageRows";
 import styles from "./MessageListComponent.module.css";
-import {
-  isUserAuthoredNotificationSource,
-  isTurnInputMessage,
-  resolveTurnInput,
-  turnInputAuthorLabel,
-  turnInputBadgeLabel,
-  turnInputDisplayText,
-} from "../utils/turnInputRouting";
-import PrismService from "../services/PrismService";
-import { getCleanAndRaw } from "../utils/messageHelpers";
 import SoundService from "@/services/SoundService";
-import {
-  APPROVAL_STATUS,
-  isLocalProvider,
-  resolveProviderBaseType,
-} from "../constants";
-import { getTotalInputTokens } from "../utils/utilities";
-import { parseMentionTokens } from "../utils/mentionUtils";
-import { getTextualFileKind, formatFileSize } from "../utils/fileIntake";
-import { TOOL_NAMES } from "@rodrigo-barraza/utilities-library/taxonomy";
-import { noteMessageRowRender } from "../utils/chatDebugProbe";
-
-import type {
-  Message,
-  ToolCallEvent,
-  ContentSegment,
-  FileAttachment,
-} from "../types/types";
+import useVirtualRows from "../hooks/useVirtualRows";
+import type { Message } from "../types/types";
 
 export interface SubAgentToolActivityItem {
   toolNames?: string[] | Record<string, number> | Record<string, string>;
@@ -103,763 +57,6 @@ export interface SubAgentToolActivityItem {
   conversationId?: string;
 }
 
-/* -- Task notification detection ─────────────────────────────
- * Sub-agent results, async task completions, and timer reminders
- * arrive as user-role messages with _notificationSource metadata.
- * For messages persisted before the metadata field existed,
- * fall back to content-based <task-notification> XML detection.  */
-
-function isNotificationMessage(message: Message): boolean {
-  // Mid-turn steering updates / question answers are persisted with a
-  // `_notificationSource` too ("user-update" | "user-answer"), but they
-  // are the USER's own words — rendered as a user bubble, never a card.
-  if (isUserAuthoredNotificationSource(message._notificationSource)) return false;
-  if (message._turnInput) return false;
-  if (message._notificationSource) return true;
-  if (!message.content) return false;
-  return message.content.includes("<task-notification>");
-}
-
-function parseTaskNotification(content: string | undefined | null) {
-  if (!content) return null;
-
-  // Primary path: structured XML format
-  if (content.includes("<task-notification>")) {
-    const tag = (name: string) => {
-      const regex = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`);
-      const regexMatch = content.match(regex);
-      return regexMatch ? regexMatch[1].trim() : null;
-    };
-    return {
-      taskId: tag("task-id"),
-      status: tag("status"),
-      summary: tag("summary"),
-      result: tag("result"),
-      toolUses: tag("tool_uses") ? parseInt(tag("tool_uses") || "0", 10) : 0,
-      durationMs: tag("duration_ms"),
-    };
-  }
-
-  return null;
-}
-
-/**
- * Splits a raw message content string into a system context prefix (if any) and the clean user message.
- */
-function splitRawContent(raw: string | undefined | null): {
-  prefix: string;
-  rest: string;
-} {
-  if (!raw) return { prefix: "", rest: "" };
-  if (raw.startsWith("[System Context]")) {
-    const splitIndex = raw.indexOf("\n\n[User Message]\n");
-    if (splitIndex !== -1) {
-      const length = splitIndex + "\n\n[User Message]\n".length;
-      return { prefix: raw.substring(0, length), rest: raw.substring(length) };
-    }
-    const altSplit = raw.indexOf("[User Message]\n");
-    if (altSplit !== -1) {
-      const length = altSplit + "[User Message]\n".length;
-      return { prefix: raw.substring(0, length), rest: raw.substring(length) };
-    }
-  } else if (raw.startsWith("[System Context - Local Time:")) {
-    const index = raw.indexOf("]\n\n");
-    if (index !== -1) {
-      const length = index + 3;
-      return { prefix: raw.substring(0, length), rest: raw.substring(length) };
-    }
-  }
-  return { prefix: "", rest: raw };
-}
-
-/* -- Render @path mentions as inline badges -------------------
- * When a user sends a message with file/dir mentions, the
- * contentEditable serializer stores them as `@path/to/file`
- * strings. This function parses them back into styled badges
- * for display in the message list.                             */
-
-function renderContentWithMentions(
-  text: string | undefined | null,
-  knownPaths: Set<string> | null | undefined,
-  onMentionFileOpen: ((_path: string) => void) | undefined,
-) {
-  const segments = parseMentionTokens(text || "");
-  // Fast path: no mentions found, return plain string
-  if (segments.length === 1 && segments[0].type === "text") return text || "";
-
-  return segments.map((seg, i) => {
-    if (seg.type === "text") return seg.value;
-    // Strip the #Lstart-Lend suffix from the value to get a clean path
-    const cleanPath = seg.value.replace(/#L\d+(-L\d+)?$/, "");
-    return (
-      <BadgeComponent
-        key={i}
-        type="mention"
-        path={cleanPath}
-        lineStart={seg.lineStart}
-        lineEnd={seg.lineEnd}
-        knownPaths={knownPaths}
-        onFileOpen={onMentionFileOpen}
-      />
-    );
-  });
-}
-
-function getMimeCategory(ref: string | undefined | null) {
-  if (!ref) return "file";
-  let targetUrl = ref;
-  if (ref.startsWith("minio://")) {
-    targetUrl = PrismService.getFileUrl(ref);
-  }
-  // Handle HTTP/HTTPS URLs (e.g. MinIO files or Discord CDN images)
-  if (targetUrl.startsWith("http://") || targetUrl.startsWith("https://")) {
-    try {
-      const pathname = new URL(targetUrl).pathname;
-      const ext = pathname.split(".").pop()?.toLowerCase();
-      if (
-        ext &&
-        ["png", "jpg", "jpeg", "gif", "webp", "svg", "heic", "heif"].includes(
-          ext,
-        )
-      )
-        return "image";
-      if (ext && ["wav", "mp3", "webm", "ogg"].includes(ext)) return "audio";
-      if (ext && ["mp4", "mov", "avi"].includes(ext)) return "video";
-      if (ext === "pdf") return "pdf";
-      // Any recognized text/code extension (.txt, .md, .py, .log, …)
-      if (ext === "txt" || getTextualFileKind(pathname)) return "text";
-    } catch {
-      // URL parse failed, fall through
-    }
-    return "image"; // Default assumption for HTTP URLs in images array
-  }
-  const match = targetUrl.match(/^data:([^;,]+)/);
-  if (!match) return "file";
-  const mime = match[1];
-  if (mime === "application/json") return "text";
-  const type = mime.split("/")[0];
-  if (type === "application") return "pdf";
-  if (type === "text") return "text";
-  return type;
-}
-
-/**
- * Category from an explicit MIME type — used when the caller knows the
- * attachment's MIME (message.files) and the URL alone is unreliable
- * (MinIO object names may not keep the original extension).
- */
-function getCategoryFromMimeType(mimeType: string): string {
-  if (mimeType.startsWith("image/")) return "image";
-  if (mimeType.startsWith("audio/")) return "audio";
-  if (mimeType.startsWith("video/")) return "video";
-  if (mimeType === "application/pdf") return "pdf";
-  if (mimeType.startsWith("text/") || mimeType === "application/json")
-    return "text";
-  return "file";
-}
-
-/* -- Message time formatter ------------------------------------
- * Produces a short clock-time string (e.g. "7:15 PM") from an
- * ISO timestamp, and a full date-time string for the tooltip.  */
-
-const MESSAGE_TIME_FORMATTER = new Intl.DateTimeFormat(undefined, {
-  hour: "numeric",
-  minute: "2-digit",
-  hour12: true,
-});
-
-const MESSAGE_TOOLTIP_FORMATTER = new Intl.DateTimeFormat(undefined, {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  second: "2-digit",
-  hour12: true,
-});
-
-function formatMessageTime(isoTimestamp: string | undefined | null): {
-  shortTime: string;
-  fullDateTime: string;
-} | null {
-  if (!isoTimestamp) return null;
-  try {
-    const parsedDate = new Date(isoTimestamp);
-    if (isNaN(parsedDate.getTime())) return null;
-    return {
-      shortTime: MESSAGE_TIME_FORMATTER.format(parsedDate),
-      fullDateTime: MESSAGE_TOOLTIP_FORMATTER.format(parsedDate),
-    };
-  } catch {
-    return null;
-  }
-}
-
-/* -- Sub-components -------------------------------------------- */
-
-interface ThinkingBlockProps {
-  thinking?: string;
-  isStreaming?: boolean;
-  streamKeepVisible?: boolean;
-  thinkingDurationSeconds?: number;
-  children?: React.ReactNode;
-  // Minimal "Chat" view: render a compact, non-expandable pill.
-  minimal?: boolean;
-}
-
-function ThinkingBlock({
-  thinking,
-  isStreaming,
-  streamKeepVisible,
-  thinkingDurationSeconds,
-  children,
-  minimal = false,
-}: ThinkingBlockProps) {
-  // User can manually toggle after streaming has finished
-  const [manualOpen, setManualOpen] = useState(false);
-  // User can temporarily close during streaming
-  const [streamClosed, setStreamClosed] = useState(false);
-  const contentRef = useRef<HTMLDivElement | null>(null);
-
-  // Live counter for streaming — track elapsed seconds in real-time.
-  // Deliberately keyed on a boolean rather than the thinking text itself:
-  // depending on `thinking` would tear down and recreate the interval on
-  // every streamed token, so a sub-second token cadence keeps the 1s timer
-  // from ever firing and the counter never advances.
-  const streamingStartRef = useRef<number | null>(null);
-  const [liveElapsedSeconds, setLiveElapsedSeconds] = useState(0);
-  const hasThinkingText = Boolean(thinking);
-
-  useEffect(() => {
-    if (isStreaming && hasThinkingText) {
-      if (streamingStartRef.current === null) {
-        streamingStartRef.current = performance.now();
-      }
-      const updateElapsedSeconds = () => {
-        if (streamingStartRef.current !== null) {
-          setLiveElapsedSeconds(
-            Math.round((performance.now() - streamingStartRef.current) / 1000),
-          );
-        }
-      };
-      updateElapsedSeconds();
-      const intervalId = setInterval(updateElapsedSeconds, 1000);
-      return () => clearInterval(intervalId);
-    }
-    if (!isStreaming) {
-      streamingStartRef.current = null;
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
-      setLiveElapsedSeconds(0);
-    }
-  }, [isStreaming, hasThinkingText]);
-
-  // Derive collapsed state:
-  // - Streaming: expanded unless user explicitly closed it
-  // - Not streaming: collapsed unless user explicitly opened it
-  const collapsed = isStreaming ? streamClosed : !manualOpen;
-
-  // Auto-scroll to bottom of thinking content while streaming (instant snap)
-  // Direct scrollTop assignment avoids the race condition where queued smooth
-  // scroll animations can never keep up with rapid token emission.
-  useEffect(() => {
-    if (isStreaming && !streamClosed && contentRef.current) {
-      const element = contentRef.current;
-      requestAnimationFrame(() => {
-        if (element) {
-          element.scrollTop = element.scrollHeight;
-        }
-      });
-    }
-  }, [thinking, isStreaming, streamClosed]);
-
-  const handleToggle = () => {
-    if (isStreaming) {
-      setStreamClosed((previousClosedState) => !previousClosedState);
-    } else {
-      setManualOpen((previousOpenState) => !previousOpenState);
-    }
-  };
-
-  if (!isStreaming && !streamKeepVisible && !thinking?.trim() && !children) return null;
-
-  // Determine the label text based on streaming state and available duration
-  const thinkingLabel = (() => {
-    if (isStreaming) {
-      return liveElapsedSeconds > 0
-        ? `Thinking for ${liveElapsedSeconds} second${liveElapsedSeconds === 1 ? "" : "s"}…`
-        : "Thinking…";
-    }
-    if (thinkingDurationSeconds != null && thinkingDurationSeconds > 0) {
-      return `Thought for ${thinkingDurationSeconds < 1 ? "<1" : Math.round(thinkingDurationSeconds)} second${Math.round(thinkingDurationSeconds) === 1 ? "" : "s"}`;
-    }
-    return "Thoughts";
-  })();
-
-  // Minimal "Chat" view — a non-expandable pill mirroring the tool-call pill.
-  if (minimal) {
-    return (
-      <div
-        className={`${styles['thinking-pill']}${isStreaming ? ` ${styles['thinking-pill-active']}` : ""}`}
-      >
-        <span className={styles['thinking-toggle-emoji']}>🧠</span>
-        <span className={styles['thinking-pill-label']}>{thinkingLabel}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`${styles['thinking-block']}${isStreaming ? ` ${styles['thinking-streaming']}` : ""}`}
-    >
-      <button className={styles['thinking-toggle']} onClick={handleToggle}>
-        <span className={styles['thinking-toggle-emoji']}>🧠</span>
-        <span>{thinkingLabel}</span>
-        <ChevronDown size={14} className={`${styles['thinking-chevron']}${collapsed ? ` ${styles['thinking-chevron-collapsed']}` : ''}`} />
-      </button>
-      <div className={`${styles['thinking-disclosure']}${collapsed ? ` ${styles['thinking-disclosure-collapsed']}` : ''}`}>
-        <div className={styles['thinking-content']} ref={contentRef}>
-          {thinking?.trim() ? (
-            (() => {
-              const { body, token } = isStreaming
-                ? splitStreamingTail(thinking)
-                : { body: thinking, token: "" };
-              return (
-                <MarkdownContent
-                  content={body}
-                  className={isStreaming ? styles['streaming-text'] : ""}
-                >
-                  {isStreaming && (
-                    <StreamingCursorComponent active token={token} />
-                  )}
-                </MarkdownContent>
-              );
-            })()
-          ) : (
-            isStreaming && <StreamingCursorComponent active standalone />
-          )}
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* Inline preview of a text/code attachment — fetches the source
- * (fetch() handles data: URLs too) and renders it in a scrollable
- * monospace block. Content is capped so a huge log can't lock up the
- * message list. */
-const TEXT_PREVIEW_MAX_CHARS = 100_000;
-
-function TextFilePreview({ sourceUrl }: { sourceUrl: string }) {
-  // Callers key this component on sourceUrl, so a URL change remounts
-  // it and the loading state resets without any in-effect setState.
-  const [textContent, setTextContent] = useState<string | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch(sourceUrl)
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.text();
-      })
-      .then((text) => {
-        if (cancelled) return;
-        setTextContent(
-          text.length > TEXT_PREVIEW_MAX_CHARS
-            ? text.slice(0, TEXT_PREVIEW_MAX_CHARS) + "\n… (truncated)"
-            : text,
-        );
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        setLoadError(
-          error instanceof Error ? error.message : "failed to load",
-        );
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [sourceUrl]);
-
-  return (
-    <div className={styles['text-file-preview']}>
-      {loadError ? (
-        <div className={styles['text-file-status']}>
-          Could not load preview ({loadError})
-        </div>
-      ) : textContent === null ? (
-        <div className={styles['text-file-status']}>Loading…</div>
-      ) : (
-        <pre className={styles['text-file-content']}>{textContent}</pre>
-      )}
-    </div>
-  );
-}
-
-interface MediaPreviewProps {
-  dataUrl: string;
-  /**
-   * Known MIME type of the attachment. When provided it decides the
-   * preview category directly — more reliable than sniffing the URL,
-   * whose extension may be lost on MinIO uploads.
-   */
-  mimeType?: string;
-  onClick?: () => void;
-}
-
-function MediaPreview({ dataUrl: rawUrl, mimeType, onClick }: MediaPreviewProps) {
-  const sourceUrl = PrismService.getFileUrl(rawUrl);
-  const mimeCategory = mimeType ? getCategoryFromMimeType(mimeType) : "file";
-  const cat = mimeCategory !== "file" ? mimeCategory : getMimeCategory(rawUrl);
-
-  if (cat === "image") {
-    return (
-       
-      <img
-        src={sourceUrl}
-        alt="Attached"
-        className={styles['message-image']}
-        onClick={onClick}
-      />
-    );
-  }
-  if (cat === "audio") {
-    return (
-      <div className={styles['audio-card']}>
-        <AudioPlayerRecorderComponent sourceUrl={sourceUrl} compact />
-      </div>
-    );
-  }
-  if (cat === "video") {
-    return (
-      <div className={styles['video-card']}>
-        <video
-          controls
-          src={sourceUrl}
-          preload="metadata"
-          className={styles['video-preview']}
-        />
-      </div>
-    );
-  }
-  if (cat === "pdf") {
-    return (
-      <div className={styles['pdf-viewer']}>
-        <div className={styles['pdf-header']}>
-          <FileText size={14} className={styles['pdf-header-icon']} />
-          <span className={styles['pdf-header-label']}>PDF Document</span>
-          <a
-            href={sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles['pdf-open-link']}
-          >
-            Open ↗
-          </a>
-        </div>
-        <iframe
-          src={sourceUrl}
-          className={styles['pdf-frame']}
-          title="PDF preview"
-        />
-      </div>
-    );
-  }
-  if (cat === "text") {
-    return <TextFilePreview key={sourceUrl} sourceUrl={sourceUrl} />;
-  }
-  return (
-    <div className={styles['media-card']}>
-      <FileText size={22} className={styles['media-card-icon']} />
-      <span className={styles['media-card-label']}>{cat.toUpperCase()}</span>
-    </div>
-  );
-}
-
-/* -- Sent non-image file attachments ---------------------------
- * message.files carries {url, name, mimeType, modality} refs for
- * files uploaded to MinIO at send time. Each renders as a compact
- * chip (mirroring the pending-attachment chips in the input box);
- * previewable categories expand an inline MediaPreview on click,
- * everything else gets a download / open-in-new-tab link.       */
-
-function renderAttachmentChipIcon(file: FileAttachment) {
-  const mimeType = file.mimeType || "";
-  const kind =
-    file.modality ||
-    (mimeType.startsWith("audio/")
-      ? "audio"
-      : mimeType.startsWith("video/")
-        ? "video"
-        : mimeType === "application/pdf"
-          ? "pdf"
-          : undefined);
-  const iconProps = { size: 14, className: styles['file-chip-icon'] };
-  if (kind === "audio") return <Volume2 {...iconProps} />;
-  if (kind === "video") return <VideoIcon {...iconProps} />;
-  if (kind === "pdf") return <FileText {...iconProps} />;
-  // Text/code files get code-flavoured icons regardless of modality
-  // bucket; other documents (docx/xlsx/csv) keep the spreadsheet icon.
-  const textualKind = getTextualFileKind(file.name || "");
-  if (textualKind === "code") return <FileCode {...iconProps} />;
-  if (textualKind === "text") return <FileText {...iconProps} />;
-  if (kind === "document") return <FileSpreadsheet {...iconProps} />;
-  if (mimeType.startsWith("text/") || mimeType === "application/json")
-    return <FileText {...iconProps} />;
-  return <FileIcon {...iconProps} />;
-}
-
-function getAttachmentCategory(file: FileAttachment): string {
-  const mimeType = file.mimeType || "";
-  if (mimeType.startsWith("image/")) return "image";
-  if (mimeType.startsWith("audio/")) return "audio";
-  if (mimeType.startsWith("video/")) return "video";
-  if (mimeType === "application/pdf") return "pdf";
-  if (mimeType.startsWith("text/") || mimeType === "application/json")
-    return "text";
-  return "file";
-}
-
-// Categories MediaPreview can render meaningfully inline.
-const PREVIEWABLE_ATTACHMENT_CATEGORIES = new Set([
-  "image",
-  "audio",
-  "video",
-  "pdf",
-  "text",
-]);
-
-function FileAttachmentChip({ file }: { file: FileAttachment }) {
-  const [expanded, setExpanded] = useState(false);
-  const resolvedUrl = file.url ? PrismService.getFileUrl(file.url) : null;
-  const category = getAttachmentCategory(file);
-  const canPreview =
-    Boolean(file.url) && PREVIEWABLE_ATTACHMENT_CATEGORIES.has(category);
-  const chipBody = (
-    <>
-      {renderAttachmentChipIcon(file)}
-      <span className={styles['file-chip-name']}>{file.name}</span>
-      {file.sizeBytes != null && file.sizeBytes > 0 && (
-        <span className={styles['file-chip-size']}>
-          {formatFileSize(file.sizeBytes)}
-        </span>
-      )}
-    </>
-  );
-  return (
-    <div className={styles['file-attachment']}>
-      <div className={styles['file-chip']}>
-        {canPreview ? (
-          <button
-            type="button"
-            className={styles['file-chip-main']}
-            onClick={() => setExpanded((wasExpanded) => !wasExpanded)}
-            title={`${file.name} — click to ${expanded ? "hide" : "show"} preview`}
-          >
-            {chipBody}
-          </button>
-        ) : (
-          <span className={styles['file-chip-main']} title={file.name}>
-            {chipBody}
-          </span>
-        )}
-        {resolvedUrl && (
-          <a
-            href={resolvedUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            download={file.name}
-            className={styles['file-chip-open']}
-            title={`Download / open ${file.name}`}
-          >
-            <Download size={13} />
-          </a>
-        )}
-      </div>
-      {expanded && canPreview && file.url && (
-        <div className={styles['file-attachment-preview']}>
-          <MediaPreview dataUrl={file.url} mimeType={file.mimeType} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* -- Inline edit for messages ---------------------------------- */
-
-interface EditableMessageProps {
-  content: string;
-  index: number;
-  role: Message["role"];
-  onEdit: (_index: number, _content: string) => void;
-  editing: boolean;
-  onCancelEdit: () => void;
-  knownPaths?: Set<string> | null;
-  onMentionFileOpen?: (_path: string) => void;
-  showRaw?: boolean;
-}
-
-function EditableMessage({
-  content,
-  index,
-  role,
-  onEdit,
-  editing,
-  onCancelEdit,
-  knownPaths,
-  onMentionFileOpen,
-  showRaw = false,
-}: EditableMessageProps) {
-  const [editValue, setEditValue] = useState(content);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const isAssistant = role === "assistant";
-
-  // Auto-resize textarea to fit content on open
-  useEffect(() => {
-    if (editing && textareaRef.current) {
-      const element = textareaRef.current;
-      element.style.height = "auto";
-      element.style.height = Math.min(element.scrollHeight, 600) + "px";
-    }
-  }, [editing]);
-
-  const cancel = () => {
-    onCancelEdit();
-    setEditValue(content);
-  };
-  const save = () => {
-    if (editValue.trim() && editValue !== content) onEdit(index, editValue);
-    onCancelEdit();
-  };
-  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Escape") cancel();
-    // Only user messages submit on plain Enter; assistant messages
-    // always use Shift+Enter or the Save button (since content is long)
-    else if (e.key === "Enter" && !e.shiftKey && !isAssistant) {
-      e.preventDefault();
-      save();
-    }
-  };
-
-  if (editing) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-          width: "100%",
-        }}
-      >
-        <textarea
-          ref={textareaRef}
-          autoFocus
-          value={editValue}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-            setEditValue(e.target.value);
-            // Auto-resize as content changes
-            const element = e.target;
-            element.style.height = "auto";
-            element.style.height = Math.min(element.scrollHeight, 600) + "px";
-          }}
-          onKeyDown={handleKey}
-          rows={isAssistant ? 8 : 3}
-          style={{
-            width: "100%",
-            minHeight: isAssistant ? 120 : 60,
-            maxHeight: 600,
-            padding: "10px 12px",
-            fontSize: isAssistant ? 13 : 14,
-            lineHeight: 1.55,
-            color: "var(--text-primary)",
-            background: "var(--background-surface)",
-            border: "1px solid var(--accent-primary)",
-            borderRadius: 8,
-            resize: "vertical",
-            fontFamily: isAssistant ? "var(--font-mono, monospace)" : "inherit",
-            boxShadow: "0 0 0 2px var(--accent-primary-glow)",
-            tabSize: 2,
-          }}
-        />
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <button
-            onClick={save}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "5px 14px",
-              fontSize: 12,
-              fontWeight: 600,
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-              background: "var(--accent-primary)",
-              color: "#fff",
-            }}
-          >
-            <Check size={14} /> Save
-          </button>
-          <button
-            onClick={cancel}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "5px 14px",
-              fontSize: 12,
-              fontWeight: 600,
-              borderRadius: 6,
-              cursor: "pointer",
-              background: "var(--background-elevated)",
-              color: "var(--text-secondary)",
-              border: "1px solid var(--border-color)",
-            }}
-          >
-            <XIcon size={14} /> Cancel
-          </button>
-          {isAssistant && (
-            <span
-              style={{
-                marginLeft: "auto",
-                fontSize: 11,
-                color: "var(--text-muted)",
-              }}
-            >
-              Raw markdown • Esc to cancel
-            </span>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Non-editing: user messages show plain text, assistant uses caller's rendering
-  if (!isAssistant) {
-    if (showRaw) {
-      const { prefix, rest } = splitRawContent(content);
-      if (prefix) {
-        return (
-          <div className={styles['text']}>
-            <div className={styles['raw-prefix']}>{prefix}</div>
-            {renderContentWithMentions(rest, knownPaths, onMentionFileOpen)}
-          </div>
-        );
-      }
-    }
-    return (
-      <div className={styles['text']}>
-        {renderContentWithMentions(content, knownPaths, onMentionFileOpen)}
-      </div>
-    );
-  }
-  return null; // Assistant non-editing rendering is handled by the caller
-}
-
-/* -- Main export ----------------------------------------------- */
-
 /** A non-image file staged in the input box, not yet uploaded. */
 export interface PendingFileAttachment {
   name: string;
@@ -867,6 +64,17 @@ export interface PendingFileAttachment {
   dataUrl: string;
   modality: string;
   sizeBytes?: number;
+}
+
+/** Previous / next message, as the chat header's arrows move. */
+export interface MessageListNavigation {
+  previous: () => void;
+  next: () => void;
+}
+
+export interface MessageListNavigationState {
+  canNavigateUp: boolean;
+  canNavigateDown: boolean;
 }
 
 interface MessageListBaseProps {
@@ -877,7 +85,7 @@ interface MessageListBaseProps {
   headerContent?: React.ReactNode;
   systemPrompt?: string | null;
   onSystemPromptEdit?: (_editedPromptValue: string) => void;
-  planProposal?: { plan: string; steps?: string[]; status?: "pending" | "approved" | "rejected" | "executing" } | null;
+  planProposal?: PlanProposalView | null;
   onPlanApprove?: () => void;
   onPlanReject?: () => void;
   knownPaths?: string[];
@@ -889,7 +97,17 @@ interface MessageListBaseProps {
   onDocClick?: (_url: string) => void;
   onMentionFileOpen?: (_path: string) => void;
   onOpenFileInViewer?: (_absolutePath: string) => void;
-  toolDisplayMetadataMap?: Record<string, any> | null;
+  toolDisplayMetadataMap?: Record<string, ToolDisplayMetadata> | null;
+  /**
+   * The element the list scrolls in. Given, the list mounts only the rows
+   * near the viewport (hooks/useVirtualRows); without it every row renders.
+   */
+  scrollElementRef?: RefObject<HTMLElement | null>;
+  /** What the rows belong to (the conversation): keeps unsaved rows' measurements apart. */
+  listKey?: string;
+  /** Previous / next message for the header's arrows. */
+  navigationRef?: Ref<MessageListNavigation>;
+  onNavigationStateChange?: (_state: MessageListNavigationState) => void;
 }
 
 /** A read-only list shows no message actions. */
@@ -923,11 +141,103 @@ interface EditableMessageListProps {
 export type MessageListProps = MessageListBaseProps &
   (ReadOnlyMessageListProps | EditableMessageListProps);
 
+/** One row of the list: a message, or the first of a run of deleted ones. */
+interface ListRow {
+  /** The message's display index. */
+  index: number;
+  /** Measurement key: the saved message id, else its place in this list. */
+  key: string;
+  /** A bubble the header's arrows stop at (not a continuation, group or notice). */
+  isNavigationTarget: boolean;
+  /** A user bubble — the pinned header's candidates. */
+  isUserBubble: boolean;
+}
+
+const EMPTY_MESSAGES: Message[] = [];
+
+const TIMER_PREFIXES = ["⏰ Reminder fired: ", "🔔 Notification: ", "🏮 Reminder fired: "];
+
+function rendersBubble(message: Message): boolean {
+  if (message.deleted) return false;
+  if (message.role !== "user") return true;
+  if (parseTaskNotification(message.content)) return false;
+  return !(typeof message.content === "string" && TIMER_PREFIXES.some((prefix) => message.content.startsWith(prefix)));
+}
+
+/** The nearest ancestor that scrolls vertically. */
+function findScrollParent(element: HTMLElement | null): HTMLElement | null {
+  let scrollParent = element?.parentElement ?? null;
+  while (scrollParent) {
+    const overflow = getComputedStyle(scrollParent).overflowY;
+    if (overflow === "auto" || overflow === "scroll") return scrollParent;
+    scrollParent = scrollParent.parentElement;
+  }
+  return null;
+}
+
+/** Last entry of the ascending `positions` below `limit`, or -1. */
+function lastBelow(positions: readonly number[], limit: number): number {
+  let low = 0;
+  let high = positions.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    if (positions[middle] < limit) low = middle + 1;
+    else high = middle;
+  }
+  return low > 0 ? positions[low - 1] : -1;
+}
+
+/** First entry of the ascending `positions` at or above `limit`, or -1. */
+function firstAtOrAbove(positions: readonly number[], limit: number): number {
+  let low = 0;
+  let high = positions.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    if (positions[middle] < limit) low = middle + 1;
+    else high = middle;
+  }
+  return low < positions.length ? positions[low] : -1;
+}
+
+/**
+ * The frame around one row: what the virtualizer measures. A row that was
+ * in the list before it mounted (scrolled back into view) does not fade in
+ * again; a new one (a reply, a conversation just opened) does.
+ */
+function RowFrame({
+  rowKey,
+  position,
+  isNew,
+  measureRow,
+  children,
+}: {
+  rowKey: string;
+  position: number;
+  isNew: boolean;
+  measureRow: (_key: string) => (_element: HTMLElement | null) => void;
+  children: React.ReactNode;
+}) {
+  const [isSettled] = useState(!isNew);
+  return (
+    <div
+      ref={measureRow(rowKey)}
+      data-row-position={position}
+      className={isSettled ? `${styles['row-frame']} ${styles['row-frame-settled']}` : styles['row-frame']}
+    >
+      {children}
+    </div>
+  );
+}
+
 /**
  * Shared message list component.
+ *
+ * Rows are memoized (MessageList/MessageRowComponent): a streamed token
+ * renders the last row only. Given a `scrollElementRef`, only the rows near
+ * the viewport mount (hooks/useVirtualRows).
  */
 export default function MessageList({
-  messages = [],
+  messages = EMPTY_MESSAGES,
   readOnly = false,
   isGenerating = false,
   streamingOutputs,
@@ -954,6 +264,10 @@ export default function MessageList({
   onMentionFileOpen,
   onOpenFileInViewer,
   toolDisplayMetadataMap,
+  scrollElementRef,
+  listKey = "list",
+  navigationRef,
+  onNavigationStateChange,
 }: MessageListProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [localLightboxSourceUrl, setLocalLightboxSourceUrl] = useState<string | null>(null);
@@ -967,6 +281,7 @@ export default function MessageList({
   const hasSystemPrompt = !!(systemPrompt && systemPrompt.trim());
 
   const containerReference = useRef<HTMLDivElement | null>(null);
+  const rowsReference = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const messagesListElement = containerReference.current;
@@ -1085,48 +400,118 @@ export default function MessageList({
     };
   }, []);
 
-  const handleImageClick = (url: string) => {
-    if (onImageClick) {
-      onImageClick(url);
-    } else {
-      setLocalLightboxSourceUrl(url);
-    }
-  };
-
   // `displaySourceIndices[i]` is displayMessages[i]'s index in `messages` —
   // the index every message action reports to its caller.
-  const { displayMessages, displaySourceIndices } = useMemo(() => {
-    const visibleMessages: Message[] = [];
-    const sourceIndices: number[] = [];
-    messages.forEach((message, sourceIndex) => {
-      if (!showRaw && message.role === "system") return;
-      if (!showRaw && message.role === "user" && isNotificationMessage(message)) return;
-      sourceIndices.push(sourceIndex);
-      if (message.role !== "user") {
-        visibleMessages.push(message);
-      } else if (isTurnInputMessage(message)) {
-        visibleMessages.push({
-          ...message,
-          content: showRaw ? message.content || "" : turnInputDisplayText(message),
-        });
-      } else {
-        const { clean, raw } = getCleanAndRaw(message.content || "", message.rawContent);
-        visibleMessages.push({ ...message, content: showRaw ? raw : clean });
-      }
-    });
-    return { displayMessages: visibleMessages, displaySourceIndices: sourceIndices };
-  }, [messages, showRaw]);
+  const { messages: displayMessages, sourceIndices: displaySourceIndices } = useMemo(
+    () => buildDisplayList(messages, showRaw),
+    [messages, showRaw],
+  );
+  const swapBefore = useMemo(() => modelSwapPositions(displayMessages), [displayMessages]);
+  // Consecutive deleted messages coalesce into one row, keyed by the first.
+  const deletedGroups = useMemo(
+    () => deletedMessageGroups(displayMessages, swapBefore),
+    [displayMessages, swapBefore],
+  );
+  // Consecutive assistant messages share one bubble (avatar and header on
+  // the first, metadata on the last).
+  const coalesceMeta = useMemo(
+    () => coalesceAssistantRuns(displayMessages, swapBefore),
+    [displayMessages, swapBefore],
+  );
 
-  const toSourceIndex = (displayIndex: number) =>
-    displaySourceIndices[displayIndex] ?? displayIndex;
-  const handleEdit =
-    onEdit && ((displayIndex: number, content: string) => onEdit(toSourceIndex(displayIndex), content));
-  const handleRerun = onRerun && ((displayIndex: number) => onRerun(toSourceIndex(displayIndex)));
-  const handleDelete = onDelete && ((displayIndex: number) => onDelete(toSourceIndex(displayIndex)));
-  const handleRestore =
-    onRestore && ((displayIndex: number) => onRestore(toSourceIndex(displayIndex)));
-  const handleRewind = onRewind && ((displayIndex: number) => onRewind(toSourceIndex(displayIndex)));
-  const handleFork = onFork && ((displayIndex: number) => onFork(toSourceIndex(displayIndex)));
+  // The rows: every message but the non-first members of a deleted run.
+  const { rows, navigationTargetPositions, userBubblePositions } = useMemo(() => {
+    const listRows: ListRow[] = [];
+    const targets: number[] = [];
+    const userBubbles: number[] = [];
+    const usedKeys = new Set<string>();
+    displayMessages.forEach((message, index) => {
+      if (message.deleted && !deletedGroups.has(index)) return;
+      let key = message.id ? `id:${message.id}` : `${listKey}:at:${index}`;
+      if (message.deleted) key = `deleted:${key}`;
+      if (usedKeys.has(key)) key = `${key}#${index}`;
+      usedKeys.add(key);
+      const isBubble = rendersBubble(message);
+      const row: ListRow = {
+        index,
+        key,
+        isNavigationTarget: isBubble && !coalesceMeta[index]?.isContinuation,
+        isUserBubble: isBubble && message.role === "user",
+      };
+      if (row.isNavigationTarget) targets.push(listRows.length);
+      if (row.isUserBubble) userBubbles.push(listRows.length);
+      listRows.push(row);
+    });
+    return { rows: listRows, navigationTargetPositions: targets, userBubblePositions: userBubbles };
+  }, [displayMessages, deletedGroups, coalesceMeta, listKey]);
+
+  const getRowKey = useCallback((position: number) => rows[position].key, [rows]);
+  const estimateRowSize = useCallback(
+    (position: number) => {
+      const row = rows[position];
+      const group = deletedGroups.get(row.index);
+      // A deleted run starts collapsed: one summary line.
+      return group ? 40 : estimateRowHeight(displayMessages[row.index]);
+    },
+    [rows, deletedGroups, displayMessages],
+  );
+  const virtual = useVirtualRows({
+    count: rows.length,
+    getKey: getRowKey,
+    estimateSize: estimateRowSize,
+    scrollElementRef,
+    rowsElementRef: rowsReference,
+  });
+
+  // Keys the last render had: a row mounting with one of them is not new.
+  const previousRowKeysRef = useRef<ReadonlySet<string>>(new Set());
+  useLayoutEffect(() => {
+    previousRowKeysRef.current = new Set(rows.map((row) => row.key));
+  }, [rows]);
+
+  // What the windowing and the handlers read between renders.
+  const latestRef = useRef({
+    rows,
+    virtual,
+    displaySourceIndices,
+    navigationTargetPositions,
+    userBubblePositions,
+    onEdit,
+    onRerun,
+    onDelete,
+    onRestore,
+    onRewind,
+    onFork,
+    onImageClick,
+    onDocClick,
+    onMentionFileOpen,
+    onOpenFileInViewer,
+    onPlanApprove,
+    onPlanReject,
+    onNavigationStateChange,
+  });
+  useLayoutEffect(() => {
+    latestRef.current = {
+      rows,
+      virtual,
+      displaySourceIndices,
+      navigationTargetPositions,
+      userBubblePositions,
+      onEdit,
+      onRerun,
+      onDelete,
+      onRestore,
+      onRewind,
+      onFork,
+      onImageClick,
+      onDocClick,
+      onMentionFileOpen,
+      onOpenFileInViewer,
+      onPlanApprove,
+      onPlanReject,
+      onNavigationStateChange,
+    };
+  });
 
   // -- Sticky user message (pinned section header) -----------
   // Tracks ALL user messages: the pinned candidate is whichever
@@ -1140,19 +525,117 @@ export default function MessageList({
   const scrollingToUserMessageRef = useRef<boolean>(false);
   const recomputePinnedRef = useRef<(() => void) | null>(null);
 
+  // The handlers every row shares. Stable for the list's life: they read
+  // the latest props when called, so a row never renders for a new closure.
+  const actions = useMemo<MessageRowActions>(() => {
+    const toSourceIndex = (displayIndex: number) =>
+      latestRef.current.displaySourceIndices[displayIndex] ?? displayIndex;
+    const userMessageRefs = new Map<number, (_element: HTMLDivElement | null) => void>();
+    return {
+      edit: (index, content) => latestRef.current.onEdit?.(toSourceIndex(index), content),
+      rerun: (index) => latestRef.current.onRerun?.(toSourceIndex(index)),
+      delete: (index) => latestRef.current.onDelete?.(toSourceIndex(index)),
+      restore: (index) => latestRef.current.onRestore?.(toSourceIndex(index)),
+      rewind: (index) => latestRef.current.onRewind?.(toSourceIndex(index)),
+      fork: (index) => latestRef.current.onFork?.(toSourceIndex(index)),
+      toggleEditing: (index) => setEditingIndex((current) => (current === index ? null : index)),
+      cancelEditing: () => setEditingIndex(null),
+      toggleDeletedGroup: (index) =>
+        setExpandedDeletedSet((previousExpandedSet) => {
+          const next = new Set(previousExpandedSet);
+          if (next.has(index)) next.delete(index);
+          else next.add(index);
+          return next;
+        }),
+      openImage: (url) => {
+        const { onImageClick: openImage } = latestRef.current;
+        if (openImage) openImage(url);
+        else setLocalLightboxSourceUrl(url);
+      },
+      openDocument: (url) => latestRef.current.onDocClick?.(url),
+      userMessageRef: (index) => {
+        let callback = userMessageRefs.get(index);
+        if (!callback) {
+          callback = (element) => {
+            if (element) userMessageElementsRef.current.set(index, element);
+            else userMessageElementsRef.current.delete(index);
+          };
+          userMessageRefs.set(index, callback);
+        }
+        return callback;
+      },
+    };
+  }, []);
+
+  // Handlers whose presence changes what a row shows get stable stand-ins.
+  const stableCallbacks = useMemo(
+    () => ({
+      openMentionedFile: (path: string) => latestRef.current.onMentionFileOpen?.(path),
+      openFileInViewer: (path: string) => latestRef.current.onOpenFileInViewer?.(path),
+      approvePlan: () => latestRef.current.onPlanApprove?.(),
+      rejectPlan: () => latestRef.current.onPlanReject?.(),
+    }),
+    [],
+  );
+  const hasMentionFileOpen = !!onMentionFileOpen;
+  const hasOpenFileInViewer = !!onOpenFileInViewer;
+  const hasPlanApprove = !!onPlanApprove;
+  const hasPlanReject = !!onPlanReject;
+  const shared = useMemo<MessageRowShared>(
+    () => ({
+      readOnly,
+      minimal,
+      showRaw,
+      isGenerating,
+      knownPaths: knownPathsSet,
+      activeAgent,
+      toolDisplayMetadataMap,
+      canEdit: !!onEdit,
+      canRerun: !!onRerun,
+      canRestore: !!onRestore,
+      canRewind: !!onRewind,
+      canFork: !!onFork,
+      onMentionFileOpen: hasMentionFileOpen ? stableCallbacks.openMentionedFile : undefined,
+      onOpenFileInViewer: hasOpenFileInViewer ? stableCallbacks.openFileInViewer : undefined,
+      onPlanApprove: hasPlanApprove ? stableCallbacks.approvePlan : undefined,
+      onPlanReject: hasPlanReject ? stableCallbacks.rejectPlan : undefined,
+      actions,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- a handler's presence, not its identity, is what rows show
+    [
+      readOnly,
+      minimal,
+      showRaw,
+      isGenerating,
+      knownPathsSet,
+      activeAgent,
+      toolDisplayMetadataMap,
+      !!onEdit,
+      !!onRerun,
+      !!onRestore,
+      !!onRewind,
+      !!onFork,
+      hasMentionFileOpen,
+      hasOpenFileInViewer,
+      hasPlanApprove,
+      hasPlanReject,
+      stableCallbacks,
+      actions,
+    ],
+  );
+
+  const resolveScrollElement = useCallback(
+    (): HTMLElement | null => scrollElementRef?.current ?? findScrollParent(containerReference.current),
+    [scrollElementRef],
+  );
+
   useEffect(() => {
     const container = containerReference.current;
     if (!container) return;
 
     // Find the scroll container — walk up to the nearest overflow-y ancestor
-    let scrollParent = container.parentElement;
-    while (scrollParent) {
-      const overflow = getComputedStyle(scrollParent).overflowY;
-      if (overflow === "auto" || overflow === "scroll") break;
-      scrollParent = scrollParent.parentElement;
-    }
-    if (!scrollParent) return;
-    const scrollElement = scrollParent;
+    const scrollElement = resolveScrollElement();
+    if (!scrollElement) return;
 
     // Sticky offsets resolve against the scroll container's padding box,
     // so a padded container leaves a see-through gap above/beside the
@@ -1195,6 +678,16 @@ export default function MessageList({
           ownerBottom = rect.bottom;
         }
       });
+      if (ownerIndex < 0) {
+        // Windowed: the owner can be above the mounted rows — the last user
+        // bubble before them, entirely above the viewport.
+        const { rows: currentRows, virtual: currentVirtual, userBubblePositions: bubbles } = latestRef.current;
+        const hiddenOwner = lastBelow(bubbles, currentVirtual.start);
+        if (hiddenOwner >= 0) {
+          ownerIndex = currentRows[hiddenOwner].index;
+          ownerBottom = -Infinity;
+        }
+      }
       setPinnedUserMessageIndex(
         ownerIndex >= 0 && ownerBottom < pinThreshold ? ownerIndex : -1,
       );
@@ -1222,7 +715,7 @@ export default function MessageList({
       recomputePinnedRef.current = null;
       setPinnedUserMessageIndex(-1);
     };
-  }, [displayMessages.length]);
+  }, [displayMessages.length, resolveScrollElement]);
 
   // Derive sticky message data from the pinned index. Messages with
   // neither text nor attachments (e.g. audio-only) are never pinned.
@@ -1241,129 +734,169 @@ export default function MessageList({
 
   const handleStickyClick = useCallback(() => {
     const node = userMessageElementsRef.current.get(pinnedUserMessageIndex);
-    if (!node) return;
-    // Walk up to the nearest scrollable ancestor
-    let scrollParent = node.parentElement;
-    while (scrollParent) {
-      const overflow = getComputedStyle(scrollParent).overflowY;
-      if (overflow === "auto" || overflow === "scroll") break;
-      scrollParent = scrollParent.parentElement;
-    }
-    if (!scrollParent) return;
-
+    const { rows: currentRows, virtual: currentVirtual } = latestRef.current;
     // Suppress tracking during scroll to prevent stutter from layout shifts
-    scrollingToUserMessageRef.current = true;
-
+    const suppressTracking = () => {
+      scrollingToUserMessageRef.current = true;
+      // Re-enable tracking after the smooth scroll completes — the recompute
+      // sees the message back in view and dismisses the sticky header
+      setTimeout(() => {
+        scrollingToUserMessageRef.current = false;
+        recomputePinnedRef.current?.();
+      }, 600);
+    };
+    if (currentVirtual.isWindowed) {
+      // Through the window: the message may not be mounted, and rows
+      // mounting on the way must not cut a smooth scroll short.
+      const position = currentRows.findIndex((row) => row.index === pinnedUserMessageIndex);
+      if (position < 0) return;
+      suppressTracking();
+      // Land the message just inside the pin threshold so the sticky header
+      // dismisses and the real message takes its place at the top
+      currentVirtual.scrollToIndex(position, {
+        offset: -12,
+        behavior: node ? "smooth" : "auto",
+        selector: "[data-message-index]",
+      });
+      return;
+    }
+    if (!node) return;
+    const scrollParent = findScrollParent(node);
+    if (!scrollParent) return;
+    suppressTracking();
     const nodeRect = node.getBoundingClientRect();
     const parentRect = scrollParent.getBoundingClientRect();
     // Land the message just inside the pin threshold so the sticky header
     // dismisses and the real message takes its place at the top
     const offset = nodeRect.top - parentRect.top + scrollParent.scrollTop - 12;
     scrollParent.scrollTo({ top: offset, behavior: "smooth" });
-
-    // Re-enable tracking after the smooth scroll completes — the recompute
-    // sees the message back in view and dismisses the sticky header
-    setTimeout(() => {
-      scrollingToUserMessageRef.current = false;
-      recomputePinnedRef.current?.();
-    }, 600);
   }, [pinnedUserMessageIndex]);
 
-  const toggleDeletedExpanded = (index: number) => {
-    setExpandedDeletedSet((previousExpandedSet) => {
-      const next = new Set(previousExpandedSet);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return next;
-    });
-  };
-
-  const swapBefore = useMemo(() => {
-    const array = new Array(displayMessages.length).fill(false);
-    let lastModel = null;
-    let prospectiveSwapIndex = null;
-
-    for (let i = 0; i < displayMessages.length; i++) {
-      const message = displayMessages[i];
-      if (message.role === "user") {
-        if (prospectiveSwapIndex === null) {
-          prospectiveSwapIndex = i; // The start of the user's turn
-        }
-      } else if (message.role === "assistant" && message.model) {
-        if (lastModel && lastModel !== message.model) {
-          // Model changed! Show swap before the user's turn that led to this,
-          // or before this assistant message if no user message preceded it.
-          const swapIndex =
-            prospectiveSwapIndex !== null ? prospectiveSwapIndex : i;
-          array[swapIndex] = true;
-        }
-        lastModel = message.model;
-        prospectiveSwapIndex = null;
+  // -- Previous / next message (the chat header's arrows) -------------
+  const navigation = useMemo(() => {
+    const mountedTargets = (): HTMLElement[] => {
+      const container = containerReference.current;
+      return container ? Array.from(container.querySelectorAll<HTMLElement>("[data-navigation-target]")) : [];
+    };
+    // The message at or nearest the viewport top: the first whose bottom
+    // is below the container top (or the last, scrolled past everything).
+    const currentOf = (targets: HTMLElement[], containerTop: number): number => {
+      if (targets.length === 0) return -1;
+      for (let index = 0; index < targets.length; index++) {
+        // Considered "current" when its top is near (within 8px) or below
+        // the container top, or its bottom extends past it
+        if (targets[index].getBoundingClientRect().bottom > containerTop + 8) return index;
       }
-    }
-    return array;
-  }, [displayMessages]);
-
-  // -- Coalesce consecutive deleted messages into groups ------
-  // Each group is keyed by the index of the first deleted message
-  // in the run (the "leader"). Non-leader deleted messages are
-  // skipped during rendering.
-  const deletedGroups = useMemo(() => {
-    const map = new Map(); // index → { isLeader, groupIndices }
-    let i = 0;
-    while (i < displayMessages.length) {
-      if (displayMessages[i].deleted) {
-        const start = i;
-        const indices = [];
-        while (i < displayMessages.length && displayMessages[i].deleted) {
-          indices.push(i);
-          i++;
-        }
-        // First in run is the leader
-        map.set(start, { isLeader: true, groupIndices: indices });
-        for (let k = 1; k < indices.length; k++) {
-          map.set(indices[k], { isLeader: false });
-        }
-      } else {
-        i++;
+      return targets.length - 1;
+    };
+    const scrollToTarget = (target: HTMLElement) => {
+      const scrollElement = resolveScrollElement();
+      if (!scrollElement) return;
+      const { virtual: currentVirtual } = latestRef.current;
+      const frame = target.closest<HTMLElement>("[data-row-position]");
+      if (currentVirtual.isWindowed && frame) {
+        currentVirtual.scrollToIndex(Number(frame.dataset.rowPosition), {
+          behavior: "smooth",
+          selector: "[data-navigation-target]",
+        });
+        return;
       }
-    }
-    return map;
-  }, [displayMessages]);
-
-  // -- Coalesce consecutive assistant messages into groups ----
-  // Each group shares a single avatar + header. Only the first
-  // message in a run of assistant messages shows the avatar.
-  // "isContinuation" means this assistant msg continues the
-  // previous assistant msg's visual container.
-  // "isLastInGroup" means metadata (tokens, cost) should render.
-  const coalesceMeta = useMemo(() => {
-    const meta = new Array(displayMessages.length).fill(null);
-    for (let i = 0; i < displayMessages.length; i++) {
-      if (displayMessages[i].role !== "assistant") continue;
-      // Deleted messages always break the coalesce chain —
-      // they render as their own standalone block.
-      if (displayMessages[i].deleted) {
-        meta[i] = { isContinuation: false, isLastInGroup: true };
-        continue;
+      const containerTop = scrollElement.getBoundingClientRect().top;
+      const scrollOffset = target.getBoundingClientRect().top - containerTop + scrollElement.scrollTop;
+      scrollElement.scrollTo({ top: scrollOffset, behavior: "smooth" });
+    };
+    const scrollToRow = (position: number) =>
+      latestRef.current.virtual.scrollToIndex(position, { selector: "[data-navigation-target]" });
+    const state = (): MessageListNavigationState => {
+      const scrollElement = resolveScrollElement();
+      const { virtual: currentVirtual, navigationTargetPositions: targetPositions } = latestRef.current;
+      const hasTargetsAbove = currentVirtual.isWindowed && lastBelow(targetPositions, currentVirtual.start) >= 0;
+      const hasTargetsBelow = currentVirtual.isWindowed && firstAtOrAbove(targetPositions, currentVirtual.end) >= 0;
+      const targets = mountedTargets();
+      if (!scrollElement || targets.length === 0) {
+        return { canNavigateUp: hasTargetsAbove, canNavigateDown: hasTargetsBelow };
       }
-      const previousIsAssistant =
-        i > 0 &&
-        displayMessages[i - 1].role === "assistant" &&
-        !displayMessages[i - 1].deleted;
-      const nextIsAssistant =
-        i < displayMessages.length - 1 &&
-        displayMessages[i + 1].role === "assistant" &&
-        !displayMessages[i + 1].deleted;
-      meta[i] = {
-        isContinuation: previousIsAssistant && !swapBefore[i],
-        isLastInGroup:
-          !nextIsAssistant ||
-          (i < displayMessages.length - 1 && swapBefore[i + 1]),
+      const containerTop = scrollElement.getBoundingClientRect().top;
+      const currentIndex = currentOf(targets, containerTop);
+      const currentTop = targets[currentIndex]?.getBoundingClientRect().top ?? containerTop;
+      const isCurrentTopOffscreen = currentTop < containerTop - 8;
+      return {
+        canNavigateUp: currentIndex > 0 || isCurrentTopOffscreen || hasTargetsAbove,
+        canNavigateDown: currentIndex < targets.length - 1 || hasTargetsBelow,
       };
+    };
+    return {
+      state,
+      // Navigate to the previous message (scroll its top into view). If the
+      // current message's top is scrolled above the viewport, snap to it
+      // first before jumping to the previous message.
+      previous: () => {
+        const scrollElement = resolveScrollElement();
+        if (!scrollElement) return;
+        const targets = mountedTargets();
+        const currentIndex = currentOf(targets, scrollElement.getBoundingClientRect().top);
+        const { virtual: currentVirtual, navigationTargetPositions: targetPositions } = latestRef.current;
+        if (currentIndex >= 0) {
+          const currentElement = targets[currentIndex];
+          const containerTop = scrollElement.getBoundingClientRect().top;
+          const isCurrentTopOffscreen = currentElement.getBoundingClientRect().top < containerTop - 8;
+          const target = isCurrentTopOffscreen ? currentElement : targets[currentIndex - 1];
+          if (target) {
+            scrollToTarget(target);
+            return;
+          }
+        }
+        // The previous message is above the mounted rows.
+        if (!currentVirtual.isWindowed) return;
+        const position = lastBelow(targetPositions, currentVirtual.start);
+        if (position >= 0) scrollToRow(position);
+      },
+      // Navigate to the next message (scroll its top into view)
+      next: () => {
+        const scrollElement = resolveScrollElement();
+        if (!scrollElement) return;
+        const targets = mountedTargets();
+        const currentIndex = currentOf(targets, scrollElement.getBoundingClientRect().top);
+        if (currentIndex >= 0 && currentIndex < targets.length - 1) {
+          scrollToTarget(targets[currentIndex + 1]);
+          return;
+        }
+        // The next message is below the mounted rows.
+        const { virtual: currentVirtual, navigationTargetPositions: targetPositions } = latestRef.current;
+        if (!currentVirtual.isWindowed) return;
+        const position = firstAtOrAbove(targetPositions, currentVirtual.end);
+        if (position >= 0) scrollToRow(position);
+      },
+    };
+  }, [resolveScrollElement]);
+
+  useImperativeHandle(navigationRef, () => ({ previous: navigation.previous, next: navigation.next }), [navigation]);
+
+  // Report the arrows' state on scroll and whenever the rows change.
+  const reportedNavigationRef = useRef<MessageListNavigationState | null>(null);
+  const reportNavigationState = useCallback(() => {
+    const report = latestRef.current.onNavigationStateChange;
+    if (!report) return;
+    const next = navigation.state();
+    const previous = reportedNavigationRef.current;
+    if (previous && previous.canNavigateUp === next.canNavigateUp && previous.canNavigateDown === next.canNavigateDown) {
+      return;
     }
-    return meta;
-  }, [displayMessages, swapBefore]);
+    reportedNavigationRef.current = next;
+    report(next);
+  }, [navigation]);
+  useEffect(() => {
+    reportNavigationState();
+  }, [messages, virtual.start, virtual.end, reportNavigationState]);
+  useEffect(() => {
+    if (!onNavigationStateChange) return;
+    const scrollElement = resolveScrollElement();
+    if (!scrollElement) return;
+    scrollElement.addEventListener("scroll", reportNavigationState, { passive: true });
+    return () => scrollElement.removeEventListener("scroll", reportNavigationState);
+  }, [onNavigationStateChange, resolveScrollElement, reportNavigationState]);
+
+  const mountedRows = rows.slice(virtual.start, virtual.end);
 
   return (
     <div ref={containerReference} className={`message-list-component ${styles['messages-list']}`}>
@@ -1463,1455 +996,66 @@ export default function MessageList({
         </div>
       )}
       {headerContent}
-      {/* eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change */}
-      {displayMessages.map((message, i) => {
-        // Test-only row-render counter (utils/chatDebugProbe).
-        noteMessageRowRender(message, i);
-        const roleClass =
-          message.role === "user"
-            ? styles['user-node']
-            : message.role === "system"
-              ? styles['system-node']
-              : styles['assistant-node'];
-        const isStreaming =
-          (isGenerating &&
-            message.role === "assistant" &&
-            i === displayMessages.length - 1) ||
-          (message.role === "assistant" && message._liveStreaming === true);
-        const coalesce = coalesceMeta[i];
-
-        const showModelChange = swapBefore[i];
-        const isFadedSwap =
-          showModelChange &&
-          i > 0 &&
-          displayMessages[i - 1].deleted &&
-          displayMessages[i].deleted;
-        const swapDividerClass =
-          `${styles['model-change-divider']} ${isFadedSwap ? styles['model-change-divider-faded'] : ""}`.trim();
-
-        // If message is a non-leader deleted message, skip rendering the whole
-        // top-level block so we don't leak the model swap outside the group
-        const deletedGroupInfo = message.deleted ? deletedGroups.get(i) : null;
-        if (message.deleted && !deletedGroupInfo?.isLeader) {
-          return null;
+      <div
+        ref={rowsReference}
+        className={rows.length === 0 ? `${styles['rows']} ${styles['rows-empty']}` : styles['rows']}
+        style={
+          virtual.isWindowed
+            ? { paddingTop: virtual.paddingTop, paddingBottom: virtual.paddingBottom }
+            : undefined
         }
-
-        return (
-          <React.Fragment key={i}>
-            {showModelChange && (
-              <div className={swapDividerClass}>
-                <span className={styles['model-change-line']} />
-                <span className={styles['model-change-label']}>
-                  <RefreshCw size={11} />
-                  Model Swap
-                </span>
-                <span className={styles['model-change-line']} />
-              </div>
-            )}
-            {/* -- Deleted message group: coalesced into a single row -- */}
-            {message.deleted &&
-              (() => {
-                const groupInfo = deletedGroups.get(i);
-                // Non-leader deleted messages are rendered inside the leader block
-                if (!groupInfo?.isLeader) return null;
-                const groupIndices = groupInfo.groupIndices;
-                const groupCount = groupIndices.length;
-                const isExpanded = expandedDeletedSet.has(i);
-
-                if (!isExpanded) {
-                  // -- Collapsed: single summary row --
-                  return (
-                    <div className={styles['deleted-layout-row']}>
-                      <button
-                        className={styles['deleted-toggle']}
-                        onClick={() => toggleDeletedExpanded(i)}
-                      >
-                        <ChevronRight size={13} />
-                        <span className={styles['deleted-badge']}>
-                          Deleted{groupCount > 1 ? ` (${groupCount})` : ""}
-                        </span>
-                        {groupCount === 1 && (
-                          <>
-                            <BadgeComponent
-                              variant="info"
-                              mini
-                              tooltip="Message role"
-                            >
-                              {message.role === "user" ? "User" : "Model"}
-                            </BadgeComponent>
-                            {message.model && (
-                              <BadgeComponent
-                                type="model"
-                                models={[message.model]}
-                                mini
-                              />
-                            )}
-                            {message.timestamp && (
-                              <BadgeComponent
-                                type="dateTime"
-                                date={message.timestamp}
-                              />
-                            )}
-                            {message.content && (
-                              <span className={styles['deleted-preview']}>
-                                {message.content.length > 80
-                                  ? message.content.slice(0, 80) + "…"
-                                  : message.content}
-                              </span>
-                            )}
-                          </>
-                        )}
-                        {groupCount > 1 && (
-                          <>
-                            <BadgeComponent
-                              type="dateTime"
-                              date={displayMessages[groupIndices[0]].timestamp}
-                            />
-                            <span style={{ opacity: 0.5 }}>—</span>
-                            <BadgeComponent
-                              type="dateTime"
-                              date={
-                                displayMessages[groupIndices[groupCount - 1]]
-                                  .timestamp
-                              }
-                            />
-                          </>
-                        )}
-                      </button>
-                      {groupCount === 1 && handleRestore && (
-                        <div className={styles['deleted-actions']}>
-                          <IconButtonComponent
-                            icon={<Undo2 size={14} />}
-                            onClick={() => handleRestore?.(i)}
-                            tooltip="Restore message"
-                            className={styles['action-button']}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
+      >
+        {mountedRows.map((row, offset) => {
+          const position = virtual.start + offset;
+          const { index } = row;
+          const message = displayMessages[index];
+          const coalesce = coalesceMeta[index];
+          const group = message.deleted ? deletedGroups.get(index) ?? null : null;
+          const showModelChange = swapBefore[index];
+          const isFadedSwap =
+            showModelChange && index > 0 && !!displayMessages[index - 1].deleted && !!message.deleted;
+          const isStreaming =
+            (isGenerating && message.role === "assistant" && index === displayMessages.length - 1) ||
+            (message.role === "assistant" && message._liveStreaming === true);
+          return (
+            <RowFrame
+              key={`${listKey}:${index}`}
+              rowKey={row.key}
+              position={position}
+              // eslint-disable-next-line react-hooks/refs -- the previous commit's keys: a new row fades in
+              isNew={!previousRowKeysRef.current.has(row.key)}
+              measureRow={virtual.measureRow}
+            >
+              <MessageRow
+                message={message}
+                index={index}
+                group={group}
+                isExpanded={!!group && expandedDeletedSet.has(index)}
+                showModelChange={showModelChange}
+                isFadedSwap={isFadedSwap}
+                isContinuation={!!coalesce?.isContinuation}
+                isLastInGroup={coalesce?.isLastInGroup !== false}
+                isStreaming={isStreaming}
+                isAvatarLive={message.role === "assistant" && isGenerating && index === messages.length - 1}
+                isEditing={editingIndex === index}
+                planProposal={
+                  rowShowsPlan(message, planProposal, index === messages.length - 1) ? planProposal ?? null : null
                 }
-
-                // -- Expanded: show all messages in the group --
-                return (
-                  <div className={styles['deleted-expanded']}>
-                    <div className={styles['deleted-layout-row']}>
-                      <button
-                        className={styles['deleted-toggle']}
-                        onClick={() => toggleDeletedExpanded(i)}
-                      >
-                        <ChevronDown size={13} />
-                        <span className={styles['deleted-badge']}>
-                          Deleted{groupCount > 1 ? ` (${groupCount})` : ""}
-                        </span>
-                      </button>
-                    </div>
-                    {groupIndices.map((gi: number) => {
-                      const groupMessage = displayMessages[gi];
-                      const gRoleClass =
-                        groupMessage.role === "user"
-                          ? styles['user-node']
-                          : groupMessage.role === "system"
-                            ? styles['system-node']
-                            : styles['assistant-node'];
-
-                      const gShowModelChange = swapBefore[gi];
-                      const gIsFadedSwap =
-                        gShowModelChange &&
-                        gi > 0 &&
-                        displayMessages[gi - 1].deleted &&
-                        displayMessages[gi].deleted;
-                      const gSwapDividerClass =
-                        `${styles['model-change-divider']} ${gIsFadedSwap ? styles['model-change-divider-faded'] : ""}`.trim();
-                      const shouldRenderInnerSwap =
-                        gShowModelChange && gi !== groupIndices[0];
-
-                      return (
-                        <React.Fragment key={gi}>
-                          {shouldRenderInnerSwap && (
-                            <div className={gSwapDividerClass}>
-                              <span className={styles['model-change-line']} />
-                              <span className={styles['model-change-label']}>
-                                <RefreshCw size={11} />
-                                Model Swap
-                              </span>
-                              <span className={styles['model-change-line']} />
-                            </div>
-                          )}
-                          <div className={styles['deleted-group-item']}>
-                            <div className={styles['deleted-group-item-header']}>
-                              <BadgeComponent
-                                variant="info"
-                                mini
-                                tooltip="Message role"
-                              >
-                                {groupMessage.role === "user" ? "User" : "Model"}
-                              </BadgeComponent>
-                              {groupMessage.model && (
-                                <BadgeComponent
-                                  type="model"
-                                  models={[groupMessage.model]}
-                                  mini
-                                />
-                              )}
-                              {groupMessage.timestamp && (
-                                <BadgeComponent
-                                  type="dateTime"
-                                  date={groupMessage.timestamp}
-                                />
-                              )}
-                              <div
-                                className={styles['deleted-actions']}
-                                style={{ opacity: 1 }}
-                              >
-                                {handleRestore && (
-                                  <IconButtonComponent
-                                    icon={<Undo2 size={14} />}
-                                    onClick={() => handleRestore?.(gi)}
-                                    tooltip="Restore message"
-                                    className={styles['action-button']}
-                                  />
-                                )}
-                                {groupMessage.content && (
-                                  <CopyButtonComponent
-                                    text={groupMessage.content}
-                                    tooltip="Copy raw text"
-                                    className={styles['action-button']}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                            <div className={styles['deleted-message-body']}>
-                              <div
-                                className={`${styles['message']} ${gRoleClass}`}
-                              >
-                                <div
-                                  className={`${styles['avatar']} ${styles['deleted-avatar']}`}
-                                >
-                                  {groupMessage.role === "user" ? (
-                                    <User size={16} />
-                                  ) : groupMessage.role === "system" ? (
-                                    <Terminal size={16} />
-                                  ) : (
-                                    <Bot size={16} />
-                                  )}
-                                </div>
-                                <div className={styles['content']}>
-                                  {groupMessage.thinking && (
-                                    <ThinkingBlock
-                                      thinking={groupMessage.thinking}
-                                      isStreaming={false}
-                                      thinkingDurationSeconds={groupMessage.thinkingDurationSeconds}
-                                      minimal={minimal}
-                                    />
-                                  )}
-                                  {groupMessage.toolCalls &&
-                                    groupMessage.toolCalls.length > 0 &&
-                                    groupMessage.toolCalls.map((singleToolCall: ToolCallEvent, toolCallIndex: number) => (
-                                      <ToolCallsBlockComponent
-                                        key={`group-tool-${toolCallIndex}`}
-                                        toolCall={singleToolCall}
-                                        subAgentToolActivity={subAgentToolActivity}
-                                        onOpenFileInViewer={onOpenFileInViewer}
-                                        toolDisplayMetadataMap={toolDisplayMetadataMap}
-                                        minimal={minimal}
-                                      />
-                                    ))}
-                                  {groupMessage.images && groupMessage.images.length > 0 && (
-                                    <div className={styles['image-preview-layout-row']}>
-                                      {groupMessage.images.map(
-                                        (rawUrl: string, j: number) => {
-                                          const resolvedUrl =
-                                            PrismService.getFileUrl(rawUrl);
-                                          const cat = getMimeCategory(rawUrl);
-                                          let clickHandler;
-                                          if (cat === "image")
-                                            clickHandler = () =>
-                                              handleImageClick(resolvedUrl);
-                                          else if (
-                                            cat === "pdf" ||
-                                            cat === "text"
-                                          )
-                                            clickHandler = () =>
-                                              onDocClick?.(resolvedUrl);
-                                          return (
-                                            <MediaPreview
-                                              key={j}
-                                              dataUrl={rawUrl}
-                                              onClick={clickHandler}
-                                            />
-                                          );
-                                        },
-                                      )}
-                                    </div>
-                                  )}
-                                  {groupMessage.content ? (
-                                    <MarkdownContent content={groupMessage.content} />
-                                  ) : null}
-                                  {!minimal &&
-                                    groupMessage.role === "assistant" &&
-                                    (groupMessage.usage || groupMessage.provider) && (
-                                      <div className={styles['meta-badges']}>
-                                        {groupMessage.provider && (
-                                          <BadgeComponent
-                                            type="providers"
-                                            providers={[groupMessage.provider]}
-                                          />
-                                        )}
-                                        {groupMessage.model && (
-                                          <BadgeComponent
-                                            type="model"
-                                            models={[groupMessage.model]}
-                                          />
-                                        )}
-                                      </div>
-                                    )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </React.Fragment>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            {/* -- Normal (non-deleted) message -- */}
-            {!message.deleted &&
-              (() => {
-                // -- Task notification card (replaces user bubble for sub-agent results) --
-                // Only renders for non-absorbed notifications (i.e. edge cases where
-                // the matching team_create tool call isn't in the visible window).
-                const taskNotif =
-                  message.role === "user"
-                    ? parseTaskNotification(message.content)
-                    : null;
-                if (taskNotif) {
-                  return (
-                    <SubAgentNotificationComponent
-                      taskNotif={taskNotif}
-                      timestamp={message.timestamp}
-                      readOnly={readOnly}
-                      onDelete={() => handleDelete?.(i)}
-                    />
-                  );
+                streamingOutputs={
+                  !group && hasStreamingOutput(message, streamingOutputs) ? streamingOutputs ?? null : null
                 }
-
-                // -- Fired Timer Badge Rendering --
-                const isTimerFired =
-                  message.role === "user" &&
-                  message.content &&
-                  typeof message.content === "string" &&
-                  (message.content.startsWith("⏰ Reminder fired: ") ||
-                    message.content.startsWith("🔔 Notification: ") ||
-                    message.content.startsWith("🏮 Reminder fired: "));
-                if (isTimerFired) {
-                  const prompt = message.content
-                    .replace("⏰ Reminder fired: ", "")
-                    .replace("🔔 Notification: ", "")
-                    .replace("🏮 Reminder fired: ", "");
-                  return (
-                    <div className={styles['schedule-fired-divider']}>
-                      <span className={styles['schedule-fired-line']} />
-                      <span className={styles['schedule-fired-label']}>
-                        Schedule Fired
-                      </span>
-                      <span className={styles['schedule-fired-line']} />
-                      <div className={styles['schedule-fired-details']}>
-                        {message.timestamp && (
-                          <BadgeComponent
-                            type="dateTime"
-                            date={message.timestamp}
-                          />
-                        )}
-                        <span className={styles['schedule-fired-prompt']}>
-                          {prompt}
-                        </span>
-                      </div>
-                    </div>
-                  );
+                subAgentToolActivity={
+                  subAgentToolActivity && readsSubAgentActivity(group ? group.messages : [message])
+                    ? subAgentToolActivity
+                    : null
                 }
-
-
-                // -- Normal message rendering --
-                return (
-                  <div
-                    ref={
-                      message.role === "user"
-                        ? (element: HTMLDivElement | null) => {
-                            if (element) {
-                              userMessageElementsRef.current.set(i, element);
-                            } else {
-                              userMessageElementsRef.current.delete(i);
-                            }
-                          }
-                        : undefined
-                    }
-                    data-message-index={i}
-                    {...(!coalesce?.isContinuation ? { 'data-navigation-target': '' } : {})}
-                    className={`${styles['message']} ${roleClass}${coalesce?.isContinuation ? ` ${styles['continuation-message']}` : ""}`}
-                  >
-                    {/* Avatar: hidden for continuation messages */}
-                    {!coalesce?.isContinuation && (
-                      <div
-                        className={`${styles['avatar']}${message.role === "assistant" && isGenerating && i === messages.length - 1 ? ` ${styles['prism-avatar']}` : ""}`}
-                      >
-                        {message.role === "user" ? (
-                          <User size={16} />
-                        ) : message.role === "system" ? (
-                          <Terminal size={16} />
-                        ) : activeAgent ? (
-                          renderAgentIcon(activeAgent, 16)
-                        ) : (
-                          <Bot size={16} />
-                        )}
-                      </div>
-                    )}
-                    <div className={styles['content']}>
-                      {/* Header: hidden for continuation messages */}
-                      {!coalesce?.isContinuation && (
-                        <div className={styles['message-header']}>
-                          <div className={styles['role-label']}>
-                            {message.role === "user"
-                              ? turnInputAuthorLabel(resolveTurnInput(message))
-                              : message.role === "system"
-                                ? "System"
-                                : activeAgent?.name || "Model"}
-                            {(() => {
-                              if (message.role !== "user") return null;
-                              const turnInput = resolveTurnInput(message);
-                              if (!turnInput) return null;
-                              const isSettled = turnInput.status === "applied" || !turnInput.status;
-                              return (
-                                <span
-                                  className={`${styles['turn-input-badge']} ${isSettled ? "" : styles['turn-input-badge-pending']}`}
-                                  title={
-                                    turnInput.boundary
-                                      ? `Applied at ${turnInput.boundary.replace(/_/g, " ")}`
-                                      : undefined
-                                  }
-                                >
-                                  {isSettled ? <Zap size={11} /> : <Clock size={11} />}
-                                  {turnInputBadgeLabel(turnInput)}
-                                </span>
-                              );
-                            })()}
-                            {(() => {
-                              const formattedTime = formatMessageTime(message.timestamp);
-                              if (!formattedTime) return null;
-                              return (
-                                <span
-                                  className={styles['message-timestamp']}
-                                  title={formattedTime.fullDateTime}
-                                >
-                                  {formattedTime.shortTime}
-                                </span>
-                              );
-                            })()}
-                          </div>
-                          {!readOnly && (
-                            <div className={styles['message-actions']}>
-                              {message.role === "user" && (
-                                <>
-                                  <IconButtonComponent
-                                    icon={<Pencil size={14} />}
-                                    onClick={() =>
-                                      setEditingIndex(
-                                        editingIndex === i ? null : i,
-                                      )
-                                    }
-                                    disabled={isGenerating}
-                                    tooltip="Edit message"
-                                    className={styles['action-button']}
-                                  />
-                                  {handleRerun && (
-                                    <IconButtonComponent
-                                      icon={<RotateCcw size={14} />}
-                                      onClick={() => handleRerun(i)}
-                                      disabled={isGenerating}
-                                      tooltip="Rerun this turn"
-                                      className={styles['action-button']}
-                                    />
-                                  )}
-                                </>
-                              )}
-                              {message.role === "assistant" &&
-                                message.content && (
-                                  <IconButtonComponent
-                                    icon={<Pencil size={14} />}
-                                    onClick={() =>
-                                      setEditingIndex(
-                                        editingIndex === i ? null : i,
-                                      )
-                                    }
-                                    disabled={isGenerating}
-                                    tooltip="Edit response"
-                                    className={styles['action-button']}
-                                  />
-                                )}
-                              {message.content && (
-                                <CopyButtonComponent
-                                  text={message.content}
-                                  tooltip="Copy raw text"
-                                  className={styles['action-button']}
-                                />
-                              )}
-                              {handleRewind && (
-                                <IconButtonComponent
-                                  icon={<History size={14} />}
-                                  onClick={() => handleRewind(i)}
-                                  disabled={isGenerating || !message.id}
-                                  tooltip={message.id ? "Rewind to here…" : "Rewind — available once saved"}
-                                  className={styles['action-button']}
-                                />
-                              )}
-                              {handleFork && (
-                                <IconButtonComponent
-                                  icon={<GitBranch size={14} />}
-                                  onClick={() => handleFork(i)}
-                                  disabled={isGenerating || !message.id}
-                                  tooltip={message.id ? "Fork from here" : "Fork — available once saved"}
-                                  className={styles['action-button']}
-                                />
-                              )}
-                              <IconButtonComponent
-                                icon={<Trash2 size={14} />}
-                                onClick={() => handleDelete?.(i)}
-                                disabled={isGenerating}
-                                tooltip="Delete message"
-                                variant="destructive"
-                                className={styles['action-button']}
-                              />
-                            </div>
-                          )}
-                          {readOnly && message.content && (
-                            <div className={styles['message-actions']}>
-                              <CopyButtonComponent
-                                text={message.content}
-                                tooltip="Copy raw text"
-                                className={styles['action-button']}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* -- Interleaved content: thinking + tool calls + text -- */}
-                      {message.contentSegments &&
-                      message.contentSegments.length > 0 ? (
-                        (() => {
-                          const segs = message.contentSegments;
-                          const hasThinking = segs.some(
-                            (state) => state.type === "thinking",
-                          );
-                          // Dedup guard: track tool IDs already rendered to prevent
-                          // the same tool call from appearing in multiple segments
-                          const renderedToolIds = new Set();
-
-                          // Only the block currently being generated stays open:
-                          // the last tool call of the final segment, and only while
-                          // this message is streaming. Once a newer block or the
-                          // text response starts (or streaming ends), every tool
-                          // block collapses unless the user opened it manually.
-                          const latestOpenToolId = (() => {
-                            if (!isStreaming) return null;
-                            const lastSeg = segs[segs.length - 1];
-                            if (lastSeg?.type !== "tools") return null;
-                            const ids = lastSeg.toolIds || [];
-                            return ids[ids.length - 1] ?? null;
-                          })();
-
-                          // Helper: render a segment by type
-                          const renderSeg = (
-                            seg: ContentSegment,
-                            si: number,
-                            opts: {
-                              isLastText?: boolean;
-                              insideThinking?: boolean;
-                              suppressCursor?: boolean;
-                            } = {},
-                          ) => {
-                            if (seg.type === "thinking") {
-                              const fragment =
-                                message.thinkingFragments?.[
-                                  seg.fragmentIndex ?? 0
-                                ]?.trim();
-                              if (!fragment) return null;
-                              return (
-                                <MarkdownContent
-                                  key={`seg-k-${si}`}
-                                  content={fragment}
-                                />
-                              );
-                            }
-                            if (
-                              seg.type === "tools" &&
-                              message.toolCalls &&
-                              message.toolCalls.length > 0
-                            ) {
-                              const toolIdSet = new Set(seg.toolIds || []);
-                              const segmentTools = message.toolCalls.filter(
-                                (toolCall: ToolCallEvent) => {
-                                  if (!toolIdSet.has(toolCall.id)) return false;
-                                  if (renderedToolIds.has(toolCall.id)) return false;
-                                  renderedToolIds.add(toolCall.id);
-                                  return true;
-                                },
-                              );
-                              if (segmentTools.length === 0) return null;
-                              return segmentTools.map((singleToolCall: ToolCallEvent, toolCallIndex: number) => (
-                                <ToolCallsBlockComponent
-                                  key={`seg-t-${si}-${toolCallIndex}`}
-                                  toolCall={singleToolCall}
-                                  streamingOutputs={streamingOutputs}
-                                  subAgentToolActivity={subAgentToolActivity}
-                                  isAutoCollapsed={
-                                    singleToolCall.id == null ||
-                                    singleToolCall.id !== latestOpenToolId
-                                  }
-                                  onOpenFileInViewer={onOpenFileInViewer}
-                                  toolDisplayMetadataMap={toolDisplayMetadataMap}
-                                  minimal={minimal}
-                                />
-                              ));
-                            }
-                            if (seg.type === "text") {
-                              const rawFragment =
-                                message.textFragments?.[
-                                  seg.fragmentIndex ?? 0
-                                ]?.trim();
-                              const fragmentText = rawFragment
-                                ? substituteToolOutputTokens(
-                                    rawFragment,
-                                    message.toolCalls,
-                                  )
-                                : rawFragment;
-                              const isLastTextSeg = !!opts.isLastText;
-                              const showCursor =
-                                !opts.insideThinking && !opts.suppressCursor;
-                              const cursorActive =
-                                isStreaming && isLastTextSeg && showCursor;
-                              if (fragmentText) {
-                                const { body, token } = cursorActive
-                                  ? splitStreamingTail(fragmentText)
-                                  : { body: fragmentText, token: "" };
-                                return (
-                                  <MarkdownContent
-                                    key={`seg-x-${si}`}
-                                    content={body}
-                                    className={
-                                      cursorActive ? styles['streaming-text'] : ""
-                                    }
-                                  >
-                                    {cursorActive && (
-                                      <StreamingCursorComponent
-                                        active
-                                        token={token}
-                                      />
-                                    )}
-                                  </MarkdownContent>
-                                );
-                              }
-                              if (cursorActive) {
-                                return (
-                                  <StreamingCursorComponent
-                                    key={`seg-x-${si}`}
-                                    active
-                                    standalone
-                                  />
-                                );
-                              }
-                              return null;
-                            }
-                            if (seg.type === "plan" && planProposal) {
-                              return (
-                                <PlanCardComponent
-                                  key={`seg-p-${si}`}
-                                  planText={planProposal.plan}
-                                  steps={planProposal.steps}
-                                  status={planProposal.status}
-                                  onApprove={onPlanApprove}
-                                  onReject={onPlanReject}
-                                />
-                              );
-                            }
-                            if (seg.type === "audio") {
-                              const audioList = Array.isArray(message.audio)
-                                ? message.audio
-                                : message.audio
-                                  ? [message.audio]
-                                  : [];
-                              const audioRef =
-                                audioList[seg.fragmentIndex ?? 0];
-                              if (!audioRef) return null;
-                              return (
-                                <div
-                                  key={`seg-a-${si}`}
-                                  className={styles['image-preview-layout-row']}
-                                >
-                                  <MediaPreview dataUrl={audioRef} />
-                                </div>
-                              );
-                            }
-                            if (seg.type === "image") {
-                              const imageRef =
-                                message.images?.[seg.fragmentIndex ?? 0];
-                              if (!imageRef) return null;
-                              const resolvedUrl =
-                                PrismService.getFileUrl(imageRef);
-                              const cat = getMimeCategory(imageRef);
-                              let clickHandler;
-                              if (cat === "image")
-                                clickHandler = () =>
-                                  handleImageClick(resolvedUrl);
-                              else if (cat === "pdf" || cat === "text")
-                                clickHandler = () => onDocClick?.(resolvedUrl);
-                              return (
-                                <div
-                                  key={`seg-i-${si}`}
-                                  className={styles['image-preview-layout-row']}
-                                >
-                                  <MediaPreview
-                                    dataUrl={imageRef}
-                                    onClick={clickHandler}
-                                  />
-                                </div>
-                              );
-                            }
-                            return null;
-                          };
-
-                          // Edit mode: show reasoning then editable text
-                          if (
-                            message.role === "assistant" &&
-                            handleEdit &&
-                            editingIndex === i
-                          ) {
-                            const nonThinking = segs.filter(
-                              (state) => state.type !== "thinking",
-                            );
-                            return (
-                              <>
-                                {hasThinking &&
-                                  segs
-                                    .filter((state) => state.type === "thinking")
-                                    .map((seg, segmentIndex) => {
-                                      const fragment =
-                                        message.thinkingFragments?.[
-                                          seg.fragmentIndex ?? 0
-                                        ];
-                                      return (
-                                        <ThinkingBlock
-                                          key={`edit-think-${segmentIndex}`}
-                                          isStreaming={false}
-                                          thinking={fragment}
-                                          thinkingDurationSeconds={message.thinkingDurationSeconds}
-                                          minimal={minimal}
-                                        />
-                                      );
-                                    })}
-                                {nonThinking.map((seg, si) =>
-                                  renderSeg(seg, si),
-                                )}
-                                <EditableMessage
-                                  key="seg-edit"
-                                  content={message.content}
-                                  index={i}
-                                  role="assistant"
-                                  onEdit={handleEdit}
-                                  editing={true}
-                                  onCancelEdit={() => setEditingIndex(null)}
-                                  knownPaths={knownPathsSet}
-                                  onMentionFileOpen={onMentionFileOpen}
-                                />
-                              </>
-                            );
-                          }
-
-                          // -- Normal rendering --
-                          // Render each segment in its original interleaved order.
-                          // Each thinking segment gets its own ThinkingBlock so they
-                          // appear separately between tool calls and text — both
-                          // during streaming and after refresh.
-                          if (hasThinking) {
-                            const lastSeg = segs[segs.length - 1];
-
-                            // Find the last text segment index for streaming cursor.
-                            // The cursor only attaches to text while text is the
-                            // final segment — once a tool call (or anything else)
-                            // starts after it, the cursor moves below that block.
-                            const lastTextSegmentIndex = (() => {
-                              for (let k = segs.length - 1; k >= 0; k--) {
-                                if (segs[k].type === "text") return k;
-                              }
-                              return -1;
-                            })();
-                            const cursorOnText =
-                              lastTextSegmentIndex === segs.length - 1;
-
-                            // Track whether any non-thinking content exists
-                            const hasVisibleContent = segs.some(
-                              (state) => state.type !== "thinking",
-                            );
-
-                            // Find the last thinking segment — the streaming cursor
-                            // should attach to this one (not the absolute last segment)
-                            // so intermediate thinking blocks remain visible during
-                            // multi-iteration agentic flows.
-                            const lastThinkingSegmentIndex = (() => {
-                              for (let k = segs.length - 1; k >= 0; k--) {
-                                if (segs[k].type === "thinking") return k;
-                              }
-                              return -1;
-                            })();
-
-                            return (
-                              <>
-                                {segs.map((seg, segmentIndex) => {
-                                  if (seg.type === "thinking") {
-                                    const isLastThinkingSegment =
-                                      segmentIndex === lastThinkingSegmentIndex;
-                                    const isThinkingStreaming =
-                                      isStreaming &&
-                                      isLastThinkingSegment &&
-                                      seg === lastSeg;
-                                    const fragment =
-                                      message.thinkingFragments?.[
-                                        seg.fragmentIndex ?? 0
-                                      ];
-                                    return (
-                                      <ThinkingBlock
-                                        key={`think-${segmentIndex}`}
-                                        isStreaming={isThinkingStreaming}
-                                        streamKeepVisible={
-                                          isStreaming && isLastThinkingSegment
-                                        }
-                                        thinking={fragment}
-                                        thinkingDurationSeconds={message.thinkingDurationSeconds}
-                                        minimal={minimal}
-                                      />
-                                    );
-                                  }
-                                  const isLastText =
-                                    cursorOnText &&
-                                    segmentIndex === lastTextSegmentIndex;
-                                  return (
-                                    <React.Fragment
-                                      key={`vis-${segmentIndex}`}
-                                    >
-                                      {renderSeg(seg, segmentIndex, {
-                                        isLastText,
-                                      })}
-                                    </React.Fragment>
-                                  );
-                                })}
-                                {/* Streaming cursor when no visible content yet,
-                                    or below the trailing non-text block (e.g. a
-                                    tool call being generated/executed) */}
-                                {isStreaming &&
-                                  (!hasVisibleContent ||
-                                    (lastSeg &&
-                                      lastSeg.type !== "text" &&
-                                      lastSeg.type !== "thinking")) && (
-                                    <StreamingCursorComponent active standalone />
-                                  )}
-                              </>
-                            );
-                          }
-
-                          // No thinking — render all segments inline (tools interleaved with text)
-                          // Find the last text segment to place streaming cursor.
-                          // The cursor only stays attached to text while text is
-                          // the final segment — once a tool call (or other block)
-                          // follows it, the cursor renders standalone below.
-                          const lastTextIndex = (() => {
-                            for (let k = segs.length - 1; k >= 0; k--) {
-                              if (segs[k].type === "text") return k;
-                            }
-                            return -1;
-                          })();
-                          const trailingSeg = segs[segs.length - 1];
-                          const textIsLast =
-                            lastTextIndex === segs.length - 1;
-                          return (
-                            <>
-                              {segs.map((seg, si) =>
-                                renderSeg(seg, si, {
-                                  isLastText:
-                                    textIsLast && si === lastTextIndex,
-                                }),
-                              )}
-                              {isStreaming &&
-                                trailingSeg &&
-                                trailingSeg.type !== "text" && (
-                                  <StreamingCursorComponent
-                                    active
-                                    standalone
-                                  />
-                                )}
-                            </>
-                          );
-                        })()
-                      ) : (
-                        <>
-                          {/* Structural render path: this branch handles all user messages
-                              (inline editing / raw view / mentions, below) and any message that
-                              has no contentSegments. The thinking + tool-call blocks additionally
-                              cover assistant messages persisted before contentSegments existed. */}
-                          {/* Thinking block (segment-less assistant messages) */}
-                          {message.thinking && (
-                            <ThinkingBlock
-                              thinking={message.thinking}
-                              isStreaming={
-                                isStreaming &&
-                                !!message.thinking &&
-                                !message.content
-                              }
-                              thinkingDurationSeconds={message.thinkingDurationSeconds}
-                              minimal={minimal}
-                            />
-                          )}
-
-                          {/* Tool calls (persisted conversations without segments) */}
-                          {message.toolCalls &&
-                            message.toolCalls.length > 0 &&
-                            message.toolCalls.map((singleToolCall: ToolCallEvent, toolCallIndex: number) => (
-                              <ToolCallsBlockComponent
-                                key={`fallback-tool-${toolCallIndex}`}
-                                toolCall={singleToolCall}
-                                streamingOutputs={streamingOutputs}
-                                subAgentToolActivity={subAgentToolActivity}
-                                isAutoCollapsed={
-                                  // Only the latest tool call stays open, and only
-                                  // while streaming with no text response yet
-                                  !isStreaming ||
-                                  !!message.content ||
-                                  toolCallIndex !== message.toolCalls!.length - 1
-                                }
-                                onOpenFileInViewer={onOpenFileInViewer}
-                                toolDisplayMetadataMap={toolDisplayMetadataMap}
-                                minimal={minimal}
-                              />
-                            ))}
-
-                          {/* Text content */}
-                          {message.role === "user" && handleEdit ? (
-                            <EditableMessage
-                              content={message.content}
-                              index={i}
-                              role="user"
-                              onEdit={handleEdit}
-                              editing={editingIndex === i}
-                              onCancelEdit={() => setEditingIndex(null)}
-                              knownPaths={knownPathsSet}
-                              onMentionFileOpen={onMentionFileOpen}
-                              showRaw={showRaw}
-                            />
-                          ) : message.role === "assistant" &&
-                            handleEdit &&
-                            editingIndex === i ? (
-                            <EditableMessage
-                              content={message.content}
-                              index={i}
-                              role="assistant"
-                              onEdit={handleEdit}
-                              editing={true}
-                              onCancelEdit={() => setEditingIndex(null)}
-                              knownPaths={knownPathsSet}
-                              onMentionFileOpen={onMentionFileOpen}
-                            />
-                          ) : message.role === "user" && showRaw ? (
-                            (() => {
-                              const { prefix, rest } = splitRawContent(
-                                message.content,
-                              );
-                              if (prefix) {
-                                const { body, token } = isStreaming
-                                  ? splitStreamingTail(rest)
-                                  : { body: rest, token: "" };
-                                return (
-                                  <div className={styles['text']}>
-                                    <div className={styles['raw-prefix']}>
-                                      {prefix}
-                                    </div>
-                                    <MarkdownContent
-                                      content={body}
-                                      className={
-                                        isStreaming ? styles['streaming-text'] : ""
-                                      }
-                                    >
-                                      {isStreaming && (
-                                        <StreamingCursorComponent
-                                          active
-                                          token={token}
-                                        />
-                                      )}
-                                    </MarkdownContent>
-                                  </div>
-                                );
-                              }
-                              const { body, token } = isStreaming
-                                ? splitStreamingTail(message.content)
-                                : { body: message.content, token: "" };
-                              return (
-                                <MarkdownContent
-                                  content={body}
-                                  className={
-                                    isStreaming ? styles['streaming-text'] : ""
-                                  }
-                                >
-                                  {isStreaming && (
-                                    <StreamingCursorComponent
-                                      active
-                                      token={token}
-                                    />
-                                  )}
-                                </MarkdownContent>
-                              );
-                            })()
-                          ) : message.content ? (
-                            (() => {
-                              const substitutedContent =
-                                substituteToolOutputTokens(
-                                  message.content,
-                                  message.toolCalls,
-                                );
-                              const { body, token } = isStreaming
-                                ? splitStreamingTail(substitutedContent)
-                                : { body: substitutedContent, token: "" };
-                              return (
-                                <MarkdownContent
-                                  content={body}
-                                  className={
-                                    isStreaming ? styles['streaming-text'] : ""
-                                  }
-                                >
-                                  {isStreaming && (
-                                    <StreamingCursorComponent
-                                      active
-                                      token={token}
-                                    />
-                                  )}
-                                </MarkdownContent>
-                              );
-                            })()
-                          ) : isStreaming ? (
-                            <StreamingCursorComponent active standalone />
-                          ) : null}
-                        </>
-                      )}
-
-                      {/* Visual tool results rendered inline below prose */}
-                      {message.role === "assistant" &&
-                        message.toolCalls &&
-                        message.toolCalls.length > 0 &&
-                        (() => {
-                          // A tool result renders inline when it carries
-                          // self-describing `display` metadata — except media
-                          // already rendered inline at its true position:
-                          // images promoted to message.images (media row
-                          // below), and audio covered by inline audio
-                          // segments. During streaming every tool clip also
-                          // arrives as an `audio` SSE event that renders an
-                          // inline player right after its tool chip, so
-                          // repeating it here would pile every clip up at
-                          // the bottom of the in-flight message.
-                          const messageImageUrls = new Set(message.images || []);
-                          const hasInlineAudioSegments =
-                            !!message.contentSegments?.some(
-                              (segment) => segment.type === "audio",
-                            );
-                          const visualToolCalls = message.toolCalls.filter(
-                            (toolCall: ToolCallEvent) => {
-                              const display = getResultDisplay(toolCall.result);
-                              if (!display) return false;
-                              // "code" stays in the tool card — the reply text
-                              // already carries the substituted verbatim copy.
-                              if (display.kind === "code") return false;
-                              if (
-                                display.kind === "image" &&
-                                messageImageUrls.has(display.url)
-                              ) {
-                                return false;
-                              }
-                              if (
-                                display.kind === "audio" &&
-                                hasInlineAudioSegments
-                              ) {
-                                return false;
-                              }
-                              return true;
-                            },
-                          );
-                          if (visualToolCalls.length === 0) return null;
-                          return visualToolCalls.map(
-                            (toolCall: ToolCallEvent, toolCallIndex: number) => (
-                              <div key={`visual-${toolCall.id || toolCallIndex}`}>
-                                <ToolResultView toolCall={toolCall} hideToggles={true} />
-                              </div>
-                            ),
-                          );
-                        })()}
-
-                      {/* Images / media (skipped when already rendered inline via segments) */}
-                      {message.images &&
-                        message.images.length > 0 &&
-                        !message.contentSegments?.some(
-                          (segment) => segment.type === "image",
-                        ) &&
-                        (() => {
-                          // Skip media already rendered at its tool call's
-                          // position by an earlier message in this turn.
-                          const priorToolMediaUrls =
-                            collectPriorToolDisplayUrls(displayMessages, i);
-                          const rowImages = message.images.filter(
-                            (rawUrl) => !priorToolMediaUrls.has(rawUrl),
-                          );
-                          if (rowImages.length === 0) return null;
-                          return (
-                            <div className={styles['image-preview-layout-row']}>
-                              {rowImages.map((rawUrl, j) => {
-                                const resolvedUrl = PrismService.getFileUrl(rawUrl);
-                                const cat = getMimeCategory(rawUrl);
-                                let clickHandler;
-                                if (cat === "image")
-                                  clickHandler = () =>
-                                    handleImageClick(resolvedUrl);
-                                else if (cat === "pdf" || cat === "text")
-                                  clickHandler = () => onDocClick?.(resolvedUrl);
-                                return (
-                                  <MediaPreview
-                                    key={j}
-                                    dataUrl={rawUrl}
-                                    onClick={clickHandler}
-                                  />
-                                );
-                              })}
-                            </div>
-                          );
-                        })()}
-
-                      {/* Sources a grounded answer cited */}
-                      {message.role === "assistant" && message.citations && (
-                        <CitationsComponent citations={message.citations} />
-                      )}
-
-                      {/* Non-image file attachments (uploaded refs) */}
-                      {message.files && message.files.length > 0 && (
-                        <div className={styles['file-attachment-row']}>
-                          {message.files.map((attachedFile, j) => (
-                            <FileAttachmentChip
-                              key={`file-${j}`}
-                              file={attachedFile}
-                            />
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Streaming audio (live conversation in progress) */}
-                      {!readOnly &&
-                        message.role === "assistant" &&
-                        message._liveStreaming &&
-                        !message.audio && (
-                          <div className={styles['audio-card']}>
-                            <AudioPlayerRecorderComponent streaming compact />
-                          </div>
-                        )}
-
-                      {/* Audio (skipped when already rendered inline via segments) */}
-                      {message.audio &&
-                        !message.contentSegments?.some(
-                          (segment) => segment.type === "audio",
-                        ) &&
-                        (() => {
-                          // Same cross-message dedup as images above — plus
-                          // this message's OWN audio tool results, which the
-                          // visual-tool-result stack above already renders
-                          // with their descriptive header (Synth/TTS card).
-                          const priorToolMediaUrls =
-                            collectPriorToolDisplayUrls(displayMessages, i);
-                          for (const toolCall of message.toolCalls || []) {
-                            const display = getResultDisplay(toolCall.result);
-                            if (display?.kind === "audio") {
-                              priorToolMediaUrls.add(display.url);
-                            }
-                          }
-                          const rowAudio = (
-                            Array.isArray(message.audio)
-                              ? message.audio
-                              : [message.audio]
-                          ).filter(
-                            (rawUrl) => !priorToolMediaUrls.has(rawUrl),
-                          );
-                          if (rowAudio.length === 0) return null;
-                          return (
-                            <div className={styles['image-preview-layout-row']}>
-                              {rowAudio.map((rawUrl, j) => (
-                                <MediaPreview key={`aud-${j}`} dataUrl={rawUrl} />
-                              ))}
-                            </div>
-                          );
-                        })()}
-
-                      {/* Video */}
-                      {message.video &&
-                        (Array.isArray(message.video)
-                          ? message.video
-                          : [message.video]
-                        ).length > 0 && (
-                          <div className={styles['image-preview-layout-row']}>
-                            {(Array.isArray(message.video)
-                              ? message.video
-                              : [message.video]
-                            ).map((rawUrl, j) => (
-                              <MediaPreview key={`vid-${j}`} dataUrl={rawUrl} />
-                            ))}
-                          </div>
-                        )}
-
-                      {/* PDF */}
-                      {message.pdf &&
-                        (Array.isArray(message.pdf)
-                          ? message.pdf
-                          : [message.pdf]
-                        ).length > 0 && (
-                          <div className={styles['image-preview-layout-row']}>
-                            {(Array.isArray(message.pdf)
-                              ? message.pdf
-                              : [message.pdf]
-                            ).map((rawUrl, j) => {
-                              const resolvedUrl =
-                                PrismService.getFileUrl(rawUrl);
-                              return (
-                                <MediaPreview
-                                  key={`pdf-${j}`}
-                                  dataUrl={rawUrl}
-                                  onClick={() => onDocClick?.(resolvedUrl)}
-                                />
-                              );
-                            })}
-                          </div>
-                        )}
-
-                      {/* Error block */}
-                      {message.error && (
-                        <div className={styles['error-block']}>
-                          <AlertTriangle
-                            size={14}
-                            className={styles['error-icon']}
-                          />
-                          <span>{message.error}</span>
-                        </div>
-                      )}
-
-                      {/* User metadata */}
-                      {!minimal && message.role === "user" && message.content && (
-                        <div className={styles['meta-badges']}>
-                          <BadgeComponent
-                            type="words"
-                            count={
-                              message.content
-                                .trim()
-                                .split(/\s+/)
-                                .filter(Boolean).length
-                            }
-                          />
-                          <BadgeComponent
-                            type="tokens"
-                            value={Math.ceil(message.content.length / 4)}
-                            label="estimated"
-                          />
-                        </div>
-                      )}
-
-                      {/* System metadata */}
-                      {!minimal && message.role === "system" && message.content && (
-                        <div className={styles['meta-badges']}>
-                          <BadgeComponent
-                            type="words"
-                            count={
-                              message.content
-                                .trim()
-                                .split(/\s+/)
-                                .filter(Boolean).length
-                            }
-                          />
-                          <BadgeComponent
-                            type="tokens"
-                            value={Math.ceil(message.content.length / 4)}
-                            label="estimated"
-                          />
-                        </div>
-                      )}
-
-                      {/* Assistant metadata — only on the last message in a coalesced group */}
-                      {!minimal &&
-                        message.role === "assistant" &&
-                        coalesce?.isLastInGroup !== false &&
-                        (message.usage ||
-                          message.audio ||
-                          message.provider) && (
-                          <div className={styles['meta-badges']}>
-                            {message.provider && (
-                              <BadgeComponent
-                                type="providers"
-                                providers={[message.provider]}
-                              />
-                            )}
-                            {message.model && (
-                              <BadgeComponent
-                                type="model"
-                                models={[message.model]}
-                              />
-                            )}
-                            {message.voice && (
-                              <BadgeComponent
-                                variant="info"
-                                tooltip={`Voice: ${message.voice}`}
-                              >
-                                🔊 {message.voice}
-                              </BadgeComponent>
-                            )}
-                            {(() => {
-                              if (
-                                message.usage?.inputTokens != null &&
-                                message.usage?.outputTokens != null
-                              ) {
-                                const cacheRead =
-                                  message.usage.cacheReadInputTokens || 0;
-                                const cacheWrite =
-                                  message.usage.cacheCreationInputTokens || 0;
-                                const cached = cacheRead + cacheWrite;
-                                const totalIn = getTotalInputTokens(
-                                  message.usage,
-                                );
-                                let inLabel = "in";
-                                if (cached) {
-                                  const parts = [];
-                                  if (message.usage.inputTokens)
-                                    parts.push(
-                                      `${message.usage.inputTokens.toLocaleString()} new`,
-                                    );
-                                  if (cacheRead)
-                                    parts.push(
-                                      `${cacheRead.toLocaleString()} read`,
-                                    );
-                                  if (cacheWrite)
-                                    parts.push(
-                                      `${cacheWrite.toLocaleString()} write`,
-                                    );
-                                  inLabel = `in (${parts.join(" · ")})`;
-                                }
-                                const reasoning =
-                                  message.usage
-                                    ?.reasoningOutputTokens || 0;
-                                let outLabel = "out";
-                                if (reasoning > 0) {
-                                  outLabel = `out (${reasoning.toLocaleString()} reasoning)`;
-                                }
-                                return (
-                                  <>
-                                    <BadgeComponent
-                                      type="tokens"
-                                      value={totalIn}
-                                      label={inLabel}
-                                    />
-                                    <BadgeComponent
-                                      type="tokens"
-                                      value={message.usage.outputTokens}
-                                      label={outLabel}
-                                    />
-                                  </>
-                                );
-                              }
-                              if (message.usage?.outputTokens != null) {
-                                return (
-                                  <BadgeComponent
-                                    type="tokens"
-                                    value={message.usage.outputTokens}
-                                    label="tokens"
-                                  />
-                                );
-                              }
-                              return null;
-                            })()}
-                            {message.content && (
-                              <BadgeComponent
-                                type="words"
-                                count={
-                                  message.content
-                                    .trim()
-                                    .split(/\s+/)
-                                    .filter(Boolean).length
-                                }
-                              />
-                            )}
-                            {message.totalTime != null && (
-                              <BadgeComponent
-                                type="stopwatch"
-                                seconds={message.totalTime}
-                              />
-                            )}
-                            {message.tokensPerSec && (
-                              <BadgeComponent
-                                variant="info"
-                                tooltip={`${message.tokensPerSec} tokens per second`}
-                              >
-                                {message.tokensPerSec} tok/s
-                              </BadgeComponent>
-                            )}
-                            {isLocalProvider(
-                              resolveProviderBaseType(message.provider ?? ""),
-                            ) ? (
-                              <BadgeComponent
-                                variant="success"
-                                tooltip="Free (local model)"
-                              >
-                                $0
-                              </BadgeComponent>
-                            ) : message.estimatedCost ? (
-                              <BadgeComponent
-                                type="cost"
-                                cost={message.estimatedCost}
-                              />
-                            ) : null}
-                          </div>
-                        )}
-
-                      {/* Plan proposal card — fallback for non-segmented messages */}
-                      {planProposal &&
-                        message.role === "assistant" &&
-                        (planProposal.status === APPROVAL_STATUS.PENDING
-                          ? i === messages.length - 1
-                          : message.toolCalls?.some((toolCall) => toolCall.name === TOOL_NAMES.EXIT_PLAN_MODE)) &&
-                        !message.contentSegments?.some(
-                          (state) => state.type === "plan",
-                        ) && (
-                          <PlanCardComponent
-                            planText={planProposal.plan}
-                            steps={planProposal.steps}
-                            status={planProposal.status}
-                            onApprove={onPlanApprove}
-                            onReject={onPlanReject}
-                          />
-                        )}
-
-                      {/* Termination notice — surfaces why the agentic loop ended abnormally */}
-                      {message.role === "assistant" &&
-                        !isStreaming &&
-                        (message as unknown as { _terminationReason?: string })._terminationReason && (
-                          <div className={styles['termination-notice']}>
-                            <AlertTriangle size={14} />
-                            <span>{(message as unknown as { _terminationReason?: string })._terminationReason}</span>
-                          </div>
-                        )}
-                    </div>
-                  </div>
-                );
-              })()}
-          </React.Fragment>
-        );
-      })}
+                priorToolMediaKey={group ? "" : priorToolMediaKey(displayMessages, index)}
+                shared={shared}
+              />
+            </RowFrame>
+          );
+        })}
+      </div>
       {localLightboxSourceUrl && (
         <ImagePreviewComponent
           src={localLightboxSourceUrl}
