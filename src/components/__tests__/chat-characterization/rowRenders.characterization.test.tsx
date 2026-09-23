@@ -71,7 +71,11 @@ function longConversation(messageCount: number) {
   };
 }
 
-describe("row renders per streamed token (characterization)", { timeout: 600_000 }, () => {
+// A 2,000-message run re-rendered every row per token on master: ~2 s a
+// token in jsdom, so a 1,000-token measurement needs more than ten minutes.
+const TIMEOUT_MILLISECONDS = Math.max(600_000, TOKEN_COUNT * 4_000);
+
+describe("row renders per streamed token (characterization)", { timeout: TIMEOUT_MILLISECONDS }, () => {
   it(`${MESSAGE_COUNT}-message conversation, ${TOKEN_COUNT} tokens`, async () => {
     harness = await mountChat(
       { initialConversationId: LONG_CONVERSATION_ID },
