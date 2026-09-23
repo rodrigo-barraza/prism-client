@@ -14,7 +14,7 @@ import { COLLECTIONS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import {
   PROACTIVE_PENDING_REQUEST_NODE_ID,
   PROACTIVE_PENDING_TURN_NODE_ID,
-} from "../components/ChatConversationGraphComponent";
+} from "../utils/conversationGraphModel";
 
 /* ═══════════════════════════════════════════════════════════════════
    Pending-chain helpers
@@ -128,13 +128,56 @@ function computeRequestsFingerprint(requests: IrisRequestEntry[]): string {
     .join("|");
 }
 
+/** FNV-1a of the requests fingerprint — the `v` the graph endpoint keys its
+    cache on. The request COUNT alone does not change when a pending
+    request completes or fails, so a rebuild inside the server's TTL was
+    served the pending graph. */
+export function graphContentVersion(requests: IrisRequestEntry[]): string {
+  const fingerprint = computeRequestsFingerprint(requests);
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < fingerprint.length; index++) {
+    hash ^= fingerprint.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `${requests.length.toString(36)}-${(hash >>> 0).toString(36)}`;
+}
+
+/** Cache-busting version for a first load: the rows are fetched in
+    parallel with the graph, so there is no fingerprint yet. */
+function freshLoadVersion(): string {
+  return `load-${Date.now().toString(36)}`;
+}
+
+// Tool emojis are cosmetic and identical for every graph — one fetch per
+// page, shared by every mounted instance (the sidebar and main view each
+// fetched their own, plus one per no-op hook).
+let toolEmojiMapPromise: Promise<Map<string, string>> | null = null;
+
+function loadToolEmojiMap(): Promise<Map<string, string>> {
+  toolEmojiMapPromise ??= PrismService.getBuiltInToolSchemas()
+    .then((toolSchemas: ToolSchema[]) => {
+      const emojiMap = new Map<string, string>();
+      for (const toolSchema of toolSchemas) {
+        if (!toolSchema.emoji) continue;
+        const resolvedEmoji = Array.isArray(toolSchema.emoji) ? toolSchema.emoji[0] : toolSchema.emoji;
+        if (resolvedEmoji) emojiMap.set(toolSchema.name, resolvedEmoji);
+      }
+      return emojiMap;
+    })
+    .catch(() => {
+      toolEmojiMapPromise = null;
+      return new Map<string, string>();
+    });
+  return toolEmojiMapPromise;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    Canonical layout dimensions
    ═══════════════════════════════════════════════════════════════════
    Node positions are computed once using these canonical dimensions.
    Each rendering instance applies its own viewport transform (zoom +
-   pan) via animateToFitTransform to map these positions onto its
-   actual canvas size. This decouples data/layout from viewport. */
+   pan — see useGraphViewport / fitViewport) to map these positions onto
+   its actual canvas size. This decouples data/layout from viewport. */
 const CANONICAL_LAYOUT_WIDTH = LAYOUT.CANONICAL_WIDTH;
 const CANONICAL_LAYOUT_HEIGHT = LAYOUT.CANONICAL_HEIGHT;
 
@@ -161,6 +204,12 @@ export interface ConversationGraphDataState {
   /** Rendering instance that currently owns the collision-settlement loop —
       prevents two mounted instances from applying pushes twice per frame. */
   collisionOwnerRef: MutableRefObject<symbol | null>;
+  /** Nodes the user dragged. A rebuild keeps their positions; every other
+      node takes the server layout (and glides there). */
+  pinnedNodeIds: Set<string>;
+  setPinnedNodeIds: Dispatch<SetStateAction<Set<string>>>;
+  /** Releases every pinned node back to its server position. */
+  restoreServerLayout: () => void;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -179,6 +228,23 @@ export default function useConversationGraphData(
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [enteringNodeIds, setEnteringNodeIds] = useState<Set<string>>(new Set());
   const [toolEmojiMap, setToolEmojiMap] = useState<Map<string, string>>(new Map());
+  const [pinnedNodeIds, setPinnedNodeIds] = useState<Set<string>>(new Set());
+
+  // A switch drops the previous conversation's state DURING render, so no
+  // frame ever pairs the new conversation id with the old graph (an effect
+  // runs after paint: the old graph flashed, and the canvas took it as the
+  // new conversation's first frame).
+  const [servedConversationId, setServedConversationId] = useState(conversationId);
+  if (servedConversationId !== conversationId) {
+    setServedConversationId(conversationId);
+    setConversation(null);
+    setConversationStats(null);
+    setConversationRequests([]);
+    setGraphData(null);
+    setPinnedNodeIds(new Set());
+    setEnteringNodeIds(new Set());
+    setIsLoading(conversationId !== null);
+  }
 
   const conversationRef = useRef<AgentConversation | null>(null);
   const conversationRequestsRef = useRef<IrisRequestEntry[]>([]);
@@ -187,6 +253,14 @@ export default function useConversationGraphData(
   const nodesRef = useRef<GraphNode[]>([]);
   const draggedNodeIdRef = useRef<string | null>(null);
   const collisionOwnerRef = useRef<symbol | null>(null);
+  const pinnedNodeIdsRef = useRef<Set<string>>(pinnedNodeIds);
+  // Where the server last put each node, before pins were applied.
+  const serverPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+  // The conversation the hook currently serves. Every async result checks
+  // it: a rebuild or refresh that resolves after a switch belongs to the
+  // conversation the user left and must not land on this one.
+  const activeConversationIdRef = useRef<string | null>(conversationId);
+  const enteringTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   // All agentConversationIds known from the current request set.
   // Sub-agent requests use their own unique conversationId, so the SSE
@@ -226,24 +300,61 @@ export default function useConversationGraphData(
   useEffect(() => { graphDataRef.current = graphData; }, [graphData]);
   useEffect(() => { nodesRef.current = graphData?.nodes || []; }, [graphData?.nodes]);
   useEffect(() => { isGeneratingRef.current = isGenerating; }, [isGenerating]);
+  useEffect(() => { pinnedNodeIdsRef.current = pinnedNodeIds; }, [pinnedNodeIds]);
 
-  // -- Fetch tool schemas for emoji map (cosmetic) ----------------
+  // -- Tool emoji map (cosmetic) — skipped by a no-op instance ------
+  const hasConversation = conversationId !== null;
   useEffect(() => {
+    if (!hasConversation) return;
     let isCancelled = false;
-    PrismService.getBuiltInToolSchemas()
-      .then((toolSchemas: ToolSchema[]) => {
-        if (isCancelled) return;
-        const emojiMap = new Map<string, string>();
-        for (const toolSchema of toolSchemas) {
-          if (toolSchema.emoji) {
-            const resolvedEmoji = Array.isArray(toolSchema.emoji) ? toolSchema.emoji[0] : toolSchema.emoji;
-            if (resolvedEmoji) emojiMap.set(toolSchema.name, resolvedEmoji);
-          }
-        }
-        setToolEmojiMap(emojiMap);
-      })
-      .catch(() => { /* Tool emojis are cosmetic — fail silently */ });
+    loadToolEmojiMap().then((emojiMap) => { if (!isCancelled) setToolEmojiMap(emojiMap); });
     return () => { isCancelled = true; };
+  }, [hasConversation]);
+
+  // -- Entering animation bookkeeping -------------------------------
+  // Batches accumulate: a node that arrives while the previous batch is
+  // still animating no longer cuts that batch's animation short.
+  const markEntering = useCallback((nodeIds: Iterable<string>) => {
+    const batch = new Set(nodeIds);
+    if (batch.size === 0) return;
+    setEnteringNodeIds((previous) => new Set([...previous, ...batch]));
+    const timer = setTimeout(() => {
+      enteringTimersRef.current.delete(timer);
+      setEnteringNodeIds((previous) => {
+        const next = new Set(previous);
+        for (const nodeId of batch) next.delete(nodeId);
+        return next;
+      });
+    }, TIMING.ANIMATION_DURATION);
+    enteringTimersRef.current.add(timer);
+  }, []);
+
+  useEffect(() => {
+    const timers = enteringTimersRef.current;
+    return () => {
+      for (const timer of timers) clearTimeout(timer);
+      timers.clear();
+    };
+  }, []);
+
+  const rememberServerPositions = useCallback((graph: GraphData) => {
+    serverPositionsRef.current = new Map(graph.nodes.map((node) => [node.id, { x: node.x, y: node.y }]));
+  }, []);
+
+  const restoreServerLayout = useCallback(() => {
+    const serverPositions = serverPositionsRef.current;
+    setPinnedNodeIds(new Set());
+    pinnedNodeIdsRef.current = new Set();
+    setGraphData((previousGraphData) => {
+      if (!previousGraphData) return previousGraphData;
+      return {
+        ...previousGraphData,
+        nodes: previousGraphData.nodes.map((node) => {
+          const serverPosition = serverPositions.get(node.id);
+          return serverPosition ? { ...node, x: serverPosition.x, y: serverPosition.y } : node;
+        }),
+      };
+    });
   }, []);
 
   // -- Incremental rebuild (backend-driven, throttled) -------------
@@ -254,7 +365,7 @@ export default function useConversationGraphData(
     activeConversation: AgentConversation,
   ) => {
     const activeConversationId = activeConversation.id || activeConversation._id;
-    if (!activeConversationId) return;
+    if (!activeConversationId || activeConversationId !== activeConversationIdRef.current) return;
 
     graphRebuildInFlightRef.current = true;
     try {
@@ -262,7 +373,11 @@ export default function useConversationGraphData(
         activeConversationId,
         CANONICAL_LAYOUT_WIDTH,
         CANONICAL_LAYOUT_HEIGHT,
+        graphContentVersion(conversationRequestsRef.current),
       );
+      // The user switched conversations while this was in flight.
+      if (activeConversationId !== activeConversationIdRef.current) return;
+      rememberServerPositions(graph);
 
       // Build the final graph BEFORE dispatching state — setGraphData updater
       // functions must stay pure (no mutation of closure objects, no timers),
@@ -270,39 +385,28 @@ export default function useConversationGraphData(
       const previousGraphData = graphDataRef.current;
 
       const existingPositions = new Map<string, { x: number; y: number }>();
-      const existingNodeIds = new Set<string>();
       if (previousGraphData) {
         for (const node of previousGraphData.nodes) {
           existingPositions.set(node.id, { x: node.x, y: node.y });
-          existingNodeIds.add(node.id);
         }
       }
 
       const newNodeIds = new Set<string>();
       for (const node of graph.nodes) {
-        if (!existingNodeIds.has(node.id)) newNodeIds.add(node.id);
+        if (!existingPositions.has(node.id)) newNodeIds.add(node.id);
       }
 
-      // When new sub-agent nodes appear, the graph topology has changed
-      // significantly — the layout algorithm computes sub-agent branch
-      // positions relative to the main chain, so preserving old positions
-      // would place new nodes at coordinates relative to a stale grid.
-      const hasNewSubAgentNodes = [...newNodeIds].some((nodeId) => {
-        const node = graph.nodes.find((graphNode) => graphNode.id === nodeId);
-        if (!node) return false;
-        if (node.category === "subagent") return true;
-        if (node.category === "request" && ((node.metadata?.agentDepth as number) ?? 0) > 0) return true;
-        return false;
-      });
-
-      if (!hasNewSubAgentNodes) {
-        for (const node of graph.nodes) {
-          if (newNodeIds.has(node.id)) continue;
-          const previousPosition = existingPositions.get(node.id);
-          if (previousPosition) {
-            node.x = previousPosition.x;
-            node.y = previousPosition.y;
-          }
+      // The server layout only grows (fixed grid), so every node takes its
+      // server position — the canvas glides anything that moved. Nodes the
+      // user dragged keep where they were put; one mid-drag counts too, or
+      // a rebuild would yank it back to its server position under the pointer.
+      const pinnedIds = new Set(pinnedNodeIdsRef.current);
+      if (draggedNodeIdRef.current) pinnedIds.add(draggedNodeIdRef.current);
+      for (const node of graph.nodes) {
+        const previousPosition = pinnedIds.has(node.id) ? existingPositions.get(node.id) : undefined;
+        if (previousPosition) {
+          node.x = previousPosition.x;
+          node.y = previousPosition.y;
         }
       }
 
@@ -328,18 +432,14 @@ export default function useConversationGraphData(
       nodesRef.current = graph.nodes;
       graphDataRef.current = graph;
       setGraphData(graph);
-
-      if (newNodeIds.size > 0) {
-        setEnteringNodeIds(newNodeIds);
-        setTimeout(() => setEnteringNodeIds(new Set()), TIMING.ANIMATION_DURATION);
-      }
+      markEntering(newNodeIds);
     } catch {
       // Graph API failed — silently degrade
     } finally {
       graphRebuildInFlightRef.current = false;
       lastGraphRebuildTimestampRef.current = Date.now();
     }
-  }, []);
+  }, [markEntering, rememberServerPositions]);
 
   // Throttled wrapper: ensures at most one graph API call per throttle window.
   // If called while in-flight or within the cooldown, schedules a single
@@ -379,19 +479,27 @@ export default function useConversationGraphData(
 
   // -- Load session graph -----------------------------------------
   useEffect(() => {
-    if (!conversationId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
-      setConversation(null);
-      setConversationStats(null);
-      setConversationRequests([]);
-      setGraphData(null);
-      ssePopulatedForConversationRef.current = null;
-      return;
-    }
+    // The refs the previous conversation left behind (its conversation,
+    // requests and known agent ids) let a late SSE batch for the OLD
+    // conversation rebuild over the new one. State was already cleared
+    // during render; the refs reset here, before any async work, and this
+    // effect is declared before the SSE effect so it seeds from them.
+    activeConversationIdRef.current = conversationId;
+    conversationRef.current = null;
+    conversationRequestsRef.current = [];
+    conversationStatsRef.current = null;
+    knownAgentConversationIdsRef.current = new Set();
+    graphDataRef.current = null;
+    nodesRef.current = [];
+    serverPositionsRef.current = new Map();
+    pinnedNodeIdsRef.current = new Set();
+    ssePopulatedForConversationRef.current = null;
+
+    if (!conversationId) return;
 
     let isCancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     setIsLoading(true);
-    ssePopulatedForConversationRef.current = null;
 
     const loadGraph = async () => {
       try {
@@ -406,7 +514,12 @@ export default function useConversationGraphData(
         const [statsResponse, requestsResponse, graphResponse] = await Promise.all([
           IrisService.getConversationRunStats(conversationId).catch(() => null),
           IrisService.getConversationRequests(conversationId).catch(() => ({ requests: [] })),
-          IrisService.getConversationGraph(conversationId, CANONICAL_LAYOUT_WIDTH, CANONICAL_LAYOUT_HEIGHT).catch(() => null),
+          IrisService.getConversationGraph(
+            conversationId,
+            CANONICAL_LAYOUT_WIDTH,
+            CANONICAL_LAYOUT_HEIGHT,
+            freshLoadVersion(),
+          ).catch(() => null),
         ]);
 
         if (isCancelled) return;
@@ -416,13 +529,17 @@ export default function useConversationGraphData(
           return;
         }
 
+        conversationRef.current = fetchedConversation;
         setConversation(fetchedConversation);
         setConversationStats(statsResponse);
         const requestsList = requestsResponse.requests || [];
+        conversationRequestsRef.current = requestsList;
         setConversationRequests(requestsList);
 
         if (graphResponse) {
+          rememberServerPositions(graphResponse);
           nodesRef.current = graphResponse.nodes;
+          graphDataRef.current = graphResponse;
           setGraphData(graphResponse);
         }
         setIsLoading(false);
@@ -433,7 +550,7 @@ export default function useConversationGraphData(
 
     loadGraph();
     return () => { isCancelled = true; };
-  }, [conversationId]);
+  }, [conversationId, rememberServerPositions]);
 
   // -- SSE live updates -------------------------------------------
   useEffect(() => {
@@ -472,6 +589,7 @@ export default function useConversationGraphData(
         }
 
         conversationRequestsRef.current = bootstrapRequests;
+        conversationRef.current = fetchedConversation;
         setConversation(fetchedConversation);
         setConversationStats(bootstrapStats);
         setConversationRequests(bootstrapRequests);
@@ -480,11 +598,14 @@ export default function useConversationGraphData(
           conversationId,
           CANONICAL_LAYOUT_WIDTH,
           CANONICAL_LAYOUT_HEIGHT,
+          graphContentVersion(bootstrapRequests),
         ).catch(() => null);
         if (isCancelled) return;
 
         if (graphResponse) {
+          rememberServerPositions(graphResponse);
           nodesRef.current = graphResponse.nodes;
+          graphDataRef.current = graphResponse;
           setGraphData(graphResponse);
         }
         setIsLoading(false);
@@ -743,7 +864,7 @@ export default function useConversationGraphData(
         graphRebuildThrottleTimerRef.current = null;
       }
     };
-  }, [conversationId, incrementalGraphRebuild]);
+  }, [conversationId, incrementalGraphRebuild, rememberServerPositions]);
 
   // -- Proactive pending request node injection/removal -----------
   useEffect(() => {
@@ -809,8 +930,7 @@ export default function useConversationGraphData(
         };
       });
 
-      setEnteringNodeIds(enteringIds);
-      setTimeout(() => setEnteringNodeIds(new Set()), TIMING.ANIMATION_DURATION);
+      markEntering(enteringIds);
 
     // ── Removal: generation stopped ──
     } else if (wasGenerating) {
@@ -845,7 +965,7 @@ export default function useConversationGraphData(
         };
       });
     }
-  }, [isGenerating, graphData]);
+  }, [isGenerating, graphData, markEntering]);
 
   return {
     conversation,
@@ -862,5 +982,8 @@ export default function useConversationGraphData(
     graphDataRef,
     draggedNodeIdRef,
     collisionOwnerRef,
+    pinnedNodeIds,
+    setPinnedNodeIds,
+    restoreServerLayout,
   };
 }

@@ -1,0 +1,87 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ConversationGraphEdgeComponent — one edge of the Nodes view
+   ═══════════════════════════════════════════════════════════════════
+   Dimming is GROUP opacity, not stroke-opacity, so the arrowhead marker
+   fades with its line. The path's `d` transitions in step with the
+   nodes' transform transition (same duration and curve). */
+
+.edge {
+  opacity: var(--graph-edge-opacity, 0.55);
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.edge-muted {
+  opacity: 0.09;
+}
+
+.edge-highlighted,
+.edge-selected,
+.edge-live {
+  opacity: 1;
+}
+
+.edge-line {
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  transition:
+    d 440ms cubic-bezier(0.22, 1, 0.36, 1),
+    stroke-width 200ms ease;
+}
+
+.edge-line-static {
+  transition: stroke-width 200ms ease;
+}
+
+.edge-highlighted .edge-line {
+  stroke-width: 2.3;
+}
+
+.edge-selected .edge-line {
+  stroke: var(--graph-selection-color);
+  stroke-width: 2.6;
+  filter: drop-shadow(0 0 3px var(--graph-selection-glow));
+}
+
+.edge-live .edge-line {
+  stroke: var(--graph-live-color);
+  stroke-width: 2.2;
+  stroke-dasharray: 7 7;
+  animation: edge-flow 0.9s linear infinite;
+}
+
+.edge-entering .edge-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: edge-draw 640ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.edge-particle {
+  fill: var(--graph-live-color);
+  filter: drop-shadow(0 0 3px var(--graph-live-color));
+}
+
+@keyframes edge-flow {
+  to { stroke-dashoffset: -14; }
+}
+
+@keyframes edge-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge-line {
+    transition: none;
+  }
+
+  .edge-live .edge-line,
+  .edge-entering .edge-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .edge-particle {
+    display: none;
+  }
+}

@@ -1,137 +1,414 @@
 /* ═══════════════════════════════════════════════════════════════════
-   ChatConversationGraphComponent — Embeddable graph canvas for chat view
-   ═══════════════════════════════════════════════════════════════════ */
+   ChatConversationGraphComponent — the chat's Nodes view
+   ═══════════════════════════════════════════════════════════════════
+   Layers, bottom to top: canvas background → starfield (dark canvases)
+   → vignette → SVG graph (dot grid, edges, nodes) → glass overlays.
+   Every colour is a theme token or one of the --graph-* tokens below,
+   which flip for light canvases (.graph-canvas-light). */
 
-.graph-embed-wrapper {
+.graph-root {
   display: flex;
   flex-direction: column;
   flex: 1;
   height: 100%;
   min-height: 0;
   overflow: hidden;
+  /* Overlays adapt to the graph's own width — the sidebar and a split
+     pane are narrow even on a wide screen. */
+  container-type: inline-size;
 }
 
-/* ── Canvas area fills remaining height ──────────────────────── */
+.graph-canvas {
+  --graph-selection-color: oklch(0.86 0.12 205);
+  --graph-selection-glow: oklch(0.86 0.12 205 / 0.55);
+  --graph-failed-color: oklch(0.66 0.21 25);
+  --graph-tool-color: oklch(0.72 0.16 45);
+  --graph-label-halo: color-mix(in oklch, var(--background-base) 90%, transparent);
+  --graph-edge-opacity: 0.5;
+  --graph-grid-dot: color-mix(in oklch, var(--text-muted) 24%, transparent);
+  --graph-glass-background: color-mix(in oklch, var(--background-surface) 72%, transparent);
+  --graph-glass-border: color-mix(in oklch, var(--text-primary) 10%, transparent);
+  --graph-glass-shadow: 0 12px 32px oklch(0 0 0 / 0.32), inset 0 1px 0 oklch(1 0 0 / 0.05);
 
-.graph-embed-canvas-area {
+  position: relative;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
+  outline: none;
+  cursor: grab;
+  background:
+    radial-gradient(ellipse 80% 60% at 28% 18%, color-mix(in oklch, var(--accent-primary) 9%, transparent), transparent 70%),
+    var(--background-base);
+  transition: background var(--transition-normal);
 }
 
-
-/* ── Spawn Ripple — animated ring when sub-agent appears ──────── */
-
-@keyframes spawn-ripple-animation {
-  0% {
-    opacity: 0.5;
-    stroke-width: 2;
-  }
-  100% {
-    opacity: 0;
-    stroke-width: 0.5;
-  }
+.graph-canvas:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--graph-selection-color);
 }
 
-.spawn-ripple-circle {
-  fill: none;
+.graph-canvas-grabbing {
+  cursor: grabbing;
+}
+
+.graph-canvas::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   pointer-events: none;
-  animation: spawn-ripple-animation 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  background: radial-gradient(ellipse at center, transparent 58%, color-mix(in oklch, var(--background-base) 65%, transparent) 100%);
 }
 
-/* ── Collapsed Sub-Tree Badge ─────────────────────────────────── */
-
-.collapsed-subtree-badge-group {
-  cursor: pointer;
-  transition: opacity 0.2s ease;
+.graph-canvas-light {
+  --graph-selection-color: oklch(0.5 0.17 255);
+  --graph-selection-glow: oklch(0.5 0.17 255 / 0.3);
+  --graph-failed-color: oklch(0.55 0.2 25);
+  --graph-tool-color: oklch(0.6 0.16 45);
+  --graph-label-halo: color-mix(in oklch, var(--background-surface) 92%, transparent);
+  --graph-edge-opacity: 0.68;
+  --graph-grid-dot: color-mix(in oklch, var(--text-muted) 40%, transparent);
+  --graph-glass-background: color-mix(in oklch, var(--background-surface) 84%, transparent);
+  --graph-glass-border: color-mix(in oklch, var(--text-primary) 12%, transparent);
+  --graph-glass-shadow: 0 10px 28px oklch(0 0 0 / 0.1), inset 0 1px 0 oklch(1 0 0 / 0.6);
 }
 
-.collapsed-subtree-badge-group:hover {
-  opacity: 0.85;
+:global([data-theme="light"]) .graph-canvas {
+  background: radial-gradient(
+    circle at 50% 30%,
+    var(--color-white) 0%,
+    oklch(95.1% 0.0 0.0) 20%,
+    oklch(90.1% 0.0 0.0) 50%,
+    oklch(82.8% 0.0 0.0) 100%
+  );
 }
 
-/* ── Depth Label (small text under nested agents) ────────────── */
+:global([data-theme="tropical"]) .graph-canvas {
+  background: radial-gradient(
+    circle at 50% 70%,
+    oklch(26.4% 0.0234 55.1) 0%,
+    oklch(22.8% 0.0195 52.4) 30%,
+    oklch(19.1% 0.0155 47.9) 70%,
+    oklch(17.0% 0.013 55.3) 100%
+  );
+}
 
-.depth-label-text {
+:global([data-theme="oceanic"]) .graph-canvas {
+  background: radial-gradient(
+    circle at 50% 40%,
+    oklch(24.1% 0.0519 261.2) 0%,
+    oklch(20.0% 0.0398 259.8) 30%,
+    oklch(15.8% 0.0265 257.6) 70%,
+    oklch(14.3% 0.0251 255.7) 100%
+  );
+}
+
+:global([data-theme="muted"]) .graph-canvas {
+  background: radial-gradient(
+    circle at 50% 30%,
+    oklch(93.4% 0.0 0.0) 0%,
+    oklch(88.9% 0.0 0.0) 20%,
+    oklch(85.8% 0.0 0.0) 50%,
+    oklch(82.0% 0.0 0.0) 100%
+  );
+}
+
+.starfield {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+:global([data-theme="tropical"]) .starfield {
+  opacity: 0.3;
+}
+
+:global([data-theme="oceanic"]) .starfield {
+  opacity: 0.45;
+}
+
+/* ── Graph ────────────────────────────────────────────────────── */
+
+.graph-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
+}
+
+.graph-grid-dot {
+  fill: var(--graph-grid-dot);
+}
+
+.graph-marker-selected {
+  fill: var(--graph-selection-color);
+}
+
+.graph-marker-live {
+  fill: var(--graph-live-color);
+}
+
+/* ── Glass overlays ───────────────────────────────────────────── */
+
+.graph-status,
+.graph-legend,
+.graph-toolbar {
+  background: var(--graph-glass-background);
+  border: 1px solid var(--graph-glass-border);
+  box-shadow: var(--graph-glass-shadow);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+}
+
+.graph-status {
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline-start: 14px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  animation: overlay-appear 260ms ease-out;
+}
+
+.graph-status > span:not(.graph-status-live) + span::before {
+  content: "·";
+  margin-inline-end: 10px;
+  color: var(--text-muted);
+}
+
+.graph-status-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--graph-live-color);
+}
+
+.graph-status-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--graph-live-color);
+  animation: live-ping 1.6s ease-out infinite;
+}
+
+.graph-status-failed {
+  font-weight: 600;
+  color: var(--graph-failed-color);
+}
+
+.graph-legend {
+  position: absolute;
+  inset-block-end: 14px;
+  inset-inline-start: 14px;
+  z-index: 6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: calc(100% - 320px);
+  padding: 4px;
+  border-radius: 12px;
+  animation: overlay-appear 260ms ease-out;
+}
+
+.graph-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: default;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.graph-legend-item:hover,
+.graph-legend-item-active {
+  color: var(--text-primary);
+  background: color-mix(in oklch, var(--text-primary) 8%, transparent);
+}
+
+.graph-legend-dot {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 -2px 3px oklch(0 0 0 / 0.25), inset 0 1px 2px oklch(1 0 0 / 0.35);
+}
+
+.graph-legend-count {
+  font-size: 10px;
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Phase Activity Pulse — animated ring synced to status bar phase ── */
-
-@keyframes phase-activity-pulse-animation {
-  0%, 100% {
-    opacity: 0.6;
-    stroke-width: 2;
-  }
-  50% {
-    opacity: 0.2;
-    stroke-width: 1;
-  }
+.graph-controls {
+  position: absolute;
+  inset-block-end: 14px;
+  inset-inline-end: 14px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
 }
 
-.phase-activity-pulse-ring {
+.graph-controls-compact {
+  inset-block-end: 8px;
+  inset-inline-end: 8px;
+}
+
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.graph-toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.graph-toolbar-button:hover {
+  color: var(--text-primary);
+  background: color-mix(in oklch, var(--text-primary) 9%, transparent);
+}
+
+.graph-toolbar-button:focus-visible,
+.graph-legend-item:focus-visible {
+  outline: 2px solid var(--graph-selection-color);
+  outline-offset: 1px;
+}
+
+.graph-toolbar-button-active {
+  color: var(--graph-selection-color);
+}
+
+.graph-toolbar-follow {
+  color: var(--graph-live-color);
+}
+
+.graph-zoom-readout {
+  min-width: 46px;
+  font-variant-numeric: tabular-nums;
+}
+
+.graph-toolbar-divider {
+  width: 1px;
+  height: 16px;
+  margin-inline: 3px;
+  background: var(--graph-glass-border);
+}
+
+/* ── Empty / loading ──────────────────────────────────────────── */
+
+.graph-empty-prompt {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
   pointer-events: none;
-  animation: phase-activity-pulse-animation 2s ease-in-out infinite;
 }
 
-/* ── Node Activity Pulse — animated ring on active request/model nodes ── */
-
-@keyframes node-activity-pulse-animation {
-  0%, 100% {
-    opacity: 0.7;
-    stroke-width: 2.5;
-  }
-  50% {
-    opacity: 0.15;
-    stroke-width: 1;
-  }
+.graph-empty-prompt-icon {
+  opacity: 0.3;
 }
 
-.node-activity-pulse-ring {
-  pointer-events: none;
-  animation: node-activity-pulse-animation 1.4s ease-in-out infinite;
+.graph-empty-prompt-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
-/* ── Tool Activity Pulse — faster, more energetic glow for tool execution ── */
-
-@keyframes node-tool-activity-pulse-animation {
-  0%, 100% {
-    opacity: 0.8;
-    stroke-width: 3;
-  }
-  40% {
-    opacity: 0.1;
-    stroke-width: 0.8;
-  }
-  70% {
-    opacity: 0.5;
-    stroke-width: 2;
-  }
+.graph-empty-prompt-subtitle {
+  max-width: 300px;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
 }
 
-.node-tool-activity-pulse-ring {
-  pointer-events: none;
-  animation: node-tool-activity-pulse-animation 0.9s ease-in-out infinite;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-/* ── Pending Request Pulse — breathing shimmer for in-flight requests ── */
+@keyframes overlay-appear {
+  from { opacity: 0; translate: 0 4px; }
+  to { opacity: 1; translate: 0 0; }
+}
 
-@keyframes pending-request-pulse-animation {
-  0%, 100% {
-    opacity: 0.7;
-    stroke-width: 2.5;
-    stroke-dashoffset: 0;
+@keyframes live-ping {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--graph-live-color) 70%, transparent); }
+  100% { box-shadow: 0 0 0 8px transparent; }
+}
+
+@container (max-width: 560px) {
+  .graph-legend {
+    display: none;
   }
-  50% {
-    opacity: 0.2;
-    stroke-width: 1.5;
-    stroke-dashoffset: 12;
+
+  .graph-status {
+    inset-block-start: 10px;
+    inset-inline-start: 10px;
+    padding: 5px 10px;
   }
 }
 
-.pending-request-pulse-ring {
-  pointer-events: none;
-  stroke-dasharray: 6 4;
-  animation: pending-request-pulse-animation 1.6s ease-in-out infinite;
+@media (prefers-reduced-motion: reduce) {
+  .graph-status,
+  .graph-legend {
+    animation: none;
+  }
+
+  .graph-status-live-dot {
+    animation: none;
+  }
 }

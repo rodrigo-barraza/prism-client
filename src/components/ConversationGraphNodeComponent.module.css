@@ -1,0 +1,331 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ConversationGraphNodeComponent — one node of the Nodes view
+   ═══════════════════════════════════════════════════════════════════
+   The outer group is positioned by a CSS transform, so a layout change
+   glides rather than jumps. Inner groups scale about the node's own
+   centre: SVG elements resolve transform-origin against the view box,
+   and the parent translate makes (0, 0) the node centre.
+   Colours: --node-color (per node) and the canvas's --graph-* tokens. */
+
+.node {
+  cursor: pointer;
+  transition:
+    transform 440ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms ease;
+}
+
+.node-dragging {
+  cursor: grabbing;
+  transition: opacity 220ms ease;
+}
+
+.node-dimmed {
+  opacity: 0.26;
+}
+
+.node-lift,
+.node-body {
+  transform-box: view-box;
+  transform-origin: 0 0;
+}
+
+.node-lift {
+  transition: transform 180ms ease-out;
+}
+
+.node:hover .node-lift {
+  transform: scale(1.07);
+}
+
+.node-dragging .node-lift {
+  transform: scale(1.1);
+}
+
+.node-hit-area {
+  fill: transparent;
+}
+
+/* ── Orb ──────────────────────────────────────────────────────── */
+
+.node-orb {
+  stroke: color-mix(in oklch, var(--node-color) 65%, white 35%);
+  stroke-width: 1.25;
+  stroke-opacity: 0.85;
+  transition: stroke-width 160ms ease;
+}
+
+.node-gloss {
+  fill: white;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.node-emoji,
+.node-pending-glyph {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The app loads Noto Color Emoji as --font-emoji; without it the glyph
+   came from whatever the text font falls back to on that platform. */
+.node-emoji {
+  font-family: var(--font-emoji, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif);
+}
+
+.node-pending-glyph {
+  fill: white;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.node-provider-icon {
+  overflow: visible;
+  pointer-events: none;
+}
+
+.node-provider-icon-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: white;
+  filter: drop-shadow(0 1px 1px oklch(0 0 0 / 0.35));
+}
+
+/* ── States ───────────────────────────────────────────────────── */
+
+.node-halo {
+  fill: var(--node-color);
+  opacity: 0.34;
+  filter: blur(9px);
+  pointer-events: none;
+}
+
+.node-live .node-halo {
+  animation: node-halo-breathe 1.9s ease-in-out infinite;
+}
+
+.node-spinner {
+  fill: none;
+  stroke: var(--node-color);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 22 78;
+  pointer-events: none;
+  transform-box: view-box;
+  transform-origin: 0 0;
+  animation: node-spin 1.15s linear infinite;
+}
+
+.node-selection-ring {
+  fill: none;
+  stroke: var(--graph-selection-color);
+  stroke-width: 2.25;
+  pointer-events: none;
+  transform-box: view-box;
+  transform-origin: 0 0;
+}
+
+.node-focused .node-selection-ring {
+  stroke-dasharray: 5 4;
+  animation: node-spin 10s linear infinite;
+}
+
+.node-selected .node-orb {
+  stroke: var(--graph-selection-color);
+  stroke-width: 1.75;
+  stroke-opacity: 1;
+}
+
+.node-in-live-flow .node-orb {
+  stroke: var(--node-color);
+  stroke-width: 2;
+  stroke-opacity: 1;
+}
+
+.node-failed .node-orb {
+  stroke: var(--graph-failed-color);
+  stroke-width: 2.5;
+  stroke-opacity: 1;
+}
+
+.node-entering {
+  animation: node-pop 560ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.node-spawn-ripple {
+  fill: none;
+  stroke: var(--node-color);
+  stroke-width: 2;
+  pointer-events: none;
+  transform-box: view-box;
+  transform-origin: 0 0;
+  animation: node-spawn-ripple 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Badges ───────────────────────────────────────────────────── */
+
+.node-badge {
+  pointer-events: none;
+}
+
+.node-badge-plate {
+  fill: var(--background-surface);
+  stroke: var(--node-color);
+  stroke-width: 1.25;
+}
+
+.node-badge-text {
+  fill: var(--text-primary);
+  font-size: 9px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.node-failed-badge {
+  pointer-events: none;
+}
+
+.node-failed-badge circle {
+  fill: var(--graph-failed-color);
+  stroke: var(--background-surface);
+  stroke-width: 1.5;
+}
+
+.node-failed-badge text {
+  fill: white;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.node-pin-dot {
+  fill: var(--text-secondary);
+  stroke: var(--background-surface);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.node-collapse-toggle {
+  cursor: pointer;
+}
+
+.node-collapse-toggle rect {
+  fill: var(--background-surface);
+  stroke: var(--node-color);
+  stroke-width: 1.25;
+  transition: fill 150ms ease;
+}
+
+.node-collapse-toggle:hover rect {
+  fill: var(--background-elevated);
+}
+
+.node-collapse-toggle text {
+  fill: var(--text-primary);
+  font-size: 9px;
+  font-weight: 700;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Labels ───────────────────────────────────────────────────── */
+
+.node-label {
+  pointer-events: none;
+  user-select: none;
+}
+
+.node-label-primary,
+.node-label-secondary {
+  paint-order: stroke fill;
+  stroke: var(--graph-label-halo);
+  stroke-linejoin: round;
+}
+
+.node-label-primary {
+  fill: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  stroke-width: 4px;
+}
+
+.node-label-secondary {
+  fill: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  stroke-width: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.node-tool-pills {
+  overflow: visible;
+  pointer-events: none;
+}
+
+.node-tool-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  max-width: 200px;
+}
+
+.node-tool-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 14px;
+  white-space: nowrap;
+  color: color-mix(in oklch, var(--graph-tool-color) 55%, var(--text-primary));
+  background: color-mix(in oklch, var(--graph-tool-color) 15%, var(--background-surface));
+  border: 1px solid color-mix(in oklch, var(--graph-tool-color) 38%, transparent);
+}
+
+.node-tool-pill-image {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* ── Motion ───────────────────────────────────────────────────── */
+
+@keyframes node-pop {
+  0% { transform: scale(0.2); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes node-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes node-halo-breathe {
+  0%, 100% { opacity: 0.22; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes node-spawn-ripple {
+  0% { transform: scale(0.55); opacity: 0.7; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node,
+  .node-lift {
+    transition: none;
+  }
+
+  .node-spinner,
+  .node-live .node-halo,
+  .node-entering,
+  .node-spawn-ripple,
+  .node-focused .node-selection-ring {
+    animation: none;
+  }
+}
