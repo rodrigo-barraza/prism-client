@@ -223,9 +223,12 @@ each emitter.
   `approvalConversationId`.
 - **`goal_update`** has `change`: `set`, `progress`, `status` or `cleared`.
   The goal's own `status` is `active`, `paused`, `completed` or `blocked`.
-- **The service can send `seq` values that go backwards.**
-  `SubAgentTelemetryEmitter` forwards some sub-agent events to the parent
-  stream as the same object, carrying the `seq` the sub-agent's own counter
-  stamped: `usage_update`, `approval_required`, `approval_decided`, and
-  grandchildren's `sub_agent_*` events. A cursor that drops
-  `seq <= lastSeen` can then drop events.
+- **Forwarded sub-agent events used to carry the sub-agent's `seq`.**
+  `SubAgentTelemetryEmitter` forwards the sub-agent's `usage_update`,
+  `approval_required` and `approval_decided`, and grandchildren's `sub_agent_*`
+  events, to the parent stream. They carried the `seq` the sub-agent's own
+  counter had stamped. Whenever the parent had emitted more events, that
+  number ran backwards, and the cursor dropped the event as already seen.
+  prism-service branch `forwarded-events-own-seq` makes the parent stamp its
+  own `seq` on these events. Until it lands, a parent stream can still run
+  backwards.
