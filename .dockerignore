@@ -11,7 +11,7 @@ node_modules
 deploy.sh
 docker-compose.yml
 Dockerfile
-eslint.config.js
+.oxlintrc.json
 next-env.d.ts
 tsconfig.tsbuildinfo
 tests

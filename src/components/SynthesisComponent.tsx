@@ -182,6 +182,7 @@ export default function SynthesisComponent() {
   // Update settings when config loads if they haven't been customized yet
   useEffect(() => {
     if (config?.parameterDescriptors) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
       setSettings(prev => {
         const defaults = buildSettingsDefaults(config.parameterDescriptors);
         return {
@@ -263,6 +264,7 @@ export default function SynthesisComponent() {
         restoreModel(merged, setSettings);
       },
     }).catch(console.error);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     loadSynthesisHistory();
 
     // Load favorites

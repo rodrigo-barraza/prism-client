@@ -113,7 +113,7 @@ Secrets are resolved in priority order:
 npm run start         # Start production server
 npm run dev           # Start dev server (port 3333)
 npm run build         # Build for production
-npm run lint          # Run ESLint
+npm run lint          # Run oxlint (.oxlintrc.json)
 npm run lint:fix      # Auto-fix lint issues
 npm run format        # Format with Prettier
 npm run format:check  # Check formatting
