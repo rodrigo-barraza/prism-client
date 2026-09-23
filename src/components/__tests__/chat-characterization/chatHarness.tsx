@@ -72,11 +72,21 @@ export function loadTranscript(name: string): WireEvent[] {
 
 export class ManualClock {
   private performanceMilliseconds = 1_000;
+  private ownPerformanceNow: PropertyDescriptor | undefined;
 
   install(): void {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(CLOCK_EPOCH);
-    vi.spyOn(performance, "now").mockImplementation(() => this.performanceMilliseconds);
+    // A plain override, not vi.spyOn: a spy keeps every call, and React's
+    // scheduler reads this clock once per unit of work. A 2,000-message
+    // chat piled up ~60 MB of call records per streamed token and ran the
+    // worker out of heap after a few dozen tokens.
+    this.ownPerformanceNow = Object.getOwnPropertyDescriptor(performance, "now");
+    Object.defineProperty(performance, "now", {
+      value: () => this.performanceMilliseconds,
+      configurable: true,
+      writable: true,
+    });
   }
 
   advance(milliseconds: number): void {
@@ -85,6 +95,8 @@ export class ManualClock {
   }
 
   uninstall(): void {
+    if (this.ownPerformanceNow) Object.defineProperty(performance, "now", this.ownPerformanceNow);
+    else delete (performance as { now?: unknown }).now;
     vi.useRealTimers();
   }
 }
