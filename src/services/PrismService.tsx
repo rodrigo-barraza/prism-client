@@ -1340,6 +1340,8 @@ export default class PrismService {
         durationMs: number;
         hasChanges: boolean;
         totalCost?: number | null;
+        costUnknown?: boolean;
+        runtime?: string;
         branchName?: string | null;
         files?: string[];
         toolCallCount?: number;
@@ -1366,6 +1368,8 @@ export default class PrismService {
       provider: subAgent.providerName,
       durationMs: subAgent.durationMs,
       totalCost: subAgent.totalCost ?? undefined,
+      ...(subAgent.costUnknown ? { costUnknown: true } : {}),
+      ...(subAgent.runtime ? { runtime: subAgent.runtime } : {}),
       toolCallCount: subAgent.toolCallCount,
       branchName: subAgent.branchName ?? undefined,
       files: subAgent.files,

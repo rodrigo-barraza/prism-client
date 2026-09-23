@@ -32,6 +32,13 @@ export interface PendingApproval {
   autoModeReason?: string;
   autoModeCategory?: string;
   /**
+   * An external ACP agent asked for its own call (a sub-agent on the `acp`
+   * runtime): the server's words naming the agent and the call. Its
+   * arguments are the agent's own — the card offers no edit and no
+   * "Always allow" rule (Prism's rules do not reach the agent's tools).
+   */
+  externalAgentReason?: string;
+  /**
    * Set when a sub-agent asked: the conversation its loop is keyed by, where
    * the decision must be sent. Absent: the conversation on screen.
    */
@@ -65,6 +72,7 @@ export function approvalFromEvent(data: ApprovalRequiredEvent): PendingApproval 
     ...(data.preview ? { preview: data.preview } : {}),
     ...retryFields(data.requestedBy, data.reason),
     ...autoModeFields(data.requestedBy, data.reason, data.category),
+    ...externalAgentFields(data.requestedBy, data.reason),
     ...(typeof data.approvalConversationId === "string" && data.approvalConversationId
       ? { conversationId: data.approvalConversationId }
       : {}),
@@ -114,6 +122,7 @@ export function approvalsFromPendingSnapshot(
             ...(toolCall.preview ? { preview: toolCall.preview } : {}),
             ...retryFields(toolCall.requestedBy, toolCall.reason),
             ...autoModeFields(toolCall.requestedBy, toolCall.reason),
+            ...externalAgentFields(toolCall.requestedBy, toolCall.reason),
             status: "pending" as const,
           },
         ]
@@ -150,6 +159,20 @@ const RETRY_AFTER_RESTART = "restart";
 
 /** `requestedBy` of a card auto mode put out (prism-service AutoModeGate). */
 const ASKED_BY_AUTO_MODE = "classifier";
+
+/** `requestedBy` of an external ACP agent's own request (prism-service APPROVALS.EXTERNAL_AGENT_REQUESTED_BY). */
+const ASKED_BY_EXTERNAL_AGENT = "external_agent";
+
+function externalAgentFields(
+  requestedBy: unknown,
+  reason: unknown,
+): Pick<PendingApproval, "externalAgentReason"> {
+  if (requestedBy !== ASKED_BY_EXTERNAL_AGENT) return {};
+  return {
+    externalAgentReason:
+      typeof reason === "string" && reason ? reason : "An external agent asks permission for its own call.",
+  };
+}
 
 function autoModeFields(
   requestedBy: unknown,

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  Bot,
   Shield,
   ShieldAlert,
   ShieldCheck,
@@ -54,6 +55,11 @@ interface ApprovalCardProps {
    */
   autoModeReason?: string;
   autoModeCategory?: string;
+  /**
+   * An external ACP agent asks for its own call: the server's words for who
+   * and what. Its arguments cannot be edited — only allowed or denied.
+   */
+  externalAgentReason?: string;
   /** Other calls of the same batch still waiting — offers "Allow the rest of this batch". */
   otherPendingInBatch?: number;
   /** A decision for this card is in flight. */
@@ -97,6 +103,7 @@ export default function ApprovalCardComponent({
   retryReason,
   autoModeReason,
   autoModeCategory,
+  externalAgentReason,
   otherPendingInBatch = 0,
   isSubmitting = false,
   onDecide,
@@ -174,6 +181,13 @@ export default function ApprovalCardComponent({
           <span>
             <strong>Auto mode{autoModeCategory ? ` · ${autoModeCategory}` : ""}:</strong> {autoModeReason}
           </span>
+        </div>
+      )}
+
+      {externalAgentReason && (
+        <div className={styles["external-agent-notice"]} role="note">
+          <Bot size={14} aria-hidden="true" />
+          <span>{externalAgentReason}</span>
         </div>
       )}
 
@@ -319,19 +333,21 @@ export default function ApprovalCardComponent({
             <X size={14} />
             {retryAfterRestart ? "Don't run it again…" : "Deny…"}
           </button>
-          <button
-            type="button"
-            className={styles["secondary-button"]}
-            disabled={isSubmitting}
-            onClick={() => {
-              setError(null);
-              setEditedJson(argumentsJson);
-              setMode("edit");
-            }}
-          >
-            <Pencil size={14} />
-            Edit arguments
-          </button>
+          {!externalAgentReason && (
+            <button
+              type="button"
+              className={styles["secondary-button"]}
+              disabled={isSubmitting}
+              onClick={() => {
+                setError(null);
+                setEditedJson(argumentsJson);
+                setMode("edit");
+              }}
+            >
+              <Pencil size={14} />
+              Edit arguments
+            </button>
+          )}
           {otherPendingInBatch > 0 && (
             <button
               type="button"

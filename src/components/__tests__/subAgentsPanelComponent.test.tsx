@@ -83,3 +83,22 @@ describe("SubAgentsPanelComponent — stop one sub-agent", () => {
     consoleError.mockRestore();
   });
 });
+
+// prompt 24, Landing 3: an external ACP agent that reported no cost.
+describe("SubAgentsPanelComponent — an external agent's unknown cost", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("says the cost is unknown instead of showing none (which reads as free)", async () => {
+    vi.mocked(PrismService.getCoordinatorSubAgents).mockResolvedValue({
+      subAgents: [
+        { ...subAgent("agent-acp", "complete"), costUnknown: true, runtime: "acp", provider: "acp", resolvedModel: "Claude Code" },
+        { ...subAgent("agent-prism", "complete"), totalCost: 0.02 },
+      ],
+    });
+    render(<SubAgentsPanelComponent conversationId="parent-conv" />);
+    await screen.findByText("Researcher agent-acp");
+    expect(screen.getAllByText("cost unknown")).toHaveLength(1);
+  });
+});
