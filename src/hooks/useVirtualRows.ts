@@ -24,7 +24,7 @@
  * renders: tests, snapshots and find-in-page see the whole list.
  */
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 /** Rows the list mounts before it has measured its scroll container: the tail. */
 const INITIAL_ROW_COUNT = 40;
@@ -227,7 +227,13 @@ export default function useVirtualRows({
 
   // Mode: a window once the scroll container has a height; every row while
   // it has none (no layout at all — jsdom — or hidden since it mounted).
-  useLayoutEffect(() => {
+  //
+  // This and the scroll listener below are passive effects on purpose: the
+  // scroll container belongs to an ancestor (the chat's transcript), and
+  // React attaches an ancestor's ref only after its children's layout
+  // effects have run. A layout effect here saw no element, settled on "all"
+  // and never looked again: every row stayed mounted.
+  useEffect(() => {
     if (!isEnabled) return;
     const scrollElement = scrollElementRef?.current;
     const hasLayout = !!scrollElement && scrollElement.clientHeight > 0;
@@ -245,7 +251,7 @@ export default function useVirtualRows({
   }, [isEnabled, scrollElementRef]);
 
   // Scrolling moves the window; it also says whether the view is pinned to the bottom.
-  useLayoutEffect(() => {
+  useEffect(() => {
     const scrollElement = scrollElementRef?.current;
     if (!isEnabled || !scrollElement) return;
     const onScroll = () => {

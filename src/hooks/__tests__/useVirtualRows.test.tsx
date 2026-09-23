@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act, render, fireEvent } from "@testing-library/react";
-import { useCallback, useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef, type RefObject } from "react";
 import useVirtualRows from "../useVirtualRows";
 
 const ROW_HEIGHT = 100;
@@ -139,6 +139,38 @@ function Rows({ count, windowed = true }: { count: number; windowed?: boolean })
   );
 }
 
+/**
+ * The chat's shape: the scroll container belongs to a parent (the
+ * transcript) and the rows to a child (the message list), so the parent's
+ * ref is attached only after the child's layout effects have run.
+ */
+function RowsInParentScroller({ count }: { count: number }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  return (
+    <div ref={scrollRef} data-testid="scroller">
+      <ChildRows count={count} scrollRef={scrollRef} />
+    </div>
+  );
+}
+
+function ChildRows({ count, scrollRef }: { count: number; scrollRef: RefObject<HTMLDivElement | null> }) {
+  const rowsRef = useRef<HTMLDivElement>(null);
+  const getKey = useCallback((index: number) => `row-${index}`, []);
+  const estimateSize = useCallback(() => ROW_HEIGHT, []);
+  const virtual = useVirtualRows({ count, getKey, estimateSize, scrollElementRef: scrollRef, rowsElementRef: rowsRef, overscanPixels: OVERSCAN });
+  useLayoutEffect(() => {
+    latest = virtual;
+  });
+  return (
+    <div ref={rowsRef} data-testid="rows">
+      {Array.from({ length: virtual.end - virtual.start }, (_, offset) => {
+        const index = virtual.start + offset;
+        return <div key={index} ref={virtual.measureRow(`row-${index}`)} data-index={index} />;
+      })}
+    </div>
+  );
+}
+
 function layoutFor(count: number) {
   layout.scrollHeight = count * ROW_HEIGHT;
 }
@@ -177,6 +209,20 @@ describe("useVirtualRows", () => {
     // The viewport (600) plus the overscan above it (200): 8 rows, then one partly in.
     expect(mountedCount(view.container)).toBeLessThanOrEqual(10);
     expect(virtual.paddingTop + (virtual.end - virtual.start) * ROW_HEIGHT + virtual.paddingBottom).toBe(1_000 * ROW_HEIGHT);
+  });
+
+  it("windows the rows when the scroll container belongs to a parent, and follows its scrolling", async () => {
+    layoutFor(1_000);
+    const view = render(<RowsInParentScroller count={1_000} />);
+    await flushFrames();
+    expect(latest?.isWindowed).toBe(true);
+    expect(mountedCount(view.container)).toBeLessThanOrEqual(10);
+    await act(async () => {
+      layout.scrollTop = 25_000;
+      fireEvent.scroll(view.getByTestId("scroller"));
+    });
+    await flushFrames();
+    expect(latest?.start).toBe(248);
   });
 
   it("moves the window with the scroll position once the user scrolls away from the bottom", async () => {
