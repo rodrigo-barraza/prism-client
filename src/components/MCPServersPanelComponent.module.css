@@ -416,3 +416,9 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
+
+.oauth-status {
+  margin-top: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}

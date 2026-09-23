@@ -223,6 +223,11 @@ import {
 import { shouldOpenViewerLiveStream } from "../utils/viewerLiveStreamGate";
 import { awaitingUserStatus } from "../utils/awaitingUserStatus";
 import { pendingDecisionCards, type ServedPendingDecisions } from "../utils/pendingDecisionCards";
+import { useMcpComposerSources } from "../hooks/useMcpComposerSources";
+import { McpPromptSlashItems, McpResourceMentionItems } from "./McpComposerMenuItemsComponent";
+import { appendMcpResourceContext, filterMcpPrompts, filterMcpResources } from "../utils/mcpComposer";
+import { createMcpResourceBadge } from "../utils/mentionUtils";
+import type { MCPResource } from "@/types/types";
 import {
   shouldApplySnapshotRefresh,
   refreshUnlessStreamOwned,
@@ -786,6 +791,13 @@ export default function AgentChatComponent({
   // At send time we extract names via extractSlashCommandNames().
   const [slashCommandOpen, setSlashCommandOpen] = useState(false);
   const [slashCommandQuery, setSlashCommandQuery] = useState("");
+  // MCP prompts (the `/` menu) and resources (the `@` menu).
+  const {
+    prompts: mcpPrompts,
+    resources: mcpResources,
+    ensurePrompts: ensureMcpPrompts,
+    ensureResources: ensureMcpResources,
+  } = useMcpComposerSources();
   const [memoriesRefreshKey, setMemoriesRefreshKey] = useState(0);
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0);
   const [datastoreRefreshKey, setDatastoreRefreshKey] = useState(0);
@@ -3598,12 +3610,13 @@ export default function AgentChatComponent({
       if (trimmedValue.startsWith("/") && !trimmedValue.includes(" ") && !hasSlashBadges) {
         setSlashCommandOpen(true);
         setSlashCommandQuery(trimmedValue.slice(1).toLowerCase());
+        ensureMcpPrompts();
       } else {
         setSlashCommandOpen(false);
         setSlashCommandQuery("");
       }
     },
-    [],
+    [ensureMcpPrompts],
   );
 
   // Helper to programmatically set the editable value (quick prompts, queue cancel)
@@ -3823,11 +3836,12 @@ export default function AgentChatComponent({
         setMentionIndex(0);
         setMentionOpen(true);
         ensureMentionCache();
+        ensureMcpResources();
       } else {
         setMentionOpen(false);
       }
     },
-    [ensureMentionCache],
+    [ensureMentionCache, ensureMcpResources],
   );
   const detectMentionQueryRef = useRef<((_element: HTMLDivElement) => void) | null>(
     detectMentionQuery,
@@ -3841,6 +3855,27 @@ export default function AgentChatComponent({
     // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
     return filterMentionResults(mentionCacheRef.current, mentionQuery, 20);
   }, [mentionOpen, mentionQuery]);
+
+  const mcpResourceMatches = useMemo(
+    () => (mentionOpen ? filterMcpResources(mcpResources, mentionQuery) : []),
+    [mentionOpen, mentionQuery, mcpResources],
+  );
+
+  /** Mention an MCP resource — its content is attached when the message is sent. */
+  const applyMcpResourceMention = useCallback((resource: MCPResource) => {
+    const element = textareaRef.current;
+    if (!element || !mentionAnchorRef.current) return;
+    const { node, offset } = mentionAnchorRef.current;
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+    const badge = createMcpResourceBadge(resource.server, resource.uri, resource.name);
+    const space = applyMentionToTextNode(node, offset, selection.anchorOffset, badge);
+    placeCaretAfter(space);
+    inputValueRef.current = serializeEditable(element);
+    setHasInput(inputValueRef.current.trim().length > 0);
+    setMentionOpen(false);
+    element.focus();
+  }, []);
 
   /** Apply mention — replace @query text with a badge span. */
   const applyMention = useCallback(
@@ -6034,6 +6069,16 @@ export default function AgentChatComponent({
           }
         }
       }
+
+      // Attach the content of any MCP resources the message @-mentions.
+      finalMessageContent = await appendMcpResourceContext(
+        finalMessageContent,
+        text,
+        async (server, uri) => {
+          const read = await PrismService.readMCPResource(server, uri);
+          return read.content ?? read.contents?.map((entry) => entry.text ?? "").join("\n") ?? null;
+        },
+      );
 
       const userMessage = {
         role: MESSAGE_ROLES.USER,
@@ -9679,14 +9724,15 @@ export default function AgentChatComponent({
             />
             {/* -- Slash Command Picker -- */}
             {slashCommandOpen &&
-              rules.length > 0 &&
+              (rules.length > 0 || mcpPrompts.length > 0) &&
               (() => {
                 const filteredRules = rules.filter(
                   (rule) =>
                     rule.enabled &&
                     rule.name.toLowerCase().includes(slashCommandQuery),
                 );
-                if (filteredRules.length === 0) return null;
+                const filteredMcpPrompts = filterMcpPrompts(mcpPrompts, slashCommandQuery);
+                if (filteredRules.length === 0 && filteredMcpPrompts.length === 0) return null;
                 return (
                   <div
                     className={chatStyles['mention-dropdown']}
@@ -9745,12 +9791,22 @@ export default function AgentChatComponent({
                           )}
                         </button>
                       ))}
+                      <McpPromptSlashItems
+                        prompts={filteredMcpPrompts}
+                        itemClassName={chatStyles['mention-item']}
+                        onInsert={(promptText) => {
+                          setTextareaValue(promptText);
+                          setSlashCommandOpen(false);
+                          setSlashCommandQuery("");
+                          textareaRef.current?.focus();
+                        }}
+                      />
                     </div>
                   </div>
                 );
               })()}
             {/* -- Mention Autocomplete Dropdown -- */}
-            {mentionOpen && mentionResults.length > 0 && (
+            {mentionOpen && (mentionResults.length > 0 || mcpResourceMatches.length > 0) && (
               <div className={chatStyles['mention-dropdown']}>
                 <div className={chatStyles['mention-list']} ref={mentionListRef}>
                   {mentionResults.map((entry, i) => (
@@ -9774,6 +9830,11 @@ export default function AgentChatComponent({
                       </span>
                     </button>
                   ))}
+                  <McpResourceMentionItems
+                    resources={mcpResourceMatches}
+                    itemClassName={chatStyles['mention-item']}
+                    onPick={applyMcpResourceMention}
+                  />
                 </div>
               </div>
             )}

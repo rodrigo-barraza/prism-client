@@ -1,0 +1,70 @@
+/* ── MCP prompts and resources in the composer menus ───────── */
+
+.name {
+  color: var(--color-cyan);
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+}
+
+.description {
+  margin-inline-start: 8px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.arguments {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+}
+
+.arguments-title {
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  color: var(--color-cyan);
+}
+
+.argument {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+
+  input {
+    padding: 4px 6px;
+    font: inherit;
+    color: var(--text-primary);
+    background: var(--background-surface);
+    border: 1px solid var(--calculated-border-color);
+    border-radius: 4px;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+
+  button {
+    padding: 3px 10px;
+    font: inherit;
+    font-size: var(--font-size-xs);
+    border-radius: 4px;
+    border: 1px solid var(--calculated-border-color);
+    background: var(--background-elevated);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.error {
+  padding: 4px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--color-rose);
+}

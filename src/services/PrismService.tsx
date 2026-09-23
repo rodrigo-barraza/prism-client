@@ -34,6 +34,9 @@ import type {
   PrismSettings,
   MCPServer,
   MCPQuarantinedTool,
+  MCPOAuthStatus,
+  MCPPrompt,
+  MCPResource,
   CoordinatorSubAgent,
   Favorite,
   ToolSchema,
@@ -1165,15 +1168,20 @@ export default class PrismService {
     id: string,
   ): Promise<{
     success: boolean;
-    serverName: string;
-    toolCount: number;
-    tools: Array<{ name: string; description?: string }>;
+    serverName?: string;
+    toolCount?: number;
+    tools?: Array<{ name: string; description?: string }>;
+    /** An OAuth server without tokens: open this URL to authorize. */
+    authorizationRequired?: boolean;
+    authorizationUrl?: string;
   }> {
     return PrismService._request<{
       success: boolean;
-      serverName: string;
-      toolCount: number;
-      tools: Array<{ name: string; description?: string }>;
+      serverName?: string;
+      toolCount?: number;
+      tools?: Array<{ name: string; description?: string }>;
+      authorizationRequired?: boolean;
+      authorizationUrl?: string;
     }>(`/mcp-servers/${id}/connect`, {
       method: HTTP_METHODS.POST,
     });
@@ -1190,6 +1198,75 @@ export default class PrismService {
         method: HTTP_METHODS.POST,
       },
     );
+  }
+
+  /**
+   * An OAuth MCP server's authorization state (never a token).
+   */
+  static async getMCPServerOAuth(
+    id: string,
+  ): Promise<MCPOAuthStatus & { connected: boolean }> {
+    return PrismService._request(`/mcp-servers/${id}/oauth`, {
+      method: HTTP_METHODS.GET,
+    });
+  }
+
+  /**
+   * Forget an OAuth MCP server's tokens and disconnect it.
+   */
+  static async signOutMCPServer(id: string): Promise<{ success: boolean }> {
+    return PrismService._request(`/mcp-servers/${id}/oauth`, {
+      method: HTTP_METHODS.DELETE,
+    });
+  }
+
+  /**
+   * Prompts of the connected MCP servers (composer slash commands).
+   */
+  static async getMCPPrompts(): Promise<MCPPrompt[]> {
+    const { prompts } = await PrismService._request<{ prompts: MCPPrompt[] }>(
+      "/mcp-servers/prompts",
+      { method: HTTP_METHODS.GET },
+    );
+    return prompts ?? [];
+  }
+
+  /**
+   * Fill an MCP prompt; `text` is what the composer inserts.
+   */
+  static async getMCPPrompt(
+    server: string,
+    name: string,
+    promptArguments: Record<string, string> = {},
+  ): Promise<{ text: string; description: string | null }> {
+    return PrismService._request("/mcp-servers/prompts/get", {
+      method: HTTP_METHODS.POST,
+      body: { server, name, arguments: promptArguments },
+    });
+  }
+
+  /**
+   * Resources of the connected MCP servers (composer @-mentions).
+   */
+  static async getMCPResources(): Promise<MCPResource[]> {
+    const { resources } = await PrismService._request<{ resources: MCPResource[] }>(
+      "/mcp-servers/resources",
+      { method: HTTP_METHODS.GET },
+    );
+    return resources ?? [];
+  }
+
+  /**
+   * Read one MCP resource. `content` is set for a single text resource.
+   */
+  static async readMCPResource(
+    server: string,
+    uri: string,
+  ): Promise<{ content?: string; contents?: Array<{ uri: string; text: string | null }> }> {
+    return PrismService._request("/mcp-servers/resources/read", {
+      method: HTTP_METHODS.POST,
+      body: { server, uri },
+    });
   }
 
   /**
