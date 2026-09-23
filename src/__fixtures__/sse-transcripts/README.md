@@ -58,6 +58,7 @@ stay as they are because `transcriptReplay.test.ts` pins them.
 | `agent-turn-with-tools.jsonl` | Thinking, text, and a read_file call. A sub-agent with one tool. Usage and a (stale-shaped) context budget. |
 | `turn-side-channels.jsonl` | The checklist (`todo_update`), the brief, web search sources, a code run. |
 | `agent-turn-approval.jsonl` | Two write_file calls in one batch get two cards. One is allowed and one denied, and the denied call returns `USER_REJECTED`. |
+| `agent-turn-budget-pause.jsonl` | Two read_file passes against a $1.50 cap: the second crosses it and the turn pauses (`status: budget_reached`, the call not run) until the cap is raised (`budget_resolved`), then finishes. Emitters: `harnesses/lifecycle/BudgetPauseGate.ts` (prompt 13 Landing 3). |
 | `agent-turn-plan.jsonl` | A `plan_proposal` the user approves, then `plan_mode_exited`. |
 | `agent-turn-question-blocking.jsonl` | A blocking `user_question` that the turn waits on. |
 | `agent-turn-question-nonblocking.jsonl` | A `blocking: false` question and `question_pending`. The agent keeps working, and the answer returns as a `turn_input` of kind `question_answer`. |

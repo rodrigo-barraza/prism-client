@@ -1,6 +1,7 @@
 /**
  * The cards a loaded conversation is still waiting on, from the
- * `pendingApproval` / `pendingQuestion` prism-service serves with it.
+ * `pendingApproval` / `pendingQuestion` / `pendingBudget` prism-service
+ * serves with it.
  *
  * Those waits are durable (prism-service prompt 13): a turn parked on its
  * user survives a server restart and has no timeout, so a conversation may be
@@ -10,6 +11,7 @@
  */
 import { EXECUTION_STATUS } from "../constants";
 import { approvalsFromPendingSnapshot, type PendingApproval } from "./approvalCards";
+import { budgetPauseFromServed, type BudgetPause, type ServedPendingBudget } from "./budgetPause";
 import type { UserQuestionItem } from "../types/types";
 
 type SnapshotCalls = Parameters<typeof approvalsFromPendingSnapshot>[0];
@@ -26,12 +28,15 @@ export interface ServedPendingDecisions {
     questionId?: string;
     questions?: UserQuestionItem[];
   };
+  /** A turn paused at its cost cap (prompt 13 Landing 3). */
+  pendingBudget?: ServedPendingBudget;
 }
 
 export interface PendingDecisionCards {
   approvals: PendingApproval[];
   planProposal: { plan: string; steps: string[]; status: "pending" } | null;
   question: { questionId?: string; questions: UserQuestionItem[] } | null;
+  budget: BudgetPause | null;
 }
 
 function planSteps(planText: string): string[] {
@@ -44,7 +49,12 @@ export function pendingDecisionCards(
   conversation: ServedPendingDecisions,
   displayMessages: ReadonlyArray<{ role?: string; content?: unknown }>,
 ): PendingDecisionCards {
-  const cards: PendingDecisionCards = { approvals: [], planProposal: null, question: null };
+  const cards: PendingDecisionCards = {
+    approvals: [],
+    planProposal: null,
+    question: null,
+    budget: budgetPauseFromServed(conversation.pendingBudget),
+  };
 
   const approval = conversation.pendingApproval;
   if (approval?.isPending) {

@@ -55,6 +55,39 @@ describe("pendingDecisionCards", () => {
         USER_ONLY,
       ).question,
     ).toEqual({ questionId: "q-1", questions: [{ question: "Port?" }] });
-    expect(pendingDecisionCards({}, USER_ONLY)).toEqual({ approvals: [], planProposal: null, question: null });
+    expect(pendingDecisionCards({}, USER_ONLY)).toEqual({
+      approvals: [],
+      planProposal: null,
+      question: null,
+      budget: null,
+    });
+  });
+
+  it("a turn paused at its cost cap (prompt 13 Landing 3): the budget card", () => {
+    const cards = pendingDecisionCards(
+      {
+        pendingBudget: {
+          isPending: true,
+          pauseId: "pause-1",
+          spentDollars: 2,
+          maxCostDollars: 1.5,
+          limitedBy: "turn",
+          turnCapDollars: 1.5,
+          goalMaxCostDollars: null,
+        },
+      },
+      USER_ONLY,
+    );
+    expect(cards.budget).toEqual({
+      pauseId: "pause-1",
+      spentDollars: 2,
+      maxCostDollars: 1.5,
+      limitedBy: "turn",
+      turnCapDollars: 1.5,
+      goalMaxCostDollars: null,
+    });
+    expect(
+      pendingDecisionCards({ pendingBudget: { isPending: false, pauseId: "pause-1" } }, USER_ONLY).budget,
+    ).toBeNull();
   });
 });
