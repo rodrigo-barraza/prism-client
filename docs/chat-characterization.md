@@ -29,7 +29,7 @@ WT=<your worktree>
 "$WT"/node_modules/.bin/vitest run --root "$WT" src/components/__tests__/chat-characterization/
 ```
 
-It has 38 tests and takes about 15 s.
+It has 39 tests and takes about 15 s.
 
 ## What it does
 
@@ -50,9 +50,9 @@ README) through both transports:
   service restart.
 - **`rowRenders.characterization.test.tsx`** counts how many rows re-render
   for each streamed token.
-- **`urlAndRootSync.characterization.test.tsx`** covers what the chat hands to
-  its page: URL changes through `onUrlChange`, and the live phase's colours on
-  `:root`.
+- **`urlAndRootSync.characterization.test.tsx`** covers what the chat and its
+  page's URL hand each other: URL changes through `onUrlChange`, a
+  `?conversation=` link, and the live phase's colours on `:root`.
 
 Only the network is fake: `fetch`, `WebSocket` and `EventSource`
 (`chatHarness.tsx`). The transport (`services/agentStream.ts`: the SSE
@@ -168,6 +168,7 @@ or the toasts that were shown.
 | truncated replay; service restarted | — | ✓ |
 | Stop mid-turn, then the next send | ✓ | — |
 | a server `error` that mentions the network | ✓ | — |
+| a `?conversation=` link opened before the agent personas load | — | ✓ |
 
 ## Row-render baseline
 
@@ -287,6 +288,17 @@ These are pinned, not fixed, unless marked fixed.
   it started recovery and never showed. A server `error` event is now always
   shown. Only transport failures start recovery. The scenario "a server error
   that mentions the network" was red on master `f3bbfa29`.
+- **A `?conversation=` link opened an empty chat (fixed by Landing 2's live
+  check).**
+  - The link loaded once, at mount, under the agent's project, which is a
+    guess until the page's personas arrive: the guess for Coding is `coding`,
+    while the Coding persona keeps its conversations in `prism-chat`.
+  - The lookup 404'd and was never retried, so a reload or a push-notification
+    link to a Coding conversation showed a blank chat, and the next send
+    started a new conversation.
+  - The load now tries again when the project resolves. The scenario "opens a
+    ?conversation= link once the agent's project is known" was red on master
+    `80adb7a5`.
 
 ## For Landing 3: the post-stream poller
 

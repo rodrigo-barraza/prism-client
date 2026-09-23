@@ -572,7 +572,7 @@ export default function AgentChatComponent({
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef<boolean>(false);
   // Track whether the URL conversation param has been consumed
-  const urlConversationAppliedRef = useRef<boolean>(false);
+  const urlConversationLoadRef = useRef<{ project: string | undefined; isLoaded: boolean } | null>(null);
 
   // -- Admin mode hooks (called unconditionally per Rules of Hooks) --
   const adminHeaderContext = useAdminHeader();
@@ -1949,11 +1949,17 @@ export default function AgentChatComponent({
   }, [loadConversations, isAdmin]);
 
   // -- Auto-load conversation from URL ?conversation= param ----------------
-  // Runs once on mount. Fetches the full conversation and applies it.
-  // Uses a ref guard to prevent double-loading on StrictMode re-mounts.
+  // Fetches the full conversation once and applies it. It is looked up under
+  // the agent's project, which is a guess until the page's personas arrive
+  // (the Coding persona keeps its conversations in "prism-chat", the guess is
+  // "coding"): a miss is tried again when the project resolves. The ref keeps
+  // StrictMode re-mounts from loading twice.
   useEffect(() => {
-    if (isAdmin || !initialConversationId || urlConversationAppliedRef.current) return;
-    urlConversationAppliedRef.current = true;
+    if (isAdmin || !initialConversationId) return;
+    const previousAttempt = urlConversationLoadRef.current;
+    if (previousAttempt?.isLoaded || previousAttempt?.project === agentProject) return;
+    const attempt = { project: agentProject, isLoaded: false };
+    urlConversationLoadRef.current = attempt;
 
     (async () => {
       try {
@@ -1968,6 +1974,7 @@ export default function AgentChatComponent({
         // changed to a new UUID. Applying stale data would restore the old
         // selection highlight in the sidebar.
         if (conversationIdRef.current !== conversationIdAtLoadStart) return;
+        attempt.isLoaded = true;
 
         const displayMessages = resolveDisplayMessages(full);
         console.debug(
@@ -2078,7 +2085,7 @@ export default function AgentChatComponent({
         console.error("Failed to preload conversation from URL:", error);
       }
     })();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [agentProject]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ═══════════════════════════════════════════════════════════════
   // ██  ADMIN MODE — Data Loading Effects

@@ -25,8 +25,10 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
   SessionProvider: ({ children }: { children: unknown }) => children,
 }));
+// A known agent's empty state animates its badge in WebGL, which jsdom lacks.
+vi.mock("../../ThreeCanvasComponent", () => ({ default: () => null }));
 
-import { mountChat, type ChatHarness } from "./chatHarness";
+import { mountChat, respond, transcriptRows, type ChatHarness } from "./chatHarness";
 import type { ChatUrlChange } from "../../AgentChatComponent";
 
 let harness: ChatHarness | null = null;
@@ -58,6 +60,53 @@ describe("what the chat hands to its page", { timeout: 60_000 }, () => {
     const newChat = chat.view.container.querySelector<HTMLElement>("button[title='Start a new conversation']")!;
     await chat.settle(() => fireEvent.click(newChat));
     expect(changes.at(-1)).toEqual({ kind: "conversation", conversationId: null });
+  });
+
+  it("opens a ?conversation= link once the agent's project is known, even when a first guess missed", async () => {
+    // The page passes its agent personas after they load; until then the
+    // chat guesses the Coding agent's project ("coding"), and the service
+    // keeps its conversations under the persona's ("prism-chat").
+    const persisted = new Map<string, unknown>([
+      [
+        "conv-link",
+        {
+          id: "conv-link",
+          title: "Linked",
+          project: "prism-chat",
+          updatedAt: "2026-09-22T11:59:00.000Z",
+          displayMessages: [
+            { role: "user", content: "Linked question", timestamp: "2026-09-22T11:58:00.000Z" },
+            { role: "assistant", content: "Linked answer.", timestamp: "2026-09-22T11:58:05.000Z" },
+          ],
+        },
+      ],
+    ]);
+    const chat = (harness = await mountChat(
+      { initialConversationId: "conv-link" },
+      {
+        persisted,
+        configureNetwork: (network) => {
+          network.on("GET", /^\/conversations\/conv-link\?project=coding$/, () =>
+            respond(404, { error: "Conversation not found" }),
+          );
+        },
+      },
+    ));
+    expect(chat.state().messages).toEqual([]);
+
+    await chat.rerender({
+      initialConversationId: "conv-link",
+      agents: [{ id: "CODING", name: "Coding", project: "prism-chat" }],
+    });
+    expect(chat.state().activeId).toBe("conv-link");
+    expect(transcriptRows(chat.view.container)).toEqual([
+      expect.stringContaining("Linked question"),
+      expect.stringContaining("Linked answer."),
+    ]);
+    expect(chat.network.requestsMatching("GET", /^\/conversations\/conv-link\?/).map((request) => request.path)).toEqual([
+      "/conversations/conv-link?project=coding",
+      "/conversations/conv-link?project=prism-chat",
+    ]);
   });
 
   it("puts the live phase's colours on :root after commit, and takes them off with the turn", async () => {

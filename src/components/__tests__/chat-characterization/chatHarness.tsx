@@ -482,6 +482,8 @@ export interface ChatHarness {
   commits: { total: number };
   /** Every toast the chat has shown, in order (see normalizeState). */
   toastLog: ReadonlyArray<{ message: string; type: string }>;
+  /** Render the chat again with new props (the page's agent personas arriving, say). */
+  rerender(_props: AgentChatComponentProps): Promise<void>;
   unmount(): void;
 }
 
@@ -545,13 +547,14 @@ export async function mountChat(
   });
 
   const commits = { total: 0 };
+  const chatElement = (chatProps: AgentChatComponentProps) => (
+    <Profiler id="agent-chat" onRender={() => (commits.total += 1)}>
+      <AgentChatComponent {...chatProps} />
+    </Profiler>
+  );
   let view: RenderResult | null = null;
   await act(async () => {
-    view = render(
-      <Profiler id="agent-chat" onRender={() => (commits.total += 1)}>
-        <AgentChatComponent {...props} />
-      </Profiler>,
-    );
+    view = render(chatElement(props));
     await flushAsyncWork();
   });
 
@@ -602,6 +605,9 @@ export async function mountChat(
     rowRenders,
     commits,
     toastLog,
+    async rerender(nextProps) {
+      await settle(() => view!.rerender(chatElement(nextProps)));
+    },
     unmount() {
       for (const stream of network.streams) stream.close();
       view?.unmount();
