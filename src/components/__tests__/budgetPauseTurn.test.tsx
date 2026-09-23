@@ -224,10 +224,17 @@ describe("a turn paused at its cost cap", { timeout: 60_000 }, () => {
     );
     const events = loadTranscript("agent-turn-budget-pause.jsonl");
     const pausedAt = events.findIndex((event) => event.type === "status" && event.message === "budget_reached");
+    // The document says what the service would serve meanwhile: a refresh of
+    // the conversation (the list poll, a change event) hydrates the card from
+    // it, so it must not contradict the live frames.
+    const served = persisted.get("conv-live") as Record<string, unknown>;
+    const reached = events[pausedAt];
     for (const event of events.slice(0, pausedAt + 1)) {
+      if (event === reached) served.pendingBudget = { isPending: true, ...reached };
       await chat.settle(() => socket.receive({ ...event, conversationId: "conv-live" }));
     }
     expect(budgetCard(chat), "the viewer shows the pause").not.toBeNull();
+    delete served.pendingBudget;
     await chat.settle(() => socket.receive({ ...events[pausedAt + 1], conversationId: "conv-live" }));
     expect(budgetCard(chat), "budget_resolved takes it down").toBeNull();
   });
