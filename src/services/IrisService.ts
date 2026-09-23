@@ -552,13 +552,18 @@ export default class IrisService {
     );
   }
 
+  /** `contentVersion` is the caller's fingerprint of the request rows it
+      holds — the server keys its short graph cache on it, so a request
+      that completed without changing the count is never served stale. */
   static async getConversationGraph(
     agentConversationId: string,
     canvasWidth: number,
     canvasHeight: number,
+    contentVersion?: string,
   ): Promise<GraphData> {
+    const versionQuery = contentVersion ? `&v=${encodeURIComponent(contentVersion)}` : "";
     return fetchJSON<GraphData>(
-      `/agent-conversations/${agentConversationId}/graph?width=${canvasWidth}&height=${canvasHeight}`,
+      `/agent-conversations/${agentConversationId}/graph?width=${canvasWidth}&height=${canvasHeight}${versionQuery}`,
     );
   }
 
