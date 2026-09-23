@@ -56,6 +56,8 @@ export function reconnectDelayMilliseconds(
 export interface SubscribedInfo extends SubscribedAckSummary {
   /** False for the first subscribe, true for every resubscribe after a drop. */
   isReconnect: boolean;
+  /** The cursor mark this subscribe sent as `afterSeq` (undefined: it sent none). */
+  afterSeq: number | undefined;
 }
 
 type WebSocketLike = Pick<WebSocket, "send" | "close" | "readyState"> & {
@@ -132,10 +134,13 @@ export function openLiveViewerSocket({
       return;
     }
     socket = attemptSocket;
+    // The mark this attempt subscribes from, for its ack.
+    let subscribedAfterSeq: number | undefined;
 
     attemptSocket.onopen = () => {
       if (isClosedByOwner || socket !== attemptSocket) return;
       const afterSeq = cursor.afterSeq();
+      subscribedAfterSeq = afterSeq;
       attemptSocket.send(
         JSON.stringify({
           type: "subscribe",
@@ -162,7 +167,7 @@ export function openLiveViewerSocket({
         hasSubscribed = true;
         failedAttempts = 0;
         setState("live");
-        onSubscribed?.({ ...summary, isReconnect });
+        onSubscribed?.({ ...summary, isReconnect, afterSeq: subscribedAfterSeq });
         return;
       }
       if (!cursor.accept(data)) return; // replayed duplicate

@@ -520,7 +520,9 @@ export default function useLiveConversationSync({
             );
           }
         } else if (item.kind === "turn-lost") {
-          // The service restarted while the socket was down: the turn is gone.
+          // The turn ended, or the service restarted, while the socket was
+          // down, and what was missed cannot be replayed: land on the stored
+          // document.
           endViewedTurn();
         } else {
           const event = item.event;
