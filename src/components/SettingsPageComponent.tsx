@@ -55,6 +55,7 @@ import MCPServersPanel from "./MCPServersPanelComponent";
 import PermissionRulesPanel from "./PermissionRulesPanelComponent";
 import HooksPanel from "./HooksPanelComponent";
 import ProjectInstructionsPanel from "./ProjectInstructionsPanelComponent";
+import ImportPanel from "./ImportPanelComponent";
 import PushNotificationsPanel from "./PushNotificationsPanelComponent";
 import {
   ButtonComponent,
@@ -3152,6 +3153,22 @@ export default function SettingsPageComponent() {
         <ProjectInstructionsPanel
           instructions={projectInstructions}
           onInstructionsChange={loadProjectInstructions}
+        />
+      </CardComponent>
+
+      {/* -- Import Section -------------------------------------------- */}
+      <CardComponent className={styles["section"]} data-settings-section="import">
+        <CardComponent.Header
+          icon={Download}
+          title="Import"
+          subtitle="Bring in a Claude Code setup or an Agent Plugins plugin — preview exactly what arrives, then import. Skills keep their folders; MCP servers arrive disabled."
+        />
+
+        <ImportPanel
+          onImported={() => {
+            loadMCPServers();
+            loadProjectInstructions();
+          }}
         />
       </CardComponent>
 
