@@ -150,6 +150,67 @@ describe("SSE-driven turn (characterization)", { timeout: 60_000 }, () => {
     ).toMatchSnapshot();
   });
 
+  it("done, then no poll: a stored turn that lags is fetched once, and the streamed turn stays", async () => {
+    // The service persists a turn before it emits `done` (prism-service
+    // Finalizer), so the first fetch after `done` already has it. A
+    // document without the turn means persisting failed: the chat keeps
+    // what streamed and fetches it again only for the stats, at 2 s. It
+    // used to poll — again after 2 s and after 4 s.
+    const chat = (harness = await mountChat());
+    const prompt = "What port does the dev server use?";
+    const events = loadTranscript("agent-turn-reconnect.jsonl");
+    let requestsBeforeDone = 0;
+    await sendAndReplay(chat, prompt, events, {
+      onEvent: (event) => {
+        if (event.type !== "chunk" || event.content !== ", documented.") return;
+        const conversationId = chat.state().conversationId;
+        // Persisting failed: the stored conversation has no turn.
+        chat.persisted.set(conversationId, { id: conversationId, project: "coding", displayMessages: [] });
+        requestsBeforeDone = chat.network.requests.length;
+      },
+    });
+    await chat.settle(() => new Promise<void>((resolveWait) => setTimeout(resolveWait, 5_000)));
+    const conversationDocument = `GET /conversations/${chat.state().conversationId}?project=coding`;
+    const documentFetches = chat.network.requests
+      .slice(requestsBeforeDone)
+      .filter((request) => `${request.method} ${request.path}` === conversationDocument).length;
+    // The refresh after `done`, and the stats at 2 s — no retries.
+    expect(documentFetches).toBe(2);
+    // What streamed, tool step included — not the empty stored document.
+    expect(domDigest(chat.view.container).rows).toEqual([
+      `User12:00 PM${prompt}`,
+      "Model12:00 PMChecking the config📖Analyzed config.json for 0.02 seconds— port 3000, documented.",
+    ]);
+  });
+
+  it("a /rule picked from the composer's slash menu sends its name with the turn", async () => {
+    const chat = (harness = await mountChat({}, {
+      configureNetwork: (network) =>
+        network.on("GET", /^\/rules(\?|$)/, () => [
+          { id: "rule-1", name: "concise", enabled: true, content: "Answer in one line.", description: "Short answers" },
+        ]),
+    }));
+    const composer = onlyOne(chat.view.container, REGION_SELECTORS.composer);
+    await chat.settle(() => {
+      composer.textContent = "/";
+      fireEvent.input(composer);
+    });
+    const ruleItem = within(chat.view.container).getByRole("button", { name: /\/concise/ });
+    await chat.settle(() => fireEvent.mouseDown(ruleItem));
+    expect(composer.querySelector("[data-slash-command='concise']")).not.toBeNull();
+    const nextStream = chat.network.nextStream();
+    await chat.settle(() => {
+      composer.appendChild(document.createTextNode("Summarize the README."));
+      fireEvent.input(composer);
+    });
+    await chat.settle(() => fireEvent.keyDown(composer, { key: "Enter", code: "Enter" }));
+    const stream = await nextStream;
+    const body = stream.request.body as { activeRuleNames?: string[]; messages: Array<{ content: string }> };
+    expect(body.activeRuleNames).toEqual(["concise"]);
+    expect(body.messages[body.messages.length - 1].content).toBe("Summarize the README.");
+    await chat.settle(() => stream.close());
+  });
+
   it("approvals: two cards in one batch, one allowed from its card, one denied elsewhere", async () => {
     const chat = (harness = await mountChat());
     const events = loadTranscript("agent-turn-approval.jsonl");

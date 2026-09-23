@@ -95,3 +95,23 @@ export function extractPersistedContextBudget(
     ?.contextBudget as ContextBudget | null | undefined;
   return budget ?? null;
 }
+
+/**
+ * Whether the stored conversation has the turn this chat just streamed, so
+ * it may replace the streamed transcript: it has at least as many messages,
+ * and the last prompt the user sent. The service persists a turn before it
+ * emits `done`; a document without the turn means persisting failed, and
+ * what streamed stays on screen.
+ */
+export function documentHasSentTurn(
+  storedMessages: ReadonlyArray<{ role: string; content?: unknown }>,
+  streamedMessages: ReadonlyArray<{ role: string; content?: unknown }>,
+): boolean {
+  if (storedMessages.length < streamedMessages.length) return false;
+  const lastSentPrompt = [...streamedMessages].reverse().find((message) => message.role === "user");
+  const sentText = lastSentPrompt?.content ? String(lastSentPrompt.content).trim() : "";
+  if (!sentText) return true;
+  return storedMessages.some(
+    (message) => message.role === "user" && String(message.content ?? "").trim() === sentText,
+  );
+}

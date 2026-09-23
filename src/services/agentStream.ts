@@ -45,9 +45,10 @@ export type AgentStreamItem =
   /** Socket transports: a (re)subscribe was acknowledged. */
   | { kind: "subscribed"; info: SubscribedInfo }
   /**
-   * `watchConversation`: a RE-subscribe found the service holding no events
-   * for the conversation (it restarted while the socket was down), so the
-   * turn being watched is gone — the stored document says how it ended.
+   * `watchConversation`: a RE-subscribe missed events it cannot be replayed —
+   * the service restarted while the socket was down, or the turn ended then
+   * (`done` retires the turn's buffer) — so the stored document says how the
+   * watched turn ended.
    */
   | { kind: "turn-lost" };
 
@@ -429,7 +430,7 @@ export function watchConversation(conversationId: string): AgentStream {
         `[agentStream] Live subscription ${info.isReconnect ? "resumed" : "confirmed"} for conversation ${conversationId} (lastSeq=${info.lastSeq}, replayed=${info.replayedCount}, dropped=${info.droppedCount})`,
       );
       queue.push({ kind: "subscribed", info });
-      if (info.isReconnect && !info.lastSeq && info.replayedCount === 0) {
+      if (info.isReconnect && info.replayedCount === 0 && missedUnreplayableEvents(info)) {
         queue.push({ kind: "turn-lost" });
       }
     },
@@ -439,6 +440,17 @@ export function watchConversation(conversationId: string): AgentStream {
     queue.end();
   };
   return { close, [Symbol.asyncIterator]: () => queue.iterator(close) };
+}
+
+/**
+ * Whether a resubscribe that replayed nothing missed events anyway: the
+ * service knows no seq at all (it restarted), or it stamped events past the
+ * mark we sent and can no longer replay them — the turn's `done` retired its
+ * buffer while the socket was down.
+ */
+function missedUnreplayableEvents(info: SubscribedInfo): boolean {
+  if (!info.lastSeq) return true;
+  return info.afterSeq === undefined || info.lastSeq > info.afterSeq;
 }
 
 export type FollowOutcome =

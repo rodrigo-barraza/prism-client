@@ -182,6 +182,41 @@ describe("agentStream — the viewer socket", () => {
     stream.close();
   });
 
+  it("reports the turn lost when it ended while the socket was down", async () => {
+    // The service retires a turn's buffer at `done`: a viewer that missed the
+    // end gets nothing replayed, while the counter moved past its mark.
+    const stream = watchConversation("conv-8");
+    const { items } = collect(stream);
+    latest().open();
+    latest().receive({ type: "subscribed", lastSeq: BASE + 2, replayedCount: 2, droppedCount: 0 });
+    latest().receive({ type: "chunk", content: "a", seq: BASE + 1 });
+    latest().receive({ type: "chunk", content: "b", seq: BASE + 2 });
+    latest().drop();
+    vi.advanceTimersByTime(15_000);
+    latest().open();
+    expect(latest().subscriptions()).toEqual([{ type: "subscribe", conversationId: "conv-8", afterSeq: BASE + 2 }]);
+    latest().receive({ type: "subscribed", lastSeq: BASE + 5, replayedCount: 0, droppedCount: 0 });
+    await vi.waitFor(() => expect(items.at(-1)?.kind).toBe("turn-lost"));
+    stream.close();
+  });
+
+  it("keeps watching when a resubscribe missed nothing", async () => {
+    // A long tool call: the turn runs on, and nothing was stamped meanwhile.
+    const stream = watchConversation("conv-9");
+    const { items } = collect(stream);
+    latest().open();
+    latest().receive({ type: "subscribed", lastSeq: BASE + 1, replayedCount: 1, droppedCount: 0 });
+    latest().receive({ type: "chunk", content: "a", seq: BASE + 1 });
+    latest().drop();
+    vi.advanceTimersByTime(15_000);
+    latest().open();
+    latest().receive({ type: "subscribed", lastSeq: BASE + 1, replayedCount: 0, droppedCount: 0 });
+    await vi.waitFor(() => expect(items.filter((item) => item.kind === "subscribed")).toHaveLength(2));
+    await flush();
+    expect(items.some((item) => item.kind === "turn-lost")).toBe(false);
+    stream.close();
+  });
+
   it("normalizes socket events the way the SSE's are", async () => {
     const stream = watchConversation("conv-5");
     const { items } = collect(stream);

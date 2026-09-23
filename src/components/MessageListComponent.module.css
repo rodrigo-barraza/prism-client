@@ -1,8 +1,36 @@
 /* ── Message list container ── */
 .messages-list {
+  --message-list-gap: 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--message-list-gap);
+}
+
+/* ── Rows ──
+   Each row sits in a frame that carries the gap after it as padding, so a
+   frame's height is all the room the row takes: the transcript mounts only
+   the rows near the viewport and stands in for the rest by their heights
+   (hooks/useVirtualRows). The last frame's padding is taken back below. */
+.rows {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: calc(-1 * var(--message-list-gap));
+}
+
+.rows-empty {
+  display: none;
+}
+
+.row-frame {
+  display: flex;
+  flex-direction: column;
+  gap: var(--message-list-gap);
+  padding-bottom: var(--message-list-gap);
+}
+
+/* A row mounted again as it scrolls back into view does not fade in again. */
+.row-frame-settled .message {
+  animation: none;
 }
 
 /* ── Per-message row ── */
@@ -18,7 +46,10 @@
     /* clear the sticky pinned header when scrollIntoView fires */
   }
 
-  &:hover .action-button {
+  /* Keyboard users reach the actions too: a focused action (or anything
+     focused in the row) shows the row's actions, not only a hover. */
+  &:hover .action-button,
+  &:focus-within .action-button {
     opacity: 1;
   }
 }
@@ -152,7 +183,7 @@
   user-select: none;
 }
 
-/* ── Actions (hidden until hover) ── */
+/* ── Actions (hidden until hover or keyboard focus) ── */
 .message-actions {
   display: flex;
   align-items: center;
@@ -171,6 +202,12 @@
   &:hover {
     color: var(--accent-primary);
     transform: scale(1.1);
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 1px;
   }
 }
 
@@ -845,7 +882,8 @@ button.file-chip-main:hover {
   margin: 0;
   width: 100%;
 
-  &:hover .deleted-actions {
+  &:hover .deleted-actions,
+  &:focus-within .deleted-actions {
     opacity: 1;
   }
 }
@@ -1241,11 +1279,11 @@ button.file-chip-main:hover {
    defined on that container in ChatAreaComponent.module.css. */
 
 :global(.chat-terminal-mode) .messages-list {
+  --message-list-gap: 18px;
   font-family: var(--terminal-font, ui-monospace, monospace);
   font-size: 12.5px;
   line-height: 1.6;
   color: var(--terminal-text);
-  gap: 18px;
 }
 
 /* No avatars in a terminal — the role prefix glyph carries identity */
