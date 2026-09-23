@@ -10,7 +10,8 @@
  */
 
 import type { LiveTurnCursor, SubscribedAckSummary } from "../utils/liveTurnCursor";
-import type { SSEData } from "../types/types";
+import type { TurnEvent } from "../types/types";
+import { parseStreamEvent } from "./protocolEvents";
 
 export type LiveSocketState =
   /** No WebSocket URL is configured — live streaming is unavailable. */
@@ -70,7 +71,7 @@ export interface LiveViewerSocketOptions {
   conversationId: string;
   cursor: LiveTurnCursor;
   /** Every accepted (not replay-duplicate) event, in order. */
-  onEvent: (_event: SSEData) => void;
+  onEvent: (_event: TurnEvent) => void;
   onSubscribed?: (_info: SubscribedInfo) => void;
   onStateChange?: (_state: LiveSocketState) => void;
   backoff?: ReconnectBackoff;
@@ -146,13 +147,15 @@ export function openLiveViewerSocket({
 
     attemptSocket.onmessage = (messageEvent: MessageEvent) => {
       if (isClosedByOwner || socket !== attemptSocket) return;
-      let data: SSEData;
+      let frame: unknown;
       try {
-        data = JSON.parse(messageEvent.data as string) as SSEData;
+        frame = JSON.parse(messageEvent.data as string);
       } catch (parseError: unknown) {
         console.warn("[liveViewerSocket] unparseable frame:", parseError);
         return;
       }
+      const data = parseStreamEvent(frame, "turn");
+      if (!data || data.type === "hello") return; // unknown type (logged), or the connection's greeting
       if (data.type === "subscribed") {
         const summary = cursor.noteSubscribed(data);
         const isReconnect = hasSubscribed;

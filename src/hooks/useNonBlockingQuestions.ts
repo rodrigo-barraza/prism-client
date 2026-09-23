@@ -10,7 +10,7 @@
  * changes (`clear`).
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { SSEData, UserQuestionItem } from "../types/types";
+import type { UserQuestionEvent, UserQuestionItem } from "../types/types";
 
 export interface QuestionAnswerData {
   answer: string | string[];
@@ -33,7 +33,7 @@ export interface NonBlockingQuestionsApi {
   openCards: NonBlockingQuestionCard[];
   openCount: number;
   /** Upsert from a `user_question` event; ignored without a questionId or when already known. */
-  open: (_event: SSEData) => void;
+  open: (_event: UserQuestionEvent) => void;
   markAnswered: (
     _questionId: string,
     _answers: QuestionAnswerData[],
@@ -54,7 +54,7 @@ export default function useNonBlockingQuestions(
     setCards([]);
   }, [conversationId]);
 
-  const open = useCallback((event: SSEData) => {
+  const open = useCallback((event: UserQuestionEvent) => {
     const questionId = typeof event.questionId === "string" ? event.questionId : "";
     if (!questionId) return;
     const questions = Array.isArray(event.questions) ? event.questions : [];

@@ -20,16 +20,14 @@
  * dedupe heuristics in the consumers stay as the fallback for those.
  */
 
-export interface CursorEventLike {
-  seq?: unknown;
-  [key: string]: unknown;
-}
+/** Any stream event: the cursor only reads its `seq`. */
+export type CursorEventLike = object;
 
+/** The `subscribed` ack, read defensively (numbers are checked, not trusted). */
 export interface SubscribedAckLike {
   lastSeq?: unknown;
   replayedCount?: unknown;
   droppedCount?: unknown;
-  [key: string]: unknown;
 }
 
 export interface SubscribedAckSummary {
@@ -76,14 +74,14 @@ export function createCursor(initialAfterSeq?: number): LiveTurnCursor {
   let truncated = false;
 
   const shouldAccept = (event: CursorEventLike): boolean => {
-    const seq = readSeq(event?.seq);
+    const seq = readSeq((event as { seq?: unknown } | undefined)?.seq);
     if (seq === undefined) return true;
     if (mark === undefined) return true;
     return seq > mark;
   };
 
   const remember = (event: CursorEventLike): void => {
-    const seq = readSeq(event?.seq);
+    const seq = readSeq((event as { seq?: unknown } | undefined)?.seq);
     if (seq === undefined) return;
     if (mark === undefined || seq > mark) mark = seq;
   };

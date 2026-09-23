@@ -10,6 +10,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { SERVER_SENT_EVENT_TYPES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import PrismService from "../PrismService";
+import { TURN_EVENT_TYPES } from "../../types/protocol/events";
 import type { SSECallbacks } from "../../types/types";
 
 /**
@@ -21,6 +22,14 @@ const INTENTIONALLY_UNHANDLED: Record<string, string> = {
     "never emitted as an SSE envelope type — 'text' exists in the taxonomy for content blocks / live-voice WS frames",
   [SERVER_SENT_EVENT_TYPES.TOKEN]:
     "legacy alias, no emit sites in prism-service",
+};
+
+/** Protocol events (types/protocol/events.ts) the dispatcher routes nowhere, and why. */
+const PROTOCOL_EVENTS_NOT_ROUTED: Record<string, string> = {
+  hello: "connection framing: the parser reads its version",
+  subscribed: "the live viewer socket handles the ack itself",
+  refusal: "not rendered yet; the done event carries the refusal too",
+  memory_consolidation_complete: "background upkeep, not rendered",
 };
 
 /** Minimal payload per event so the dispatch cast paths don't throw. */
@@ -73,6 +82,11 @@ function buildSpyCallbacks(): { callbacks: SSECallbacks; spies: Array<ReturnType
     onConversationStateUpdate: spy(),
     onTodoUpdate: spy(),
     onBriefUpdate: spy(),
+    onUserMessage: spy(),
+    onApprovalDecided: spy(),
+    onTurnInput: spy(),
+    onGoalUpdate: spy(),
+    onPermissionMode: spy(),
     onRunInfo: spy(),
     onModelStart: spy(),
     onModelComplete: spy(),
@@ -110,6 +124,16 @@ describe("SSE contract exhaustiveness", () => {
       expect(reason.length).toBeGreaterThan(10);
     }
   });
+
+  it.each(TURN_EVENT_TYPES.filter((t) => !(t in PROTOCOL_EVENTS_NOT_ROUTED)))(
+    "dispatches protocol event type '%s' to a callback",
+    (type) => {
+      const { callbacks, spies } = buildSpyCallbacks();
+      PrismService._dispatchSSE(makeEvent(type) as never, callbacks);
+      const totalCalls = spies.reduce((sum, s) => sum + s.mock.calls.length, 0);
+      expect(totalCalls).toBeGreaterThan(0);
+    },
+  );
 
   it("dispatches the synthesis framing events (not yet in the shared taxonomy)", () => {
     // synthesis_start / turn_start / turn_complete are a client↔server

@@ -50,7 +50,6 @@ import {
   BackgroundUsage,
   ConversationStats,
   ModelOption,
-  SSEData,
   ContentSegment,
   TransformedRequestItem,
   LlamaCppServerProps,
@@ -61,6 +60,7 @@ import {
   TurnInputBoundary,
   FileAttachment,
 } from "../types/types";
+import { isKnownStatusEvent, type DoneEvent } from "../types/protocol/events";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import HistoryPanel from "./HistoryPanelComponent";
@@ -787,7 +787,8 @@ export default function AgentChatComponent({
     return map;
   }, [builtInTools]);
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [_injectedSkills, setInjectedSkills] = useState<Skill[]>([]);
+  /** Names of the skills injected into the current turn (`skills_injected`). */
+  const [_injectedSkills, setInjectedSkills] = useState<string[]>([]);
   const [rules, setRules] = useState<Rule[]>([]);
   const [hooks, setHooks] = useState<Hook[]>([]);
   const [projectInstructions, setProjectInstructions] =
@@ -4421,6 +4422,53 @@ export default function AgentChatComponent({
           }
         };
 
+        /**
+         * A status with a phase — LM Studio's lifecycle (loading, prefilling,
+         * generating) or a truncated turn: show it on the assistant message.
+         */
+        const applyStatusPhase = (statusData: { message: string; phase: string; progress?: number }) => {
+          setMessages((previousMessages) => {
+            const updated = [...previousMessages];
+            const last = updated[updated.length - 1];
+            if (last?.role === "assistant") {
+              updated[updated.length - 1] = {
+                ...last,
+                status: statusData.message,
+                statusPhase: statusData.phase,
+                // Structured progress (0-1) from LM Studio prompt prefilling
+                _statusProgress:
+                  statusData.progress != null
+                    ? statusData.progress
+                    : last._statusProgress,
+                // Track when prefilling phase started for live TTFT estimation
+                _processingStartTime:
+                  statusData.phase === "prefilling" &&
+                  !last._processingStartTime
+                    ? performance.now()
+                    : last._processingStartTime,
+              };
+            } else {
+              // Phase event arrived before any content chunk — create a
+              // placeholder assistant message to carry the phase metadata.
+              // onChunk/onThinking will merge into this message when they fire.
+              updated.push({
+                role: MESSAGE_ROLES.ASSISTANT,
+                content: "",
+                status: statusData.message,
+                statusPhase: statusData.phase,
+                _statusProgress:
+                  statusData.progress != null
+                    ? statusData.progress
+                    : undefined,
+                _processingStartTime:
+                  statusData.phase === "prefilling"
+                    ? performance.now()
+                    : undefined,
+              });
+            }
+            return updated;
+          });
+        };
         abortRef.current = streamFn(payload, {
           onChunk: (
             content: string,
@@ -4644,13 +4692,13 @@ export default function AgentChatComponent({
               return updated;
             });
           },
-          onToolExecution: (data: SSEData) => {
+          onToolExecution: (data) => {
             if (isStale()) return;
             const toolData = data.tool;
             if (!toolData) return;
             handleToolEvent(
               {
-                id: toolData.id,
+                id: toolData.id ?? "",
                 name: toolData.name,
                 args: toolData.args,
                 status: data.status as string,
@@ -4679,7 +4727,7 @@ export default function AgentChatComponent({
               { logLabel: "ToolCall MCP" },
             );
           },
-          onToolOutput: (data: SSEData) => {
+          onToolOutput: (data) => {
             if (isStale()) return;
             if (data.event === "stdout" || data.event === "stderr") {
               setStreamingOutputs((previousPixelSize: Map<string, string>) => {
@@ -4691,7 +4739,7 @@ export default function AgentChatComponent({
               });
             }
           },
-          onApprovalRequired: (data: SSEData) => {
+          onApprovalRequired: (data) => {
             if (isStale()) return;
             const approval = approvalFromEvent(data);
             if (!approval) return;
@@ -4718,7 +4766,7 @@ export default function AgentChatComponent({
             });
           },
           // One card decided — here, in another tab, by a batch scope or a timeout.
-          onApprovalDecided: (data: SSEData) => {
+          onApprovalDecided: (data) => {
             if (isStale()) return;
             setPendingApprovals((previousPendingApprovals) =>
               applyApprovalDecided(previousPendingApprovals, data),
@@ -4729,7 +4777,7 @@ export default function AgentChatComponent({
           // bubble LAST — every chunk handler above patches messages[-1]
           // when it is an assistant — so a bubble that has to be created
           // here goes just above it; the finalize refresh restores order.
-          onTurnInput: (data: SSEData) => {
+          onTurnInput: (data) => {
             if (isStale()) return;
             const inputId = typeof data.id === "string" ? data.id : "";
             if (!inputId) return;
@@ -4748,7 +4796,7 @@ export default function AgentChatComponent({
               ),
             );
           },
-          onGoalUpdate: (data: SSEData) => {
+          onGoalUpdate: (data) => {
             if (isStale()) return;
             applyGoalEvent(data);
           },
@@ -4757,7 +4805,7 @@ export default function AgentChatComponent({
             applyPermissionModeEvent(data);
           },
           ...turnActivityCallbacks(generationConversationId),
-          onUserQuestion: (data: SSEData) => {
+          onUserQuestion: (data) => {
             if (isStale()) return;
             if (data.blocking === false) {
               // The agent keeps working — pin the card, leave the composer
@@ -4788,7 +4836,7 @@ export default function AgentChatComponent({
               return updated;
             });
           },
-          onPlanProposal: (data: SSEData) => {
+          onPlanProposal: (data) => {
             if (isStale()) return;
 
             // Inject plan as a content segment so it renders in-flow —
@@ -4827,8 +4875,17 @@ export default function AgentChatComponent({
               status: isPending ? "pending" : "approved",
             });
           },
-          onStatus: (statusData: SSEData) => {
+          onStatus: (event) => {
             if (isStale()) return;
+            // Display text (a provider's progress, a blocked tool) carries
+            // only a phase; a known message carries its own fields.
+            if (!isKnownStatusEvent(event)) {
+              if (event.phase) {
+                applyStatusPhase({ message: event.message, phase: event.phase, progress: event.progress });
+              }
+              return;
+            }
+            const statusData = event;
             // A configured hook's `systemMessage` — addressed to the user,
             // never shown to the model.
             if (statusData?.message === "hook_system_message" && typeof statusData.text === "string") {
@@ -5009,53 +5066,12 @@ export default function AgentChatComponent({
                 }
                 return updatedMessages;
               });
-            } else if (statusData?.phase) {
-              // LM Studio lifecycle status (loading, processing, generating)
-              setMessages((previousMessages) => {
-                const updated = [...previousMessages];
-                const last = updated[updated.length - 1];
-                if (last?.role === "assistant") {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    status: statusData.message,
-                    statusPhase: statusData.phase,
-                    // Structured progress (0-1) from LM Studio prompt prefilling
-                    _statusProgress:
-                      statusData.progress != null
-                        ? statusData.progress
-                        : last._statusProgress,
-                    // Track when prefilling phase started for live TTFT estimation
-                    _processingStartTime:
-                      statusData.phase === "prefilling" &&
-                      !last._processingStartTime
-                        ? performance.now()
-                        : last._processingStartTime,
-                  };
-                } else {
-                  // Phase event arrived before any content chunk — create a
-                  // placeholder assistant message to carry the phase metadata.
-                  // onChunk/onThinking will merge into this message when they fire.
-                  updated.push({
-                    role: MESSAGE_ROLES.ASSISTANT,
-                    content: "",
-                    status: statusData.message,
-                    statusPhase: statusData.phase,
-                    _statusProgress:
-                      statusData.progress != null
-                        ? statusData.progress
-                        : undefined,
-                    _processingStartTime:
-                      statusData.phase === "prefilling"
-                        ? performance.now()
-                        : undefined,
-                  });
-                }
-                return updated;
-              });
+            } else if ("phase" in statusData) {
+              applyStatusPhase({ message: statusData.message, phase: statusData.phase });
             }
           },
           // -- Sub-agent agent live events -----------------------------
-          onSubAgentToolExecution: (data: SSEData) => {
+          onSubAgentToolExecution: (data) => {
             if (isStale()) return;
             const subAgentId = data.subAgentId;
             if (!subAgentId) return;
@@ -5071,7 +5087,6 @@ export default function AgentChatComponent({
               };
               const toolData = data.tool;
               if (!toolData) return previousSubAgentToolActivity;
-              if (data.toolEmoji && toolData.name) cacheToolEmoji(toolData.name as string, data.toolEmoji as string);
 
               let updatedCalls = [...entry.toolCalls];
               if (data.status === "streaming" || data.status === "calling") {
@@ -5155,7 +5170,7 @@ export default function AgentChatComponent({
               return previousSubAgentToolActivity;
             });
           },
-          onSubAgentToolOutput: (data: SSEData) => {
+          onSubAgentToolOutput: (data) => {
             if (isStale()) return;
             const subAgentId = data.subAgentId;
             const key = data.toolCallId || data.name || "";
@@ -5167,7 +5182,7 @@ export default function AgentChatComponent({
               return updated;
             });
           },
-          onSubAgentStatus: (data: SSEData) => {
+          onSubAgentStatus: (data) => {
             if (isStale()) return;
             const subAgentId = data.subAgentId;
             if (!subAgentId) return;
@@ -5384,13 +5399,6 @@ export default function AgentChatComponent({
                       existing.totalOutputTokens,
                     // Per-sub-agent tok/s from burst counters
                     tokensPerSecond: (data as any).tokensPerSecond ?? existing.tokensPerSecond,
-                    ...(data.inputTokens != null && {
-                      inputTokens: data.inputTokens,
-                    }),
-                    ...(data.totalTokens != null && {
-                      totalTokens: data.totalTokens,
-                    }),
-                    ...(data.avgTtft != null && { avgTtft: data.avgTtft }),
                   },
                 };
               });
@@ -5415,7 +5423,7 @@ export default function AgentChatComponent({
                     ...(previousSubAgentToolActivity[subAgentId] || {}),
                     phase: "complete",
                     currentTool: null,
-                    durationMs: data.durationMs,
+                    durationMs: data.durationMilliseconds,
                     toolCount:
                       data.toolCount ?? previousSubAgentToolActivity[subAgentId]?.toolCount,
                   },
@@ -5476,7 +5484,7 @@ export default function AgentChatComponent({
               });
             }
           },
-          onUsageUpdate: (data: SSEData) => {
+          onUsageUpdate: (data) => {
             if (isStale()) return;
             setMessages((previousMessages) => {
               const updated = [...previousMessages];
@@ -5527,7 +5535,7 @@ export default function AgentChatComponent({
               return updated;
             });
           },
-          onContextBudget: (data: SSEData) => {
+          onContextBudget: (data) => {
             if (isStale()) return;
             setContextBudget({
               contextWindow: data.contextWindow as number,
@@ -5546,7 +5554,7 @@ export default function AgentChatComponent({
               calibrationRatio: data.calibrationRatio !== undefined ? (data.calibrationRatio as number) : undefined,
             });
           },
-          onTaskNotification: (data: SSEData) => {
+          onTaskNotification: (data) => {
             console.debug(`[onTaskNotification] received, isStale=${isStale()}`);
             if (isStale()) return;
 
@@ -5602,7 +5610,7 @@ export default function AgentChatComponent({
               return updated;
             });
           },
-          onConversationStateUpdate: (data: SSEData) => {
+          onConversationStateUpdate: (data) => {
             // Patch the conversations list entry with the updated counter
             // and isActive flag so the status bar resolves correctly.
             const updatedPendingCount = (data.pendingBackgroundTasks as number) ?? 0;
@@ -5618,7 +5626,8 @@ export default function AgentChatComponent({
               }),
             );
           },
-          onDone: (data: SSEData) => {
+          onDone: (event) => {
+            const data: Partial<DoneEvent> = event;
             console.debug(`[onDone] stream finished, isStale=${isStale()}`);
             if (!isStale()) {
               setMessages((previousMessages) => {
@@ -5646,13 +5655,13 @@ export default function AgentChatComponent({
                     ...last,
                     provider: settings.provider,
                     model: settings.model,
-                    usage: data.usage,
-                    totalTime: data.totalTime,
-                    tokensPerSec: data.tokensPerSec,
-                    estimatedCost: data.estimatedCost,
-                    timeToGeneration: data.timeToGeneration,
-                    thinkingDurationSeconds: (data.thinkingDurationSeconds as number | undefined),
-                    contentDurationSeconds: (data.contentDurationSeconds as number | undefined),
+                    usage: data.usage ?? undefined,
+                    totalTime: data.totalTime ?? undefined,
+                    tokensPerSec: data.tokensPerSec ?? undefined,
+                    estimatedCost: data.estimatedCost ?? undefined,
+                    timeToGeneration: data.timeToGeneration ?? undefined,
+                    thinkingDurationSeconds: data.thinkingDurationSeconds,
+                    contentDurationSeconds: data.contentDurationSeconds,
                     completedAt: new Date().toISOString(),
                     status: undefined,
                     statusPhase: undefined,
@@ -7556,7 +7565,7 @@ export default function AgentChatComponent({
     const streamedAdminSource = adminSelectedSourceRef.current;
 
     const cleanupWebSocket = PrismService.subscribeToAutoResponse(activeId, {
-      onUserMessage: (data: SSEData) => {
+      onUserMessage: (data) => {
         if (!isSubscriptionActive) return;
         // A new turn started: reset the accumulators and render the user's
         // prompt immediately — it is only persisted at finalize, so no
@@ -7594,7 +7603,7 @@ export default function AgentChatComponent({
       // A mid-turn input landed (ours from another tab, an answer, a task
       // completion). It becomes a user bubble and whatever streams next
       // opens a fresh assistant bubble under it.
-      onTurnInput: (data: SSEData) => {
+      onTurnInput: (data) => {
         if (!isSubscriptionActive) return;
         const inputId = typeof data.id === "string" ? data.id : "";
         if (!inputId) return;
@@ -7613,7 +7622,7 @@ export default function AgentChatComponent({
           }) as ClientMessage[],
         );
       },
-      onGoalUpdate: (data: SSEData) => {
+      onGoalUpdate: (data) => {
         if (!isSubscriptionActive) return;
         liveTurnHelpersRef.current.applyGoalEvent(data);
       },
@@ -7624,7 +7633,7 @@ export default function AgentChatComponent({
       ...turnActivityCallbacks(activeId),
       // Non-blocking questions can be answered from a viewing tab too;
       // blocking ones stay with the driving client (and the snapshot).
-      onUserQuestion: (data: SSEData) => {
+      onUserQuestion: (data) => {
         if (!isSubscriptionActive || isAdmin) return;
         if (data.blocking === false) liveTurnHelpersRef.current.openNonBlockingQuestion(data);
       },
@@ -7690,7 +7699,7 @@ export default function AgentChatComponent({
         });
       },
 
-      onToolExecution: (data: SSEData) => {
+      onToolExecution: (data) => {
         if (!isSubscriptionActive) return;
         markStreamDelivering();
         const toolData = data.tool as Record<string, unknown> | undefined;
@@ -7747,7 +7756,7 @@ export default function AgentChatComponent({
         });
       },
 
-      onToolOutput: (data: SSEData) => {
+      onToolOutput: (data) => {
         if (!isSubscriptionActive) return;
         const toolCallId = data.toolCallId as string | undefined;
         if (!toolCallId) return;
@@ -7777,34 +7786,31 @@ export default function AgentChatComponent({
         });
       },
 
-      onStatus: (data: SSEData) => {
+      onStatus: (event) => {
         if (!isSubscriptionActive) return;
-        const statusMessage = data.message as string | undefined;
+        // Known messages carry their own fields; display text only a phase.
+        const data = isKnownStatusEvent(event) ? event : null;
 
-        if (statusMessage === "turn_input_applied" && typeof data.inputId === "string") {
+        if (data?.message === "turn_input_applied") {
           const appliedInputId = data.inputId;
           setMessages((previousMessages) =>
             markTurnInputApplied(previousMessages, appliedInputId, {
-              boundary: data.boundary as TurnInputBoundary | undefined,
-              iteration: typeof data.iteration === "number" ? data.iteration : undefined,
+              boundary: data.boundary,
+              iteration: data.iteration,
             }),
           );
         }
 
         // Update iteration progress
-        if (statusMessage === "iteration_progress") {
-          const iteration = data.iteration as number | undefined;
-          const maxIterations = data.maxIterations as number | undefined;
-          if (typeof iteration === "number") {
-            setAgenticProgress({
-              iteration,
-              maxIterations: maxIterations || 0,
-            });
-          }
+        if (data?.message === "iteration_progress") {
+          setAgenticProgress({
+            iteration: data.iteration,
+            maxIterations: data.maxIterations || 0,
+          });
         }
 
         // Update phase on last assistant message
-        const phase = data.phase as string | undefined;
+        const phase = "phase" in event ? event.phase : undefined;
         if (phase) {
           setMessages((previousMessages) => {
             if (previousMessages.length === 0) return previousMessages;
@@ -7823,7 +7829,7 @@ export default function AgentChatComponent({
         }
       },
 
-      onDone: (_data?: SSEData) => {
+      onDone: () => {
         if (!isSubscriptionActive) return;
         // Generation finished — do a final full refresh from DB
         // to get the canonical message state with all metadata.

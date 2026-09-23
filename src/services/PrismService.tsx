@@ -6,6 +6,8 @@ import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { getErrorMessage } from "../utils/errorMessage";
 import { cursorFor } from "../utils/liveTurnCursor";
+import { parseStreamEvent, sourceModelOf, type StreamProtocol } from "./protocolEvents";
+import { StreamError } from "../types/types";
 import { openLiveViewerSocket, type LiveSocketState } from "./liveViewerSocket";
 import type { TurnInputResponse } from "../utils/turnInputRouting";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
@@ -69,8 +71,7 @@ import type {
   EmbeddingPayload,
   EmbeddingResponse,
   SSECallbacks,
-  SSEData,
-  WebSearchResult,
+  StreamEvent,
   ApprovalResponse,
   ApprovalDecisionRequest,
   ApprovalDecisionResponse,
@@ -1712,9 +1713,12 @@ export default class PrismService {
       method = HTTP_METHODS.POST,
       body,
       cursorConversationId,
+      protocol = "turn",
     }: {
       method?: string;
       body?: unknown;
+      /** Which stream this is (protocolEvents.ts): its frames are parsed as that stream's events. */
+      protocol?: StreamProtocol;
       /**
        * Advance this conversation's event cursor as events arrive, so a
        * later viewer WebSocket for the same conversation resubscribes with
@@ -1752,16 +1756,16 @@ export default class PrismService {
       if (!json) return;
 
       try {
-        const data = PrismService._normalizeSSEData(JSON.parse(json));
-        if (
-          data.type === SERVER_SENT_EVENT_TYPES.TOOL_EXECUTION ||
-          data.type === SERVER_SENT_EVENT_TYPES.TOOL_CALL ||
-          data.type === SERVER_SENT_EVENT_TYPES.DONE ||
-          data.type === SERVER_SENT_EVENT_TYPES.ERROR
-        ) {
+        const parsed = parseStreamEvent(JSON.parse(json), protocol);
+        if (!parsed) return; // not an event of this stream — logged by the parser
+        const data = PrismService._normalizeSSEData(parsed);
+        if (data.type === "tool_execution" || data.type === "toolCall") {
+          const toolName = data.type === "tool_execution" ? data.tool.name : data.name;
           console.debug(
-            `[SSE dispatch] type=${data.type} status=${data.status || ""} tool=${(data.tool as { name?: string })?.name || data.name || ""} (${json.length}ch)`,
+            `[SSE dispatch] type=${data.type} status=${data.status || ""} tool=${toolName || ""} (${json.length}ch)`,
           );
+        } else if (data.type === "done" || data.type === "error") {
+          console.debug(`[SSE dispatch] type=${data.type} (${json.length}ch)`);
         }
         if (
           data.type === SERVER_SENT_EVENT_TYPES.DONE ||
@@ -1873,7 +1877,7 @@ export default class PrismService {
    * on the code path (provider vs orchestrator) — canonicalize to
    * `durationMs` on both the envelope and the nested `tool` object.
    */
-  static _normalizeSSEData(data: SSEData): SSEData {
+  static _normalizeSSEData<Event extends StreamEvent>(data: Event): Event {
     const normalizeDuration = (obj: Record<string, unknown> | undefined) => {
       if (!obj) return;
       if (obj.durationMs == null && typeof obj.durationMilliseconds === "number") {
@@ -1881,203 +1885,157 @@ export default class PrismService {
       }
     };
     normalizeDuration(data as Record<string, unknown>);
-    normalizeDuration(data.tool as Record<string, unknown> | undefined);
+    normalizeDuration((data as { tool?: Record<string, unknown> }).tool);
     return data;
   }
 
   /**
-   * Dispatch a single parsed SSE event object to the matching callback.
-   * Centralises the type → handler mapping shared by chat, agent, and
-   * benchmark streams.
+   * Dispatch one parsed stream event to its callback. Shared by the chat,
+   * agent, viewer, synthesis and benchmark streams; the switch is exhaustive
+   * over every event type, so a new protocol event does not compile until
+   * it is routed (or deliberately ignored) here.
    */
-  static _dispatchSSE(data: SSEData, callbacks: SSECallbacks): void {
-    const {
-      onChunk,
-      onThinking,
-      onImage,
-      onAudio,
-      onExecutableCode,
-      onCodeExecutionResult,
-      onWebSearchResult,
-      onToolCall,
-      onToolExecution,
-      onToolOutput,
-      onSubAgentToolExecution,
-      onSubAgentToolOutput,
-      onSubAgentStatus,
-      onApprovalRequired,
-      onApprovalDecided,
-      onPlanProposal,
-      onUserQuestion,
-      onTaskNotification,
-      onConversationStateUpdate,
-      onTodoUpdate,
-      onBriefUpdate,
-      onTurnInput,
-      onGoalUpdate,
-      onPermissionMode,
-      onRunInfo,
-      onModelStart,
-      onModelComplete,
-      onRunComplete,
-      onUsageUpdate,
-      onContextBudget,
-      onStatus,
-      onUserMessage,
-      onSynthesisStart,
-      onTurnStart,
-      onTurnComplete,
-      onDone,
-      onError,
-    } = callbacks;
-
-    switch (data.type) {
-      case SERVER_SENT_EVENT_TYPES.CHUNK:
-        onChunk?.(
-          data.content as string,
-          data._sourceModel as string | undefined,
-          data.outputCharacters as number | undefined,
-        );
+  static _dispatchSSE(event: StreamEvent, callbacks: SSECallbacks): void {
+    switch (event.type) {
+      case "chunk":
+        callbacks.onChunk?.(event.content, sourceModelOf(event), event.outputCharacters);
         break;
-      case SERVER_SENT_EVENT_TYPES.THINKING:
-        onThinking?.(
-          data.content as string,
-          data._sourceModel as string | undefined,
-          data.outputCharacters as number | undefined,
-        );
+      case "thinking":
+        callbacks.onThinking?.(event.content, sourceModelOf(event), event.outputCharacters);
         break;
-      case SERVER_SENT_EVENT_TYPES.IMAGE:
-        onImage?.(
-          data.data as string,
-          data.mimeType as string,
-          data.minioRef as string | undefined,
-        );
+      case "image":
+        callbacks.onImage?.(event.data ?? "", event.mimeType ?? "image/png", event.minioRef ?? undefined);
         break;
-      case SERVER_SENT_EVENT_TYPES.AUDIO:
-        onAudio?.(data.data as string, data.mimeType as string);
+      case "audio":
+        callbacks.onAudio?.(event.data ?? "", event.mimeType ?? "");
         break;
-      case SERVER_SENT_EVENT_TYPES.EXECUTABLE_CODE:
-        onExecutableCode?.(data.code as string, data.language as string);
+      case "executableCode":
+        callbacks.onExecutableCode?.(event.code, event.language);
         break;
-      case SERVER_SENT_EVENT_TYPES.CODE_EXECUTION_RESULT:
-        onCodeExecutionResult?.(data.output as string, data.outcome as string);
+      case "codeExecutionResult":
+        callbacks.onCodeExecutionResult?.(event.output, event.outcome);
         break;
-      case SERVER_SENT_EVENT_TYPES.WEB_SEARCH_RESULT:
-        onWebSearchResult?.(data.results as WebSearchResult[]);
+      case "webSearchResult":
+        callbacks.onWebSearchResult?.(event.results);
         break;
-      case SERVER_SENT_EVENT_TYPES.TOOL_CALL:
-        onToolCall?.({
-          id: data.id as string,
-          name: data.name as string,
-          args: data.args as Record<string, unknown>,
-          result: data.result,
-          status: data.status as string | undefined,
-          thoughtSignature: data.thoughtSignature as string | undefined,
-          _sourceModel: data._sourceModel as string | undefined,
+      case "toolCall":
+        callbacks.onToolCall?.({
+          id: event.id ?? "",
+          name: event.name ?? "",
+          args: event.args,
+          result: event.result,
+          status: event.status,
+          thoughtSignature: event.thoughtSignature,
+          _sourceModel: sourceModelOf(event),
         });
         break;
-      case SERVER_SENT_EVENT_TYPES.TOOL_EXECUTION:
-        onToolExecution?.(data);
+      case "tool_execution":
+        callbacks.onToolExecution?.(event);
         break;
-      case SERVER_SENT_EVENT_TYPES.TOOL_OUTPUT:
-        onToolOutput?.(data);
+      case "tool_output":
+        callbacks.onToolOutput?.(event);
         break;
-      case SERVER_SENT_EVENT_TYPES.APPROVAL_REQUIRED:
-        onApprovalRequired?.(data);
-        break;
-      case SERVER_SENT_EVENT_TYPES.PLAN_PROPOSAL:
-        onPlanProposal?.(data);
-        break;
-      // Sub-agent events — forwarded from spawned sub-agents
-      case SERVER_SENT_EVENT_TYPES.SUB_AGENT_TOOL_EXECUTION:
-        onSubAgentToolExecution?.(data);
-        break;
-      case SERVER_SENT_EVENT_TYPES.SUB_AGENT_TOOL_OUTPUT:
-        onSubAgentToolOutput?.(data);
-        break;
-      case SERVER_SENT_EVENT_TYPES.SUB_AGENT_STATUS:
-        onSubAgentStatus?.(data);
-        break;
-      // Prism-local agentic events
-      case SERVER_SENT_EVENT_TYPES.USER_QUESTION:
-        onUserQuestion?.(data);
-        break;
-      case SERVER_SENT_EVENT_TYPES.TASK_NOTIFICATION:
-        onTaskNotification?.(data);
-        break;
-      case SERVER_SENT_EVENT_TYPES.CONVERSATION_STATE_UPDATE:
-        onConversationStateUpdate?.(data);
-        break;
-      case SERVER_SENT_EVENT_TYPES.TODO_UPDATE:
-        onTodoUpdate?.(data);
-        break;
-      case SERVER_SENT_EVENT_TYPES.BRIEF_UPDATE:
-        onBriefUpdate?.(data);
-        break;
-      // Harness mailbox: a mid-turn input was applied (POST /agent/input)
-      case "turn_input":
-        onTurnInput?.(data);
-        break;
-      // Conversation goal set / progressed / paused / cleared
-      case "goal_update":
-        onGoalUpdate?.(data);
-        break;
-      // The conversation's permission mode: what the turn runs in, a switch
-      // (the selector, another tab), plan mode ending on an approved plan
-      case "permission_mode":
-        onPermissionMode?.(data);
+      case "approval_required":
+        callbacks.onApprovalRequired?.(event);
         break;
       // A pending tool/plan call was decided (any tab, a scope, a timeout)
       case "approval_decided":
-        onApprovalDecided?.(data);
+        callbacks.onApprovalDecided?.(event);
         break;
-      // Benchmark-specific events
-      case SERVER_SENT_EVENT_TYPES.RUN_INFO:
-        onRunInfo?.(data);
+      case "plan_proposal":
+        callbacks.onPlanProposal?.(event);
         break;
-      case SERVER_SENT_EVENT_TYPES.MODEL_START:
-        onModelStart?.(data);
+      // Sub-agent events — forwarded from spawned sub-agents
+      case "sub_agent_tool_execution":
+        callbacks.onSubAgentToolExecution?.(event);
         break;
-      case SERVER_SENT_EVENT_TYPES.MODEL_COMPLETE:
-        onModelComplete?.(data);
+      case "sub_agent_tool_output":
+        callbacks.onSubAgentToolOutput?.(event);
         break;
-      case SERVER_SENT_EVENT_TYPES.RUN_COMPLETE:
-        onRunComplete?.(data);
+      case "sub_agent_status":
+        callbacks.onSubAgentStatus?.(event);
         break;
-      case SERVER_SENT_EVENT_TYPES.USAGE_UPDATE:
-        onUsageUpdate?.(data);
+      case "user_question":
+        callbacks.onUserQuestion?.(event);
         break;
-      case SERVER_SENT_EVENT_TYPES.CONTEXT_BUDGET:
-        onContextBudget?.(data);
+      case "task_notification":
+        callbacks.onTaskNotification?.(event);
         break;
-      case SERVER_SENT_EVENT_TYPES.STATUS:
-        onStatus?.(data);
+      case "conversation_state_update":
+        callbacks.onConversationStateUpdate?.(event);
+        break;
+      case "todo_update":
+        callbacks.onTodoUpdate?.(event);
+        break;
+      case "brief_update":
+        callbacks.onBriefUpdate?.(event);
+        break;
+      // Harness mailbox: a mid-turn input was applied (POST /agent/input)
+      case "turn_input":
+        callbacks.onTurnInput?.(event);
+        break;
+      // Conversation goal set / progressed / paused / cleared
+      case "goal_update":
+        callbacks.onGoalUpdate?.(event);
+        break;
+      // The conversation's permission mode: what the turn runs in, and each switch
+      case "permission_mode":
+        callbacks.onPermissionMode?.(event);
+        break;
+      case "usage_update":
+        callbacks.onUsageUpdate?.(event);
+        break;
+      case "context_budget":
+        callbacks.onContextBudget?.(event);
+        break;
+      case "status":
+        callbacks.onStatus?.(event);
         break;
       // Turn-start mirror of the user's prompt — emitted by chat/agent
       // handlers so direct viewers (/admin/chat, second tab) can render it
       // before it is persisted at finalize.
       case "user_message":
-        onUserMessage?.(data);
+        callbacks.onUserMessage?.(event);
+        break;
+      // Benchmark-specific events
+      case "run_info":
+        callbacks.onRunInfo?.(event);
+        break;
+      case "model_start":
+        callbacks.onModelStart?.(event);
+        break;
+      case "model_complete":
+        callbacks.onModelComplete?.(event);
+        break;
+      case "run_complete":
+        callbacks.onRunComplete?.(event);
         break;
       // Synthesis-stream framing events (/synthesis/generate — see
       // SynthesisOrchestrationService in prism-service for the protocol)
       case "synthesis_start":
-        onSynthesisStart?.(data.conversationId as string);
+        callbacks.onSynthesisStart?.(event.conversationId);
         break;
       case "turn_start":
-        onTurnStart?.(data.role as string, data.index as number);
+        callbacks.onTurnStart?.(event.role, event.index);
         break;
       case "turn_complete":
-        onTurnComplete?.(data.message as unknown as Message, data.role as string);
+        callbacks.onTurnComplete?.(event.message as Message, event.role);
         break;
-      case SERVER_SENT_EVENT_TYPES.DONE:
-        onDone?.(data);
+      case "done":
+        callbacks.onDone?.(event);
         break;
-      case SERVER_SENT_EVENT_TYPES.ERROR:
-        onError?.(new Error(data.message as string));
+      case "error":
+        callbacks.onError?.(new StreamError(event));
+        break;
+      // Connection framing (the live viewer socket handles `subscribed`), and
+      // protocol events this client does not render yet.
+      case "hello":
+      case "subscribed":
+      case "refusal":
+      case "memory_consolidation_complete":
         break;
       default:
-        break;
+        event satisfies never;
     }
   }
 
@@ -2127,7 +2085,7 @@ export default class PrismService {
   ): () => void {
     return PrismService._streamSSE(
       "/synthesis/generate",
-      { body: payload },
+      { body: payload, protocol: "synthesis" },
       callbacks,
     );
   }
@@ -2903,6 +2861,7 @@ export default class PrismService {
             ? { trials: options.trials }
             : {}),
         },
+        protocol: "benchmark",
       },
       callbacks,
     );
@@ -3012,7 +2971,7 @@ export default class PrismService {
   ): () => void {
     return PrismService._streamSSE(
       `/benchmark/${id}/follow`,
-      { method: HTTP_METHODS.GET },
+      { method: HTTP_METHODS.GET, protocol: "benchmark" },
       callbacks,
     );
   }

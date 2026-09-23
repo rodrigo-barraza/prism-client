@@ -1,11 +1,11 @@
 {"type":"status","message":"iteration_progress","iteration":1,"maxIterations":25}
 {"type":"tool_execution","status":"calling","tool":{"id":"tc-101","name":"write_todo","args":{"items":[{"content":"Read the config","status":"completed"},{"content":"Check the port","status":"in_progress"},{"content":"Write the summary","status":"pending"}]}}}
-{"type":"todo_update","items":[{"content":"Read the config","status":"completed","priority":"medium"},{"content":"Check the port","status":"in_progress","priority":"high"},{"content":"Write the summary","status":"pending","priority":"low"}],"stats":{"total":3,"pending":1,"in_progress":1,"completed":1}}
-{"type":"tool_execution","status":"done","tool":{"id":"tc-101","name":"write_todo","args":{},"result":{"acknowledged":true}},"durationMilliseconds":4}
-{"type":"webSearchResult","results":[{"title":"Configuring the dev server port","url":"https://docs.example.dev/config/port","snippet":"Set PORT or pass -p."},{"title":"Environment variables","url":"https://docs.example.dev/config/env"}]}
+{"type":"todo_update","items":[{"id":1,"content":"Read the config","status":"completed","priority":"medium"},{"id":2,"content":"Check the port","status":"in_progress","priority":"high"},{"id":3,"content":"Write the summary","status":"pending","priority":"low"}],"stats":{"total":3,"pending":1,"in_progress":1,"completed":1}}
+{"type":"tool_execution","status":"done","tool":{"id":"tc-101","name":"write_todo","args":{},"result":{"acknowledged":true},"durationMilliseconds":4}}
+{"type":"webSearchResult","results":[{"title":"Configuring the dev server port","url":"https://docs.example.dev/config/port","pageAge":"3 days ago"},{"title":"Environment variables","url":"https://docs.example.dev/config/env"}]}
 {"type":"webSearchResult","results":[{"title":"Configuring the dev server port","url":"https://docs.example.dev/config/port"}]}
 {"type":"executableCode","code":"print(sum(range(10)))","language":"PYTHON"}
 {"type":"codeExecutionResult","output":"45\n","outcome":"OUTCOME_OK"}
 {"type":"chunk","content":"The port is 3000.","outputCharacters":17}
 {"type":"brief_update","brief":{"summary":"Confirmed the dev server listens on 3000.","keyFiles":["app/config.json"],"openQuestions":["Should production use 443?"],"timestamp":"2026-09-22T10:00:00.000Z"}}
-{"type":"done"}
+{"type":"done","provider":"google","model":"gemini-3.6-flash","usage":{"inputTokens":800,"outputTokens":120,"totalInputTokens":800},"estimatedCost":0.0009,"totalTime":3.1}

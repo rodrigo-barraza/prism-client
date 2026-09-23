@@ -18,6 +18,7 @@ import {
   Wrench,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
+import { sourceModelOf } from "../services/protocolEvents";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import RunHistorySidebarComponent from "./RunHistorySidebarComponent";
 import {
@@ -66,7 +67,8 @@ import type {
   ModelOption,
   ToolCallEvent,
   SSECallbacks,
-  SSEData,
+  BenchmarkStreamEventOf,
+  ToolExecutionEvent,
   Message,
   ModelInstance,
   AgentInstance,
@@ -415,17 +417,13 @@ export default function BenchmarkDetailPageComponent({
   const buildBenchmarkSSECallbacks = useCallback(
     // eslint-disable-next-line react-hooks/preserve-manual-memoization -- manual memoization is authoritative; React Compiler not enabled
     (overrides: Partial<SSECallbacks> = {}) => ({
-      onRunInfo: (data: SSEData) => {
-        setStreamingTotal((data as { totalModels?: number }).totalModels || 0);
+      onRunInfo: (data: BenchmarkStreamEventOf<"run_info">) => {
+        setStreamingTotal(data.totalModels || 0);
       },
 
       // -- Model lifecycle — supports concurrent models across providers --
-      onModelStart: (data: SSEData) => {
-        const { provider, model, isLocal } = data as unknown as {
-          provider: string;
-          model: string;
-          isLocal?: boolean;
-        };
+      onModelStart: (data: BenchmarkStreamEventOf<"model_start">) => {
+        const { provider, model, isLocal } = data;
         const modelKey = `${provider}:${model}`;
 
         // Initialize live data refs for this model
@@ -464,7 +462,7 @@ export default function BenchmarkDetailPageComponent({
         setActiveModels((prev) => {
           const next = new Map(prev);
           next.set(modelKey, {
-            model: data as unknown as { provider: string; model: string; label?: string },
+            model: data,
             progress: 0,
             phase: initialPhase,
           });
@@ -516,8 +514,8 @@ export default function BenchmarkDetailPageComponent({
         progressIntervalsRef.current.set(modelKey, intervalId);
       },
 
-      onModelComplete: (result: SSEData) => {
-        const bmResult = result as unknown as BenchmarkRunResult;
+      onModelComplete: (result: BenchmarkStreamEventOf<"model_complete">) => {
+        const bmResult: BenchmarkRunResult = result;
         const modelKey = `${bmResult.provider}:${bmResult.model}`;
         resetModelLiveState(modelKey);
 
@@ -595,41 +593,32 @@ export default function BenchmarkDetailPageComponent({
           );
         }
       },
-      onToolExecution: (data: SSEData) => {
-        const key = resolveModelKeyForContent(
-          liveDataRef.current,
-          (data as { _sourceModel?: string })._sourceModel,
-        );
+      onToolExecution: (data: ToolExecutionEvent) => {
+        const key = resolveModelKeyForContent(liveDataRef.current, sourceModelOf(data));
         if (!key) return;
         const benchmarkData = liveDataRef.current.get(key);
         if (!benchmarkData) return;
-        const tool =
-          ((data as Record<string, unknown>).tool as {
-            id?: string;
-            name?: string;
-            args?: unknown;
-            result?: unknown;
-          }) || {};
-        if ((data as Record<string, unknown>).status === "calling") {
+        const { tool } = data;
+        if (data.status === "calling") {
           benchmarkData.toolCalls = [
             ...benchmarkData.toolCalls,
             {
-              id: tool.id,
+              id: tool.id ?? undefined,
               name: tool.name,
               args: tool.args,
               status: EXECUTION_STATUS.CALLING,
             },
           ];
         } else {
-          benchmarkData.toolCalls = benchmarkData.toolCalls.map((tool) =>
-            tool.id === tool.id
+          benchmarkData.toolCalls = benchmarkData.toolCalls.map((existing) =>
+            existing.id === tool.id
               ? {
-                  ...tool,
-                  status: (data as Record<string, unknown>).status as string,
+                  ...existing,
+                  status: data.status,
                   result: tool.result,
                   ...(tool.args ? { args: tool.args } : {}),
                 }
-              : tool,
+              : existing,
           );
         }
       },
@@ -659,8 +648,8 @@ export default function BenchmarkDetailPageComponent({
         abortRef.current = PrismService.followBenchmarkRun(
           benchmarkId,
           buildBenchmarkSSECallbacks({
-            onRunComplete: async (event: SSEData) => {
-              const run = event as unknown as BenchmarkRun;
+            onRunComplete: async (event: BenchmarkStreamEventOf<"run_complete">) => {
+              const run: BenchmarkRun = event;
               resetLiveState();
               setLatestRun(run);
               setActiveRunId(run.id || null);
@@ -895,8 +884,8 @@ export default function BenchmarkDetailPageComponent({
       benchmarkId,
       models,
       buildBenchmarkSSECallbacks({
-        onRunComplete: async (event: SSEData) => {
-          const run = event as unknown as BenchmarkRun;
+        onRunComplete: async (event: BenchmarkStreamEventOf<"run_complete">) => {
+          const run: BenchmarkRun = event;
           resetLiveState();
           setLatestRun(run);
           setActiveRunId(run.id || null);

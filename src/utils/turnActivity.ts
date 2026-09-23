@@ -6,7 +6,12 @@
  * the chat keeps them here, per conversation, and renders them in
  * TurnActivityPanelComponent.
  */
-import type { SSEData, WebSearchResult } from "../types/types";
+import type {
+  BriefUpdateEvent,
+  TodoUpdateEvent,
+  WebSearchResult,
+  WebSearchResultItem,
+} from "../types/types";
 
 export interface TodoItem {
   content: string;
@@ -53,7 +58,7 @@ export function startTurn(activity: TurnActivity): TurnActivity {
   return { ...activity, sources: [], codeRuns: [] };
 }
 
-export function applyTodoUpdate(activity: TurnActivity, event: SSEData): TurnActivity {
+export function applyTodoUpdate(activity: TurnActivity, event: TodoUpdateEvent): TurnActivity {
   if (!Array.isArray(event.items)) return activity;
   const todos = (event.items as Array<Record<string, unknown>>)
     .filter((item) => item && typeof item.content === "string")
@@ -65,7 +70,7 @@ export function applyTodoUpdate(activity: TurnActivity, event: SSEData): TurnAct
   return { ...activity, todos };
 }
 
-export function applyBriefUpdate(activity: TurnActivity, event: SSEData): TurnActivity {
+export function applyBriefUpdate(activity: TurnActivity, event: BriefUpdateEvent): TurnActivity {
   const brief = event.brief as Record<string, unknown> | undefined;
   if (!brief || typeof brief.summary !== "string") return activity;
   return {
@@ -81,11 +86,11 @@ export function applyBriefUpdate(activity: TurnActivity, event: SSEData): TurnAc
 
 export function applyWebSearchResults(
   activity: TurnActivity,
-  results: WebSearchResult[] | undefined,
+  results: WebSearchResultItem[] | undefined,
 ): TurnActivity {
   if (!Array.isArray(results) || results.length === 0) return activity;
   const seenUrls = new Set(activity.sources.map((source) => source.url));
-  const added = results.filter((result) => {
+  const added = results.filter((result): result is WebSearchResult => {
     if (!result?.url || seenUrls.has(result.url)) return false;
     seenUrls.add(result.url);
     return true;

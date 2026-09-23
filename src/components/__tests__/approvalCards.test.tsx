@@ -14,7 +14,7 @@ import {
   approvalsFromPendingSnapshot,
   type PendingApproval,
 } from "../../utils/approvalCards";
-import type { SSEData } from "../../types/types";
+import type { ApprovalRequiredEvent } from "../../types/types";
 import writeFileEvent from "../../__fixtures__/approvals/approval-required-write-file.json";
 
 const sendApprovalDecision = vi.fn();
@@ -22,17 +22,18 @@ vi.mock("../../services/PrismService", () => ({
   default: { sendApprovalDecision: (...args: unknown[]) => sendApprovalDecision(...args) },
 }));
 
-function approvalRequired(toolCallId: string, batchId = "batch-1"): SSEData {
+function approvalRequired(toolCallId: string, batchId = "batch-1"): ApprovalRequiredEvent {
   return {
     type: "approval_required",
     toolCallId,
     batchId,
+    batchSize: 1,
     toolCall: { id: toolCallId, name: "write_file", args: { path: `${toolCallId}.txt`, content: toolCallId } },
     tier: 2,
   };
 }
 
-function cardsFrom(events: SSEData[]): PendingApproval[] {
+function cardsFrom(events: ApprovalRequiredEvent[]): PendingApproval[] {
   return events.map((event) => approvalFromEvent(event)!).filter(Boolean);
 }
 
@@ -107,7 +108,7 @@ describe("ApprovalCardsComponent — one card per tool call", () => {
 
   it("a sub-agent's card is labelled and decided on the sub-agent's own conversation", async () => {
     sendApprovalDecision.mockResolvedValue({ ok: true, decidedToolCallIds: ["sub-call"], remaining: 0 });
-    const forwarded: SSEData = {
+    const forwarded: ApprovalRequiredEvent = {
       ...approvalRequired("sub-call", "sub-batch"),
       subAgentId: "worker-1",
       subAgentDescription: "Refactor the parser",
@@ -244,7 +245,7 @@ describe("ApprovalCardsComponent — one card per tool call", () => {
     render(
       <Harness
         conversationId="conversation-a"
-        initial={cardsFrom([writeFileEvent as unknown as SSEData])}
+        initial={cardsFrom([writeFileEvent as ApprovalRequiredEvent])}
         onNotify={vi.fn()}
       />,
     );
@@ -298,10 +299,11 @@ describe("a 'run it again?' card", () => {
     sendApprovalDecision.mockReset();
   });
 
-  const retryEvent: SSEData = {
+  const retryEvent: ApprovalRequiredEvent = {
     type: "approval_required",
     toolCallId: "call-w#retry",
     batchId: "batch-1",
+    batchSize: 1,
     toolCall: { id: "call-w#retry", name: "write_file", args: { path: "w.txt" } },
     tier: 2,
     requestedBy: "restart",

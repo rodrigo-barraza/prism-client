@@ -1,4 +1,4 @@
-import type { ApprovalPreview, SSEData } from "../types/types";
+import type { ApprovalDecidedEvent, ApprovalPreview, ApprovalRequiredEvent } from "../types/types";
 
 /**
  * Approval cards — one per pending tool call, decided on its own
@@ -45,7 +45,7 @@ function normalizeTier(tier: unknown): 1 | 2 | 3 | undefined {
 }
 
 /** A card from an `approval_required` event; null for an event without a call id. */
-export function approvalFromEvent(data: SSEData): PendingApproval | null {
+export function approvalFromEvent(data: ApprovalRequiredEvent): PendingApproval | null {
   const toolCallId =
     (typeof data.toolCallId === "string" && data.toolCallId) || data.toolCall?.id;
   if (!toolCallId) return null;
@@ -126,7 +126,7 @@ export function setApprovalStatus(
 /** Apply an `approval_decided` event — this tab, another tab, a scope, or a timeout. */
 export function applyApprovalDecided(
   approvals: PendingApproval[],
-  data: SSEData,
+  data: ApprovalDecidedEvent,
 ): PendingApproval[] {
   if (typeof data.toolCallId !== "string") return approvals;
   return setApprovalStatus(

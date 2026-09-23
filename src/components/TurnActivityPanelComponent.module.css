@@ -106,12 +106,6 @@
   color: var(--text-muted);
 }
 
-.source-snippet {
-  margin: 2px 0 0;
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-}
-
 .output {
   margin: 6px 0 0;
 

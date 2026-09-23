@@ -486,7 +486,7 @@ export default function SynthesisComponent() {
               setGenerationProgress("");
             },
             onDone: (data) => {
-              if (data?.synthesisRunId) {
+              if ("synthesisRunId" in data && data.synthesisRunId) {
                 setActiveHistoryId(data.synthesisRunId);
               }
               resolve();
