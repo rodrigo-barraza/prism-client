@@ -45,6 +45,7 @@ import type { ChatSidebar } from "./useChatSidebar";
 
 // Stable default so non-admin renders do not churn admin callback deps
 const EMPTY_ADMIN_DATE_RANGE = { from: "", to: "" };
+const EMPTY_ADMIN_PROJECT_OPTIONS: ReturnType<typeof useProjectFilter>["projectOptions"] = [];
 
 const ADMIN_POLL_INTERVAL = 5000;
 // Minimum spacing between change-event-driven admin reloads. Every reload is
@@ -188,7 +189,7 @@ export default function useAgentChatAdmin({
 
   // Derive admin filter values from hooks
   const adminProjectFilter = isAdmin ? adminProjectFilterHook.projectFilter : null;
-  const adminProjectOptions = isAdmin ? adminProjectFilterHook.projectOptions : [];
+  const adminProjectOptions = isAdmin ? adminProjectFilterHook.projectOptions : EMPTY_ADMIN_PROJECT_OPTIONS;
   const adminHandleProjectChange = adminProjectFilterHook.handleProjectChange;
   const adminProviderFilter = isAdmin ? (adminSearchParams.get("provider") || null) : null;
   const adminModelFilter = isAdmin ? (adminSearchParams.get("model") || null) : null;
