@@ -1658,11 +1658,26 @@ export default class PrismService {
     return result?.goal ?? null;
   }
 
+  /** The goal and the goal the model proposed (waiting for approval). */
+  static async getConversationGoalState(
+    conversationId: string,
+  ): Promise<{ goal: ConversationGoal | null; proposal: ConversationGoal | null }> {
+    const result = await PrismService._request<{
+      goal?: ConversationGoal | null;
+      proposal?: ConversationGoal | null;
+    }>(`/conversations/${encodeURIComponent(conversationId)}/goal`, { method: HTTP_METHODS.GET });
+    return { goal: result?.goal ?? null, proposal: result?.proposal ?? null };
+  }
+
+  /** Create or replace the goal (a proposal still waiting is dropped). */
   static async setConversationGoal(
     conversationId: string,
     goal: {
       objective: string;
       completionCriteria?: string;
+      rubric?: Array<{ id?: string; criterion: string }>;
+      verifier?: { provider: string; model: string };
+      maxIterations?: number;
       budget?: ConversationGoalBudget;
     },
   ): Promise<ConversationGoal | null> {
@@ -1673,14 +1688,18 @@ export default class PrismService {
     return result?.goal ?? null;
   }
 
-  /** Pause / resume, or nudge progress / blockedOn / budget. */
+  /** Pause / resume, nudge progress / blockedOn / budget, or edit the goal in place. */
   static async patchConversationGoal(
     conversationId: string,
     patch: {
       status?: "active" | "paused";
       progress?: { summary: string; percent?: number | null };
       blockedOn?: string | null;
-      budget?: ConversationGoalBudget;
+      budget?: ConversationGoalBudget | null;
+      objective?: string;
+      rubric?: Array<{ id?: string; criterion: string }>;
+      verifier?: { provider: string; model: string } | null;
+      maxIterations?: number;
     },
   ): Promise<ConversationGoal | null> {
     const result = await PrismService._request<{ goal: ConversationGoal | null }>(
@@ -1695,6 +1714,23 @@ export default class PrismService {
       `/conversations/${encodeURIComponent(conversationId)}/goal`,
       { method: HTTP_METHODS.DELETE },
     );
+  }
+
+  /** The model's proposed goal becomes the goal. */
+  static async approveGoalProposal(conversationId: string): Promise<ConversationGoal | null> {
+    const result = await PrismService._request<{ goal: ConversationGoal | null }>(
+      `/conversations/${encodeURIComponent(conversationId)}/goal/proposal/approve`,
+      { method: HTTP_METHODS.POST },
+    );
+    return result?.goal ?? null;
+  }
+
+  static async declineGoalProposal(conversationId: string): Promise<boolean> {
+    const result = await PrismService._request<{ success: boolean }>(
+      `/conversations/${encodeURIComponent(conversationId)}/goal/proposal/decline`,
+      { method: HTTP_METHODS.POST },
+    );
+    return result?.success === true;
   }
 
   /**

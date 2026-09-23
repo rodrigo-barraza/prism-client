@@ -9549,6 +9549,12 @@ export default function AgentChatComponent({
           onClear={() => void conversationGoal.clear()}
           isBusy={conversationGoal.isBusy}
           error={conversationGoal.error}
+          proposal={conversationGoal.proposal}
+          onSave={conversationGoal.save}
+          onApproveProposal={() => void conversationGoal.approveProposal()}
+          onDeclineProposal={() => void conversationGoal.declineProposal()}
+          models={config?.textToText?.models}
+          canCreate={!!conversationId && !isNoAgent}
         />
         <TurnActivityPanelComponent activity={turnActivity} />
         {!isNoAgent && (

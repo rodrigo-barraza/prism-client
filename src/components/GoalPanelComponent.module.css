@@ -244,3 +244,162 @@
   font-size: var(--font-size-xs);
   color: var(--color-danger);
 }
+
+/* ── Rubric: each criterion with the verifier's last word ──── */
+
+.rubric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
+.rubric-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.rubric-item svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+}
+
+.rubric-unchecked svg {
+  color: var(--text-muted);
+}
+
+.rubric-met {
+  color: var(--text-primary);
+}
+
+.rubric-met svg {
+  color: var(--color-success);
+}
+
+.rubric-unmet svg {
+  color: var(--color-danger);
+}
+
+.rubric-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.rubric-evidence {
+  color: var(--color-danger);
+}
+
+.verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.verdict svg {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+}
+
+.verdict-satisfied svg {
+  color: var(--color-success);
+}
+
+.verdict-needs_revision svg {
+  color: var(--accent-primary);
+}
+
+.verdict-failed svg,
+.verdict-failed strong {
+  color: var(--color-danger);
+}
+
+.paused {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: var(--border-radius-sm);
+  background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
+.paused svg {
+  flex-shrink: 0;
+  margin-block-start: 1px;
+}
+
+.pill-proposed {
+  background: color-mix(in oklch, var(--color-warning, var(--accent-primary)) 18%, transparent);
+  color: var(--color-warning, var(--accent-primary));
+}
+
+/* ── A goal the agent proposed ─────────────────────────────── */
+
+.proposal {
+  border-style: dashed;
+}
+
+.proposal-hint {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.proposal-criteria {
+  margin: 0;
+  padding-inline-start: 18px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.proposal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.action-primary {
+  color: var(--accent-primary);
+  border-color: color-mix(in oklch, var(--accent-primary) 45%, var(--calculated-border-color));
+}
+
+/* ── No goal yet: the way into the form ─────────────────────── */
+
+.entry {
+  max-width: 800px;
+  margin: 0 auto;
+  margin-block-end: 6px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.entry-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px dashed var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.entry-button:hover {
+  color: var(--accent-primary);
+  border-color: color-mix(in oklch, var(--accent-primary) 45%, var(--calculated-border-color));
+}

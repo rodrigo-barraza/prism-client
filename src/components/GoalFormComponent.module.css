@@ -1,0 +1,170 @@
+/* ── Goal form ──────────────────────────────────────────────── */
+/* Create / edit a goal inside the goal panel: description,      */
+/* rubric criteria, budgets, verifier and revision limit.        */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0;
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background: var(--background-surface);
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+}
+
+textarea.input {
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.input:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--accent-primary) 60%, transparent);
+  outline-offset: 1px;
+}
+
+.input[aria-invalid="true"] {
+  border-color: color-mix(in oklch, var(--color-danger) 60%, var(--calculated-border-color));
+}
+
+.criteria {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding-inline-start: 18px;
+}
+
+.criterion-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.criterion-row::marker {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.icon-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.icon-button:hover:not(:disabled) {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+}
+
+.icon-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.add-button {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--accent-primary);
+  background: transparent;
+  border: 1px dashed color-mix(in oklch, var(--accent-primary) 45%, var(--calculated-border-color));
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.add-button:hover {
+  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.field-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.primary-button,
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+}
+
+.primary-button {
+  color: var(--background-surface);
+  background: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+}
+
+.secondary-button {
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--calculated-border-color);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
