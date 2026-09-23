@@ -9,6 +9,8 @@ import {
   Plug,
   Unplug,
   Wrench,
+  ShieldAlert,
+  ShieldCheck,
 } from "lucide-react";
 import PrismService from "../services/PrismService";
 import {
@@ -16,9 +18,10 @@ import {
   CloseButtonComponent,
   IconButtonComponent,
   InputComponent,
+  SwitchComponent,
 } from "@rodrigo-barraza/components-library";
 import styles from "./MCPServersPanelComponent.module.css";
-import type { MCPServer } from "@/types/types";
+import type { MCPServer, MCPQuarantinedTool } from "@/types/types";
 import type { ReactNode } from "react";
 import { getErrorMessage } from "../utils/errorMessage";
 
@@ -27,7 +30,25 @@ import { getErrorMessage } from "../utils/errorMessage";
  *
  * Shows configured MCP servers with live connection status. Users can
  * add/edit/delete servers, connect/disconnect, and see discovered tools.
+ *
+ * A tool whose definition changed after the server was approved (or that
+ * appeared since) is quarantined by prism-service: the agent can't see or
+ * call it until it is approved again here.
  */
+
+const QUARANTINE_REASON_LABELS: Record<MCPQuarantinedTool["reason"], string> = {
+  changed: "changed",
+  new: "new",
+  duplicate: "name collision",
+};
+
+/** Server names are the tools' namespace: no `__`, no runs of separators. */
+function toServerNameSlug(value: string): string {
+  return value
+    .replace(/[^a-zA-Z0-9_-]/g, "-")
+    .replace(/[-_]{2,}/g, (run) => run[0])
+    .toLowerCase();
+}
 export default function MCPServersPanel({
   servers,
   onServersChange,
@@ -193,6 +214,31 @@ export default function MCPServersPanel({
     [onServersChange],
   );
 
+  const [approving, setApproving] = useState<string | null>(null); // `${serverId}:${tool|*}`
+
+  const handleApprove = useCallback(
+    async (server: MCPServer, toolName?: string) => {
+      const serverId = server.id || server._id?.toString() || "";
+      if (!serverId) return;
+      setApproving(`${serverId}:${toolName ?? "*"}`);
+      setError(null);
+      try {
+        await PrismService.approveMCPServerTools(
+          serverId,
+          toolName ? [toolName] : undefined,
+        );
+        onServersChange();
+      } catch (error: unknown) {
+        setError(
+          `Approval failed: ${getErrorMessage(error) || "Unknown error"}`,
+        );
+      } finally {
+        setApproving(null);
+      }
+    },
+    [onServersChange],
+  );
+
   // -- Edit / Create Form ---------------------------------------
 
   if (editingServer) {
@@ -218,9 +264,7 @@ export default function MCPServersPanel({
                   state
                     ? {
                         ...state,
-                        name: e.target.value
-                          .replace(/[^a-zA-Z0-9_-]/g, "-")
-                          .toLowerCase(),
+                        name: toServerNameSlug(e.target.value),
                       }
                     : null,
                 )
@@ -360,6 +404,49 @@ export default function MCPServersPanel({
             </div>
           )}
 
+          <div className={styles['form-group']}>
+            <SwitchComponent
+              id="mcp-server-trusted"
+              label="Trusted server"
+              labelPlacement="start"
+              checked={editingServer.trusted === true}
+              onChange={(checked: boolean) =>
+                setEditingServer((state: MCPServer | null) =>
+                  state ? { ...state, trusted: checked } : null,
+                )
+              }
+            />
+            <span className={styles['hint']}>
+              Tools this server marks read-only run without asking. Everything
+              else still asks, and your permission rules still apply.
+            </span>
+          </div>
+
+          <div className={styles['form-group']}>
+            <label>Output cap (tokens)</label>
+            <InputComponent
+              type="number"
+              value={editingServer.outputCapTokens ?? ""}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setEditingServer((state: MCPServer | null) =>
+                  state
+                    ? {
+                        ...state,
+                        outputCapTokens: e.target.value
+                          ? Math.max(1, Math.floor(Number(e.target.value)))
+                          : null,
+                      }
+                    : null,
+                )
+              }
+              placeholder="25000"
+            />
+            <span className={styles['hint']}>
+              Longer tool results are cut here; the agent can read the rest on
+              demand.
+            </span>
+          </div>
+
           {error && <div className={styles['error-message']}>{error}</div>}
 
           <div className={styles['form-actions']}>
@@ -414,6 +501,12 @@ export default function MCPServersPanel({
         const serverId = server.id || server._id?.toString() || "";
         const isConfirming = confirmingDeleteId === serverId;
         const isConnecting = connecting === serverId;
+        // A shared (deployment-seeded) server can be reviewed, not edited.
+        const canManage = !readOnly && !server.shared;
+        const quarantined = server.quarantinedTools ?? [];
+        const approvable = quarantined.filter(
+          (tool: MCPQuarantinedTool) => tool.reason !== "duplicate",
+        );
 
         return (
           <div key={serverId} className={styles['server-card']}>
@@ -435,9 +528,32 @@ export default function MCPServersPanel({
                       {server.toolCount} tools
                     </span>
                   )}
+                  {server.protocolVersion && (
+                    <span
+                      className={styles['transport-badge']}
+                      title="MCP protocol revision the last connection negotiated"
+                    >
+                      {server.protocolVersion}
+                    </span>
+                  )}
+                  {server.trusted && (
+                    <span className={styles['trusted-badge']}>
+                      <ShieldCheck size={9} />
+                      trusted
+                    </span>
+                  )}
+                  {server.shared && (
+                    <span className={styles['transport-badge']}>shared</span>
+                  )}
+                  {quarantined.length > 0 && (
+                    <span className={styles['quarantine-badge']}>
+                      <ShieldAlert size={9} />
+                      {quarantined.length} quarantined
+                    </span>
+                  )}
                 </div>
               </div>
-              {!readOnly && (
+              {canManage && (
                 <div className={styles['server-actions']}>
                   {server.connected ? (
                     <button
@@ -483,6 +599,52 @@ export default function MCPServersPanel({
                     </span>
                   ),
                 )}
+              </div>
+            )}
+
+            {quarantined.length > 0 && !readOnly && (
+              <div className={styles['quarantine']}>
+                <div className={styles['quarantine-header']}>
+                  <span>
+                    Held back from the agent: these tools changed or appeared
+                    after the server was approved.
+                  </span>
+                  {approvable.length > 1 && (
+                    <ButtonComponent
+                      variant="primary"
+                      size="small"
+                      onClick={() => handleApprove(server)}
+                      disabled={approving !== null}
+                    >
+                      Approve all
+                    </ButtonComponent>
+                  )}
+                </div>
+                {quarantined.map((tool: MCPQuarantinedTool) => (
+                  <div key={tool.name} className={styles['quarantine-row']}>
+                    <div className={styles['quarantine-tool']}>
+                      <span className={styles['tool-tag']}>{tool.name}</span>
+                      <span className={styles['quarantine-reason']}>
+                        {QUARANTINE_REASON_LABELS[tool.reason]}
+                      </span>
+                      <div className={styles['quarantine-description']}>
+                        {tool.description || "(no description)"}
+                      </div>
+                    </div>
+                    {tool.reason !== "duplicate" && (
+                      <ButtonComponent
+                        variant="secondary"
+                        size="small"
+                        onClick={() => handleApprove(server, tool.name)}
+                        disabled={approving !== null}
+                      >
+                        {approving === `${serverId}:${tool.name}`
+                          ? "Approving..."
+                          : "Approve"}
+                      </ButtonComponent>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
 

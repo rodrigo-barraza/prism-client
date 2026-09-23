@@ -1581,8 +1581,30 @@ export interface MCPServer {
   tools?: Array<{ name: string; description?: string }>;
   enabled?: boolean;
   headers?: Record<string, string>;
+  /** Seeded by the deployment — every profile sees it; not editable here. */
+  shared?: boolean;
+  /** Owner-set: lets a tool's readOnlyHint lower it to the AUTO tier. */
+  trusted?: boolean;
+  /** Protocol negotiation: `auto` probes for 2026-07-28, falls back to 2025. */
+  protocol?: "auto" | "legacy" | "2026-07-28";
+  /** Cap on one tool result, in tokens (server default). */
+  outputCapTokens?: number | null;
+  toolOutputCapTokens?: Record<string, number>;
+  /** What the last connection negotiated. */
+  protocolVersion?: string | null;
+  protocolEra?: string | null;
+  /** Tools held back from the agent until the owner re-approves them. */
+  quarantinedTools?: MCPQuarantinedTool[];
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface MCPQuarantinedTool {
+  name: string;
+  /** changed = definition differs from the approved one; new = appeared after approval; duplicate = name collision (can't be approved). */
+  reason: "changed" | "new" | "duplicate";
+  hash: string;
+  description: string;
 }
 
 // --- Coordinator Sub-Agents ---------------------------------

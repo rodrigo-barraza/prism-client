@@ -33,6 +33,7 @@ import type {
   AgentMemoryFacets,
   PrismSettings,
   MCPServer,
+  MCPQuarantinedTool,
   CoordinatorSubAgent,
   Favorite,
   ToolSchema,
@@ -1189,6 +1190,25 @@ export default class PrismService {
         method: HTTP_METHODS.POST,
       },
     );
+  }
+
+  /**
+   * Re-approve quarantined MCP tools at their current definitions. Without
+   * `tools`, every quarantined tool on the server is approved.
+   */
+  static async approveMCPServerTools(
+    id: string,
+    tools?: string[],
+  ): Promise<{
+    success: boolean;
+    approved: string[];
+    skipped: string[];
+    quarantinedTools: MCPQuarantinedTool[];
+  }> {
+    return PrismService._request(`/mcp-servers/${id}/tools/approve`, {
+      method: HTTP_METHODS.POST,
+      body: tools ? { tools } : {},
+    });
   }
 
   // ---------------------------------------------------------------------------
