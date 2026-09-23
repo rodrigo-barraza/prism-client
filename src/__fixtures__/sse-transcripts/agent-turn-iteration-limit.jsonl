@@ -1,0 +1,8 @@
+{"type":"user_message","role":"user","content":"Fix every lint warning.","conversationId":"conv-fixture","timestamp":1790078400000,"seq":1790078400001}
+{"type":"status","message":"iteration_progress","iteration":25,"maxIterations":25,"seq":1790078400002}
+{"type":"tool_execution","tool":{"name":"execute_command","args":{"command":"npm run lint"},"id":"toolu_09Lint"},"toolEmoji":"💻","toolLabel":"Running npm run lint","status":"calling","timestamp":1790078400100,"seq":1790078400003}
+{"type":"tool_output","toolCallId":"toolu_09Lint","name":"execute_command","event":"stdout","data":"src/a.ts: 3 warnings\n","seq":1790078400004}
+{"type":"tool_output","toolCallId":"toolu_09Lint","name":"execute_command","event":"stderr","data":"exit 1\n","seq":1790078400005}
+{"type":"tool_execution","tool":{"name":"execute_command","args":{"command":"npm run lint"},"id":"toolu_09Lint","result":{"exitCode":1,"stdout":"src/a.ts: 3 warnings\n","stderr":"exit 1\n"},"durationMilliseconds":4100,"durationMs":4100},"toolEmoji":"💻","toolLabel":"Ran npm run lint","status":"done","seq":1790078400006}
+{"type":"status","message":"iteration_limit_reached","seq":1790078400007}
+{"type":"done","provider":"anthropic","model":"claude-test","usage":{"inputTokens":30500,"outputTokens":2100,"cacheReadInputTokens":0,"cacheCreationInputTokens":0,"reasoningOutputTokens":0,"tokensPerSec":0,"requests":25,"totalInputTokens":30500},"estimatedCost":0.0981,"tokensPerSec":41.2,"timeToGeneration":0.842,"generationTime":4.1,"totalTime":6.3,"conversationId":"conv-fixture","seq":1790078400008}

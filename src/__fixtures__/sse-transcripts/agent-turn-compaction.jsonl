@@ -1,0 +1,13 @@
+{"type":"user_message","role":"user","content":"Keep going with the refactor.","conversationId":"conv-fixture","timestamp":1790078400000,"seq":1790078400001}
+{"type":"status","message":"compaction_started","seq":1790078400002}
+{"type":"usage_update","operation":"compact:summarize","usage":{"requests":1,"inputTokens":9000,"outputTokens":700,"estimatedCost":0.0003},"seq":1790078400003}
+{"type":"status","message":"compaction_complete","preCompactTokens":180000,"postCompactTokens":42000,"boundary":{"summary":"Refactored the loaders; tests pass.","throughMessageId":"m_123","createdAt":"2026-09-22T11:59:59.000Z","provider":"anthropic","model":"claude-test","tokensBefore":180000,"tokensAfter":42000},"seq":1790078400004}
+{"type":"context_budget","contextWindow":200000,"messageTokens":12000,"systemPromptTokens":3000,"toolSchemaTokens":9000,"skillTokens":0,"safetyMarginTokens":2400,"totalInputTokens":26400,"availableOutputTokens":173600,"requestedOutputTokens":16000,"isClamped":false,"toolCount":42,"source":"estimated","seq":1790078400005}
+{"type":"status","message":"iteration_progress","iteration":1,"maxIterations":25,"seq":1790078400006}
+{"type":"status","message":"generation_started","timeToFirstToken":0.911,"seq":1790078400007}
+{"type":"chunk","content":"Picking up from the summary.","outputCharacters":28,"seq":1790078400008}
+{"type":"status","message":"generation_progress","tokPerSec":48.2,"activeRequests":1,"outputTokens":310,"inputTokens":21000,"totalTokens":21310,"outputCharacters":1240,"avgTtft":0.911,"estimatedCost":0.0123,"seq":1790078400009}
+{"type":"context_budget","contextWindow":200000,"messageTokens":12000,"systemPromptTokens":3000,"toolSchemaTokens":9000,"skillTokens":0,"safetyMarginTokens":2400,"totalInputTokens":21000,"availableOutputTokens":173600,"requestedOutputTokens":16000,"isClamped":false,"toolCount":42,"source":"reported","lastReportedInputTokens":21000,"calibrationRatio":0.795,"seq":1790078400010}
+{"type":"usage_update","usage":{"inputTokens":21000,"outputTokens":310,"cacheReadInputTokens":0,"cacheCreationInputTokens":0,"reasoningOutputTokens":0,"tokensPerSec":0,"requests":1,"totalInputTokens":21000},"estimatedCost":0.0123,"seq":1790078400011}
+{"type":"chunk","content":" The loaders are done; next is the cache.","outputCharacters":69,"seq":1790078400012}
+{"type":"done","provider":"anthropic","model":"claude-test","usage":{"inputTokens":21000,"outputTokens":310,"cacheReadInputTokens":0,"cacheCreationInputTokens":0,"reasoningOutputTokens":0,"tokensPerSec":0,"requests":1,"totalInputTokens":21000},"estimatedCost":0.0123,"tokensPerSec":41.2,"timeToGeneration":0.842,"generationTime":4.1,"totalTime":6.3,"conversationId":"conv-fixture","seq":1790078400013}

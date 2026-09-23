@@ -1,0 +1,10 @@
+{"type":"user_message","role":"user","content":"Check the config.","conversationId":"conv-fixture","timestamp":1790078400000,"seq":1790078400001}
+{"type":"status","message":"iteration_progress","iteration":1,"maxIterations":25,"seq":1790078400002}
+{"type":"chunk","content":"Reading the config first.","outputCharacters":25,"seq":1790078400003}
+{"type":"tool_execution","tool":{"name":"read_file","args":{"path":"/app/config.json"},"id":"toolu_10Read"},"toolEmoji":"📖","toolLabel":"Reading config.json","status":"calling","timestamp":1790078400100,"seq":1790078400004}
+{"type":"tool_execution","tool":{"name":"read_file","args":{"path":"/app/config.json"},"id":"toolu_10Read","result":{"content":"{\"port\":3000}"},"durationMilliseconds":18,"durationMs":18},"toolEmoji":"📖","toolLabel":"Read config.json","status":"done","seq":1790078400005}
+{"type":"turn_input","id":"input-5e6f7a8b","kind":"user_update","content":"Also check the tests.","boundary":"after_tools","iteration":1,"seq":1790078400006}
+{"type":"status","message":"turn_input_applied","inputId":"input-5e6f7a8b","kind":"user_update","boundary":"after_tools","iteration":1,"seq":1790078400007}
+{"type":"status","message":"iteration_progress","iteration":2,"maxIterations":25,"seq":1790078400008}
+{"type":"chunk","content":" Checking the tests too — both agree on 3000.","outputCharacters":71,"seq":1790078400009}
+{"type":"done","provider":"anthropic","model":"claude-test","usage":{"inputTokens":3100,"outputTokens":150,"cacheReadInputTokens":0,"cacheCreationInputTokens":0,"reasoningOutputTokens":0,"tokensPerSec":0,"requests":2,"totalInputTokens":3100},"estimatedCost":0.0066,"tokensPerSec":41.2,"timeToGeneration":0.842,"generationTime":4.1,"totalTime":6.3,"conversationId":"conv-fixture","seq":1790078400010}

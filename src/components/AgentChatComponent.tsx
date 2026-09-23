@@ -271,6 +271,10 @@ import {
   applyMentionToTextNode,
 } from "../utils/mentionUtils";
 import SoundService from "../services/SoundService";
+import {
+  isChatDebugProbeInstalled,
+  publishChatDebugState,
+} from "../utils/chatDebugProbe";
 
 // Stable default so non-admin renders do not churn admin callback deps
 const EMPTY_ADMIN_DATE_RANGE = { from: "", to: "" };
@@ -9892,6 +9896,36 @@ export default function AgentChatComponent({
       )}
     </div>
   );
+
+  // Test-only: the characterization suite snapshots this after every commit
+  // (utils/chatDebugProbe). No listener outside tests.
+  useEffect(() => {
+    if (!isChatDebugProbeInstalled()) return;
+    publishChatDebugState({
+      conversationId,
+      activeId,
+      title,
+      isGenerating,
+      isConversationRunning,
+      liveConnectionState,
+      messages,
+      toolActivity,
+      subAgentToolActivity,
+      streamingOutputs,
+      pendingApprovals,
+      pendingUserQuestion,
+      nonBlockingQuestions: nonBlockingQuestions.cards,
+      planProposal,
+      agenticProgress,
+      contextBudget,
+      goal: conversationGoal.goal,
+      turnActivity,
+      queuedTurns: nextTurnQueue.items,
+      conversations,
+      generatingConversationIds,
+      toasts,
+    });
+  });
 
   // -- Layout ---------------------------------------------------
   return (

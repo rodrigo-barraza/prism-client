@@ -1,0 +1,3598 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SSE-driven turn (characterization) > a blocking question, answered from its card 1`] = `
+{
+  "answerRequests": [
+    {
+      "answers": [
+        {
+          "answer": "Postgres",
+        },
+      ],
+      "conversationId": "<uuid:1>",
+      "questionId": "q-mfu8x2k1-1",
+    },
+  ],
+  "asked": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [],
+      "nonBlockingQuestions": [],
+      "questionCard": [
+        "DatabaseWhich database should the service target?PostgresSQLite",
+      ],
+      "queuedTurns": [],
+      "rows": [
+        "User12:00 PMSet up the database layer.",
+        "Model12:00 PMOne thing first.❓Calling Ask User…▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "⏸️Waiting for youIteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "nonBlockingQuestions": [],
+      "pendingUserQuestion": {
+        "context": "The config names neither.",
+        "questionId": "q-mfu8x2k1-1",
+        "questions": [
+          {
+            "header": "Database",
+            "multiSelect": false,
+            "options": [
+              {
+                "label": "Postgres",
+                "preview": null,
+              },
+              {
+                "label": "SQLite",
+                "preview": null,
+              },
+            ],
+            "question": "Which database should the service target?",
+          },
+        ],
+      },
+    },
+  },
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMSet up the database layer.",
+      "Model12:00 PMOne thing first.❓Ask User for 5 secondsPostgres it is — adding the driver.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 2,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Set up the database layer.",
+        "rawContent": "Set up the database layer.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_streamingBurstElapsed": 125,
+        "_streamingBurstTokens": 2,
+        "_streamingLastChunkTime": 1200,
+        "_streamingOutputCharacters": 52,
+        "_streamingStartTime": 1075,
+        "completedAt": "2026-09-22T12:00:00.225Z",
+        "content": "One thing first. Postgres it is — adding the driver.",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+          {
+            "toolIds": [
+              "toolu_05Ask",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 1,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0052,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "One thing first.",
+          " Postgres it is — adding the driver.",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "toolCalls": [
+          {
+            "args": {
+              "questions": [
+                {
+                  "header": "Database",
+                  "multiSelect": false,
+                  "options": [
+                    {
+                      "label": "Postgres",
+                      "preview": null,
+                    },
+                    {
+                      "label": "SQLite",
+                      "preview": null,
+                    },
+                  ],
+                  "question": "Which database should the service target?",
+                },
+              ],
+            },
+            "durationMs": 5210,
+            "id": "toolu_05Ask",
+            "name": "ask_user",
+            "result": {
+              "answers": [
+                {
+                  "answer": "Postgres",
+                  "question": "Which database should the service target?",
+                },
+              ],
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+        ],
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 2100,
+          "outputTokens": 160,
+          "reasoningOutputTokens": 0,
+          "requests": 2,
+          "tokensPerSec": 0,
+          "totalInputTokens": 2100,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Set up the database layer.",
+    "toolActivity": [
+      {
+        "args": {
+          "questions": [
+            {
+              "header": "Database",
+              "multiSelect": false,
+              "options": [
+                {
+                  "label": "Postgres",
+                  "preview": null,
+                },
+                {
+                  "label": "SQLite",
+                  "preview": null,
+                },
+              ],
+              "question": "Which database should the service target?",
+            },
+          ],
+        },
+        "durationMs": 5210,
+        "id": "toolu_05Ask",
+        "name": "ask_user",
+        "result": {
+          "answers": [
+            {
+              "answer": "Postgres",
+              "question": "Which database should the service target?",
+            },
+          ],
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(16ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(16ch tools:1) gen=1 tools=[ask_user:calling]",
+    "user_question: msgs=2 last=assistant(16ch tools:1) gen=1 tools=[ask_user:calling] question",
+    "tool_execution(done): msgs=2 last=assistant(16ch tools:1) gen=1 tools=[ask_user:done]",
+    "status(iteration_progress): msgs=2 last=assistant(16ch tools:1) gen=1 tools=[ask_user:done]",
+    "chunk: msgs=2 last=assistant(52ch tools:1) gen=1 tools=[ask_user:done]",
+    "done: msgs=2 last=assistant(52ch tools:1) gen=0 tools=[ask_user:done]",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > a non-blocking question: the agent keeps working, the answer comes back as a turn input 1`] = `
+{
+  "answerRequests": [
+    {
+      "answers": [
+        {
+          "answer": "Postgres",
+        },
+      ],
+      "conversationId": "<uuid:1>",
+      "questionId": "q-mfu8x2k1-2",
+    },
+  ],
+  "answered": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [],
+      "nonBlockingQuestions": [
+        "1 answered questionWhich database should the service target?Answered×",
+      ],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User12:00 PMSet up the database layer.",
+        "Model12:00 PM❓Calling Ask User…▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "🔧Running tool Ask User...Iteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "nonBlockingQuestions": [
+        {
+          "answeredVia": "answer",
+          "answers": [
+            {
+              "answer": "Postgres",
+            },
+          ],
+          "context": "The config names neither.",
+          "questionId": "q-mfu8x2k1-2",
+          "questions": [
+            {
+              "header": "Database",
+              "multiSelect": false,
+              "options": [
+                {
+                  "label": "Postgres",
+                  "preview": null,
+                },
+                {
+                  "label": "SQLite",
+                  "preview": null,
+                },
+              ],
+              "question": "Which database should the service target?",
+            },
+          ],
+          "receivedAt": 1790078400100,
+          "status": "answered",
+        },
+      ],
+    },
+  },
+  "asked": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [],
+      "nonBlockingQuestions": [
+        "1 question from the agent — it keeps working while you answerAgent QuestionWaiting for your answerThe config names neither.DatabaseWhich database should the service target?PostgresSQLite",
+      ],
+      "questionCard": [
+        "DatabaseWhich database should the service target?PostgresSQLite",
+      ],
+      "queuedTurns": [],
+      "rows": [
+        "User12:00 PMSet up the database layer.",
+        "Model12:00 PM❓Calling Ask User…▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "🔧Running tool Ask User...Iteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "nonBlockingQuestions": [
+        {
+          "context": "The config names neither.",
+          "questionId": "q-mfu8x2k1-2",
+          "questions": [
+            {
+              "header": "Database",
+              "multiSelect": false,
+              "options": [
+                {
+                  "label": "Postgres",
+                  "preview": null,
+                },
+                {
+                  "label": "SQLite",
+                  "preview": null,
+                },
+              ],
+              "question": "Which database should the service target?",
+            },
+          ],
+          "receivedAt": 1790078400100,
+          "status": "open",
+        },
+      ],
+      "pendingUserQuestion": null,
+    },
+  },
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [
+      "1 answered questionWhich database should the service target?Answered×",
+    ],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMSet up the database layer.",
+      "UserAnswer12:00 PMPostgres",
+      "Model12:00 PM❓Ask User for 0.01 secondsWhile you decide, I'll read the config.📖Analyzed config.json for 0.02 secondsPostgres noted — adding the driver.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 2,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Set up the database layer.",
+        "rawContent": "Set up the database layer.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_turnInput": {
+          "boundary": "after_tools",
+          "id": "input-a1b2c3d4",
+          "iteration": 1,
+          "kind": "question_answer",
+          "receivedAt": "2026-09-22T12:00:00.250Z",
+          "status": "applied",
+        },
+        "content": "Postgres",
+        "rawContent": "Postgres",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.250Z",
+      },
+      {
+        "_streamingBurstElapsed": 150,
+        "_streamingBurstTokens": 2,
+        "_streamingLastChunkTime": 1325,
+        "_streamingOutputCharacters": 75,
+        "_streamingStartTime": 1175,
+        "completedAt": "2026-09-22T12:00:00.350Z",
+        "content": "While you decide, I'll read the config. Postgres noted — adding the driver.",
+        "contentSegments": [
+          {
+            "toolIds": [
+              "toolu_06Ask",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+          {
+            "toolIds": [
+              "toolu_07Read",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 1,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0063,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "While you decide, I'll read the config.",
+          " Postgres noted — adding the driver.",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "toolCalls": [
+          {
+            "args": {
+              "blocking": false,
+              "questions": [
+                {
+                  "header": "Database",
+                  "multiSelect": false,
+                  "options": [
+                    {
+                      "label": "Postgres",
+                      "preview": null,
+                    },
+                    {
+                      "label": "SQLite",
+                      "preview": null,
+                    },
+                  ],
+                  "question": "Which database should the service target?",
+                },
+              ],
+            },
+            "durationMs": 12,
+            "id": "toolu_06Ask",
+            "name": "ask_user",
+            "result": {
+              "questionId": "q-mfu8x2k1-2",
+              "status": "pending",
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+          {
+            "args": {
+              "path": "/app/config.json",
+            },
+            "durationMs": 19,
+            "id": "toolu_07Read",
+            "name": "read_file",
+            "result": {
+              "content": "{"port":3000}",
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+        ],
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 2600,
+          "outputTokens": 190,
+          "reasoningOutputTokens": 0,
+          "requests": 2,
+          "tokensPerSec": 0,
+          "totalInputTokens": 2600,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [
+      {
+        "answeredVia": "answer",
+        "answers": [
+          {
+            "answer": "Postgres",
+          },
+        ],
+        "context": "The config names neither.",
+        "questionId": "q-mfu8x2k1-2",
+        "questions": [
+          {
+            "header": "Database",
+            "multiSelect": false,
+            "options": [
+              {
+                "label": "Postgres",
+                "preview": null,
+              },
+              {
+                "label": "SQLite",
+                "preview": null,
+              },
+            ],
+            "question": "Which database should the service target?",
+          },
+        ],
+        "receivedAt": 1790078400100,
+        "status": "answered",
+      },
+    ],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Set up the database layer.",
+    "toolActivity": [
+      {
+        "args": {
+          "blocking": false,
+          "questions": [
+            {
+              "header": "Database",
+              "multiSelect": false,
+              "options": [
+                {
+                  "label": "Postgres",
+                  "preview": null,
+                },
+                {
+                  "label": "SQLite",
+                  "preview": null,
+                },
+              ],
+              "question": "Which database should the service target?",
+            },
+          ],
+        },
+        "durationMs": 12,
+        "id": "toolu_06Ask",
+        "name": "ask_user",
+        "result": {
+          "questionId": "q-mfu8x2k1-2",
+          "status": "pending",
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+      {
+        "args": {
+          "path": "/app/config.json",
+        },
+        "durationMs": 19,
+        "id": "toolu_07Read",
+        "name": "read_file",
+        "result": {
+          "content": "{"port":3000}",
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[ask_user:calling]",
+    "user_question: msgs=2 last=assistant(0ch tools:1) gen=1 tools=[ask_user:calling] nbq=1",
+    "status(question_pending): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[ask_user:calling] nbq=1",
+    "tool_execution(done): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[ask_user:done] nbq=1",
+    "chunk: msgs=2 last=assistant(39ch tools:1) gen=1 tools=[ask_user:done] nbq=1",
+    "tool_execution(calling): msgs=2 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:calling] nbq=1",
+    "tool_execution(done): msgs=2 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "turn_input: msgs=3 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "status(turn_input_applied): msgs=3 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "status(iteration_progress): msgs=3 last=assistant(39ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "chunk: msgs=3 last=assistant(75ch tools:2) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "done: msgs=3 last=assistant(75ch tools:2) gen=0 tools=[ask_user:done,read_file:done] nbq=1",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > a turn with tools and a sub-agent 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [
+      "undefined / undefined tokens (NaN%)undefined free~ estFree spaceNaN",
+    ],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMWhat port does the dev server use?",
+      "Model12:00 PM🧠ThoughtsLet me check the config.📄Analyzed config.json for 0.3 secondsThe port is 3000. Spawning a checker.🛠️Create Subagents for 0.1 secondsDocumented in two places. All good.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 1,
+      "maxIterations": 25,
+    },
+    "contextBudget": {
+      "source": "estimated",
+    },
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "What port does the dev server use?",
+        "rawContent": "What port does the dev server use?",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_intermediateEstimatedCost": 0.0042,
+        "_streamingBurstElapsed": 375,
+        "_streamingBurstTokens": 4,
+        "_streamingLastChunkTime": 1425,
+        "_streamingOutputCharacters": 98,
+        "_streamingStartTime": 1050,
+        "completedAt": "2026-09-22T12:00:00.450Z",
+        "content": "Let me check the config. The port is 3000. Spawning a checker. Documented in two places. All good.",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "thinking",
+          },
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+          {
+            "toolIds": [
+              "tc-001",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 1,
+            "type": "text",
+          },
+          {
+            "toolIds": [
+              "tc-002",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 2,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0042,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "Let me check the config.",
+          " The port is 3000. Spawning a checker.",
+          " Documented in two places. All good.",
+        ],
+        "thinking": "The user wants the config file. I should read it first.",
+        "thinkingFragments": [
+          "The user wants the config file. I should read it first.",
+        ],
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "toolCalls": [
+          {
+            "args": {
+              "path": "/app/config.json",
+            },
+            "durationMs": 312,
+            "id": "tc-001",
+            "name": "read_file",
+            "result": {
+              "content": "{"port":3000}",
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+          {
+            "args": {
+              "members": [
+                {
+                  "agent_id": "sa-1",
+                  "description": "Verify port 3000 is documented",
+                },
+              ],
+            },
+            "durationMs": 4200,
+            "id": "tc-002",
+            "name": "create_subagents",
+            "result": {
+              "members": [
+                {
+                  "agent_id": "sa-1",
+                  "status": "complete",
+                },
+              ],
+            },
+            "status": "done",
+            "timestamp": 1790078400225,
+          },
+        ],
+        "usage": {
+          "inputTokens": 1200,
+          "outputTokens": 350,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {
+      "sa-1": {
+        "currentTool": null,
+        "description": "Verify port 3000 is documented",
+        "iteration": 0,
+        "phase": "complete",
+        "toolCalls": [
+          {
+            "args": {
+              "pattern": "3000",
+            },
+            "durationMs": 150,
+            "id": "tc-sa-1",
+            "name": "grep_files",
+            "result": {
+              "matches": 2,
+            },
+            "status": "done",
+          },
+        ],
+        "toolCount": 1,
+        "toolNames": {
+          "grep_files": 1,
+        },
+      },
+    },
+    "title": "What port does the dev server use?",
+    "toolActivity": [
+      {
+        "args": {
+          "path": "/app/config.json",
+        },
+        "durationMs": 312,
+        "id": "tc-001",
+        "name": "read_file",
+        "result": {
+          "content": "{"port":3000}",
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+      {
+        "args": {
+          "members": [
+            {
+              "agent_id": "sa-1",
+              "description": "Verify port 3000 is documented",
+            },
+          ],
+        },
+        "durationMs": 4200,
+        "id": "tc-002",
+        "name": "create_subagents",
+        "result": {
+          "members": [
+            {
+              "agent_id": "sa-1",
+              "status": "complete",
+            },
+          ],
+        },
+        "status": "done",
+        "timestamp": 1790078400225,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "thinking: msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(24ch) gen=1",
+    "tool_execution(streaming): msgs=2 last=assistant(24ch tools:1) gen=1 tools=[read_file:streaming]",
+    "tool_execution(calling): msgs=2 last=assistant(24ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_output: msgs=2 last=assistant(24ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(done): msgs=2 last=assistant(24ch tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=2 last=assistant(62ch tools:1) gen=1 tools=[read_file:done]",
+    "tool_execution(calling): msgs=2 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
+    "sub_agent_status(spawned): msgs=2 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling] subs=[sa-1:spawned]",
+    "sub_agent_tool_execution(calling): msgs=2 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling] subs=[sa-1:-]",
+    "sub_agent_tool_execution(done): msgs=2 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling] subs=[sa-1:-]",
+    "sub_agent_status(complete): msgs=2 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:calling] subs=[sa-1:complete]",
+    "tool_execution(done): msgs=2 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:done] subs=[sa-1:complete]",
+    "usage_update: msgs=2 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:done] subs=[sa-1:complete]",
+    "context_budget: msgs=2 last=assistant(62ch tools:2) gen=1 tools=[read_file:done,create_subagents:done] subs=[sa-1:complete]",
+    "chunk: msgs=2 last=assistant(98ch tools:2) gen=1 tools=[read_file:done,create_subagents:done] subs=[sa-1:complete]",
+    "done: msgs=2 last=assistant(98ch tools:2) gen=0 tools=[read_file:done,create_subagents:done] subs=[sa-1:complete]",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > a turn's side channels: checklist, brief, sources, code runs 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMWhich port, and show your work.",
+      "Model12:00 PM🛠️Write Todo for 0.05 secondsThe port is 3000.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [
+      "Checklist1/3 doneRead the configCheck the portWrite the summaryBriefConfirmed the dev server listens on 3000.app/config.jsonShould production use 443?Sources2Configuring the dev server portdocs.example.devSet PORT or pass -p.Environment variablesdocs.example.devCode executionokpythonCopyprint(sum(range(10)))Output45",
+    ],
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 1,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Which port, and show your work.",
+        "rawContent": "Which port, and show your work.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_streamingBurstElapsed": 0,
+        "_streamingBurstTokens": 1,
+        "_streamingLastChunkTime": 1225,
+        "_streamingOutputCharacters": 17,
+        "_streamingStartTime": 1225,
+        "completedAt": "2026-09-22T12:00:00.275Z",
+        "content": "The port is 3000.",
+        "contentSegments": [
+          {
+            "toolIds": [
+              "tc-101",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+        ],
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "The port is 3000.",
+        ],
+        "thinkingFragments": [],
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "toolCalls": [
+          {
+            "args": {
+              "items": [
+                {
+                  "content": "Read the config",
+                  "status": "completed",
+                },
+                {
+                  "content": "Check the port",
+                  "status": "in_progress",
+                },
+                {
+                  "content": "Write the summary",
+                  "status": "pending",
+                },
+              ],
+            },
+            "durationMs": 50,
+            "id": "tc-101",
+            "name": "write_todo",
+            "result": {
+              "acknowledged": true,
+            },
+            "status": "done",
+            "timestamp": 1790078400050,
+          },
+        ],
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Which port, and show your work.",
+    "toolActivity": [
+      {
+        "args": {
+          "items": [
+            {
+              "content": "Read the config",
+              "status": "completed",
+            },
+            {
+              "content": "Check the port",
+              "status": "in_progress",
+            },
+            {
+              "content": "Write the summary",
+              "status": "pending",
+            },
+          ],
+        },
+        "durationMs": 50,
+        "id": "tc-101",
+        "name": "write_todo",
+        "result": {
+          "acknowledged": true,
+        },
+        "status": "done",
+        "timestamp": 1790078400050,
+      },
+    ],
+    "turnActivity": {
+      "brief": {
+        "keyFiles": [
+          "app/config.json",
+        ],
+        "openQuestions": [
+          "Should production use 443?",
+        ],
+        "summary": "Confirmed the dev server listens on 3000.",
+        "timestamp": "2026-09-22T10:00:00.000Z",
+      },
+      "codeRuns": [
+        {
+          "code": "print(sum(range(10)))",
+          "language": "python",
+          "outcome": "OUTCOME_OK",
+          "output": "45
+",
+        },
+      ],
+      "sources": [
+        {
+          "snippet": "Set PORT or pass -p.",
+          "title": "Configuring the dev server port",
+          "url": "https://docs.example.dev/config/port",
+        },
+        {
+          "title": "Environment variables",
+          "url": "https://docs.example.dev/config/env",
+        },
+      ],
+      "todos": [
+        {
+          "content": "Read the config",
+          "priority": "medium",
+          "status": "completed",
+        },
+        {
+          "content": "Check the port",
+          "priority": "high",
+          "status": "in_progress",
+        },
+        {
+          "content": "Write the summary",
+          "priority": "low",
+          "status": "pending",
+        },
+      ],
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[write_todo:calling]",
+    "todo_update: msgs=2 last=assistant(0ch tools:1) gen=1 tools=[write_todo:calling]",
+    "tool_execution(done): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "webSearchResult: msgs=2 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "webSearchResult: msgs=2 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "executableCode: msgs=2 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "codeExecutionResult: msgs=2 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "chunk: msgs=2 last=assistant(17ch tools:1) gen=1 tools=[write_todo:done]",
+    "brief_update: msgs=2 last=assistant(17ch tools:1) gen=1 tools=[write_todo:done]",
+    "done: msgs=2 last=assistant(17ch tools:1) gen=0 tools=[write_todo:done]",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > an error before the loop: \`error\` alone 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMSummarize the logs.",
+      "Model12:00 PM",
+      "⚠️ Error: Context preparation failed: model claude-test is not available",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Summarize the logs.",
+        "rawContent": "Summarize the logs.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "completedAt": "2026-09-22T12:00:00.025Z",
+        "content": "⚠️ Error: Context preparation failed: model claude-test is not available",
+        "isError": true,
+        "role": "assistant",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Summarize the logs.",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "error(Context preparation failed: model claude-test is not available): msgs=3 last=assistant(72ch) gen=0",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > an error in the loop: \`done\`, then \`error\` 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMSummarize the logs.",
+      "Model12:00 PMReading the logs",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 1,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Summarize the logs.",
+        "rawContent": "Summarize the logs.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_streamingBurstElapsed": 0,
+        "_streamingBurstTokens": 1,
+        "_streamingLastChunkTime": 1075,
+        "_streamingOutputCharacters": 16,
+        "_streamingStartTime": 1075,
+        "completedAt": "2026-09-22T12:00:00.100Z",
+        "content": "Reading the logs",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0012,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "Reading the logs",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 900,
+          "outputTokens": 40,
+          "reasoningOutputTokens": 0,
+          "requests": 1,
+          "tokensPerSec": 0,
+          "totalInputTokens": 900,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Summarize the logs.",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(16ch) gen=1",
+    "done: msgs=2 last=assistant(16ch) gen=0",
+    "error(Provider stream ended unexpectedly): msgs=2 last=assistant(16ch) gen=0",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > approvals: two cards in one batch, one allowed from its card, one denied elsewhere 1`] = `
+{
+  "approveRequests": [
+    {
+      "batchId": "batch-approval-1",
+      "conversationId": "<uuid:1>",
+      "decision": "allow",
+      "toolCallId": "toolu_01Readme",
+    },
+  ],
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMAdd a README and a LICENSE.",
+      "Model12:00 PMI'll write both files.📝Wrote README.md for 0.04 seconds📝Denied: Write File LICENSEWrote the README; skipped the LICENSE as asked.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "pending": {
+    "dom": {
+      "approvalCards": [
+        "write_fileWriteWaiting for your approval/workspace/scratch-repo/README.mdnew file--- /dev/null +++ b/workspace/scratch-repo/README.md @@ -0,0 +1 @@ +# Scratch ArgumentsAllowDeny…Edit argumentsAllow the rest of this batch (2)Auto-approve this conversationAlways allow…",
+        "write_fileWriteWaiting for your approval/workspace/scratch-repo/LICENSEnew file--- /dev/null +++ b/workspace/scratch-repo/LICENSE @@ -0,0 +1 @@ +MIT ArgumentsAllowDeny…Edit argumentsAllow the rest of this batch (2)Auto-approve this conversationAlways allow…",
+      ],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User12:00 PMAdd a README and a LICENSE.",
+        "Model12:00 PMI'll write both files.📝Writing README.md…📝Writing LICENSE…▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "⏸️Waiting for youIteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "isGenerating": true,
+      "pendingApprovals": [
+        {
+          "batchId": "batch-approval-1",
+          "id": "toolu_01Readme",
+          "preview": {
+            "diff": "--- /dev/null
++++ b/workspace/scratch-repo/README.md
+@@ -0,0 +1 @@
++# Scratch",
+            "isNewFile": true,
+            "kind": "diff",
+            "path": "/workspace/scratch-repo/README.md",
+          },
+          "status": "pending",
+          "tier": 2,
+          "toolArgs": {
+            "content": "# Scratch
+",
+            "path": "/workspace/scratch-repo/README.md",
+          },
+          "toolName": "write_file",
+        },
+        {
+          "batchId": "batch-approval-1",
+          "id": "toolu_02License",
+          "preview": {
+            "diff": "--- /dev/null
++++ b/workspace/scratch-repo/LICENSE
+@@ -0,0 +1 @@
++MIT",
+            "isNewFile": true,
+            "kind": "diff",
+            "path": "/workspace/scratch-repo/LICENSE",
+          },
+          "status": "pending",
+          "tier": 2,
+          "toolArgs": {
+            "content": "MIT
+",
+            "path": "/workspace/scratch-repo/LICENSE",
+          },
+          "toolName": "write_file",
+        },
+      ],
+    },
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 2,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Add a README and a LICENSE.",
+        "rawContent": "Add a README and a LICENSE.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_intermediateEstimatedCost": 0.0061,
+        "_intermediateUsage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 2400,
+          "outputTokens": 180,
+          "reasoningOutputTokens": 0,
+          "requests": 2,
+          "tokensPerSec": 0,
+          "totalInputTokens": 2400,
+        },
+        "_streamingBurstElapsed": 300,
+        "_streamingBurstTokens": 2,
+        "_streamingLastChunkTime": 1400,
+        "_streamingOutputCharacters": 71,
+        "_streamingStartTime": 1100,
+        "_ttftSamples": [
+          0.842,
+        ],
+        "completedAt": "2026-09-22T12:00:00.450Z",
+        "content": "I'll write both files. Wrote the README; skipped the LICENSE as asked.",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+          {
+            "toolIds": [
+              "toolu_01Readme",
+              "toolu_02License",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 1,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0061,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "I'll write both files.",
+          " Wrote the README; skipped the LICENSE as asked.",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "toolCalls": [
+          {
+            "args": {
+              "content": "# Scratch
+",
+              "path": "/workspace/scratch-repo/README.md",
+            },
+            "durationMs": 37,
+            "id": "toolu_01Readme",
+            "name": "write_file",
+            "result": {
+              "bytesWritten": 10,
+              "path": "/workspace/scratch-repo/README.md",
+              "success": true,
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+          {
+            "args": {
+              "content": "MIT
+",
+              "path": "/workspace/scratch-repo/LICENSE",
+            },
+            "durationMs": 190,
+            "id": "toolu_02License",
+            "name": "write_file",
+            "result": {
+              "error": "USER_REJECTED",
+              "message": "The user denied this tool call.",
+              "reason": "No license yet",
+              "success": false,
+            },
+            "status": "error",
+            "timestamp": 1790078400160,
+          },
+        ],
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 2400,
+          "outputTokens": 180,
+          "reasoningOutputTokens": 0,
+          "requests": 2,
+          "tokensPerSec": 0,
+          "totalInputTokens": 2400,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [
+      {
+        "batchId": "batch-approval-1",
+        "id": "toolu_01Readme",
+        "preview": {
+          "diff": "--- /dev/null
++++ b/workspace/scratch-repo/README.md
+@@ -0,0 +1 @@
++# Scratch",
+          "isNewFile": true,
+          "kind": "diff",
+          "path": "/workspace/scratch-repo/README.md",
+        },
+        "status": "approved",
+        "tier": 2,
+        "toolArgs": {
+          "content": "# Scratch
+",
+          "path": "/workspace/scratch-repo/README.md",
+        },
+        "toolName": "write_file",
+      },
+      {
+        "batchId": "batch-approval-1",
+        "id": "toolu_02License",
+        "preview": {
+          "diff": "--- /dev/null
++++ b/workspace/scratch-repo/LICENSE
+@@ -0,0 +1 @@
++MIT",
+          "isNewFile": true,
+          "kind": "diff",
+          "path": "/workspace/scratch-repo/LICENSE",
+        },
+        "status": "rejected",
+        "tier": 2,
+        "toolArgs": {
+          "content": "MIT
+",
+          "path": "/workspace/scratch-repo/LICENSE",
+        },
+        "toolName": "write_file",
+      },
+    ],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Add a README and a LICENSE.",
+    "toolActivity": [
+      {
+        "args": {
+          "content": "# Scratch
+",
+          "path": "/workspace/scratch-repo/README.md",
+        },
+        "durationMs": 37,
+        "id": "toolu_01Readme",
+        "name": "write_file",
+        "result": {
+          "bytesWritten": 10,
+          "path": "/workspace/scratch-repo/README.md",
+          "success": true,
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+      {
+        "args": {
+          "content": "MIT
+",
+          "path": "/workspace/scratch-repo/LICENSE",
+        },
+        "durationMs": 190,
+        "id": "toolu_02License",
+        "name": "write_file",
+        "result": {
+          "error": "USER_REJECTED",
+          "message": "The user denied this tool call.",
+          "reason": "No license yet",
+          "success": false,
+        },
+        "status": "error",
+        "timestamp": 1790078400160,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "status(generation_started): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(22ch) gen=1",
+    "tool_execution(streaming): msgs=2 last=assistant(22ch tools:1) gen=1 tools=[write_file:streaming]",
+    "tool_execution(calling): msgs=2 last=assistant(22ch tools:1) gen=1 tools=[write_file:calling]",
+    "tool_execution(calling): msgs=2 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
+    "approval_required: msgs=2 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=1",
+    "approval_required: msgs=2 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=2",
+    "approval_decided: msgs=2 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=2",
+    "approval_decided: msgs=2 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=2",
+    "status(Tool execution rejected: write_file): msgs=2 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling] approvals=2",
+    "tool_execution(done): msgs=2 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:calling] approvals=2",
+    "tool_execution(error): msgs=2 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:error] approvals=2",
+    "status(iteration_progress): msgs=2 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:error] approvals=2",
+    "chunk: msgs=2 last=assistant(70ch tools:2) gen=1 tools=[write_file:done,write_file:error] approvals=2",
+    "usage_update: msgs=2 last=assistant(70ch tools:2) gen=1 tools=[write_file:done,write_file:error] approvals=2",
+    "done: msgs=2 last=assistant(70ch tools:2) gen=0 tools=[write_file:done,write_file:error] approvals=2",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > compaction, then the turn: context budget estimated, then reported 1`] = `
+{
+  "compacting": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User12:00 PMKeep going with the refactor.",
+        "Model12:00 PM▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "📥Compacting conversation...",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "messages": [
+        {
+          "content": "Keep going with the refactor.",
+          "rawContent": "Keep going with the refactor.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "status": "Compacting conversation...",
+          "statusPhase": "prefilling",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+      ],
+    },
+  },
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [
+      "21.0k / 200.0k tokens (11%)173.6k free✓ realSystem prompt3.0kSystem tools (42)9.0kMessages12.0kFree space179.0k",
+    ],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMKeep going with the refactor.",
+      "Model12:00 PMPicking up from the summary. The loaders are done; next is the cache.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 1,
+      "maxIterations": 25,
+    },
+    "contextBudget": {
+      "availableOutputTokens": 173600,
+      "calibrationRatio": 0.795,
+      "contextWindow": 200000,
+      "isClamped": false,
+      "lastReportedInputTokens": 21000,
+      "messageTokens": 12000,
+      "requestedOutputTokens": 16000,
+      "safetyMarginTokens": 2400,
+      "skillTokens": 0,
+      "source": "reported",
+      "systemPromptTokens": 3000,
+      "toolCount": 42,
+      "toolSchemaTokens": 9000,
+      "totalInputTokens": 21000,
+    },
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Keep going with the refactor.",
+        "rawContent": "Keep going with the refactor.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_backgroundUsage": {
+          "cost": 0,
+          "inputTokens": 9000,
+          "outputTokens": 700,
+          "requests": 1,
+        },
+        "_intermediateEstimatedCost": 0.0123,
+        "_intermediateUsage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 21000,
+          "outputTokens": 310,
+          "reasoningOutputTokens": 0,
+          "requests": 1,
+          "tokensPerSec": 0,
+          "totalInputTokens": 21000,
+        },
+        "_liveGenProgress": {
+          "activeRequests": 1,
+          "avgTtft": 0.911,
+          "estimatedCost": 0.0123,
+          "inputTokens": 21000,
+          "outputTokens": 310,
+          "timestamp": 1225,
+          "tokensPerSecond": 48.2,
+          "totalTokens": 21310,
+        },
+        "_streamingBurstElapsed": 100,
+        "_streamingBurstTokens": 2,
+        "_streamingLastChunkTime": 1300,
+        "_streamingOutputCharacters": 69,
+        "_streamingStartTime": 1200,
+        "_ttftSamples": [
+          0.911,
+        ],
+        "completedAt": "2026-09-22T12:00:00.325Z",
+        "content": "Picking up from the summary. The loaders are done; next is the cache.",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0123,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "Picking up from the summary. The loaders are done; next is the cache.",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 21000,
+          "outputTokens": 310,
+          "reasoningOutputTokens": 0,
+          "requests": 1,
+          "tokensPerSec": 0,
+          "totalInputTokens": 21000,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Keep going with the refactor.",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(compaction_started): msgs=2 last=assistant(0ch prefilling) gen=1",
+    "usage_update: msgs=2 last=assistant(0ch prefilling) gen=1",
+    "status(compaction_complete): msgs=2 last=assistant(0ch) gen=1",
+    "context_budget: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "status(generation_started): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(28ch) gen=1",
+    "status(generation_progress): msgs=2 last=assistant(28ch) gen=1",
+    "context_budget: msgs=2 last=assistant(28ch) gen=1",
+    "usage_update: msgs=2 last=assistant(28ch) gen=1",
+    "chunk: msgs=2 last=assistant(69ch) gen=1",
+    "done: msgs=2 last=assistant(69ch) gen=0",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > goals: set, progress, then completed after done 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [
+      "GoalCompletedClearShip the port changeDone when: Config and docs say 4000; tests green100%Config and docs say 4000; tests green$0.01 / $5.001 / 20 turns",
+    ],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMShip the port change end to end.",
+      "Model12:00 PM🎯Set Goal for 0.009 secondsGoal set. Changing the config. Config and docs now say 4000.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 1,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": {
+      "blockedOn": null,
+      "budget": {
+        "maxCostDollars": 5,
+        "maxTurns": 20,
+      },
+      "completionCriteria": "Config and docs say 4000; tests green",
+      "createdAt": "2026-09-22T12:00:00.000Z",
+      "objective": "Ship the port change",
+      "progress": {
+        "percent": 100,
+        "summary": "Config and docs say 4000; tests green",
+        "updatedAt": "2026-09-22T12:00:00.000Z",
+      },
+      "spentDollars": 0.0058,
+      "status": "completed",
+      "turnsUsed": 1,
+      "updatedAt": "2026-09-22T12:00:00.000Z",
+    },
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Ship the port change end to end.",
+        "rawContent": "Ship the port change end to end.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_streamingBurstElapsed": 50,
+        "_streamingBurstTokens": 2,
+        "_streamingLastChunkTime": 1200,
+        "_streamingOutputCharacters": 60,
+        "_streamingStartTime": 1150,
+        "completedAt": "2026-09-22T12:00:00.225Z",
+        "content": "Goal set. Changing the config. Config and docs now say 4000.",
+        "contentSegments": [
+          {
+            "toolIds": [
+              "toolu_11Goal",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0058,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "Goal set. Changing the config. Config and docs now say 4000.",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "toolCalls": [
+          {
+            "args": {
+              "objective": "Ship the port change",
+            },
+            "durationMs": 9,
+            "id": "toolu_11Goal",
+            "name": "set_goal",
+            "result": {
+              "ok": true,
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+        ],
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 2800,
+          "outputTokens": 140,
+          "reasoningOutputTokens": 0,
+          "requests": 2,
+          "tokensPerSec": 0,
+          "totalInputTokens": 2800,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Ship the port change end to end.",
+    "toolActivity": [
+      {
+        "args": {
+          "objective": "Ship the port change",
+        },
+        "durationMs": 9,
+        "id": "toolu_11Goal",
+        "name": "set_goal",
+        "result": {
+          "ok": true,
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [
+    {
+      "message": "Goal completed",
+      "type": "info",
+    },
+  ],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[set_goal:calling]",
+    "goal_update: msgs=2 last=assistant(0ch tools:1) gen=1 tools=[set_goal:calling] goal=active",
+    "tool_execution(done): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[set_goal:done] goal=active",
+    "chunk: msgs=2 last=assistant(30ch tools:1) gen=1 tools=[set_goal:done] goal=active",
+    "goal_update: msgs=2 last=assistant(30ch tools:1) gen=1 tools=[set_goal:done] goal=active",
+    "chunk: msgs=2 last=assistant(60ch tools:1) gen=1 tools=[set_goal:done] goal=active",
+    "done: msgs=2 last=assistant(60ch tools:1) gen=0 tools=[set_goal:done] goal=active",
+    "goal_update: msgs=2 last=assistant(60ch tools:1) gen=0 tools=[set_goal:done] goal=completed",
+    "status(hook_system_message): msgs=2 last=assistant(60ch tools:1) gen=0 tools=[set_goal:done] goal=completed",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > plan mode: a plan the user executes 1`] = `
+{
+  "approveRequests": [
+    {
+      "approved": true,
+      "conversationId": "<uuid:1>",
+    },
+  ],
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMChange the dev port to 4000.",
+      "Model12:00 PMHere is the plan.Implementation PlanApproved Read the config Change the port to 4000 Update the docs 📖Analyzed config.json for 0.02 secondsRead the config; the port is 3000 today.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "proposed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User12:00 PMChange the dev port to 4000.",
+        "Model12:00 PMHere is the plan.Implementation PlanAwaiting ApprovalExecute PlanCancel Read the config Change the port to 4000 Update the docs ▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "⏸️Waiting for youIteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "planProposal": {
+        "plan": "1. Read the config
+2. Change the port to 4000
+3. Update the docs",
+        "status": "pending",
+        "steps": [
+          "Read the config",
+          "Change the port to 4000",
+          "Update the docs",
+        ],
+      },
+    },
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 2,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Change the dev port to 4000.",
+        "rawContent": "Change the dev port to 4000.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_streamingBurstElapsed": 175,
+        "_streamingBurstTokens": 2,
+        "_streamingLastChunkTime": 1250,
+        "_streamingOutputCharacters": 58,
+        "_streamingStartTime": 1075,
+        "completedAt": "2026-09-22T12:00:00.275Z",
+        "content": "Here is the plan. Read the config; the port is 3000 today.",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+          {
+            "type": "plan",
+          },
+          {
+            "toolIds": [
+              "toolu_04Read",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 1,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0044,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "Here is the plan.",
+          " Read the config; the port is 3000 today.",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "toolCalls": [
+          {
+            "args": {
+              "path": "/app/config.json",
+            },
+            "durationMs": 21,
+            "id": "toolu_04Read",
+            "name": "read_file",
+            "result": {
+              "content": "{"port":3000}",
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+        ],
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 1800,
+          "outputTokens": 120,
+          "reasoningOutputTokens": 0,
+          "requests": 2,
+          "tokensPerSec": 0,
+          "totalInputTokens": 1800,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": {
+      "plan": "1. Read the config
+2. Change the port to 4000
+3. Update the docs",
+      "status": "approved",
+      "steps": [
+        "Read the config",
+        "Change the port to 4000",
+        "Update the docs",
+      ],
+    },
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Change the dev port to 4000.",
+    "toolActivity": [
+      {
+        "args": {
+          "path": "/app/config.json",
+        },
+        "durationMs": 21,
+        "id": "toolu_04Read",
+        "name": "read_file",
+        "result": {
+          "content": "{"port":3000}",
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(17ch) gen=1",
+    "plan_proposal: msgs=2 last=assistant(17ch) gen=1 plan",
+    "approval_decided: msgs=2 last=assistant(17ch) gen=1 plan",
+    "status(plan_mode_exited): msgs=2 last=assistant(17ch) gen=1 plan",
+    "status(iteration_progress): msgs=2 last=assistant(17ch) gen=1 plan",
+    "tool_execution(calling): msgs=2 last=assistant(17ch tools:1) gen=1 tools=[read_file:calling] plan",
+    "tool_execution(done): msgs=2 last=assistant(17ch tools:1) gen=1 tools=[read_file:done] plan",
+    "chunk: msgs=2 last=assistant(58ch tools:1) gen=1 tools=[read_file:done] plan",
+    "done: msgs=2 last=assistant(58ch tools:1) gen=0 tools=[read_file:done] plan",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > reconnect: the SSE ends mid-turn; the live socket resumes after the SSE's last seq 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMWhat port does the dev server use?",
+      "Model12:00 PMChecking the config — port 3000, documented.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "recovered": [
+    "chunk#-1",
+    "tool_execution#0",
+    "tool_execution#1",
+    "chunk#2",
+    "chunk#3",
+  ],
+  "socketsOpened": 1,
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 1,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "What port does the dev server use?",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "completedAt": "2026-09-22T12:00:00.125Z",
+        "content": "Checking the config — port 3000, documented.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+        "usage": {
+          "inputTokens": 1500,
+          "outputTokens": 60,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "What port does the dev server use?",
+    "toolActivity": [
+      {
+        "args": {
+          "path": "/app/config.json",
+        },
+        "id": "toolu_12Read",
+        "name": "read_file",
+        "status": "calling",
+        "timestamp": 1790078400100,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User12:00 PMWhat port does the dev server use?",
+        "Model12:00 PMChecking the config📖Analyzing config.json…— port 3000, documented.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "🔧Running tool Read File...⚡ 80.0 tok/sIteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "What port does the dev server use?",
+          "rawContent": "What port does the dev server use?",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "_streamingBurstElapsed": 25,
+          "_streamingBurstTokens": 2,
+          "_streamingLastChunkTime": 1100,
+          "_streamingOutputCharacters": 19,
+          "_streamingStartTime": 1075,
+          "content": "Checking the config — port 3000, documented.",
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "toolu_12Read",
+              ],
+              "type": "tools",
+            },
+            {
+              "fragmentIndex": 1,
+              "type": "text",
+            },
+          ],
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "textFragments": [
+            "Checking the config",
+            " — port 3000, documented.",
+          ],
+          "thinkingFragments": [],
+          "timestamp": "2026-09-22T12:00:00.000Z",
+          "toolCalls": [
+            {
+              "args": {
+                "path": "/app/config.json",
+              },
+              "id": "toolu_12Read",
+              "name": "read_file",
+              "status": "calling",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+      ],
+    },
+  },
+  "subscribe": [
+    {
+      "afterSeq": 1790078400005,
+      "conversationId": "<uuid:1>",
+      "type": "subscribe",
+    },
+  ],
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(8ch) gen=1",
+    "chunk: msgs=2 last=assistant(19ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(19ch tools:1) gen=1 tools=[read_file:calling]",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > steering refused (409, no running turn): the update is queued and sent when the turn ends 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMCheck the config.",
+      "Model12:00 PMReading the config first.📖Analyzed config.json for 0.02 secondsChecking the tests too — both agree on 3000.",
+      "User12:00 PMAlso check the tests.",
+      "Model12:00 PMTests pass.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "queued": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [
+        "Queued for next turnAlso check the tests.",
+      ],
+      "rows": [
+        "User12:00 PMCheck the config.",
+        "Model12:00 PMReading the config first.📖Analyzing config.json…▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "🔧Running tool Read File...Iteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "messages": [
+        {
+          "content": "Check the config.",
+          "rawContent": "Check the config.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "_streamingBurstElapsed": 0,
+          "_streamingBurstTokens": 1,
+          "_streamingLastChunkTime": 1075,
+          "_streamingOutputCharacters": 25,
+          "_streamingStartTime": 1075,
+          "content": "Reading the config first.",
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "toolu_10Read",
+              ],
+              "type": "tools",
+            },
+          ],
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "textFragments": [
+            "Reading the config first.",
+          ],
+          "thinkingFragments": [],
+          "timestamp": "2026-09-22T12:00:00.000Z",
+          "toolCalls": [
+            {
+              "args": {
+                "path": "/app/config.json",
+              },
+              "id": "toolu_10Read",
+              "name": "read_file",
+              "status": "calling",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+      ],
+      "queuedTurns": [
+        {
+          "conversationId": "<uuid:1>",
+          "files": [],
+          "id": "<uuid:2>",
+          "images": [],
+          "text": "Also check the tests.",
+        },
+      ],
+      "toasts": undefined,
+    },
+  },
+  "queuedTurnRequest": [
+    {
+      "content": "Check the config.",
+      "rawContent": "Check the config.",
+      "role": "user",
+      "timestamp": "2026-09-22T12:00:00.000Z",
+    },
+    {
+      "_streamingBurstElapsed": 100,
+      "_streamingBurstTokens": 2,
+      "_streamingLastChunkTime": 1175,
+      "_streamingOutputCharacters": 71,
+      "_streamingStartTime": 1075,
+      "completedAt": "2026-09-22T12:00:00.200Z",
+      "content": "Reading the config first. Checking the tests too — both agree on 3000.",
+      "contentSegments": [
+        {
+          "fragmentIndex": 0,
+          "type": "text",
+        },
+        {
+          "toolIds": [
+            "toolu_10Read",
+          ],
+          "type": "tools",
+        },
+        {
+          "fragmentIndex": 1,
+          "type": "text",
+        },
+      ],
+      "estimatedCost": 0.0066,
+      "model": "claude-test",
+      "provider": "anthropic",
+      "role": "assistant",
+      "textFragments": [
+        "Reading the config first.",
+        " Checking the tests too — both agree on 3000.",
+      ],
+      "thinkingFragments": [],
+      "timeToGeneration": 0.842,
+      "timestamp": "2026-09-22T12:00:00.000Z",
+      "tokensPerSec": 41.2,
+      "toolCalls": [
+        {
+          "args": {
+            "path": "/app/config.json",
+          },
+          "durationMs": 18,
+          "id": "toolu_10Read",
+          "name": "read_file",
+          "result": {
+            "content": "{"port":3000}",
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+      ],
+      "totalTime": 6.3,
+      "usage": {
+        "cacheCreationInputTokens": 0,
+        "cacheReadInputTokens": 0,
+        "inputTokens": 3100,
+        "outputTokens": 150,
+        "reasoningOutputTokens": 0,
+        "requests": 2,
+        "tokensPerSec": 0,
+        "totalInputTokens": 3100,
+      },
+    },
+    {
+      "content": "Also check the tests.",
+      "rawContent": "Also check the tests.",
+      "role": "user",
+      "timestamp": "2026-09-22T12:00:00.200Z",
+    },
+  ],
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Check the config.",
+        "rawContent": "Check the config.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_streamingBurstElapsed": 100,
+        "_streamingBurstTokens": 2,
+        "_streamingLastChunkTime": 1175,
+        "_streamingOutputCharacters": 71,
+        "_streamingStartTime": 1075,
+        "completedAt": "2026-09-22T12:00:00.200Z",
+        "content": "Reading the config first. Checking the tests too — both agree on 3000.",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+          {
+            "toolIds": [
+              "toolu_10Read",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 1,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0066,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "Reading the config first.",
+          " Checking the tests too — both agree on 3000.",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "toolCalls": [
+          {
+            "args": {
+              "path": "/app/config.json",
+            },
+            "durationMs": 18,
+            "id": "toolu_10Read",
+            "name": "read_file",
+            "result": {
+              "content": "{"port":3000}",
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+        ],
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 3100,
+          "outputTokens": 150,
+          "reasoningOutputTokens": 0,
+          "requests": 2,
+          "tokensPerSec": 0,
+          "totalInputTokens": 3100,
+        },
+      },
+      {
+        "content": "Also check the tests.",
+        "rawContent": "Also check the tests.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.200Z",
+      },
+      {
+        "_streamingBurstElapsed": 0,
+        "_streamingBurstTokens": 1,
+        "_streamingLastChunkTime": 1225,
+        "_streamingOutputCharacters": 11,
+        "_streamingStartTime": 1225,
+        "completedAt": "2026-09-22T12:00:00.250Z",
+        "content": "Tests pass.",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+        ],
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "Tests pass.",
+        ],
+        "thinkingFragments": [],
+        "timestamp": "2026-09-22T12:00:00.200Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Check the config.",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [
+    {
+      "message": "No running turn — queued for next turn",
+      "type": "info",
+    },
+  ],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(25ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(25ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(done): msgs=2 last=assistant(25ch tools:1) gen=1 tools=[read_file:done] queued=1",
+    "status(iteration_progress): msgs=2 last=assistant(25ch tools:1) gen=1 tools=[read_file:done] queued=1",
+    "chunk: msgs=2 last=assistant(70ch tools:1) gen=1 tools=[read_file:done] queued=1",
+    "done: msgs=4 last=assistant(0ch) gen=1",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > steering: an update sent mid-turn is applied at the next boundary 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMCheck the config.",
+      "UserApplied at step 112:00 PMAlso check the tests.",
+      "Model12:00 PMReading the config first.📖Analyzed config.json for 0.02 secondsChecking the tests too — both agree on 3000.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "inputRequests": [
+    {
+      "conversationId": "<uuid:1>",
+      "text": "Also check the tests.",
+    },
+  ],
+  "sent": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User12:00 PMCheck the config.",
+        "UserPending12:00 PMAlso check the tests.",
+        "Model12:00 PMReading the config first.📖Analyzing config.json…▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "🔧Running tool Read File...Iteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "messages": [
+        {
+          "content": "Check the config.",
+          "rawContent": "Check the config.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "_turnInput": {
+            "id": "input-5e6f7a8b",
+            "kind": "user_update",
+            "receivedAt": "2026-09-22T12:00:00.100Z",
+            "status": "pending",
+          },
+          "content": "Also check the tests.",
+          "rawContent": "Also check the tests.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.100Z",
+        },
+        {
+          "_streamingBurstElapsed": 0,
+          "_streamingBurstTokens": 1,
+          "_streamingLastChunkTime": 1075,
+          "_streamingOutputCharacters": 25,
+          "_streamingStartTime": 1075,
+          "content": "Reading the config first.",
+          "contentSegments": [
+            {
+              "fragmentIndex": 0,
+              "type": "text",
+            },
+            {
+              "toolIds": [
+                "toolu_10Read",
+              ],
+              "type": "tools",
+            },
+          ],
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "textFragments": [
+            "Reading the config first.",
+          ],
+          "thinkingFragments": [],
+          "timestamp": "2026-09-22T12:00:00.000Z",
+          "toolCalls": [
+            {
+              "args": {
+                "path": "/app/config.json",
+              },
+              "id": "toolu_10Read",
+              "name": "read_file",
+              "status": "calling",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+      ],
+      "queuedTurns": [],
+    },
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 2,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Check the config.",
+        "rawContent": "Check the config.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_turnInput": {
+          "boundary": "after_tools",
+          "id": "input-5e6f7a8b",
+          "iteration": 1,
+          "kind": "user_update",
+          "receivedAt": "2026-09-22T12:00:00.100Z",
+          "status": "applied",
+        },
+        "content": "Also check the tests.",
+        "rawContent": "Also check the tests.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.100Z",
+      },
+      {
+        "_streamingBurstElapsed": 150,
+        "_streamingBurstTokens": 2,
+        "_streamingLastChunkTime": 1225,
+        "_streamingOutputCharacters": 71,
+        "_streamingStartTime": 1075,
+        "completedAt": "2026-09-22T12:00:00.250Z",
+        "content": "Reading the config first. Checking the tests too — both agree on 3000.",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+          {
+            "toolIds": [
+              "toolu_10Read",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 1,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.0066,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "Reading the config first.",
+          " Checking the tests too — both agree on 3000.",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "toolCalls": [
+          {
+            "args": {
+              "path": "/app/config.json",
+            },
+            "durationMs": 18,
+            "id": "toolu_10Read",
+            "name": "read_file",
+            "result": {
+              "content": "{"port":3000}",
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+        ],
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 3100,
+          "outputTokens": 150,
+          "reasoningOutputTokens": 0,
+          "requests": 2,
+          "tokensPerSec": 0,
+          "totalInputTokens": 3100,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Check the config.",
+    "toolActivity": [
+      {
+        "args": {
+          "path": "/app/config.json",
+        },
+        "durationMs": 18,
+        "id": "toolu_10Read",
+        "name": "read_file",
+        "result": {
+          "content": "{"port":3000}",
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(25ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(25ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(done): msgs=3 last=assistant(25ch tools:1) gen=1 tools=[read_file:done]",
+    "turn_input: msgs=3 last=assistant(25ch tools:1) gen=1 tools=[read_file:done]",
+    "status(turn_input_applied): msgs=3 last=assistant(25ch tools:1) gen=1 tools=[read_file:done]",
+    "status(iteration_progress): msgs=3 last=assistant(25ch tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=3 last=assistant(70ch tools:1) gen=1 tools=[read_file:done]",
+    "done: msgs=3 last=assistant(70ch tools:1) gen=0 tools=[read_file:done]",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > sub-agents: two spawned, one completes, one fails 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMAudit auth and billing in parallel.",
+      "Model12:00 PMSplitting the audit in two.🤖Create Subagents for 0.3 secondsAuth is clean; the billing audit failed — the provider was overloaded.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "spawned": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User12:00 PMAudit auth and billing in parallel.",
+        "Model12:00 PMSplitting the audit in two.🤖Calling Create Subagents…▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "👥Awaiting Sub-Agents…Iteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "conversations": [
+        {
+          "_id": "conv-sub-2",
+          "agentIndex": 1,
+          "createdAt": "2026-09-22T12:00:00.150Z",
+          "id": "conv-sub-2",
+          "isGenerating": true,
+          "messages": [],
+          "modelNames": [
+            "claude-test",
+          ],
+          "parentConversationId": "conv-fixture",
+          "project": "coding",
+          "providers": [
+            "anthropic",
+          ],
+          "title": "Audit the billing module",
+          "updatedAt": "2026-09-22T12:00:00.150Z",
+        },
+        {
+          "_id": "conv-sub-1",
+          "agentIndex": 0,
+          "createdAt": "2026-09-22T12:00:00.125Z",
+          "id": "conv-sub-1",
+          "isGenerating": true,
+          "messages": [],
+          "modelNames": [
+            "claude-test",
+          ],
+          "parentConversationId": "conv-fixture",
+          "project": "coding",
+          "providers": [
+            "anthropic",
+          ],
+          "title": "Audit the auth module",
+          "updatedAt": "2026-09-22T12:00:00.125Z",
+        },
+        {
+          "_liveModalities": {},
+          "createdAt": "2026-09-22T12:00:00.000Z",
+          "id": "<uuid:1>",
+          "isActive": true,
+          "modalities": {},
+          "title": "Audit auth and billing in parallel.",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T12:00:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "<uuid:1>",
+        "conv-sub-1",
+        "conv-sub-2",
+      ],
+      "subAgentToolActivity": {
+        "agent-1-3f9a": {
+          "conversationId": "conv-sub-1",
+          "currentTool": null,
+          "description": "Audit the auth module",
+          "iteration": 0,
+          "phase": "spawned",
+          "toolCount": 0,
+          "toolNames": {},
+        },
+        "agent-2-7c1d": {
+          "conversationId": "conv-sub-2",
+          "currentTool": null,
+          "description": "Audit the billing module",
+          "iteration": 0,
+          "phase": "spawned",
+          "toolCount": 0,
+          "toolNames": {},
+        },
+      },
+    },
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 2,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [
+      {
+        "_id": "conv-sub-2",
+        "agentIndex": 1,
+        "createdAt": "2026-09-22T12:00:00.150Z",
+        "id": "conv-sub-2",
+        "isActive": false,
+        "isGenerating": false,
+        "messages": [],
+        "modelNames": [
+          "claude-test",
+        ],
+        "parentConversationId": "conv-fixture",
+        "pendingBackgroundTasks": 0,
+        "project": "coding",
+        "providers": [
+          "anthropic",
+        ],
+        "title": "Audit the billing module",
+        "updatedAt": "2026-09-22T12:00:00.150Z",
+      },
+      {
+        "_id": "conv-sub-1",
+        "agentIndex": 0,
+        "createdAt": "2026-09-22T12:00:00.125Z",
+        "id": "conv-sub-1",
+        "isActive": false,
+        "isGenerating": false,
+        "messages": [],
+        "modelNames": [
+          "claude-test",
+        ],
+        "parentConversationId": "conv-fixture",
+        "pendingBackgroundTasks": 0,
+        "project": "coding",
+        "providers": [
+          "anthropic",
+        ],
+        "title": "Audit the auth module",
+        "updatedAt": "2026-09-22T12:00:00.125Z",
+      },
+    ],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Audit auth and billing in parallel.",
+        "rawContent": "Audit auth and billing in parallel.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_liveGenProgress": {
+          "activeRequests": 2,
+          "avgTtft": 1.063,
+          "estimatedCost": 0.0031,
+          "inputTokens": 8200,
+          "outputTokens": 162,
+          "timestamp": 1275,
+          "tokensPerSecond": 21,
+          "totalTokens": 8362,
+        },
+        "_streamingBurstElapsed": 425,
+        "_streamingBurstTokens": 2,
+        "_streamingLastChunkTime": 1500,
+        "_streamingOutputCharacters": 96,
+        "_streamingStartTime": 1075,
+        "_subAgentTokens": {
+          "input": 5100,
+          "output": 420,
+          "requests": 3,
+        },
+        "_ttftSamples": [
+          1.284,
+        ],
+        "completedAt": "2026-09-22T12:00:00.525Z",
+        "content": "Splitting the audit in two. Auth is clean; the billing audit failed — the provider was overloaded.",
+        "contentSegments": [
+          {
+            "fragmentIndex": 0,
+            "type": "text",
+          },
+          {
+            "toolIds": [
+              "toolu_08Spawn",
+            ],
+            "type": "tools",
+          },
+          {
+            "fragmentIndex": 1,
+            "type": "text",
+          },
+        ],
+        "estimatedCost": 0.024,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [
+          "Splitting the audit in two.",
+          " Auth is clean; the billing audit failed — the provider was overloaded.",
+        ],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "toolCalls": [
+          {
+            "args": {
+              "members": [
+                {
+                  "description": "Audit the auth module",
+                },
+                {
+                  "description": "Audit the billing module",
+                },
+              ],
+            },
+            "durationMs": 48400,
+            "id": "toolu_08Spawn",
+            "name": "create_subagents",
+            "result": {
+              "members": [
+                {
+                  "status": "complete",
+                  "subAgentId": "agent-1-3f9a",
+                },
+                {
+                  "error": "Provider overloaded",
+                  "status": "failed",
+                  "subAgentId": "agent-2-7c1d",
+                },
+              ],
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+        ],
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 9800,
+          "outputTokens": 640,
+          "reasoningOutputTokens": 0,
+          "requests": 4,
+          "tokensPerSec": 0,
+          "totalInputTokens": 9800,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {
+      "toolu_s1Cmd": "12 passing
+",
+    },
+    "subAgentToolActivity": {
+      "agent-1-3f9a": {
+        "conversationId": "conv-sub-1",
+        "currentTool": null,
+        "description": "Audit the auth module",
+        "durationMs": 48213,
+        "firstChunkTime": 1790078401000,
+        "iteration": 1,
+        "lastChunkTime": 1790078403000,
+        "maxIterations": 25,
+        "outputTokens": 42,
+        "phase": "complete",
+        "toolCalls": [
+          {
+            "args": {
+              "command": "npm test -- auth",
+            },
+            "durationMs": 2300,
+            "id": "toolu_s1Cmd",
+            "name": "execute_command",
+            "result": {
+              "exitCode": 0,
+              "stdout": "12 passing
+",
+            },
+            "status": "done",
+          },
+        ],
+        "toolCount": 1,
+        "toolNames": {
+          "execute_command": 1,
+        },
+        "totalOutputTokens": 120,
+      },
+      "agent-2-7c1d": {
+        "conversationId": "conv-sub-2",
+        "currentTool": null,
+        "description": "Audit the billing module",
+        "error": "Provider overloaded",
+        "iteration": 0,
+        "phase": "failed",
+        "toolCount": 0,
+        "toolNames": {},
+      },
+    },
+    "title": "Audit auth and billing in parallel.",
+    "toolActivity": [
+      {
+        "args": {
+          "members": [
+            {
+              "description": "Audit the auth module",
+            },
+            {
+              "description": "Audit the billing module",
+            },
+          ],
+        },
+        "durationMs": 48400,
+        "id": "toolu_08Spawn",
+        "name": "create_subagents",
+        "result": {
+          "members": [
+            {
+              "status": "complete",
+              "subAgentId": "agent-1-3f9a",
+            },
+            {
+              "error": "Provider overloaded",
+              "status": "failed",
+              "subAgentId": "agent-2-7c1d",
+            },
+          ],
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(27ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(spawned): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:spawned]",
+    "sub_agent_status(spawned): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:spawned,agent-2-7c1d:spawned]",
+    "sub_agent_status(iteration_progress): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:spawned,agent-2-7c1d:spawned]",
+    "sub_agent_status(phase): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:generating,agent-2-7c1d:spawned]",
+    "sub_agent_status(generation_started): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:generating,agent-2-7c1d:spawned]",
+    "sub_agent_status(generation_progress): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:generating,agent-2-7c1d:spawned]",
+    "status(generation_progress): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:generating,agent-2-7c1d:spawned]",
+    "sub_agent_tool_execution(calling): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:-,agent-2-7c1d:spawned]",
+    "sub_agent_tool_output: msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:-,agent-2-7c1d:spawned]",
+    "sub_agent_tool_execution(done): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:-,agent-2-7c1d:spawned]",
+    "sub_agent_status(phase): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:-,agent-2-7c1d:thinking]",
+    "sub_agent_status(complete): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:complete,agent-2-7c1d:thinking]",
+    "sub_agent_status(failed): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling] subs=[agent-1-3f9a:complete,agent-2-7c1d:failed]",
+    "tool_execution(done): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:done] subs=[agent-1-3f9a:complete,agent-2-7c1d:failed]",
+    "status(iteration_progress): msgs=2 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:done] subs=[agent-1-3f9a:complete,agent-2-7c1d:failed]",
+    "chunk: msgs=2 last=assistant(98ch tools:1) gen=1 tools=[create_subagents:done] subs=[agent-1-3f9a:complete,agent-2-7c1d:failed]",
+    "done: msgs=2 last=assistant(98ch tools:1) gen=0 tools=[create_subagents:done] subs=[agent-1-3f9a:complete,agent-2-7c1d:failed]",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > the loop gives up: iteration limit, with command output on the way 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMFix every lint warning.",
+      "Model12:00 PM💻Ran npm run lint for 4 secondsThe agent reached its maximum iteration limit before producing a final response.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 25,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "Fix every lint warning.",
+        "rawContent": "Fix every lint warning.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "_terminationReason": "The agent reached its maximum iteration limit before producing a final response.",
+        "completedAt": "2026-09-22T12:00:00.200Z",
+        "content": "",
+        "contentSegments": [
+          {
+            "toolIds": [
+              "toolu_09Lint",
+            ],
+            "type": "tools",
+          },
+        ],
+        "estimatedCost": 0.0981,
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "textFragments": [],
+        "thinkingFragments": [],
+        "timeToGeneration": 0.842,
+        "timestamp": "2026-09-22T12:00:00.000Z",
+        "tokensPerSec": 41.2,
+        "toolCalls": [
+          {
+            "args": {
+              "command": "npm run lint",
+            },
+            "durationMs": 4100,
+            "id": "toolu_09Lint",
+            "name": "execute_command",
+            "result": {
+              "exitCode": 1,
+              "stderr": "exit 1
+",
+              "stdout": "src/a.ts: 3 warnings
+",
+            },
+            "status": "done",
+            "timestamp": 1790078400100,
+          },
+        ],
+        "totalTime": 6.3,
+        "usage": {
+          "cacheCreationInputTokens": 0,
+          "cacheReadInputTokens": 0,
+          "inputTokens": 30500,
+          "outputTokens": 2100,
+          "reasoningOutputTokens": 0,
+          "requests": 25,
+          "tokensPerSec": 0,
+          "totalInputTokens": 30500,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {
+      "toolu_09Lint": "src/a.ts: 3 warnings
+exit 1
+",
+    },
+    "subAgentToolActivity": {},
+    "title": "Fix every lint warning.",
+    "toolActivity": [
+      {
+        "args": {
+          "command": "npm run lint",
+        },
+        "durationMs": 4100,
+        "id": "toolu_09Lint",
+        "name": "execute_command",
+        "result": {
+          "exitCode": 1,
+          "stderr": "exit 1
+",
+          "stdout": "src/a.ts: 3 warnings
+",
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[execute_command:calling]",
+    "tool_output: msgs=2 last=assistant(0ch tools:1) gen=1 tools=[execute_command:calling]",
+    "tool_output: msgs=2 last=assistant(0ch tools:1) gen=1 tools=[execute_command:calling]",
+    "tool_execution(done): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[execute_command:done]",
+    "status(iteration_limit_reached): msgs=2 last=assistant(0ch tools:1) gen=1 tools=[execute_command:done]",
+    "done: msgs=2 last=assistant(0ch tools:1) gen=0 tools=[execute_command:done]",
+  ],
+}
+`;
+
+exports[`SSE-driven turn (characterization) > the request a send makes, and the refresh from the persisted turn after done 1`] = `
+{
+  "agentRequest": {
+    "agent": "CODING",
+    "autoApprove": false,
+    "conversationId": "<uuid:1>",
+    "disabledTools": [
+      "save_memory",
+      "extract_memories",
+      "consolidate_memories",
+      "search_memories",
+      "generate_image",
+      "describe_image",
+      "synthesize_speech",
+      "transcribe_audio",
+    ],
+    "functionCallingEnabled": true,
+    "maxIterations": 25,
+    "maxRecursionDepth": 1,
+    "maxSubAgentIterations": 25,
+    "maxTokens": 64000,
+    "messages": [
+      {
+        "content": "What port does the dev server use?",
+        "rawContent": "What port does the dev server use?",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+    ],
+    "model": "claude-test",
+    "planFirst": false,
+    "project": "coding",
+    "provider": "anthropic",
+    "temperature": 1,
+    "thinkingEnabled": false,
+    "topology": "hierarchical",
+    "traceId": "<uuid:2>",
+  },
+  "documentFetchesAfterDone": 1,
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User12:00 PMWhat port does the dev server use?",
+      "Model12:00 PMChecking the config — port 3000, documented.",
+    ],
+    "sendButton": "Send",
+    "statusBar": [],
+    "turnActivity": [],
+  },
+  "requestsAfterDone": [
+    "GET /agent-memories?project=coding&limit=1&agent=CODING",
+    "GET /conversations/<uuid:1>?project=coding",
+    "GET /conversations?type=agent&project=coding&agent=CODING",
+    "GET /orchestrator/sub-agents?conversationId=<uuid:1>",
+  ],
+  "state": {
+    "activeId": "<uuid:1>",
+    "agenticProgress": {
+      "iteration": 1,
+      "maxIterations": 25,
+    },
+    "contextBudget": null,
+    "conversationId": "<uuid:1>",
+    "conversations": [],
+    "generatingConversationIds": [],
+    "goal": null,
+    "isConversationRunning": false,
+    "isGenerating": false,
+    "liveConnectionState": "closed",
+    "messages": [
+      {
+        "content": "What port does the dev server use?",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "completedAt": "2026-09-22T12:00:00.225Z",
+        "content": "Checking the config — port 3000, documented.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+        "usage": {
+          "inputTokens": 1500,
+          "outputTokens": 60,
+        },
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "What port does the dev server use?",
+    "toolActivity": [
+      {
+        "args": {
+          "path": "/app/config.json",
+        },
+        "durationMs": 22,
+        "id": "toolu_12Read",
+        "name": "read_file",
+        "result": {
+          "content": "{"port":3000}",
+        },
+        "status": "done",
+        "timestamp": 1790078400100,
+      },
+    ],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=2 last=assistant(0ch) gen=1",
+    "status(iteration_progress): msgs=2 last=assistant(0ch) gen=1",
+    "chunk: msgs=2 last=assistant(8ch) gen=1",
+    "chunk: msgs=2 last=assistant(19ch) gen=1",
+    "tool_execution(calling): msgs=2 last=assistant(19ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(done): msgs=2 last=assistant(19ch tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=2 last=assistant(31ch tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=2 last=assistant(44ch tools:1) gen=1 tools=[read_file:done]",
+    "done: msgs=2 last=assistant(44ch) gen=0 tools=[read_file:done]",
+  ],
+}
+`;

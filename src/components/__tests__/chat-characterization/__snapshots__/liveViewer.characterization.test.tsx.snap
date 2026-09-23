@@ -1,0 +1,3686 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`live-viewer turn (characterization) > a blocking question (the driving client's to answer) 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMSet up the database layer.",
+      "Model12:00 PMOne thing first. Postgres it is — adding the driver.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Set up the database layer.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "One thing first. Postgres it is — adding the driver.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMSet up the database layer.",
+        "Model❓Ask User for 5 secondsOne thing first. Postgres it is — adding the driver.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "📥Prefilling...Iteration 2/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 2,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Set up the database layer.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "One thing first. Postgres it is — adding the driver.",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "questions": [
+                  {
+                    "header": "Database",
+                    "multiSelect": false,
+                    "options": [
+                      {
+                        "label": "Postgres",
+                        "preview": null,
+                      },
+                      {
+                        "label": "SQLite",
+                        "preview": null,
+                      },
+                    ],
+                    "question": "Which database should the service target?",
+                  },
+                ],
+              },
+              "durationMs": 5210,
+              "id": "toolu_05Ask",
+              "name": "ask_user",
+              "result": {
+                "answers": [
+                  {
+                    "answer": "Postgres",
+                    "question": "Which database should the service target?",
+                  },
+                ],
+              },
+              "status": "done",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "questions": [
+              {
+                "header": "Database",
+                "multiSelect": false,
+                "options": [
+                  {
+                    "label": "Postgres",
+                    "preview": null,
+                  },
+                  {
+                    "label": "SQLite",
+                    "preview": null,
+                  },
+                ],
+                "question": "Which database should the service target?",
+              },
+            ],
+          },
+          "durationMs": 5210,
+          "id": "toolu_05Ask",
+          "name": "ask_user",
+          "result": {
+            "answers": [
+              {
+                "answer": "Postgres",
+                "question": "Which database should the service target?",
+              },
+            ],
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+      ],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(26ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(26ch) gen=1",
+    "chunk: msgs=4 last=assistant(16ch) gen=1",
+    "tool_execution(calling): msgs=4 last=assistant(16ch tools:1) gen=1 tools=[ask_user:calling]",
+    "user_question: msgs=4 last=assistant(16ch tools:1) gen=1 tools=[ask_user:calling]",
+    "tool_execution(done): msgs=4 last=assistant(16ch tools:1) gen=1 tools=[ask_user:done]",
+    "status(iteration_progress): msgs=4 last=assistant(16ch tools:1) gen=1 tools=[ask_user:done]",
+    "chunk: msgs=4 last=assistant(52ch tools:1) gen=1 tools=[ask_user:done]",
+    "done: msgs=4 last=assistant(52ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > a non-blocking question, answered as a turn input 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [
+      "1 question from the agent — it keeps working while you answerAgent QuestionWaiting for your answerThe config names neither.DatabaseWhich database should the service target?PostgresSQLite",
+    ],
+    "questionCard": [
+      "DatabaseWhich database should the service target?PostgresSQLite",
+    ],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMSet up the database layer.",
+      "Model12:00 PMWhile you decide, I'll read the config. Postgres noted — adding the driver.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Set up the database layer.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "While you decide, I'll read the config. Postgres noted — adding the driver.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [
+      {
+        "context": "The config names neither.",
+        "questionId": "q-mfu8x2k1-2",
+        "questions": [
+          {
+            "header": "Database",
+            "multiSelect": false,
+            "options": [
+              {
+                "label": "Postgres",
+                "preview": null,
+              },
+              {
+                "label": "SQLite",
+                "preview": null,
+              },
+            ],
+            "question": "Which database should the service target?",
+          },
+        ],
+        "receivedAt": 1790078400100,
+        "status": "open",
+      },
+    ],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [
+        "1 question from the agent — it keeps working while you answerAgent QuestionWaiting for your answerThe config names neither.DatabaseWhich database should the service target?PostgresSQLite",
+      ],
+      "questionCard": [
+        "DatabaseWhich database should the service target?PostgresSQLite",
+      ],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMSet up the database layer.",
+        "Model❓Ask User for 0.01 seconds",
+        "📖Analyzed config.json for 0.02 secondsWhile you decide, I'll read the config.",
+        "UserAnswer12:00 PMPostgres",
+        "ModelPostgres noted — adding the driver.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "✨Generating...Iteration 2/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 2,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Set up the database layer.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "blocking": false,
+                "questions": [
+                  {
+                    "header": "Database",
+                    "multiSelect": false,
+                    "options": [
+                      {
+                        "label": "Postgres",
+                        "preview": null,
+                      },
+                      {
+                        "label": "SQLite",
+                        "preview": null,
+                      },
+                    ],
+                    "question": "Which database should the service target?",
+                  },
+                ],
+              },
+              "durationMs": 12,
+              "id": "toolu_06Ask",
+              "name": "ask_user",
+              "result": {
+                "questionId": "q-mfu8x2k1-2",
+                "status": "pending",
+              },
+              "status": "done",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+        {
+          "content": "While you decide, I'll read the config.",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "path": "/app/config.json",
+              },
+              "durationMs": 19,
+              "id": "toolu_07Read",
+              "name": "read_file",
+              "result": {
+                "content": "{"port":3000}",
+              },
+              "status": "done",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+        {
+          "_turnInput": {
+            "boundary": "after_tools",
+            "id": "input-a1b2c3d4",
+            "iteration": 1,
+            "kind": "question_answer",
+            "receivedAt": "2026-09-22T12:00:00.250Z",
+            "status": "applied",
+          },
+          "content": "Postgres",
+          "rawContent": "Postgres",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.250Z",
+        },
+        {
+          "content": "Postgres noted — adding the driver.",
+          "role": "assistant",
+        },
+      ],
+      "nonBlockingQuestions": [
+        {
+          "context": "The config names neither.",
+          "questionId": "q-mfu8x2k1-2",
+          "questions": [
+            {
+              "header": "Database",
+              "multiSelect": false,
+              "options": [
+                {
+                  "label": "Postgres",
+                  "preview": null,
+                },
+                {
+                  "label": "SQLite",
+                  "preview": null,
+                },
+              ],
+              "question": "Which database should the service target?",
+            },
+          ],
+          "receivedAt": 1790078400100,
+          "status": "open",
+        },
+      ],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "blocking": false,
+            "questions": [
+              {
+                "header": "Database",
+                "multiSelect": false,
+                "options": [
+                  {
+                    "label": "Postgres",
+                    "preview": null,
+                  },
+                  {
+                    "label": "SQLite",
+                    "preview": null,
+                  },
+                ],
+                "question": "Which database should the service target?",
+              },
+            ],
+          },
+          "durationMs": 12,
+          "id": "toolu_06Ask",
+          "name": "ask_user",
+          "result": {
+            "questionId": "q-mfu8x2k1-2",
+            "status": "pending",
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+        {
+          "args": {
+            "path": "/app/config.json",
+          },
+          "durationMs": 19,
+          "id": "toolu_07Read",
+          "name": "read_file",
+          "result": {
+            "content": "{"port":3000}",
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+      ],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(26ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(26ch) gen=1",
+    "tool_execution(calling): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[ask_user:calling]",
+    "user_question: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[ask_user:calling] nbq=1",
+    "status(question_pending): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[ask_user:calling] nbq=1",
+    "tool_execution(done): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[ask_user:done] nbq=1",
+    "chunk: msgs=5 last=assistant(39ch) gen=1 tools=[ask_user:done] nbq=1",
+    "tool_execution(calling): msgs=5 last=assistant(39ch tools:1) gen=1 tools=[ask_user:done,read_file:calling] nbq=1",
+    "tool_execution(done): msgs=5 last=assistant(39ch tools:1) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "turn_input: msgs=6 last=user(8ch) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "status(turn_input_applied): msgs=6 last=user(8ch) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "status(iteration_progress): msgs=6 last=user(8ch) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "chunk: msgs=7 last=assistant(35ch) gen=1 tools=[ask_user:done,read_file:done] nbq=1",
+    "done: msgs=4 last=assistant(75ch) gen=0 nbq=1",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > a replay the service had to truncate says so 1`] = `
+[
+  {
+    "message": "Earlier output truncated — 7 events could not be replayed",
+    "type": "info",
+  },
+]
+`;
+
+exports[`live-viewer turn (characterization) > a resubscribe that finds the service restarted ends the turn and reloads the document 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMWhat port does the dev server use?",
+      "Model12:00 PMChecking the config",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "What port does the dev server use?",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "Checking the config",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "subscriptions": [
+    {
+      "afterSeq": 1790078400004,
+      "conversationId": "conv-live",
+      "type": "subscribe",
+    },
+  ],
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(34ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(34ch) gen=1",
+    "chunk: msgs=4 last=assistant(8ch) gen=1",
+    "chunk: msgs=4 last=assistant(19ch) gen=1",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > a turn with tools and a sub-agent 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMWhat port does the dev server use?",
+      "Model12:00 PMLet me check the config. The port is 3000. Spawning a checker. Documented in two places. All good.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "What port does the dev server use?",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "Let me check the config. The port is 3000. Spawning a checker. Documented in two places. All good.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMWhat port does the dev server use?",
+        "Model🧠Thoughts📄Analyzed config.json for 0.3 seconds🛠️Create Subagents for 0.1 secondsLet me check the config. The port is 3000. Spawning a checker. Documented in two places. All good.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "🧠Starting...Iteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 1,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "What port does the dev server use?",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "Let me check the config. The port is 3000. Spawning a checker. Documented in two places. All good.",
+          "contentSegments": [],
+          "role": "assistant",
+          "statusPhase": "thinking",
+          "textFragments": [],
+          "thinking": "The user wants the config file. I should read it first.",
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "path": "/app/config.json",
+              },
+              "durationMs": 312,
+              "id": "tc-001",
+              "name": "read_file",
+              "result": {
+                "content": "{"port":3000}",
+              },
+              "status": "done",
+              "timestamp": 1790078400125,
+            },
+            {
+              "args": {
+                "members": [
+                  {
+                    "agent_id": "sa-1",
+                    "description": "Verify port 3000 is documented",
+                  },
+                ],
+              },
+              "durationMs": 4200,
+              "id": "tc-002",
+              "name": "create_subagents",
+              "result": {
+                "members": [
+                  {
+                    "agent_id": "sa-1",
+                    "status": "complete",
+                  },
+                ],
+              },
+              "status": "done",
+              "timestamp": 1790078400250,
+            },
+          ],
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "path": "/app/config.json",
+          },
+          "durationMs": 312,
+          "id": "tc-001",
+          "name": "read_file",
+          "result": {
+            "content": "{"port":3000}",
+          },
+          "status": "done",
+          "timestamp": 1790078400125,
+        },
+        {
+          "args": {
+            "members": [
+              {
+                "agent_id": "sa-1",
+                "description": "Verify port 3000 is documented",
+              },
+            ],
+          },
+          "durationMs": 4200,
+          "id": "tc-002",
+          "name": "create_subagents",
+          "result": {
+            "members": [
+              {
+                "agent_id": "sa-1",
+                "status": "complete",
+              },
+            ],
+          },
+          "status": "done",
+          "timestamp": 1790078400250,
+        },
+      ],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(34ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(34ch) gen=1",
+    "thinking: msgs=4 last=assistant(0ch thinking) gen=1",
+    "chunk: msgs=4 last=assistant(24ch thinking) gen=1",
+    "tool_execution(streaming): msgs=4 last=assistant(24ch thinking tools:1) gen=1 tools=[read_file:streaming]",
+    "tool_execution(calling): msgs=4 last=assistant(24ch thinking tools:1) gen=1 tools=[read_file:calling]",
+    "tool_output: msgs=4 last=assistant(24ch thinking tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(done): msgs=4 last=assistant(24ch thinking tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=4 last=assistant(62ch thinking tools:1) gen=1 tools=[read_file:done]",
+    "tool_execution(calling): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
+    "sub_agent_status(spawned): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
+    "sub_agent_tool_execution(calling): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
+    "sub_agent_tool_execution(done): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
+    "sub_agent_status(complete): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:calling]",
+    "tool_execution(done): msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:done]",
+    "usage_update: msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:done]",
+    "context_budget: msgs=4 last=assistant(62ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:done]",
+    "chunk: msgs=4 last=assistant(98ch thinking tools:2) gen=1 tools=[read_file:done,create_subagents:done]",
+    "done: msgs=4 last=assistant(98ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > a turn's side channels: checklist, brief, sources, code runs 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMWhat port does the dev server use?",
+      "Model12:00 PMThe port is 3000.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [
+      "Checklist1/3 doneRead the configCheck the portWrite the summaryBriefConfirmed the dev server listens on 3000.app/config.jsonShould production use 443?Sources2Configuring the dev server portdocs.example.devSet PORT or pass -p.Environment variablesdocs.example.devCode executionokpythonCopyprint(sum(range(10)))Output45",
+    ],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "What port does the dev server use?",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "The port is 3000.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": {
+        "keyFiles": [
+          "app/config.json",
+        ],
+        "openQuestions": [
+          "Should production use 443?",
+        ],
+        "summary": "Confirmed the dev server listens on 3000.",
+        "timestamp": "2026-09-22T10:00:00.000Z",
+      },
+      "codeRuns": [
+        {
+          "code": "print(sum(range(10)))",
+          "language": "python",
+          "outcome": "OUTCOME_OK",
+          "output": "45
+",
+        },
+      ],
+      "sources": [
+        {
+          "snippet": "Set PORT or pass -p.",
+          "title": "Configuring the dev server port",
+          "url": "https://docs.example.dev/config/port",
+        },
+        {
+          "title": "Environment variables",
+          "url": "https://docs.example.dev/config/env",
+        },
+      ],
+      "todos": [
+        {
+          "content": "Read the config",
+          "priority": "medium",
+          "status": "completed",
+        },
+        {
+          "content": "Check the port",
+          "priority": "high",
+          "status": "in_progress",
+        },
+        {
+          "content": "Write the summary",
+          "priority": "low",
+          "status": "pending",
+        },
+      ],
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMWhat port does the dev server use?",
+        "Model🛠️Write Todo for 0.05 seconds",
+        "The port is 3000.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "✨Generating...Iteration 1/25",
+      ],
+      "turnActivity": [
+        "Checklist1/3 doneRead the configCheck the portWrite the summaryBriefConfirmed the dev server listens on 3000.app/config.jsonShould production use 443?Sources2Configuring the dev server portdocs.example.devSet PORT or pass -p.Environment variablesdocs.example.devCode executionokpythonCopyprint(sum(range(10)))Output45",
+      ],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 1,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "What port does the dev server use?",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "items": [
+                  {
+                    "content": "Read the config",
+                    "status": "completed",
+                  },
+                  {
+                    "content": "Check the port",
+                    "status": "in_progress",
+                  },
+                  {
+                    "content": "Write the summary",
+                    "status": "pending",
+                  },
+                ],
+              },
+              "durationMs": 50,
+              "id": "tc-101",
+              "name": "write_todo",
+              "result": {
+                "acknowledged": true,
+              },
+              "status": "done",
+              "timestamp": 1790078400075,
+            },
+          ],
+        },
+        {
+          "content": "The port is 3000.",
+          "role": "assistant",
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "items": [
+              {
+                "content": "Read the config",
+                "status": "completed",
+              },
+              {
+                "content": "Check the port",
+                "status": "in_progress",
+              },
+              {
+                "content": "Write the summary",
+                "status": "pending",
+              },
+            ],
+          },
+          "durationMs": 50,
+          "id": "tc-101",
+          "name": "write_todo",
+          "result": {
+            "acknowledged": true,
+          },
+          "status": "done",
+          "timestamp": 1790078400075,
+        },
+      ],
+      "turnActivity": {
+        "brief": {
+          "keyFiles": [
+            "app/config.json",
+          ],
+          "openQuestions": [
+            "Should production use 443?",
+          ],
+          "summary": "Confirmed the dev server listens on 3000.",
+          "timestamp": "2026-09-22T10:00:00.000Z",
+        },
+        "codeRuns": [
+          {
+            "code": "print(sum(range(10)))",
+            "language": "python",
+            "outcome": "OUTCOME_OK",
+            "output": "45
+",
+          },
+        ],
+        "sources": [
+          {
+            "snippet": "Set PORT or pass -p.",
+            "title": "Configuring the dev server port",
+            "url": "https://docs.example.dev/config/port",
+          },
+          {
+            "title": "Environment variables",
+            "url": "https://docs.example.dev/config/env",
+          },
+        ],
+        "todos": [
+          {
+            "content": "Read the config",
+            "priority": "medium",
+            "status": "completed",
+          },
+          {
+            "content": "Check the port",
+            "priority": "high",
+            "status": "in_progress",
+          },
+          {
+            "content": "Write the summary",
+            "priority": "low",
+            "status": "pending",
+          },
+        ],
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(34ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(34ch) gen=1",
+    "tool_execution(calling): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:calling]",
+    "todo_update: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:calling]",
+    "tool_execution(done): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "webSearchResult: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "webSearchResult: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "executableCode: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "codeExecutionResult: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[write_todo:done]",
+    "chunk: msgs=5 last=assistant(17ch) gen=1 tools=[write_todo:done]",
+    "brief_update: msgs=5 last=assistant(17ch) gen=1 tools=[write_todo:done]",
+    "done: msgs=4 last=assistant(17ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > an error before the loop 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMWhat port does the dev server use?",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "What port does the dev server use?",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMWhat port does the dev server use?",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "🧬Synthesizing…",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": null,
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": false,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "What port does the dev server use?",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(34ch) gen=1",
+    "error(Context preparation failed: model claude-test is not available): msgs=3 last=user(34ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > an error in the loop: done, then error 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMSummarize the logs.",
+      "Model12:00 PMReading the logs",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Summarize the logs.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "Reading the logs",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMSummarize the logs.",
+        "ModelReading the logs▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "✨Generating...Iteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 1,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Summarize the logs.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "Reading the logs",
+          "role": "assistant",
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(19ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(19ch) gen=1",
+    "chunk: msgs=4 last=assistant(16ch) gen=1",
+    "done: msgs=4 last=assistant(16ch) gen=0",
+    "error(Provider stream ended unexpectedly): msgs=4 last=assistant(16ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > approvals: two cards in one batch, decided elsewhere 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMAdd a README and a LICENSE.",
+      "Model12:00 PMI'll write both files. Wrote the README; skipped the LICENSE as asked.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Add a README and a LICENSE.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "I'll write both files. Wrote the README; skipped the LICENSE as asked.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMAdd a README and a LICENSE.",
+        "Model📝Wrote README.md for 0.04 seconds📝Denied: Write File LICENSEI'll write both files. Wrote the README; skipped the LICENSE as asked.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "📥Prefilling...Iteration 2/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 2,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Add a README and a LICENSE.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "I'll write both files. Wrote the README; skipped the LICENSE as asked.",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "content": "# Scratch
+",
+                "path": "/workspace/scratch-repo/README.md",
+              },
+              "durationMs": 37,
+              "id": "toolu_01Readme",
+              "name": "write_file",
+              "result": {
+                "bytesWritten": 10,
+                "path": "/workspace/scratch-repo/README.md",
+                "success": true,
+              },
+              "status": "done",
+              "timestamp": 1790078400100,
+            },
+            {
+              "args": {
+                "content": "MIT
+",
+                "path": "/workspace/scratch-repo/LICENSE",
+              },
+              "durationMs": 190,
+              "id": "toolu_02License",
+              "name": "write_file",
+              "result": {
+                "error": "USER_REJECTED",
+                "message": "The user denied this tool call.",
+                "reason": "No license yet",
+                "success": false,
+              },
+              "status": "error",
+              "timestamp": 1790078400160,
+            },
+          ],
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "content": "# Scratch
+",
+            "path": "/workspace/scratch-repo/README.md",
+          },
+          "durationMs": 37,
+          "id": "toolu_01Readme",
+          "name": "write_file",
+          "result": {
+            "bytesWritten": 10,
+            "path": "/workspace/scratch-repo/README.md",
+            "success": true,
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+        {
+          "args": {
+            "content": "MIT
+",
+            "path": "/workspace/scratch-repo/LICENSE",
+          },
+          "durationMs": 190,
+          "id": "toolu_02License",
+          "name": "write_file",
+          "result": {
+            "error": "USER_REJECTED",
+            "message": "The user denied this tool call.",
+            "reason": "No license yet",
+            "success": false,
+          },
+          "status": "error",
+          "timestamp": 1790078400160,
+        },
+      ],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(27ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(27ch) gen=1",
+    "status(generation_started): msgs=3 last=user(27ch) gen=1",
+    "chunk: msgs=4 last=assistant(22ch) gen=1",
+    "tool_execution(streaming): msgs=4 last=assistant(22ch tools:1) gen=1 tools=[write_file:streaming]",
+    "tool_execution(calling): msgs=4 last=assistant(22ch tools:1) gen=1 tools=[write_file:calling]",
+    "tool_execution(calling): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
+    "approval_required: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
+    "approval_required: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
+    "approval_decided: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
+    "approval_decided: msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
+    "status(Tool execution rejected: write_file): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:calling,write_file:calling]",
+    "tool_execution(done): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:calling]",
+    "tool_execution(error): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:error]",
+    "status(iteration_progress): msgs=4 last=assistant(22ch tools:2) gen=1 tools=[write_file:done,write_file:error]",
+    "chunk: msgs=4 last=assistant(70ch tools:2) gen=1 tools=[write_file:done,write_file:error]",
+    "usage_update: msgs=4 last=assistant(70ch tools:2) gen=1 tools=[write_file:done,write_file:error]",
+    "done: msgs=4 last=assistant(70ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > compaction, then the turn 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMKeep going with the refactor.",
+      "Model12:00 PMPicking up from the summary. The loaders are done; next is the cache.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Keep going with the refactor.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "Picking up from the summary. The loaders are done; next is the cache.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMKeep going with the refactor.",
+        "ModelPicking up from the summary. The loaders are done; next is the cache.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "✨Generating...Iteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 1,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Keep going with the refactor.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "Picking up from the summary. The loaders are done; next is the cache.",
+          "role": "assistant",
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(29ch) gen=1",
+    "status(compaction_started): msgs=3 last=user(29ch) gen=1",
+    "usage_update: msgs=3 last=user(29ch) gen=1",
+    "status(compaction_complete): msgs=3 last=user(29ch) gen=1",
+    "context_budget: msgs=3 last=user(29ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(29ch) gen=1",
+    "status(generation_started): msgs=3 last=user(29ch) gen=1",
+    "chunk: msgs=4 last=assistant(28ch) gen=1",
+    "status(generation_progress): msgs=4 last=assistant(28ch) gen=1",
+    "context_budget: msgs=4 last=assistant(28ch) gen=1",
+    "usage_update: msgs=4 last=assistant(28ch) gen=1",
+    "chunk: msgs=4 last=assistant(69ch) gen=1",
+    "done: msgs=4 last=assistant(69ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > goals: set, progress, then completed after done 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [
+      "GoalCompletedClearShip the port changeDone when: Config and docs say 4000; tests green100%Config and docs say 4000; tests green$0.01 / $5.001 / 20 turns",
+    ],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMShip the port change end to end.",
+      "Model12:00 PMGoal set. Changing the config. Config and docs now say 4000.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": {
+      "blockedOn": null,
+      "budget": {
+        "maxCostDollars": 5,
+        "maxTurns": 20,
+      },
+      "completionCriteria": "Config and docs say 4000; tests green",
+      "createdAt": "2026-09-22T12:00:00.000Z",
+      "objective": "Ship the port change",
+      "progress": {
+        "percent": 100,
+        "summary": "Config and docs say 4000; tests green",
+        "updatedAt": "2026-09-22T12:00:00.000Z",
+      },
+      "spentDollars": 0.0058,
+      "status": "completed",
+      "turnsUsed": 1,
+      "updatedAt": "2026-09-22T12:00:00.000Z",
+    },
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Ship the port change end to end.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "Goal set. Changing the config. Config and docs now say 4000.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [
+        "GoalActivePauseClearShip the port changeDone when: Config and docs say 4000; tests green50%Config changed; docs next$0.00 / $5.000 / 20 turns",
+      ],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMShip the port change end to end.",
+        "Model🎯Set Goal for 0.009 seconds",
+        "Goal set. Changing the config. Config and docs now say 4000.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "✨Generating...Iteration 1/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 1,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": {
+        "blockedOn": null,
+        "budget": {
+          "maxCostDollars": 5,
+          "maxTurns": 20,
+        },
+        "completionCriteria": "Config and docs say 4000; tests green",
+        "createdAt": "2026-09-22T12:00:00.000Z",
+        "objective": "Ship the port change",
+        "progress": {
+          "percent": 50,
+          "summary": "Config changed; docs next",
+          "updatedAt": "2026-09-22T12:00:00.000Z",
+        },
+        "spentDollars": 0.004,
+        "status": "active",
+        "turnsUsed": 0,
+        "updatedAt": "2026-09-22T12:00:00.000Z",
+      },
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Ship the port change end to end.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "objective": "Ship the port change",
+              },
+              "durationMs": 9,
+              "id": "toolu_11Goal",
+              "name": "set_goal",
+              "result": {
+                "ok": true,
+              },
+              "status": "done",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+        {
+          "content": "Goal set. Changing the config. Config and docs now say 4000.",
+          "role": "assistant",
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "objective": "Ship the port change",
+          },
+          "durationMs": 9,
+          "id": "toolu_11Goal",
+          "name": "set_goal",
+          "result": {
+            "ok": true,
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+      ],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(32ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(32ch) gen=1",
+    "tool_execution(calling): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[set_goal:calling]",
+    "goal_update: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[set_goal:calling] goal=active",
+    "tool_execution(done): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[set_goal:done] goal=active",
+    "chunk: msgs=5 last=assistant(30ch) gen=1 tools=[set_goal:done] goal=active",
+    "goal_update: msgs=5 last=assistant(30ch) gen=1 tools=[set_goal:done] goal=active",
+    "chunk: msgs=5 last=assistant(60ch) gen=1 tools=[set_goal:done] goal=active",
+    "done: msgs=4 last=assistant(60ch) gen=0",
+    "goal_update: msgs=4 last=assistant(60ch) gen=0 goal=completed",
+    "status(hook_system_message): msgs=4 last=assistant(60ch) gen=0 goal=completed",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > plan mode: a plan decided elsewhere 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMChange the dev port to 4000.",
+      "Model12:00 PMHere is the plan. Read the config; the port is 3000 today.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Change the dev port to 4000.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "Here is the plan. Read the config; the port is 3000 today.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMChange the dev port to 4000.",
+        "Model📖Analyzed config.json for 0.02 secondsHere is the plan. Read the config; the port is 3000 today.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "📥Prefilling...Iteration 2/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 2,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Change the dev port to 4000.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "Here is the plan. Read the config; the port is 3000 today.",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "path": "/app/config.json",
+              },
+              "durationMs": 21,
+              "id": "toolu_04Read",
+              "name": "read_file",
+              "result": {
+                "content": "{"port":3000}",
+              },
+              "status": "done",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "path": "/app/config.json",
+          },
+          "durationMs": 21,
+          "id": "toolu_04Read",
+          "name": "read_file",
+          "result": {
+            "content": "{"port":3000}",
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+      ],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(28ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(28ch) gen=1",
+    "chunk: msgs=4 last=assistant(17ch) gen=1",
+    "plan_proposal: msgs=4 last=assistant(17ch) gen=1",
+    "approval_decided: msgs=4 last=assistant(17ch) gen=1",
+    "status(plan_mode_exited): msgs=4 last=assistant(17ch) gen=1",
+    "status(iteration_progress): msgs=4 last=assistant(17ch) gen=1",
+    "tool_execution(calling): msgs=4 last=assistant(17ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(done): msgs=4 last=assistant(17ch tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=4 last=assistant(58ch tools:1) gen=1 tools=[read_file:done]",
+    "done: msgs=4 last=assistant(58ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > reconnect: a dropped socket resubscribes after its last seq; the cursor drops the repeats 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMWhat port does the dev server use?",
+      "Model12:00 PMChecking the config — port 3000, documented.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "What port does the dev server use?",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "Checking the config — port 3000, documented.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "subscriptions": [
+    [
+      {
+        "conversationId": "conv-live",
+        "type": "subscribe",
+      },
+    ],
+    [
+      {
+        "afterSeq": 1790078400005,
+        "conversationId": "conv-live",
+        "type": "subscribe",
+      },
+    ],
+  ],
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(34ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(34ch) gen=1",
+    "chunk: msgs=4 last=assistant(8ch) gen=1",
+    "chunk: msgs=4 last=assistant(19ch) gen=1",
+    "tool_execution(calling): msgs=4 last=assistant(19ch tools:1) gen=1 tools=[read_file:calling]",
+    "chunk: msgs=4 last=assistant(19ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(calling): msgs=4 last=assistant(19ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(done): msgs=4 last=assistant(19ch tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=4 last=assistant(31ch tools:1) gen=1 tools=[read_file:done]",
+    "chunk: msgs=4 last=assistant(44ch tools:1) gen=1 tools=[read_file:done]",
+    "done: msgs=4 last=assistant(44ch) gen=0",
+  ],
+  "whileDown": "reconnecting",
+}
+`;
+
+exports[`live-viewer turn (characterization) > steering: an update from another tab 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMCheck the config.",
+      "Model12:00 PMReading the config first. Checking the tests too — both agree on 3000.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Check the config.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "Reading the config first. Checking the tests too — both agree on 3000.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMCheck the config.",
+        "Model📖Analyzed config.json for 0.02 secondsReading the config first.",
+        "UserApplied at step 112:00 PMAlso check the tests.",
+        "ModelChecking the tests too — both agree on 3000.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "✨Generating...Iteration 2/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 2,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Check the config.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "Reading the config first.",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "path": "/app/config.json",
+              },
+              "durationMs": 18,
+              "id": "toolu_10Read",
+              "name": "read_file",
+              "result": {
+                "content": "{"port":3000}",
+              },
+              "status": "done",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+        {
+          "_turnInput": {
+            "boundary": "after_tools",
+            "id": "input-5e6f7a8b",
+            "iteration": 1,
+            "kind": "user_update",
+            "receivedAt": "2026-09-22T12:00:00.150Z",
+            "status": "applied",
+          },
+          "content": "Also check the tests.",
+          "rawContent": "Also check the tests.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.150Z",
+        },
+        {
+          "content": "Checking the tests too — both agree on 3000.",
+          "role": "assistant",
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "path": "/app/config.json",
+          },
+          "durationMs": 18,
+          "id": "toolu_10Read",
+          "name": "read_file",
+          "result": {
+            "content": "{"port":3000}",
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+      ],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(17ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(17ch) gen=1",
+    "chunk: msgs=4 last=assistant(25ch) gen=1",
+    "tool_execution(calling): msgs=4 last=assistant(25ch tools:1) gen=1 tools=[read_file:calling]",
+    "tool_execution(done): msgs=4 last=assistant(25ch tools:1) gen=1 tools=[read_file:done]",
+    "turn_input: msgs=5 last=user(21ch) gen=1 tools=[read_file:done]",
+    "status(turn_input_applied): msgs=5 last=user(21ch) gen=1 tools=[read_file:done]",
+    "status(iteration_progress): msgs=5 last=user(21ch) gen=1 tools=[read_file:done]",
+    "chunk: msgs=6 last=assistant(44ch) gen=1 tools=[read_file:done]",
+    "done: msgs=4 last=assistant(70ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > sub-agents: two spawned, one completes, one fails 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMAudit auth and billing in parallel.",
+      "Model12:00 PMSplitting the audit in two. Auth is clean; the billing audit failed — the provider was overloaded.",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Audit auth and billing in parallel.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "Splitting the audit in two. Auth is clean; the billing audit failed — the provider was overloaded.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMAudit auth and billing in parallel.",
+        "Model🤖Create Subagents for 0.3 secondsSplitting the audit in two. Auth is clean; the billing audit failed — the provider was overloaded.▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "📥Prefilling...Iteration 2/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 2,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Audit auth and billing in parallel.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "Splitting the audit in two. Auth is clean; the billing audit failed — the provider was overloaded.",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "members": [
+                  {
+                    "description": "Audit the auth module",
+                  },
+                  {
+                    "description": "Audit the billing module",
+                  },
+                ],
+              },
+              "durationMs": 48400,
+              "id": "toolu_08Spawn",
+              "name": "create_subagents",
+              "result": {
+                "members": [
+                  {
+                    "status": "complete",
+                    "subAgentId": "agent-1-3f9a",
+                  },
+                  {
+                    "error": "Provider overloaded",
+                    "status": "failed",
+                    "subAgentId": "agent-2-7c1d",
+                  },
+                ],
+              },
+              "status": "done",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "members": [
+              {
+                "description": "Audit the auth module",
+              },
+              {
+                "description": "Audit the billing module",
+              },
+            ],
+          },
+          "durationMs": 48400,
+          "id": "toolu_08Spawn",
+          "name": "create_subagents",
+          "result": {
+            "members": [
+              {
+                "status": "complete",
+                "subAgentId": "agent-1-3f9a",
+              },
+              {
+                "error": "Provider overloaded",
+                "status": "failed",
+                "subAgentId": "agent-2-7c1d",
+              },
+            ],
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+      ],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(35ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(35ch) gen=1",
+    "chunk: msgs=4 last=assistant(27ch) gen=1",
+    "tool_execution(calling): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(spawned): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(spawned): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(iteration_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(phase): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(generation_started): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(generation_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "status(generation_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_tool_execution(calling): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_tool_output: msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_tool_execution(done): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(phase): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(complete): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "sub_agent_status(failed): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:calling]",
+    "tool_execution(done): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:done]",
+    "status(iteration_progress): msgs=4 last=assistant(27ch tools:1) gen=1 tools=[create_subagents:done]",
+    "chunk: msgs=4 last=assistant(98ch tools:1) gen=1 tools=[create_subagents:done]",
+    "done: msgs=4 last=assistant(98ch) gen=0",
+  ],
+}
+`;
+
+exports[`live-viewer turn (characterization) > subscribes to the running conversation on open 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.▎",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "✨Generating...",
+    ],
+    "turnActivity": [],
+  },
+  "sent": [
+    {
+      "conversationId": "conv-live",
+      "type": "subscribe",
+    },
+    {
+      "hidden": false,
+      "type": "visibility",
+    },
+  ],
+  "socketUrl": "ws://prism.test/ws/chat?project=prism-client-dev&username=anonymous",
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": true,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+}
+`;
+
+exports[`live-viewer turn (characterization) > the loop gives up: iteration limit 1`] = `
+{
+  "dom": {
+    "approvalCards": [],
+    "contextBudget": [],
+    "goal": [],
+    "liveConnection": [
+      "Live stream: Live",
+    ],
+    "nonBlockingQuestions": [],
+    "questionCard": [],
+    "queuedTurns": [],
+    "rows": [
+      "User11:58 AMEarlier question",
+      "Model11:58 AMEarlier answer.",
+      "User12:00 PMFix every lint warning.",
+      "Model12:00 PM",
+    ],
+    "sendButton": "Stop",
+    "statusBar": [
+      "🧬Synthesizing…",
+    ],
+    "turnActivity": [],
+  },
+  "state": {
+    "activeId": "conv-live",
+    "agenticProgress": null,
+    "contextBudget": null,
+    "conversationId": "conv-live",
+    "conversations": [
+      {
+        "_liveModalities": {},
+        "id": "conv-live",
+        "isActive": true,
+        "modalities": {},
+        "title": "Live turn",
+        "totalCost": 0,
+        "updatedAt": "2026-09-22T11:59:00.000Z",
+      },
+    ],
+    "generatingConversationIds": [
+      "conv-live",
+    ],
+    "goal": null,
+    "isConversationRunning": true,
+    "isGenerating": false,
+    "liveConnectionState": "live",
+    "messages": [
+      {
+        "content": "Earlier question",
+        "role": "user",
+        "timestamp": "2026-09-22T11:58:00.000Z",
+      },
+      {
+        "content": "Earlier answer.",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T11:58:05.000Z",
+      },
+      {
+        "content": "Fix every lint warning.",
+        "role": "user",
+        "timestamp": "2026-09-22T12:00:00.000Z",
+      },
+      {
+        "content": "",
+        "model": "claude-test",
+        "provider": "anthropic",
+        "role": "assistant",
+        "timestamp": "2026-09-22T12:00:00.500Z",
+      },
+    ],
+    "nonBlockingQuestions": [],
+    "pendingApprovals": [],
+    "pendingUserQuestion": null,
+    "planProposal": null,
+    "queuedTurns": [],
+    "streamingOutputs": {},
+    "subAgentToolActivity": {},
+    "title": "Live turn",
+    "toolActivity": [],
+    "turnActivity": {
+      "brief": null,
+      "codeRuns": [],
+      "sources": [],
+      "todos": null,
+    },
+  },
+  "streamed": {
+    "dom": {
+      "approvalCards": [],
+      "contextBudget": [],
+      "goal": [],
+      "liveConnection": [
+        "Live stream: Live",
+      ],
+      "nonBlockingQuestions": [],
+      "questionCard": [],
+      "queuedTurns": [],
+      "rows": [
+        "User11:58 AMEarlier question",
+        "Model11:58 AMEarlier answer.",
+        "User12:00 PMFix every lint warning.",
+        "Model💻Ran npm run lint for 4 seconds▎",
+      ],
+      "sendButton": "Stop",
+      "statusBar": [
+        "📥Prefilling...Iteration 25/25",
+      ],
+      "turnActivity": [],
+    },
+    "state": {
+      "activeId": "conv-live",
+      "agenticProgress": {
+        "iteration": 25,
+        "maxIterations": 25,
+      },
+      "contextBudget": null,
+      "conversationId": "conv-live",
+      "conversations": [
+        {
+          "_liveModalities": {},
+          "id": "conv-live",
+          "isActive": true,
+          "modalities": {},
+          "title": "Live turn",
+          "totalCost": 0,
+          "updatedAt": "2026-09-22T11:59:00.000Z",
+        },
+      ],
+      "generatingConversationIds": [
+        "conv-live",
+      ],
+      "goal": null,
+      "isConversationRunning": true,
+      "isGenerating": true,
+      "liveConnectionState": "live",
+      "messages": [
+        {
+          "content": "Earlier question",
+          "role": "user",
+          "timestamp": "2026-09-22T11:58:00.000Z",
+        },
+        {
+          "content": "Earlier answer.",
+          "model": "claude-test",
+          "provider": "anthropic",
+          "role": "assistant",
+          "timestamp": "2026-09-22T11:58:05.000Z",
+        },
+        {
+          "content": "Fix every lint warning.",
+          "role": "user",
+          "timestamp": "2026-09-22T12:00:00.000Z",
+        },
+        {
+          "content": "",
+          "contentSegments": [],
+          "role": "assistant",
+          "textFragments": [],
+          "thinkingFragments": [],
+          "toolCalls": [
+            {
+              "args": {
+                "command": "npm run lint",
+              },
+              "durationMs": 4100,
+              "id": "toolu_09Lint",
+              "name": "execute_command",
+              "result": {
+                "exitCode": 1,
+                "stderr": "exit 1
+",
+                "stdout": "src/a.ts: 3 warnings
+",
+              },
+              "status": "done",
+              "timestamp": 1790078400100,
+            },
+          ],
+        },
+      ],
+      "nonBlockingQuestions": [],
+      "pendingApprovals": [],
+      "pendingUserQuestion": null,
+      "planProposal": null,
+      "queuedTurns": [],
+      "streamingOutputs": {},
+      "subAgentToolActivity": {},
+      "title": "Live turn",
+      "toolActivity": [
+        {
+          "args": {
+            "command": "npm run lint",
+          },
+          "durationMs": 4100,
+          "id": "toolu_09Lint",
+          "name": "execute_command",
+          "result": {
+            "exitCode": 1,
+            "stderr": "exit 1
+",
+            "stdout": "src/a.ts: 3 warnings
+",
+          },
+          "status": "done",
+          "timestamp": 1790078400100,
+        },
+      ],
+      "turnActivity": {
+        "brief": null,
+        "codeRuns": [],
+        "sources": [],
+        "todos": null,
+      },
+    },
+  },
+  "toasts": [],
+  "trace": [
+    "user_message: msgs=3 last=user(23ch) gen=1",
+    "status(iteration_progress): msgs=3 last=user(23ch) gen=1",
+    "tool_execution(calling): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[execute_command:calling]",
+    "tool_output: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[execute_command:calling]",
+    "tool_output: msgs=4 last=assistant(0ch tools:1) gen=1 tools=[execute_command:calling]",
+    "tool_execution(done): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[execute_command:done]",
+    "status(iteration_limit_reached): msgs=4 last=assistant(0ch tools:1) gen=1 tools=[execute_command:done]",
+    "done: msgs=4 last=assistant(0ch) gen=0",
+  ],
+}
+`;
