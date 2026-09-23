@@ -15,7 +15,6 @@ import {
   File,
   FolderOpen,
   Plus,
-  ShieldCheck,
   FileCode,
   FileText,
   FileSpreadsheet,
@@ -181,7 +180,6 @@ import {
   AGENT_IDS,
   AGENTLESS_AGENT,
   LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
-  LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED,
   LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS,
   LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS,
   LOCAL_STORAGE_KEY_AGENT_MAX_RECURSION_DEPTH,
@@ -1121,12 +1119,6 @@ export default function AgentChatComponent({
     }
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
-  const [criticGateEnabled, setCriticGateEnabled] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED) === "true";
-    }
-    return false;
-  });
   const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>(
     [],
   );
@@ -4211,7 +4203,6 @@ export default function AgentChatComponent({
                 ? maxSubAgentIterations
                 : 0,
               maxRecursionDepth,
-              ...(criticGateEnabled && { enableCriticGate: true }),
               ...(settings.agents?.workspaceEnabled === false && {
                 workspaceEnabled: false,
               }),
@@ -5755,7 +5746,6 @@ export default function AgentChatComponent({
       settings.agents?.thoughtStructure,
       settings.agents?.workspaceEnabled,
       settings.agents?.locale,
-      criticGateEnabled,
       conversationId,
       traceId,
       disabledTools,
@@ -8216,22 +8206,6 @@ export default function AgentChatComponent({
                       label: "Plan Mode",
                       checked: planFirst,
                       onChange: () => setPlanFirst((value) => !value),
-                    },
-                    {
-                      key: "criticGate",
-                      icon: <ShieldCheck size={12} />,
-                      label: "Critic Gate",
-                      checked: criticGateEnabled,
-                      onChange: () => {
-                        setCriticGateEnabled((value) => {
-                          const next = !value;
-                          localStorage.setItem(
-                            LOCAL_STORAGE_KEY_CRITIC_GATE_ENABLED,
-                            String(next),
-                          );
-                          return next;
-                        });
-                      },
                     },
                     {
                       key: "iterations",
