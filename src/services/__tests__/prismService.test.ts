@@ -442,6 +442,16 @@ describe("PrismService", () => {
       await PrismService.getAgentMemoryFacets("project-a", "LUPOS");
       expect(lastUrl).toContain("/agent-memories/facets?project=project-a&agent=LUPOS");
 
+      // Quarantine review (prompt 22): the pending list and a decision.
+      await PrismService.getAgentMemories(
+        "project-a", 10, "coding", 0, undefined, undefined, undefined, false, true,
+      );
+      expect(lastUrl).toContain("quarantined=true");
+      await PrismService.reviewAgentMemory("memory-9", "reject");
+      expect(lastUrl).toContain("/agent-memories/memory-9/review");
+      expect(lastOptions?.method).toBe("POST");
+      expect(JSON.parse(lastOptions?.body as string)).toEqual({ decision: "reject" });
+
       await PrismService.deleteAgentMemory("memory-123");
       expect(lastUrl).toContain("/agent-memories/memory-123");
 

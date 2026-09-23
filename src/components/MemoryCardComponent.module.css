@@ -148,6 +148,55 @@
   color: var(--color-cyan);
 }
 
+/* ── Provenance: quarantined / untrusted source ──────────── */
+
+.is-quarantined {
+  border-left-color: var(--color-rose);
+  background: color-mix(in oklch, var(--color-rose) 5%, transparent);
+}
+
+.memory-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-rose) 12%, transparent);
+  color: var(--color-rose);
+}
+
+.memory-source-badge-confirmed {
+  background: color-mix(in srgb, var(--color-emerald) 10%, transparent);
+  color: var(--color-emerald);
+}
+
+.review-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.review-label {
+  flex: 1;
+  font-size: var(--font-size-xs);
+  color: var(--color-rose);
+  font-weight: 500;
+}
+
+.review-button-accept {
+  background: color-mix(in srgb, var(--color-emerald) 15%, transparent);
+  color: var(--color-emerald);
+  border-color: color-mix(in srgb, var(--color-emerald) 30%, transparent);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-emerald) 25%, transparent);
+  }
+}
+
 /* ── Discord User Attribution Badges ───────────────────────── */
 
 .memory-user-badge {
