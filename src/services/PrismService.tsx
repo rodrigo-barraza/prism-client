@@ -1,14 +1,11 @@
-import { EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS, HEADER_PROFILE_ID } from "@/constants";
-import { reportViewerVisibility } from "./viewerVisibility";
-import { SERVER_SENT_EVENT_TYPES, IDENTITY_HEADERS } from "@rodrigo-barraza/utilities-library/taxonomy";
-import { PRISM_SERVICE_URL, PRISM_WEBSOCKET_URL, MINIO_URL } from "@/config";
+import { EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS } from "@/constants";
+import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { getErrorMessage } from "../utils/errorMessage";
-import { cursorFor } from "../utils/liveTurnCursor";
-import { parseStreamEvent, sourceModelOf, type StreamProtocol } from "./protocolEvents";
+import { sourceModelOf, type StreamProtocol } from "./protocolEvents";
 import { StreamError } from "../types/types";
-import { openLiveViewerSocket, type LiveSocketState } from "./liveViewerSocket";
+import { serverSentEvents, StreamClosedError } from "./agentStream";
 import type { TurnInputResponse } from "../utils/turnInputRouting";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
 import { hydrateToolEmojiCache } from "../components/WorkflowNodeConstantsComponent";
@@ -1779,14 +1776,10 @@ export default class PrismService {
   }
 
   /**
-   * Stream text generation via SSE (Server-Sent Events).
-
-
-   */
-  /**
-   * Generic SSE stream helper — handles fetch, ReadableStream parsing, and
-   * callback dispatch for any SSE endpoint.  All public stream* methods
-   * delegate here so the protocol logic lives in exactly one place.
+   * Generic SSE stream helper for the callback-driven streams (synthesis,
+   * benchmarks): reads the response through agentStream's
+   * `serverSentEvents` and dispatches each event to its callback. The agent
+   * chat iterates agentStream directly.
    */
   static _streamSSE(
     endpoint: string,
@@ -1800,174 +1793,39 @@ export default class PrismService {
       body?: unknown;
       /** Which stream this is (protocolEvents.ts): its frames are parsed as that stream's events. */
       protocol?: StreamProtocol;
-      /**
-       * Advance this conversation's event cursor as events arrive, so a
-       * later viewer WebSocket for the same conversation resubscribes with
-       * `afterSeq` and drops anything this stream already delivered.
-       */
+      /** Advance this conversation's event cursor as events arrive (see serverSentEvents). */
       cursorConversationId?: string;
     } = {},
     callbacks: SSECallbacks = {},
   ): () => void {
-    const { onError } = callbacks;
-    const cursor = cursorConversationId ? cursorFor(cursorConversationId) : null;
     const controller = new AbortController();
-    // Terminal-state guarantee: consumers must never hang waiting for onDone.
-    // Track whether the server delivered a logical terminal event (done/error);
-    // if the stream closes without one, synthesize onStreamClosed.
-    let sawTerminalEvent = false;
-    // Watchdog: a stalled-but-open socket (half-open TCP, dead proxy) never
-    // rejects reader.read() — without this the stream hangs forever. The
-    // server emits `: ping` comment frames well inside this window, and any
-    // byte (data or comment) resets the timer.
-    const STALL_TIMEOUT_MS = 120_000;
-    let stallTimer: ReturnType<typeof setTimeout> | undefined;
-    let stalled = false;
-    const armStallTimer = () => {
-      clearTimeout(stallTimer);
-      stallTimer = setTimeout(() => {
-        stalled = true;
-        controller.abort();
-      }, STALL_TIMEOUT_MS);
-    };
-
-    const parseAndDispatchLine = (line: string) => {
-      if (!line.startsWith("data: ")) return;
-      const json = line.slice(6);
-      if (!json) return;
-
-      try {
-        const parsed = parseStreamEvent(JSON.parse(json), protocol);
-        if (!parsed) return; // not an event of this stream — logged by the parser
-        const data = PrismService._normalizeSSEData(parsed);
-        if (data.type === "tool_execution" || data.type === "toolCall") {
-          const toolName = data.type === "tool_execution" ? data.tool.name : data.name;
-          console.debug(
-            `[SSE dispatch] type=${data.type} status=${data.status || ""} tool=${toolName || ""} (${json.length}ch)`,
-          );
-        } else if (data.type === "done" || data.type === "error") {
-          console.debug(`[SSE dispatch] type=${data.type} (${json.length}ch)`);
-        }
-        if (
-          data.type === SERVER_SENT_EVENT_TYPES.DONE ||
-          data.type === SERVER_SENT_EVENT_TYPES.ERROR
-        ) {
-          sawTerminalEvent = true;
-        }
-        if (cursor && !cursor.accept(data)) return; // already delivered
-        PrismService._dispatchSSE(data, callbacks);
-      } catch (parseError: unknown) {
-        if (json.length > 0) {
-          console.warn(
-            `[PrismService] SSE JSON parse failed (${json.length} chars):`,
-            getErrorMessage(parseError),
-            json.slice(0, 200),
-          );
-        }
-      }
-    };
-
-    // Tolerate CRLF line endings and skip `:` comment (heartbeat) frames.
-    const parseLines = (lines: string[]) => {
-      for (const rawLine of lines) {
-        const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
-        if (line.startsWith(":")) continue; // SSE comment / server heartbeat
-        parseAndDispatchLine(line);
-      }
-    };
-
     (async () => {
       try {
-        const response = await fetch(`${API_BASE}${endpoint}`, {
+        for await (const event of serverSentEvents(endpoint, {
           method,
-          headers: getHeaders(),
-          ...(body ? { body: JSON.stringify(body) } : {}),
+          body,
+          protocol,
+          cursorConversationId,
           signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({}));
-          if (onError)
-            onError(new Error(error.message || `HTTP ${response.status}`));
-          return;
-        }
-
-        if (!response.body) {
-          if (onError) onError(new Error("SSE response has no body"));
-          return;
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        armStallTimer();
-
-        while (true) {
-          const { done, value } = await reader.read();
-          armStallTimer();
-          if (done) {
-            // Flush any trailing bytes: a final event without a terminating
-            // newline would otherwise be silently discarded.
-            buffer += decoder.decode();
-            if (buffer.length > 0) parseLines(buffer.split("\n"));
-            break;
+        })) {
+          try {
+            PrismService._dispatchSSE(event, callbacks);
+          } catch (callbackError: unknown) {
+            // A throwing consumer must not end the stream for the rest.
+            console.warn(`[PrismService] SSE callback failed on "${event.type}":`, callbackError);
           }
-
-          buffer += decoder.decode(value, { stream: true });
-
-          // Parse SSE lines: "data: {...}\n\n"
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || ""; // Keep incomplete line in buffer
-
-          parseLines(lines);
         }
-
-        if (!sawTerminalEvent) {
-          console.warn(`[SSE] stream closed without done/error event`);
-          callbacks.onStreamClosed?.({ reason: "eof-without-done" });
-        }
+        if (controller.signal.aborted) callbacks.onAborted?.();
       } catch (error: unknown) {
-        if (error instanceof Error && error.name === "AbortError") {
-          if (stalled) {
-            console.warn(
-              `[SSE] no bytes received for ${STALL_TIMEOUT_MS / 1000}s — treating stream as stalled`,
-            );
-            callbacks.onStreamClosed?.({ reason: "stalled" });
-          } else {
-            callbacks.onAborted?.();
-          }
+        if (error instanceof StreamClosedError) {
+          callbacks.onStreamClosed?.({ reason: error.reason });
           return;
         }
         console.error(`[SSE] stream error:`, error);
-        if (onError)
-          onError(
-            error instanceof Error ? error : new Error(getErrorMessage(error)),
-          );
-      } finally {
-        clearTimeout(stallTimer);
+        callbacks.onError?.(error instanceof Error ? error : new Error(getErrorMessage(error)));
       }
     })();
-
     return () => controller.abort();
-  }
-
-  /**
-   * Normalize a parsed SSE event at the wire boundary so downstream
-   * consumers see one canonical shape. Currently: the server emits tool
-   * durations as either `durationMs` or `durationMilliseconds` depending
-   * on the code path (provider vs orchestrator) — canonicalize to
-   * `durationMs` on both the envelope and the nested `tool` object.
-   */
-  static _normalizeSSEData<Event extends StreamEvent>(data: Event): Event {
-    const normalizeDuration = (obj: Record<string, unknown> | undefined) => {
-      if (!obj) return;
-      if (obj.durationMs == null && typeof obj.durationMilliseconds === "number") {
-        obj.durationMs = obj.durationMilliseconds;
-      }
-    };
-    normalizeDuration(data as Record<string, unknown>);
-    normalizeDuration((data as { tool?: Record<string, unknown> }).tool);
-    return data;
   }
 
   /**
@@ -2124,15 +1982,6 @@ export default class PrismService {
   }
 
   /**
-   * Stream text generation via SSE (Server-Sent Events).
-
-
-   */
-  static streamText(payload: ChatPayload, callbacks: SSECallbacks): () => void {
-    return PrismService._streamSSE("/chat", { body: payload }, callbacks);
-  }
-
-  /**
    * Stream a full server-orchestrated synthesis run via SSE.
    * The backend owns the turn loop (persona prompt, role-swapping, model
    * selection, persistence — see SynthesisOrchestrationService); the client
@@ -2172,193 +2021,6 @@ export default class PrismService {
       { body: payload, protocol: "synthesis" },
       callbacks,
     );
-  }
-
-  /**
-   * Stream agentic text generation via SSE — hits the /agent endpoint
-   * which enables the AgenticLoopService (tool orchestration, planning,
-   * approval gates, etc.). Identical callback interface to streamText().
-   */
-  static streamAgentText(
-    payload: ChatPayload,
-    callbacks: SSECallbacks,
-  ): () => void {
-    // Default agent selection is server policy (AgentRoutes).
-    return PrismService._streamSSE(
-      "/agent",
-      { body: payload, cursorConversationId: payload.conversationId },
-      callbacks,
-    );
-  }
-
-  /**
-   * The `/ws/chat` URL with this client's identity, or null when no
-   * WebSocket URL is configured. Browsers cannot set custom headers on
-   * WebSocket upgrades, so identity and profile travel as query params
-   * (mirrored server-side).
-   */
-  static liveSocketUrl(): string | null {
-    if (!PRISM_WEBSOCKET_URL) return null;
-    const headers = getHeaders();
-    const websocketUrlParameters = new URLSearchParams({
-      project: headers[IDENTITY_HEADERS.project] || "any",
-      username: headers[IDENTITY_HEADERS.username] || "anonymous",
-    });
-    if (headers[HEADER_PROFILE_ID]) {
-      websocketUrlParameters.set("profileId", headers[HEADER_PROFILE_ID]);
-    }
-    return `${PRISM_WEBSOCKET_URL}/ws/chat?${websocketUrlParameters.toString()}`;
-  }
-
-  /**
-   * A `createSocket` for openLiveViewerSocket that keeps the service told
-   * whether this page is visible on every (re)connected socket — a viewer
-   * that never reports counts as watching, and the conversation's "needs
-   * you" push would be held back. `stop` ends the reporting for good.
-   */
-  static visibilityReportingSockets(): {
-    createSocket: (_url: string) => WebSocket;
-    stop: () => void;
-  } {
-    let stopReporting: (() => void) | null = null;
-    return {
-      createSocket: (socketUrl) => {
-        stopReporting?.();
-        const websocket = new WebSocket(socketUrl);
-        stopReporting = reportViewerVisibility(websocket);
-        return websocket;
-      },
-      stop: () => {
-        stopReporting?.();
-        stopReporting = null;
-      },
-    };
-  }
-
-  /**
-   * Subscribe to a conversation's live events via WebSocket.
-   *
-   * Used by viewers of a turn driven elsewhere (another tab or device,
-   * /admin/chat, a sub-agent) and after the SSE stream closes on a
-   * non-blocking sub-agent dispatch. Events are dispatched through the same
-   * SSE callback system as the primary stream. The socket reconnects with
-   * backoff and resubscribes from the conversation's event cursor
-   * (liveViewerSocket), so a drop replays only what was missed.
-   *
-   * Returns a cleanup function that closes the WebSocket.
-   */
-  static subscribeToAutoResponse(
-    conversationId: string,
-    callbacks: SSECallbacks,
-    { onStateChange }: { onStateChange?: (_state: LiveSocketState) => void } = {},
-  ): () => void {
-    const url = PrismService.liveSocketUrl();
-    if (!url) {
-      console.warn(
-        "[PrismService] No WebSocket URL configured — auto-response streaming unavailable",
-      );
-    }
-    const sockets = PrismService.visibilityReportingSockets();
-    const socket = openLiveViewerSocket({
-      url,
-      conversationId,
-      cursor: cursorFor(conversationId),
-      createSocket: sockets.createSocket,
-      onStateChange,
-      onEvent: (data) => PrismService._dispatchSSE(data, callbacks),
-      onSubscribed: (ack) => {
-        console.debug(
-          `[PrismService] Live subscription ${ack.isReconnect ? "resumed" : "confirmed"} for conversation ${conversationId} (lastSeq=${ack.lastSeq}, replayed=${ack.replayedCount}, dropped=${ack.droppedCount})`,
-        );
-        if (ack.truncated) {
-          callbacks.onReplayTruncated?.({ droppedCount: ack.droppedCount });
-        }
-        // A resubscribe that finds the server holding no events at all for
-        // this conversation (it restarted while the socket was down) has no
-        // turn left to follow — end it here; onDone refreshes from the
-        // database.
-        if (ack.isReconnect && !ack.lastSeq && ack.replayedCount === 0) {
-          callbacks.onDone?.({ type: SERVER_SENT_EVENT_TYPES.DONE, reason: "no-live-turn" });
-        }
-      },
-    });
-    return () => {
-      socket.close();
-      sockets.stop();
-    };
-  }
-
-  /**
-   * Follow a turn THIS client was driving after its SSE stream dropped:
-   * resubscribe from the event cursor over the reconnecting live socket and
-   * dispatch what arrives until the turn ends.
-   *
-   * Resolves `"done"` / `"error"` on the turn's terminal event; `"ended"`
-   * when a subscribe finds the server no longer running it; `"unconfigured"`
-   * right away without a WebSocket URL (the caller falls back to polling);
-   * `"timeout"` after `timeoutMilliseconds`.
-   */
-  static followLiveTurn(
-    conversationId: string,
-    callbacks: SSECallbacks,
-    {
-      isTurnRunning,
-      timeoutMilliseconds,
-      onStateChange,
-    }: {
-      isTurnRunning: () => Promise<boolean>;
-      timeoutMilliseconds: number;
-      onStateChange?: (_state: LiveSocketState) => void;
-    },
-  ): Promise<"done" | "error" | "ended" | "unconfigured" | "timeout"> {
-    return new Promise((resolve) => {
-      let isSettled = false;
-      let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
-      const socketRef: { current: { close(): void } | null } = { current: null };
-      const sockets = PrismService.visibilityReportingSockets();
-      const finish = (outcome: "done" | "error" | "ended" | "unconfigured" | "timeout") => {
-        if (isSettled) return;
-        isSettled = true;
-        if (timeoutTimer) clearTimeout(timeoutTimer);
-        socketRef.current?.close();
-        sockets.stop();
-        resolve(outcome);
-      };
-
-      const socket = openLiveViewerSocket({
-        url: PrismService.liveSocketUrl(),
-        conversationId,
-        cursor: cursorFor(conversationId),
-        createSocket: sockets.createSocket,
-        onStateChange,
-        onEvent: (data) => {
-          PrismService._dispatchSSE(data, callbacks);
-          if (data.type === SERVER_SENT_EVENT_TYPES.DONE) finish("done");
-          else if (data.type === SERVER_SENT_EVENT_TYPES.ERROR) finish("error");
-        },
-        onSubscribed: (ack) => {
-          if (!ack.lastSeq && ack.replayedCount === 0) {
-            finish("ended"); // the server has no events for it: it restarted
-            return;
-          }
-          if (ack.replayedCount === 0) {
-            // Nothing missed — still running, or finished with its buffer
-            // already retired. The document says which.
-            isTurnRunning()
-              .then((isRunning) => {
-                if (!isRunning) finish("ended");
-              })
-              .catch(() => {});
-          }
-        },
-      });
-      socketRef.current = socket;
-      if (socket.state() === "unconfigured") {
-        finish("unconfigured");
-        return;
-      }
-      timeoutTimer = setTimeout(() => finish("timeout"), timeoutMilliseconds);
-    });
   }
 
   /**

@@ -10,10 +10,9 @@
  *   - the live-viewer WebSocket it opens for a turn driven elsewhere: a
  *     fake `WebSocket` the test opens, acks and writes frames into.
  *
- * Everything below the component is the real code: PrismService, the SSE
- * framing, liveViewerSocket and its cursor. Only the network is fake, so a
- * refactor of the transport (docs/prompts/26 Landing 2) runs through the
- * same harness unchanged.
+ * Everything below the component is the real code: the transport
+ * (services/agentStream.ts — the SSE reader, liveViewerSocket and its
+ * cursor) and the conversation reducer. Only the network is fake.
  *
  * What the suite reads:
  *   - state — `utils/chatDebugProbe` publishes the chat's state after every
@@ -483,6 +482,8 @@ export interface ChatHarness {
   commits: { total: number };
   /** Every toast the chat has shown, in order (see normalizeState). */
   toastLog: ReadonlyArray<{ message: string; type: string }>;
+  /** Render the chat again with new props (the page's agent personas arriving, say). */
+  rerender(_props: AgentChatComponentProps): Promise<void>;
   unmount(): void;
 }
 
@@ -546,13 +547,14 @@ export async function mountChat(
   });
 
   const commits = { total: 0 };
+  const chatElement = (chatProps: AgentChatComponentProps) => (
+    <Profiler id="agent-chat" onRender={() => (commits.total += 1)}>
+      <AgentChatComponent {...chatProps} />
+    </Profiler>
+  );
   let view: RenderResult | null = null;
   await act(async () => {
-    view = render(
-      <Profiler id="agent-chat" onRender={() => (commits.total += 1)}>
-        <AgentChatComponent {...props} />
-      </Profiler>,
-    );
+    view = render(chatElement(props));
     await flushAsyncWork();
   });
 
@@ -603,6 +605,9 @@ export async function mountChat(
     rowRenders,
     commits,
     toastLog,
+    async rerender(nextProps) {
+      await settle(() => view!.rerender(chatElement(nextProps)));
+    },
     unmount() {
       for (const stream of network.streams) stream.close();
       view?.unmount();

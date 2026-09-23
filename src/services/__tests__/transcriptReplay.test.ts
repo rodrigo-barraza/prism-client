@@ -11,6 +11,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import PrismService from "../PrismService";
+import { normalizeStreamEvent } from "../agentStream";
 import type {
   ContextBudgetEvent,
   SSECallbacks,
@@ -65,7 +66,7 @@ function replay(events: TurnEvent[]): string[] {
   };
 
   for (const event of events) {
-    PrismService._dispatchSSE(PrismService._normalizeSSEData(event), callbacks);
+    PrismService._dispatchSSE(normalizeStreamEvent(event), callbacks);
   }
   return log;
 }

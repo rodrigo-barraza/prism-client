@@ -11,6 +11,13 @@ Date: 2026-07-13
 > Phase 3.5 (shared state ladder), Phase 3.6 (persisted event — note the
 > Finalizer already emits `done` after persistence, so re-verify whether
 > attemptPostStreamRefresh is still needed at all), Phases 4–5.
+>
+> **2026-09-22 (prism-service prompt 26, Landing 2 `chat-event-reducer`):**
+> the agentStream.ts module (one typed event iterator for the SSE, the viewer
+> socket and recovery) and the Phase 2 reducer
+> (`utils/agentConversationReducer.ts`, one handler set for every transport)
+> are done; the line numbers below predate both. The component split and
+> `attemptPostStreamRefresh` are Landing 3's (`docs/chat-characterization.md`).
 Scope: the main agentic flow in prism-client (`ChatConversationComponent` → `PrismService._streamSSE` → SSE callbacks → tool/sub-agent state → render), plus business logic that should migrate to prism-service.
 Constraint: every phase is independently shippable and must not break current functionality. Client and service deploy independently (`npm run deploy` each), so all protocol changes are **additive-first**: server emits old + new shapes during transition, client switches, old shape removed last.
 

@@ -3,17 +3,11 @@ import {
   AGENT_IDS,
   AGENTLESS_AGENT,
   LOCAL_STORAGE_KEY_ACTIVE_AGENT,
-  EVENT_NAME_AGENT_SWITCH,
-  EVENT_NAME_MODEL_CHANGE,
-  EVENT_NAME_CONVERSATION_CHANGE,
-  EVENT_NAME_SIDEBAR_TAB_CHANGE,
-  EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE,
-  EVENT_NAME_VIEW_MODE_CHANGE,
 } from "@/constants";
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import AgentChatComponent from "../../components/AgentChatComponent";
+import AgentChatComponent, { type ChatUrlChange } from "../../components/AgentChatComponent";
 import PrismService from "../../services/PrismService";
 import { AgentPersona } from "../../types/types";
 import styles from "./page.module.css";
@@ -131,158 +125,61 @@ function AgentsPageInner() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Listen for agent:switch events from AgentChatComponent
-  const handleAgentSwitch = useCallback(
-    (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const newId = customEvent.detail?.agentId;
-      if (newId) {
-        setLocalAgentId(newId);
-        localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVE_AGENT, newId);
-        if (searchParams.has("conversation")) {
-          router.push(`/chat?agent=${encodeURIComponent(newId)}`);
-        } else if (newId !== activeAgentId) {
-          router.replace(
-            buildUrl(searchParams, { agent: encodeURIComponent(newId) }),
-            { scroll: false },
-          );
+  // The chat reports what the URL mirrors (ChatUrlChange); the router
+  // applies it. `agent` also switches the chat itself (a remount).
+  const handleUrlChange = useCallback(
+    (change: ChatUrlChange) => {
+      const replace = (updates: Record<string, string | null>) =>
+        router.replace(buildUrl(searchParams, updates), { scroll: false });
+      switch (change.kind) {
+        case "agent": {
+          const newId = change.agentId;
+          if (!newId) return;
+          setLocalAgentId(newId);
+          localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVE_AGENT, newId);
+          if (searchParams.has("conversation")) {
+            router.push(`/chat?agent=${encodeURIComponent(newId)}`);
+          } else if (newId !== activeAgentId) {
+            replace({ agent: encodeURIComponent(newId) });
+          }
+          return;
         }
+        case "model": {
+          if (!change.provider || !change.model) return;
+          const modelKey = `${change.provider}:${change.model}`;
+          if (searchParams.get("model") === modelKey) return;
+          replace({ model: modelKey });
+          return;
+        }
+        case "conversation": {
+          // A conversation owns its model: the URL drops `model` and keeps
+          // `agent`, which stops AgentChatComponent from remounting.
+          const { conversationId } = change;
+          if (searchParams.get("conversation") === (conversationId || null)) return;
+          if (conversationId) {
+            replace({ conversation: conversationId, model: null, agent: activeAgentId });
+          } else {
+            // New chat — clear conversation param, keep everything else
+            replace({ conversation: null });
+          }
+          return;
+        }
+        case "tab":
+          if (!change.tab || searchParams.get("tab") === change.tab) return;
+          replace({ tab: change.tab });
+          return;
+        case "tabBottom":
+          if (!change.tabBottom || searchParams.get("tabBottom") === change.tabBottom) return;
+          replace({ tabBottom: change.tabBottom });
+          return;
+        case "viewMode":
+          if (!change.viewMode || searchParams.get("view") === change.viewMode) return;
+          replace({ view: change.viewMode });
+          return;
       }
     },
     [activeAgentId, router, searchParams],
   );
-
-  // Listen for model:change events from AgentChatComponent — sync URL
-  const handleModelChange = useCallback(
-    (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const { provider, model } = customEvent.detail || {};
-      if (!provider || !model) return;
-      const modelKey = `${provider}:${model}`;
-      const current = searchParams.get("model");
-      if (current === modelKey) return;
-      router.replace(buildUrl(searchParams, { model: modelKey }), {
-        scroll: false,
-      });
-    },
-    [router, searchParams],
-  );
-
-  // When a conversation is active, strip model from URL but keep agent — the
-  // conversation data is the source of truth for the model, and we keep agent
-  // in the URL to prevent AgentChatComponent remounting.
-  const handleConversationChange = useCallback(
-    (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const { conversationId } = customEvent.detail || {};
-      const current = searchParams.get("conversation");
-      if (current === (conversationId || null)) return;
-      if (conversationId) {
-        // Conversation active — keep conversation and agent params
-        router.replace(
-          buildUrl(searchParams, {
-            conversation: conversationId,
-            model: null,
-            agent: activeAgentId,
-          }),
-          { scroll: false },
-        );
-      } else {
-        // New chat — clear conversation param, keep everything else
-        router.replace(buildUrl(searchParams, { conversation: null }), {
-          scroll: false,
-        });
-      }
-    },
-    [activeAgentId, router, searchParams],
-  );
-
-  const handleSidebarTabChangeNotification = useCallback(
-    (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { tab: activeTabKey } = customEvent.detail || {};
-      if (!activeTabKey) return;
-      const currentSidebarTabKey = searchParams.get("tab");
-      if (currentSidebarTabKey === activeTabKey) return;
-      router.replace(buildUrl(searchParams, { tab: activeTabKey }), {
-        scroll: false,
-      });
-    },
-    [router, searchParams],
-  );
-
-  const handleSidebarTabBottomChangeNotification = useCallback(
-    (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { tabBottom: activeTabBottomKey } = customEvent.detail || {};
-      if (!activeTabBottomKey) return;
-      const currentSidebarTabBottomKey = searchParams.get("tabBottom");
-      if (currentSidebarTabBottomKey === activeTabBottomKey) return;
-      router.replace(buildUrl(searchParams, { tabBottom: activeTabBottomKey }), {
-        scroll: false,
-      });
-    },
-    [router, searchParams],
-  );
-
-  const handleViewModeChangeNotification = useCallback(
-    (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { viewMode: activeViewMode } = customEvent.detail || {};
-      if (!activeViewMode) return;
-      const currentViewMode = searchParams.get("view");
-      if (currentViewMode === activeViewMode) return;
-      router.replace(buildUrl(searchParams, { view: activeViewMode }), {
-        scroll: false,
-      });
-    },
-    [router, searchParams],
-  );
-
-  useEffect(() => {
-    window.addEventListener(EVENT_NAME_AGENT_SWITCH, handleAgentSwitch);
-    window.addEventListener(EVENT_NAME_MODEL_CHANGE, handleModelChange);
-    window.addEventListener(EVENT_NAME_CONVERSATION_CHANGE, handleConversationChange);
-    window.addEventListener(
-      EVENT_NAME_SIDEBAR_TAB_CHANGE,
-      handleSidebarTabChangeNotification,
-    );
-    window.addEventListener(
-      EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE,
-      handleSidebarTabBottomChangeNotification,
-    );
-    window.addEventListener(
-      EVENT_NAME_VIEW_MODE_CHANGE,
-      handleViewModeChangeNotification,
-    );
-    return () => {
-      window.removeEventListener(EVENT_NAME_AGENT_SWITCH, handleAgentSwitch);
-      window.removeEventListener(EVENT_NAME_MODEL_CHANGE, handleModelChange);
-      window.removeEventListener(
-        EVENT_NAME_CONVERSATION_CHANGE,
-        handleConversationChange,
-      );
-      window.removeEventListener(
-        EVENT_NAME_SIDEBAR_TAB_CHANGE,
-        handleSidebarTabChangeNotification,
-      );
-      window.removeEventListener(
-        EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE,
-        handleSidebarTabBottomChangeNotification,
-      );
-      window.removeEventListener(
-        EVENT_NAME_VIEW_MODE_CHANGE,
-        handleViewModeChangeNotification,
-      );
-    };
-  }, [
-    handleAgentSwitch,
-    handleModelChange,
-    handleConversationChange,
-    handleSidebarTabChangeNotification,
-    handleSidebarTabBottomChangeNotification,
-    handleViewModeChangeNotification,
-  ]);
 
   // Persist to localStorage on change
   useEffect(() => {
@@ -302,6 +199,7 @@ function AgentsPageInner() {
         initialTabKey={initialTabKey}
         initialTabBottomKey={initialTabBottomKey}
         initialViewMode={initialViewMode}
+        onUrlChange={handleUrlChange}
       />
     </main>
   );

@@ -4,11 +4,10 @@
  * `/ws/chat` subscribe → ack → frames — replayed from the same recorded
  * transcripts as the SSE suite.
  *
- * The viewer has its own handler set today, and it diverges from the SSE
- * one (no sub-agent activity, no usage or context budget, no approval
- * cards). These snapshots pin that divergence; unifying the two
- * (docs/prompts/26 Landing 2) changes them on purpose, and each changed
- * line is a difference to document.
+ * The viewer's events go through the same reducer as the SSE's (Landing 2
+ * of docs/prompts/26 unified them; docs/chat-characterization.md lists what
+ * changed). What stays the viewer's own is the turn's lifecycle: it follows
+ * a turn it did not send, and lands on the stored document at `done`.
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 

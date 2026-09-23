@@ -216,3 +216,24 @@ export const PHASE_TOKENS: Readonly<Record<StatusBarPhase, PhaseTokens>> = {
     },
   },
 } as const;
+
+/**
+ * Publish the live chat phase's colours as custom properties on :root, where
+ * the sidebar generating-dot and the history items' inline progress bars
+ * read them; no phase (or one without tokens) removes them.
+ */
+export function applyPhaseTokensToRoot(
+  phase: string | null | undefined,
+  rootStyle: CSSStyleDeclaration = document.documentElement.style,
+): void {
+  const tokens = phase ? PHASE_TOKENS[phase as StatusBarPhase] : null;
+  const pulseColor = tokens?.overlay.pulse ?? null;
+  if (pulseColor) rootStyle.setProperty("--generating-dot-phase-color", pulseColor);
+  else rootStyle.removeProperty("--generating-dot-phase-color");
+  for (let stopIndex = 0; stopIndex < 7; stopIndex++) {
+    const property = `--live-phase-gradient-stop-${stopIndex + 1}`;
+    const stop = tokens?.gradientStops[stopIndex];
+    if (stop) rootStyle.setProperty(property, stop);
+    else rootStyle.removeProperty(property);
+  }
+}

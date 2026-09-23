@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
 import {
   Paperclip,
@@ -40,26 +40,20 @@ import {
   Rule,
   Hook,
   ProjectInstructions,
-  ToolCallEvent,
   PrismSettings,
   Conversation,
   AgentPersona,
   ToolSchema,
-  SubAgentGenerationProgress,
-  BackgroundUsage,
   ConversationStats,
   ModelOption,
-  ContentSegment,
   TransformedRequestItem,
   LlamaCppServerProps,
-  ContextBudget,
   LiveConversationStatus,
   UserQuestionItem,
-  TurnInputKind,
-  TurnInputBoundary,
   FileAttachment,
+  StreamError,
+  type TurnEvent,
 } from "../types/types";
-import { isKnownStatusEvent, type DoneEvent } from "../types/protocol/events";
 import ThreePanelLayout from "./ThreePanelLayoutComponent";
 import NavigationSidebarComponent from "./NavigationSidebarComponent";
 import HistoryPanel from "./HistoryPanelComponent";
@@ -99,23 +93,39 @@ import ForkLineageComponent from "./ForkLineageComponent";
 import QueuedTurnChipsComponent from "./QueuedTurnChipsComponent";
 import LiveConnectionIndicatorComponent from "./LiveConnectionIndicatorComponent";
 import TurnActivityPanelComponent from "./TurnActivityPanelComponent";
-import useTurnActivity from "../hooks/useTurnActivity";
+import useAgentConversation from "../hooks/useAgentConversation";
 import useFavoriteKeys from "../hooks/useFavoriteKeys";
 import type { LiveSocketState } from "../services/liveViewerSocket";
 import { PRISM_WEBSOCKET_URL } from "@/config";
 import { resolveDisplayMessages } from "../utils/messageHelpers";
-import { appendRecoveredText } from "../utils/liveTurnRecovery";
+import {
+  followTurn,
+  openTurnStream,
+  StreamClosedError,
+  watchConversation,
+  type AgentStream,
+} from "../services/agentStream";
+import {
+  createAgentConversationState,
+  reduceEvent,
+  turnActivityOf,
+  eventClockNow,
+  type AgentConversationState,
+  type ClientMessage,
+  type SubAgentActivityEntry,
+} from "../utils/agentConversationReducer";
+import {
+  effectsOfEvent,
+  runsWhileHidden,
+  type AgentConversationEffect,
+} from "../utils/agentConversationEffects";
 import ContextBudgetIndicatorComponent from "./ContextBudgetIndicatorComponent";
 import ImagePreviewComponent from "./ImagePreviewComponent";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import ApprovalCardsComponent from "./ApprovalCardsComponent";
 import {
-  addApproval,
-  applyApprovalDecided,
-  approvalFromEvent,
   approvalsFromPendingSnapshot,
-  type PendingApproval,
 } from "../utils/approvalCards";
 import UserQuestionCardComponent from "./UserQuestionCardComponent";
 import BudgetPauseCardComponent from "./BudgetPauseCardComponent";
@@ -137,24 +147,17 @@ import {
   insertTurnInputMessage,
   attachTurnInputServerId,
   removeTurnInputMessage,
-  markTurnInputApplied,
-  applyTurnInputEvent,
   type TurnInputOutcome,
 } from "../utils/turnInputRouting";
 
 import StatusBarComponent, { type StatusBarPhase } from "./StatusBarComponent";
-import { PHASE_TOKENS } from "../utils/statusBarPhaseTokens";
+import { applyPhaseTokensToRoot } from "../utils/statusBarPhaseTokens";
 import PixelTransitionComponent from "./PixelTransitionComponent";
 import ChatConversationGraphComponent from "./ChatConversationGraphComponent";
 import useConversationGraphData from "../hooks/useConversationGraphData";
 import ChatViewModeControlComponent from "./ChatViewModeControlComponent";
 import type { ChatViewMode } from "./ChatViewModeControlComponent";
 
-import {
-  applyToolExecutionToMessages,
-  applyToolExecutionToActivity,
-  applyToolCallToMessages,
-} from "../utils/toolCallStateUpdaters";
 import { cacheToolEmoji } from "./WorkflowNodeConstantsComponent";
 
 import useConversationStats from "../hooks/useConversationStats";
@@ -163,7 +166,7 @@ import {
   renderToolName,
   type ToolDisplayMetadata,
 } from "@rodrigo-barraza/utilities-library";
-import { TOOL_NAMES, STATUS_MESSAGES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { TOOL_NAMES, DEFAULT_TOPOLOGY, DOMAINS } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { buildUnifiedToolCounts, CAPABILITY_TOOL_NAMES, toolCountsToUsedTools, resolveDefaultModel, buildDateRangeParams, buildSettingsDefaults, isNameBasedThinkingModel } from "../utils/utilities";
 import { buildResetConversationSettings } from "../utils/conversationReset";
 import { buildDirectChatConversationMeta } from "../utils/directChatMeta";
@@ -186,13 +189,7 @@ import {
   LOCAL_STORAGE_KEY_AGENT_MAX_SUB_AGENT_ITERATIONS,
   LOCAL_STORAGE_KEY_AGENT_MAX_RECURSION_DEPTH,
   DEFAULT_RECURSIVE_SPAWNING_DEPTH,
-  EVENT_NAME_SIDEBAR_TAB_CHANGE,
-  EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE,
-  EVENT_NAME_VIEW_MODE_CHANGE,
   EVENT_NAME_USER_TYPING,
-  EVENT_NAME_CONVERSATION_CHANGE,
-  EVENT_NAME_AGENT_SWITCH,
-  EVENT_NAME_MODEL_CHANGE,
   EVENT_NAME_CRON_JOB_SCHEDULED,
   LOCAL_STORAGE_KEY_WORKSPACE_TOGGLE_PREFERENCE,
 } from "../constants";
@@ -232,7 +229,6 @@ import type { MCPResource } from "@/types/types";
 import {
   shouldApplySnapshotRefresh,
   refreshUnlessStreamOwned,
-  seedStreamAccumulators,
   extractPersistedContextBudget,
 } from "../utils/liveConversationView";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -397,17 +393,6 @@ function glitchText(length = 6) {
 // Tools that are always on and non-toggleable in the agent view
 const AGENT_LOCKED_TOOLS = new Set(["Tool Calling"]);
 
-// Filesystem-mutating tools that should trigger a workspace tree refresh
-const WORKSPACE_FS_TOOLS: Set<string> = new Set([
-  TOOL_NAMES.WRITE_FILE,
-  TOOL_NAMES.REPLACE_IN_FILE,
-  TOOL_NAMES.PATCH_FILE,
-  TOOL_NAMES.MOVE_FILE,
-  TOOL_NAMES.DELETE_FILE,
-  TOOL_NAMES.EXECUTE_COMMAND,
-  TOOL_NAMES.EDIT_NOTEBOOK,
-]);
-
 const BOTTOM_PANEL_TABS = new Set([
   "tools",
   "skills",
@@ -416,6 +401,43 @@ const BOTTOM_PANEL_TABS = new Set([
   "instructions",
   "memories",
   "tasks",
+]);
+
+/** Tokens a conversation's badges have shown: they never go back down within one load. */
+interface TokenMark {
+  input: number;
+  output: number;
+  total: number;
+}
+
+const ZERO_TOKEN_MARK: TokenMark = { input: 0, output: 0, total: 0 };
+
+/** `mark` raised to `displayed`, or `mark` itself when nothing went up. */
+function raiseTokenMark(mark: TokenMark, displayed: TokenMark): TokenMark {
+  if (displayed.input <= mark.input && displayed.output <= mark.output && displayed.total <= mark.total) {
+    return mark;
+  }
+  return {
+    input: Math.max(mark.input, displayed.input),
+    output: Math.max(mark.output, displayed.output),
+    total: Math.max(mark.total, displayed.total),
+  };
+}
+
+/** The state a stream's effects are read against when it has no conversation on screen or in the background. */
+const EMPTY_CONVERSATION_STATE = createAgentConversationState();
+
+/** Events that write the transcript: a viewer stream that delivers one owns `messages` until done. */
+const STREAM_CONTENT_EVENT_TYPES: ReadonlySet<TurnEvent["type"]> = new Set([
+  "user_message",
+  "turn_input",
+  "chunk",
+  "thinking",
+  "tool_execution",
+  "toolCall",
+  "image",
+  "audio",
+  "task_notification",
 ]);
 
 
@@ -479,45 +501,15 @@ interface ViewerOpenFile {
   path: string;
 }
 
-interface SubAgentActivityEntry {
-  phase?: string;
-  currentTool?: string | null;
-  iteration?: number;
-  subAgentId?: string;
-  toolName?: string;
-  error?: string;
-  phaseProgress?: number;
-  totalOutputTokens?: number;
-  tokensPerSecond?: number;
-  toolCount?: number;
-  toolNames?: Record<string, number>;
-  toolCalls?: ToolCallEvent[];
-  [key: string]:
-    | string
-    | number
-    | boolean
-    | null
-    | undefined
-    | Record<string, number>
-    | ToolCallEvent[];
-}
 
-/** Approval request from an agentic tool call. */
-/** Snapshot of UI state stored when a background-generating conversation is paused. */
+/**
+ * A conversation the user switched away from while its turn was streaming:
+ * its conversation state (the SSE keeps it current in the background) and
+ * the settings it ran with, restored when they switch back.
+ */
 interface ConversationSnapshot {
-  messages: ClientMessage[];
+  conversation: AgentConversationState;
   title: string;
-  toolActivity: ToolCallEvent[];
-  subAgentToolActivity: Record<string, SubAgentActivityEntry>;
-  streamingOutputs: Map<string, string>;
-  pendingApprovals: PendingApproval[];
-  pendingUserQuestion: {
-    questionId?: string;
-    questions?: UserQuestionItem[];
-    context?: string;
-  } | null;
-  planProposal: { plan: string; steps?: string[]; status?: "pending" | "approved" | "rejected" | "executing" } | null;
-  agenticProgress: { iteration: number; maxIterations: number } | null;
   settings: Record<string, unknown>;
   backendConversationStats: ConversationStats | null;
   isBackendStatsStale?: boolean;
@@ -525,47 +517,19 @@ interface ConversationSnapshot {
   disabledTools: string[];
 }
 
-interface ClientMessage extends Message {
-  _liveModelNames?: string[];
-  _liveModalities?: Record<string, number>;
-  _backgroundUsage?: BackgroundUsage & { requests?: number };
-  _streamingOutputCharacters?: number;
-  _streamingStartTime?: number;
-  _streamingLastChunkTime?: number;
-  _streamingBurstTokens?: number;
-  _streamingBurstElapsed?: number;
-  _processingStartTime?: number;
-  _ttftSamples?: number[];
-  _statusProgress?: number | Record<string, unknown>;
-  _subAgentGenerationProgress?: Record<string, SubAgentGenerationProgress>;
-  _subAgentTokens?: {
-    input?: number;
-    output?: number;
-    requests?: number;
-  };
-  _liveGenProgress?: {
-    inputTokens?: number;
-    outputTokens?: number;
-    tokensPerSecond?: number;
-    totalOutputTokens?: number;
-    cost?: number;
-    requests?: number;
-    activeRequests?: number;
-    totalTokens?: number;
-    avgTtft?: number;
-    /** Live server-estimated cost of the in-flight generation (USD) */
-    estimatedCost?: number | null;
-    timestamp?: number;
-  };
-  _fromSnapshot?: boolean;
-  _snapshot?: Record<string, unknown>;
-  statusPhase?: string;
-  synthetic?: boolean;
-  /** UI-only status marker for in-flight messages (e.g. 'thinking', 'processing') */
-  status?: string;
-  /** Populated when the agentic loop terminates for a non-standard reason (e.g. iteration limit, stall, cost limit) */
-  _terminationReason?: string;
-}
+
+/**
+ * A change the page's URL mirrors — the conversation on screen, the model,
+ * the sidebar tabs, the view mode, the agent. The page applies it with its
+ * router (`/chat`); a page that keeps no chat state in its URL passes none.
+ */
+export type ChatUrlChange =
+  | { kind: "conversation"; conversationId: string | null }
+  | { kind: "model"; provider: string; model: string }
+  | { kind: "tab"; tab: string }
+  | { kind: "tabBottom"; tabBottom: string }
+  | { kind: "viewMode"; viewMode: string }
+  | { kind: "agent"; agentId: string };
 
 export interface AgentChatComponentProps {
   agentId?: string;
@@ -581,6 +545,8 @@ export interface AgentChatComponentProps {
   initialViewMode?: string | null;
   isAdmin?: boolean;
   initialId?: string | null;
+  /** Mirror a change in the page's URL (see ChatUrlChange). */
+  onUrlChange?: (_change: ChatUrlChange) => void;
 }
 
 export default function AgentChatComponent({
@@ -595,11 +561,20 @@ export default function AgentChatComponent({
   initialViewMode = null,
   isAdmin = false,
   initialId = null,
+  onUrlChange,
 }: AgentChatComponentProps) {
+  const onUrlChangeRef = useRef(onUrlChange);
+  useLayoutEffect(() => {
+    onUrlChangeRef.current = onUrlChange;
+  });
+  const reportUrlChange = useCallback(
+    (change: ChatUrlChange) => onUrlChangeRef.current?.(change),
+    [],
+  );
   // Track whether the URL model param has been applied — prevents re-apply on re-render
   const urlModelAppliedRef = useRef<boolean>(false);
   // Track whether the URL conversation param has been consumed
-  const urlConversationAppliedRef = useRef<boolean>(false);
+  const urlConversationLoadRef = useRef<{ project: string | undefined; isLoaded: boolean } | null>(null);
 
   // -- Admin mode hooks (called unconditionally per Rules of Hooks) --
   const adminHeaderContext = useAdminHeader();
@@ -636,8 +611,9 @@ export default function AgentChatComponent({
   const adminSelectedSourceRef = useRef<
     "conversation" | "agent_conversation" | null
   >(adminSelectedSource);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  adminSelectedSourceRef.current = adminSelectedSource;
+  useLayoutEffect(() => {
+    adminSelectedSourceRef.current = adminSelectedSource;
+  });
   const [adminLoadingDetail, setAdminLoadingDetail] = useState(false);
   const [adminNewIds, setAdminNewIds] = useState<Set<string>>(new Set());
   const [adminGeneratingCount, setAdminGeneratingCount] = useState(0);
@@ -697,18 +673,43 @@ export default function AgentChatComponent({
   const [chatBackground] = useChatBackgroundSetting();
 
   // -- State ----------------------------------------------------
-  const [messages, setMessages] = useState<ClientMessage[]>([]);
+  // The conversation on screen: its transcript, cards, live activity and the
+  // turn in progress — one reducer that every turn event goes through,
+  // whichever transport carried it (useAgentConversation).
+  const agentConversation = useAgentConversation();
+  const {
+    state: {
+      messages,
+      isGenerating,
+      toolActivity,
+      streamingOutputs,
+      subAgentToolActivity,
+      pendingApprovals,
+      pendingUserQuestion,
+      planProposal,
+      agenticProgress,
+      statusBarInitialElapsedMilliseconds,
+      contextBudget,
+    },
+    dispatch: dispatchConversation,
+    getState: getConversationState,
+    ingest: ingestConversationEvent,
+    setMessages,
+    setIsGenerating,
+    setToolActivity,
+    setSubAgentToolActivity,
+    setPendingApprovals,
+    setPendingUserQuestion,
+    setPlanProposal,
+    setAgenticProgress,
+    setStatusBarInitialElapsedMilliseconds,
+    setContextBudget,
+  } = agentConversation;
 
   const inputValueRef = useRef<string>("");
   const [hasInput, setHasInput] = useState(false);
   const [draftInputLength, setDraftInputLength] = useState(0);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isUserExplicitlyStopped, setIsUserExplicitlyStopped] = useState(false);
-  const [contextBudget, setContextBudget] = useState<ContextBudget | null>(null);
-  const [toolActivity, setToolActivity] = useState<ToolCallEvent[]>([]);
-  const [streamingOutputs, setStreamingOutputs] = useState<Map<string, string>>(
-    new Map(),
-  );
   const [conversationId, setConversationId] = useState(() => generateUUID());
   const nextTurnQueue = useNextTurnQueue(conversationId);
   const enqueueNextTurn = nextTurnQueue.enqueue;
@@ -718,11 +719,7 @@ export default function AgentChatComponent({
     PRISM_WEBSOCKET_URL ? "closed" : "unconfigured",
   );
   // Checklist, brief, sources and code runs a turn streams outside its messages.
-  const {
-    activity: turnActivity,
-    callbacksFor: turnActivityCallbacks,
-    startTurn: startTurnActivity,
-  } = useTurnActivity(conversationId);
+  const turnActivity = turnActivityOf(agentConversation.state, conversationId);
   const conversationFavorites = useFavoriteKeys("conversation");
   const [traceId, setTraceId] = useState<string | null>(() => generateUUID());
   const [conversations, setConversations] = useState<Array<AgentConversation | Conversation>>(
@@ -736,8 +733,9 @@ export default function AgentChatComponent({
   // that must read the CURRENT selection without re-subscribing on every
   // selection change.
   const activeIdRef = useRef<string | null>(activeId);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  activeIdRef.current = activeId;
+  useLayoutEffect(() => {
+    activeIdRef.current = activeId;
+  });
 
   // Single source of truth for the conversation graph.
   // Called unconditionally so the SSE subscription stays alive
@@ -787,8 +785,6 @@ export default function AgentChatComponent({
     return map;
   }, [builtInTools]);
   const [skills, setSkills] = useState<Skill[]>([]);
-  /** Names of the skills injected into the current turn (`skills_injected`). */
-  const [_injectedSkills, setInjectedSkills] = useState<string[]>([]);
   const [rules, setRules] = useState<Rule[]>([]);
   const [hooks, setHooks] = useState<Hook[]>([]);
   const [projectInstructions, setProjectInstructions] =
@@ -851,8 +847,9 @@ export default function AgentChatComponent({
   );
   const [viewerRefreshKey, setViewerRefreshKey] = useState(0);
   const viewerOpenFilesRef = useRef<ViewerOpenFile[]>(viewerOpenFiles);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  viewerOpenFilesRef.current = viewerOpenFiles;
+  useLayoutEffect(() => {
+    viewerOpenFilesRef.current = viewerOpenFiles;
+  });
   const [viewerWidth, setViewerWidth] = useState(() => {
     if (typeof window === "undefined") return 500;
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY_FILE_VIEWER_WIDTH);
@@ -881,15 +878,13 @@ export default function AgentChatComponent({
     totalEntries: number;
     truncated: boolean;
   } | null>(null);
-  const [subAgentToolActivity, setSubAgentToolActivity] = useState<
-    Record<string, SubAgentActivityEntry>
-  >({});
 
   // Track which tabs have received new data the user hasn't viewed yet
   const [newDataTabs, setNewDataTabs] = useState(new Set());
   const leftTabRef = useRef<string>(leftTab);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  leftTabRef.current = leftTab;
+  useLayoutEffect(() => {
+    leftTabRef.current = leftTab;
+  });
   const [leftTabBottom, setLeftTabBottom] = useState(() => {
     if (initialTabBottomKey) {
       return initialTabBottomKey;
@@ -900,36 +895,30 @@ export default function AgentChatComponent({
     return "tools";
   });
   const leftTabBottomRef = useRef<string>(leftTabBottom);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  leftTabBottomRef.current = leftTabBottom;
+  useLayoutEffect(() => {
+    leftTabBottomRef.current = leftTabBottom;
+  });
+
+  // The URL follows the tabs and the view mode once the user changes them;
+  // the values the chat opens with stay out of it.
+  const reportedUrlStateRef = useRef({ tab: leftTab, tabBottom: leftTabBottom, viewMode });
+  useEffect(() => {
+    if (reportedUrlStateRef.current.tab === leftTab) return;
+    reportedUrlStateRef.current.tab = leftTab;
+    if (leftTab) reportUrlChange({ kind: "tab", tab: leftTab });
+  }, [leftTab, reportUrlChange]);
 
   useEffect(() => {
-    if (leftTab) {
-      window.dispatchEvent(
-        new CustomEvent(EVENT_NAME_SIDEBAR_TAB_CHANGE, {
-          detail: { tab: leftTab },
-        }),
-      );
-    }
-  }, [leftTab]);
+    if (reportedUrlStateRef.current.tabBottom === leftTabBottom) return;
+    reportedUrlStateRef.current.tabBottom = leftTabBottom;
+    if (leftTabBottom) reportUrlChange({ kind: "tabBottom", tabBottom: leftTabBottom });
+  }, [leftTabBottom, reportUrlChange]);
 
   useEffect(() => {
-    if (leftTabBottom) {
-      window.dispatchEvent(
-        new CustomEvent(EVENT_NAME_SIDEBAR_TAB_BOTTOM_CHANGE, {
-          detail: { tabBottom: leftTabBottom },
-        }),
-      );
-    }
-  }, [leftTabBottom]);
-
-  useEffect(() => {
-    window.dispatchEvent(
-      new CustomEvent(EVENT_NAME_VIEW_MODE_CHANGE, {
-        detail: { viewMode },
-      }),
-    );
-  }, [viewMode]);
+    if (reportedUrlStateRef.current.viewMode === viewMode) return;
+    reportedUrlStateRef.current.viewMode = viewMode;
+    reportUrlChange({ kind: "viewMode", viewMode });
+  }, [viewMode, reportUrlChange]);
 
   useEffect(() => {
     if (initialTabKey) {
@@ -1085,11 +1074,13 @@ export default function AgentChatComponent({
   // handleSend can read current values without re-creating callbacks on
   // every attachment change (the main cause of input lag).
   const pendingImagesRef = useRef<string[]>(pendingImages);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  pendingImagesRef.current = pendingImages;
+  useLayoutEffect(() => {
+    pendingImagesRef.current = pendingImages;
+  });
   const pendingFilesRef = useRef<typeof pendingFiles>(pendingFiles);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  pendingFilesRef.current = pendingFiles;
+  useLayoutEffect(() => {
+    pendingFilesRef.current = pendingFiles;
+  });
   const [lightboxSourceUrl, setLightboxSourceUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef<number>(0);
@@ -1121,15 +1112,7 @@ export default function AgentChatComponent({
     }
   }, []);
   const [planFirst, setPlanFirst] = useState(false);
-  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>(
-    [],
-  );
-  // BLOCKING agent question — gates the turn until answered.
-  const [pendingUserQuestion, setPendingUserQuestion] = useState<{
-    questionId?: string;
-    questions?: UserQuestionItem[];
-    context?: string;
-  } | null>(null);
+  // The BLOCKING question (pendingUserQuestion) is conversation state above.
   // NON-blocking questions (agent keeps working), the conversation goal and
   // the composer's while-running send mode live in their own hooks.
   const nonBlockingQuestions = useNonBlockingQuestions(conversationId);
@@ -1144,38 +1127,19 @@ export default function AgentChatComponent({
   // A turn paused at its cost cap (prompt 13 L3): its card, set by `budget_reached`.
   const budgetPause = useBudgetPause(conversationId);
   const { hydrate: hydrateBudgetPause, applyStatus: applyBudgetStatus, clear: clearBudgetPause } = budgetPause;
-  const [planProposal, setPlanProposal] = useState<{
-    plan: string;
-    steps?: string[];
-    status?: "pending" | "approved" | "rejected" | "executing";
-  } | null>(null);
-  const [agenticProgress, setAgenticProgress] = useState<{
-    iteration: number;
-    maxIterations: number;
-  } | null>(null); // { iteration, maxIterations }
-  // Elapsed time offset (ms) from the backend's live status registry.
-  // Seeds the StatusBar's asymptotic timer so it resumes at the correct
-  // position after a conversation switch or page refresh.
-  const [statusBarInitialElapsedMilliseconds, setStatusBarInitialElapsedMilliseconds] =
-    useState<number | null>(null);
-  const [_contextTruncated, setContextTruncated] = useState<{
-    strategy: string;
-    estimatedTokens?: number;
-  } | null>(null); // { strategy, estimatedTokens }
   const [currentTurnStart, setCurrentTurnStart] = useState<number | null>(null); // Date.now() when user sends
   const [backendConversationStats, setBackendConversationStats] =
     useState<ConversationStats | null>(null);
   const [isBackendStatsStale, setIsBackendStatsStale] = useState(false);
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
 
-  // Frontend-side high-water marks for token display.
-  // Ensures the token badges never show a lower number than previously
-  // displayed, regardless of which computation path produced the values.
-  const tokenHwmRef = useRef<{ input: number; output: number; total: number }>({
-    input: 0,
-    output: 0,
-    total: 0,
-  });
+  // Frontend-side high-water marks for token display: the token badges
+  // never show a lower number than a committed render showed, whichever
+  // computation path produced the values. A render reads the mark and
+  // reports what it displayed (displayedTokenMark); the mark is raised after
+  // commit — never written during render, and never a render of its own.
+  const tokenHighWaterMarkRef = useRef<TokenMark>(ZERO_TOKEN_MARK);
+  let displayedTokenMark: TokenMark | null = null;
 
   // -- Pixelation transition state ----------------------------
   const [pixelTransition, setPixelTransition] = useState<"out" | "in" | null>(
@@ -1225,11 +1189,9 @@ export default function AgentChatComponent({
   const SCROLL_BOTTOM_THRESHOLD = 150;
 
   const conversationIdRef = useRef<string>(conversationId);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  conversationIdRef.current = conversationId;
-  const isGeneratingRef = useRef<boolean>(isGenerating);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  isGeneratingRef.current = isGenerating;
+  useLayoutEffect(() => {
+    conversationIdRef.current = conversationId;
+  });
   // Distinguish client-initiated generation (active SSE via handleSend)
   // from server-initiated generation (timer/scheduled task, passive DB load).
   // The conversation whose running generation THIS client initiated via
@@ -1371,7 +1333,7 @@ export default function AgentChatComponent({
     }, 3000);
 
     return () => clearInterval(subAgentStatusPollInterval);
-  }, [activeId, isDrivingActiveStream, pendingBackgroundTaskCountForPolling]);
+  }, [activeId, isDrivingActiveStream, pendingBackgroundTaskCountForPolling, setSubAgentToolActivity]);
 
 
   // Snapshot cache: stores UI state for conversations that are generating in the background
@@ -1383,9 +1345,11 @@ export default function AgentChatComponent({
       abortRef.current();
       abortRef.current = null;
     }
-    setIsGenerating(false);
     setIsUserExplicitlyStopped(true);
-    setPlanProposal(null);
+    // The conversation side: not generating, no plan card, the in-flight
+    // bubble stops its live metrics (TTFT badge, tok/s), and every sub-agent
+    // bar stops — their terminal events will not arrive on an aborted stream.
+    dispatchConversation({ type: "turn/stopped", clock: eventClockNow() });
     clearBudgetPause();
 
     // Explicitly stop the backend agentic session — decoupled from
@@ -1399,48 +1363,6 @@ export default function AgentChatComponent({
     // so the badge freezes on abort instead of continuing until the
     // finally block in handleSend runs.
     setCurrentTurnStart(null);
-
-    // Clear live streaming and processing metadata from the in-flight
-    // assistant message so the TTFT badge and tok/s indicators stop
-    // calculating.  Without this, statusPhase / _processingStartTime /
-    // _streamingLastChunkTime remain on the message and the SettingsPanel
-    // ticker keeps running after the user hits stop.
-    setMessages((previousMessages) => {
-      const last = previousMessages[previousMessages.length - 1];
-      if (last?.role === "assistant" && !last.completedAt) {
-        const updated = [...previousMessages];
-        updated[updated.length - 1] = {
-          ...last,
-          statusPhase: undefined,
-          _processingStartTime: undefined,
-          _streamingStartTime: undefined,
-          _streamingLastChunkTime: undefined,
-          completedAt: new Date().toISOString(),
-        };
-        return updated;
-      }
-      return previousMessages;
-    });
-
-    // Force all active sub-agents to terminal state so their StatusBarComponent
-    // bars stop animating — the SSE stream was aborted before "complete" events
-    // could arrive, leaving activity entries stuck in active phases.
-    setSubAgentToolActivity((previousSubAgentToolActivity) => {
-      const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
-      const hasActive = Object.values(previousSubAgentToolActivity).some(
-        (subAgent: SubAgentActivityEntry) =>
-          !subAgent.phase || !terminalPhases.has(subAgent.phase),
-      );
-      if (!hasActive) return previousSubAgentToolActivity;
-      const next: Record<string, SubAgentActivityEntry> = {};
-      for (const [id, subAgent] of Object.entries(previousSubAgentToolActivity)) {
-        next[id] =
-          !subAgent.phase || !terminalPhases.has(subAgent.phase)
-            ? { ...subAgent, phase: "complete", currentTool: null }
-            : subAgent;
-      }
-      return next;
-    });
 
     // Explicitly abort any running sub-agents for this conversation — belt-and-suspenders
     // alongside the backend SSE disconnect handler
@@ -1458,7 +1380,7 @@ export default function AgentChatComponent({
     setTimeout(() => {
       loadConversationsRef.current?.();
     }, 500);
-  }, [isNoAgent, clearBudgetPause]);
+  }, [isNoAgent, dispatchConversation, clearBudgetPause]);
 
   // -- Filtered config: only tool-calling models for agents; all text models for Direct Chat ------------
   const filteredConfig = useMemo(() => {
@@ -1976,7 +1898,7 @@ export default function AgentChatComponent({
         // Never remove the conversation this client is actively streaming —
         // the listing may predate the backend's markGenerating(true) write
         // (the handleSend → change-stream stale window).
-        const streamingConversationId = isGeneratingRef.current
+        const streamingConversationId = getConversationState().isGenerating
           ? conversationIdRef.current
           : null;
         setGeneratingConversationIds((previousIds) => {
@@ -1997,9 +1919,10 @@ export default function AgentChatComponent({
     } finally {
       setConversationsLoading(false);
     }
-  }, [agentProject, agentId, isNoAgent]);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  loadConversationsRef.current = loadConversations;
+  }, [agentProject, agentId, isNoAgent, getConversationState]);
+  useLayoutEffect(() => {
+    loadConversationsRef.current = loadConversations;
+  }, [loadConversations]);
 
   const loadMoreConversations = useCallback(async () => {
     if (!conversationsCursorRef.current || conversationsLoading) return;
@@ -2032,11 +1955,17 @@ export default function AgentChatComponent({
   }, [loadConversations, isAdmin]);
 
   // -- Auto-load conversation from URL ?conversation= param ----------------
-  // Runs once on mount. Fetches the full conversation and applies it.
-  // Uses a ref guard to prevent double-loading on StrictMode re-mounts.
+  // Fetches the full conversation once and applies it. It is looked up under
+  // the agent's project, which is a guess until the page's personas arrive
+  // (the Coding persona keeps its conversations in "prism-chat", the guess is
+  // "coding"): a miss is tried again when the project resolves. The ref keeps
+  // StrictMode re-mounts from loading twice.
   useEffect(() => {
-    if (isAdmin || !initialConversationId || urlConversationAppliedRef.current) return;
-    urlConversationAppliedRef.current = true;
+    if (isAdmin || !initialConversationId) return;
+    const previousAttempt = urlConversationLoadRef.current;
+    if (previousAttempt?.isLoaded || previousAttempt?.project === agentProject) return;
+    const attempt = { project: agentProject, isLoaded: false };
+    urlConversationLoadRef.current = attempt;
 
     (async () => {
       try {
@@ -2051,6 +1980,7 @@ export default function AgentChatComponent({
         // changed to a new UUID. Applying stale data would restore the old
         // selection highlight in the sidebar.
         if (conversationIdRef.current !== conversationIdAtLoadStart) return;
+        attempt.isLoaded = true;
 
         const displayMessages = resolveDisplayMessages(full);
         console.debug(
@@ -2058,6 +1988,7 @@ export default function AgentChatComponent({
         );
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
+        dispatchConversation({ type: "conversation/loaded" });
         setMessages(displayMessages);
         setConversationId(full.id || generateUUID());
         setTraceId(full.traceId || null);
@@ -2152,7 +2083,7 @@ export default function AgentChatComponent({
 
         setBackendConversationStats(full.stats || null);
         setIsBackendStatsStale(false);
-        tokenHwmRef.current = { input: 0, output: 0, total: 0 };
+        tokenHighWaterMarkRef.current = ZERO_TOKEN_MARK;
 
         // Hydrate persisted context budget from the conversation document
         setContextBudget(extractPersistedContextBudget(full));
@@ -2161,7 +2092,7 @@ export default function AgentChatComponent({
         console.error("Failed to preload conversation from URL:", error);
       }
     })();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [agentProject]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ═══════════════════════════════════════════════════════════════
   // ██  ADMIN MODE — Data Loading Effects
@@ -2486,6 +2417,7 @@ export default function AgentChatComponent({
             : await IrisService.getConversation(id);
         const fullEntry = detail as UnifiedEntry;
         const displayMessages = resolveDisplayMessages(fullEntry);
+        dispatchConversation({ type: "conversation/loaded" });
         setMessages(displayMessages);
         setConversationId(fullEntry.id || generateUUID());
         setTitle(fullEntry.title || "Untitled");
@@ -2526,7 +2458,7 @@ export default function AgentChatComponent({
         setAdminLoadingDetail(false);
       }
     },
-    [isAdmin, activeId, adminAgentParam, adminTraceFilter, adminProjectFilter, adminProviderFilter, adminModelFilter, adminUpsertConversationEntry],
+    [isAdmin, activeId, adminAgentParam, adminTraceFilter, adminProjectFilter, adminProviderFilter, adminModelFilter, adminUpsertConversationEntry, dispatchConversation, setMessages, setContextBudget],
   );
 
   // Admin: refresh selected entry
@@ -2555,13 +2487,14 @@ export default function AgentChatComponent({
           return;
         }
         const displayMessages = resolveDisplayMessages(full);
+        dispatchConversation({ type: "conversation/loaded" });
         setMessages(displayMessages);
         setBackendConversationStats(full.stats || null);
       } catch (error: unknown) {
         console.error("Failed to refresh selected entry:", error);
       }
     },
-    [isAdmin, adminUpsertConversationEntry],
+    [isAdmin, adminUpsertConversationEntry, dispatchConversation, setMessages, setContextBudget],
   );
 
   // Admin: initial detail load by ID.
@@ -2582,6 +2515,7 @@ export default function AgentChatComponent({
         setConversationId(conversationEntry.id || generateUUID());
         setTitle(conversationEntry.title || "Untitled");
         const displayMessages = resolveDisplayMessages(conversationEntry);
+        dispatchConversation({ type: "conversation/loaded" });
         setMessages(displayMessages);
         setBackendConversationStats(conversationEntry.stats || null);
         setConversations((previousConversations) => [conversationEntry as AgentConversation | Conversation, ...previousConversations]);
@@ -2592,7 +2526,7 @@ export default function AgentChatComponent({
         setConversationId(initialId);
       })
       .finally(() => setAdminLoadingDetail(false));
-  }, [isAdmin, initialId]);
+  }, [isAdmin, initialId, dispatchConversation, setMessages]);
 
   // Admin: lazy load system prompt for agent conversations
   useEffect(() => {
@@ -2811,7 +2745,7 @@ export default function AgentChatComponent({
       setAdminSelectedSource(null);
       adminAutoSelectedRef.current = false;
     },
-    [isAdmin, adminSearchParams, adminRouter],
+    [isAdmin, adminSearchParams, adminRouter, setMessages],
   );
 
   // Admin: header controls
@@ -3137,6 +3071,7 @@ export default function AgentChatComponent({
     settings.agents?.locale,
     settings.systemPrompt,
     settings.model,
+    setContextBudget,
   ]);
 
   // -- Baseline context budget for new conversations -----------------
@@ -3185,6 +3120,7 @@ export default function AgentChatComponent({
     settings.systemPrompt,
     settings.model,
     settings.provider,
+    setContextBudget,
   ]);
 
   // -- Eager-fetch tab badge counts (fires on mount / conversation change) --
@@ -3249,7 +3185,7 @@ export default function AgentChatComponent({
         });
       })
       .catch(() => {});
-  }, [conversationId, tasksRefreshKey, isAdmin]);
+  }, [conversationId, tasksRefreshKey, isAdmin, setSubAgentToolActivity]);
 
   // System prompt is fully assembled server-side by SystemPromptAssembler.
   // The client sends a placeholder system message that gets replaced.
@@ -3460,7 +3396,7 @@ export default function AgentChatComponent({
         clearTimeout(phaseTwoTimeoutId);
       };
     },
-    [agentProject, isNoAgent],
+    [agentProject, isNoAgent, setMessages],
   );
 
   const configurableTools = useMemo(() => {
@@ -3848,8 +3784,9 @@ export default function AgentChatComponent({
   const detectMentionQueryRef = useRef<((_element: HTMLDivElement) => void) | null>(
     detectMentionQuery,
   );
-  // eslint-disable-next-line react-hooks/immutability, react-hooks/refs -- see rule docs; compiler-prep lints, React Compiler not enabled
-  detectMentionQueryRef.current = detectMentionQuery;
+  useLayoutEffect(() => {
+    detectMentionQueryRef.current = detectMentionQuery;
+  }, [detectMentionQuery]);
 
   const mentionResults = useMemo(() => {
     // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
@@ -4102,1638 +4039,436 @@ export default function AgentChatComponent({
     [supportsAnyFileInput, intakeFiles],
   );
 
+  // -- Turn streams -----------------------------------------------
+  /** Run one side effect of a turn event (utils/agentConversationEffects), from any transport. */
+  const runConversationEffect = useCallback(
+    (effect: AgentConversationEffect) => {
+      const refreshMemoriesCount = () =>
+        PrismService.getAgentMemories(agentProject, 1, agentId)
+          .then((result) => setTotalMemoriesCount(result.total || 0))
+          .catch(() => {
+            /* Non-critical background count refresh */
+          });
+      switch (effect.kind) {
+        case "tool-emoji":
+          cacheToolEmoji(effect.toolName, effect.emoji);
+          break;
+        case "refresh-panel":
+          if (effect.panel === "tasks") setTasksRefreshKey((k) => k + 1);
+          else setDatastoreRefreshKey((k) => k + 1);
+          break;
+        case "cron-job-scheduled": {
+          const currentNotificationCount = parseInt(
+            localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
+            10,
+          );
+          localStorage.setItem(
+            LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
+            String(currentNotificationCount + 1),
+          );
+          window.dispatchEvent(new CustomEvent(EVENT_NAME_CRON_JOB_SCHEDULED));
+          break;
+        }
+        case "memory-saved":
+          if (hasAnyMemoryModelSet) setLeftTabBottom("memories");
+          setMemoriesRefreshKey((k) => k + 1);
+          refreshMemoriesCount();
+          break;
+        case "workspace-file-touched": {
+          setWorkspaceTreeRefreshKey((k) => k + 1);
+          // Live-update the file viewer: tabs whose file was touched.
+          const mutatedPath = effect.path;
+          const openFiles = viewerOpenFilesRef.current;
+          if (!mutatedPath || openFiles.length === 0) break;
+          // delete_file and move_file both remove the source path
+          if (effect.toolName === TOOL_NAMES.DELETE_FILE || effect.toolName === TOOL_NAMES.MOVE_FILE) {
+            const deleted = openFiles.find((file: ViewerOpenFile) => file.path === mutatedPath);
+            if (!deleted) break;
+            setViewerOpenFiles((previousViewerOpenFiles) => {
+              const next = previousViewerOpenFiles.filter(
+                (file: ViewerOpenFile) => file.path !== mutatedPath,
+              );
+              setViewerActiveFileId((activeFileId: string | null) => {
+                if (activeFileId !== deleted.id) return activeFileId;
+                const closedTabIndex = previousViewerOpenFiles.findIndex(
+                  (file: ViewerOpenFile) => file.id === deleted.id,
+                );
+                return next[Math.min(closedTabIndex, next.length - 1)]?.id || null;
+              });
+              return next;
+            });
+          } else if (openFiles.some((file) => file.path === mutatedPath)) {
+            // Re-fetch the modified file's content
+            setViewerRefreshKey((k) => k + 1);
+          }
+          break;
+        }
+        case "toast":
+          addToast(effect.message, effect.level);
+          break;
+        case "enable-tools":
+          enableSpecificTools(effect.toolNames);
+          break;
+        case "tasks-updated":
+          // Ephemeral tab switch — show tasks panel then revert after 5s
+          switchTabTemporarily("tasks");
+          setTasksRefreshKey((k) => k + 1);
+          markTabNew("tasks");
+          break;
+        case "sub-agents-updated":
+          // Refresh sub-agents data without switching the active tab
+          setTasksRefreshKey((k) => k + 1);
+          markTabNew("subAgents");
+          break;
+        case "memories-updated":
+          if (hasAnyMemoryModelSet) {
+            // Ephemeral tab switch — show memories panel then revert after 5s
+            switchTabTemporarily("memories");
+            markTabNew("memories");
+          }
+          setMemoriesRefreshKey((k) => k + 1);
+          // Re-fetch the count for the tab badge (the panel may not be mounted yet)
+          refreshMemoriesCount();
+          break;
+        case "sub-agent-spawned": {
+          // List the sub-agent's conversation right away rather than after
+          // the post-completion list reload, with the generating dot.
+          const spawnTimestamp = new Date().toISOString();
+          setConversations((previousConversations) => {
+            // A continuation spawn is already listed
+            if (
+              previousConversations.some(
+                (existing) => (existing.id || String(existing._id)) === effect.conversationId,
+              )
+            ) {
+              return previousConversations;
+            }
+            return [
+              {
+                _id: effect.conversationId,
+                id: effect.conversationId,
+                project: agentProject || "",
+                title: effect.description,
+                messages: [],
+                updatedAt: spawnTimestamp,
+                createdAt: spawnTimestamp,
+                parentConversationId: effect.parentConversationId,
+                isGenerating: true,
+                agentIndex: effect.agentIndex,
+                ...(effect.model ? { modelNames: [effect.model] } : {}),
+                ...(effect.provider ? { providers: [effect.provider] } : {}),
+              } as AgentConversation,
+              ...previousConversations,
+            ];
+          });
+          setGeneratingConversationIds((previousGeneratingConversationIds) =>
+            new Set(previousGeneratingConversationIds).add(effect.conversationId),
+          );
+          break;
+        }
+        case "sub-agent-settled":
+          // Stop the sidebar dot and resolve the entry to completed now,
+          // without waiting for a list reload.
+          setGeneratingConversationIds((previousGeneratingConversationIds) => {
+            if (!previousGeneratingConversationIds.has(effect.conversationId)) {
+              return previousGeneratingConversationIds;
+            }
+            const next = new Set(previousGeneratingConversationIds);
+            next.delete(effect.conversationId);
+            return next;
+          });
+          setConversations((previousConversations) =>
+            previousConversations.map((entry) =>
+              (entry.id || String(entry._id)) === effect.conversationId
+                ? ({ ...entry, isActive: false, isGenerating: false, pendingBackgroundTasks: 0 } as typeof entry)
+                : entry,
+            ),
+          );
+          break;
+        case "conversation-state":
+          // The status bar reads the listed conversation's counter and flag.
+          setConversations((previousConversations) =>
+            previousConversations.map((entry) =>
+              entry.id === effect.conversationId
+                ? ({
+                    ...entry,
+                    pendingBackgroundTasks: effect.pendingBackgroundTasks,
+                    ...(effect.isActive !== undefined ? { isActive: effect.isActive } : {}),
+                  } as typeof entry)
+                : entry,
+            ),
+          );
+          break;
+        case "budget-status":
+          applyBudgetStatus(effect.event);
+          break;
+        case "goal":
+          applyGoalEvent(effect.event);
+          break;
+        case "permission-mode":
+          applyPermissionModeEvent(effect.event);
+          break;
+        case "non-blocking-question":
+          // A read-only viewer answers nothing.
+          if (!isAdmin) openNonBlockingQuestion(effect.event);
+          break;
+        default:
+          effect satisfies never;
+      }
+    },
+    [
+      agentProject,
+      agentId,
+      hasAnyMemoryModelSet,
+      addToast,
+      enableSpecificTools,
+      switchTabTemporarily,
+      markTabNew,
+      applyGoalEvent,
+      applyPermissionModeEvent,
+      applyBudgetStatus,
+      openNonBlockingQuestion,
+      isAdmin,
+    ],
+  );
+  // Streams read the runner through a ref: a stream captures its callbacks
+  // once, and what the runner closes over changes mid-turn.
+  const runConversationEffectRef = useRef(runConversationEffect);
+  useLayoutEffect(() => {
+    runConversationEffectRef.current = runConversationEffect;
+  }, [runConversationEffect]);
+
+  /**
+   * Route one event of `streamConversationId`'s stream: into the chat while
+   * that conversation is on screen; into its background snapshot when the
+   * user switched away mid-turn, so switching back shows all of it.
+   */
+  const routeTurnEvent = useCallback(
+    (event: TurnEvent, streamConversationId: string) => {
+      if (conversationIdRef.current === streamConversationId) {
+        for (const effect of ingestConversationEvent(event, streamConversationId)) {
+          runConversationEffectRef.current(effect);
+        }
+        return;
+      }
+      const snapshot = backgroundConversationsRef.current.get(streamConversationId);
+      const before = snapshot?.conversation ?? EMPTY_CONVERSATION_STATE;
+      if (snapshot) {
+        backgroundConversationsRef.current.set(streamConversationId, {
+          ...snapshot,
+          conversation: reduceEvent(snapshot.conversation, event, streamConversationId),
+        });
+      }
+      for (const effect of effectsOfEvent(event, before, streamConversationId)) {
+        if (runsWhileHidden(effect)) runConversationEffectRef.current(effect);
+      }
+    },
+    [ingestConversationEvent],
+  );
+
+  /** The bookkeeping of a turn this chat sent, once its `done` arrives. */
+  const finishSentTurn = useCallback(
+    (streamConversationId: string) => {
+      if (conversationIdRef.current === streamConversationId) {
+        setCurrentTurnStart(null);
+        fetchConversationStats(streamConversationId);
+        // `done` definitively means the service finished: settle the listed
+        // conversation now rather than after the list reload's round trip.
+        setConversations((previousConversations) =>
+          previousConversations.map((entry) =>
+            entry.id === streamConversationId
+              ? ({ ...entry, pendingBackgroundTasks: 0, isActive: false } as typeof entry)
+              : entry,
+          ),
+        );
+      }
+      // The conversation summarizer runs after the stream closes — poll
+      // every 2s for up to 20s until new memories show up.
+      (async () => {
+        const baselineCount = await PrismService.getAgentMemories(agentProject, 1, agentId)
+          .then((result) => result.total || 0)
+          .catch(() => 0);
+        let pollAttempts = 0;
+        const pollInterval = setInterval(async () => {
+          pollAttempts++;
+          try {
+            const { total } = await PrismService.getAgentMemories(agentProject, 1, agentId);
+            if (total > baselineCount) {
+              clearInterval(pollInterval);
+              setMemoriesRefreshKey((k) => k + 1);
+            }
+          } catch {
+            /* Non-critical background poll */
+          }
+          if (pollAttempts >= 10) clearInterval(pollInterval);
+        }, 2000);
+      })();
+    },
+    [agentProject, agentId, fetchConversationStats],
+  );
+
+  /**
+   * Drive the SSE of a turn this chat sent. Resolves "done" at the turn's
+   * `done` — the stream keeps delivering what follows it (goal updates, hook
+   * messages) — and "stopped" when the user's Stop closed it. Rejects with
+   * the turn's `error` event (a StreamError) or the transport's failure.
+   */
+  const driveTurnStream = useCallback(
+    (stream: AgentStream, streamConversationId: string) =>
+      new Promise<"done" | "stopped">((resolve, reject) => {
+        let isSettled = false;
+        const settle = (outcome: () => void) => {
+          if (isSettled) return;
+          isSettled = true;
+          outcome();
+        };
+        void (async () => {
+          try {
+            for await (const item of stream) {
+              if (item.kind !== "event") continue;
+              const event = item.event;
+              try {
+                routeTurnEvent(event, streamConversationId);
+              } catch (handlingError: unknown) {
+                // One bad event must not end the turn for everything after it.
+                console.warn(`[driveTurnStream] could not apply "${event.type}":`, handlingError);
+              }
+              if (event.type === "done") {
+                finishSentTurn(streamConversationId);
+                settle(() => resolve("done"));
+              } else if (event.type === "error") {
+                settle(() => reject(new StreamError(event)));
+              }
+            }
+            settle(() => resolve("stopped"));
+          } catch (streamError: unknown) {
+            console.error(`[driveTurnStream] stream error:`, streamError);
+            settle(() => reject(streamError));
+          }
+        })();
+      }),
+    [routeTurnEvent, finishSentTurn],
+  );
+
   // -- Orchestration loop ---------------------------------------
   const runOrchestrationLoop = useCallback(
     async (
       conversationMessages: ClientMessage[],
       activeRuleNames: string[] = [],
-    ) => {
+    ): Promise<"done" | "stopped"> => {
       const currentMessages = [...conversationMessages];
-      // Capture which conversation this generation belongs to — if the user
-      // switches conversations, streaming callbacks will skip UI updates.
+      // The conversation this generation belongs to: if the user switches
+      // away, its events keep that conversation's snapshot current instead.
       const generationConversationId = conversationIdRef.current;
 
-      await new Promise<void>((resolve, reject) => {
-        // -- Build payload: Direct Chat (/chat) vs Agent (/agent) --
-        const payload = isNoAgent
-          ? {
-              // Direct Chat: raw /chat endpoint — no agentic loop
-              provider: settings.provider ?? "",
-              model: settings.model ?? "",
-              messages: [
-                ...(settings.systemPrompt
-                  ? [
-                      {
-                        role: MESSAGE_ROLES.SYSTEM,
-                        content: settings.systemPrompt,
-                      },
-                    ]
-                  : []),
-                ...currentMessages,
-              ],
-              maxTokens: settings.maxTokens,
-              temperature: settings.temperature,
-              ...(settings.thinkingEnabled !== undefined && {
-                thinkingEnabled: settings.thinkingEnabled,
-              }),
-              ...(settings.reasoningEffort && {
-                reasoningEffort: settings.reasoningEffort,
-              }),
-              ...(settings.thinkingBudget && {
-                thinkingBudget: settings.thinkingBudget,
-              }),
-              ...(settings.thinkingLevel && {
-                thinkingLevel: settings.thinkingLevel,
-              }),
-              // Native provider FC (Google code exec, LM Studio MCP, etc.)
-              functionCallingEnabled: settings.functionCallingEnabled ?? false,
-              ...(settings.functionCallingEnabled && {
-                disabledTools: [...disabledTools, ...lockedOffTools.keys()],
-              }),
-              // Provider-native capabilities
-              ...(settings.webSearchEnabled ? { webSearch: true } : {}),
-              ...(settings.codeExecutionEnabled ? { codeExecution: true } : {}),
-              ...(settings.urlContextEnabled ? { urlContext: true } : {}),
-              conversationId,
-              // Always present — its presence is the /chat turn-start marker
-              // that makes the service persist the user's own prompt. See
-              // buildDirectChatConversationMeta.
-              conversationMeta: buildDirectChatConversationMeta(
-                settings.systemPrompt,
-              ),
-              // Omit project — falls back to x-project header ("prism"),
-              // routing to the conversations collection
-              traceId,
-            }
-          : {
-              // Agent mode: full /agent endpoint with AgenticLoopService.
-              // No system placeholder — the harness assembles the system
-              // prompt server-side and feeds it to providers as a
-              // first-class parameter, never via the messages array.
-              provider: settings.provider ?? "",
-              model: settings.model ?? "",
-              messages: currentMessages,
-              functionCallingEnabled: true,
+      // -- Build payload: Direct Chat (/chat) vs Agent (/agent) --
+      const payload = isNoAgent
+        ? {
+            // Direct Chat: raw /chat endpoint — no agentic loop
+            provider: settings.provider ?? "",
+            model: settings.model ?? "",
+            messages: [
+              ...(settings.systemPrompt
+                ? [
+                    {
+                      role: MESSAGE_ROLES.SYSTEM,
+                      content: settings.systemPrompt,
+                    },
+                  ]
+                : []),
+              ...currentMessages,
+            ],
+            maxTokens: settings.maxTokens,
+            temperature: settings.temperature,
+            ...(settings.thinkingEnabled !== undefined && {
+              thinkingEnabled: settings.thinkingEnabled,
+            }),
+            ...(settings.reasoningEffort && {
+              reasoningEffort: settings.reasoningEffort,
+            }),
+            ...(settings.thinkingBudget && {
+              thinkingBudget: settings.thinkingBudget,
+            }),
+            ...(settings.thinkingLevel && {
+              thinkingLevel: settings.thinkingLevel,
+            }),
+            // Native provider FC (Google code exec, LM Studio MCP, etc.)
+            functionCallingEnabled: settings.functionCallingEnabled ?? false,
+            ...(settings.functionCallingEnabled && {
               disabledTools: [...disabledTools, ...lockedOffTools.keys()],
-              maxTokens: settings.maxTokens,
-              temperature: settings.temperature,
-              ...(settings.thinkingEnabled !== undefined && {
-                thinkingEnabled: settings.thinkingEnabled,
-              }),
-              ...(settings.reasoningEffort && {
-                reasoningEffort: settings.reasoningEffort,
-              }),
-              ...(settings.thinkingBudget && {
-                thinkingBudget: settings.thinkingBudget,
-              }),
-              ...(settings.thinkingLevel && {
-                thinkingLevel: settings.thinkingLevel,
-              }),
-              project: agentProject,
-              conversationId,
-              traceId,
-              agent: agentId,
-              ...(activeRuleNames.length > 0 && { activeRuleNames }),
-              // Send only explicit user overrides — the server owns the
-              // defaults (harness "standard", minContextLength, agent).
-              ...(settings?.agents?.harness && {
-                harness: settings.agents.harness,
-              }),
-              topology: settings?.agents?.topology || DEFAULT_TOPOLOGY,
-              thoughtStructure:
-                (settings?.agents?.thoughtStructure as string) || undefined,
-              // Phase 1: Agentic controls
-              permissionMode: currentPermissionMode,
-              planFirst,
-              maxIterations: Number.isFinite(maxIterations) ? maxIterations : 0,
-              maxSubAgentIterations: Number.isFinite(maxSubAgentIterations)
-                ? maxSubAgentIterations
-                : 0,
-              maxRecursionDepth,
-              ...(settings.agents?.workspaceEnabled === false && {
-                workspaceEnabled: false,
-              }),
-              ...(settings.agents?.locale && {
-                locale: settings.agents.locale,
-              }),
-            };
-
-        let streamedText = "";
-        let streamedThinking = "";
-        let firstChunkTime: number | undefined;
-        let prevChunkTime: number | null = null; // previous chunk's timestamp for delta accumulation
-        let burstTokens = 0; // tokens in current generation burst (resets on gap)
-        let burstElapsed = 0; // elapsed in current generation burst (resets on gap)
-        const CHUNK_GAP_THRESHOLD = 500; // ms — gaps larger than this are processing/tool pauses
-        // -- Interleaved content tracking --
-        // contentSegments: ordered list of { type: "thinking", fragmentIndex } | { type: "text", fragmentIndex } | { type: "tools", toolIds: [...] }
-        // textFragments: array of strings, one per text segment — the text delta between tool groups
-        // thinkingFragments: array of strings, one per thinking segment — the thinking delta between tool groups
-        const contentSegments: ContentSegment[] = [];
-        const textFragments: string[] = [];
-        const thinkingFragments: string[] = [];
-        const audioRefs: string[] = []; // one entry per audio segment — mirrors message.audio
-        const imageRefs: string[] = []; // one entry per image segment — mirrors message.images
-        const segmentToolIdSet = new Set(); // Dedup: track tool IDs already in contentSegments
-        let lastSegmentType: string | null = null; // "thinking" | "text" | "tools"
-        let prevCleanLen = 0; // length of cleanTextRaw at last onChunk — used for computing deltas
-        let prevThinkingLen = 0; // length of thinking text at last onThinking — used for computing deltas
-
-        // Deep-copy segments for React state (objects are shared refs otherwise)
-        const snapshotSegments = () =>
-          contentSegments.map((segment) => ({
-            ...segment,
-            ...(segment.toolIds ? { toolIds: [...segment.toolIds] } : {}),
-          }));
-
-        // Guard: returns true when the user switched conversations — skip all UI updates
-        // but let the stream continue (the backend saves independently).
-        const isStale = () => conversationIdRef.current !== generationConversationId;
-
-        // Direct Chat → streamText (/chat); Agents → streamAgentText (/agent)
-        const streamFn = isNoAgent
-          ? PrismService.streamText
-          : PrismService.streamAgentText;
-        // Unified handler for both tool-event pipelines: agentic
-        // `tool_execution` envelopes and LM Studio native MCP `toolCall`
-        // events. Owns activity/message state updates, segment tracking,
-        // and the panel-refresh side effects.
-        const handleToolEvent = (
-          toolInput: {
-            id?: string;
-            name?: string;
-            args?: Record<string, unknown>;
-            result?: unknown;
-            status: string;
-            durationMs?: number;
-            timestamp?: number;
-          },
-          { toolEmoji, logLabel }: { toolEmoji?: string; logLabel: string },
-        ) => {
-          if (toolEmoji && toolInput.name) cacheToolEmoji(toolInput.name, toolEmoji);
-          const resolvedId = toolInput.id || `tc-${Date.now()}-${Math.random()}`;
-          console.debug(
-            `[${logLabel}] ${toolInput.status} ${toolInput.name} id=${resolvedId}`,
-          );
-
-          setToolActivity((previousToolActivity: ToolCallEvent[]) => {
-            const next = applyToolExecutionToActivity(
-              previousToolActivity,
-              resolvedId,
-              toolInput,
-            );
-            return next ?? previousToolActivity;
-          });
-
-          // Track segment ordering: group consecutive tool events
-          // Guard: only add to segments if not already tracked
-          if (toolInput.status === "streaming" || toolInput.status === "calling") {
-            if (!segmentToolIdSet.has(resolvedId)) {
-              segmentToolIdSet.add(resolvedId);
-              if (lastSegmentType === "tools") {
-                // Append to current tools segment
-                contentSegments[contentSegments.length - 1].toolIds!.push(
-                  resolvedId,
-                );
-              } else {
-                contentSegments.push({
-                  type: "tools",
-                  toolIds: [resolvedId],
-                });
-                lastSegmentType = "tools";
-              }
-            }
+            }),
+            // Provider-native capabilities
+            ...(settings.webSearchEnabled ? { webSearch: true } : {}),
+            ...(settings.codeExecutionEnabled ? { codeExecution: true } : {}),
+            ...(settings.urlContextEnabled ? { urlContext: true } : {}),
+            conversationId,
+            // Always present — its presence is the /chat turn-start marker
+            // that makes the service persist the user's own prompt. See
+            // buildDirectChatConversationMeta.
+            conversationMeta: buildDirectChatConversationMeta(
+              settings.systemPrompt,
+            ),
+            // Omit project — falls back to x-project header ("prism"),
+            // routing to the conversations collection
+            traceId,
           }
-
-          // Capture snapshot values from the mutable streaming closure
-          // BEFORE passing to the functional updater
-          const snapshot = {
-            contentSegments: snapshotSegments(),
-            textFragments: [...textFragments],
-            thinkingFragments: [...thinkingFragments],
+        : {
+            // Agent mode: full /agent endpoint with AgenticLoopService.
+            // No system placeholder — the harness assembles the system
+            // prompt server-side and feeds it to providers as a
+            // first-class parameter, never via the messages array.
+            provider: settings.provider ?? "",
+            model: settings.model ?? "",
+            messages: currentMessages,
+            functionCallingEnabled: true,
+            disabledTools: [...disabledTools, ...lockedOffTools.keys()],
+            maxTokens: settings.maxTokens,
+            temperature: settings.temperature,
+            ...(settings.thinkingEnabled !== undefined && {
+              thinkingEnabled: settings.thinkingEnabled,
+            }),
+            ...(settings.reasoningEffort && {
+              reasoningEffort: settings.reasoningEffort,
+            }),
+            ...(settings.thinkingBudget && {
+              thinkingBudget: settings.thinkingBudget,
+            }),
+            ...(settings.thinkingLevel && {
+              thinkingLevel: settings.thinkingLevel,
+            }),
+            project: agentProject,
+            conversationId,
+            traceId,
+            agent: agentId,
+            ...(activeRuleNames.length > 0 && { activeRuleNames }),
+            // Send only explicit user overrides — the server owns the
+            // defaults (harness "standard", minContextLength, agent).
+            ...(settings?.agents?.harness && {
+              harness: settings.agents.harness,
+            }),
+            topology: settings?.agents?.topology || DEFAULT_TOPOLOGY,
+            thoughtStructure:
+              (settings?.agents?.thoughtStructure as string) || undefined,
+            // Phase 1: Agentic controls
+            permissionMode: currentPermissionMode,
+            planFirst,
+            maxIterations: Number.isFinite(maxIterations) ? maxIterations : 0,
+            maxSubAgentIterations: Number.isFinite(maxSubAgentIterations)
+              ? maxSubAgentIterations
+              : 0,
+            maxRecursionDepth,
+            ...(settings.agents?.workspaceEnabled === false && {
+              workspaceEnabled: false,
+            }),
+            ...(settings.agents?.locale && {
+              locale: settings.agents.locale,
+            }),
           };
 
-          setMessages(
-            (msgPrev: ClientMessage[]) =>
-              applyToolExecutionToMessages(
-                msgPrev,
-                resolvedId,
-                toolInput,
-                snapshot,
-              ) as ClientMessage[],
-          );
-
-          // Auto-refresh tasks panel when any task tool completes
-          if (
-            toolInput.status !== "calling" &&
-            toolInput.name &&
-            toolInput.name.includes("_task")
-          ) {
-            setTasksRefreshKey((k) => k + 1);
-          }
-
-          // Auto-refresh datastore panel when any datastore tool completes
-          if (
-            toolInput.status !== "calling" &&
-            toolInput.name &&
-            toolInput.name.includes("_datastore")
-          ) {
-            setDatastoreRefreshKey((k) => k + 1);
-          }
-
-          // Increment scheduled task notification badge when agent creates a cron job
-          if (
-            toolInput.status === "done" &&
-            toolInput.name === TOOL_NAMES.CREATE_CRON_JOB
-          ) {
-            const currentNotificationCount = parseInt(
-              localStorage.getItem(LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT) || "0",
-              10,
-            );
-            localStorage.setItem(
-              LOCAL_STORAGE_KEY_CRON_JOB_NOTIFICATIONS_COUNT,
-              String(currentNotificationCount + 1),
-            );
-            window.dispatchEvent(new CustomEvent(EVENT_NAME_CRON_JOB_SCHEDULED));
-          }
-
-          // Auto-refresh memories panel when save_memory completes
-          if (
-            toolInput.status !== "calling" &&
-            toolInput.name === TOOL_NAMES.SAVE_MEMORY
-          ) {
-            if (hasAnyMemoryModelSet) {
-              setLeftTabBottom("memories");
-            }
-            setMemoriesRefreshKey((k) => k + 1);
-            PrismService.getAgentMemories(agentProject, 1, agentId)
-              .then((result) => setTotalMemoriesCount(result.total || 0))
-              .catch(() => {
-                /* Non-critical background count refresh */
-              });
-          }
-
-          // Auto-refresh workspace tree when filesystem-mutating tools complete
-          if (
-            toolInput.status !== "calling" &&
-            WORKSPACE_FS_TOOLS.has(toolInput.name || "")
-          ) {
-            setWorkspaceTreeRefreshKey((k) => k + 1);
-
-            // Live-update file viewer: refresh open tabs whose path was touched
-            const mutatedPath =
-              (toolInput.args?.path as string) ||
-              (toolInput.args?.source as string) ||
-              null;
-            const openFiles = viewerOpenFilesRef.current;
-            if (mutatedPath && openFiles.length > 0) {
-              // delete_file and move_file both remove the source path
-              if (
-                toolInput.name === TOOL_NAMES.DELETE_FILE ||
-                toolInput.name === TOOL_NAMES.MOVE_FILE
-              ) {
-                const deleted = openFiles.find(
-                  (file: ViewerOpenFile) => file.path === mutatedPath,
-                );
-                if (deleted) {
-                  setViewerOpenFiles((previousViewerOpenFiles) => {
-                    const next = previousViewerOpenFiles.filter(
-                      (file: ViewerOpenFile) => file.path !== mutatedPath,
-                    );
-                    setViewerActiveFileId((activeId: string | null) => {
-                      if (activeId !== deleted.id) return activeId;
-                      const closedTabIndex = previousViewerOpenFiles.findIndex(
-                        (file: ViewerOpenFile) => file.id === deleted.id,
-                      );
-                      const newActive =
-                        next[Math.min(closedTabIndex, next.length - 1)];
-                      return newActive?.id || null;
-                    });
-                    return next;
-                  });
-                }
-              } else if (openFiles.some((file) => file.path === mutatedPath)) {
-                // Bump refresh key to re-fetch modified file content
-                setViewerRefreshKey((k) => k + 1);
-              }
-            }
-          }
-        };
-
-        /**
-         * A status with a phase — LM Studio's lifecycle (loading, prefilling,
-         * generating) or a truncated turn: show it on the assistant message.
-         */
-        const applyStatusPhase = (statusData: { message: string; phase: string; progress?: number }) => {
-          setMessages((previousMessages) => {
-            const updated = [...previousMessages];
-            const last = updated[updated.length - 1];
-            if (last?.role === "assistant") {
-              updated[updated.length - 1] = {
-                ...last,
-                status: statusData.message,
-                statusPhase: statusData.phase,
-                // Structured progress (0-1) from LM Studio prompt prefilling
-                _statusProgress:
-                  statusData.progress != null
-                    ? statusData.progress
-                    : last._statusProgress,
-                // Track when prefilling phase started for live TTFT estimation
-                _processingStartTime:
-                  statusData.phase === "prefilling" &&
-                  !last._processingStartTime
-                    ? performance.now()
-                    : last._processingStartTime,
-              };
-            } else {
-              // Phase event arrived before any content chunk — create a
-              // placeholder assistant message to carry the phase metadata.
-              // onChunk/onThinking will merge into this message when they fire.
-              updated.push({
-                role: MESSAGE_ROLES.ASSISTANT,
-                content: "",
-                status: statusData.message,
-                statusPhase: statusData.phase,
-                _statusProgress:
-                  statusData.progress != null
-                    ? statusData.progress
-                    : undefined,
-                _processingStartTime:
-                  statusData.phase === "prefilling"
-                    ? performance.now()
-                    : undefined,
-              });
-            }
-            return updated;
-          });
-        };
-        abortRef.current = streamFn(payload, {
-          onChunk: (
-            content: string,
-            _sourceModel?: string,
-            outputCharacters?: number,
-          ) => {
-            streamedText += content;
-            // Backend sends authoritative running token count on each chunk
-            burstTokens++;
-            // Skip UI updates if user switched conversations
-            if (isStale()) return;
-            const now = performance.now();
-            if (!firstChunkTime)
-              console.debug(
-                `[onChunk] first chunk received, ${content.length}ch, stale=${isStale()}`,
-              );
-            if (!firstChunkTime) firstChunkTime = now;
-            // Accumulate generation-only elapsed: skip gaps from processing/tool phases
-            if (prevChunkTime !== null) {
-              const delta = now - prevChunkTime;
-              if (delta < CHUNK_GAP_THRESHOLD) {
-                burstElapsed += delta;
-              } else {
-                // New generation burst — reset burst counters for fresh tok/s
-                burstTokens = 1;
-                burstElapsed = 0;
-              }
-            }
-            prevChunkTime = now;
-
-            // Track segment ordering: start a new text fragment when text resumes after tools
-            if (lastSegmentType !== "text") {
-              contentSegments.push({
-                type: "text",
-                fragmentIndex: textFragments.length,
-              });
-              textFragments.push("");
-              lastSegmentType = "text";
-            }
-
-            // Text is now sanitized server-side (tool call XML stripped in
-            // StreamChunkDispatcher/AgenticLoopService) — use streamedText directly.
-
-            // Compute text delta since last update and append to current fragment
-            const delta = streamedText.slice(prevCleanLen);
-            if (delta) {
-              textFragments[textFragments.length - 1] += delta;
-            }
-            prevCleanLen = streamedText.length;
-
-            const cleanText = streamedText.trim();
-            setMessages((previousMessages) => {
-              const updated = [...previousMessages];
-              const lastMessage = updated[updated.length - 1];
-              if (lastMessage?.role === "assistant") {
-                updated[updated.length - 1] = {
-                  ...lastMessage,
-                  content: cleanText,
-                  contentSegments: snapshotSegments(),
-                  textFragments: [...textFragments],
-                  thinkingFragments: [...thinkingFragments],
-                  _streamingOutputCharacters: outputCharacters || 0,
-                  _streamingStartTime: firstChunkTime,
-                  _streamingLastChunkTime: now,
-                  _streamingBurstTokens: burstTokens,
-                  _streamingBurstElapsed: burstElapsed,
-                };
-              } else {
-                updated.push({
-                  role: MESSAGE_ROLES.ASSISTANT,
-                  content: cleanText,
-                  contentSegments: snapshotSegments(),
-                  textFragments: [...textFragments],
-                  thinkingFragments: [...thinkingFragments],
-                  _streamingOutputCharacters: outputCharacters || 0,
-                  _streamingStartTime: firstChunkTime,
-                  _streamingLastChunkTime: now,
-                  _streamingBurstTokens: burstTokens,
-                  _streamingBurstElapsed: burstElapsed,
-                });
-              }
-              return updated;
-            });
-          },
-          onThinking: (
-            content: string,
-            _sourceModel?: string,
-            outputCharacters?: number,
-          ) => {
-            streamedThinking += content;
-            if (isStale()) return;
-
-            // Backend sends authoritative running token count on each thinking chunk
-            burstTokens++;
-            const now = performance.now();
-            if (!firstChunkTime) firstChunkTime = now;
-            if (prevChunkTime !== null) {
-              const delta = now - prevChunkTime;
-              if (delta < CHUNK_GAP_THRESHOLD) {
-                burstElapsed += delta;
-              } else {
-                burstTokens = 1;
-                burstElapsed = 0;
-              }
-            }
-            prevChunkTime = now;
-
-            // Track segment ordering: start a new thinking fragment when thinking resumes after tools
-            if (lastSegmentType !== "thinking") {
-              contentSegments.push({
-                type: "thinking",
-                fragmentIndex: thinkingFragments.length,
-              });
-              thinkingFragments.push("");
-              lastSegmentType = "thinking";
-            }
-
-            // Compute thinking delta and append to current fragment
-            const delta = streamedThinking.slice(prevThinkingLen);
-            if (delta) {
-              thinkingFragments[thinkingFragments.length - 1] += delta;
-            }
-            prevThinkingLen = streamedThinking.length;
-
-            setMessages((previousMessages) => {
-              const updated = [...previousMessages];
-              const lastMessage = updated[updated.length - 1];
-              if (lastMessage?.role === "assistant") {
-                updated[updated.length - 1] = {
-                  ...lastMessage,
-                  thinking: streamedThinking,
-                  contentSegments: snapshotSegments(),
-                  thinkingFragments: [...thinkingFragments],
-                  _streamingOutputCharacters: outputCharacters || 0,
-                  _streamingStartTime: firstChunkTime,
-                  _streamingLastChunkTime: now,
-                  _streamingBurstTokens: burstTokens,
-                  _streamingBurstElapsed: burstElapsed,
-                };
-              } else {
-                updated.push({
-                  role: MESSAGE_ROLES.ASSISTANT,
-                  content: "",
-                  thinking: streamedThinking,
-                  contentSegments: snapshotSegments(),
-                  thinkingFragments: [...thinkingFragments],
-                  _streamingOutputCharacters: outputCharacters || 0,
-                  _streamingStartTime: firstChunkTime,
-                  _streamingLastChunkTime: now,
-                  _streamingBurstTokens: burstTokens,
-                  _streamingBurstElapsed: burstElapsed,
-                });
-              }
-              return updated;
-            });
-          },
-          onImage: (dataStr: string, mimeType: string, minioRef?: string) => {
-            if (isStale()) return;
-            const imgRef = minioRef || dataStr;
-            if (!imgRef) return;
-            // Track segment ordering so images render inline at their true
-            // position (matching the backend's post-stream displayMessages)
-            if (!imageRefs.includes(imgRef)) {
-              contentSegments.push({
-                type: "image",
-                fragmentIndex: imageRefs.length,
-              });
-              imageRefs.push(imgRef);
-              lastSegmentType = "image";
-            }
-            setMessages((previousMessages) => {
-              const updated = [...previousMessages];
-              const last = updated[updated.length - 1];
-              if (last?.role === "assistant") {
-                updated[updated.length - 1] = {
-                  ...last,
-                  images: [...imageRefs],
-                  contentSegments: snapshotSegments(),
-                };
-              } else {
-                updated.push({
-                  role: MESSAGE_ROLES.ASSISTANT,
-                  content: "",
-                  images: [...imageRefs],
-                  contentSegments: snapshotSegments(),
-                });
-              }
-              return updated;
-            });
-          },
-          onAudio: (dataString: string, _mimeType: string) => {
-            if (isStale()) return;
-            if (!dataString) return;
-            // Track segment ordering so audio players render inline at their
-            // true position (matching the backend's post-stream displayMessages)
-            if (!audioRefs.includes(dataString)) {
-              contentSegments.push({
-                type: "audio",
-                fragmentIndex: audioRefs.length,
-              });
-              audioRefs.push(dataString);
-              lastSegmentType = "audio";
-            }
-            setMessages((previousMessages) => {
-              const updated = [...previousMessages];
-              const last = updated[updated.length - 1];
-              if (last?.role === "assistant") {
-                updated[updated.length - 1] = {
-                  ...last,
-                  audio: [...audioRefs],
-                  contentSegments: snapshotSegments(),
-                };
-              } else {
-                updated.push({
-                  role: MESSAGE_ROLES.ASSISTANT,
-                  content: "",
-                  audio: [...audioRefs],
-                  contentSegments: snapshotSegments(),
-                });
-              }
-              return updated;
-            });
-          },
-          onToolExecution: (data) => {
-            if (isStale()) return;
-            const toolData = data.tool;
-            if (!toolData) return;
-            handleToolEvent(
-              {
-                id: toolData.id ?? "",
-                name: toolData.name,
-                args: toolData.args,
-                status: data.status as string,
-                result: toolData.result,
-                durationMs: toolData.durationMs,
-                timestamp: data.timestamp as number | undefined,
-              },
-              {
-                toolEmoji: data.toolEmoji as string | undefined,
-                logLabel: "ToolExec",
-              },
-            );
-          },
-          // LM Studio native MCP tool calls (toolCall events)
-          onToolCall: (toolCall: ToolCallEvent) => {
-            if (isStale()) return;
-            handleToolEvent(
-              {
-                id: toolCall.id,
-                name: toolCall.name,
-                args: toolCall.args,
-                status: (toolCall.status as string) || "",
-                result: toolCall.result,
-                durationMs: toolCall.durationMs,
-              },
-              { logLabel: "ToolCall MCP" },
-            );
-          },
-          onToolOutput: (data) => {
-            if (isStale()) return;
-            if (data.event === "stdout" || data.event === "stderr") {
-              setStreamingOutputs((previousPixelSize: Map<string, string>) => {
-                const updated = new Map<string, string>(previousPixelSize);
-                const key = data.toolCallId || data.name || "";
-                const existing = updated.get(key) || "";
-                updated.set(key, existing + (data.data || ""));
-                return updated;
-              });
-            }
-          },
-          onApprovalRequired: (data) => {
-            if (isStale()) return;
-            const approval = approvalFromEvent(data);
-            if (!approval) return;
-            setPendingApprovals((previousPendingApprovals) =>
-              addApproval(previousPendingApprovals, approval),
-            );
-            // Clear processing metadata so the live TTFT badge stops
-            // counting — user deliberation time on approval gates
-            // should not inflate time-to-first-token.
-            setMessages((previousMessages) => {
-              const updated = [...previousMessages];
-              const last = updated[updated.length - 1];
-              if (
-                last?.role === "assistant" &&
-                (last.statusPhase || last._processingStartTime)
-              ) {
-                updated[updated.length - 1] = {
-                  ...last,
-                  statusPhase: undefined,
-                  _processingStartTime: undefined,
-                };
-              }
-              return updated;
-            });
-          },
-          // One card decided — here, in another tab, by a batch scope or a timeout.
-          onApprovalDecided: (data) => {
-            if (isStale()) return;
-            setPendingApprovals((previousPendingApprovals) =>
-              applyApprovalDecided(previousPendingApprovals, data),
-            );
-          },
-          // Harness mailbox: our own `/agent/input` bubble (or another
-          // tab's) was applied. The driver keeps its in-flight assistant
-          // bubble LAST — every chunk handler above patches messages[-1]
-          // when it is an assistant — so a bubble that has to be created
-          // here goes just above it; the finalize refresh restores order.
-          onTurnInput: (data) => {
-            if (isStale()) return;
-            const inputId = typeof data.id === "string" ? data.id : "";
-            if (!inputId) return;
-            setMessages((previousMessages) =>
-              applyTurnInputEvent(
-                previousMessages,
-                {
-                  id: inputId,
-                  kind: (data.kind as TurnInputKind | undefined) ?? "user_update",
-                  content: (data.content as string) || "",
-                  images: Array.isArray(data.images) ? (data.images as string[]) : undefined,
-                  boundary: data.boundary as TurnInputBoundary | undefined,
-                  iteration: typeof data.iteration === "number" ? data.iteration : undefined,
-                },
-                "before-trailing-assistant",
-              ),
-            );
-          },
-          onGoalUpdate: (data) => {
-            if (isStale()) return;
-            applyGoalEvent(data);
-          },
-          onPermissionMode: (data) => {
-            if (isStale()) return;
-            applyPermissionModeEvent(data);
-          },
-          ...turnActivityCallbacks(generationConversationId),
-          onUserQuestion: (data) => {
-            if (isStale()) return;
-            if (data.blocking === false) {
-              // The agent keeps working — pin the card, leave the composer
-              // and the TTFT badge alone.
-              openNonBlockingQuestion(data);
-              return;
-            }
-            setPendingUserQuestion({
-              questionId: typeof data.questionId === "string" ? data.questionId : undefined,
-              questions: data.questions || [],
-              context: data.context || undefined,
-            });
-            // Clear processing metadata — user deliberation time should
-            // not inflate TTFT (same pattern as approval gates).
-            setMessages((previousMessages) => {
-              const updated = [...previousMessages];
-              const last = updated[updated.length - 1];
-              if (
-                last?.role === "assistant" &&
-                (last.statusPhase || last._processingStartTime)
-              ) {
-                updated[updated.length - 1] = {
-                  ...last,
-                  statusPhase: undefined,
-                  _processingStartTime: undefined,
-                };
-              }
-              return updated;
-            });
-          },
-          onPlanProposal: (data) => {
-            if (isStale()) return;
-
-            // Inject plan as a content segment so it renders in-flow —
-            // subsequent tool/text segments will appear after the plan card
-            contentSegments.push({ type: "plan" });
-            lastSegmentType = "plan";
-
-            // Snapshot segments into the current assistant message.
-            // When the plan requires user approval (not auto-approved),
-            // clear processing metadata so the live TTFT badge stops
-            // counting — user deliberation time is not part of TTFT.
-            const isPending = !data.autoApproved;
-            setMessages((previousMessages) => {
-              const updated = [...previousMessages];
-              const last = updated[updated.length - 1];
-              if (last?.role === "assistant") {
-                updated[updated.length - 1] = {
-                  ...last,
-                  contentSegments: snapshotSegments(),
-                  textFragments: [...textFragments],
-                  thinkingFragments: [...thinkingFragments],
-                  ...(isPending
-                    ? {
-                        statusPhase: undefined,
-                        _processingStartTime: undefined,
-                      }
-                    : {}),
-                };
-              }
-              return updated;
-            });
-
-            setPlanProposal({
-              plan: data.plan || "",
-              steps: data.steps || [],
-              status: isPending ? "pending" : "approved",
-            });
-          },
-          onStatus: (event) => {
-            if (isStale()) return;
-            // Display text (a provider's progress, a blocked tool) carries
-            // only a phase; a known message carries its own fields.
-            if (!isKnownStatusEvent(event)) {
-              if (event.phase) {
-                applyStatusPhase({ message: event.message, phase: event.phase, progress: event.progress });
-              }
-              return;
-            }
-            const statusData = event;
-            if (applyBudgetStatus(statusData)) return;
-            // A configured hook's `systemMessage` — addressed to the user,
-            // never shown to the model.
-            if (statusData?.message === "hook_system_message" && typeof statusData.text === "string") {
-              addToast(statusData.text, "info");
-            }
-            // Mailbox entry applied — the `turn_input` event carries the
-            // content; this twin only settles a bubble's badge if that
-            // event was missed.
-            if (statusData?.message === "turn_input_applied" && typeof statusData.inputId === "string") {
-              const appliedInputId = statusData.inputId;
-              setMessages((previousMessages) =>
-                markTurnInputApplied(previousMessages, appliedInputId, {
-                  boundary: statusData.boundary as TurnInputBoundary | undefined,
-                  iteration: typeof statusData.iteration === "number" ? statusData.iteration : undefined,
-                }),
-              );
-            }
-            // statusData is now the full SSE data object { type, message, iteration?, maxIterations? }
-            if (statusData?.message === STATUS_MESSAGES.ITERATION_PROGRESS) {
-              setAgenticProgress({
-                iteration: statusData.iteration ?? 0,
-                maxIterations: statusData.maxIterations ?? 0,
-              });
-              // Clear the elapsed offset once live SSE events start flowing —
-              // the StatusBar's own timer is now tracking real-time progress.
-              setStatusBarInitialElapsedMilliseconds(null);
-            } else if (statusData?.message === STATUS_MESSAGES.SKILLS_INJECTED) {
-              setInjectedSkills(statusData.skills || []);
-            } else if (statusData?.message === STATUS_MESSAGES.COMPACTION_STARTED) {
-              setMessages((previousMessages) => {
-                const updatedMessages = [...previousMessages];
-                const lastMessage = updatedMessages[updatedMessages.length - 1];
-                if (lastMessage?.role === "assistant") {
-                  updatedMessages[updatedMessages.length - 1] = {
-                    ...lastMessage,
-                    status: "Compacting conversation...",
-                    statusPhase: "prefilling",
-                  };
-                } else {
-                  updatedMessages.push({
-                    role: MESSAGE_ROLES.ASSISTANT,
-                    content: "",
-                    status: "Compacting conversation...",
-                    statusPhase: "prefilling",
-                  });
-                }
-                return updatedMessages;
-              });
-            } else if (
-              statusData?.message === STATUS_MESSAGES.COMPACTION_COMPLETE ||
-              statusData?.message === STATUS_MESSAGES.COMPACTION_FAILED
-            ) {
-              setMessages((previousMessages) => {
-                const updatedMessages = [...previousMessages];
-                const lastMessage = updatedMessages[updatedMessages.length - 1];
-                if (
-                  lastMessage?.role === "assistant" &&
-                  lastMessage.statusPhase === "prefilling"
-                ) {
-                  updatedMessages[updatedMessages.length - 1] = {
-                    ...lastMessage,
-                    status: undefined,
-                    statusPhase: undefined,
-                  };
-                }
-                return updatedMessages;
-              });
-            } else if (statusData?.message === STATUS_MESSAGES.CONTEXT_TRUNCATED) {
-              setContextTruncated({
-                strategy: statusData.strategy || "",
-                estimatedTokens: statusData.estimatedTokens,
-              });
-            } else if (statusData?.message === STATUS_MESSAGES.TOOL_SET_CHANGED) {
-              const dynamicTools = statusData.dynamicTools as string[] | undefined;
-              if (Array.isArray(dynamicTools) && dynamicTools.length > 0) {
-                enableSpecificTools(dynamicTools);
-              }
-            } else if (statusData?.message === STATUS_MESSAGES.TASKS_UPDATED) {
-              // Ephemeral tab switch — show tasks panel then revert after 5s
-              switchTabTemporarily("tasks");
-              setTasksRefreshKey((k) => k + 1);
-              markTabNew("tasks");
-            } else if (statusData?.message === STATUS_MESSAGES.SUB_AGENTS_UPDATED) {
-              // Refresh sub-agents data without switching the active tab
-              setTasksRefreshKey((k) => k + 1);
-              markTabNew("subAgents");
-            } else if (statusData?.message === STATUS_MESSAGES.MEMORIES_UPDATED) {
-              if (hasAnyMemoryModelSet) {
-                // Ephemeral tab switch — show memories panel then revert after 5s
-                switchTabTemporarily("memories");
-                markTabNew("memories");
-              }
-              setMemoriesRefreshKey((k) => k + 1);
-              // Re-fetch count for the tab badge (MemoriesPanel may not be mounted yet)
-              PrismService.getAgentMemories(agentProject, 1, agentId)
-                .then((result) => setTotalMemoriesCount(result.total || 0))
-                .catch(() => {});
-            } else if (statusData?.message === STATUS_MESSAGES.GENERATION_STARTED) {
-              // Server-computed TTFT — accumulate per-iteration samples for averaging
-              setMessages((previousMessages) => {
-                const updated = [...previousMessages];
-                const last = updated[updated.length - 1];
-                if (last?.role === "assistant") {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    _ttftSamples: [
-                      ...(last._ttftSamples || []),
-                      statusData.timeToFirstToken ?? 0,
-                    ],
-                  };
-                }
-                return updated;
-              });
-            } else if (statusData?.message === STATUS_MESSAGES.GENERATION_PROGRESS) {
-              // Backend-computed metrics from ConversationGenerationTracker —
-              // authoritative aggregate across orchestrator, sub-agents,
-              // and tool sub-requests.
-              setMessages((previousMessages) => {
-                const updated = [...previousMessages];
-                const last = updated[updated.length - 1];
-                if (last?.role === "assistant") {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    _liveGenProgress: {
-                      // Server emits `tokPerSec`; accept the legacy alias too.
-                      tokensPerSecond:
-                        (statusData as any).tokPerSec ??
-                        (statusData as any).tokensPerSecond,
-                      activeRequests: (statusData as any).activeRequests,
-                      outputTokens: (statusData as any).outputTokens,
-                      inputTokens: (statusData as any).inputTokens,
-                      totalTokens: (statusData as any).totalTokens,
-                      avgTtft: (statusData as any).avgTtft,
-                      // Live server-estimated cost — monotonic per turn (server
-                      // emits a high-water mark). Keep the previous value when a
-                      // frame arrives without one.
-                      estimatedCost:
-                        (statusData as any).estimatedCost ??
-                        last._liveGenProgress?.estimatedCost,
-                      timestamp: performance.now(),
-                    },
-                  };
-                }
-                return updated;
-              });
-            } else if (
-              statusData?.message === STATUS_MESSAGES.ITERATION_LIMIT_REACHED ||
-              statusData?.message === STATUS_MESSAGES.SEMANTIC_STALL_DETECTED ||
-              statusData?.message === STATUS_MESSAGES.COST_LIMIT_REACHED ||
-              statusData?.message === STATUS_MESSAGES.EMPTY_OUTPUT
-            ) {
-              // ── Loop termination events ──────────────────────────
-              // The agentic loop terminated for a non-standard reason.
-              // Surface this to the user as inline metadata on the last
-              // assistant message so ChatMessageComponent renders a notice.
-              const terminationLabels: Record<string, string> = {
-                [STATUS_MESSAGES.ITERATION_LIMIT_REACHED]:
-                  "The agent reached its maximum iteration limit before producing a final response.",
-                [STATUS_MESSAGES.SEMANTIC_STALL_DETECTED]:
-                  "The agent was stuck in a behavioral loop, calling the same tools repeatedly.",
-                [STATUS_MESSAGES.COST_LIMIT_REACHED]:
-                  "The generation was stopped because the cost limit was reached.",
-                [STATUS_MESSAGES.EMPTY_OUTPUT]:
-                  "The model produced an empty response with no text or tool calls.",
-              };
-              const terminationReason =
-                terminationLabels[statusData.message as string] ||
-                "The generation ended unexpectedly.";
-
-              setMessages((previousMessages) => {
-                const updatedMessages = [...previousMessages];
-                const lastMessage = updatedMessages[updatedMessages.length - 1];
-                if (lastMessage?.role === "assistant") {
-                  updatedMessages[updatedMessages.length - 1] = {
-                    ...lastMessage,
-                    _terminationReason: terminationReason,
-                  };
-                }
-                return updatedMessages;
-              });
-            } else if ("phase" in statusData) {
-              applyStatusPhase({ message: statusData.message, phase: statusData.phase });
-            }
-          },
-          // -- Sub-agent agent live events -----------------------------
-          onSubAgentToolExecution: (data) => {
-            if (isStale()) return;
-            const subAgentId = data.subAgentId;
-            if (!subAgentId) return;
-            setSubAgentToolActivity((previousSubAgentToolActivity) => {
-              const raw = previousSubAgentToolActivity[subAgentId];
-              const entry = {
-                toolCount: 0,
-                currentTool: null as string | null,
-                iteration: 0,
-                toolNames: {} as Record<string, number>,
-                toolCalls: [] as ToolCallEvent[],
-                ...raw,
-              };
-              const toolData = data.tool;
-              if (!toolData) return previousSubAgentToolActivity;
-
-              let updatedCalls = [...entry.toolCalls];
-              if (data.status === "streaming" || data.status === "calling") {
-                const newCall: ToolCallEvent = {
-                  id: toolData.id || `wtc-${Date.now()}`,
-                  name: toolData.name || "unknown",
-                  args: toolData.args || {},
-                  status: data.status as string,
-                };
-                const existingIndex = updatedCalls.findIndex(
-                  (toolCall) => toolCall.id === newCall.id,
-                );
-                if (existingIndex >= 0) {
-                  updatedCalls = updatedCalls.map((toolCall) =>
-                    toolCall.id === newCall.id
-                      ? {
-                          ...toolCall,
-                          status: data.status as string,
-                          ...(toolData.args &&
-                          Object.keys(toolData.args).length > 0
-                            ? { args: toolData.args }
-                            : {}),
-                        }
-                      : toolCall,
-                  );
-                  return {
-                    ...previousSubAgentToolActivity,
-                    [subAgentId]: {
-                      ...entry,
-                      currentTool: toolData.name || entry.currentTool,
-                      toolCalls: updatedCalls,
-                      phase: undefined,
-                    },
-                  };
-                }
-                updatedCalls.push(newCall);
-
-                const toolName = toolData.name || "unknown";
-                const updatedToolNames: Record<string, number> = {
-                  ...entry.toolNames,
-                  [toolName]: (entry.toolNames[toolName] || 0) + 1,
-                };
-                return {
-                  ...previousSubAgentToolActivity,
-                  [subAgentId]: {
-                    ...entry,
-                    currentTool: toolName,
-                    toolCount: entry.toolCount + 1,
-                    toolNames: updatedToolNames,
-                    toolCalls: updatedCalls,
-                    phase: undefined, // Clear phase — tool is now active
-                  },
-                };
-              } else if (data.status === "done" || data.status === "error") {
-                updatedCalls = updatedCalls.map((toolCall) => {
-                  if (
-                    toolCall.id === toolData.id ||
-                    (toolCall.name === toolData.name &&
-                      (toolCall.status === "calling" ||
-                        toolCall.status === "streaming"))
-                  ) {
-                    return {
-                      ...toolCall,
-                      status: data.status === "done" ? "done" : "error",
-                      result: toolData.result,
-                      durationMs: toolData.durationMs || (toolData as Record<string, unknown>).durationMilliseconds as number | undefined,
-                    };
-                  }
-                  return toolCall;
-                });
-                return {
-                  ...previousSubAgentToolActivity,
-                  [subAgentId]: {
-                    ...entry,
-                    currentTool: null,
-                    toolCalls: updatedCalls,
-                    phase: undefined,
-                  },
-                };
-              }
-              return previousSubAgentToolActivity;
-            });
-          },
-          onSubAgentToolOutput: (data) => {
-            if (isStale()) return;
-            const subAgentId = data.subAgentId;
-            const key = data.toolCallId || data.name || "";
-            if (!subAgentId || !key) return;
-            setStreamingOutputs((previousStreamingOutputs) => {
-              const updated = new Map<string, string>(previousStreamingOutputs);
-              const existing = updated.get(key) || "";
-              updated.set(key, existing + (data.data || ""));
-              return updated;
-            });
-          },
-          onSubAgentStatus: (data) => {
-            if (isStale()) return;
-            const subAgentId = data.subAgentId;
-            if (!subAgentId) return;
-            // Terminal-state settle for a sub-agent's own conversation entry:
-            // stop the sidebar generating dot and resolve the derived state to
-            // "completed" immediately, without waiting for a list reload.
-            const settleSubAgentConversation = (settledConversationId: string) => {
-              setGeneratingConversationIds(
-                (previousGeneratingConversationIds) => {
-                  if (!previousGeneratingConversationIds.has(settledConversationId)) {
-                    return previousGeneratingConversationIds;
-                  }
-                  const next = new Set(previousGeneratingConversationIds);
-                  next.delete(settledConversationId);
-                  return next;
-                },
-              );
-              setConversations((previousConversations) =>
-                previousConversations.map((entry) => {
-                  if ((entry.id || String(entry._id)) !== settledConversationId) {
-                    return entry;
-                  }
-                  return {
-                    ...entry,
-                    isActive: false,
-                    isGenerating: false,
-                    pendingBackgroundTasks: 0,
-                  } as typeof entry;
-                }),
-              );
-            };
-            if (data.message === STATUS_MESSAGES.SPAWNED) {
-              // Early mapping: store subAgentId indexed by description
-              // so SpawnAgentRenderer can look up activity before tool result arrives
-              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
-                ...previousSubAgentToolActivity,
-                [subAgentId]: {
-                  ...(previousSubAgentToolActivity[subAgentId] || {
-                    toolCount: 0,
-                    currentTool: null,
-                    iteration: 0,
-                    toolNames: {},
-                  }),
-                  description: data.description,
-                  phase: "spawned",
-                  conversationId: (data.conversationId as string) || undefined,
-                },
-              }));
-
-              // Optimistic sidebar injection: add placeholder conversation
-              // entry so sub-agent appears in the HistoryList immediately
-              // rather than waiting for loadConversations() post-completion.
-              const subAgentConversationId = data.conversationId as string | undefined;
-              const subAgentParentConversationId = data.parentConversationId as string | undefined;
-              if (subAgentConversationId) {
-                const spawnTimestamp = new Date().toISOString();
-                setConversations((previousConversations) => {
-                  // Guard: don't duplicate if already in the list (e.g. continuation spawn)
-                  if (previousConversations.some(
-                    (existingConversation) => (existingConversation.id || String(existingConversation._id)) === subAgentConversationId,
-                  )) {
-                    return previousConversations;
-                  }
-                  return [
-                    {
-                      _id: subAgentConversationId,
-                      id: subAgentConversationId,
-                      project: agentProject || "",
-                      title: data.description || "Sub-agent",
-                      messages: [],
-                      updatedAt: spawnTimestamp,
-                      createdAt: spawnTimestamp,
-                      parentConversationId: subAgentParentConversationId || null,
-                      isGenerating: true,
-                      agentIndex: typeof data.agentIndex === "number" ? data.agentIndex : null,
-                      ...(data.model ? { modelNames: [data.model as string] } : {}),
-                      ...(data.provider ? { providers: [data.provider as string] } : {}),
-                    } as AgentConversation,
-                    ...previousConversations,
-                  ];
-                });
-                // Mark this sub-agent conversation as generating so the
-                // sidebar shows the pulsing generating-dot indicator.
-                setGeneratingConversationIds(
-                  (previousGeneratingConversationIds) =>
-                    new Set(previousGeneratingConversationIds).add(
-                      subAgentConversationId,
-                    ),
-                );
-              }
-            } else if (data.message === STATUS_MESSAGES.ITERATION_PROGRESS) {
-              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
-                ...previousSubAgentToolActivity,
-                [subAgentId]: {
-                  ...(previousSubAgentToolActivity[subAgentId] || {
-                    toolCount: 0,
-                    currentTool: null,
-                  }),
-                  iteration: data.iteration,
-                  maxIterations: data.maxIterations,
-                },
-              }));
-            } else if (data.message === STATUS_MESSAGES.PHASE) {
-              // Sub-agent LLM phase updates (generating, thinking, prefilling, loading)
-              setSubAgentToolActivity((previousSubAgentToolActivity) => ({
-                ...previousSubAgentToolActivity,
-                [subAgentId]: {
-                  ...(previousSubAgentToolActivity[subAgentId] || {
-                    toolCount: 0,
-                    currentTool: null,
-                    iteration: 0,
-                  }),
-                  phase: data.phase,
-                  phaseLabel: data.label || undefined,
-                  phaseProgress:
-                    data.progress != null
-                      ? data.progress
-                      : (previousSubAgentToolActivity[subAgentId]?.phaseProgress ??
-                        undefined),
-                },
-              }));
-            } else if (data.message === STATUS_MESSAGES.GENERATION_STARTED) {
-              // Sub-agent server-computed TTFT — push into the shared samples array
-              setMessages((previousMessages) => {
-                const updated = [...previousMessages];
-                const last = updated[updated.length - 1];
-                if (last?.role === "assistant") {
-                  updated[updated.length - 1] = {
-                    ...last,
-                    _ttftSamples: [
-                      ...(last._ttftSamples || []),
-                      data.timeToFirstToken ?? 0,
-                    ],
-                  };
-                }
-                return updated;
-              });
-            } else if (data.message === STATUS_MESSAGES.GENERATION_PROGRESS) {
-              setMessages((previousMessages) => {
-                const updated = [...previousMessages];
-                const last = updated[updated.length - 1];
-                if (last?.role === "assistant") {
-                  const wp = last._subAgentGenerationProgress || {};
-                  const existing = (wp[subAgentId] || {}) as SubAgentGenerationProgress;
-                  updated[updated.length - 1] = {
-                    ...last,
-                    _subAgentGenerationProgress: {
-                      ...wp,
-                      [subAgentId]: {
-                        ...existing,
-                        // Burst-scoped values for tok/s computation — only update when present
-                        ...((data as any).outputTokens != null && {
-                          outputTokens: (data as any).outputTokens,
-                        }),
-                        ...((data as any).firstChunkTime != null && {
-                          firstChunkTime: (data as any).firstChunkTime,
-                        }),
-                        ...((data as any).lastChunkTime != null && {
-                          lastChunkTime: (data as any).lastChunkTime,
-                        }),
-                        // Cumulative total for token badge count
-                        totalOutputTokens:
-                          (data as any).totalOutputTokens ||
-                          (data as any).outputTokens ||
-                          existing.totalOutputTokens,
-                        // Per-sub-agent tok/s from burst counters
-                        // (server emits `tokPerSec`; accept the legacy alias)
-                        tokensPerSecond:
-                          (data as any).tokPerSec ??
-                          (data as any).tokensPerSecond ??
-                          existing.tokensPerSecond,
-                        ...((data as any).inputTokens != null && {
-                          inputTokens: (data as any).inputTokens,
-                        }),
-                        ...((data as any).totalTokens != null && {
-                          totalTokens: (data as any).totalTokens,
-                        }),
-                        ...((data as any).avgTtft != null && { avgTtft: (data as any).avgTtft }),
-                      },
-                    },
-                  };
-                }
-                return updated;
-              });
-              // Also store on subAgentToolActivity so TeamCreateRenderer can
-              // display live per-sub-agent metrics on each sub-agent's header
-              setSubAgentToolActivity((previousSubAgentToolActivity) => {
-                const existing = (previousSubAgentToolActivity[subAgentId] || {
-                  toolCount: 0,
-                  currentTool: null,
-                  iteration: 0,
-                  toolNames: {},
-                }) as SubAgentActivityEntry;
-                return {
-                  ...previousSubAgentToolActivity,
-                  [subAgentId]: {
-                    ...existing,
-                    status: (data as any).status || existing.status,
-                    iteration: (data as any).iteration || existing.iteration,
-                    // Burst-scoped values for header tok/s computation
-                    ...((data as any).outputTokens != null && {
-                      outputTokens: (data as any).outputTokens,
-                    }),
-                    ...((data as any).firstChunkTime != null && {
-                      firstChunkTime: (data as any).firstChunkTime,
-                    }),
-                    ...((data as any).lastChunkTime != null && {
-                      lastChunkTime: (data as any).lastChunkTime,
-                    }),
-                    // Cumulative total for token badge count
-                    totalOutputTokens:
-                      (data as any).totalOutputTokens ||
-                      (data as any).outputTokens ||
-                      existing.totalOutputTokens,
-                    // Per-sub-agent tok/s from burst counters
-                    tokensPerSecond: (data as any).tokensPerSecond ?? existing.tokensPerSecond,
-                  },
-                };
-              });
-            } else if (data.message === STATUS_MESSAGES.COMPLETE) {
-              // Sub-agent finished — clear phase so StatusBar stops showing "Generating..."
-              setSubAgentToolActivity((previousSubAgentToolActivity) => {
-                // Settle the sub-agent's conversation so the sidebar dot and
-                // progress bar stop. Prefer the event's conversationId (the
-                // backend includes it on terminal events) — the activity-map
-                // fallback only works when this client saw the "spawned" event.
-                const completedConversationId =
-                  (data.conversationId as string | undefined) ||
-                  (previousSubAgentToolActivity[subAgentId]?.conversationId as
-                    | string
-                    | undefined);
-                if (completedConversationId) {
-                  settleSubAgentConversation(completedConversationId);
-                }
-                return {
-                  ...previousSubAgentToolActivity,
-                  [subAgentId]: {
-                    ...(previousSubAgentToolActivity[subAgentId] || {}),
-                    phase: "complete",
-                    currentTool: null,
-                    durationMs: data.durationMilliseconds,
-                    toolCount:
-                      data.toolCount ?? previousSubAgentToolActivity[subAgentId]?.toolCount,
-                  },
-                };
-              });
-              // Accumulate sub-agent usage into the streaming assistant message
-              // so stats badges update in real-time per sub-agent completion
-              if (data.usage) {
-                setMessages((previousMessages) => {
-                  const updated = [...previousMessages];
-                  const last = updated[updated.length - 1];
-                  if (last?.role === "assistant") {
-                    const wt = last._subAgentTokens || {
-                      input: 0,
-                      output: 0,
-                      requests: 0,
-                    };
-                    // Remove completed sub-agent from live progress so stale tok/s doesn't linger
-                    const wp = { ...(last._subAgentGenerationProgress || {}) };
-                    delete wp[subAgentId];
-                    updated[updated.length - 1] = {
-                      ...last,
-                      _subAgentTokens: {
-                        input: (wt.input || 0) + (data.usage?.inputTokens || 0),
-                        output:
-                          (wt.output || 0) + (data.usage?.outputTokens || 0),
-                        requests:
-                          (wt.requests || 0) + (data.usage?.requests || 1),
-                      },
-                      _subAgentGenerationProgress:
-                        Object.keys(wp).length > 0 ? wp : undefined,
-                    };
-                  }
-                  return updated;
-                });
-              }
-            } else if (data.message === STATUS_MESSAGES.FAILED) {
-              // Sub-agent errored — mark as failed and settle its conversation
-              // (failures previously left the sidebar dot/progress bar running).
-              setSubAgentToolActivity((previousSubAgentToolActivity) => {
-                const failedConversationId =
-                  (data.conversationId as string | undefined) ||
-                  (previousSubAgentToolActivity[subAgentId]?.conversationId as
-                    | string
-                    | undefined);
-                if (failedConversationId) {
-                  settleSubAgentConversation(failedConversationId);
-                }
-                return {
-                  ...previousSubAgentToolActivity,
-                  [subAgentId]: {
-                    ...(previousSubAgentToolActivity[subAgentId] || {}),
-                    phase: "failed",
-                    currentTool: null,
-                    error: data.error,
-                  },
-                };
-              });
-            }
-          },
-          onUsageUpdate: (data) => {
-            if (isStale()) return;
-            setMessages((previousMessages) => {
-              const updated = [...previousMessages];
-              const last = updated[updated.length - 1];
-              if (last?.role !== "assistant") return previousMessages;
-
-              // Background operations (memory extraction, consolidation, embeddings,
-              // compaction) emit incremental usage_update events. Accumulate them
-              // separately so the token badge grows smoothly instead of jumping
-              // when fetchConversationStats discovers them all at once.
-              const op = (data.operation as string) || "";
-              const isBackground =
-                op.startsWith("memory:") ||
-                op.startsWith("embed:") ||
-                op.startsWith("compact:");
-              if (isBackground) {
-                const backgroundUsage = last._backgroundUsage || {
-                  inputTokens: 0,
-                  outputTokens: 0,
-                  cost: 0,
-                };
-                updated[updated.length - 1] = {
-                  ...last,
-                  _backgroundUsage: {
-                    inputTokens:
-                      (backgroundUsage.inputTokens || 0) +
-                      (data.usage?.inputTokens || 0),
-                    outputTokens:
-                      (backgroundUsage.outputTokens || 0) +
-                      (data.usage?.outputTokens || 0),
-                    requests:
-                      (backgroundUsage.requests || 0) +
-                      (data.usage?.requests || 1),
-                    cost:
-                      (backgroundUsage.cost || 0) + (data.estimatedCost || 0),
-                  },
-                };
-              } else if (!last.usage) {
-                // Authoritative per-iteration usage from the backend —
-                // stored on the message so getConversationTokenStats can use it
-                // as a middle priority between streaming estimate and final done.
-                updated[updated.length - 1] = {
-                  ...last,
-                  _intermediateUsage: data.usage,
-                  _intermediateEstimatedCost: data.estimatedCost ?? null,
-                };
-              }
-              return updated;
-            });
-          },
-          onContextBudget: (data) => {
-            if (isStale()) return;
-            setContextBudget({
-              contextWindow: data.contextWindow as number,
-              messageTokens: data.messageTokens as number,
-              systemPromptTokens: data.systemPromptTokens as number,
-              toolSchemaTokens: data.toolSchemaTokens as number,
-              skillTokens: data.skillTokens !== undefined ? (data.skillTokens as number) : undefined,
-              safetyMarginTokens: data.safetyMarginTokens as number,
-              totalInputTokens: data.totalInputTokens as number,
-              availableOutputTokens: data.availableOutputTokens as number,
-              requestedOutputTokens: data.requestedOutputTokens !== undefined ? (data.requestedOutputTokens as number) : undefined,
-              isClamped: data.isClamped as boolean,
-              toolCount: data.toolCount as number,
-              source: (data.source as "estimated" | "reported") || "estimated",
-              lastReportedInputTokens: data.lastReportedInputTokens !== undefined ? (data.lastReportedInputTokens as number) : undefined,
-              calibrationRatio: data.calibrationRatio !== undefined ? (data.calibrationRatio as number) : undefined,
-            });
-          },
-          onTaskNotification: (data) => {
-            console.debug(`[onTaskNotification] received, isStale=${isStale()}`);
-            if (isStale()) return;
-
-            // ── Finalize current assistant message + inject notification ──
-            // The auto-response will stream new chunks into a fresh
-            // assistant message. Reset local streaming accumulators so the
-            // new content doesn't merge with the previous agent's output.
-            streamedText = "";
-            streamedThinking = "";
-            contentSegments.length = 0;
-            textFragments.length = 0;
-            thinkingFragments.length = 0;
-            segmentToolIdSet.clear();
-            lastSegmentType = null;
-            prevCleanLen = 0;
-            prevThinkingLen = 0;
-            firstChunkTime = undefined;
-            prevChunkTime = null;
-            burstTokens = 0;
-            burstElapsed = 0;
-
-            setMessages((previousMessages) => {
-              const updated = [...previousMessages];
-              const lastIndex = updated.length - 1;
-              const lastMessage = updated[lastIndex];
-
-              // Finalize the current assistant message if present
-              if (lastMessage?.role === "assistant" && !lastMessage.completedAt) {
-                updated[lastIndex] = {
-                  ...lastMessage,
-                  completedAt: new Date().toISOString(),
-                };
-              }
-
-              // Inject the notification as a user-role message
-              updated.push({
-                role: MESSAGE_ROLES.USER,
-                content: data.content as string,
-                timestamp: data.timestamp as string,
-                _notificationSource: data._notificationSource as string,
-                _notificationId: data._notificationId as string,
-              });
-
-              // Create a new empty assistant placeholder for the auto-response
-              updated.push({
-                role: MESSAGE_ROLES.ASSISTANT,
-                content: "",
-                timestamp: new Date().toISOString(),
-                provider: settings.provider,
-                model: settings.model,
-              });
-
-              return updated;
-            });
-          },
-          onConversationStateUpdate: (data) => {
-            // Patch the conversations list entry with the updated counter
-            // and isActive flag so the status bar resolves correctly.
-            const updatedPendingCount = (data.pendingBackgroundTasks as number) ?? 0;
-            const updatedIsActive = data.isActive as boolean | undefined;
-            setConversations((previousConversations) =>
-              previousConversations.map((entry) => {
-                if (entry.id !== conversationId) return entry;
-                return {
-                  ...entry,
-                  pendingBackgroundTasks: updatedPendingCount,
-                  ...(updatedIsActive !== undefined ? { isActive: updatedIsActive } : {}),
-                } as typeof entry;
-              }),
-            );
-          },
-          onDone: (event) => {
-            const data: Partial<DoneEvent> = event;
-            console.debug(`[onDone] stream finished, isStale=${isStale()}`);
-            if (!isStale()) {
-              setMessages((previousMessages) => {
-                const updated = [...previousMessages];
-                const last = updated[updated.length - 1];
-                console.debug(
-                  `[onDone setMessages] previousMessages=${previousMessages.length}, last.role=${last?.role}`,
-                );
-                if (last?.role === "assistant") {
-                  const audioFromDone = data.audioRef
-                    ? (() => {
-                        const existing = Array.isArray(last.audio)
-                          ? last.audio
-                          : last.audio
-                            ? [last.audio]
-                            : [];
-                        return existing.includes(data.audioRef as string)
-                          ? existing.length > 0
-                            ? existing
-                            : undefined
-                          : [...existing, data.audioRef as string];
-                      })()
-                    : last.audio;
-                  updated[updated.length - 1] = {
-                    ...last,
-                    provider: settings.provider,
-                    model: settings.model,
-                    usage: data.usage ?? undefined,
-                    totalTime: data.totalTime ?? undefined,
-                    tokensPerSec: data.tokensPerSec ?? undefined,
-                    estimatedCost: data.estimatedCost ?? undefined,
-                    timeToGeneration: data.timeToGeneration ?? undefined,
-                    thinkingDurationSeconds: data.thinkingDurationSeconds,
-                    contentDurationSeconds: data.contentDurationSeconds,
-                    completedAt: new Date().toISOString(),
-                    status: undefined,
-                    statusPhase: undefined,
-                    ...(audioFromDone ? { audio: audioFromDone } : {}),
-                  };
-                }
-                return updated;
-              });
-              setCurrentTurnStart(null);
-              setPendingUserQuestion(null);
-              fetchConversationStats(conversationId);
-
-              // Immediately patch the conversation entry to terminal state.
-              // The SSE `done` event definitively means the backend finished —
-              // clear pendingBackgroundTasks and isActive so the status bar
-              // resolves on the very next render instead of waiting for the
-              // async `loadConversations()` round-trip that races the re-render.
-              setConversations((previousConversations) =>
-                previousConversations.map((entry) => {
-                  if (entry.id !== conversationId) return entry;
-                  return {
-                    ...entry,
-                    pendingBackgroundTasks: 0,
-                    isActive: false,
-                  } as typeof entry;
-                }),
-              );
-            }
-            // ConversationSummarizer runs async after SSE stream closes —
-            // poll every 2s for up to 20s until new memories are detected
-            (async () => {
-              const baselineCount = await PrismService.getAgentMemories(
-                agentProject,
-                1,
-                agentId,
-              )
-                .then((result) => result.total || 0)
-                .catch(() => 0);
-              let pollAttempts = 0;
-              const pollInterval = setInterval(async () => {
-                pollAttempts++;
-                try {
-                  const { total } = await PrismService.getAgentMemories(
-                    agentProject,
-                    1,
-                    agentId,
-                  );
-                  if (total > baselineCount) {
-                    clearInterval(pollInterval);
-                    setMemoriesRefreshKey((k) => k + 1);
-                  }
-                } catch {
-                  /* Non-critical background poll */
-                }
-                if (pollAttempts >= 10) clearInterval(pollInterval);
-              }, 2000);
-            })();
-            resolve();
-          },
-          onError: (error) => {
-            console.error(`[onError] stream error:`, error);
-            reject(error);
-          },
-          // Transport EOF without a done/error event (server crash mid-turn,
-          // proxy timeout). Classified as a network error so the catch below
-          // enters recovery polling — the backend loop persists independently.
-          onStreamClosed: ({ reason }) => {
-            reject(new Error(`SSE network stream closed early (${reason})`));
-          },
-        });
-      });
-
-      return [];
+      // Direct Chat → /chat; Agents → /agent (the agentic loop).
+      const stream = openTurnStream(isNoAgent ? "/chat" : "/agent", payload);
+      abortRef.current = () => stream.close();
+      return driveTurnStream(stream, generationConversationId);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- payload builder reads latest settings at call time; identity kept stable by design
     [
@@ -5765,22 +4500,18 @@ export default function AgentChatComponent({
       agentId,
       isNoAgent,
       agentProject,
-      fetchConversationStats,
-      markTabNew,
-      switchTabTemporarily,
       rules,
+      driveTurnStream,
     ],
   );
 
   // -- Send handler ---------------------------------------------
   // Read inputValue from ref at send-time to avoid re-creating
   // handleSend on every keystroke (the main cause of input lag).
-  const messagesRef = useRef<ClientMessage[]>(messages);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  messagesRef.current = messages;
   const titleRef = useRef<string>(title);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
-  titleRef.current = title;
+  useLayoutEffect(() => {
+    titleRef.current = title;
+  });
 
   /**
    * "Update current task": steer the RUNNING turn through `/agent/input`.
@@ -5835,7 +4566,7 @@ export default function AgentChatComponent({
       setPendingImages(images);
       addToast(outcome.toast, "warning");
     },
-    [addToast, setTextareaValue, enqueueNextTurn],
+    [addToast, setTextareaValue, enqueueNextTurn, setMessages],
   );
 
   const handleSend = useCallback(
@@ -5986,37 +4717,15 @@ export default function AgentChatComponent({
       const genId = conversationIdRef.current;
       clientDrivenConversationIdRef.current = genId;
       console.debug(
-        `[handleSend] starting generation, conversationId=${genId}, currentMessages=${messagesRef.current.length}`,
+        `[handleSend] starting generation, conversationId=${genId}, currentMessages=${getConversationState().messages.length}`,
       );
       setGeneratingConversationIds((previousGeneratingConversationIds) =>
         new Set(previousGeneratingConversationIds).add(genId),
       );
-      setToolActivity([]);
-      // Preserve sub-agent entries that are still in non-terminal phases
-      // so their progress bars remain visible while the follow-up generates.
-      // Only wipe entries that already reached "complete" or "failed".
-      setSubAgentToolActivity((previousSubAgentToolActivity) => {
-        const terminalPhases = new Set(["complete", "completed", "failed", "stopped"]);
-        const preserved: Record<string, SubAgentActivityEntry> = {};
-        for (const [id, entry] of Object.entries(previousSubAgentToolActivity)) {
-          if (!entry.phase || !terminalPhases.has(entry.phase)) {
-            preserved[id] = entry;
-          }
-        }
-        return preserved;
-      });
-      setStreamingOutputs(new Map());
-      setPendingApprovals([]);
-      setPendingUserQuestion(null);
+      // The budget card is its hook's, not the conversation reducer's.
       clearBudgetPause();
-      setPlanProposal(null);
-      setAgenticProgress(null);
-      setStatusBarInitialElapsedMilliseconds(null);
-      setInjectedSkills([]);
-      setContextTruncated(null);
-      startTurnActivity(genId);
 
-      const currentMessages = messagesRef.current;
+      const currentMessages = getConversationState().messages;
       // Optimistic display title only — the persisted title is derived
       // server-side (ChatRoutes) and arrives via the change stream.
       let resolvedTitle = titleRef.current;
@@ -6029,11 +4738,7 @@ export default function AgentChatComponent({
         // Optimistic: add the conversation to the history list immediately
         const now = new Date().toISOString();
         setActiveId(conversationId);
-        window.dispatchEvent(
-          new CustomEvent(EVENT_NAME_CONVERSATION_CHANGE, {
-            detail: { conversationId: conversationId },
-          }),
-        );
+        reportUrlChange({ kind: "conversation", conversationId });
         // An edit of the first message empties an already-listed
         // conversation — replace its entry rather than adding a second.
         setConversations((previousConversations) => [
@@ -6103,24 +4808,33 @@ export default function AgentChatComponent({
         ...(uploadedFileUrls.length > 0 ? { files: uploadedFileUrls } : {}),
       };
       const updatedMessages = [...currentMessages, userMessage];
-      // Insert placeholder assistant message so the aiNode
-      // (with blinking cursor) appears immediately
-      setMessages([
-        ...updatedMessages,
-        {
-          role: MESSAGE_ROLES.ASSISTANT,
-          content: "",
-          timestamp: new Date().toISOString(),
-          provider: settings.provider,
-          model: settings.model,
-        },
-      ]);
+      // The turn starts with a placeholder assistant bubble, so the aiNode
+      // (with its blinking cursor) appears at once; the stream fills it.
+      dispatchConversation({
+        type: "turn/started",
+        messages: [
+          ...updatedMessages,
+          {
+            role: MESSAGE_ROLES.ASSISTANT,
+            content: "",
+            timestamp: new Date().toISOString(),
+            provider: settings.provider,
+            model: settings.model,
+          },
+        ],
+        conversationId: genId,
+        sentWith: { provider: settings.provider, model: settings.model },
+      });
 
+      let wasStopped = false;
       try {
         console.debug(
           `[handleSend] starting runOrchestrationLoop, updatedMessages=${updatedMessages.length}`,
         );
-        await runOrchestrationLoop(updatedMessages, turnActiveRuleNames);
+        const outcome = await runOrchestrationLoop(updatedMessages, turnActiveRuleNames);
+        // The user's Stop closed the stream; handleStop settled the turn.
+        wasStopped = outcome === "stopped";
+        if (wasStopped) return;
         // Messages are already updated by the streaming callbacks — just reload history
         console.debug(
           `[handleSend] runOrchestrationLoop resolved, proceeding to post-stream refresh`,
@@ -6148,7 +4862,7 @@ export default function AgentChatComponent({
             );
             if (full && full.displayMessages && conversationIdRef.current === genId) {
               const displayMessages = resolveDisplayMessages(full);
-              const currentCount = messagesRef.current.length;
+              const currentCount = getConversationState().messages.length;
               console.debug(
                 `[PostStream setMessages] attempt=${attempt} display=${displayMessages.length}, currentStreaming=${currentCount}`,
                 displayMessages.length === 0
@@ -6174,7 +4888,7 @@ export default function AgentChatComponent({
               // message exists in the DB data. This catches the edge case where
               // DB has the right count but wrong content (e.g. user message was
               // dropped and replaced with an extra assistant message).
-              const lastStreamingUserMessage = [...messagesRef.current]
+              const lastStreamingUserMessage = [...getConversationState().messages]
                 .reverse()
                 .find((message: ClientMessage) => message.role === "user");
               if (lastStreamingUserMessage?.content) {
@@ -6223,6 +4937,9 @@ export default function AgentChatComponent({
       } catch (error: unknown) {
         console.error(`[handleSend] orchestration error:`, error);
 
+        // The turn's own `error` event: the reducer already showed it.
+        if (error instanceof StreamError) return;
+
         // Detect network/fetch errors caused by mobile screen lock, tab
         // suspension, or TCP connection drops. These are NOT real failures —
         // the backend agentic loop continues processing in the background.
@@ -6230,6 +4947,7 @@ export default function AgentChatComponent({
         // the live socket (polling when none is configured).
         const errorMessage = getErrorMessage(error);
         const isNetworkDisconnection =
+          error instanceof StreamClosedError ||
           error instanceof TypeError ||
           errorMessage.includes("fetch") ||
           errorMessage.includes("network") ||
@@ -6298,27 +5016,19 @@ export default function AgentChatComponent({
 
           // Follow the rest of the turn over the live socket. It resubscribes
           // from this conversation's event cursor — the SSE's own mark — so
-          // the text the SSE missed continues the bubble with nothing
-          // repeated; the document refresh then lands the canonical messages.
-          const liveRecoveryOutcome = await PrismService.followLiveTurn(
-            genId,
-            {
-              onChunk: (content: string) => {
-                if (conversationIdRef.current !== genId) return;
-                setMessages((previousMessages) =>
-                  appendRecoveredText(previousMessages, content),
-                );
-              },
-            },
-            {
-              isTurnRunning: async () =>
-                Boolean(
-                  (await PrismService.getAgentConversation(genId, agentProject!))?.isActive,
-                ),
-              timeoutMilliseconds: RECOVERY_MAX_DURATION_MILLISECONDS,
-              onStateChange: setLiveConnectionState,
-            },
-          );
+          // what the SSE missed goes through the same reducer and continues
+          // the turn's bubble with nothing repeated; the document refresh
+          // then lands the canonical messages.
+          const recovery = followTurn(genId, {
+            isTurnRunning: async () =>
+              Boolean((await PrismService.getAgentConversation(genId, agentProject!))?.isActive),
+            timeoutMilliseconds: RECOVERY_MAX_DURATION_MILLISECONDS,
+          });
+          for await (const item of recovery) {
+            if (item.kind === "connection") setLiveConnectionState(item.state);
+            else if (item.kind === "event") routeTurnEvent(item.event, genId);
+          }
+          const liveRecoveryOutcome = await recovery.outcome;
           console.info(
             `[handleSend] Live recovery for ${genId} finished: ${liveRecoveryOutcome}`,
           );
@@ -6332,14 +5042,7 @@ export default function AgentChatComponent({
             }
           }
         } else {
-          setMessages((previousMessages) => [
-            ...previousMessages,
-            {
-              role: MESSAGE_ROLES.ASSISTANT,
-              content: `⚠️ Error: ${errorMessage}`,
-              isError: true,
-            },
-          ]);
+          dispatchConversation({ type: "turn/failed", message: errorMessage });
         }
       } finally {
         console.debug(
@@ -6362,7 +5065,7 @@ export default function AgentChatComponent({
         // Only update local UI state if this conversation is still displayed
         if (conversationIdRef.current === genId) {
           setIsGenerating(false);
-          SoundService.playGenerationEnd();
+          if (!wasStopped) SoundService.playGenerationEnd();
           abortRef.current = null;
           setCurrentTurnStart(null);
 
@@ -6427,6 +5130,8 @@ export default function AgentChatComponent({
       addToast,
       sendTurnInputUpdate,
       enqueueNextTurn,
+      dispatchConversation,
+      routeTurnEvent,
     ],
   );
 
@@ -6543,10 +5248,7 @@ export default function AgentChatComponent({
   const messageActions = useMessageActions({
     messages,
     listMessages: filteredMessages,
-    commitMessages: (nextMessages) => {
-      messagesRef.current = nextMessages;
-      setMessages(nextMessages);
-    },
+    commitMessages: setMessages,
     isGenerating,
     conversationId: activeId,
     project: agentProject || undefined,
@@ -6571,20 +5273,9 @@ export default function AgentChatComponent({
   // -- Conversation management ----------------------------------
   const resetConversationState = useCallback(() => {
     console.debug(`[resetConversationState] clearing all messages and state`);
-    setMessages([]);
-    setToolActivity([]);
-    setSubAgentToolActivity({});
-    setStreamingOutputs(new Map());
+    dispatchConversation({ type: "conversation/reset" });
     setPendingImages([]);
-    setPendingApprovals([]);
-    setPendingUserQuestion(null);
     clearBudgetPause();
-    setPlanProposal(null);
-    setAgenticProgress(null);
-    setInjectedSkills([]);
-    setContextTruncated(null);
-    setIsGenerating(false);
-    setContextBudget(null);
     hydrateConversationGoal(null);
     setForkedFrom(null);
     clearNonBlockingQuestions();
@@ -6599,7 +5290,7 @@ export default function AgentChatComponent({
     setBackendConversationStats(null);
     setIsBackendStatsStale(false);
     setUnavailableWorkspace(null);
-    tokenHwmRef.current = { input: 0, output: 0, total: 0 };
+    tokenHighWaterMarkRef.current = ZERO_TOKEN_MARK;
     isUserNearBottomRef.current = true;
     textareaRef.current?.focus();
 
@@ -6612,27 +5303,16 @@ export default function AgentChatComponent({
     );
 
     // Clear conversation from URL
-    window.dispatchEvent(
-      new CustomEvent(EVENT_NAME_CONVERSATION_CHANGE, {
-        detail: { conversationId: null },
-      }),
-    );
-  }, [isNoAgent, config, resetToAllDisabled, hydrateConversationGoal, clearNonBlockingQuestions, clearBudgetPause]);
+    reportUrlChange({ kind: "conversation", conversationId: null });
+  }, [isNoAgent, config, resetToAllDisabled, hydrateConversationGoal, clearNonBlockingQuestions, dispatchConversation, reportUrlChange, clearBudgetPause]);
 
   const handleNewChat = useCallback(() => {
     // If generating, snapshot the current conversation so user can switch back to it
     if (isGenerating) {
       const currentId = conversationIdRef.current;
       backgroundConversationsRef.current.set(currentId, {
-        messages,
+        conversation: getConversationState(),
         title,
-        toolActivity,
-        subAgentToolActivity,
-        streamingOutputs,
-        pendingApprovals,
-        pendingUserQuestion,
-        planProposal,
-        agenticProgress,
         settings: { ...settings },
         backendConversationStats,
         workspaceRoot: currentWorkspace?.path || null,
@@ -6651,19 +5331,14 @@ export default function AgentChatComponent({
     isGenerating,
     messages,
     title,
-    toolActivity,
-    subAgentToolActivity,
-    streamingOutputs,
-    pendingApprovals,
-    pendingUserQuestion,
-    planProposal,
-    agenticProgress,
+    getConversationState,
     settings,
     backendConversationStats,
     activeId,
     resetConversationState,
     currentWorkspace?.path,
     disabledTools,
+    setIsGenerating,
   ]);
 
   /* -- Chat header "New Conversation" glitch effect ------------------ */
@@ -6757,22 +5432,13 @@ export default function AgentChatComponent({
         const snap = full._snapshot;
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
-        setMessages(snap.messages as ClientMessage[]);
+        // Its conversation state as the stream left it — the SSE kept the
+        // snapshot current while the user was away.
+        dispatchConversation({ type: "conversation/restored", state: snap.conversation });
         setConversationId(full.id || generateUUID());
         setActiveId(full.id || null);
-        window.dispatchEvent(
-          new CustomEvent(EVENT_NAME_CONVERSATION_CHANGE, {
-            detail: { conversationId: full.id },
-          }),
-        );
+        reportUrlChange({ kind: "conversation", conversationId: full.id ?? null });
         setTitle(snap.title || "");
-        setToolActivity(snap.toolActivity || []);
-        setSubAgentToolActivity(snap.subAgentToolActivity || {});
-        setStreamingOutputs(snap.streamingOutputs || new Map());
-        setPendingApprovals(snap.pendingApprovals || []);
-        setPendingUserQuestion(snap.pendingUserQuestion || null);
-        setPlanProposal(snap.planProposal || null);
-        setAgenticProgress(snap.agenticProgress || null);
         setSettings((previousSettings) => ({
           ...previousSettings,
           ...(snap.settings as Partial<typeof previousSettings>),
@@ -6799,6 +5465,8 @@ export default function AgentChatComponent({
         );
         scrollBehaviorRef.current = "instant";
         isUserNearBottomRef.current = true;
+        // The stored document replaces the transcript: no stream owns it.
+        dispatchConversation({ type: "conversation/loaded" });
         setMessages(displayMessages);
         setConversationId(full.id || generateUUID());
         setTraceId(full.traceId || null);
@@ -6932,11 +5600,7 @@ export default function AgentChatComponent({
         setPendingUserQuestion(pendingCards.question);
         hydrateBudgetPause(pendingCards.budget);
 
-        window.dispatchEvent(
-          new CustomEvent(EVENT_NAME_CONVERSATION_CHANGE, {
-            detail: { conversationId: full.id },
-          }),
-        );
+        reportUrlChange({ kind: "conversation", conversationId: full.id ?? null });
         setTitle(full.title || "Agent");
         setToolActivity([]);
         setSubAgentToolActivity({});
@@ -7031,7 +5695,7 @@ export default function AgentChatComponent({
 
         setBackendConversationStats(full.stats || null);
         setIsBackendStatsStale(false);
-        tokenHwmRef.current = { input: 0, output: 0, total: 0 };
+        tokenHighWaterMarkRef.current = ZERO_TOKEN_MARK;
 
         // Restore tool toggle state from the conversation's persisted toolConfig.
         // Conversations without toolConfig default to all tools disabled.
@@ -7073,7 +5737,28 @@ export default function AgentChatComponent({
         }
       }
     },
-    [workspaces, currentWorkspace?.path, setCurrentWorkspace, restoreDisabledTools, resetToAllDisabled, enableSpecificTools, hydrateConversationGoal, hydrateBudgetPause],
+    [
+      workspaces,
+      currentWorkspace?.path,
+      setCurrentWorkspace,
+      restoreDisabledTools,
+      resetToAllDisabled,
+      enableSpecificTools,
+      hydrateConversationGoal,
+      hydrateBudgetPause,
+      dispatchConversation,
+      reportUrlChange,
+      setMessages,
+      setIsGenerating,
+      setToolActivity,
+      setSubAgentToolActivity,
+      setPendingApprovals,
+      setPendingUserQuestion,
+      setPlanProposal,
+      setAgenticProgress,
+      setStatusBarInitialElapsedMilliseconds,
+      setContextBudget,
+    ],
   );
 
   const handleSelectConversation = useCallback(
@@ -7082,21 +5767,14 @@ export default function AgentChatComponent({
       if (isGenerating) {
         const currentId = conversationIdRef.current;
         backgroundConversationsRef.current.set(currentId, {
-          messages,
+          conversation: getConversationState(),
           title,
-          toolActivity,
-          subAgentToolActivity,
-          streamingOutputs,
-          pendingApprovals,
-          pendingUserQuestion,
-          planProposal,
-          agenticProgress,
           settings: { ...settings },
           backendConversationStats,
           isBackendStatsStale,
           workspaceRoot: currentWorkspace?.path || null,
           disabledTools: [...disabledTools],
-        } as ConversationSnapshot);
+        });
         setIsGenerating(false);
       }
       // Already viewing this conversation — just scroll to bottom instantly
@@ -7119,7 +5797,7 @@ export default function AgentChatComponent({
         applyConversationData({
           id: conversation.id,
           title: snapshot.title,
-          messages: snapshot.messages,
+          messages: snapshot.conversation.messages,
           stats: snapshot.backendConversationStats ?? undefined,
           workspaceRoot: snapshot.workspaceRoot || undefined,
           _fromSnapshot: true,
@@ -7167,15 +5845,8 @@ export default function AgentChatComponent({
       activeId,
       agentProject,
       isNoAgent,
-      messages,
       title,
-      toolActivity,
-      subAgentToolActivity,
-      streamingOutputs,
-      pendingApprovals,
-      pendingUserQuestion,
-      planProposal,
-      agenticProgress,
+      getConversationState,
       settings,
       backendConversationStats,
       generatingConversationIds,
@@ -7453,6 +6124,10 @@ export default function AgentChatComponent({
     isNoAgent,
     agentProject,
     applyConversationData,
+    setMessages,
+    setSubAgentToolActivity,
+    setAgenticProgress,
+    setStatusBarInitialElapsedMilliseconds,
   ]);
 
   // ── Live WebSocket stream for viewed conversations ────────────────
@@ -7481,21 +6156,17 @@ export default function AgentChatComponent({
   // callbacks), which happens repeatedly DURING a viewed generation — with
   // them in the dep array the WebSocket was torn down and reopened every
   // couple of seconds, dying before the turn's chunks could arrive, so
-  // viewers only ever saw the finalize snapshot.
+  // viewers only ever saw the finalize snapshot. Synced after each commit.
   const applyConversationDataRef = useRef(applyConversationData);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
-  applyConversationDataRef.current = applyConversationData;
-  // Goal / non-blocking-question / toast helpers for the viewer stream,
-  // mirrored for the same reason as applyConversationData above.
-  const liveTurnHelpersRef = useRef({ addToast, applyGoalEvent, applyPermissionModeEvent, openNonBlockingQuestion });
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
-  liveTurnHelpersRef.current = { addToast, applyGoalEvent, applyPermissionModeEvent, openNonBlockingQuestion };
+  const addToastRef = useRef(addToast);
   const adminRefreshSelectedEntryRef = useRef(adminRefreshSelectedEntry);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
-  adminRefreshSelectedEntryRef.current = adminRefreshSelectedEntry;
   const agentProjectRef = useRef(agentProject);
-  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern (see activeIdRef above)
-  agentProjectRef.current = agentProject;
+  useLayoutEffect(() => {
+    applyConversationDataRef.current = applyConversationData;
+    addToastRef.current = addToast;
+    adminRefreshSelectedEntryRef.current = adminRefreshSelectedEntry;
+    agentProjectRef.current = agentProject;
+  });
 
   useEffect(() => {
     if (!activeId) return;
@@ -7519,40 +6190,26 @@ export default function AgentChatComponent({
     isWebSocketStreamingRef.current = true;
     webSocketHasStreamedContentRef.current = false;
 
-    // Mutable streaming state (avoids stale closures in callbacks).
-    // Seed ONLY when this subscription continues a stream the previous
-    // subscription for the SAME conversation left mid-turn (effect churn) —
-    // the trailing assistant bubble then holds partial streamed content to
-    // extend. On a fresh join the trailing assistant bubble is a COMPLETED
-    // reply from the snapshot; seeding from it would append the new turn's
-    // chunks to the old reply. The service replays the active turn's
-    // buffered events on subscribe, so a fresh mid-turn join still renders
-    // everything generated so far.
+    // The stream continues the trailing bubble ONLY when this subscription
+    // resumes one the previous subscription for the SAME conversation left
+    // mid-turn (effect churn): that bubble holds its partial text. On a
+    // fresh join the trailing assistant bubble is a COMPLETED reply from
+    // the snapshot, and the stream opens its own. The service replays the
+    // active turn's buffered events on subscribe, so a fresh mid-turn join
+    // still renders everything generated so far.
     const isContinuationOfInterruptedStream =
       interruptedStreamConversationIdRef.current === activeId;
     interruptedStreamConversationIdRef.current = null;
-    const seeded = isContinuationOfInterruptedStream
-      ? seedStreamAccumulators(messagesRef.current)
-      : { streamedText: "", streamedThinking: "" };
-    let streamedText = seeded.streamedText;
-    let streamedThinking = seeded.streamedThinking;
-    // Whether the trailing assistant bubble was written by THIS stream (or
-    // seeded as a continuation of it). Chunks may only overwrite a bubble
-    // the stream owns — otherwise they push a new bubble instead of
-    // corrupting a snapshot-loaded completed reply.
-    let ownsTrailingAssistantBubble =
-      isContinuationOfInterruptedStream &&
-      (streamedText !== "" || streamedThinking !== "");
+    dispatchConversation({ type: "stream/attached", continuation: isContinuationOfInterruptedStream });
     let isSubscriptionActive = true;
 
     // Non-admin (viewed conversation): the gate guarantees a generation is
     // running, so show the active state immediately. Admin: the always-on
     // subscription is mostly idle — the flag raises lazily when events
     // actually arrive (markStreamDelivering) and clears on done.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state sync in effect (pre-React-Compiler pattern; compiler not enabled)
     if (!isAdmin) setIsGenerating(true);
 
-    // An event just arrived — this stream owns `messages` until done.
+    // Content just arrived — this stream owns `messages` until done.
     // Re-raised per event so ownership recovers on every subsequent turn
     // of an always-on admin subscription.
     const markStreamDelivering = () => {
@@ -7565,330 +6222,90 @@ export default function AgentChatComponent({
     const streamedConversationId = activeId;
     const streamedAdminSource = adminSelectedSourceRef.current;
 
-    const cleanupWebSocket = PrismService.subscribeToAutoResponse(activeId, {
-      onUserMessage: (data) => {
-        if (!isSubscriptionActive) return;
-        // A new turn started: reset the accumulators and render the user's
-        // prompt immediately — it is only persisted at finalize, so no
-        // snapshot refresh can show it until the turn ends.
-        markStreamDelivering();
-        streamedText = "";
-        streamedThinking = "";
-        // The next assistant content belongs to a NEW bubble after this
-        // user message — never to a previous turn's trailing bubble.
-        ownsTrailingAssistantBubble = false;
-        startTurnActivity(activeId);
-        const userMessageContent = (data.content as string) || "";
-        if (!userMessageContent) return;
-        setMessages((previousMessages) => {
-          const lastMessage = previousMessages[previousMessages.length - 1];
-          if (
-            lastMessage?.role === "user" &&
-            lastMessage.content === userMessageContent
-          ) {
-            return previousMessages; // already present (e.g. snapshot race)
+    // The viewed turn ended: land on the stored document, which carries
+    // everything the stream did not (usage, cost, the canonical order).
+    const endViewedTurn = () => {
+      setIsGenerating(false);
+      isWebSocketStreamingRef.current = false;
+      // Release `messages` ownership so snapshot refreshes flow again
+      // between turns of an always-on (admin) subscription.
+      webSocketHasStreamedContentRef.current = false;
+      // The refreshed trailing bubble is not stream-written — the next
+      // turn's chunks must open a fresh bubble.
+      dispatchConversation({ type: "stream/released" });
+
+      // The admin viewer reads cross-user documents through the admin
+      // fetchers — the username-scoped PrismService endpoints would miss
+      // another user's conversation entirely.
+      if (isAdmin) {
+        adminRefreshSelectedEntryRef.current(activeId, adminSelectedSourceRef.current);
+        return;
+      }
+      (async () => {
+        try {
+          const finalConversation = isNoAgent
+            ? await PrismService.getConversation(activeId)
+            : await PrismService.getAgentConversation(activeId, agentProjectRef.current!);
+          if (finalConversation && finalConversation.id === conversationIdRef.current) {
+            applyConversationDataRef.current(finalConversation);
           }
-          return [
-            ...previousMessages,
-            {
-              role: MESSAGE_ROLES.USER,
-              content: userMessageContent,
-              timestamp: new Date(
-                (data.timestamp as number) || Date.now(),
-              ).toISOString(),
-            } as ClientMessage,
-          ];
-        });
-      },
+        } catch {
+          // Non-critical — the change stream will catch up
+        }
+      })();
+    };
 
-      // A mid-turn input landed (ours from another tab, an answer, a task
-      // completion). It becomes a user bubble and whatever streams next
-      // opens a fresh assistant bubble under it.
-      onTurnInput: (data) => {
-        if (!isSubscriptionActive) return;
-        const inputId = typeof data.id === "string" ? data.id : "";
-        if (!inputId) return;
-        markStreamDelivering();
-        streamedText = "";
-        streamedThinking = "";
-        ownsTrailingAssistantBubble = false;
-        setMessages((previousMessages) =>
-          applyTurnInputEvent(previousMessages, {
-            id: inputId,
-            kind: (data.kind as TurnInputKind | undefined) ?? "user_update",
-            content: (data.content as string) || "",
-            images: Array.isArray(data.images) ? (data.images as string[]) : undefined,
-            boundary: data.boundary as TurnInputBoundary | undefined,
-            iteration: typeof data.iteration === "number" ? data.iteration : undefined,
-          }) as ClientMessage[],
-        );
-      },
-      onGoalUpdate: (data) => {
-        if (!isSubscriptionActive) return;
-        liveTurnHelpersRef.current.applyGoalEvent(data);
-      },
-      onPermissionMode: (data) => {
-        if (!isSubscriptionActive) return;
-        liveTurnHelpersRef.current.applyPermissionModeEvent(data);
-      },
-      ...turnActivityCallbacks(activeId),
-      // Non-blocking questions can be answered from a viewing tab too;
-      // blocking ones stay with the driving client (and the snapshot).
-      onUserQuestion: (data) => {
-        if (!isSubscriptionActive || isAdmin) return;
-        if (data.blocking === false) liveTurnHelpersRef.current.openNonBlockingQuestion(data);
-      },
-      onReplayTruncated: ({ droppedCount }) => {
-        if (!isSubscriptionActive) return;
-        liveTurnHelpersRef.current.addToast(
-          `Earlier output truncated — ${droppedCount} event${droppedCount === 1 ? "" : "s"} could not be replayed`,
-          "info",
-        );
-      },
-
-      onChunk: (content: string) => {
-        if (!isSubscriptionActive) return;
-        markStreamDelivering();
-        streamedText += content;
-        const trimmedText = streamedText.trim();
-        const canOverwriteTrailingBubble = ownsTrailingAssistantBubble;
-        ownsTrailingAssistantBubble = true;
-
-        setMessages((previousMessages) => {
-          const updated = [...previousMessages];
-          const lastMessage = updated[updated.length - 1];
-          if (lastMessage?.role === "assistant" && canOverwriteTrailingBubble) {
-            updated[updated.length - 1] = {
-              ...lastMessage,
-              content: trimmedText,
-            };
-          } else {
-            updated.push({
-              role: MESSAGE_ROLES.ASSISTANT,
-              content: trimmedText,
-            } as ClientMessage);
+    // The viewer's events go through the same reducer as the SSE this chat
+    // drives (useAgentConversation) — only the turn's lifecycle is its own.
+    const stream = watchConversation(activeId);
+    void (async () => {
+      for await (const item of stream) {
+        if (!isSubscriptionActive) break;
+        if (item.kind === "connection") {
+          setLiveConnectionState(item.state);
+        } else if (item.kind === "subscribed") {
+          const { droppedCount } = item.info;
+          if (item.info.truncated) {
+            addToastRef.current(
+              `Earlier output truncated — ${droppedCount} event${droppedCount === 1 ? "" : "s"} could not be replayed`,
+              "info",
+            );
           }
-          return updated;
-        });
-      },
-
-      onThinking: (content: string) => {
-        if (!isSubscriptionActive) return;
-        markStreamDelivering();
-        streamedThinking += content;
-        const canOverwriteTrailingBubble = ownsTrailingAssistantBubble;
-        ownsTrailingAssistantBubble = true;
-
-        setMessages((previousMessages) => {
-          const updated = [...previousMessages];
-          const lastMessage = updated[updated.length - 1];
-          if (lastMessage?.role === "assistant" && canOverwriteTrailingBubble) {
-            updated[updated.length - 1] = {
-              ...lastMessage,
-              thinking: streamedThinking,
-              statusPhase: "thinking",
-            } as ClientMessage;
-          } else {
-            updated.push({
-              role: MESSAGE_ROLES.ASSISTANT,
-              content: "",
-              thinking: streamedThinking,
-              statusPhase: "thinking",
-            } as ClientMessage);
-          }
-          return updated;
-        });
-      },
-
-      onToolExecution: (data) => {
-        if (!isSubscriptionActive) return;
-        markStreamDelivering();
-        const toolData = data.tool as Record<string, unknown> | undefined;
-        if (!toolData) return;
-        if (data.toolEmoji && toolData.name) {
-          cacheToolEmoji(toolData.name as string, data.toolEmoji as string);
-        }
-        const resolvedToolId =
-          (toolData.id as string) || `tc-${Date.now()}-${Math.random()}`;
-
-        setToolActivity((previousToolActivity: ToolCallEvent[]) => {
-          const next = applyToolExecutionToActivity(
-            previousToolActivity,
-            resolvedToolId,
-            {
-              id: toolData.id as string | undefined,
-              name: toolData.name as string | undefined,
-              args: toolData.args as Record<string, unknown> | undefined,
-              status: data.status as string,
-              result: toolData.result,
-              durationMs: (toolData.durationMs ||
-                toolData.durationMilliseconds) as number | undefined,
-              timestamp: data.timestamp as number | undefined,
-            },
-          );
-          return next ?? previousToolActivity;
-        });
-
-        setMessages((previousMessages: ClientMessage[]) => {
-          const lastAssistant = [...previousMessages]
-            .reverse()
-            .find((m) => m.role === "assistant");
-          const snapshot = {
-            contentSegments: lastAssistant?.contentSegments || [],
-            textFragments: lastAssistant?.textFragments || [],
-            thinkingFragments: lastAssistant?.thinkingFragments || [],
-          };
-          const next = applyToolExecutionToMessages(
-            previousMessages,
-            resolvedToolId,
-            {
-              id: toolData.id as string | undefined,
-              name: toolData.name as string | undefined,
-              args: toolData.args as Record<string, unknown> | undefined,
-              status: data.status as string,
-              result: toolData.result,
-              durationMs: (toolData.durationMs ||
-                toolData.durationMilliseconds) as number | undefined,
-              timestamp: data.timestamp as number | undefined,
-            },
-            snapshot,
-          );
-          return (next ?? previousMessages) as ClientMessage[];
-        });
-      },
-
-      onToolOutput: (data) => {
-        if (!isSubscriptionActive) return;
-        const toolCallId = data.toolCallId as string | undefined;
-        if (!toolCallId) return;
-
-        setMessages((previousMessages: ClientMessage[]) => {
-          const lastAssistant = [...previousMessages]
-            .reverse()
-            .find((m) => m.role === "assistant");
-          const snapshot = {
-            contentSegments: lastAssistant?.contentSegments || [],
-            textFragments: lastAssistant?.textFragments || [],
-            thinkingFragments: lastAssistant?.thinkingFragments || [],
-          };
-          const next = applyToolCallToMessages(
-            previousMessages,
-            toolCallId,
-            {
-              id: toolCallId,
-              name: data.name as string,
-              args: {},
-              result: data.data,
-              status: "complete",
-            },
-            snapshot,
-          );
-          return (next ?? previousMessages) as ClientMessage[];
-        });
-      },
-
-      onStatus: (event) => {
-        if (!isSubscriptionActive) return;
-        // Known messages carry their own fields; display text only a phase.
-        const data = isKnownStatusEvent(event) ? event : null;
-        if (data && applyBudgetStatus(data)) return;
-
-        if (data?.message === "turn_input_applied") {
-          const appliedInputId = data.inputId;
-          setMessages((previousMessages) =>
-            markTurnInputApplied(previousMessages, appliedInputId, {
-              boundary: data.boundary,
-              iteration: data.iteration,
-            }),
-          );
-        }
-
-        // Update iteration progress
-        if (data?.message === "iteration_progress") {
-          setAgenticProgress({
-            iteration: data.iteration,
-            maxIterations: data.maxIterations || 0,
-          });
-        }
-
-        // Update phase on last assistant message
-        const phase = "phase" in event ? event.phase : undefined;
-        if (phase) {
-          setMessages((previousMessages) => {
-            if (previousMessages.length === 0) return previousMessages;
-            const lastMessage = previousMessages[previousMessages.length - 1];
-            if (lastMessage?.role !== "assistant") return previousMessages;
-            if ((lastMessage as ClientMessage).statusPhase === phase) {
-              return previousMessages;
-            }
-            const updatedMessages = [...previousMessages];
-            updatedMessages[updatedMessages.length - 1] = {
-              ...lastMessage,
-              statusPhase: phase,
-            } as ClientMessage;
-            return updatedMessages;
-          });
-        }
-      },
-
-      onDone: () => {
-        if (!isSubscriptionActive) return;
-        // Generation finished — do a final full refresh from DB
-        // to get the canonical message state with all metadata.
-        setIsGenerating(false);
-        isWebSocketStreamingRef.current = false;
-        // Release `messages` ownership so snapshot refreshes flow again
-        // between turns of an always-on (admin) subscription.
-        webSocketHasStreamedContentRef.current = false;
-        streamedText = "";
-        streamedThinking = "";
-        // The refreshed canonical trailing bubble is not stream-written —
-        // the next turn's chunks must open a fresh bubble.
-        ownsTrailingAssistantBubble = false;
-
-        // The admin viewer reads cross-user documents through the admin
-        // fetchers — the username-scoped PrismService endpoints would miss
-        // another user's conversation entirely.
-        if (isAdmin) {
-          adminRefreshSelectedEntryRef.current(activeId, adminSelectedSourceRef.current);
-          return;
-        }
-
-        (async () => {
+        } else if (item.kind === "turn-lost") {
+          // The service restarted while the socket was down: the turn is gone.
+          endViewedTurn();
+        } else {
+          const event = item.event;
+          if (STREAM_CONTENT_EVENT_TYPES.has(event.type)) markStreamDelivering();
           try {
-            const finalConversation = isNoAgent
-              ? await PrismService.getConversation(activeId)
-              : await PrismService.getAgentConversation(activeId, agentProjectRef.current!);
-            if (
-              finalConversation &&
-              finalConversation.id === conversationIdRef.current
-            ) {
-              applyConversationDataRef.current(finalConversation);
+            for (const effect of ingestConversationEvent(event, activeId)) {
+              runConversationEffectRef.current(effect);
             }
-          } catch {
-            // Non-critical — the change stream will catch up
+          } catch (handlingError: unknown) {
+            console.warn(`[viewer stream] could not apply "${event.type}":`, handlingError);
           }
-        })();
-      },
-
-      onError: () => {
-        if (!isSubscriptionActive) return;
-        // WebSocket error — fall back to change-stream updates
-        setIsGenerating(false);
-        isWebSocketStreamingRef.current = false;
-      },
-    }, { onStateChange: setLiveConnectionState });
+          if (event.type === "done") {
+            endViewedTurn();
+          } else if (event.type === "error") {
+            // Fall back to change-stream updates
+            setIsGenerating(false);
+            isWebSocketStreamingRef.current = false;
+          }
+        }
+      }
+    })();
 
     return () => {
       isSubscriptionActive = false;
-      cleanupWebSocket();
+      stream.close();
+      setLiveConnectionState((state) => (state === "unconfigured" ? state : "closed"));
       const hadStreamedContent = webSocketHasStreamedContentRef.current;
       isWebSocketStreamingRef.current = false;
       webSocketHasStreamedContentRef.current = false;
       setIsGenerating(false);
       // Torn down mid-turn with partial streamed content in `messages`?
       // Remember the conversation so an immediate re-subscription for it
-      // (effect churn) seeds its accumulators and continues the bubble.
+      // (effect churn) continues the bubble.
       interruptedStreamConversationIdRef.current = hadStreamedContent
         ? streamedConversationId
         : null;
@@ -7908,9 +6325,9 @@ export default function AgentChatComponent({
     liveStreamConversationRunning,
     isNoAgent,
     isAdmin,
-    turnActivityCallbacks,
-    startTurnActivity,
-    applyBudgetStatus,
+    dispatchConversation,
+    ingestConversationEvent,
+    setIsGenerating,
   ]);
 
   // -- Visibility Recovery (Mobile Screen Lock) -------------------
@@ -8097,6 +6514,9 @@ export default function AgentChatComponent({
   });
 
   // -- Top panel group (settings, workspace, info, parameters) ------
+  // The live phase the status bar shows, reported by its builder below.
+  let statusBarPhase: string | null = null;
+
   const leftPanel = (
     <div
       style={{
@@ -8282,7 +6702,6 @@ export default function AgentChatComponent({
             conversationStats={
               (messages.length > 0
                 ? backendConversationStats
-                  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
                   ? (() => {
                       const mapSubStats = (sub: ConversationStats | undefined) => {
                         if (!sub) return undefined;
@@ -8385,7 +6804,7 @@ export default function AgentChatComponent({
                         ],
                         uniqueProviders,
                         totalTokens: (() => {
-                          const hwm = tokenHwmRef.current;
+                          const hwm = tokenHighWaterMarkRef.current;
                           const threadMessage = {
                             input: Math.max(hwm.input, tokenInput),
                             output: Math.max(hwm.output, tokenOutput),
@@ -8400,11 +6819,7 @@ export default function AgentChatComponent({
                               backendConversationStats.totalReasoningOutputTokens ||
                               0,
                           };
-                          tokenHwmRef.current = {
-                            input: threadMessage.input,
-                            output: threadMessage.output,
-                            total: threadMessage.total,
-                          };
+                          displayedTokenMark = threadMessage;
                           return threadMessage;
                         })(),
                         totalCost:
@@ -8457,7 +6872,6 @@ export default function AgentChatComponent({
                         maxSubAgentDepth,
                       } as DisplayConversationStats;
                     })()
-                  // eslint-disable-next-line react-hooks/refs -- existing ref-during-render pattern; restructuring risks behavior change
                   : (() => {
                       // -- Client-side fallback (live generation, no backend data yet) --
                       // When _liveGenProgress exists, use backend-authoritative token
@@ -8505,7 +6919,7 @@ export default function AgentChatComponent({
                         uniqueModels,
                         uniqueProviders,
                         totalTokens: (() => {
-                          const hwm = tokenHwmRef.current;
+                          const hwm = tokenHighWaterMarkRef.current;
                           const threadMessage = {
                             input: Math.max(
                               hwm.input,
@@ -8520,11 +6934,7 @@ export default function AgentChatComponent({
                               fallbackTokens.total || 0,
                             ),
                           };
-                          tokenHwmRef.current = {
-                            input: threadMessage.input,
-                            output: threadMessage.output,
-                            total: threadMessage.total,
-                          };
+                          displayedTokenMark = threadMessage;
                           return threadMessage;
                         })(),
                         totalCost:
@@ -9418,28 +7828,9 @@ export default function AgentChatComponent({
               ? "synthesizing"
               : null;
 
-        // Sync phase tokens to :root so both the sidebar generating-dot
-        // and the HistoryItem inline progress bar match the live phase
-        const resolvedPhaseTokens = phase ? PHASE_TOKENS[phase as keyof typeof PHASE_TOKENS] : null;
-        const phasePulseColor = resolvedPhaseTokens?.overlay.pulse ?? null;
-        if (phasePulseColor) {
-          document.documentElement.style.setProperty("--generating-dot-phase-color", phasePulseColor);
-        } else {
-          document.documentElement.style.removeProperty("--generating-dot-phase-color");
-        }
-        const resolvedGradientStops = resolvedPhaseTokens?.gradientStops;
-        if (resolvedGradientStops) {
-          for (let stopIndex = 0; stopIndex < 7; stopIndex++) {
-            document.documentElement.style.setProperty(
-              `--live-phase-gradient-stop-${stopIndex + 1}`,
-              resolvedGradientStops[stopIndex],
-            );
-          }
-        } else {
-          for (let stopIndex = 0; stopIndex < 7; stopIndex++) {
-            document.documentElement.style.removeProperty(`--live-phase-gradient-stop-${stopIndex + 1}`);
-          }
-        }
+        // The sidebar generating-dot and the HistoryItem inline progress
+        // bar take the live phase's colours from :root (set after commit).
+        statusBarPhase = phase;
         const label = awaitingStatus
           ? awaitingStatus.label
           : isGenerating
@@ -9914,6 +8305,19 @@ export default function AgentChatComponent({
     </div>
   );
 
+  // What this render worked out that lives outside it, written after commit:
+  // the live phase's colours on :root, and the token badges' high-water mark.
+  useEffect(() => {
+    if (isAdmin) return;
+    applyPhaseTokensToRoot(statusBarPhase);
+  }, [isAdmin, statusBarPhase]);
+  const committedTokenMark = displayedTokenMark;
+  useLayoutEffect(() => {
+    if (committedTokenMark) {
+      tokenHighWaterMarkRef.current = raiseTokenMark(tokenHighWaterMarkRef.current, committedTokenMark);
+    }
+  });
+
   // Test-only: the characterization suite snapshots this after every commit
   // (utils/chatDebugProbe). No listener outside tests.
   useEffect(() => {
@@ -10090,13 +8494,7 @@ export default function AgentChatComponent({
                 <AgentPickerComponent
                   agents={agents}
                   activeAgentId={agentId}
-                  onSelect={(id: string) => {
-                    window.dispatchEvent(
-                      new CustomEvent(EVENT_NAME_AGENT_SWITCH, {
-                        detail: { agentId: id },
-                      }),
-                    );
-                  }}
+                  onSelect={(id: string) => reportUrlChange({ kind: "agent", agentId: id })}
                   disabled={isGenerating}
                 />
               )
@@ -10136,11 +8534,7 @@ export default function AgentChatComponent({
                   });
                 }
                 saveModel(provider, modelName);
-                window.dispatchEvent(
-                  new CustomEvent(EVENT_NAME_MODEL_CHANGE, {
-                    detail: { provider, model: modelName },
-                  }),
-                );
+                reportUrlChange({ kind: "model", provider, model: modelName });
               }}
               favorites={favoriteKeys}
               onToggleFavorite={async (key: string) => {
