@@ -21,10 +21,11 @@ const CONTENT_MAX_CHARS = TRUNCATION_LIMITS.MAX_CONTENT_CHARS;
 /**
  * SkillsPanel — CRUD interface for project-scoped agent skills.
  *
- * Skills are Markdown knowledge blocks stored in MongoDB and injected
- * into the agent's system prompt by SystemPromptAssembler. They give
- * the LLM domain-specific context, coding conventions, or project
- * rules without consuming tool call slots.
+ * Skills are Markdown instruction blocks stored in MongoDB. The agent's
+ * system prompt lists each one as `name: description` (the skill
+ * catalog); the agent reads a skill's content with the `load_skill` tool
+ * when a task matches it, so the description is what decides whether a
+ * skill gets used.
  */
 export default function SkillsPanel({
   skills,
@@ -238,7 +239,7 @@ export default function SkillsPanel({
               placeholder="Coding style rules and project conventions"
             />
             <span className={styles['hint']}>
-              Short summary shown in the skill list
+              One line the agent sees in its skill list — say when to use this skill
             </span>
           </div>
 
@@ -311,9 +312,9 @@ export default function SkillsPanel({
           </div>
           <div className={styles['empty-title']}>No skills yet</div>
           <div className={styles['empty-subtitle']}>
-            Skills are Markdown knowledge blocks injected into the agent&apos;s
-            system prompt. Add coding conventions, project rules, or
-            domain-specific context.
+            Skills are Markdown instructions the agent loads when a task
+            matches their description. Add coding conventions, project
+            rules, or domain-specific know-how.
           </div>
           <ButtonComponent
             variant="disabled"
