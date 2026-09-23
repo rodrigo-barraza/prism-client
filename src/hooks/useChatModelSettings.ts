@@ -204,8 +204,10 @@ export default function useChatModelSettings({
       },
       onLocalMerge: (merged: PrismConfig) => {
         setConfig(merged);
-        // Retry URL model param in case the model is a local model
-        if (!tryApplyUrlModel(merged)) {
+        // Retry URL model param in case the model is a local model. A URL
+        // model applied from the cloud catalog stands: restoring the memory
+        // here would put the remembered (or default) model back over it.
+        if (!urlModelAppliedRef.current && !tryApplyUrlModel(merged)) {
           restoreModel(merged, setSettings, {
             fcOnly: !isNoAgent,
             fallback: fcFallback,
