@@ -82,6 +82,12 @@ export default function ProjectInstructionsPanel({
   const content = instructions?.content || "";
   const version = instructions?.version ?? 0;
   const hasDocument = version > 0 && Boolean(content.trim());
+  // Edits go to the document shown. An agent without a document of its own
+  // is shown the project-wide one (`agent: null`): saving there must edit
+  // that one — writing to the agent's scope would fork a copy, and the
+  // prompt carries the project document AND the agent's, so it would read
+  // twice. With no document at all, a first save starts one in `agent`.
+  const editAgent = hasDocument ? instructions?.agent || undefined : agent;
 
   // -- Edit / cancel / save --------------------------------------
 
@@ -101,7 +107,7 @@ export default function ProjectInstructionsPanel({
     setSaving(true);
     setError(null);
     try {
-      await PrismService.updateProjectInstructions(draftContent, agent);
+      await PrismService.updateProjectInstructions(draftContent, editAgent);
       setIsEditing(false);
       setDraftContent("");
       onInstructionsChange();
@@ -111,7 +117,7 @@ export default function ProjectInstructionsPanel({
     } finally {
       setSaving(false);
     }
-  }, [draftContent, agent, onInstructionsChange]);
+  }, [draftContent, editAgent, onInstructionsChange]);
 
   // -- Version history -------------------------------------------
 
@@ -119,7 +125,7 @@ export default function ProjectInstructionsPanel({
     setVersionsLoading(true);
     try {
       const loaded = await PrismService.getProjectInstructionsVersions(
-        agent,
+        editAgent,
         VERSION_HISTORY_LIMIT,
       );
       setVersions(loaded || []);
@@ -129,7 +135,7 @@ export default function ProjectInstructionsPanel({
     } finally {
       setVersionsLoading(false);
     }
-  }, [agent]);
+  }, [editAgent]);
 
   const handleToggleHistory = useCallback(() => {
     setIsHistoryOpen((previous: boolean) => !previous);
@@ -149,7 +155,7 @@ export default function ProjectInstructionsPanel({
       setRestoringVersion(restoreVersion);
       setError(null);
       try {
-        await PrismService.rollbackProjectInstructions(restoreVersion, agent);
+        await PrismService.rollbackProjectInstructions(restoreVersion, editAgent);
         onInstructionsChange();
       } catch (caughtError: unknown) {
         console.error("Failed to restore instruction version:", caughtError);
@@ -158,7 +164,7 @@ export default function ProjectInstructionsPanel({
         setRestoringVersion(null);
       }
     },
-    [agent, onInstructionsChange],
+    [editAgent, onInstructionsChange],
   );
 
   // -- Header actions --------------------------------------------
