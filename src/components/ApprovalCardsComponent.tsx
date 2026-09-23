@@ -87,6 +87,8 @@ export default function ApprovalCardsComponent({
           toolArgs={approval.toolArgs}
           tier={approval.tier}
           preview={approval.preview}
+          retryAfterRestart={approval.retryAfterRestart}
+          retryReason={approval.reason}
           otherPendingInBatch={
             approval.batchId
               ? pending.filter((other) => other.batchId === approval.batchId && other.id !== approval.id).length

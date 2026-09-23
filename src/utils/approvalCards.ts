@@ -19,6 +19,12 @@ export interface PendingApproval {
   /** What a file write would change, when the server could compute it. */
   preview?: ApprovalPreview;
   /**
+   * The server restarted while this call was running: it may have partly
+   * run, and the card asks whether to run it again (`reason` says so).
+   */
+  retryAfterRestart?: boolean;
+  reason?: string;
+  /**
    * Set when a sub-agent asked: the conversation its loop is keyed by, where
    * the decision must be sent. Absent: the conversation on screen.
    */
@@ -45,6 +51,7 @@ export function approvalFromEvent(data: SSEData): PendingApproval | null {
     toolArgs: data.toolCall?.args || {},
     tier: normalizeTier(data.tier),
     ...(data.preview ? { preview: data.preview } : {}),
+    ...retryFields(data.requestedBy, data.reason),
     ...(typeof data.approvalConversationId === "string" && data.approvalConversationId
       ? { conversationId: data.approvalConversationId }
       : {}),
@@ -70,6 +77,8 @@ interface PendingApprovalSnapshotCall {
   batchId?: string;
   preview?: ApprovalPreview;
   _approval?: { tier?: string | number };
+  requestedBy?: string;
+  reason?: string | null;
 }
 
 /** Cards for the calls a conversation's running turn is still waiting on (GET /conversations/:id). */
@@ -87,6 +96,7 @@ export function approvalsFromPendingSnapshot(
             toolArgs: toolCall.args || {},
             tier: normalizeTier(toolCall._approval?.tier),
             ...(toolCall.preview ? { preview: toolCall.preview } : {}),
+            ...retryFields(toolCall.requestedBy, toolCall.reason),
             status: "pending" as const,
           },
         ]
@@ -116,4 +126,15 @@ export function applyApprovalDecided(
     [data.toolCallId],
     data.decision === "allow" ? "approved" : "rejected",
   );
+}
+
+/** `requestedBy` of a "run it again?" card (prism-service TURN_RESUME.RETRY_REQUESTED_BY). */
+const RETRY_AFTER_RESTART = "restart";
+
+function retryFields(
+  requestedBy: unknown,
+  reason: unknown,
+): Pick<PendingApproval, "retryAfterRestart" | "reason"> {
+  if (requestedBy !== RETRY_AFTER_RESTART) return {};
+  return { retryAfterRestart: true, ...(typeof reason === "string" && reason ? { reason } : {}) };
 }
