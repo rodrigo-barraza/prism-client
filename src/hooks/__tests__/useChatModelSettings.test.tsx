@@ -24,9 +24,9 @@ const catalog = {
 function loadCatalog() {
   vi.spyOn(PrismService, "getFavorites").mockResolvedValue([]);
   // The real loader hands the same catalog to both callbacks, one after the other.
-  vi.spyOn(PrismService, "getConfigWithLocalModels").mockImplementation(async ({ onConfig, onLocalMerge } = {}) => {
-    onConfig?.(catalog);
-    onLocalMerge?.(catalog);
+  vi.spyOn(PrismService, "getConfigWithLocalModels").mockImplementation(async (options) => {
+    options?.onConfig?.(catalog);
+    options?.onLocalMerge?.(catalog);
     return catalog;
   });
 }
