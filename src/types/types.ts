@@ -374,6 +374,14 @@ export interface MessageCitations {
   supports?: Array<{ text: string; sources: number[] }>;
 }
 
+/** Why a provider's safety filter ended a turn (an Anthropic refusal, a Gemini block). */
+export interface MessageRefusal {
+  category: string | null;
+  explanation: string | null;
+  recommendedModel?: string | null;
+  model?: string;
+}
+
 export interface Message {
   /** Server-assigned id — the anchor for rewind and fork. Absent until persisted. */
   id?: string;
@@ -450,6 +458,8 @@ export interface Message {
   video?: string | string[];
   pdf?: string | string[];
   error?: string;
+  /** Set on a turn a provider's safety filter ended — the chat says why. */
+  refusal?: MessageRefusal;
   totalTime?: number;
   tokensPerSec?: number;
   /** Accumulated thinking phase duration in seconds (from backend). */

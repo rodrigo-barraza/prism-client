@@ -201,7 +201,6 @@ describe("agentConversationReducer — every event type", () => {
   it.each([
     "hello",
     "subscribed",
-    "refusal",
     "memory_consolidation_complete",
     "citations",
     "goal_update",
@@ -210,6 +209,38 @@ describe("agentConversationReducer — every event type", () => {
   ] as const)("%s changes no conversation state (side effects only, or not rendered)", (type) => {
     const start = sentTurn();
     expect(reduceEvent(start, SAMPLES[type], CONVERSATION, clockAt(1))).toBe(start);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A refusal
+// ---------------------------------------------------------------------------
+
+describe("a refusal", () => {
+  const refused = event({ type: "refusal", category: "OTHER", explanation: null, model: "gemini-3.8-flash", iteration: 1 });
+
+  it("marks the turn's bubble with why the provider's safety filter ended it", () => {
+    const state = play(sentTurn(), [event({ type: "thinking", content: "Weighing it." }), refused]);
+    expect(state.messages).toHaveLength(2);
+    expect(last(state)).toMatchObject({
+      role: "assistant",
+      thinking: "Weighing it.",
+      refusal: { category: "OTHER", explanation: null, model: "gemini-3.8-flash" },
+    });
+  });
+
+  it("keeps an Anthropic refusal's suggested model", () => {
+    const state = play(sentTurn(), [
+      event({ type: "refusal", category: "cyber", explanation: "Declined.", recommendedModel: "claude-sonnet-5" }),
+    ]);
+    expect(last(state).refusal).toEqual({ category: "cyber", explanation: "Declined.", recommendedModel: "claude-sonnet-5" });
+  });
+
+  it("never writes into a joined turn's complete reply", () => {
+    const state = play(joinedTurn(), [refused]);
+    expect(state.messages).toHaveLength(3);
+    expect(state.messages[1]).toEqual(EARLIER_REPLY);
+    expect(last(state)).toMatchObject({ role: "assistant", content: "", refusal: { category: "OTHER" } });
   });
 });
 

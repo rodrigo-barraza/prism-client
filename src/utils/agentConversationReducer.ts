@@ -1285,6 +1285,21 @@ function applyEvent(
       return updateTurnActivity(state, conversationId, (activity) =>
         applyCodeExecutionResult(activity, event.output, event.outcome),
       );
+    case "refusal": {
+      // A provider's safety filter ended the turn: the bubble says why. The
+      // stored message drops what the refused pass streamed; on screen it
+      // stays until the conversation is opened again.
+      const refusal = {
+        category: event.category,
+        explanation: event.explanation,
+        ...(event.recommendedModel ? { recommendedModel: event.recommendedModel } : {}),
+        ...(event.model ? { model: event.model } : {}),
+      };
+      return {
+        ...state,
+        ...writeTurnBubble(state, { refusal }, { role: MESSAGE_ROLES.ASSISTANT, content: "", refusal }),
+      };
+    }
     // Side effects only (agentConversationEffects), connection framing, and
     // events the chat does not render: `citations` shows through the
     // `webSearchResult` that follows it, and later from the stored message.
@@ -1293,7 +1308,6 @@ function applyEvent(
     case "conversation_state_update":
     case "hello":
     case "subscribed":
-    case "refusal":
     case "memory_consolidation_complete":
     case "citations":
       return state;
