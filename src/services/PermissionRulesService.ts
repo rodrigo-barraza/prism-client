@@ -63,20 +63,35 @@ export default class PermissionRulesService {
     });
   }
 
-  /** A conversation's mode (or, without one, the default a new conversation starts in) and the modes on offer. */
-  static getMode(conversationId?: string | null): Promise<PermissionModeState> {
-    const suffix = conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : "";
-    return PrismService._request<PermissionModeState>(`/permissions/mode${suffix}`, {
+  /**
+   * A conversation's mode (or, without one, the default a new conversation
+   * starts in) and the modes on offer. `project` is the one the conversation
+   * is stored under — an agent's (`prism-chat`, `coding`), which this
+   * client's own project header is not; without it an agent conversation's
+   * stored mode is never found.
+   */
+  static getMode(conversationId?: string | null, project?: string | null): Promise<PermissionModeState> {
+    const query = new URLSearchParams();
+    if (conversationId) query.set("conversationId", conversationId);
+    if (conversationId && project) query.set("project", project);
+    const suffix = query.toString();
+    return PrismService._request<PermissionModeState>(`/permissions/mode${suffix ? `?${suffix}` : ""}`, {
       method: HTTP_METHODS.GET,
     });
   }
 
-  /** Switch a conversation's mode — its running turn too, at the next tool call. */
+  /**
+   * Switch a conversation's mode — its running turn too, at the next tool
+   * call. `project` as for getMode; it rides the query because the body
+   * takes nothing but the conversation and the mode.
+   */
   static setMode(
     conversationId: string,
     mode: PermissionMode,
+    project?: string | null,
   ): Promise<{ conversationId: string; mode: PermissionMode; stored: boolean; live: boolean }> {
-    return PrismService._request("/permissions/mode", {
+    const suffix = project ? `?project=${encodeURIComponent(project)}` : "";
+    return PrismService._request(`/permissions/mode${suffix}`, {
       method: HTTP_METHODS.PUT,
       body: { conversationId, mode },
     });

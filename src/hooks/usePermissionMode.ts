@@ -13,6 +13,11 @@
  * the next tool call. A conversation that has no server document yet (a new
  * chat before its first send) answers 404; the mode then rides the first
  * request (`permissionMode` in the `/agent` body), which stores it.
+ *
+ * `project` is the project the conversation is stored under — the agent's,
+ * as the turn sends it. Without it the server looks under this client's own
+ * project, finds no agent conversation, and the mode reads as the default
+ * after every reload.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import PermissionRulesService from "../services/PermissionRulesService";
@@ -41,6 +46,7 @@ export interface PermissionModeApi {
 
 export default function usePermissionMode(
   conversationId: string | null | undefined,
+  project?: string | null,
 ): PermissionModeApi {
   const [mode, setMode] = useState<PermissionMode>("default");
   const [modes, setModes] = useState<PermissionModeInfo[]>([]);
@@ -50,17 +56,19 @@ export default function usePermissionMode(
   const [notice, setNotice] = useState<string | null>(null);
   // Actions read the CURRENT conversation at call time — kept in a ref.
   const conversationIdRef = useRef(conversationId);
+  const projectRef = useRef(project);
   const modeRef = useRef(mode);
   useEffect(() => {
     conversationIdRef.current = conversationId;
-  }, [conversationId]);
+    projectRef.current = project;
+  }, [conversationId, project]);
   useEffect(() => {
     modeRef.current = mode;
   }, [mode]);
 
   useEffect(() => {
     let cancelled = false;
-    PermissionRulesService.getMode(conversationId)
+    PermissionRulesService.getMode(conversationId, project)
       .then((state) => {
         if (cancelled) return;
         setModes(state.modes ?? []);
@@ -76,7 +84,7 @@ export default function usePermissionMode(
     return () => {
       cancelled = true;
     };
-  }, [conversationId]);
+  }, [conversationId, project]);
 
   const change = useCallback(async (next: PermissionMode) => {
     const id = conversationIdRef.current;
@@ -88,7 +96,7 @@ export default function usePermissionMode(
     if (!id) return;
     setIsBusy(true);
     try {
-      await PermissionRulesService.setMode(id, next);
+      await PermissionRulesService.setMode(id, next, projectRef.current);
     } catch (changeError: unknown) {
       // Not stored yet — the first send carries (and stores) the mode.
       if ((changeError as { status?: number }).status === 404) return;

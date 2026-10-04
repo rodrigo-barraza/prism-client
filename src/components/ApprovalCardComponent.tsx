@@ -381,7 +381,13 @@ export default function ApprovalCardComponent({
             type="button"
             className={styles["approve-all-button"]}
             disabled={isSubmitting}
-            title="Allow this and every later tool call in this conversation only"
+            title={
+              protectedPath
+                ? "Allow this and every later tool call in this conversation only — writes to a protected path still ask"
+                : untrustedText
+                  ? "Allow this and every later tool call in this conversation only — calls that carry untrusted text still ask"
+                  : "Allow this and every later tool call in this conversation only"
+            }
             onClick={() => void submit({ decision: "allow", scope: "conversation" })}
           >
             <Zap size={14} />

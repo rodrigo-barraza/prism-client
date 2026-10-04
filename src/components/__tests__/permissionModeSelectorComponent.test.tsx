@@ -104,14 +104,14 @@ describe("PermissionModeSelector", () => {
 });
 
 describe("usePermissionMode", () => {
-  it("loads the conversation's mode and stores a switch", async () => {
+  it("loads the conversation's mode and stores a switch — under the project the conversation is stored in", async () => {
     vi.mocked(PermissionRulesService.getMode).mockResolvedValue(state({ mode: "acceptEdits", source: "conversation" }));
-    const { result } = renderHook(() => usePermissionMode("conv-1"));
+    const { result } = renderHook(() => usePermissionMode("conv-1", "prism-chat"));
     await waitFor(() => expect(result.current.mode).toBe("acceptEdits"));
-    expect(PermissionRulesService.getMode).toHaveBeenCalledWith("conv-1");
+    expect(PermissionRulesService.getMode).toHaveBeenCalledWith("conv-1", "prism-chat");
 
     await act(() => result.current.change("plan"));
-    expect(PermissionRulesService.setMode).toHaveBeenCalledWith("conv-1", "plan");
+    expect(PermissionRulesService.setMode).toHaveBeenCalledWith("conv-1", "plan", "prism-chat");
     expect(result.current.mode).toBe("plan");
     expect(result.current.error).toBeNull();
   });
@@ -203,6 +203,10 @@ describe("a protected-path card", () => {
     );
     expect(screen.getByRole("note").textContent).toContain("always ask");
     expect(screen.queryByText("Always allow…")).toBeNull();
+    // "Auto-approve this conversation" says what it cannot answer.
+    expect(screen.getByText("Auto-approve this conversation").closest("button")?.title).toContain(
+      "writes to a protected path still ask",
+    );
   });
 });
 
