@@ -299,7 +299,7 @@ export default function AgentChatComponent({
   // permission mode and a turn paused at its cost cap live in their own hooks.
   const nonBlockingQuestions = useNonBlockingQuestions(conversationId);
   const conversationGoal = useConversationGoal(conversationId, agentProject);
-  const permissionMode = usePermissionMode(conversationId);
+  const permissionMode = usePermissionMode(conversationId, agentProject);
   const budgetPause = useBudgetPause(conversationId);
 
   const list = useConversationList({

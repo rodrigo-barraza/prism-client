@@ -62,6 +62,24 @@ describe("PermissionRulesService", () => {
     expect(calls[2].method).toBe("GET");
   });
 
+  it("reads and switches a conversation's mode under the project it is stored in", async () => {
+    response = { mode: "acceptEdits" };
+    await PermissionRulesService.getMode("conv 1", "prism-chat");
+    expect(calls[0].url).toMatch(/\/permissions\/mode\?conversationId=conv\+1&project=prism-chat$/);
+    expect(calls[0].method).toBe("GET");
+
+    await PermissionRulesService.setMode("conv 1", "plan", "prism-chat");
+    // The body takes only the conversation and the mode: the project rides the query.
+    expect(calls[1].url).toMatch(/\/permissions\/mode\?project=prism-chat$/);
+    expect(calls[1]).toMatchObject({ method: "PUT", body: { conversationId: "conv 1", mode: "plan" } });
+
+    // A new chat has no conversation to look up; without a project the header's applies.
+    await PermissionRulesService.getMode(null, "prism-chat");
+    expect(calls[2].url).toMatch(/\/permissions\/mode$/);
+    await PermissionRulesService.setMode("conv 1", "plan");
+    expect(calls[3].url).toMatch(/\/permissions\/mode$/);
+  });
+
   it("surfaces the server's validation message", async () => {
     status = 400;
     response = { error: "rule: Unknown capability \"telepathy\"." };

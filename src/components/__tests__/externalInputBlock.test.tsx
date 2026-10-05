@@ -92,6 +92,10 @@ describe("an approval card the taint check put out", () => {
     const note = screen.getByText(/Untrusted text: these arguments contain/);
     expect(note.textContent).toContain("read_web_page https://docs.example.test");
     expect(screen.queryByText(/Always allow/)).toBeNull();
+    // "Auto-approve this conversation" says what it cannot answer.
+    expect(screen.getByText("Auto-approve this conversation").closest("button")?.title).toContain(
+      "calls that carry untrusted text still ask",
+    );
   });
 
   it("comes back the same after a reload (the pending snapshot)", () => {
