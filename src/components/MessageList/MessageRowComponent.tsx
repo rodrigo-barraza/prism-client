@@ -59,6 +59,7 @@ import PrismService from "../../services/PrismService";
 import { APPROVAL_STATUS, isLocalProvider, resolveProviderBaseType } from "../../constants";
 import { getTotalInputTokens } from "../../utils/utilities";
 import { noteMessageRowRender } from "../../utils/chatDebugProbe";
+import { refusalNotice } from "../../utils/messageHelpers";
 import type { ContentSegment, Message, ToolCallEvent } from "../../types/types";
 import type { SubAgentToolActivityItem } from "../MessageListComponent";
 import type { DeletedMessageGroup } from "./messageRows";
@@ -1164,6 +1165,14 @@ function MessageBubble(props: MessageRowProps & { priorToolMediaUrls: ReadonlySe
               <span>{(message as unknown as { _terminationReason?: string })._terminationReason}</span>
             </div>
           )}
+
+        {/* Refusal notice — a provider's safety filter ended the turn */}
+        {message.role === "assistant" && !isStreaming && message.refusal && (
+          <div className={styles['termination-notice']}>
+            <AlertTriangle size={14} />
+            <span>{refusalNotice(message.refusal)}</span>
+          </div>
+        )}
       </div>
     </div>
   );

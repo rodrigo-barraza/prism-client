@@ -1,4 +1,4 @@
-import type { Message } from "../types/types";
+import type { Message, MessageRefusal } from "../types/types";
 
 /**
  * Resolves display-ready messages from a conversation API response.
@@ -74,4 +74,17 @@ export function userMessageResendText(message: Message): string {
   const { rawContent } = message;
   if (rawContent && !hasSystemContextPrefix(rawContent)) return rawContent;
   return getCleanAndRaw(message.content || "", rawContent).clean;
+}
+
+/**
+ * What the chat says on a turn a provider's safety filter ended. Nothing
+ * else would: the refused reply is empty by design, and a Gemini block
+ * that went unnamed read as "Sorry, I cannot fulfill your request." under
+ * five messages the user never wrote (conversation 9cf6ebdd, 2026-10-04).
+ */
+export function refusalNotice(refusal: MessageRefusal): string {
+  const category = refusal.category ? ` (${refusal.category})` : "";
+  const explanation = refusal.explanation ? ` ${refusal.explanation}` : "";
+  const suggestion = refusal.recommendedModel ? ` Suggested model: ${refusal.recommendedModel}.` : "";
+  return `The provider's safety filter blocked this reply${category}.${explanation}${suggestion}`;
 }

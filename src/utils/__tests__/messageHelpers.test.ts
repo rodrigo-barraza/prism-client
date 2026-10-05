@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveDisplayMessages } from "../messageHelpers.js";
+import { refusalNotice, resolveDisplayMessages } from "../messageHelpers.js";
 import type { Message } from "../../types/types.js";
 
 /**
@@ -56,5 +56,25 @@ describe("messageHelpers - resolveDisplayMessages", () => {
     expect(
       resolveDisplayMessages({ displayMessages: [], messages: [] }),
     ).toEqual([]);
+  });
+});
+
+describe("refusalNotice", () => {
+  it("names the filter's category", () => {
+    expect(refusalNotice({ category: "OTHER", explanation: null, model: "gemini-3.8-flash" })).toBe(
+      "The provider's safety filter blocked this reply (OTHER).",
+    );
+  });
+
+  it("adds the provider's explanation and suggested model when there are any", () => {
+    expect(
+      refusalNotice({ category: "cyber", explanation: "Declined: could enable cyber harm.", recommendedModel: "claude-sonnet-5" }),
+    ).toBe(
+      "The provider's safety filter blocked this reply (cyber). Declined: could enable cyber harm. Suggested model: claude-sonnet-5.",
+    );
+  });
+
+  it("reads without a category", () => {
+    expect(refusalNotice({ category: null, explanation: null })).toBe("The provider's safety filter blocked this reply.");
   });
 });
