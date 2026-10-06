@@ -970,6 +970,7 @@ export default function AgentChatComponent({
             conversationId={conversationId}
             isFunctionCallingDisabled={!settings.functionCallingEnabled}
             isSessionLocked={isSessionLocked}
+            workspaceRoot={isNoAgent ? null : (currentWorkspace?.path ?? null)}
           />
         }
         leftTitle={undefined}

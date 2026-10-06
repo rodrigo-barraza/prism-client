@@ -35,6 +35,8 @@ interface ChatSidebarBottomComponentProps {
   isFunctionCallingDisabled: boolean;
   /** The conversation has messages: its tools are no longer the user's to toggle. */
   isSessionLocked: boolean;
+  /** The conversation's workspace root: the Hooks tab lists its repository hooks files. */
+  workspaceRoot?: string | null;
 }
 
 function tabIcon(emoji: string) {
@@ -52,6 +54,7 @@ export default function ChatSidebarBottomComponent({
   conversationId,
   isFunctionCallingDisabled,
   isSessionLocked,
+  workspaceRoot = null,
 }: ChatSidebarBottomComponentProps) {
   const { leftTabBottom, selectBottomTab, badgeProps } = sidebar;
   const { skills, rules, hooks, projectInstructions } = resources;
@@ -243,6 +246,8 @@ export default function ChatSidebarBottomComponent({
             onHooksChange={resources.loadHooks}
             agent={agentId}
             onActionsChange={setHooksHeaderActions}
+            // Trust is the conversation owner's to give: an admin viewer's would be their own.
+            workspaceRoot={isAdmin ? null : workspaceRoot}
           />
         </>
       )}

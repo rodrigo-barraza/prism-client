@@ -1302,6 +1302,39 @@ export interface HookTestResult {
   payload?: Record<string, unknown>;
 }
 
+/** One hook of a repository's hooks file: Claude Code's / Codex's schema, one row per command. */
+export interface WorkspaceHookSummaryRow {
+  event: string;
+  matcher?: string | null;
+  command: string;
+}
+
+/**
+ * A `.prism/hooks.json` that applies to a workspace (GET /hooks/workspace):
+ * the user's own (`~/.prism/hooks.json`) or the nearest one in the
+ * repository. Its command hooks run only once this user trusted the file at
+ * this `sha256`; a changed file is untrusted until trusted again.
+ */
+export interface WorkspaceHookFile {
+  scope: "user" | "project";
+  path: string;
+  /** The directory the file's commands run in. */
+  dir: string;
+  sha256: string;
+  trusted: boolean;
+  summary: WorkspaceHookSummaryRow[];
+  /** The file could not be read whole (not JSON, …): none of its hooks run. */
+  error?: string;
+  /** What in the file was skipped, and why (an unknown event, a hook that is not a command, …). */
+  skipped?: string[];
+}
+
+export interface WorkspaceHooks {
+  /** False: this user is not in PRISM_HOOK_COMMAND_OWNERS — no command hook runs for them. */
+  ownerAllowed: boolean;
+  files: WorkspaceHookFile[];
+}
+
 // --- Project Instructions (PRISM.md) ------------------------
 
 /** The single self-updating markdown doc for a scope. */

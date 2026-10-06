@@ -31,6 +31,7 @@ import {
 } from "@rodrigo-barraza/components-library";
 import { TRUNCATION_LIMITS } from "../constants";
 import { getErrorMessage } from "../utils/errorMessage";
+import WorkspaceHooksSectionComponent from "./WorkspaceHooksSectionComponent";
 import styles from "./HooksPanelComponent.module.css";
 import {
   HOOK_EVENT_NAMES,
@@ -246,6 +247,9 @@ function resolveHookId(hook: Hook): string {
  * that produces a decision: a model prompt, an HTTP endpoint, an MCP tool, a
  * shell command, or a verifier agent. Only the events in `BLOCKING_EVENTS`
  * can refuse anything; every other event observes or transforms.
+ *
+ * Given a `workspaceRoot`, the list also shows the repository hooks files
+ * that apply there, to trust or revoke (WorkspaceHooksSectionComponent).
  */
 export default function HooksPanel({
   hooks,
@@ -253,12 +257,15 @@ export default function HooksPanel({
   agent,
   onActionsChange,
   readOnly = false,
+  workspaceRoot = null,
 }: {
   hooks: Hook[];
   onHooksChange: () => void;
   agent?: string;
   onActionsChange?: (_actions: ReactNode) => void;
   readOnly?: boolean;
+  /** The conversation's workspace root: its `.prism/hooks.json` files are listed below the hooks. */
+  workspaceRoot?: string | null;
 }) {
   const [editingHook, setEditingHook] = useState<Hook | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -1251,6 +1258,8 @@ export default function HooksPanel({
           })}
         </div>
       )}
+
+      {workspaceRoot && <WorkspaceHooksSectionComponent root={workspaceRoot} readOnly={readOnly} />}
     </div>
   );
 }

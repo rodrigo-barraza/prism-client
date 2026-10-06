@@ -26,6 +26,7 @@ import type {
   Rule,
   Hook,
   HookTestResult,
+  WorkspaceHooks,
   BackgroundTask,
   ProjectInstructions,
   ProjectInstructionsVersion,
@@ -752,6 +753,34 @@ export default class PrismService {
       `/hooks/${encodeURIComponent(id)}/test`,
       { method: HTTP_METHODS.POST, body: { payload } },
     );
+  }
+
+  /**
+   * The repository hooks files (`.prism/hooks.json`) that apply to a
+   * workspace root — the user's own and the nearest one in the repository —
+   * with whether this user trusted each at its current sha256.
+   */
+  static async getWorkspaceHooks(root: string): Promise<WorkspaceHooks> {
+    return PrismService._request<WorkspaceHooks>(
+      `/hooks/workspace?root=${encodeURIComponent(root)}`,
+      { method: HTTP_METHODS.GET },
+    );
+  }
+
+  /** Trust a hooks file at this content: its command hooks run until it changes. */
+  static async trustWorkspaceHooks(path: string, sha256: string): Promise<unknown> {
+    return PrismService._request("/hooks/workspace/trust", {
+      method: HTTP_METHODS.POST,
+      body: { path, sha256 },
+    });
+  }
+
+  /** Take back a hooks file's trust: its command hooks stop running. */
+  static async revokeWorkspaceHooks(path: string): Promise<unknown> {
+    return PrismService._request("/hooks/workspace/trust", {
+      method: HTTP_METHODS.DELETE,
+      body: { path },
+    });
   }
 
   // ---------------------------------------------------------------------------

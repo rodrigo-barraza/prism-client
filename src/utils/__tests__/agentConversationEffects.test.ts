@@ -68,6 +68,10 @@ describe("effectsOfEvent", () => {
     const resolved = event({ type: "status", message: "budget_resolved", pauseId: "p-1", action: "raise", source: "user" });
     expect(effectsOfEvent(resolved, EMPTY, "conv-1")).toEqual([{ kind: "budget-status", event: resolved }]);
     expect(effects({ type: "status", message: "iteration_progress", iteration: 1, maxIterations: 5 })).toEqual([]);
+    // A workspace's hooks did not run: untrusted. The user is told where to trust them; other notices stay quiet.
+    const untrusted = "Workspace hooks in /repo/.prism/hooks.json are not trusted yet — trust them in Settings → Hooks.";
+    expect(effects({ type: "status", message: untrusted })).toEqual([{ kind: "toast", message: untrusted, level: "info" }]);
+    expect(effects({ type: "status", message: "Tool execution rejected: write_file" })).toEqual([]);
     expect(effects({ type: "status", message: "Loading model…", phase: "loading" })).toEqual([]);
   });
 
