@@ -1,0 +1,136 @@
+/* ── Background shells and monitors, above the composer ── */
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 6px 10px;
+  margin-block-end: 8px;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-md);
+  background: var(--background-surface);
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.count {
+  margin-inline-start: auto;
+  font-weight: 500;
+  text-transform: none;
+  color: var(--text-muted);
+}
+
+.tasks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.task-ended {
+  color: var(--text-secondary);
+}
+
+.task-icon {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.task-description {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-type {
+  padding: 0 6px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--calculated-border-color);
+  color: var(--text-secondary);
+}
+
+.task-meta {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.task-status {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-ok {
+  color: var(--color-success);
+}
+
+.status-neutral {
+  color: var(--text-secondary);
+}
+
+.status-failed {
+  color: var(--color-danger);
+}
+
+.stop-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.stop-error {
+  flex-basis: 100%;
+  color: var(--color-danger);
+  overflow-wrap: anywhere;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

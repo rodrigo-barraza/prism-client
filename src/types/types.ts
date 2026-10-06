@@ -11,6 +11,7 @@ import type { ToolDisplayMetadata } from "@rodrigo-barraza/utilities-library";
 import type {
   ApprovalDecidedEvent,
   ApprovalRequiredEvent,
+  BackgroundTaskEvent,
   BriefUpdateEvent,
   ContextBudgetEvent,
   ConversationStateUpdateEvent,
@@ -501,8 +502,12 @@ export interface Message {
   _external?: ExternalOrigin;
 }
 
-/** Where an external input came from. `sender` is a label, not an identity. */
-export type ExternalInputSource = NonNullable<TurnInputEvent["source"]>;
+/**
+ * Where an external input came from. `sender` is a label, not an identity.
+ * (`task`, a turn input's other source, is the agent's own background task —
+ * never external input.)
+ */
+export type ExternalInputSource = Exclude<NonNullable<TurnInputEvent["source"]>, "task">;
 export interface ExternalOrigin {
   source: ExternalInputSource;
   sender?: string;
@@ -653,6 +658,7 @@ export type {
   PlanProposalEvent,
   UserQuestionEvent,
   TurnInputEvent,
+  BackgroundTaskEvent,
   GoalUpdateEvent,
   TodoUpdateEvent,
   BriefUpdateEvent,
@@ -761,6 +767,35 @@ export interface MessageTurnInput {
   /** `external` only: where it came from. */
   source?: ExternalInputSource;
   sender?: string;
+}
+
+/** A detached `execute_command` (`shell`) or a `monitor`. */
+export type BackgroundTaskType = BackgroundTaskEvent["taskType"];
+/** `running`, or how the task ended. */
+export type BackgroundTaskStatus = BackgroundTaskEvent["status"];
+
+/**
+ * A background shell or monitor the conversation started, as the chat shows
+ * it: from its `background_task` events and GET /conversations/:id/tasks.
+ */
+export interface BackgroundTask {
+  taskId: string;
+  taskType: BackgroundTaskType;
+  status: BackgroundTaskStatus;
+  description: string;
+  command?: string;
+  /** A `ws` monitor's socket. */
+  wsUrl?: string;
+  outputFile?: string;
+  /** A monitor's events so far. */
+  eventCount: number;
+  exitCode?: number | null;
+  /** ISO. */
+  startedAt?: string;
+  /** ISO, once it ended. */
+  endedAt?: string;
+  /** ISO time of the last change the chat applied. */
+  updatedAt?: string;
 }
 
 export interface ConversationGoalBudget {
@@ -947,6 +982,8 @@ export interface SSECallbacks {
   onBriefUpdate?: (_event: BriefUpdateEvent) => void;
   /** A mid-turn input was applied by the harness (`turn_input` event) */
   onTurnInput?: (_event: TurnInputEvent) => void;
+  /** A background shell or monitor started, got a batch of events, or ended (`background_task`) */
+  onBackgroundTask?: (_event: BackgroundTaskEvent) => void;
   /** The conversation goal was set / progressed / paused / cleared (`goal_update`) */
   onGoalUpdate?: (_event: GoalUpdateEvent) => void;
   /** `permission_mode` — the conversation's permission mode is now `mode`. */

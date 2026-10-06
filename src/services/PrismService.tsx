@@ -7,6 +7,7 @@ import { sourceModelOf, type StreamProtocol } from "./protocolEvents";
 import { StreamError } from "../types/types";
 import { serverSentEvents, StreamClosedError } from "./agentStream";
 import type { TurnInputResponse } from "../utils/turnInputRouting";
+import { backgroundTasksFromResponse } from "../utils/backgroundTasks";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
 import { hydrateToolEmojiCache } from "../components/WorkflowNodeConstantsComponent";
 import type {
@@ -25,6 +26,7 @@ import type {
   Rule,
   Hook,
   HookTestResult,
+  BackgroundTask,
   ProjectInstructions,
   ProjectInstructionsVersion,
   AgentMemoryListResponse,
@@ -1400,6 +1402,35 @@ export default class PrismService {
   }
 
   /**
+   * The conversation's background shells and monitors, with their status
+   * (GET /conversations/:id/tasks).
+   */
+  static async getConversationTasks(conversationId: string, project?: string | null): Promise<BackgroundTask[]> {
+    const query = project ? `?project=${encodeURIComponent(project)}` : "";
+    const body = await PrismService._request<unknown>(
+      `/conversations/${encodeURIComponent(conversationId)}/tasks${query}`,
+      { method: HTTP_METHODS.GET },
+    );
+    return backgroundTasksFromResponse(body);
+  }
+
+  /**
+   * Stop a background shell or monitor (POST /tasks/:taskId/stop). Throws
+   * with the reason when it was not stopped — a task that had already ended
+   * included.
+   */
+  static async stopBackgroundTask(taskId: string): Promise<{ stopped: boolean; status?: string }> {
+    const result = await PrismService._request<{ stopped?: boolean; status?: string; error?: string }>(
+      `/tasks/${encodeURIComponent(taskId)}/stop`,
+      { method: HTTP_METHODS.POST },
+    );
+    if (result?.stopped === false) {
+      throw new Error(result.error || (result.status ? `Already ${result.status}` : "Not stopped"));
+    }
+    return { stopped: true, ...(result?.status ? { status: result.status } : {}) };
+  }
+
+  /**
    * Explicitly stop a running agentic session on the backend.
    * Decoupled from SSE connection lifecycle so mobile browser disconnections
    * don't abort background processing — only this explicit call does.
@@ -1910,6 +1941,10 @@ export default class PrismService {
       // Harness mailbox: a mid-turn input was applied (POST /agent/input)
       case "turn_input":
         callbacks.onTurnInput?.(event);
+        break;
+      // A background shell or monitor started, got a batch of events, or ended
+      case "background_task":
+        callbacks.onBackgroundTask?.(event);
         break;
       // Conversation goal set / progressed / paused / cleared
       case "goal_update":

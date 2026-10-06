@@ -14,8 +14,8 @@
  *   conversations (useConversationSwitching), keeping them current
  *   (useLiveConversationSync), the admin viewer (useAgentChatAdmin);
  * - the view: ChatHeader, ChatTranscript (windowed rows), the approval and
- *   question cards, ChatStatusBar, the goal and plan panels, Composer, and
- *   the two side-panel groups.
+ *   question cards, ChatStatusBar, the background tasks, the goal and plan
+ *   panels, Composer, and the two side-panel groups.
  */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -43,6 +43,7 @@ import ChatHeaderComponent from "./ChatHeaderComponent";
 import ChatTranscriptComponent, { type ChatTranscriptHandle } from "./ChatTranscriptComponent";
 import ApprovalsAndQuestionsComponent, { PinnedQuestionsComponent } from "./ApprovalsAndQuestionsComponent";
 import ChatStatusBarComponent from "./ChatStatusBarComponent";
+import BackgroundTasksStripComponent from "./BackgroundTasksStripComponent";
 import GoalAndPlanPanelsComponent, { ReadOnlyGoalAndBudgetComponent } from "./GoalAndPlanPanelsComponent";
 import ComposerComponent, { type ComposerHandle } from "./ComposerComponent";
 import AdminConversationViewComponent from "./AdminConversationViewComponent";
@@ -76,6 +77,7 @@ import useConversationBranching from "../hooks/useConversationBranching";
 import useNonBlockingQuestions from "../hooks/useNonBlockingQuestions";
 import useConversationGoal from "../hooks/useConversationGoal";
 import useBudgetPause from "../hooks/useBudgetPause";
+import useBackgroundTasks from "../hooks/useBackgroundTasks";
 import usePermissionMode from "../hooks/usePermissionMode";
 import useQuestionAnswerSender from "../hooks/useQuestionAnswerSender";
 import useFavoriteKeys from "../hooks/useFavoriteKeys";
@@ -301,6 +303,16 @@ export default function AgentChatComponent({
   const conversationGoal = useConversationGoal(conversationId, agentProject);
   const permissionMode = usePermissionMode(conversationId, agentProject);
   const budgetPause = useBudgetPause(conversationId);
+  // Background shells and monitors outlive the turn that started them: the
+  // strip above the composer lists them, with Stop.
+  const backgroundTasks = useBackgroundTasks({
+    conversationId,
+    activeId,
+    project: agentProject,
+    conversation: agentConversation,
+    clientDrivenConversationIdRef: session.clientDrivenConversationIdRef,
+    isEnabled: !isAdmin && !isNoAgent,
+  });
 
   const list = useConversationList({
     isAdmin,
@@ -862,6 +874,12 @@ export default function AgentChatComponent({
         <div
           className={`${chatStyles['input-wrapper']} ${!settings.provider || !settings.model || list.isActiveConversationSubAgent ? chatStyles['input-wrapper-disabled'] : ""}`}
         >
+          <BackgroundTasksStripComponent
+            tasks={backgroundTasks.tasks}
+            onStop={(taskId) => void backgroundTasks.stop(taskId)}
+            stopRequestedTaskIds={backgroundTasks.stopRequestedTaskIds}
+            stopErrors={backgroundTasks.stopErrors}
+          />
           <PinnedQuestionsComponent questions={nonBlockingQuestions} sendAnswer={sendQuestionAnswerOrMessage} />
           <GoalAndPlanPanelsComponent
             goal={conversationGoal}
