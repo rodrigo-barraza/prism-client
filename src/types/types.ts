@@ -482,7 +482,8 @@ export interface Message {
     };
   }>;
   /** Notification origin — identifies system-generated messages for deterministic detection.
-   *  Values: "orchestrator" | "timer" | "async-task". Absent on real user messages. */
+   *  Values: "orchestrator" | "timer" | "async-task" | "workspace_task" (a background shell's
+   *  or monitor's `<task-notification>`, shown as a task notification). Absent on real user messages. */
   _notificationSource?: string;
   /** Idempotency key — prevents duplicate notification persistence during race conditions. */
   _notificationId?: string;

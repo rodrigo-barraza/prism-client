@@ -107,6 +107,7 @@ describe("persisted mid-turn messages", () => {
     );
     expect(turnInputBadgeLabel({ id: "a", kind: "user_update", status: "applied" })).toBe("Applied mid-turn");
     expect(turnInputBadgeLabel({ id: "a", kind: "question_answer", status: "applied" })).toBe("Answer");
+    expect(turnInputBadgeLabel({ id: "a", kind: "task_notification", status: "applied" })).toBe("Task notification");
   });
 
   it("the goal verifier's gaps come from the Verifier, never the user", () => {

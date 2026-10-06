@@ -47,6 +47,7 @@ import BadgeComponent, { type ClientAgent } from "../BadgeComponent";
 import { renderAgentIcon } from "../AgentPickerComponent";
 import SubAgentNotificationComponent from "../SubAgentNotificationComponent";
 import ExternalInputBlockComponent from "../ExternalInputBlockComponent";
+import TaskNotificationItemComponent from "../TaskNotificationItemComponent";
 import PlanCardComponent from "../PlanCardComponent";
 import styles from "../MessageListComponent.module.css";
 import {
@@ -55,6 +56,7 @@ import {
   turnInputAuthorLabel,
   turnInputBadgeLabel,
 } from "../../utils/turnInputRouting";
+import { workspaceTaskNotificationsOf } from "../../utils/taskNotifications";
 import PrismService from "../../services/PrismService";
 import { APPROVAL_STATUS, isLocalProvider, resolveProviderBaseType } from "../../constants";
 import { getTotalInputTokens } from "../../utils/utilities";
@@ -1203,6 +1205,9 @@ function MessageRow(props: MessageRowProps) {
   } else {
     // -- External input: a tool-output-like block, never a user bubble --
     const externalOrigin = message.role === "user" ? externalOriginOf(message) : null;
+    // -- A background shell's or monitor's notification: the agent's own
+    // task reporting, never a user bubble --
+    const workspaceTaskNotifications = externalOrigin ? null : workspaceTaskNotificationsOf(message);
     // -- Task notification card (replaces user bubble for sub-agent results) --
     // Only renders for non-absorbed notifications (i.e. edge cases where
     // the matching team_create tool call isn't in the visible window).
@@ -1216,6 +1221,15 @@ function MessageRow(props: MessageRowProps) {
         <ExternalInputBlockComponent
           origin={externalOrigin}
           text={message.content || ""}
+          timestamp={message.timestamp}
+          readOnly={shared.readOnly}
+          onDelete={() => shared.actions.delete(index)}
+        />
+      );
+    } else if (workspaceTaskNotifications) {
+      body = (
+        <TaskNotificationItemComponent
+          notifications={workspaceTaskNotifications}
           timestamp={message.timestamp}
           readOnly={shared.readOnly}
           onDelete={() => shared.actions.delete(index)}
