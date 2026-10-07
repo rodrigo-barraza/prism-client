@@ -3951,7 +3951,7 @@ exports[`live-viewer turn (characterization) > subscribes to the running convers
       "type": "visibility",
     },
   ],
-  "socketUrl": "ws://prism.test/ws/chat?project=prism-client-dev&username=anonymous",
+  "socketUrl": "ws://prism.test/ws/chat?project=prism-client-dev&access_token=test-prism-token",
   "state": {
     "activeId": "conv-live",
     "agenticProgress": null,

@@ -19,6 +19,10 @@
  *
  * The SSE is read on demand: the next network chunk is requested only once
  * the consumer has taken every event of the previous one.
+ *
+ * Both carry the signed-in user's Prism token: the SSE in its Authorization
+ * header (prismFetch), the socket — a browser cannot set headers on one —
+ * as `access_token` on its URL, renewed before every reconnect.
  */
 
 import { PRISM_SERVICE_URL, PRISM_WEBSOCKET_URL } from "@/config";
@@ -33,6 +37,8 @@ import {
   type LiveViewerSocketOptions,
   type SubscribedInfo,
 } from "./liveViewerSocket";
+import { prismFetch } from "./prismFetch";
+import { renewPrismToken, requestPrismToken } from "./prismTokenManager";
 import { parseStreamEvent, type StreamProtocol } from "./protocolEvents";
 import { getBaseHeaders } from "./serviceHeaders";
 import { reportViewerVisibility } from "./viewerVisibility";
@@ -215,7 +221,7 @@ export async function* serverSentEvents(
 
   try {
     const response = await Promise.race([
-      fetch(`${PRISM_SERVICE_URL}${endpoint}`, {
+      prismFetch(`${PRISM_SERVICE_URL}${endpoint}`, {
         method,
         headers: getBaseHeaders(),
         ...(body ? { body: JSON.stringify(body) } : {}),
@@ -300,19 +306,37 @@ export function openTurnStream(
 // ---------------------------------------------------------------------------
 
 /**
- * The `/ws/chat` URL with this client's identity, or null when no WebSocket
- * URL is configured. Browsers cannot set headers on a WebSocket upgrade, so
- * identity and profile travel as query parameters (mirrored server-side).
+ * The `/ws/chat` URL with this client's project and profile, or null when
+ * no WebSocket URL is configured. Browsers cannot set headers on a
+ * WebSocket upgrade, so they travel as query parameters (mirrored
+ * server-side); who the user is comes with the token (`withAccessToken`).
  */
 export function liveSocketUrl(): string | null {
   if (!PRISM_WEBSOCKET_URL) return null;
   const headers = getBaseHeaders();
   const parameters = new URLSearchParams({
     project: headers[IDENTITY_HEADERS.project] || "any",
-    username: headers[IDENTITY_HEADERS.username] || "anonymous",
   });
   if (headers[HEADER_PROFILE_ID]) parameters.set("profileId", headers[HEADER_PROFILE_ID]);
   return `${PRISM_WEBSOCKET_URL}/ws/chat?${parameters.toString()}`;
+}
+
+/** `url` carrying the user's Prism token, which prism-service reads off the upgrade. */
+export function withAccessToken(url: string, token: string): string {
+  return `${url}${url.includes("?") ? "&" : "?"}access_token=${encodeURIComponent(token)}`;
+}
+
+/**
+ * The URL a live socket attempt opens: the first with the token in hand, a
+ * reconnect with a fresh one — the drop may have been the token's (a
+ * socket cannot tell an expired token from a restarting service).
+ */
+export async function authorizedSocketUrl(
+  url: string,
+  { isReconnect }: { isReconnect: boolean },
+): Promise<string> {
+  const token = isReconnect ? await renewPrismToken() : await requestPrismToken();
+  return withAccessToken(url, token);
 }
 
 /**
@@ -397,6 +421,7 @@ function openConversationSocket(conversationId: string, { onEvent, ...hooks }: S
   const sockets = visibilityReportingSockets();
   const socket = openLiveViewerSocket({
     url: liveSocketUrl(),
+    socketUrlFor: authorizedSocketUrl,
     conversationId,
     cursor: cursorFor(conversationId),
     createSocket: sockets.createSocket,

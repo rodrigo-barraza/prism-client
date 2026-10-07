@@ -9,6 +9,7 @@
  */
 import { PRISM_SERVICE_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
+import { prismFetch } from "./prismFetch";
 import { getErrorMessage } from "../utils/errorMessage";
 
 // --- Types ---------------------------------------------------
@@ -75,7 +76,7 @@ export async function executeWorkflow(
   let finalConversationIds: string[] = [];
 
   try {
-    const response = await fetch(`${PRISM_SERVICE_URL}/workflows/${workflowId}/run`, {
+    const response = await prismFetch(`${PRISM_SERVICE_URL}/workflows/${workflowId}/run`, {
       method: "POST",
       headers: getBaseHeaders(),
       signal: controller.signal,
@@ -170,7 +171,7 @@ export async function abortWorkflow(workflowId: string): Promise<void> {
 
   // Also signal the backend to cancel server-side execution
   try {
-    await fetch(`${PRISM_SERVICE_URL}/workflows/${workflowId}/abort`, {
+    await prismFetch(`${PRISM_SERVICE_URL}/workflows/${workflowId}/abort`, {
       method: "POST",
       headers: getBaseHeaders(),
     });

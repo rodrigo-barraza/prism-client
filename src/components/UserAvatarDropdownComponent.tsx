@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { useProfile } from "./ProfileContextComponent";
+import { forgetPrismToken } from "../services/prismTokenManager";
 import styles from "./UserAvatarDropdownComponent.module.css";
 
 export default function UserAvatarDropdownComponent() {
@@ -56,6 +57,7 @@ export default function UserAvatarDropdownComponent() {
 
   const handleSignOutClick = async () => {
     setIsDropdownOpen(false);
+    forgetPrismToken();
     await signOut({ callbackUrl: "/login" });
   };
 

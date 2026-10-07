@@ -9,13 +9,15 @@ import type { TurnEvent } from "../../types/types";
 
 class FakeSocket {
   static instances: FakeSocket[] = [];
+  readonly url: string;
   readyState = 0;
   sent: Array<Record<string, unknown>> = [];
   onopen: ((_event: Event) => void) | null = null;
   onmessage: ((_event: MessageEvent) => void) | null = null;
   onerror: ((_event: Event) => void) | null = null;
   onclose: ((_event: CloseEvent) => void) | null = null;
-  constructor(_url: string) {
+  constructor(url: string) {
+    this.url = url;
     FakeSocket.instances.push(this);
   }
   send(data: string) {
@@ -148,6 +150,54 @@ describe("openLiveViewerSocket", () => {
     expect(socket.state()).toBe("unconfigured");
     socket.close();
     expect(socket.state()).toBe("unconfigured");
+  });
+
+  it("asks socketUrlFor for every attempt's URL — the first, then each reconnect", async () => {
+    const asked: Array<{ url: string; isReconnect: boolean }> = [];
+    const socket = openLiveViewerSocket({
+      url: "ws://prism.test/ws/chat?project=p",
+      socketUrlFor: async (url, { isReconnect }) => {
+        asked.push({ url, isReconnect });
+        return `${url}&access_token=token-${asked.length}`;
+      },
+      conversationId: "conv-1",
+      cursor: createCursor(),
+      onEvent: () => {},
+      backoff: BACKOFF,
+      random: () => 0.5,
+      createSocket: (socketUrl) => new FakeSocket(socketUrl) as unknown as WebSocket,
+    });
+    const latest = () => FakeSocket.instances[FakeSocket.instances.length - 1];
+    // The URL is not in hand yet: nothing opens.
+    expect(FakeSocket.instances).toHaveLength(0);
+    await Promise.resolve();
+    expect(latest().url).toBe("ws://prism.test/ws/chat?project=p&access_token=token-1");
+
+    latest().open();
+    latest().drop();
+    vi.advanceTimersByTime(750);
+    await Promise.resolve();
+    expect(FakeSocket.instances).toHaveLength(2);
+    expect(latest().url).toBe("ws://prism.test/ws/chat?project=p&access_token=token-2");
+    expect(asked.map((attempt) => attempt.isReconnect)).toEqual([false, true]);
+    socket.close();
+  });
+
+  it("opens nothing for a URL that arrives after close()", async () => {
+    let deliver: (_url: string) => void = () => {};
+    const socket = openLiveViewerSocket({
+      url: "ws://prism.test/ws/chat",
+      socketUrlFor: () => new Promise<string>((resolveUrl) => (deliver = resolveUrl)),
+      conversationId: "conv-1",
+      cursor: createCursor(),
+      onEvent: () => {},
+      createSocket: (socketUrl) => new FakeSocket(socketUrl) as unknown as WebSocket,
+    });
+    socket.close();
+    deliver("ws://prism.test/ws/chat?access_token=late");
+    await Promise.resolve();
+    expect(FakeSocket.instances).toHaveLength(0);
+    expect(socket.state()).toBe("closed");
   });
 
   it("keeps retrying when the socket cannot even be created", () => {

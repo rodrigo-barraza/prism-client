@@ -1,6 +1,19 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// Every request to prism-service carries the signed-in user's token, which
+// the token manager fetches from /api/prism-token. Tests run as a user whose
+// token is always in hand; the manager's own tests unmock it.
+vi.mock("@/services/prismTokenManager", async (importOriginal) => {
+  const { TEST_PRISM_TOKEN } = await import("./prismTokenStub");
+  return {
+    ...(await importOriginal<typeof import("@/services/prismTokenManager")>()),
+    currentPrismToken: () => TEST_PRISM_TOKEN,
+    requestPrismToken: async () => TEST_PRISM_TOKEN,
+    renewPrismToken: async () => TEST_PRISM_TOKEN,
+  };
+});
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/"),
@@ -12,20 +25,26 @@ vi.mock("next/navigation", () => ({
   useSearchParams: vi.fn(() => new URLSearchParams()),
 }));
 
+// Server-side tests (route handlers, the proxy) run in the node environment,
+// which has no window.
+const hasWindow = typeof window !== "undefined";
+
 // Global window mocks
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: vi.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
+if (hasWindow) {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: vi.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+}
 
 class MockStorage implements Storage {
   private store: Record<string, string> = {};
@@ -62,7 +81,9 @@ Object.defineProperty(global, "localStorage", {
   value: mockLocalStorage,
   writable: true,
 });
-Object.defineProperty(window, "localStorage", {
-  value: mockLocalStorage,
-  writable: true,
-});
+if (hasWindow) {
+  Object.defineProperty(window, "localStorage", {
+    value: mockLocalStorage,
+    writable: true,
+  });
+}

@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { getBaseHeaders } from "../serviceHeaders";
 import { PROJECT_NAME } from "../../config";
-import { LOCAL_STORAGE_KEY_WORKSPACE_ROOT, LOCAL_STORAGE_KEY_USERNAME } from "../../constants";
+import { LOCAL_STORAGE_KEY_ACTIVE_PROFILE, LOCAL_STORAGE_KEY_WORKSPACE_ROOT } from "../../constants";
+import { TEST_PRISM_TOKEN } from "../../../tests/prismTokenStub";
 
 describe("serviceHeaders", () => {
   const originalWindow = global.window;
@@ -27,26 +28,34 @@ describe("serviceHeaders", () => {
     });
   });
 
-  it("should include workspace and username headers in browser context when present in localStorage", () => {
+  it("carries the signed-in user's Prism token, and the workspace and profile from localStorage", () => {
     localStorage.setItem(LOCAL_STORAGE_KEY_WORKSPACE_ROOT, "/home/rodrigo/development");
-    localStorage.setItem(LOCAL_STORAGE_KEY_USERNAME, "rodrigo");
+    localStorage.setItem(LOCAL_STORAGE_KEY_ACTIVE_PROFILE, "work");
 
     const retrievedHeaders = getBaseHeaders();
 
     expect(retrievedHeaders).toEqual({
       "Content-Type": "application/json",
+      Authorization: `Bearer ${TEST_PRISM_TOKEN}`,
       "x-project": PROJECT_NAME,
       "x-workspace-root": "/home/rodrigo/development",
-      "x-username": "rodrigo",
+      "x-profile-id": "work",
     });
   });
 
-  it("should omit workspace and username headers when they do not exist in localStorage", () => {
+  it("never claims a username: the token says who the user is", () => {
+    // What once set the old header must not bring it back.
+    localStorage.setItem("prism:username", "rodrigo");
+
     const retrievedHeaders = getBaseHeaders();
 
     expect(retrievedHeaders).toEqual({
       "Content-Type": "application/json",
+      Authorization: `Bearer ${TEST_PRISM_TOKEN}`,
       "x-project": PROJECT_NAME,
     });
+    expect(Object.keys(retrievedHeaders).map((name) => name.toLowerCase())).not.toContain(
+      "x-username",
+    );
   });
 });

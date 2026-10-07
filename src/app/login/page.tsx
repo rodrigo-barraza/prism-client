@@ -13,6 +13,7 @@ import {
   Loader2 
 } from "lucide-react";
 import { ACCOUNTS_SERVICE_URL } from "../../config";
+import { sameSitePath } from "../../utils/sameSitePath";
 import styles from "./login.module.css";
 import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 
@@ -21,7 +22,7 @@ function LogInContentComponent() {
   const searchParameters = useSearchParams();
   
   // Resolve redirect destination (defaults to workspace chat)
-  const callbackUrl = searchParameters?.get("callbackUrl") || "/chat";
+  const callbackUrl = sameSitePath(searchParameters?.get("callbackUrl"));
   const sessionError = searchParameters?.get("error");
 
   const [isSignUpMode, setIsSignUpMode] = useState(false);
@@ -115,6 +116,9 @@ function LogInContentComponent() {
           redirect: false,
         });
 
+        if (signInResult?.error === "AccessDenied") {
+          throw new Error("Access denied. Your email address is not in the allowed list.");
+        }
         if (signInResult?.error) {
           throw new Error("Invalid email or password");
         }
@@ -142,7 +146,7 @@ function LogInContentComponent() {
           <div className={styles['brand-logo-container']} aria-hidden="true">
             <ShieldCheck size={28} />
           </div>
-          <h1 className={styles["mainHeading-element"]}>
+          <h1 className={styles['main-heading-element']}>
             {isSignUpMode ? "Create Account" : "Welcome Back"}
           </h1>
           <p className={styles['subheading-paragraph']}>
@@ -193,7 +197,7 @@ function LogInContentComponent() {
                     placeholder="John Doe"
                     value={displayNameValue}
                     onChange={(e) => setDisplayNameValue(e.target.value)}
-                    className={styles["inputText-field"]}
+                    className={styles['input-text-field']}
                     style={{ paddingInlineStart: "44px" }}
                   />
                 </div>
@@ -222,7 +226,7 @@ function LogInContentComponent() {
                     placeholder="johndoe"
                     value={usernameValue}
                     onChange={(e) => setUsernameValue(e.target.value)}
-                    className={styles["inputText-field"]}
+                    className={styles['input-text-field']}
                     style={{ paddingInlineStart: "44px" }}
                   />
                 </div>
@@ -253,7 +257,7 @@ function LogInContentComponent() {
                 placeholder="you@domain.com"
                 value={emailValue}
                 onChange={(e) => setEmailValue(e.target.value)}
-                className={styles["inputText-field"]}
+                className={styles['input-text-field']}
                 style={{ paddingInlineStart: "44px" }}
               />
             </div>
@@ -282,7 +286,7 @@ function LogInContentComponent() {
                 placeholder="••••••••"
                 value={passwordValue}
                 onChange={(e) => setPasswordValue(e.target.value)}
-                className={styles["inputText-field"]}
+                className={styles['input-text-field']}
                 style={{ paddingInlineStart: "44px" }}
               />
             </div>
@@ -292,11 +296,11 @@ function LogInContentComponent() {
           <button 
             type="submit" 
             disabled={isSubmitting} 
-            className={styles["submitButton-element"]}
+            className={styles['submit-button-element']}
           >
             {isSubmitting ? (
               <>
-                <Loader2 size={18} className={styles["spinnerIcon-element"]} />
+                <Loader2 size={18} className={styles['spinner-icon-element']} />
                 <span>Processing...</span>
               </>
             ) : (
@@ -313,7 +317,7 @@ function LogInContentComponent() {
         <button 
           type="button" 
           onClick={handleGoogleSignIn} 
-          className={styles["googleSignIn-button"]}
+          className={styles['google-sign-in-button']}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -325,7 +329,7 @@ function LogInContentComponent() {
         </button>
 
         {/* Mode Toggle */}
-        <p className={styles["modeSwitching-paragraph"]}>
+        <p className={styles['mode-switching-paragraph']}>
           {isSignUpMode ? "Already have an account?" : "Don't have an account yet?"}
           <button 
             type="button" 
@@ -334,7 +338,7 @@ function LogInContentComponent() {
               setAlertError("");
               setAlertSuccess("");
             }}
-            className={styles["toggleMode-button"]}
+            className={styles['toggle-mode-button']}
           >
             {isSignUpMode ? "Sign In" : "Sign Up"}
           </button>

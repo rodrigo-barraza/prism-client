@@ -1,9 +1,33 @@
-import NextAuth, { type DefaultSession } from "next-auth";
+// ============================================================
+// Prism — Auth.js (next-auth v5) Configuration
+// ============================================================
+// Prism needs a login, on the LAN too. Everything fails CLOSED:
+//
+//   • Only emails in PRISM_ALLOWED_EMAILS may sign in, with Google or
+//     with an accounts-service password alike. An empty list admits NO ONE.
+//   • The allowlist is re-checked on every request (`authorized`, run by
+//     proxy.ts), so removing an email locks that user out without waiting
+//     for their session to expire.
+//   • A signed-in user's calls to prism-service carry a short-lived token
+//     this app signs (GET /api/prism-token); its subject is the Prism
+//     username PRISM_USERS maps the email to.
+//
+// Server-only env vars (resolved from Vault):
+//   AUTH_SECRET          — Auth.js session encryption key
+//   AUTH_GOOGLE_ID/…_SECRET — Google OAuth2 client
+//   PRISM_ALLOWED_EMAILS — comma-separated emails allowed in
+//   PRISM_USERS          — `email=username` pairs, comma-separated
+// ============================================================
+
+import NextAuth, { type DefaultSession, type NextAuthConfig } from "next-auth";
 import "next-auth/jwt";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { ACCOUNTS_SERVICE_URL, AUTH_ALLOWED_EMAILS as ALLOWED_EMAILS, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET } from "./config";
+import { ACCOUNTS_SERVICE_URL, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET } from "./config";
 import { fetchAccountRoles } from "./services/accountRoles";
+import { SIGN_IN_PAGE } from "./constants";
+import { isEmailAllowed, parseAllowlist, parsePrismUsers } from "./lib/access";
+import { gateRequest } from "./lib/gate";
 
 declare module "next-auth" {
   // eslint-disable-next-line no-unused-vars -- module augmentation via declaration merging
@@ -26,9 +50,11 @@ declare module "next-auth/jwt" {
   }
 }
 
-export const AUTH_ENABLED = true;
+export const ALLOWED_EMAILS = parseAllowlist(process.env.PRISM_ALLOWED_EMAILS);
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const PRISM_USERS = parsePrismUsers(process.env.PRISM_USERS);
+
+export const authConfig: NextAuthConfig = {
   providers: [
     ...(AUTH_GOOGLE_ID && AUTH_GOOGLE_SECRET
       ? [
@@ -80,20 +106,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   trustHost: true,
   pages: {
-    signIn: "/login",
+    signIn: SIGN_IN_PAGE,
+    // A refused sign-in (?error=AccessDenied) lands on the sign-in page,
+    // which says why.
+    error: SIGN_IN_PAGE,
   },
 
   callbacks: {
-    signIn({ user, account }) {
-      if (!AUTH_ENABLED) return true;
-      if (account?.provider === "google") {
-        if (ALLOWED_EMAILS.length === 0) return true;
-        const userEmailAddress = user.email?.toLowerCase();
-        return userEmailAddress
-          ? ALLOWED_EMAILS.includes(userEmailAddress)
-          : false;
-      }
-      return true;
+    // Every provider: Google, and the accounts-service password.
+    signIn({ user }) {
+      return isEmailAllowed(user.email, ALLOWED_EMAILS);
     },
 
     async jwt({ token, user }) {
@@ -119,8 +141,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
 
-    authorized() {
-      return true;
+    // proxy.ts's gate: the sign-in page and public files pass; everything
+    // else needs a session whose email is on the allowlist.
+    authorized({ request, auth }) {
+      return gateRequest(request, auth, ALLOWED_EMAILS);
     },
   },
-});
+};
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);

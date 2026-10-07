@@ -30,6 +30,15 @@ added two SSE scenarios, "done, then no poll" and "a /rule picked from the
 composer's slash menu", both red on master, and made the row-render test
 assert 0 old rows per token.
 
+**Re-cut 2026-10-06 by `prism-login-guard`** (Prism needs a login). One line
+changed: the live viewer's `socketUrl` carries the user's token
+(`access_token=test-prism-token`) in place of `username=anonymous`. The tests
+run as a signed-in user — `tests/setup.ts` stubs the token manager — and the
+socket now opens once the token is in hand, a microtask later. The change
+stream is read with fetch now (`PrismEventSource`), so the harness answers
+`GET /admin/changes/stream` (refused: it stays closed, as the old inert fake
+`EventSource` did) instead of installing a fake `EventSource`.
+
 ```bash
 WT=<your worktree>
 "$WT"/node_modules/.bin/vitest run --root "$WT" src/components/__tests__/chat-characterization/

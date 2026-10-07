@@ -12,10 +12,13 @@
  *     reports the result in a follow-up notification; a click on the body
  *     focuses a window already on the conversation, or opens one.
  *
- * Notification actions are exactly as trusted as this browser profile.
+ * A decision is the signed-in user's: the worker asks this app for the
+ * user's Prism token (/api/prism-token, on the session cookie it shares
+ * with the page) and posts with it. Signed out, the action is refused.
  */
 
 const API_BASE = (new URL(self.location.href).searchParams.get("api") || "").replace(/\/+$/, "");
+const TOKEN_ROUTE = "/api/prism-token";
 
 const APPROVE_ACTION = "approve";
 const DENY_ACTION = "deny";
@@ -87,17 +90,31 @@ async function handlePush(event) {
   });
 }
 
+/** The signed-in user's Prism token, fresh for this one request. */
+async function prismToken() {
+  const response = await fetch(TOKEN_ROUTE, { credentials: "same-origin", cache: "no-store" });
+  if (response.status === 401 || response.status === 403) {
+    throw new Error("Sign in to Prism to answer from a notification.");
+  }
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || !body.token) {
+    throw new Error(body.error || `Prism could not sign the decision (${response.status}).`);
+  }
+  return body.token;
+}
+
 /** Post the decision for the one pending call, then say how it went. */
 async function decide(payload, action) {
   const isAllow = action === APPROVE_ACTION;
   const identity = payload.identity || {};
   let failure = null;
   try {
+    const token = await prismToken();
     const response = await fetch(`${API_BASE}/agent/approve`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(identity.username ? { "x-username": identity.username } : {}),
+        Authorization: `Bearer ${token}`,
         ...(identity.project ? { "x-project": identity.project } : {}),
         ...(identity.profileId ? { "x-profile-id": identity.profileId } : {}),
       },

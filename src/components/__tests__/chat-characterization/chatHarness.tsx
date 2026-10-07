@@ -336,18 +336,6 @@ export class FakeWebSocket {
   }
 }
 
-class FakeEventSource {
-  static instances: FakeEventSource[] = [];
-  readonly url: string;
-  onmessage: ((_event: MessageEvent) => void) | null = null;
-  onerror: ((_event: Event) => void) | null = null;
-  constructor(url: string) {
-    this.url = url;
-    FakeEventSource.instances.push(this);
-  }
-  close(): void {}
-}
-
 // ---------------------------------------------------------------------------
 // jsdom gaps the chat needs
 // ---------------------------------------------------------------------------
@@ -395,7 +383,6 @@ function installDomPolyfills(): () => void {
   // SoundService's chimes: an inert Web Audio graph.
   define(window, "AudioContext", InertAudioContext);
   define(globalThis, "WebSocket", FakeWebSocket);
-  define(globalThis, "EventSource", FakeEventSource);
   return () => {
     for (const restore of restorers.reverse()) restore();
   };
@@ -464,7 +451,10 @@ function registerDefaultRoutes(network: FakeNetwork, persisted: Map<string, unkn
     .on("POST", /^\/api\/tools\/agentic\/datastore\/query$/, () => ({ rows: [], total: 0 }))
     .on("POST", /^\/agent\/input$/, () => ({ inputId: "input-1", position: 1 }))
     .on("POST", /^\/agent\/approve$/, () => ({ ok: true }))
-    .on("POST", /^\/agent\/(stop|question|answer)/, () => ({ ok: true }));
+    .on("POST", /^\/agent\/(stop|question|answer)/, () => ({ ok: true }))
+    // The change stream (SSEManager): refused, so it stays closed — the
+    // scenarios replay their turns through the SSE and the socket.
+    .on("GET", /^\/admin\/changes\/stream$/, () => respond(503, { error: "No change streams here" }));
 }
 
 // ---------------------------------------------------------------------------
@@ -525,7 +515,6 @@ export async function mountChat(
   clock.install();
   const restorePolyfills = installDomPolyfills();
   FakeWebSocket.instances = [];
-  FakeEventSource.instances = [];
   resetAllCursors();
   vi.stubGlobal("fetch", network.fetch);
   for (const method of ["debug", "info", "log"] as const) {

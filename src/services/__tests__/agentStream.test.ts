@@ -4,7 +4,8 @@
  *   - the SSE the chat drives: the request, the event cursor it advances,
  *     Stop, and the ways it can end;
  *   - the viewer socket: `afterSeq` on every (re)subscribe, replay
- *     de-duplication, a truncated replay, a service restart;
+ *     de-duplication, a truncated replay, a service restart — and the
+ *     user's token on its URL, a fresh one for every reconnect;
  *   - following a turn after its SSE dropped, until it ends.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -15,6 +16,18 @@ vi.mock("@/config", async (importOriginal) => ({
   PRISM_WEBSOCKET_URL: "ws://prism.test",
 }));
 
+/** The token in hand, and the one a renewal (a reconnect) brings. */
+const tokens = vi.hoisted(() => ({
+  request: vi.fn(async () => "token-in-hand"),
+  renew: vi.fn(async () => "token-renewed"),
+}));
+vi.mock("../prismTokenManager", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../prismTokenManager")>()),
+  currentPrismToken: () => "token-in-hand",
+  requestPrismToken: tokens.request,
+  renewPrismToken: tokens.renew,
+}));
+
 import {
   followTurn,
   openTurnStream,
@@ -23,10 +36,12 @@ import {
   type AgentStream,
   type AgentStreamItem,
 } from "../agentStream";
+import { PROJECT_NAME } from "../../config";
 import { cursorFor, resetAllCursors } from "../../utils/liveTurnCursor";
 
 class FakeWebSocket {
   static instances: FakeWebSocket[] = [];
+  readonly url: string;
   readyState = 0;
   sent: Array<Record<string, unknown>> = [];
   onopen: (() => void) | null = null;
@@ -34,7 +49,8 @@ class FakeWebSocket {
   onerror: ((_event: unknown) => void) | null = null;
   onclose: (() => void) | null = null;
   private listeners = new Map<string, Set<() => void>>();
-  constructor(_url: string) {
+  constructor(url: string) {
+    this.url = url;
     FakeWebSocket.instances.push(this);
   }
   addEventListener(type: string, listener: () => void) {
@@ -85,6 +101,12 @@ async function flush() {
   for (let round = 0; round < 10; round += 1) await Promise.resolve();
 }
 
+/**
+ * A socket attempt opens once the user's token is in hand (agentStream's
+ * authorizedSocketUrl) — with the stubbed token manager, a few microtasks.
+ */
+const tokenInHand = flush;
+
 const eventsOf = (items: AgentStreamItem[]) =>
   items.flatMap((item) => (item.kind === "event" ? [item.event] : []));
 const chunksOf = (items: AgentStreamItem[]) =>
@@ -108,6 +130,7 @@ describe("agentStream — the viewer socket", () => {
   it("subscribes without afterSeq, then resubscribes after the last accepted seq", async () => {
     const stream = watchConversation("conv-1");
     const { items } = collect(stream);
+    await tokenInHand();
     latest().open();
     expect(latest().subscriptions()).toEqual([{ type: "subscribe", conversationId: "conv-1" }]);
     latest().receive({ type: "subscribed", lastSeq: BASE + 2, replayedCount: 2, droppedCount: 0 });
@@ -116,6 +139,7 @@ describe("agentStream — the viewer socket", () => {
 
     latest().drop();
     vi.advanceTimersByTime(15_000);
+    await tokenInHand();
     expect(FakeWebSocket.instances).toHaveLength(2);
     latest().open();
     expect(latest().subscriptions()).toEqual([
@@ -134,6 +158,7 @@ describe("agentStream — the viewer socket", () => {
     cursorFor("conv-2").accept({ seq: BASE + 10 });
     const stream = watchConversation("conv-2");
     const { items } = collect(stream);
+    await tokenInHand();
     latest().open();
     expect(latest().subscriptions()[0].afterSeq).toBe(BASE + 10);
     // The ack comes first; its lastSeq is the NEWEST seq, and every replayed frame is ≤ it.
@@ -158,6 +183,7 @@ describe("agentStream — the viewer socket", () => {
   it("says when the service had to truncate the replay", async () => {
     const stream = watchConversation("conv-3");
     const { items } = collect(stream);
+    await tokenInHand();
     latest().open();
     latest().receive({ type: "subscribed", lastSeq: BASE + 90, replayedCount: 50, droppedCount: 7 });
     await vi.waitFor(() => expect(items.some((item) => item.kind === "subscribed")).toBe(true));
@@ -169,12 +195,14 @@ describe("agentStream — the viewer socket", () => {
   it("reports the turn lost when a resubscribe finds the service restarted", async () => {
     const stream = watchConversation("conv-4");
     const { items } = collect(stream);
+    await tokenInHand();
     latest().open();
     // The first subscribe to an idle conversation loses nothing.
     latest().receive({ type: "subscribed", lastSeq: 0, replayedCount: 0, droppedCount: 0 });
     latest().receive({ type: "chunk", content: "partial", seq: BASE + 1 });
     latest().drop();
     vi.advanceTimersByTime(15_000);
+    await tokenInHand();
     latest().open();
     latest().receive({ type: "subscribed", lastSeq: 0, replayedCount: 0, droppedCount: 0 });
     await vi.waitFor(() => expect(items.at(-1)?.kind).toBe("turn-lost"));
@@ -187,12 +215,14 @@ describe("agentStream — the viewer socket", () => {
     // end gets nothing replayed, while the counter moved past its mark.
     const stream = watchConversation("conv-8");
     const { items } = collect(stream);
+    await tokenInHand();
     latest().open();
     latest().receive({ type: "subscribed", lastSeq: BASE + 2, replayedCount: 2, droppedCount: 0 });
     latest().receive({ type: "chunk", content: "a", seq: BASE + 1 });
     latest().receive({ type: "chunk", content: "b", seq: BASE + 2 });
     latest().drop();
     vi.advanceTimersByTime(15_000);
+    await tokenInHand();
     latest().open();
     expect(latest().subscriptions()).toEqual([{ type: "subscribe", conversationId: "conv-8", afterSeq: BASE + 2 }]);
     latest().receive({ type: "subscribed", lastSeq: BASE + 5, replayedCount: 0, droppedCount: 0 });
@@ -204,11 +234,13 @@ describe("agentStream — the viewer socket", () => {
     // A long tool call: the turn runs on, and nothing was stamped meanwhile.
     const stream = watchConversation("conv-9");
     const { items } = collect(stream);
+    await tokenInHand();
     latest().open();
     latest().receive({ type: "subscribed", lastSeq: BASE + 1, replayedCount: 1, droppedCount: 0 });
     latest().receive({ type: "chunk", content: "a", seq: BASE + 1 });
     latest().drop();
     vi.advanceTimersByTime(15_000);
+    await tokenInHand();
     latest().open();
     latest().receive({ type: "subscribed", lastSeq: BASE + 1, replayedCount: 0, droppedCount: 0 });
     await vi.waitFor(() => expect(items.filter((item) => item.kind === "subscribed")).toHaveLength(2));
@@ -220,6 +252,7 @@ describe("agentStream — the viewer socket", () => {
   it("normalizes socket events the way the SSE's are", async () => {
     const stream = watchConversation("conv-5");
     const { items } = collect(stream);
+    await tokenInHand();
     latest().open();
     latest().receive({
       type: "tool_execution",
@@ -235,6 +268,7 @@ describe("agentStream — the viewer socket", () => {
   it("ends the iteration and closes the socket on close()", async () => {
     const stream = watchConversation("conv-6");
     const { items, finished } = collect(stream);
+    await tokenInHand();
     latest().open();
     stream.close();
     await finished;
@@ -244,15 +278,17 @@ describe("agentStream — the viewer socket", () => {
     expect(chunksOf(items)).toEqual([]);
   });
 
-  it("keeps reporting page visibility on a reconnected socket, and stops once closed", () => {
+  it("keeps reporting page visibility on a reconnected socket, and stops once closed", async () => {
     const visibilityFrames = (socket: FakeWebSocket) =>
       socket.sent.filter((frame) => frame.type === "visibility");
     const visible = { type: "visibility", hidden: false };
     const stream = watchConversation("conv-7");
+    await tokenInHand();
     const first = latest();
     first.open();
     first.drop();
     vi.advanceTimersByTime(15_000);
+    await tokenInHand();
     const second = latest();
     second.open();
 
@@ -265,6 +301,69 @@ describe("agentStream — the viewer socket", () => {
     second.readyState = 1; // a stray open socket must not report after close
     document.dispatchEvent(new Event("visibilitychange"));
     expect(visibilityFrames(second)).toHaveLength(2);
+  });
+});
+
+describe("agentStream — the socket's credential", () => {
+  const originalWebSocket = globalThis.WebSocket;
+
+  beforeEach(() => {
+    FakeWebSocket.instances = [];
+    resetAllCursors();
+    tokens.request.mockClear();
+    tokens.renew.mockClear();
+    (globalThis as { WebSocket: unknown }).WebSocket = FakeWebSocket;
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    (globalThis as { WebSocket: unknown }).WebSocket = originalWebSocket;
+  });
+
+  it("opens /ws/chat with the user's token as access_token, and claims no username", async () => {
+    const stream = watchConversation("conv-token");
+    collect(stream);
+    await tokenInHand();
+    const socketUrl = new URL(latest().url);
+    expect(`${socketUrl.origin}${socketUrl.pathname}`).toBe("ws://prism.test/ws/chat");
+    expect(Object.fromEntries(socketUrl.searchParams)).toEqual({
+      project: PROJECT_NAME,
+      access_token: "token-in-hand",
+    });
+    expect(tokens.renew).not.toHaveBeenCalled();
+    stream.close();
+  });
+
+  it("asks for a fresh token before every reconnect", async () => {
+    const stream = watchConversation("conv-token");
+    collect(stream);
+    await tokenInHand();
+    latest().open();
+    latest().drop();
+    vi.advanceTimersByTime(15_000);
+    await tokenInHand();
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    expect(new URL(latest().url).searchParams.get("access_token")).toBe("token-renewed");
+    expect(tokens.renew).toHaveBeenCalledTimes(1);
+    stream.close();
+  });
+
+  it("counts an attempt without a token as a failed one: it backs off and tries again", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    tokens.request.mockRejectedValueOnce(new Error("token route down"));
+    const stream = watchConversation("conv-token");
+    const { items } = collect(stream);
+    await tokenInHand();
+    expect(FakeWebSocket.instances).toHaveLength(0);
+    await vi.waitFor(() =>
+      expect(items.some((item) => item.kind === "connection" && item.state === "reconnecting")).toBe(true),
+    );
+    vi.advanceTimersByTime(15_000);
+    await tokenInHand();
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    expect(new URL(latest().url).searchParams.get("access_token")).toBe("token-renewed");
+    stream.close();
   });
 });
 
@@ -289,6 +388,7 @@ describe("agentStream — following a turn after its SSE dropped", () => {
     const isTurnRunning = vi.fn(async () => true);
     const recovery = followTurn("conv-2", { isTurnRunning, timeoutMilliseconds: 60_000 });
     const { items, finished } = collect(recovery);
+    await tokenInHand();
     latest().open();
     expect(latest().subscriptions()[0]).toEqual({ type: "subscribe", conversationId: "conv-2", afterSeq: BASE + 2 });
     latest().receive({ type: "subscribed", lastSeq: BASE + 4, replayedCount: 3, droppedCount: 0 });
@@ -309,9 +409,11 @@ describe("agentStream — following a turn after its SSE dropped", () => {
     cursorFor("conv-3").accept({ seq: BASE + 9 });
     const recovery = followTurn("conv-3", { isTurnRunning: async () => true, timeoutMilliseconds: 60_000 });
     collect(recovery);
+    await tokenInHand();
     // The first attempt fails while the service is down.
     latest().drop();
     vi.advanceTimersByTime(15_000);
+    await tokenInHand();
     latest().open();
     latest().receive({ type: "subscribed", lastSeq: 0, replayedCount: 0, droppedCount: 0 });
     await expect(recovery.outcome).resolves.toBe("ended");
@@ -322,6 +424,7 @@ describe("agentStream — following a turn after its SSE dropped", () => {
     const isTurnRunning = vi.fn(async () => false);
     const recovery = followTurn("conv-4", { isTurnRunning, timeoutMilliseconds: 60_000 });
     collect(recovery);
+    await tokenInHand();
     latest().open();
     latest().receive({ type: "subscribed", lastSeq: BASE + 3, replayedCount: 0, droppedCount: 0 });
     await expect(recovery.outcome).resolves.toBe("ended");
@@ -331,6 +434,7 @@ describe("agentStream — following a turn after its SSE dropped", () => {
   it("gives up after its timeout", async () => {
     const recovery = followTurn("conv-5", { isTurnRunning: async () => true, timeoutMilliseconds: 1_000 });
     collect(recovery);
+    await tokenInHand();
     vi.advanceTimersByTime(1_000);
     await expect(recovery.outcome).resolves.toBe("timeout");
   });
@@ -338,6 +442,7 @@ describe("agentStream — following a turn after its SSE dropped", () => {
   it("ends with the socket's closed state for the connection badge", async () => {
     const recovery = followTurn("conv-6", { isTurnRunning: async () => true, timeoutMilliseconds: 60_000 });
     const { items, finished } = collect(recovery);
+    await tokenInHand();
     latest().open();
     latest().receive({ type: "subscribed", lastSeq: BASE + 1, replayedCount: 1, droppedCount: 0 });
     latest().receive({ type: "done", seq: BASE + 1 });
@@ -352,15 +457,18 @@ describe("agentStream — the SSE the chat drives", () => {
   const sse = (event: Record<string, unknown>) => encoder.encode(`data: ${JSON.stringify(event)}\n\n`);
   let fetchSpy: ReturnType<typeof vi.spyOn>;
   let requests: Array<{ url: string; body: unknown }>;
+  let requestHeaders: Array<Record<string, string>>;
   let respondWith: (_signal: AbortSignal) => unknown;
 
   beforeEach(() => {
     resetAllCursors();
     requests = [];
+    requestHeaders = [];
     vi.spyOn(console, "debug").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
     fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
       requests.push({ url: String(url), body: JSON.parse(String((init as RequestInit).body)) });
+      requestHeaders.push((init as RequestInit).headers as Record<string, string>);
       return respondWith((init as RequestInit).signal!) as Response;
     });
   });
@@ -398,6 +506,13 @@ describe("agentStream — the SSE the chat drives", () => {
     expect(eventsOf(items).map((event) => event.type)).toEqual(["chunk", "done"]);
     // A later viewer socket for the conversation resumes after the SSE.
     expect(cursorFor("conv-9").afterSeq()).toBe(BASE + 2);
+  });
+
+  it("sends the user's token, never a username", async () => {
+    respondWith = () => body([sse({ type: "done" })]);
+    await collect(openTurnStream("/agent", { conversationId: "conv-14" })).finished;
+    expect(requestHeaders[0]).toMatchObject({ Authorization: "Bearer token-in-hand" });
+    expect(Object.keys(requestHeaders[0]).map((name) => name.toLowerCase())).not.toContain("x-username");
   });
 
   it("posts a direct chat to /chat, which keeps no cursor", async () => {

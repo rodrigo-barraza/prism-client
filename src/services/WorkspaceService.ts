@@ -1,5 +1,6 @@
 import { PRISM_SERVICE_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
+import { prismFetch } from "./prismFetch";
 
 const API_BASE = PRISM_SERVICE_URL;
 
@@ -68,7 +69,7 @@ export interface WorkspaceTreeResponse {
  */
 export default class WorkspaceService {
   static async list(): Promise<WorkspaceItem[]> {
-    const response = await fetch(`${API_BASE}/workspaces`, {
+    const response = await prismFetch(`${API_BASE}/workspaces`, {
       method: "GET",
       headers: getBaseHeaders(),
       cache: "no-store",
@@ -83,7 +84,7 @@ export default class WorkspaceService {
    * Used by the Settings page for the richer workspace management UI.
    */
   static async listFull(): Promise<WorkspaceFullResponse> {
-    const response = await fetch(`${API_BASE}/workspaces/full`, {
+    const response = await prismFetch(`${API_BASE}/workspaces/full`, {
       method: "GET",
       headers: getBaseHeaders(),
       cache: "no-store",
@@ -97,7 +98,7 @@ export default class WorkspaceService {
    * Update user-configured workspace roots.
    */
   static async update(roots: string[]): Promise<WorkspaceUpdateResponse> {
-    const response = await fetch(`${API_BASE}/workspaces`, {
+    const response = await prismFetch(`${API_BASE}/workspaces`, {
       method: "PUT",
       headers: { ...getBaseHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({ roots }),
@@ -111,7 +112,7 @@ export default class WorkspaceService {
    * Validate a single workspace path without persisting.
    */
   static async validate(path: string): Promise<WorkspaceValidateResponse> {
-    const response = await fetch(`${API_BASE}/workspaces/validate`, {
+    const response = await prismFetch(`${API_BASE}/workspaces/validate`, {
       method: "POST",
       headers: { ...getBaseHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify({ path }),
@@ -130,7 +131,7 @@ export default class WorkspaceService {
   ): Promise<WorkspaceTreeResponse> {
     const searchParameters = new URLSearchParams({ path });
     if (maxDepth !== 3) searchParameters.set("maxDepth", String(maxDepth));
-    const response = await fetch(`${API_BASE}/workspaces/tree?${searchParameters}`, {
+    const response = await prismFetch(`${API_BASE}/workspaces/tree?${searchParameters}`, {
       method: "GET",
       headers: getBaseHeaders(),
       cache: "no-store",
@@ -145,7 +146,7 @@ export default class WorkspaceService {
    * Sends a server-initiated kick so the agent does not auto-reconnect.
    */
   static async disconnectAgent(agentId: string): Promise<{ disconnected: boolean; agentId: string }> {
-    const response = await fetch(`${API_BASE}/workspaces/agents/${agentId}`, {
+    const response = await prismFetch(`${API_BASE}/workspaces/agents/${agentId}`, {
       method: "DELETE",
       headers: getBaseHeaders(),
     });

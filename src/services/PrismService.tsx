@@ -1,6 +1,7 @@
 import { EVENT_NAME_PRISM_SETTINGS_UPDATED, HTTP_METHODS } from "@/constants";
 import { PRISM_SERVICE_URL, MINIO_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
+import { prismFetch } from "./prismFetch";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { getErrorMessage } from "../utils/errorMessage";
 import { sourceModelOf, type StreamProtocol } from "./protocolEvents";
@@ -83,6 +84,9 @@ import type {
 
 const API_BASE = PRISM_SERVICE_URL;
 
+/** Same-origin: app/api/prism/workspaces/download/[artifact]/route.ts. */
+const WORKSPACE_DOWNLOADS_ROUTE = "/api/prism/workspaces/download";
+
 function getHeaders() {
   return getBaseHeaders();
 }
@@ -113,7 +117,7 @@ export default class PrismService {
     endpoint: string,
     { method = HTTP_METHODS.POST, body }: { method?: string; body?: unknown } = {},
   ): Promise<T> {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await prismFetch(`${API_BASE}${endpoint}`, {
       method,
       headers: getHeaders(),
       cache: "no-store",
@@ -1147,16 +1151,19 @@ export default class PrismService {
     });
   }
 
+  // The download buttons are plain links, and a navigation cannot carry the
+  // user's token: this app's own route fetches the file for the signed-in
+  // user (app/api/prism/workspaces/download/[artifact]).
   static getWorkspaceAgentDownloadUrl(): string {
-    return `${API_BASE}/workspaces/download/agent`;
+    return `${WORKSPACE_DOWNLOADS_ROUTE}/agent`;
   }
 
   static getWorkspaceAgentPlatformDownloadUrl(platform: string): string {
-    return `${API_BASE}/workspaces/download/agent?platform=${encodeURIComponent(platform)}`;
+    return `${WORKSPACE_DOWNLOADS_ROUTE}/agent?platform=${encodeURIComponent(platform)}`;
   }
 
   static getWorkspaceAgentTrayAppDownloadUrl(platform: string): string {
-    return `${API_BASE}/workspaces/download/tray-app?platform=${encodeURIComponent(platform)}`;
+    return `${WORKSPACE_DOWNLOADS_ROUTE}/tray-app?platform=${encodeURIComponent(platform)}`;
   }
 
   // ---------------------------------------------------------------------------
@@ -1670,7 +1677,7 @@ export default class PrismService {
     text: string,
     images?: string[],
   ): Promise<TurnInputResponse> {
-    const response = await fetch(`${API_BASE}/agent/input`, {
+    const response = await prismFetch(`${API_BASE}/agent/input`, {
       method: HTTP_METHODS.POST,
       headers: getHeaders(),
       cache: "no-store",
@@ -2153,7 +2160,7 @@ export default class PrismService {
 
    */
   static async generateSpeech(payload: TTSPayload): Promise<TTSResponse> {
-    const response = await fetch(`${API_BASE}/text-to-audio?format=dataUrl`, {
+    const response = await prismFetch(`${API_BASE}/text-to-audio?format=dataUrl`, {
       method: HTTP_METHODS.POST,
       headers: getHeaders(),
       body: JSON.stringify(payload),
@@ -2506,7 +2513,7 @@ export default class PrismService {
       try {
         if (onProgress) onProgress(0);
 
-        const response = await fetch(`${API_BASE}/lm-studio/load`, {
+        const response = await prismFetch(`${API_BASE}/lm-studio/load`, {
           method: HTTP_METHODS.POST,
           headers: getHeaders(),
           body: JSON.stringify(body),

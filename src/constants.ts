@@ -91,7 +91,6 @@ export const LOCAL_STORAGE_KEY_ADMIN_CHAT_FILTERS = "prism:admin-chat-filters";
 export const LOCAL_STORAGE_KEY_WORKSPACE_ROOT = "prism:workspace";
 export const LOCAL_STORAGE_KEY_FILE_VIEWER_WIDTH = "prism:fileViewerWidth";
 export const LOCAL_STORAGE_KEY_LEFT_SIDEBAR_SPLIT_RATIO = "prism:leftSidebarSplitRatio";
-export const LOCAL_STORAGE_KEY_USERNAME = "prism:username";
 export const LOCAL_STORAGE_KEY_ACTIVE_PROFILE = "prism:profile";
 export const LOCAL_STORAGE_KEY_CHAT_BACKGROUND = "prism:chat-background";
 export const LOCAL_STORAGE_KEY_AGENT_MAX_ITERATIONS = "agent:maxIterations";
@@ -109,12 +108,21 @@ export const EVENT_NAME_PRISM_SETTINGS_UPDATED = "prism-settings-updated";
 export const EVENT_NAME_PANEL_DISMISS_SIDEBARS = "panel:dismiss-sidebars";
 export const EVENT_NAME_USER_TYPING = "user:typing";
 export const EVENT_NAME_PROFILE_SWITCH = "profile:switch";
+/** The session is gone (the token route answered 401/403): the app goes to /login. */
+export const EVENT_NAME_PRISM_SIGN_IN_REQUIRED = "prism:sign-in-required";
 
 // -- Profiles ------------------------------------------------------
 // x-profile-id is prism-local (not yet in the shared IDENTITY_HEADERS
 // taxonomy); prism-service allows it in CORS explicitly.
 export const HEADER_PROFILE_ID = "x-profile-id";
 export const DEFAULT_PROFILE_ID = "default";
+
+// -- Authentication ------------------------------------------------
+// prism-service knows the user only from this: `Bearer <token>`, the
+// signed-in user's Prism token (services/prismTokenManager.ts).
+export const HEADER_AUTHORIZATION = "Authorization";
+/** The sign-in page: the one page that needs no session (proxy.ts). */
+export const SIGN_IN_PAGE = "/login";
 
 // -- Roles & Categories -------------------------------------------
 

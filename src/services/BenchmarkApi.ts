@@ -10,6 +10,7 @@ import { HTTP_METHODS } from "@/constants";
 import { PRISM_SERVICE_URL } from "@/config";
 import PrismService from "./PrismService";
 import { getBaseHeaders } from "./serviceHeaders";
+import { prismFetch } from "./prismFetch";
 import type {
   ArenaReport,
   Battle,
@@ -221,7 +222,7 @@ const BenchmarkApi = {
 
   /** Follow a run's progress; resolves when the stream ends. */
   async followRun(id: string, onEvent: (event: RunStreamEvent) => void, signal?: AbortSignal): Promise<void> {
-    const response = await fetch(`${PRISM_SERVICE_URL}/benchmark/runs/${encodeURIComponent(id)}/events`, {
+    const response = await prismFetch(`${PRISM_SERVICE_URL}/benchmark/runs/${encodeURIComponent(id)}/events`, {
       headers: getBaseHeaders(),
       cache: "no-store",
       signal,
@@ -231,7 +232,7 @@ const BenchmarkApi = {
 
   /** Download a run export with the service headers (the project scopes it). */
   async downloadExport(id: string, format: "json" | "csv"): Promise<Blob> {
-    const response = await fetch(BenchmarkApi.exportUrl(id, format), { headers: getBaseHeaders(), cache: "no-store" });
+    const response = await prismFetch(BenchmarkApi.exportUrl(id, format), { headers: getBaseHeaders(), cache: "no-store" });
     if (!response.ok) throw new Error(`Export failed: ${response.status}`);
     return response.blob();
   },
@@ -253,7 +254,7 @@ const BenchmarkApi = {
     onEvent: (event: LiveBattleEvent) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    const response = await fetch(`${PRISM_SERVICE_URL}/benchmark/arena/live`, {
+    const response = await prismFetch(`${PRISM_SERVICE_URL}/benchmark/arena/live`, {
       method: HTTP_METHODS.POST,
       headers: getBaseHeaders(),
       body: JSON.stringify(body),

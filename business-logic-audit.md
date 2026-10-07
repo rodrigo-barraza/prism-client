@@ -87,7 +87,7 @@ The client repeatedly decides model capabilities from **provider strings** and *
 
 ## Low severity / cleanup
 
-- **Client self-elevates to admin:** `IrisService.getAdminHeaders` stamps `x-username: "admin"` on every admin call ([IrisService.ts:27-29](prism-client/src/services/IrisService.ts#L27-L29)). An access-control decision in the presentation layer (trivially spoofable) — a **security** note, not business logic to relocate. Should become real server-side auth.
+- ~~**Client self-elevates to admin:** `IrisService.getAdminHeaders` stamped `x-username: "admin"` on every admin call. An access-control decision in the presentation layer (trivially spoofable).~~ **Done 2026-10-06 (`prism-login-guard`):** the hack is gone; every call carries the signed-in user's token, and prism-service opens `/admin` to a token with the `admin` role (README, Authentication).
 - **Plan proposal re-parsed from prose:** [ChatConversationComponent.tsx:6182-6194](prism-client/src/components/ChatConversationComponent.tsx#L6182-L6194) reconstructs `planSteps` by regex-splitting rendered assistant text. `PlanningModeService` produces the plan; the structured steps should arrive as API data.
 - **Graph topology/sequence inference:** [useConversationGraphData.ts:143-291, 691-871](prism-client/src/hooks/useConversationGraphData.ts#L143-L291) re-reasons about topology/layout and infers next sequence/turn numbers, duplicating what the graph endpoint owns. The optimistic "pending" placeholder node is legitimately client-side; the surrounding layout math is the concern.
 - **Coordinator sub-agent field normalization:** `PrismService.tsx:1031-1047` renames server fields and applies a `toolCallCount ?? toolUses` canonical-count fallback — finalize server-side.
