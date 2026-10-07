@@ -75,6 +75,24 @@ function notificationClick(action: string, data: Record<string, unknown>) {
   return { action, notification: { data, close: vi.fn() } };
 }
 
+const USER_TOKEN = "header.payload.signature";
+
+/**
+ * The worker's network: the app's token route (on the session cookie the
+ * worker shares with the page), then prism-service's answer to the POST.
+ */
+function signedInFetch(approveResponse: () => Promise<Response>) {
+  return vi.fn((url: string) =>
+    url === "/api/prism-token"
+      ? Promise.resolve(
+          new Response(JSON.stringify({ token: USER_TOKEN, expiresAt: 0, username: "rodrigo", roles: [] }), {
+            status: 200,
+          }),
+        )
+      : approveResponse(),
+  );
+}
+
 describe("sw.js — push", () => {
   it("shows the notification with Approve / Deny for a single-call approval", async () => {
     const worker = loadWorker();
@@ -138,22 +156,27 @@ describe("sw.js — push", () => {
 });
 
 describe("sw.js — notificationclick", () => {
-  it("Approve posts the call's decision to /agent/approve with the owner's identity, then reports it", async () => {
-    const fetchImplementation = vi
-      .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 }));
+  it("Approve posts the call's decision to /agent/approve as the signed-in user, then reports it", async () => {
+    const fetchImplementation = signedInFetch(async () =>
+      new Response(JSON.stringify({ ok: true }), { status: 200 }),
+    );
     const worker = loadWorker({ fetchImplementation });
     const click = notificationClick("approve", SINGLE_APPROVAL);
     await worker.dispatch("notificationclick", click);
 
     expect(click.notification.close).toHaveBeenCalled();
-    expect(fetchImplementation).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchImplementation.mock.calls[0];
+    expect(fetchImplementation).toHaveBeenCalledTimes(2);
+    expect(fetchImplementation.mock.calls[0]).toEqual([
+      "/api/prism-token",
+      { credentials: "same-origin", cache: "no-store" },
+    ]);
+    const [url, init] = fetchImplementation.mock.calls[1] as unknown as [string, RequestInit & { body: string }];
     expect(url).toBe("https://api.prism.test/agent/approve");
     expect(init.method).toBe("POST");
+    // Who decides is the token's; the push payload's username is not claimed.
     expect(init.headers).toEqual({
       "Content-Type": "application/json",
-      "x-username": "rodrigo",
+      Authorization: `Bearer ${USER_TOKEN}`,
       "x-project": "prism-chat",
       "x-profile-id": "default",
     });
@@ -174,23 +197,35 @@ describe("sw.js — notificationclick", () => {
   });
 
   it("Deny posts decision deny / approved false, and a refused POST says so", async () => {
-    const fetchImplementation = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ error: "No pending approval for this conversation" }), {
-          status: 404,
-        }),
-      );
+    const fetchImplementation = signedInFetch(async () =>
+      new Response(JSON.stringify({ error: "No pending approval for this conversation" }), {
+        status: 404,
+      }),
+    );
     const worker = loadWorker({ fetchImplementation });
     await worker.dispatch("notificationclick", notificationClick("deny", SINGLE_APPROVAL));
 
-    expect(JSON.parse(fetchImplementation.mock.calls[0][1].body)).toMatchObject({
+    const [, init] = fetchImplementation.mock.calls[1] as unknown as [string, { body: string }];
+    expect(JSON.parse(init.body)).toMatchObject({
       decision: "deny",
       approved: false,
     });
     const [title, options] = worker.showNotification.mock.calls[0];
     expect(title).toBe("Approval not sent");
     expect(options.body).toBe("No pending approval for this conversation");
+  });
+
+  it("signed out, nothing is sent: the notification says to sign in", async () => {
+    const fetchImplementation = vi.fn(async () =>
+      new Response(JSON.stringify({ error: "Sign in to use Prism." }), { status: 401 }),
+    );
+    const worker = loadWorker({ fetchImplementation });
+    await worker.dispatch("notificationclick", notificationClick("approve", SINGLE_APPROVAL));
+
+    expect(fetchImplementation).toHaveBeenCalledTimes(1);
+    const [title, options] = worker.showNotification.mock.calls[0];
+    expect(title).toBe("Approval not sent");
+    expect(options.body).toBe("Sign in to Prism to answer from a notification.");
   });
 
   it("an unreachable service is reported, not thrown", async () => {

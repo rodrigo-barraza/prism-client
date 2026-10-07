@@ -16,9 +16,9 @@ const secrets = vault.fetchSync();
 // Inject into process.env so secrets.js can read them
 Object.assign(process.env, secrets);
 
-// Resolved tools-service URL for the rewrite proxy (server-side only).
-// Tools-service is internal (no public hostname) — the browser calls
-// /api/tools/* which Next.js rewrites to this destination.
+// Resolved tools-service URL (server-side). Tools-service is internal (no
+// public hostname) — the browser calls /api/tools/*, a signed-in route
+// handler (src/app/api/tools) that forwards here with the service secret.
 const TOOLS_SERVICE_URL =
   process.env.TOOLS_SERVICE_URL ||
   secrets.TOOLS_SERVICE_URL ||
@@ -87,20 +87,11 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_ACCOUNTS_SERVICE_URL: secrets.ACCOUNTS_SERVICE_URL,
     NEXT_PUBLIC_CUSTOM_MODEL_NAME: process.env.CUSTOM_MODEL_NAME || secrets.CUSTOM_MODEL_NAME || "",
   },
-
-  // ── Rewrite Proxy ──────────────────────────────────────────
-  // Tools-service is internal-only (no public hostname).
-  // Proxy /api/tools/* → tools-service so the browser never makes direct
-  // requests to LAN IPs. Prism-service does NOT need a rewrite — it has
-  // a public domain (PRISM_SERVICE_PUBLIC_URL from vault) for production.
-  async rewrites() {
-    return [
-      {
-        source: "/api/tools/:path*",
-        destination: `${TOOLS_SERVICE_URL}/:path*`,
-      },
-    ];
-  },
+  // Server-only secrets (AUTH_SECRET, PRISM_USER_TOKEN_SECRET,
+  // TOOLS_SERVICE_API_SECRET, PRISM_ALLOWED_EMAILS, PRISM_USERS) are read
+  // from process.env at runtime — boot.js loads them from the vault — and
+  // must never be listed above: these values are inlined into the bundles,
+  // the browser's included.
 };
 
 export default nextConfig;

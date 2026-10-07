@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { canAccessAdminSide } from "@/utils/adminAccess";
+import { hasAdminRole } from "@/utils/adminAccess";
 import AdminShell from "../../components/AdminShellComponent";
 import { ADMIN_DATE_RANGE_COOKIE, parseAdminDateRange } from "@/utils/adminDateRange";
 
@@ -16,18 +16,11 @@ export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   // Hiding the sidebar link is cosmetic — this is the actual gate for
-  // anyone navigating to /admin directly. Mirrors the middleware's trust
-  // model: private-network hosts bypass auth (no session exists there).
-  const [session, headerList, cookieStore] = await Promise.all([
-    auth(),
-    headers(),
-    cookies(),
-  ]);
-  const canAccessAdmin = canAccessAdminSide({
-    roles: session?.user?.roles,
-    host: headerList.get("host"),
-  });
-  if (!canAccessAdmin) {
+  // anyone navigating to /admin directly. Everyone here is signed in
+  // (proxy.ts); the Admin Side takes the admin role, as prism-service's
+  // /admin routes do.
+  const [session, cookieStore] = await Promise.all([auth(), cookies()]);
+  if (!hasAdminRole(session?.user?.roles)) {
     redirect("/");
   }
 

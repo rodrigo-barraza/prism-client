@@ -2,16 +2,12 @@ import type { Viewport } from "next";
 import { Inter, Noto_Color_Emoji, Noto_Emoji } from "next/font/google";
 import {
   ThemeProvider,
-  ComponentsProvider,
   CustomThemeBootComponent,
   generateThemeInitScript,
 } from "@rodrigo-barraza/components-library";
 import { SessionProvider } from "next-auth/react";
-import { ProfileProvider } from "../components/ProfileContextComponent";
-import { WorkspaceProvider } from "../components/WorkspaceContextComponent";
 import "./globals.css";
-import SessionTrackerComponent from "@/components/SessionTrackerComponent";
-import UserAvatarDropdownComponent from "@/components/UserAvatarDropdownComponent";
+import PrismSessionGateComponent from "@/components/PrismSessionGateComponent";
 import { LOCAL_STORAGE_KEY_PANEL_NAV } from "@/constants";
 
 // Force all pages to render dynamically — prevents SSG prerender
@@ -87,14 +83,9 @@ export default function RootLayout({
         <SessionProvider>
           <ThemeProvider storageKey="prism:theme" defaultTheme="light">
             <CustomThemeBootComponent storageKey="prism:custom-themes" />
-            <ProfileProvider>
-              <ComponentsProvider sound userMenu={<UserAvatarDropdownComponent />}>
-                <WorkspaceProvider>
-                  {children}
-                  <SessionTrackerComponent />
-                </WorkspaceProvider>
-              </ComponentsProvider>
-            </ProfileProvider>
+            {/* Profiles, workspaces and the page itself render once the
+                signed-in user's Prism token is in hand. */}
+            <PrismSessionGateComponent>{children}</PrismSessionGateComponent>
           </ThemeProvider>
         </SessionProvider>
       </body>

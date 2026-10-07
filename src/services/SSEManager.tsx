@@ -2,13 +2,14 @@
  * SSEManager — Singleton multiplexer for Server-Sent Events.
  *
  * Browsers enforce a ~6 connection limit per origin under HTTP/1.1.
- * EventSource connections are persistent and count against this limit.
- * Opening multiple EventSource instances to the same URL quickly exhausts
- * the budget, causing all subsequent fetch() calls to queue as "pending".
+ * Event streams are persistent and count against this limit. Opening
+ * multiple streams to the same URL quickly exhausts the budget, causing
+ * all subsequent fetch() calls to queue as "pending".
  *
- * This manager maintains ONE shared EventSource per unique URL and fans out
+ * This manager maintains ONE shared stream per unique URL and fans out
  * messages to all registered listeners. When the last listener unsubscribes,
- * the underlying connection is closed.
+ * the underlying connection is closed. Each stream is a PrismEventSource:
+ * an EventSource that carries the signed-in user's token.
  *
  * A stream's `{ type: "status" }` message (e.g. /admin/changes/stream saying
  * whether change streams exist) is sent once per connection, so it is kept
@@ -16,10 +17,12 @@
  * listener never learns it must fall back to polling.
  */
 
+import { PrismEventSource } from "./prismEventSource";
+
 type SSEListener = (_data: unknown) => void;
 
 interface PoolEntry {
-  eventSource: EventSource;
+  eventSource: PrismEventSource;
   listeners: Set<SSEListener>;
   lastStatus?: unknown;
 }
@@ -44,7 +47,7 @@ export function subscribe(
   let entry = pools.get(url);
 
   if (!entry) {
-    const eventSource = new EventSource(url);
+    const eventSource = new PrismEventSource(url);
 
     entry = { eventSource, listeners: new Set() };
     pools.set(url, entry);
@@ -68,7 +71,7 @@ export function subscribe(
     };
 
     eventSource.onerror = () => {
-      // EventSource auto-reconnects; nothing extra needed here.
+      // A dropped stream reconnects by itself; nothing extra needed here.
     };
   }
 

@@ -1,40 +1,44 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import SSEManager from "../SSEManager";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
-class MockEventSource {
-  static instancesList: MockEventSource[] = [];
+// Each pooled stream is a PrismEventSource (an EventSource that carries the
+// user's token; prismEventSource.test.ts covers it). The pool is what this
+// file is about.
+const { MockEventSource } = vi.hoisted(() => {
+  class MockEventSource {
+    static instancesList: MockEventSource[] = [];
 
-  url: string;
-  onmessage: ((_event: MessageEvent) => void) | null = null;
-  onerror: (() => void) | null = null;
-  close = vi.fn();
+    url: string;
+    onmessage: ((_event: MessageEvent) => void) | null = null;
+    onerror: (() => void) | null = null;
+    close = vi.fn();
 
-  constructor(url: string) {
-    this.url = url;
-    MockEventSource.instancesList.push(this);
-  }
+    constructor(url: string) {
+      this.url = url;
+      MockEventSource.instancesList.push(this);
+    }
 
-  static clearMockInstances(): void {
-    MockEventSource.instancesList = [];
-  }
+    static clearMockInstances(): void {
+      MockEventSource.instancesList = [];
+    }
 
-  simulateIncomingMessage(payload: unknown): void {
-    if (this.onmessage) {
-      this.onmessage({
-        data: JSON.stringify(payload),
-      } as MessageEvent);
+    simulateIncomingMessage(payload: unknown): void {
+      if (this.onmessage) {
+        this.onmessage({
+          data: JSON.stringify(payload),
+        } as MessageEvent);
+      }
     }
   }
-}
+  return { MockEventSource };
+});
+
+vi.mock("../prismEventSource", () => ({ PrismEventSource: MockEventSource }));
+
+import SSEManager from "../SSEManager";
 
 describe("SSEManager", () => {
   beforeEach(() => {
     MockEventSource.clearMockInstances();
-    vi.stubGlobal("EventSource", MockEventSource);
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
   });
 
   it("should create a single EventSource connection for a unique URL", () => {

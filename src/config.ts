@@ -17,12 +17,12 @@
 //   Production (*.rod.dev):
 //     • PRISM_SERVICE_URL  → PRISM_SERVICE_PUBLIC_URL from vault
 //     • PRISM_WEBSOCKET_URL  → PRISM_WEBSOCKET_PUBLIC_URL from vault
-//     • TOOLS_SERVICE_URL  → /api/tools — Next.js rewrite proxy (internal service)
+//     • TOOLS_SERVICE_URL  → /api/tools — this app's proxy route (internal service)
 //
 //   Local dev (localhost):
 //     • PRISM_SERVICE_URL  → vault value (LAN IP or localhost — same network)
 //     • PRISM_WEBSOCKET_URL  → vault value
-//     • TOOLS_SERVICE_URL  → /api/tools — Next.js rewrite proxy (avoids CORS)
+//     • TOOLS_SERVICE_URL  → /api/tools — this app's proxy route (avoids CORS)
 //
 //   Server-side (SSR):
 //     • All URLs use full values from vault (LAN IPs for Docker)
@@ -78,9 +78,9 @@ function resolveWebsocketUrl() {
 export const PRISM_WEBSOCKET_URL = resolveWebsocketUrl();
 
 // -- Tools Service URL ------------------------------------------
-// Browser (all environments): proxied through Next.js rewrites at
-// /api/tools → TOOLS_SERVICE_URL. Tools-service is internal-only
-// (no public hostname), so the browser must NEVER call it directly.
+// Browser (all environments): the signed-in proxy route at /api/tools
+// (app/api/tools/[...path]), which forwards to TOOLS_SERVICE_URL with the
+// service secret. The browser must NEVER call tools-service directly.
 // Server-side: vault value (LAN IP).
 export const TOOLS_SERVICE_URL = IS_BROWSER ? "/api/tools" : RAW_TOOLS_URL;
 
@@ -114,19 +114,9 @@ export const AUTH_GOOGLE_ID =
   process.env.AUTH_GOOGLE_ID ||
   "";
 
-export const AUTH_GOOGLE_SECRET =
-  process.env.NEXT_PUBLIC_AUTH_GOOGLE_SECRET ||
-  process.env.AUTH_GOOGLE_SECRET ||
-  "";
-
-export const AUTH_ALLOWED_EMAILS = (
-  process.env.NEXT_PUBLIC_AUTH_ALLOWED_EMAILS ||
-  process.env.AUTH_ALLOWED_EMAILS ||
-  ""
-)
-  .split(",")
-  .map((allowedEmailEntry) => allowedEmailEntry.trim().toLowerCase())
-  .filter(Boolean);
+// Server-only — deliberately no NEXT_PUBLIC_ fallback. Who may sign in
+// (PRISM_ALLOWED_EMAILS) and as whom (PRISM_USERS) are read in auth.ts.
+export const AUTH_GOOGLE_SECRET = process.env.AUTH_GOOGLE_SECRET || "";
 
 // Shared secret for accounts-service internal endpoints (roles lookup at
 // sign-in). Server-only — deliberately no NEXT_PUBLIC_ fallback.

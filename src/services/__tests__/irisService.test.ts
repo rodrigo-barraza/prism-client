@@ -17,6 +17,7 @@ import {
 } from "../../types/types";
 import { PRISM_SERVICE_URL } from "../../config";
 import { subscribe as mockSseSubscribe } from "../SSEManager";
+import { TEST_PRISM_TOKEN } from "../../../tests/prismTokenStub";
 
 vi.mock("../SSEManager", () => ({
   subscribe: vi.fn().mockReturnValue({
@@ -54,11 +55,24 @@ describe("IrisService", () => {
       `${PRISM_SERVICE_URL}/admin/requests?limit=20&model=gemini`,
       expect.objectContaining({
         headers: expect.objectContaining({
-          "x-username": "admin",
+          Authorization: `Bearer ${TEST_PRISM_TOKEN}`,
         }),
       }),
     );
     expect(result).toEqual(mockRequestResponse);
+  });
+
+  it("calls the admin routes as the signed-in user: its token, never a claimed username", async () => {
+    mockFetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ data: [], total: 0 }) });
+
+    await IrisService.getTraces();
+    await IrisService.getConfig();
+
+    for (const [, init] of mockFetch.mock.calls) {
+      const headers = (init as RequestInit).headers as Record<string, string>;
+      expect(headers.Authorization).toBe(`Bearer ${TEST_PRISM_TOKEN}`);
+      expect(Object.keys(headers).map((name) => name.toLowerCase())).not.toContain("x-username");
+    }
   });
 
   it("should fetch request entry by ID", async () => {
@@ -290,7 +304,7 @@ describe("IrisService", () => {
       `${PRISM_SERVICE_URL}/conversations/conv-1/workflows`,
       expect.objectContaining({
         headers: expect.objectContaining({
-          "x-username": "admin",
+          Authorization: `Bearer ${TEST_PRISM_TOKEN}`,
         }),
       }),
     );

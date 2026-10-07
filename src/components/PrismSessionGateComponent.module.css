@@ -1,0 +1,10 @@
+/* ============================================================
+   PrismSessionGate — the screen before the first Prism token
+   ============================================================ */
+
+.gate-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 100dvh;
+}

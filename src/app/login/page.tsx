@@ -13,6 +13,7 @@ import {
   Loader2 
 } from "lucide-react";
 import { ACCOUNTS_SERVICE_URL } from "../../config";
+import { sameSitePath } from "../../utils/sameSitePath";
 import styles from "./login.module.css";
 import PanelLoadingSpinner from "../../components/PanelLoadingSpinnerComponent";
 
@@ -21,7 +22,7 @@ function LogInContentComponent() {
   const searchParameters = useSearchParams();
   
   // Resolve redirect destination (defaults to workspace chat)
-  const callbackUrl = searchParameters?.get("callbackUrl") || "/chat";
+  const callbackUrl = sameSitePath(searchParameters?.get("callbackUrl"));
   const sessionError = searchParameters?.get("error");
 
   const [isSignUpMode, setIsSignUpMode] = useState(false);
@@ -115,6 +116,9 @@ function LogInContentComponent() {
           redirect: false,
         });
 
+        if (signInResult?.error === "AccessDenied") {
+          throw new Error("Access denied. Your email address is not in the allowed list.");
+        }
         if (signInResult?.error) {
           throw new Error("Invalid email or password");
         }

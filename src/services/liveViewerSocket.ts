@@ -7,6 +7,11 @@
  * only what was missed; replayed frames at or below the mark are dropped
  * here (liveTurnCursor semantics). With no WebSocket URL configured the
  * socket never opens and reports "unconfigured" — the chat shows a banner.
+ *
+ * `socketUrlFor` turns the URL into the one an attempt opens — the chat's
+ * puts the user's token on it, a fresh one for every reconnect (a browser
+ * cannot set an Authorization header on a WebSocket, nor see why an
+ * upgrade was refused).
  */
 
 import type { LiveTurnCursor, SubscribedAckSummary } from "../utils/liveTurnCursor";
@@ -70,6 +75,12 @@ type WebSocketLike = Pick<WebSocket, "send" | "close" | "readyState"> & {
 export interface LiveViewerSocketOptions {
   /** Full socket URL, or null/undefined when none is configured. */
   url: string | null | undefined;
+  /**
+   * The URL one connection attempt opens, from `url` — asked before every
+   * attempt (`isReconnect` after the first). A rejection counts as a failed
+   * attempt: backoff, then try again.
+   */
+  socketUrlFor?: (_url: string, _attempt: { isReconnect: boolean }) => Promise<string>;
   conversationId: string;
   cursor: LiveTurnCursor;
   /** Every accepted (not replay-duplicate) event, in order. */
@@ -90,6 +101,7 @@ const CLOSED_READY_STATES = new Set([2, 3]); // CLOSING, CLOSED
 
 export function openLiveViewerSocket({
   url,
+  socketUrlFor,
   conversationId,
   cursor,
   onEvent,
@@ -103,6 +115,7 @@ export function openLiveViewerSocket({
   let socket: WebSocketLike | null = null;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   let failedAttempts = 0;
+  let attempts = 0;
   let hasSubscribed = false;
   let isClosedByOwner = false;
 
@@ -125,9 +138,27 @@ export function openLiveViewerSocket({
 
   const connect = () => {
     if (isClosedByOwner || !url) return;
+    const isReconnect = attempts > 0;
+    attempts += 1;
+    if (!socketUrlFor) {
+      open(url);
+      return;
+    }
+    socketUrlFor(url, { isReconnect }).then(
+      (socketUrl) => {
+        if (!isClosedByOwner) open(socketUrl);
+      },
+      (urlError: unknown) => {
+        console.warn("[liveViewerSocket] no URL to connect with:", urlError);
+        scheduleReconnect();
+      },
+    );
+  };
+
+  const open = (socketUrl: string) => {
     let attemptSocket: WebSocketLike;
     try {
-      attemptSocket = createSocket(url);
+      attemptSocket = createSocket(socketUrl);
     } catch (connectionError: unknown) {
       console.warn("[liveViewerSocket] could not open a WebSocket:", connectionError);
       scheduleReconnect();

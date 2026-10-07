@@ -27,7 +27,9 @@ export default defineConfig({
     css: { modules: { classNameStrategy: "non-scoped" } },
     server: {
       deps: {
-        inline: [/@rodrigo-barraza\/components-library/],
+        // next-auth imports `next/server` without an extension, which only a
+        // bundler resolves: inlined, Vite resolves it (the gate's tests).
+        inline: [/@rodrigo-barraza\/components-library/, /next-auth/],
       },
     },
   },

@@ -8,6 +8,7 @@
 import { PRISM_SERVICE_URL } from "@/config";
 import { HTTP_METHODS } from "../constants";
 import { getBaseHeaders } from "./serviceHeaders";
+import { prismFetch } from "./prismFetch";
 import type { ForkLineage } from "../types/types";
 
 export type RewindRestore = "conversation" | "code" | "both";
@@ -66,7 +67,7 @@ function withProject(path: string, project?: string) {
 }
 
 async function post(path: string, body: unknown) {
-  const response = await fetch(`${PRISM_SERVICE_URL}${path}`, {
+  const response = await prismFetch(`${PRISM_SERVICE_URL}${path}`, {
     method: HTTP_METHODS.POST,
     headers: getBaseHeaders(),
     cache: "no-store",

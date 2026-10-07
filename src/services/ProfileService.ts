@@ -1,5 +1,6 @@
 import { PRISM_SERVICE_URL } from "@/config";
 import { getBaseHeaders } from "./serviceHeaders";
+import { prismFetch } from "./prismFetch";
 
 const API_BASE = PRISM_SERVICE_URL;
 
@@ -27,7 +28,7 @@ export interface ProfileItem {
  */
 export default class ProfileService {
   static async list(): Promise<ProfileItem[]> {
-    const response = await fetch(`${API_BASE}/profiles`, {
+    const response = await prismFetch(`${API_BASE}/profiles`, {
       method: "GET",
       headers: getBaseHeaders(),
       cache: "no-store",
@@ -44,7 +45,7 @@ export default class ProfileService {
     emoji?: string;
     color?: string;
   }): Promise<ProfileItem> {
-    const response = await fetch(`${API_BASE}/profiles`, {
+    const response = await prismFetch(`${API_BASE}/profiles`, {
       method: "POST",
       headers: getBaseHeaders(),
       cache: "no-store",
@@ -61,7 +62,7 @@ export default class ProfileService {
     profileId: string,
     updates: { name?: string; emoji?: string; color?: string },
   ): Promise<ProfileItem> {
-    const response = await fetch(`${API_BASE}/profiles/${encodeURIComponent(profileId)}`, {
+    const response = await prismFetch(`${API_BASE}/profiles/${encodeURIComponent(profileId)}`, {
       method: "PATCH",
       headers: getBaseHeaders(),
       cache: "no-store",
@@ -76,7 +77,7 @@ export default class ProfileService {
 
   /** Removes the profile from the roster; its data is retained server-side. */
   static async remove(profileId: string): Promise<void> {
-    const response = await fetch(`${API_BASE}/profiles/${encodeURIComponent(profileId)}`, {
+    const response = await prismFetch(`${API_BASE}/profiles/${encodeURIComponent(profileId)}`, {
       method: "DELETE",
       headers: getBaseHeaders(),
       cache: "no-store",

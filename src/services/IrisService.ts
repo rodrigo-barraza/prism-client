@@ -1,7 +1,7 @@
 import { PRISM_SERVICE_URL } from "@/config";
 import type { GraphData } from "@rodrigo-barraza/utilities-library/graph";
 import { getBaseHeaders } from "./serviceHeaders";
-import { IDENTITY_HEADERS } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { prismFetch } from "./prismFetch";
 import { subscribe as sseSubscribe } from "./SSEManager";
 import { buildLmStudioLoadBody } from "../utils/utilities";
 import { setLocalProviderMeta } from "../components/ProviderLogosComponent";
@@ -25,10 +25,6 @@ import type {
 } from "../types/types";
 
 const API_BASE = PRISM_SERVICE_URL;
-
-function getAdminHeaders(): Record<string, string> {
-  return { ...getBaseHeaders(), [IDENTITY_HEADERS.username]: "admin" };
-}
 
 // --- Response Interfaces ------------------------------------
 
@@ -203,7 +199,9 @@ function toSearchParams(queryParameters: QueryParams): string {
 }
 
 /**
- * Shared fetch helper for IrisService.
+ * Shared fetch helper for IrisService. The admin routes are the signed-in
+ * user's like every other: prism-service opens them to a token carrying
+ * the admin role.
  */
 async function fetchJSON<T = unknown>(
   path: string,
@@ -211,8 +209,8 @@ async function fetchJSON<T = unknown>(
   isAdmin = true,
 ): Promise<T> {
   const prefix = isAdmin ? "/admin" : "";
-  const response = await fetch(`${API_BASE}${prefix}${path}`, {
-    headers: getAdminHeaders(),
+  const response = await prismFetch(`${API_BASE}${prefix}${path}`, {
+    headers: getBaseHeaders(),
     ...options,
   });
   if (!response.ok) {
@@ -599,7 +597,7 @@ export default class IrisService {
     return fetchJSON<IrisPaginatedResponse>(`/text${query ? `?${query}` : ""}`);
   }
 
-  // -- Config (user route, admin identity) -------------------
+  // -- Config (user route) -----------------------------------
   static async getConfig(): Promise<PrismConfig> {
     const config = await fetchJSON<PrismConfig>("/config", {}, false);
     if (config?.localProviders) {

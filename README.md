@@ -107,6 +107,49 @@ Secrets are resolved in priority order:
 | `TOOLS_API_URL`     | Tools service URL                |
 | `MINIO_PUBLIC_URL`  | MinIO public endpoint for media  |
 
+## Authentication
+
+Prism needs a login — on the LAN too; there is no private-network bypass.
+
+- **The gate** (`src/proxy.ts` → Auth.js `authorized` → `src/lib/gate.ts`): every page
+  and API route needs a session whose email is in `PRISM_ALLOWED_EMAILS`. Signed out,
+  a page goes to `/login` (at the origin the browser used) and an API route gets 401;
+  an account not on the list gets `/login?error=AccessDenied` or 403. Only Auth.js's
+  routes, Next's build assets, `sw.js`, the files in `public/`, the app's icons and
+  web manifest, and `/login` are open.
+  Sign-in itself (Google, or an accounts-service password) refuses an email not on
+  the list. The Admin Side also needs the `admin` role from accounts-service.
+- **The token** (`GET /api/prism-token` → `{ token, expiresAt, username, roles }`):
+  prism-service trusts nothing from a browser but this HS256 JWT, signed with
+  `PRISM_USER_TOKEN_SECRET` for the signed-in user — `sub` is their Prism username
+  (`PRISM_USERS`, else the email's local part), `iss` `prism-client`, `aud`
+  `prism-service`, one hour. `expiresAt` is epoch milliseconds.
+- **The browser** (`src/services/prismTokenManager.ts`, `prismFetch.ts`): the app
+  renders once the first token is in hand (`PrismSessionGateComponent`). Every call
+  to prism-service sends `Authorization: Bearer <token>`; the token is renewed five
+  minutes before it expires and once after a 401 (the request is retried once). The
+  live socket carries it as `access_token` on its URL, a fresh one per reconnect;
+  the admin change streams are read with fetch (`prismEventSource.ts`) because
+  `EventSource` cannot send a header. A token route that answers 401/403 sends the
+  app to `/login`, coming back afterwards.
+- **tools-service** is reached only through `/api/tools/*`, a route handler that
+  checks the session and adds `x-api-secret: TOOLS_SERVICE_API_SECRET`, streaming
+  both ways. The workspace-agent downloads go through `/api/prism/workspaces/download/*`,
+  which calls prism-service with a token minted for the user.
+
+| Server-only variable       | Meaning                                                             |
+| -------------------------- | ------------------------------------------------------------------- |
+| `AUTH_SECRET`              | Auth.js session encryption                                          |
+| `AUTH_GOOGLE_ID`/`_SECRET` | Google sign-in                                                      |
+| `PRISM_ALLOWED_EMAILS`     | comma-separated emails that may sign in — **empty admits nobody**   |
+| `PRISM_USERS`              | `email=username` pairs: the Prism username each login becomes       |
+| `PRISM_USER_TOKEN_SECRET`  | the HS256 key for user tokens (prism-service verifies with it)      |
+| `TOOLS_SERVICE_API_SECRET` | the secret `/api/tools` sends to tools-service                      |
+
+None of them may be listed in `next.config.ts`'s `env` or carry a `NEXT_PUBLIC_`
+prefix: they are read from `process.env` at runtime (`boot.js` loads them from the
+vault) and never reach the browser.
+
 ## Scripts
 
 ```bash
