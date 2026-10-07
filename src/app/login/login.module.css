@@ -27,6 +27,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* The sign-in page renders straight into the body (no app providers
+     around it), and the body is a flex row: fill it. */
+  flex: 1;
+  width: 100%;
   min-height: 100vh;
   padding-inline: 24px;
   padding-block: 24px;
@@ -136,7 +140,10 @@
     font-weight: 800;
     letter-spacing: -0.5px;
     margin-block-end: 8px;
-    background: linear-gradient(
+    /* background-image, not the shorthand: the build adds a fallback rule
+       for the oklch() stop, and a repeated shorthand there would reset
+       background-clip to border-box (a gradient bar instead of text). */
+    background-image: linear-gradient(
       to right,
       var(--text-color-primary) 40%,
       oklch(0.85 0.08 250) 100%
