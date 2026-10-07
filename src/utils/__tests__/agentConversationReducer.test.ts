@@ -288,6 +288,21 @@ describe("streamed content", () => {
     expect(last(state)).toMatchObject({ _streamingBurstTokens: 1, _streamingBurstElapsed: 0 });
   });
 
+  it("a Stop hook's continuation starts the next answer in a fragment of its own", () => {
+    const state = play(sentTurn(), [
+      event({ type: "chunk", content: "Hello!" }),
+      event({ type: "status", message: "stop_hook_continue", continuation: 1, reason: "end with a verdict glyph" }),
+      event({ type: "chunk", content: "Hello! ⚠️" }),
+    ]);
+    expect(last(state)).toMatchObject({
+      contentSegments: [
+        { type: "text", fragmentIndex: 0 },
+        { type: "text", fragmentIndex: 1 },
+      ],
+      textFragments: ["Hello!", "Hello! ⚠️"],
+    });
+  });
+
   it("interleaves thinking, text and tools in the order they streamed", () => {
     const state = play(sentTurn(), [
       event({ type: "thinking", content: "Read it first." }),

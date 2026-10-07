@@ -690,6 +690,11 @@ function applyStatus(state: AgentConversationState, event: StatusEvent, clock: E
     };
   }
   switch (event.message) {
+    // A Stop hook kept the turn going: the answer it interrupted stays the
+    // model's own words (the service persists it as its own message), so the
+    // next answer opens a fragment of its own rather than running on from it.
+    case "stop_hook_continue":
+      return { ...next, stream: { ...next.stream, lastSegmentType: null } };
     case STATUS_MESSAGES.ITERATION_PROGRESS:
       // Live events flow: the status bar's own timer takes over.
       return {
