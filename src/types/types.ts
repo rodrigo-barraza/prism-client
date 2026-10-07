@@ -11,6 +11,7 @@ import type { ToolDisplayMetadata } from "@rodrigo-barraza/utilities-library";
 import type {
   ApprovalDecidedEvent,
   ApprovalRequiredEvent,
+  BackgroundTaskEvent,
   BriefUpdateEvent,
   ContextBudgetEvent,
   ConversationStateUpdateEvent,
@@ -481,7 +482,8 @@ export interface Message {
     };
   }>;
   /** Notification origin — identifies system-generated messages for deterministic detection.
-   *  Values: "orchestrator" | "timer" | "async-task". Absent on real user messages. */
+   *  Values: "orchestrator" | "timer" | "async-task" | "workspace_task" (a background shell's
+   *  or monitor's `<task-notification>`, shown as a task notification). Absent on real user messages. */
   _notificationSource?: string;
   /** Idempotency key — prevents duplicate notification persistence during race conditions. */
   _notificationId?: string;
@@ -501,8 +503,12 @@ export interface Message {
   _external?: ExternalOrigin;
 }
 
-/** Where an external input came from. `sender` is a label, not an identity. */
-export type ExternalInputSource = NonNullable<TurnInputEvent["source"]>;
+/**
+ * Where an external input came from. `sender` is a label, not an identity.
+ * (`task`, a turn input's other source, is the agent's own background task —
+ * never external input.)
+ */
+export type ExternalInputSource = Exclude<NonNullable<TurnInputEvent["source"]>, "task">;
 export interface ExternalOrigin {
   source: ExternalInputSource;
   sender?: string;
@@ -653,6 +659,7 @@ export type {
   PlanProposalEvent,
   UserQuestionEvent,
   TurnInputEvent,
+  BackgroundTaskEvent,
   GoalUpdateEvent,
   TodoUpdateEvent,
   BriefUpdateEvent,
@@ -761,6 +768,35 @@ export interface MessageTurnInput {
   /** `external` only: where it came from. */
   source?: ExternalInputSource;
   sender?: string;
+}
+
+/** A detached `execute_command` (`shell`) or a `monitor`. */
+export type BackgroundTaskType = BackgroundTaskEvent["taskType"];
+/** `running`, or how the task ended. */
+export type BackgroundTaskStatus = BackgroundTaskEvent["status"];
+
+/**
+ * A background shell or monitor the conversation started, as the chat shows
+ * it: from its `background_task` events and GET /conversations/:id/tasks.
+ */
+export interface BackgroundTask {
+  taskId: string;
+  taskType: BackgroundTaskType;
+  status: BackgroundTaskStatus;
+  description: string;
+  command?: string;
+  /** A `ws` monitor's socket. */
+  wsUrl?: string;
+  outputFile?: string;
+  /** A monitor's events so far. */
+  eventCount: number;
+  exitCode?: number | null;
+  /** ISO. */
+  startedAt?: string;
+  /** ISO, once it ended. */
+  endedAt?: string;
+  /** ISO time of the last change the chat applied. */
+  updatedAt?: string;
 }
 
 export interface ConversationGoalBudget {
@@ -947,6 +983,8 @@ export interface SSECallbacks {
   onBriefUpdate?: (_event: BriefUpdateEvent) => void;
   /** A mid-turn input was applied by the harness (`turn_input` event) */
   onTurnInput?: (_event: TurnInputEvent) => void;
+  /** A background shell or monitor started, got a batch of events, or ended (`background_task`) */
+  onBackgroundTask?: (_event: BackgroundTaskEvent) => void;
   /** The conversation goal was set / progressed / paused / cleared (`goal_update`) */
   onGoalUpdate?: (_event: GoalUpdateEvent) => void;
   /** `permission_mode` — the conversation's permission mode is now `mode`. */
@@ -1262,6 +1300,39 @@ export interface HookTestResult {
   error?: string;
   /** The payload the handler actually received. */
   payload?: Record<string, unknown>;
+}
+
+/** One hook of a repository's hooks file: Claude Code's / Codex's schema, one row per command. */
+export interface WorkspaceHookSummaryRow {
+  event: string;
+  matcher?: string | null;
+  command: string;
+}
+
+/**
+ * A `.prism/hooks.json` that applies to a workspace (GET /hooks/workspace):
+ * the user's own (`~/.prism/hooks.json`) or the nearest one in the
+ * repository. Its command hooks run only once this user trusted the file at
+ * this `sha256`; a changed file is untrusted until trusted again.
+ */
+export interface WorkspaceHookFile {
+  scope: "user" | "project";
+  path: string;
+  /** The directory the file's commands run in. */
+  dir: string;
+  sha256: string;
+  trusted: boolean;
+  summary: WorkspaceHookSummaryRow[];
+  /** The file could not be read whole (not JSON, …): none of its hooks run. */
+  error?: string;
+  /** What in the file was skipped, and why (an unknown event, a hook that is not a command, …). */
+  skipped?: string[];
+}
+
+export interface WorkspaceHooks {
+  /** False: this user is not in PRISM_HOOK_COMMAND_OWNERS — no command hook runs for them. */
+  ownerAllowed: boolean;
+  files: WorkspaceHookFile[];
 }
 
 // --- Project Instructions (PRISM.md) ------------------------

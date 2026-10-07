@@ -70,6 +70,14 @@ export type AgentConversationEffect =
   | { kind: "permission-mode"; event: PermissionModeEvent }
   | { kind: "non-blocking-question"; event: UserQuestionEvent };
 
+/**
+ * prism-service's notice when a workspace's `.prism/hooks.json` did not run
+ * because this user has not trusted it (at its current content): "Workspace
+ * hooks in <path> are not trusted yet — trust them in Settings → Hooks."
+ * Once a turn, so it is said as a toast.
+ */
+const UNTRUSTED_WORKSPACE_HOOKS_NOTICE = /^Workspace hooks in .+ are not trusted yet/;
+
 /** Effects that still run while the stream's conversation is not the one on screen. */
 export function runsWhileHidden(effect: AgentConversationEffect): boolean {
   return effect.kind === "conversation-state";
@@ -116,7 +124,11 @@ export function effectsOfEvent(
     case "toolCall":
       return toolEffects({ name: event.name ?? "", args: event.args, status: (event.status as string) || "" }, undefined);
     case "status": {
-      if (!isKnownStatusEvent(event)) return [];
+      if (!isKnownStatusEvent(event)) {
+        return UNTRUSTED_WORKSPACE_HOOKS_NOTICE.test(event.message)
+          ? [{ kind: "toast", message: event.message, level: "info" }]
+          : [];
+      }
       switch (event.message) {
         // A configured hook's `systemMessage` — for the user, never the model.
         case "hook_system_message":

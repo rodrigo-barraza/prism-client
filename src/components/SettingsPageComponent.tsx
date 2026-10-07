@@ -295,7 +295,7 @@ export default function SettingsPageComponent() {
     useState<ProjectInstructions | null>(null);
 
   // -- Workspace state ------------------------------------------------
-  const { refreshWorkspaces } = useWorkspace();
+  const { refreshWorkspaces, currentWorkspace } = useWorkspace();
   const [wsWorkspaces, setWsWorkspaces] = useState<LocalWorkspace[]>([]);
   const [wsAgents, setWsAgents] = useState<LocalAgent[]>([]);
   const [wsAddPath, setWsAddPath] = useState("");
@@ -3180,7 +3180,8 @@ export default function SettingsPageComponent() {
           subtitle="Run a prompt, an HTTP endpoint, or an MCP tool at a lifecycle event. Only PreToolUse and UserPromptSubmit can block — every other event observes or transforms."
         />
 
-        <HooksPanel hooks={hooks} onHooksChange={loadHooks} />
+        {/* The selected workspace's repository hooks files, to trust or revoke */}
+        <HooksPanel hooks={hooks} onHooksChange={loadHooks} workspaceRoot={currentWorkspace?.path ?? null} />
       </CardComponent>
 
       {/* -- Notifications Section ------------------------------------ */}

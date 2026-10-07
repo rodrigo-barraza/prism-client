@@ -109,6 +109,63 @@ describe("protocolEvents.parseStreamEvent", () => {
     expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining(`protocol v${PROTOCOL_VERSION + 1}`));
   });
 
+  it("accepts a background task's events and a task notification's turn input", () => {
+    const started = {
+      type: "background_task",
+      seq: 41,
+      conversationId: "conv-1",
+      taskId: "shell-ab12cd34",
+      taskType: "shell",
+      status: "running",
+      description: "Build the client",
+      command: "npm run build",
+      outputFile: "/tmp/prism-1000/tasks/shell-ab12cd34.output",
+      at: "2026-10-06T12:00:00.000Z",
+    };
+    const batch = {
+      type: "background_task",
+      conversationId: "conv-1",
+      taskId: "monitor-ab12cd34",
+      taskType: "monitor",
+      status: "running",
+      description: "deploy events",
+      wsUrl: "wss://events.example.com/stream",
+      eventCount: 3,
+      at: "2026-10-06T12:00:05.000Z",
+    };
+    const killed = { ...started, status: "killed", exitCode: null, at: "2026-10-06T12:01:00.000Z" };
+    const notification = {
+      type: "turn_input",
+      id: "input-7",
+      kind: "task_notification",
+      source: "task",
+      content: "<task-notification>\n<task-id>monitor-ab12cd34</task-id>\n<task-type>monitor</task-type>\n</task-notification>",
+      boundary: "after_tools",
+      iteration: 3,
+    };
+    for (const frame of [started, batch, killed, notification]) {
+      expect(parseStreamEvent(frame, "turn")).toBe(frame);
+      expect(validateTurnEvent(frame).success).toBe(true);
+    }
+    expect(consoleError).not.toHaveBeenCalled();
+    expect(consoleWarn).not.toHaveBeenCalled();
+  });
+
+  it("reports a background task event that breaks the protocol, and still passes it on", () => {
+    const frame = {
+      type: "background_task",
+      conversationId: "conv-1",
+      taskId: "shell-1",
+      taskType: "daemon",
+      status: "running",
+      description: "x",
+      at: "2026-10-06T12:00:00.000Z",
+    };
+    expect(parseStreamEvent(frame, "turn")).toBe(frame);
+    expect(String(consoleWarn.mock.calls[0][0])).toContain('"background_task" event does not match');
+    expect(String(consoleWarn.mock.calls[0][0])).toContain("taskType");
+  });
+
   it("reads each stream with its own event types", () => {
     expect(parseStreamEvent({ type: "turn_start", role: "user", index: 0 }, "synthesis")).not.toBeNull();
     expect(parseStreamEvent({ type: "turn_start", role: "user", index: 0 }, "turn")).toBeNull();

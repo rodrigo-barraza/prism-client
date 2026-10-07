@@ -16,6 +16,7 @@ import {
   isUserAuthoredNotificationSource,
   turnInputDisplayText,
 } from "../../utils/turnInputRouting";
+import { isWorkspaceTaskNotificationMessage } from "../../utils/taskNotifications";
 import { collectPriorToolDisplayUrls } from "../ToolResultRenderers/utils";
 import { parseTeamToolResult } from "../ToolCallsBlock/SubAgentParsingUtils";
 
@@ -25,10 +26,14 @@ import { parseTeamToolResult } from "../ToolCallsBlock/SubAgentParsingUtils";
  * For messages persisted before the metadata field existed,
  * fall back to content-based <task-notification> XML detection.  */
 
+/** A user-role message the list leaves out (outside the Raw view). */
 export function isNotificationMessage(message: Message): boolean {
   // External input (a webhook, a Discord user, an MCP server, a sub-agent)
   // is shown — as an external block, never a user bubble.
   if (isExternalInputMessage(message)) return false;
+  // A background shell's or monitor's notification is shown too — as a
+  // task notification item, never a user bubble.
+  if (isWorkspaceTaskNotificationMessage(message)) return false;
   // Mid-turn steering updates / question answers are persisted with a
   // `_notificationSource` too ("user-update" | "user-answer"), but they
   // are the USER's own words — rendered as a user bubble, never a card.

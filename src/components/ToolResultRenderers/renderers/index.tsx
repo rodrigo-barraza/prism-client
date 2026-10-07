@@ -3,6 +3,7 @@ export * from "./TerminalAndGitRenderers";
 export * from "./BrowserMediaAndVisualRenderers";
 export * from "./VisualAndEmojiRenderers";
 export * from "./CoordinatorAndMiscRenderers";
+export * from "./BackgroundTaskRenderers";
 
 import { RendererProps, ToolResultDisplay } from "../types";
 import { RawResultToggle } from "../SharedComponents";

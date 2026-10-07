@@ -12,7 +12,8 @@
  *    apart from task-notification cards and what they display,
  *  - how external input (a webhook, a Discord message relayed into someone
  *    else's turn, an MCP server, a sub-agent) is told apart from the user:
- *    it is never a user bubble.
+ *    it is never a user bubble. Neither is a `task_notification` — the
+ *    agent's own background task reporting (utils/taskNotifications).
  */
 import { MESSAGE_ROLES } from "../constants";
 import type {
@@ -204,6 +205,7 @@ export function turnInputBadgeLabel(turnInput: MessageTurnInput): string {
   if (turnInput.kind === "goal_revision") return "Goal check";
   if (turnInput.kind === "question_answer") return "Answer";
   if (turnInput.kind === "task_completion") return "Task result";
+  if (turnInput.kind === "task_notification") return "Task notification";
   if (turnInput.kind === "agent_message") return "Agent message";
   if (turnInput.status === "sending") return "Sending…";
   if (turnInput.status === "pending") return "Pending";

@@ -1573,3 +1573,20 @@
   display: block;
   background: transparent;
 }
+
+/* ── Background tasks (execute_command run_in_background, monitor, task_stop) ── */
+
+.background-task-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.background-task-meta {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,219 @@
+/* ── Workspace hooks: the repository's .prism/hooks.json, and the user's ── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--calculated-border-color);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--color-cyan);
+}
+
+.title {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.root {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hint {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.owner-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 0.625rem;
+  line-height: 1.4;
+  color: var(--color-orange);
+  background: color-mix(in oklch, var(--color-orange) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-orange) 28%, transparent);
+  border-radius: var(--border-radius-sm);
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
+.error {
+  font-size: 0.625rem;
+  color: var(--color-rose);
+  line-height: 1.4;
+}
+
+.file {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--calculated-border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--background-base);
+}
+
+.file-title-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.scope-chip {
+  composes: chip from "./PanelShared.module.css";
+  color: var(--color-cyan);
+  background: color-mix(in oklch, var(--color-cyan) 10%, transparent);
+}
+
+.file-path {
+  min-width: 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.file-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.625rem;
+}
+
+.sha {
+  composes: chip chip-mono from "./PanelShared.module.css";
+}
+
+.trust-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+}
+
+.trusted {
+  color: var(--color-success);
+}
+
+.untrusted {
+  color: var(--color-orange);
+}
+
+.trust-button {
+  margin-left: auto;
+  padding: 2px 9px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  border-radius: var(--sidebar-row-chip-radius);
+  color: var(--color-cyan);
+  background: color-mix(in oklch, var(--color-cyan) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-cyan) 30%, transparent);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--color-cyan) 22%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.revoke-button {
+  color: var(--color-rose);
+  background: color-mix(in oklch, var(--color-rose) 10%, transparent);
+  border-color: color-mix(in oklch, var(--color-rose) 30%, transparent);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--color-rose) 20%, transparent);
+  }
+}
+
+.summary {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.625rem;
+  table-layout: fixed;
+
+  & th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 2px 4px;
+  }
+
+  & th:first-child {
+    width: 28%;
+  }
+
+  & th:nth-child(2) {
+    width: 24%;
+  }
+
+  & td {
+    padding: 2px 4px;
+    vertical-align: top;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--sidebar-row-divider, var(--calculated-border-color));
+    overflow-wrap: anywhere;
+  }
+}
+
+.command {
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.file-error {
+  font-size: 0.625rem;
+  line-height: 1.4;
+  color: var(--color-rose);
+  overflow-wrap: anywhere;
+}
+
+.skipped {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+
+  & summary {
+    cursor: pointer;
+  }
+
+  & ul {
+    margin: 2px 0 0;
+    padding-inline-start: 16px;
+  }
+
+  & li {
+    overflow-wrap: anywhere;
+  }
+}
+
+.muted {
+  color: var(--text-muted);
+}

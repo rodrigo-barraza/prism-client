@@ -22,6 +22,7 @@
 import { STATUS_MESSAGES } from "@rodrigo-barraza/utilities-library/taxonomy";
 import { MESSAGE_ROLES } from "../constants";
 import type {
+  BackgroundTask,
   BackgroundUsage,
   ContentSegment,
   ContextBudget,
@@ -59,6 +60,7 @@ import {
   type TurnActivity,
 } from "./turnActivity";
 import { applyTurnInputEvent, markTurnInputApplied } from "./turnInputRouting";
+import { applyBackgroundTaskEvent, mergeListedBackgroundTasks } from "./backgroundTasks";
 
 // ---------------------------------------------------------------------------
 // State
@@ -201,6 +203,11 @@ export interface AgentConversationState {
   contextBudget: ContextBudget | null;
   /** A turn's side channels (checklist, brief, sources, code runs), for one conversation. */
   turnActivity: { conversationId: string | null; activity: TurnActivity };
+  /**
+   * Background shells and monitors, by conversation id, then task id. They
+   * outlive the turn that started them: a new turn keeps them.
+   */
+  backgroundTasks: Record<string, Record<string, BackgroundTask>>;
   stream: TurnStream;
 }
 
@@ -241,6 +248,7 @@ export function createAgentConversationState(): AgentConversationState {
     statusBarInitialElapsedMilliseconds: null,
     contextBudget: null,
     turnActivity: { conversationId: null, activity: EMPTY_TURN_ACTIVITY },
+    backgroundTasks: {},
     stream: createTurnStream(),
   };
 }
@@ -250,6 +258,16 @@ export function turnActivityOf(state: AgentConversationState, conversationId: st
   return state.turnActivity.conversationId === conversationId
     ? state.turnActivity.activity
     : EMPTY_TURN_ACTIVITY;
+}
+
+const NO_BACKGROUND_TASKS: Readonly<Record<string, BackgroundTask>> = Object.freeze({});
+
+/** `conversationId`'s background tasks, by task id — the same object until one changes. */
+export function backgroundTasksOf(
+  state: AgentConversationState,
+  conversationId: string,
+): Readonly<Record<string, BackgroundTask>> {
+  return state.backgroundTasks[conversationId] ?? NO_BACKGROUND_TASKS;
 }
 
 // ---------------------------------------------------------------------------
@@ -312,6 +330,17 @@ export type AgentConversationAction =
   | { type: "conversation/reset" }
   /** Back to a conversation the user switched away from mid-turn. */
   | { type: "conversation/restored"; state: AgentConversationState }
+  /**
+   * GET /conversations/:id/tasks answered: requested at `requestedAt`,
+   * arrived at `receivedAt` (ISO, the client's clock).
+   */
+  | {
+      type: "background-tasks/listed";
+      conversationId: string;
+      tasks: BackgroundTask[];
+      requestedAt: string;
+      receivedAt: string;
+    }
   | { [Field in SettableField]: { type: "field/set"; field: Field; value: FieldUpdate<Field> } }[SettableField];
 
 // ---------------------------------------------------------------------------
@@ -661,6 +690,11 @@ function applyStatus(state: AgentConversationState, event: StatusEvent, clock: E
     };
   }
   switch (event.message) {
+    // A Stop hook kept the turn going: the answer it interrupted stays the
+    // model's own words (the service persists it as its own message), so the
+    // next answer opens a fragment of its own rather than running on from it.
+    case "stop_hook_continue":
+      return { ...next, stream: { ...next.stream, lastSegmentType: null } };
     case STATUS_MESSAGES.ITERATION_PROGRESS:
       // Live events flow: the status bar's own timer takes over.
       return {
@@ -1153,12 +1187,24 @@ function applyEvent(
             boundary: event.boundary,
             iteration: typeof event.iteration === "number" ? event.iteration : undefined,
             receivedAt: isoAt(clock),
-            // External input names where it came from (never the user).
-            ...(event.source ? { source: event.source } : {}),
+            // External input names where it came from (never the user); a
+            // task notification is the agent's own task (its `kind` says so).
+            ...(event.source && event.source !== "task" ? { source: event.source } : {}),
             ...(event.sender ? { sender: event.sender } : {}),
           },
           state.stream.ownsTrailingBubble ? "before-trailing-assistant" : "append",
         ),
+      };
+    }
+    case "background_task": {
+      // A shell or monitor started, a monitor's batch arrived, or it ended.
+      const ownerId = event.conversationId || conversationId;
+      const tasks = state.backgroundTasks[ownerId] ?? {};
+      const task = applyBackgroundTaskEvent(tasks[event.taskId], event, isoAt(clock));
+      if (task === tasks[event.taskId]) return state;
+      return {
+        ...state,
+        backgroundTasks: { ...state.backgroundTasks, [ownerId]: { ...tasks, [event.taskId]: task } },
       };
     }
     case "status":
@@ -1427,6 +1473,19 @@ export function agentConversationReducer(
       return createAgentConversationState();
     case "conversation/restored":
       return action.state;
+    case "background-tasks/listed":
+      return {
+        ...state,
+        backgroundTasks: {
+          ...state.backgroundTasks,
+          [action.conversationId]: mergeListedBackgroundTasks(
+            state.backgroundTasks[action.conversationId],
+            action.tasks,
+            action.requestedAt,
+            action.receivedAt,
+          ),
+        },
+      };
     case "field/set": {
       const previous = state[action.field];
       const value =

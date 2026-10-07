@@ -39,6 +39,7 @@ import {
 } from "./MessageList/messageRows";
 import styles from "./MessageListComponent.module.css";
 import SoundService from "@/services/SoundService";
+import { isWorkspaceTaskNotificationMessage } from "../utils/taskNotifications";
 import useVirtualRows from "../hooks/useVirtualRows";
 import type { Message } from "../types/types";
 
@@ -160,6 +161,7 @@ const TIMER_PREFIXES = ["⏰ Reminder fired: ", "🔔 Notification: ", "🏮 Rem
 function rendersBubble(message: Message): boolean {
   if (message.deleted) return false;
   if (message.role !== "user") return true;
+  if (isWorkspaceTaskNotificationMessage(message)) return false;
   if (parseTaskNotification(message.content)) return false;
   return !(typeof message.content === "string" && TIMER_PREFIXES.some((prefix) => message.content.startsWith(prefix)));
 }

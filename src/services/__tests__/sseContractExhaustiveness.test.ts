@@ -94,6 +94,7 @@ function buildSpyCallbacks(): { callbacks: SSECallbacks; spies: Array<ReturnType
     onUserMessage: spy(),
     onApprovalDecided: spy(),
     onTurnInput: spy(),
+    onBackgroundTask: spy(),
     onGoalUpdate: spy(),
     onPermissionMode: spy(),
     onUsageUpdate: spy(),

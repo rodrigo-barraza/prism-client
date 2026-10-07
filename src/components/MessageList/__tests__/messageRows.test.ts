@@ -49,6 +49,19 @@ describe("buildDisplayList", () => {
     expect(clean.sourceIndices).toEqual([1, 3]);
     expect(buildDisplayList(messages, true).sourceIndices).toEqual([0, 1, 2, 3]);
   });
+
+  it("keeps a background task's notification: it renders as a task notification item", () => {
+    const notation = "<task-notification>\n<task-id>shell-1</task-id>\n<task-type>shell</task-type>\n<status>completed</status>\n</task-notification>";
+    const messages = [
+      user("Build it"),
+      user(notation, { _notificationSource: "workspace_task" }),
+      user("Monitor event", { _turnInput: { id: "input-1", kind: "task_notification", status: "applied" } }),
+      // An async task's completion stays out of the list.
+      user("<task-notification><status>✅ completed</status></task-notification>", { _notificationSource: "async-task" }),
+      assistant("Built."),
+    ];
+    expect(buildDisplayList(messages, false).sourceIndices).toEqual([0, 1, 2, 4]);
+  });
 });
 
 describe("row layout", () => {

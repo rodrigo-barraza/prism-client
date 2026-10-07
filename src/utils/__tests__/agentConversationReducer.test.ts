@@ -12,6 +12,7 @@ import { TURN_EVENT_TYPES, type TurnEventType } from "../../types/protocol/event
 import type { TurnEvent } from "../../types/types";
 import {
   agentConversationReducer,
+  backgroundTasksOf,
   createAgentConversationState,
   createTurnStream,
   reduceEvent,
@@ -123,6 +124,18 @@ const SAMPLES: { [Type in TurnEventType]: TurnEvent } = {
     blocking: true,
   }),
   turn_input: event({ type: "turn_input", id: "input-1", kind: "user_update", content: "Also the tests.", boundary: "after_tools", iteration: 1 }),
+  background_task: event({
+    type: "background_task",
+    conversationId: CONVERSATION,
+    taskId: "monitor-ab12cd34",
+    taskType: "monitor",
+    status: "running",
+    description: "errors in deploy.log",
+    command: "tail -f deploy.log | grep --line-buffered ERROR",
+    outputFile: "/tmp/prism-1000/tasks/monitor-ab12cd34.output",
+    eventCount: 0,
+    at: "2026-09-22T12:00:00.000Z",
+  }),
   goal_update: event({ type: "goal_update", change: "cleared" }),
   todo_update: event({ type: "todo_update", items: [{ id: 1, content: "Read", status: "pending" }], stats: {} }),
   brief_update: event({ type: "brief_update", brief: { summary: "Port is 3000.", keyFiles: [], openQuestions: [] } }),
@@ -273,6 +286,21 @@ describe("streamed content", () => {
     let state = reduceEvent(sentTurn(), SAMPLES.chunk, CONVERSATION, clockAt(1));
     state = reduceEvent(state, SAMPLES.chunk, CONVERSATION, { ...clockAt(2), monotonicMilliseconds: 1_025 + 600 });
     expect(last(state)).toMatchObject({ _streamingBurstTokens: 1, _streamingBurstElapsed: 0 });
+  });
+
+  it("a Stop hook's continuation starts the next answer in a fragment of its own", () => {
+    const state = play(sentTurn(), [
+      event({ type: "chunk", content: "Hello!" }),
+      event({ type: "status", message: "stop_hook_continue", continuation: 1, reason: "end with a verdict glyph" }),
+      event({ type: "chunk", content: "Hello! ⚠️" }),
+    ]);
+    expect(last(state)).toMatchObject({
+      contentSegments: [
+        { type: "text", fragmentIndex: 0 },
+        { type: "text", fragmentIndex: 1 },
+      ],
+      textFragments: ["Hello!", "Hello! ⚠️"],
+    });
   });
 
   it("interleaves thinking, text and tools in the order they streamed", () => {
@@ -494,6 +522,164 @@ describe("cards", () => {
     expect(state.messages[1]._turnInput?.status).toBe("applied");
     state = play(state, [event({ type: "status", message: "turn_input_applied", inputId: "input-1", boundary: "before_llm", iteration: 2 })], 2);
     expect(state.messages[1]._turnInput).toMatchObject({ boundary: "before_llm", iteration: 2 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Background tasks
+// ---------------------------------------------------------------------------
+
+const TASK_NOTIFICATION = [
+  "<task-notification>",
+  "<task-id>monitor-ab12cd34</task-id>",
+  "<task-type>monitor</task-type>",
+  "<description>errors in deploy.log</description>",
+  "<event>",
+  "ERROR disk full",
+  "</event>",
+  "</task-notification>",
+].join("\n");
+
+/** A `background_task` frame for monitor-ab12cd34 (the sample's), with `fields` changed. */
+const monitorEvent = (fields: Record<string, unknown>) => event({ ...(SAMPLES.background_task as object), ...fields });
+
+describe("background tasks", () => {
+  it("follows a monitor from its start through its batches to its end, by conversation", () => {
+    const start = joinedTurn();
+    let state = play(start, [SAMPLES.background_task]);
+    expect(backgroundTasksOf(state, CONVERSATION)).toEqual({
+      "monitor-ab12cd34": {
+        taskId: "monitor-ab12cd34",
+        taskType: "monitor",
+        status: "running",
+        description: "errors in deploy.log",
+        command: "tail -f deploy.log | grep --line-buffered ERROR",
+        outputFile: "/tmp/prism-1000/tasks/monitor-ab12cd34.output",
+        eventCount: 0,
+        startedAt: "2026-09-22T12:00:00.000Z",
+        updatedAt: new Date(EPOCH + 25).toISOString(),
+      },
+    });
+    state = play(
+      state,
+      [
+        monitorEvent({ eventCount: 2, at: "2026-09-22T12:00:05.000Z" }),
+        monitorEvent({ status: "timeout", eventCount: 3, at: "2026-09-22T12:05:00.000Z" }),
+      ],
+      2,
+    );
+    expect(backgroundTasksOf(state, CONVERSATION)["monitor-ab12cd34"]).toMatchObject({
+      status: "timeout",
+      eventCount: 3,
+      startedAt: "2026-09-22T12:00:00.000Z",
+      endedAt: "2026-09-22T12:05:00.000Z",
+      updatedAt: new Date(EPOCH + 75).toISOString(),
+    });
+    // Another conversation's tasks are its own; the transcript is untouched.
+    expect(backgroundTasksOf(state, "conv-2")).toEqual({});
+    expect(state.messages).toBe(start.messages);
+  });
+
+  it("keeps a task under the conversation its event names", () => {
+    const state = reduceEvent(sentTurn(), monitorEvent({ conversationId: "conv-2" }), CONVERSATION, clockAt(1));
+    expect(Object.keys(backgroundTasksOf(state, "conv-2"))).toEqual(["monitor-ab12cd34"]);
+    expect(backgroundTasksOf(state, CONVERSATION)).toEqual({});
+  });
+
+  it("never revives a task that ended, nor lowers a monitor's count", () => {
+    const ended = play(sentTurn(), [monitorEvent({ eventCount: 4 }), monitorEvent({ status: "killed", eventCount: 4 })]);
+    // A replayed batch after the end changes nothing.
+    expect(play(ended, [monitorEvent({ eventCount: 2 })], 3)).toBe(ended);
+    const shell = play(sentTurn(), [
+      event({ type: "background_task", conversationId: CONVERSATION, taskId: "shell-1", taskType: "shell", status: "running", description: "Build", at: "2026-09-22T12:00:00.000Z" }),
+      event({ type: "background_task", conversationId: CONVERSATION, taskId: "shell-1", taskType: "shell", status: "failed", description: "Build", exitCode: 2, at: "2026-09-22T12:01:00.000Z" }),
+    ]);
+    expect(backgroundTasksOf(shell, CONVERSATION)["shell-1"]).toMatchObject({ status: "failed", exitCode: 2, eventCount: 0 });
+  });
+
+  it("outlives the turn that started it, and leaves with the conversation", () => {
+    let state = play(sentTurn(), [SAMPLES.background_task, SAMPLES.done]);
+    state = agentConversationReducer(state, {
+      type: "turn/started",
+      messages: [USER],
+      conversationId: CONVERSATION,
+      sentWith: { provider: "anthropic" },
+    });
+    expect(Object.keys(backgroundTasksOf(state, CONVERSATION))).toEqual(["monitor-ab12cd34"]);
+    expect(Object.keys(backgroundTasksOf(agentConversationReducer(state, { type: "conversation/loaded" }), CONVERSATION))).toEqual(["monitor-ab12cd34"]);
+    expect(agentConversationReducer(state, { type: "conversation/reset" }).backgroundTasks).toEqual({});
+  });
+
+  it("merges a listed conversation's tasks into what the events said", () => {
+    const requestedAt = new Date(EPOCH + 30).toISOString();
+    const receivedAt = new Date(EPOCH + 90).toISOString();
+    // Events: the monitor ended (killed); a shell started after the list was requested.
+    let state = play(sentTurn(), [
+      SAMPLES.background_task,
+      monitorEvent({ status: "killed", eventCount: 5 }),
+      event({ type: "background_task", conversationId: CONVERSATION, taskId: "shell-new", taskType: "shell", status: "running", description: "Watch the build", at: "2026-09-22T12:00:01.000Z" }),
+    ]);
+    // The list was computed before both: the monitor still running with fewer events, an old shell the events never saw, and no new shell.
+    state = agentConversationReducer(state, {
+      type: "background-tasks/listed",
+      conversationId: CONVERSATION,
+      requestedAt,
+      receivedAt,
+      tasks: [
+        { taskId: "monitor-ab12cd34", taskType: "monitor", status: "running", description: "errors in deploy.log", eventCount: 3 },
+        { taskId: "shell-old", taskType: "shell", status: "running", description: "Serve docs", eventCount: 0, startedAt: "2026-09-22T11:00:00.000Z" },
+      ],
+    });
+    const tasks = backgroundTasksOf(state, CONVERSATION);
+    expect(Object.keys(tasks).sort()).toEqual(["monitor-ab12cd34", "shell-new", "shell-old"]);
+    expect(tasks["monitor-ab12cd34"]).toMatchObject({ status: "killed", eventCount: 5 });
+    expect(tasks["shell-old"]).toMatchObject({ status: "running", startedAt: "2026-09-22T11:00:00.000Z" });
+    expect(tasks["shell-new"]).toMatchObject({ status: "running" });
+
+    // A later list: the old shell ended (it shows how, from now), the new one is gone from the service.
+    state = agentConversationReducer(state, {
+      type: "background-tasks/listed",
+      conversationId: CONVERSATION,
+      requestedAt: new Date(EPOCH + 5_000).toISOString(),
+      receivedAt: new Date(EPOCH + 5_050).toISOString(),
+      tasks: [{ taskId: "shell-old", taskType: "shell", status: "completed", description: "Serve docs", eventCount: 0, exitCode: 0 }],
+    });
+    expect(backgroundTasksOf(state, CONVERSATION)).toEqual({
+      "shell-old": {
+        taskId: "shell-old",
+        taskType: "shell",
+        status: "completed",
+        description: "Serve docs",
+        eventCount: 0,
+        exitCode: 0,
+        startedAt: "2026-09-22T11:00:00.000Z",
+        updatedAt: new Date(EPOCH + 5_050).toISOString(),
+      },
+    });
+  });
+
+  it("a task notification applied mid-turn lands above the turn's bubble, marked as the task's", () => {
+    const state = play(sentTurn(), [
+      SAMPLES.chunk,
+      event({
+        type: "turn_input",
+        id: "input-task",
+        kind: "task_notification",
+        source: "task",
+        content: TASK_NOTIFICATION,
+        boundary: "after_tools",
+        iteration: 2,
+      }),
+    ]);
+    expect(state.messages.map((message) => message.role)).toEqual(["user", "user", "assistant"]);
+    expect(state.messages[1]).toMatchObject({
+      role: "user",
+      content: TASK_NOTIFICATION,
+      _turnInput: { id: "input-task", kind: "task_notification", status: "applied", iteration: 2 },
+    });
+    // The agent's own task — never tagged as external input.
+    expect(state.messages[1]._external).toBeUndefined();
+    expect(state.messages[1]._turnInput?.source).toBeUndefined();
   });
 });
 

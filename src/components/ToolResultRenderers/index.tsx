@@ -34,8 +34,13 @@ const TOOL_RESULT_RENDERER_REGISTRY: Record<
   execute_shell: { Renderer: Renderers.TerminalRenderer, language: "bash" },
   execute_python: { Renderer: Renderers.TerminalRenderer, language: "python" },
   execute_javascript: { Renderer: Renderers.TerminalRenderer, language: "javascript" },
-  execute_command: { Renderer: Renderers.TerminalRenderer, language: "bash" },
+  // A foreground run is a terminal; `run_in_background` shows the task it started.
+  execute_command: { Renderer: Renderers.ExecuteCommandRenderer, language: "bash" },
   schedule: { Renderer: Renderers.ScheduleRenderer },
+
+  // Background tasks
+  monitor: { Renderer: Renderers.MonitorRenderer },
+  task_stop: { Renderer: Renderers.TaskStopRenderer },
 
   // Git
   git_status: { Renderer: Renderers.GitStatusRenderer },
