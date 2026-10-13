@@ -41,12 +41,16 @@ import {
   BellRing,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MILLISECONDS } from "@rodrigo-barraza/utilities-library";
-import { SERVICE_PORTS } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { IS_PRODUCTION, TOOLS_SERVICE_PUBLIC_URL } from "../config";
 import PrismService from "../services/PrismService";
 import WorkspaceService, {
   type WorkspaceValidateResponse,
 } from "../services/WorkspaceService";
 import { useWorkspace } from "./WorkspaceContextComponent";
+import {
+  workspaceBackendExample as workspaceBackendExampleFor,
+  workspaceEnvFileExample,
+} from "../utils/workspaceBridgeSetup";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
@@ -146,12 +150,14 @@ const ROUTING_PRESET_OPTIONS = [
   { value: "lead_sidekick", label: "Lead + sidekick" },
 ];
 
-// Example WORKSPACE_BACKEND for the setup guide — prism-client is served
-// from the same host as tools-service, so the visitor's hostname is the
-// right address on any network (localhost in dev, the LAN host in prod).
+// Example WORKSPACE_BACKEND for the setup guide, for where this page is
+// served (utils/workspaceBridgeSetup).
 function workspaceBackendExample(): string {
-  const hostname = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  return `ws://${hostname}:${SERVICE_PORTS["tools-service"]}`;
+  return workspaceBackendExampleFor({
+    hostname: typeof window !== "undefined" ? window.location.hostname : "localhost",
+    isPublicDomain: IS_PRODUCTION,
+    toolsServicePublicUrl: TOOLS_SERVICE_PUBLIC_URL,
+  });
 }
 
 const SETUP_GUIDE_PLATFORMS: [SetupGuidePlatformKey, PlatformDefinition][] = [
@@ -1276,7 +1282,7 @@ export default function SettingsPageComponent() {
           <div className={styles["agent-secret-layout-row"]}>
             <InputComponent
               type="password"
-              placeholder="Shared secret (leave empty to disable)"
+              placeholder="Shared secret"
               value={settings?.workspace?.agentSecret || ""}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                 handleWorkspaceSecretChange(event.target.value)
@@ -1284,8 +1290,8 @@ export default function SettingsPageComponent() {
             />
           </div>
           <div className={styles["agent-secret-hint"]}>
-            Workspace machines include this secret when connecting. If empty, any
-            machine can connect without authentication.
+            Workspace machines include this secret when connecting. While it is
+            empty, tools-service refuses every machine.
           </div>
 
           {/* -- Workspace Setup Guide ------------------------------- */}
@@ -1770,7 +1776,7 @@ export default function SettingsPageComponent() {
                                   <div className={styles["code-block"]}>
                                     <code>
                                       node workspace-agent.mjs{"\n"}
-                                      {"  "}--backend ws://YOUR_SERVER:5590
+                                      {"  "}--backend {workspaceBackendExample()}
                                       {"\n"}
                                       {"  "}--workspace{" "}
                                       {getWorkspacePathExample(
@@ -1784,7 +1790,7 @@ export default function SettingsPageComponent() {
                                       title="Copy"
                                       onClick={() => {
                                         navigator.clipboard.writeText(
-                                          `node workspace-agent.mjs \\\n  --backend ws://YOUR_SERVER:5590 \\\n  --workspace ${getWorkspacePathExample(selectedPlatform)} \\\n  --secret YOUR_API_SECRET`,
+                                          `node workspace-agent.mjs \\\n  --backend ${workspaceBackendExample()} \\\n  --workspace ${getWorkspacePathExample(selectedPlatform)} \\\n  --secret YOUR_API_SECRET`,
                                         );
                                         setCopiedBlock("download-2");
                                         setTimeout(
@@ -1801,10 +1807,11 @@ export default function SettingsPageComponent() {
                                     </button>
                                   </div>
                                   <span className={styles["step-hint"]}>
-                                    Replace the backend URL, workspace path, and
-                                    secret with your own values. Leave the
-                                    terminal running — the connector reconnects
-                                    automatically if interrupted.
+                                    Replace the workspace path, and the secret
+                                    with the Machine Authentication secret
+                                    above. Leave the terminal running — the
+                                    connector reconnects automatically if
+                                    interrupted.
                                   </span>
                                 </div>
                               </div>
@@ -2120,20 +2127,28 @@ export default function SettingsPageComponent() {
                                 </span>
                                 <div className={styles["step-body"]}>
                                   <span className={styles["step-title"]}>
-                                    Create your{" "}
+                                    Create a{" "}
                                     <code className={styles["inline-code"]}>
                                       .env
                                     </code>{" "}
-                                    file
+                                    file in the clone
                                   </span>
                                   <div className={styles["code-block"]}>
-                                    <code>cp .env.example .env</code>
+                                    <code>
+                                      {workspaceEnvFileExample(
+                                        workspaceBackendExample(),
+                                        getWorkspacePathExample(selectedPlatform),
+                                      )}
+                                    </code>
                                     <button
                                       className={styles["copy-button"]}
                                       title="Copy"
                                       onClick={() => {
                                         navigator.clipboard.writeText(
-                                          "cp .env.example .env",
+                                          workspaceEnvFileExample(
+                                            workspaceBackendExample(),
+                                            getWorkspacePathExample(selectedPlatform),
+                                          ),
                                         );
                                         setCopiedBlock("local-2");
                                         setTimeout(
@@ -2150,38 +2165,13 @@ export default function SettingsPageComponent() {
                                     </button>
                                   </div>
                                   <span className={styles["step-hint"]}>
-                                    Fill in your values:
+                                    Fill in your values: the secret is the
+                                    Machine Authentication secret above.{" "}
+                                    <code className={styles["inline-code"]}>
+                                      npm run dev:local
+                                    </code>{" "}
+                                    reads only this file.
                                   </span>
-                                  <div className={styles["code-block"]}>
-                                    <code>
-                                      WORKSPACE_BACKEND={workspaceBackendExample()}
-                                      {"\n"}
-                                      WORKSPACE_ROOTS=
-                                      {getWorkspacePathExample(
-                                        selectedPlatform,
-                                      )}
-                                    </code>
-                                    <button
-                                      className={styles["copy-button"]}
-                                      title="Copy"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(
-                                          `WORKSPACE_BACKEND=${workspaceBackendExample()}\nWORKSPACE_ROOTS=${getWorkspacePathExample(selectedPlatform)}`,
-                                        );
-                                        setCopiedBlock("local-2b");
-                                        setTimeout(
-                                          () => setCopiedBlock(null),
-                                          FEEDBACK_STANDARD_MILLISECONDS,
-                                        );
-                                      }}
-                                    >
-                                      {copiedBlock === "local-2b" ? (
-                                        <CheckCheck size={12} />
-                                      ) : (
-                                        <Copy size={12} />
-                                      )}
-                                    </button>
-                                  </div>
                                 </div>
                               </div>
 
