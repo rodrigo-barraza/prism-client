@@ -162,7 +162,7 @@ function workspaceBackendExample(): string {
 
 const SETUP_GUIDE_PLATFORMS: [SetupGuidePlatformKey, PlatformDefinition][] = [
   ["windows", { label: "Windows", methods: ["tray", "desktop", "download", "docker", "local"] }],
-  ["wsl2", { label: "WSL2", methods: ["desktop", "download", "local", "docker"] }],
+  ["wsl2", { label: "WSL2", methods: ["tray", "desktop", "download", "local", "docker"] }],
   ["linux", { label: "Linux", methods: ["tray", "desktop", "download", "docker", "local"] }],
   ["macos-intel", { label: "macOS Intel", methods: ["tray", "desktop", "download", "docker", "local"] }],
   ["macos-apple-silicon", { label: "macOS Apple Silicon", methods: ["tray", "desktop", "download", "docker", "local"] }],
@@ -191,6 +191,7 @@ function getMethodHint(
   switch (method) {
     case "tray":
       if (platform === "windows") return "One-click installer — auto-launches on login";
+      if (platform === "wsl2") return "Windows installer — runs the agent inside your distro";
       if (platform === "linux") return "AppImage — auto-launches on login";
       return "DMG installer — auto-launches on login";
     case "desktop":
@@ -209,10 +210,11 @@ function getMethodHint(
 function getTrayAppDownloadKey(platform: SetupGuidePlatformKey): string {
   switch (platform) {
     case "windows": return "win-x64";
+    // The Windows tray app runs the agent inside the distro (its WSL2 mode)
+    case "wsl2": return "win-x64";
     case "linux": return "linux-x64";
     case "macos-intel": return "mac-x64";
     case "macos-apple-silicon": return "mac-arm64";
-    default: return "";
   }
 }
 
@@ -229,10 +231,10 @@ function getDesktopAppDownloadKey(platform: SetupGuidePlatformKey): string {
 function getTrayAppDownloadLabel(platform: SetupGuidePlatformKey): { name: string; arch: string } {
   switch (platform) {
     case "windows": return { name: "Windows", arch: "Installer" };
+    case "wsl2": return { name: "Windows", arch: "Installer (WSL2 mode)" };
     case "linux": return { name: "Linux", arch: "AppImage" };
     case "macos-intel": return { name: "macOS", arch: "Intel" };
     case "macos-apple-silicon": return { name: "macOS", arch: "Apple Silicon" };
-    default: return { name: "", arch: "" };
   }
 }
 
@@ -249,12 +251,25 @@ function getDesktopAppDownloadLabel(platform: SetupGuidePlatformKey): { name: st
 function getTrayAppInstallHint(platform: SetupGuidePlatformKey): string {
   switch (platform) {
     case "windows":
+    case "wsl2":
       return "Run the installer — it installs to your user profile and launches automatically.";
     case "linux":
       return "Make the AppImage executable (chmod +x) and run it.";
     default:
       return "Open the DMG and drag to Applications.";
   }
+}
+
+// The tray app's setup wizard asks for the backend URL (pre-filled), the
+// secret and the folder; in WSL2 mode it runs the agent inside the distro
+// (workspace-service tray-app AgentProcess.startWslAgent).
+function getTraySetupHint(platform: SetupGuidePlatformKey): string {
+  const common =
+    "On first launch, a setup wizard asks for the backend URL (keep the pre-filled one), the API secret — the Machine Authentication secret above — and your workspace folder.";
+  if (platform === "wsl2") {
+    return `${common} Choose WSL2 as the run mode, pick your distro (it needs Node.js 22 or later), and browse to your folder under \\\\wsl.localhost\\<distro>\\. The agent then runs inside the distro, with its shell and toolchain.`;
+  }
+  return `${common} The agent starts automatically and appears in your system tray.`;
 }
 
 function getDesktopRunCommand(platform: SetupGuidePlatformKey): string {
@@ -1494,12 +1509,7 @@ export default function SettingsPageComponent() {
                                   Complete the setup wizard
                                 </span>
                                 <span className={styles["step-hint"]}>
-                                  On first launch, the app opens a setup wizard
-                                  where you select your workspace directory. The
-                                  backend URL and credentials are
-                                  pre-configured — just pick your folder and
-                                  click connect. The agent starts automatically
-                                  and appears in your system tray.
+                                  {getTraySetupHint(selectedPlatform)}
                                 </span>
                               </div>
                             </div>
