@@ -22,7 +22,6 @@ import {
   FolderTree,
   Settings,
   Cpu,
-  Container,
   Terminal,
   ChevronRight,
   ChevronDown,
@@ -41,12 +40,16 @@ import {
   BellRing,
 } from "lucide-react";
 import { FEEDBACK_STANDARD_MILLISECONDS } from "@rodrigo-barraza/utilities-library";
-import { SERVICE_PORTS } from "@rodrigo-barraza/utilities-library/taxonomy";
+import { IS_PRODUCTION, TOOLS_SERVICE_PUBLIC_URL } from "../config";
 import PrismService from "../services/PrismService";
 import WorkspaceService, {
   type WorkspaceValidateResponse,
 } from "../services/WorkspaceService";
 import { useWorkspace } from "./WorkspaceContextComponent";
+import {
+  workspaceBackendExample as workspaceBackendExampleFor,
+  workspaceEnvFileExample,
+} from "../utils/workspaceBridgeSetup";
 
 import ModelPickerPopoverComponent from "./ModelPickerPopoverComponent";
 import CustomThemeEditorComponent from "./CustomThemeEditorComponent";
@@ -125,7 +128,7 @@ type SetupGuidePlatformKey =
   | "macos-intel"
   | "macos-apple-silicon";
 
-type SetupGuideMethodKey = "tray" | "desktop" | "download" | "docker" | "local";
+type SetupGuideMethodKey = "tray" | "desktop" | "download" | "local";
 
 interface PlatformDefinition {
   label: string;
@@ -146,27 +149,28 @@ const ROUTING_PRESET_OPTIONS = [
   { value: "lead_sidekick", label: "Lead + sidekick" },
 ];
 
-// Example WORKSPACE_BACKEND for the setup guide — prism-client is served
-// from the same host as tools-service, so the visitor's hostname is the
-// right address on any network (localhost in dev, the LAN host in prod).
+// Example WORKSPACE_BACKEND for the setup guide, for where this page is
+// served (utils/workspaceBridgeSetup).
 function workspaceBackendExample(): string {
-  const hostname = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  return `ws://${hostname}:${SERVICE_PORTS["tools-service"]}`;
+  return workspaceBackendExampleFor({
+    hostname: typeof window !== "undefined" ? window.location.hostname : "localhost",
+    isPublicDomain: IS_PRODUCTION,
+    toolsServicePublicUrl: TOOLS_SERVICE_PUBLIC_URL,
+  });
 }
 
 const SETUP_GUIDE_PLATFORMS: [SetupGuidePlatformKey, PlatformDefinition][] = [
-  ["windows", { label: "Windows", methods: ["tray", "desktop", "download", "docker", "local"] }],
-  ["wsl2", { label: "WSL2", methods: ["desktop", "download", "local", "docker"] }],
-  ["linux", { label: "Linux", methods: ["tray", "desktop", "download", "docker", "local"] }],
-  ["macos-intel", { label: "macOS Intel", methods: ["tray", "desktop", "download", "docker", "local"] }],
-  ["macos-apple-silicon", { label: "macOS Apple Silicon", methods: ["tray", "desktop", "download", "docker", "local"] }],
+  ["windows", { label: "Windows", methods: ["tray", "desktop", "download", "local"] }],
+  ["wsl2", { label: "WSL2", methods: ["tray", "desktop", "download", "local"] }],
+  ["linux", { label: "Linux", methods: ["tray", "desktop", "download", "local"] }],
+  ["macos-intel", { label: "macOS Intel", methods: ["tray", "desktop", "download", "local"] }],
+  ["macos-apple-silicon", { label: "macOS Apple Silicon", methods: ["tray", "desktop", "download", "local"] }],
 ];
 
 const METHOD_ICONS: Record<SetupGuideMethodKey, typeof Monitor> = {
   tray: AppWindow,
   desktop: Monitor,
   download: Download,
-  docker: Container,
   local: Terminal,
 };
 
@@ -174,7 +178,6 @@ const METHOD_TITLES: Record<SetupGuideMethodKey, string> = {
   tray: "System Tray App",
   desktop: "Desktop App",
   download: "Single File",
-  docker: "Docker",
   local: "Local (Node.js)",
 };
 
@@ -185,6 +188,7 @@ function getMethodHint(
   switch (method) {
     case "tray":
       if (platform === "windows") return "One-click installer — auto-launches on login";
+      if (platform === "wsl2") return "Windows installer — runs the agent inside your distro";
       if (platform === "linux") return "AppImage — auto-launches on login";
       return "DMG installer — auto-launches on login";
     case "desktop":
@@ -192,8 +196,6 @@ function getMethodHint(
       return "Standalone executable — no Node.js, no dependencies";
     case "download":
       return "Download one file, run with Node.js 22+";
-    case "docker":
-      return "Containerized — headless servers and NAS";
     case "local":
       if (platform === "wsl2") return "Clone the repo — native filesystem performance";
       return "Clone the repo — full source access and customization";
@@ -203,10 +205,11 @@ function getMethodHint(
 function getTrayAppDownloadKey(platform: SetupGuidePlatformKey): string {
   switch (platform) {
     case "windows": return "win-x64";
+    // The Windows tray app runs the agent inside the distro (its WSL2 mode)
+    case "wsl2": return "win-x64";
     case "linux": return "linux-x64";
     case "macos-intel": return "mac-x64";
     case "macos-apple-silicon": return "mac-arm64";
-    default: return "";
   }
 }
 
@@ -223,10 +226,10 @@ function getDesktopAppDownloadKey(platform: SetupGuidePlatformKey): string {
 function getTrayAppDownloadLabel(platform: SetupGuidePlatformKey): { name: string; arch: string } {
   switch (platform) {
     case "windows": return { name: "Windows", arch: "Installer" };
+    case "wsl2": return { name: "Windows", arch: "Installer (WSL2 mode)" };
     case "linux": return { name: "Linux", arch: "AppImage" };
     case "macos-intel": return { name: "macOS", arch: "Intel" };
     case "macos-apple-silicon": return { name: "macOS", arch: "Apple Silicon" };
-    default: return { name: "", arch: "" };
   }
 }
 
@@ -243,12 +246,25 @@ function getDesktopAppDownloadLabel(platform: SetupGuidePlatformKey): { name: st
 function getTrayAppInstallHint(platform: SetupGuidePlatformKey): string {
   switch (platform) {
     case "windows":
+    case "wsl2":
       return "Run the installer — it installs to your user profile and launches automatically.";
     case "linux":
       return "Make the AppImage executable (chmod +x) and run it.";
     default:
       return "Open the DMG and drag to Applications.";
   }
+}
+
+// The tray app's setup wizard asks for the backend URL (pre-filled), the
+// secret and the folder; in WSL2 mode it runs the agent inside the distro
+// (workspace-service tray-app AgentProcess.startWslAgent).
+function getTraySetupHint(platform: SetupGuidePlatformKey): string {
+  const common =
+    "On first launch, a setup wizard asks for the backend URL (keep the pre-filled one), the API secret — the Machine Authentication secret above — and your workspace folder.";
+  if (platform === "wsl2") {
+    return `${common} Choose WSL2 as the run mode, pick your distro (it needs Node.js 22 or later), and browse to your folder under \\\\wsl.localhost\\<distro>\\. The agent then runs inside the distro, with its shell and toolchain.`;
+  }
+  return `${common} The agent starts automatically and appears in your system tray.`;
 }
 
 function getDesktopRunCommand(platform: SetupGuidePlatformKey): string {
@@ -1276,7 +1292,7 @@ export default function SettingsPageComponent() {
           <div className={styles["agent-secret-layout-row"]}>
             <InputComponent
               type="password"
-              placeholder="Shared secret (leave empty to disable)"
+              placeholder="Shared secret"
               value={settings?.workspace?.agentSecret || ""}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                 handleWorkspaceSecretChange(event.target.value)
@@ -1284,8 +1300,8 @@ export default function SettingsPageComponent() {
             />
           </div>
           <div className={styles["agent-secret-hint"]}>
-            Workspace machines include this secret when connecting. If empty, any
-            machine can connect without authentication.
+            Workspace machines include this secret when connecting. While it is
+            empty, tools-service refuses every machine.
           </div>
 
           {/* -- Workspace Setup Guide ------------------------------- */}
@@ -1488,12 +1504,7 @@ export default function SettingsPageComponent() {
                                   Complete the setup wizard
                                 </span>
                                 <span className={styles["step-hint"]}>
-                                  On first launch, the app opens a setup wizard
-                                  where you select your workspace directory. The
-                                  backend URL and credentials are
-                                  pre-configured — just pick your folder and
-                                  click connect. The agent starts automatically
-                                  and appears in your system tray.
+                                  {getTraySetupHint(selectedPlatform)}
                                 </span>
                               </div>
                             </div>
@@ -1770,7 +1781,7 @@ export default function SettingsPageComponent() {
                                   <div className={styles["code-block"]}>
                                     <code>
                                       node workspace-agent.mjs{"\n"}
-                                      {"  "}--backend ws://YOUR_SERVER:5590
+                                      {"  "}--backend {workspaceBackendExample()}
                                       {"\n"}
                                       {"  "}--workspace{" "}
                                       {getWorkspacePathExample(
@@ -1784,7 +1795,7 @@ export default function SettingsPageComponent() {
                                       title="Copy"
                                       onClick={() => {
                                         navigator.clipboard.writeText(
-                                          `node workspace-agent.mjs \\\n  --backend ws://YOUR_SERVER:5590 \\\n  --workspace ${getWorkspacePathExample(selectedPlatform)} \\\n  --secret YOUR_API_SECRET`,
+                                          `node workspace-agent.mjs \\\n  --backend ${workspaceBackendExample()} \\\n  --workspace ${getWorkspacePathExample(selectedPlatform)} \\\n  --secret YOUR_API_SECRET`,
                                         );
                                         setCopiedBlock("download-2");
                                         setTimeout(
@@ -1801,10 +1812,11 @@ export default function SettingsPageComponent() {
                                     </button>
                                   </div>
                                   <span className={styles["step-hint"]}>
-                                    Replace the backend URL, workspace path, and
-                                    secret with your own values. Leave the
-                                    terminal running — the connector reconnects
-                                    automatically if interrupted.
+                                    Replace the workspace path, and the secret
+                                    with the Machine Authentication secret
+                                    above. Leave the terminal running — the
+                                    connector reconnects automatically if
+                                    interrupted.
                                   </span>
                                 </div>
                               </div>
@@ -1828,243 +1840,6 @@ export default function SettingsPageComponent() {
                                     </code>{" "}
                                     in the output. The machine will appear in this
                                     settings panel under Machines.
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                        {/* Docker */}
-                        {expandedMethod === "docker" &&
-                          methodKey === "docker" && (
-                            <div className={styles["guide-content"]}>
-                              <div className={styles["guide-step"]}>
-                                <span className={styles["step-number"]}>
-                                  1
-                                </span>
-                                <div className={styles["step-body"]}>
-                                  <span className={styles["step-title"]}>
-                                    Clone the repository
-                                  </span>
-                                  <div className={styles["code-block"]}>
-                                    <code>
-                                      git clone
-                                      https://github.com/rodrigo-barraza/workspace-service.git
-                                      {"\n"}cd workspace-service
-                                    </code>
-                                    <button
-                                      className={styles["copy-button"]}
-                                      title="Copy"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(
-                                          "git clone https://github.com/rodrigo-barraza/workspace-service.git\ncd workspace-service",
-                                        );
-                                        setCopiedBlock("docker-1");
-                                        setTimeout(
-                                          () => setCopiedBlock(null),
-                                          FEEDBACK_STANDARD_MILLISECONDS,
-                                        );
-                                      }}
-                                    >
-                                      {copiedBlock === "docker-1" ? (
-                                        <CheckCheck size={12} />
-                                      ) : (
-                                        <Copy size={12} />
-                                      )}
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className={styles["guide-step"]}>
-                                <span className={styles["step-number"]}>
-                                  2
-                                </span>
-                                <div className={styles["step-body"]}>
-                                  <span className={styles["step-title"]}>
-                                    Create your{" "}
-                                    <code className={styles["inline-code"]}>
-                                      .env
-                                    </code>{" "}
-                                    file
-                                  </span>
-                                  <div className={styles["code-block"]}>
-                                    <code>cp .env.example .env</code>
-                                    <button
-                                      className={styles["copy-button"]}
-                                      title="Copy"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(
-                                          "cp .env.example .env",
-                                        );
-                                        setCopiedBlock("docker-2");
-                                        setTimeout(
-                                          () => setCopiedBlock(null),
-                                          FEEDBACK_STANDARD_MILLISECONDS,
-                                        );
-                                      }}
-                                    >
-                                      {copiedBlock === "docker-2" ? (
-                                        <CheckCheck size={12} />
-                                      ) : (
-                                        <Copy size={12} />
-                                      )}
-                                    </button>
-                                  </div>
-                                  <span className={styles["step-hint"]}>
-                                    The machine authentication secret is configured
-                                    above in the Machine Authentication section.
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className={styles["guide-step"]}>
-                                <span className={styles["step-number"]}>
-                                  3
-                                </span>
-                                <div className={styles["step-body"]}>
-                                  <span className={styles["step-title"]}>
-                                    Build and start the container
-                                  </span>
-                                  <div className={styles["code-block"]}>
-                                    <code>docker compose up -d</code>
-                                    <button
-                                      className={styles["copy-button"]}
-                                      title="Copy"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(
-                                          "docker compose up -d",
-                                        );
-                                        setCopiedBlock("docker-3");
-                                        setTimeout(
-                                          () => setCopiedBlock(null),
-                                          FEEDBACK_STANDARD_MILLISECONDS,
-                                        );
-                                      }}
-                                    >
-                                      {copiedBlock === "docker-3" ? (
-                                        <CheckCheck size={12} />
-                                      ) : (
-                                        <Copy size={12} />
-                                      )}
-                                    </button>
-                                  </div>
-                                  <span className={styles["step-hint"]}>
-                                    The container exposes{" "}
-                                    <code className={styles["inline-code"]}>
-                                      /workspace
-                                    </code>{" "}
-                                    as the root. Mount your project directories
-                                    via{" "}
-                                    <code className={styles["inline-code"]}>
-                                      volumes
-                                    </code>{" "}
-                                    in{" "}
-                                    <code className={styles["inline-code"]}>
-                                      docker-compose.yml
-                                    </code>
-                                    .
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className={styles["guide-step"]}>
-                                <span className={styles["step-number"]}>
-                                  4
-                                </span>
-                                <div className={styles["step-body"]}>
-                                  <span className={styles["step-title"]}>
-                                    Verify connection
-                                  </span>
-                                  <div className={styles["code-block"]}>
-                                    <code>
-                                      docker logs workspace-service
-                                    </code>
-                                    <button
-                                      className={styles["copy-button"]}
-                                      title="Copy"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(
-                                          "docker logs workspace-service",
-                                        );
-                                        setCopiedBlock("docker-4");
-                                        setTimeout(
-                                          () => setCopiedBlock(null),
-                                          FEEDBACK_STANDARD_MILLISECONDS,
-                                        );
-                                      }}
-                                    >
-                                      {copiedBlock === "docker-4" ? (
-                                        <CheckCheck size={12} />
-                                      ) : (
-                                        <Copy size={12} />
-                                      )}
-                                    </button>
-                                  </div>
-                                  <span className={styles["step-hint"]}>
-                                    Look for{" "}
-                                    <code className={styles["inline-code"]}>
-                                      Connected to ws://…
-                                    </code>{" "}
-                                    and{" "}
-                                    <code className={styles["inline-code"]}>
-                                      Server confirmed registration
-                                    </code>
-                                    .
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className={styles["guide-env-table"]}>
-                                <span
-                                  className={
-                                    styles["environment-table-title"]
-                                  }
-                                >
-                                  Environment Variables
-                                </span>
-                                <div
-                                  className={
-                                    styles["environment-layout-row"]
-                                  }
-                                >
-                                  <code
-                                    className={styles["environment-key"]}
-                                  >
-                                    WORKSPACE_BACKEND
-                                  </code>
-                                  <span
-                                    className={
-                                      styles["environment-description"]
-                                    }
-                                  >
-                                    WebSocket URL of tools-service (e.g.{" "}
-                                    <code className={styles["inline-code"]}>
-                                      {workspaceBackendExample()}
-                                    </code>
-                                    )
-                                  </span>
-                                </div>
-                                <div
-                                  className={
-                                    styles["environment-layout-row"]
-                                  }
-                                >
-                                  <code
-                                    className={styles["environment-key"]}
-                                  >
-                                    WORKSPACE_ROOTS
-                                  </code>
-                                  <span
-                                    className={
-                                      styles["environment-description"]
-                                    }
-                                  >
-                                    Comma-separated root directories (default:{" "}
-                                    <code className={styles["inline-code"]}>
-                                      /workspace
-                                    </code>
-                                    )
                                   </span>
                                 </div>
                               </div>
@@ -2120,20 +1895,28 @@ export default function SettingsPageComponent() {
                                 </span>
                                 <div className={styles["step-body"]}>
                                   <span className={styles["step-title"]}>
-                                    Create your{" "}
+                                    Create a{" "}
                                     <code className={styles["inline-code"]}>
                                       .env
                                     </code>{" "}
-                                    file
+                                    file in the clone
                                   </span>
                                   <div className={styles["code-block"]}>
-                                    <code>cp .env.example .env</code>
+                                    <code>
+                                      {workspaceEnvFileExample(
+                                        workspaceBackendExample(),
+                                        getWorkspacePathExample(selectedPlatform),
+                                      )}
+                                    </code>
                                     <button
                                       className={styles["copy-button"]}
                                       title="Copy"
                                       onClick={() => {
                                         navigator.clipboard.writeText(
-                                          "cp .env.example .env",
+                                          workspaceEnvFileExample(
+                                            workspaceBackendExample(),
+                                            getWorkspacePathExample(selectedPlatform),
+                                          ),
                                         );
                                         setCopiedBlock("local-2");
                                         setTimeout(
@@ -2150,38 +1933,13 @@ export default function SettingsPageComponent() {
                                     </button>
                                   </div>
                                   <span className={styles["step-hint"]}>
-                                    Fill in your values:
+                                    Fill in your values: the secret is the
+                                    Machine Authentication secret above.{" "}
+                                    <code className={styles["inline-code"]}>
+                                      npm run dev:local
+                                    </code>{" "}
+                                    reads only this file.
                                   </span>
-                                  <div className={styles["code-block"]}>
-                                    <code>
-                                      WORKSPACE_BACKEND={workspaceBackendExample()}
-                                      {"\n"}
-                                      WORKSPACE_ROOTS=
-                                      {getWorkspacePathExample(
-                                        selectedPlatform,
-                                      )}
-                                    </code>
-                                    <button
-                                      className={styles["copy-button"]}
-                                      title="Copy"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(
-                                          `WORKSPACE_BACKEND=${workspaceBackendExample()}\nWORKSPACE_ROOTS=${getWorkspacePathExample(selectedPlatform)}`,
-                                        );
-                                        setCopiedBlock("local-2b");
-                                        setTimeout(
-                                          () => setCopiedBlock(null),
-                                          FEEDBACK_STANDARD_MILLISECONDS,
-                                        );
-                                      }}
-                                    >
-                                      {copiedBlock === "local-2b" ? (
-                                        <CheckCheck size={12} />
-                                      ) : (
-                                        <Copy size={12} />
-                                      )}
-                                    </button>
-                                  </div>
                                 </div>
                               </div>
 
@@ -2247,102 +2005,6 @@ export default function SettingsPageComponent() {
                                     </code>{" "}
                                     in the output. The machine will appear in this
                                     settings panel under Machines.
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div
-                                className={styles["guide-compare-table"]}
-                              >
-                                <span
-                                  className={
-                                    styles["environment-table-title"]
-                                  }
-                                >
-                                  Docker vs. Local
-                                </span>
-                                <div
-                                  className={
-                                    styles["compare-layout-row"]
-                                  }
-                                >
-                                  <span
-                                    className={styles["compare-label"]}
-                                  >
-                                    Filesystem
-                                  </span>
-                                  <span
-                                    className={styles["compare-docker"]}
-                                  >
-                                    Volume-mounted
-                                  </span>
-                                  <span
-                                    className={styles["compare-local"]}
-                                  >
-                                    Native — no mount overhead
-                                  </span>
-                                </div>
-                                <div
-                                  className={
-                                    styles["compare-layout-row"]
-                                  }
-                                >
-                                  <span
-                                    className={styles["compare-label"]}
-                                  >
-                                    Performance
-                                  </span>
-                                  <span
-                                    className={styles["compare-docker"]}
-                                  >
-                                    Container + I/O
-                                  </span>
-                                  <span
-                                    className={styles["compare-local"]}
-                                  >
-                                    Faster grep, glob, git
-                                  </span>
-                                </div>
-                                <div
-                                  className={
-                                    styles["compare-layout-row"]
-                                  }
-                                >
-                                  <span
-                                    className={styles["compare-label"]}
-                                  >
-                                    Git / Shell
-                                  </span>
-                                  <span
-                                    className={styles["compare-docker"]}
-                                  >
-                                    Inside container
-                                  </span>
-                                  <span
-                                    className={styles["compare-local"]}
-                                  >
-                                    Host environment
-                                  </span>
-                                </div>
-                                <div
-                                  className={
-                                    styles["compare-layout-row"]
-                                  }
-                                >
-                                  <span
-                                    className={styles["compare-label"]}
-                                  >
-                                    Use case
-                                  </span>
-                                  <span
-                                    className={styles["compare-docker"]}
-                                  >
-                                    Servers, NAS
-                                  </span>
-                                  <span
-                                    className={styles["compare-local"]}
-                                  >
-                                    Dev machines, WSL2
                                   </span>
                                 </div>
                               </div>

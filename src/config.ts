@@ -84,6 +84,13 @@ export const PRISM_WEBSOCKET_URL = resolveWebsocketUrl();
 // Server-side: vault value (LAN IP).
 export const TOOLS_SERVICE_URL = IS_BROWSER ? "/api/tools" : RAW_TOOLS_URL;
 
+// tools-service's public domain (vault: TOOLS_SERVICE_PUBLIC_URL). Display
+// only: the address a workspace machine's bridge dials when the page is on a
+// public domain, whose host forwards no tools-service port.
+export const TOOLS_SERVICE_PUBLIC_URL =
+  process.env.NEXT_PUBLIC_TOOLS_SERVICE_PUBLIC_URL ||
+  process.env.TOOLS_SERVICE_PUBLIC_URL;
+
 // -- MinIO File Storage -----------------------------------------
 // MINIO_PUBLIC_URL is the root (e.g. https://storage.rod.dev).
 // Append the bucket name so file refs resolve to the correct path:
